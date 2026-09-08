@@ -44,6 +44,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
+  { v: "conquete", l: "Conquête (compteur)", target: "none" },
   { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
   { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
   { v: "retour_differe", l: "Retour différé (sous le deck)", target: "unit" },
@@ -386,6 +387,14 @@ export default function ComposedEffectsEditor({
                 cap.effectKind === "emblem" ? triggersUnite.filter((t) => isEmblemCadence(t.v)) : triggers,
                 (v) => patchCap(idx, { trigger: v }),
               )}
+
+              {/* SINGULIER — condition ajoutée au déclencheur choisi ci-dessus. */}
+              <span style={labelStyle}>{tr('singulier_toggle')}</span>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer" }} title={tr('singulier_toggle_title')}>
+                <input type="checkbox" checked={cap.singulier === true}
+                  onChange={(e) => patchCap(idx, { singulier: e.target.checked ? true : undefined })} />
+                <span style={{ color: "#0D9488", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{tr('singulier_toggle')}</span>
+              </label>
 
               {/* EMBLÈME — l'effet n'est pas joué maintenant : il est DÉPOSÉ sur
                   un joueur et survit à cette carte. Un emblème composé se résout

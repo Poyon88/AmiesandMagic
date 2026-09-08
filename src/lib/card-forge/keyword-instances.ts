@@ -131,18 +131,30 @@ export interface BuildKeywordInstancesInput {
   grantScopes?: Record<string, "target" | "all_allies">;
   /** Vrai pour un SORT : bascule les branches « côté créature ». */
   isSpellCard?: boolean;
+  /** SINGULIER par libellé : condition ajoutée au déclencheur. Un mot-clé qui
+   *  n'aurait sinon rien à stocker (à l'invocation, sans X) produit quand même
+   *  une instance `{ id, singulier: true }` — c'est elle qui porte la condition. */
+  singulier?: Record<string, boolean>;
   extras?: ForgeKeywordExtras;
 }
 
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
       const id = FORGE_TO_GAME_KEYWORD[label];
       if (!id) return null;
+      const base = construireInstance(label, id);
+      if (singulier[label] !== true) return base;
+      return { ...(base ?? { id }), singulier: true };
+    })
+    .filter((k): k is KeywordInstance => k !== null);
+
+  function construireInstance(label: string, id: Keyword): KeywordInstance | null {
+    {
       const mode = modes[label];
       const x = xValues[label];
       // Sur un sort, un mot-clé conféré réglé sur « tous les alliés » doit
@@ -220,6 +232,6 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       }
       if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
       return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
-    })
-    .filter((k): k is KeywordInstance => k !== null);
+    }
+  }
 }

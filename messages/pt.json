@@ -93,6 +93,14 @@
         "label": "Cântico",
         "desc": "Seus feitiços com Canto são fortalecidos enquanto esta unidade estiver em jogo."
       },
+      "lune": {
+        "label": "Lua X",
+        "desc": "A partir da segunda carta jogada no turno, todos os seus valores são aumentados em X — permanentemente."
+      },
+      "soleil": {
+        "label": "Sol X",
+        "desc": "Se for a primeira carta jogada no turno, todos os seus valores são aumentados em X — permanentemente."
+      },
       "rappel": {
         "label": "Retorno",
         "desc": "Devolva uma carta alvo do seu cemitério para sua mão."
@@ -390,8 +398,16 @@
         "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o dela, ganha +X ATK e +Y PV permanentemente."
       },
       "esprit_de_corps": {
-        "label": "Espírito de corpo",
-        "desc": "Ganha +1 ATK ou +1 PV ao acaso por cada criatura {clan_de} com Espírito de corpo já jogada."
+        "label": "Espírito de Corpo",
+        "desc": "Ganha +1 ATK ou +1 PV aleatoriamente por criatura {clan_de} com Espírito de Corpo já jogada."
+      },
+      "presage": {
+        "label": "Presságio",
+        "desc": "Revela 3 cartas do topo em ordem aleatória; escolha a do topo para colocá-la na mão, depois embaralhe o deck."
+      },
+      "apprentissage": {
+        "label": "Aprendizado",
+        "desc": "Retira uma magia da sua mão e a memoriza: a criatura pode lançá-la pagando seus custos."
       },
       "impact": {
         "label": "Impacto X",
@@ -413,6 +429,10 @@
         "label": "Fé X",
         "desc": "Adiciona X à sua Fé (máx. 10). Gasto: descubra 1 de 3 cartas do baralho com custo ≤ Fé; só esse custo é deduzido."
       },
+      "conquete": {
+        "label": "Conquista X",
+        "desc": "Adiciona X à sua Conquista (patamar 3). No patamar: descubra 1 carta entre 3 do baralho adversário e tome-a na mão; o contador volta a 0."
+      },
       "seconde_vie": {
         "label": "Segunda Vida X",
         "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
@@ -428,14 +448,6 @@
       "creuser": {
         "label": "Escavar X",
         "desc": "Veja as X cartas do fundo do seu deck; coloque uma delas no topo."
-      },
-      "presage": {
-        "label": "Presságio",
-        "desc": "Revela 3 cartas do topo em desordem; aponte a mais alta para levá-la à mão e depois embaralhe o baralho."
-      },
-      "apprentissage": {
-        "label": "Aprendizagem",
-        "desc": "Retira um feitiço da sua mão e memoriza-o: a criatura pode lançá-lo pagando os seus custos."
       },
       "retour_differe": {
         "label": "Retorno Diferido",
@@ -481,25 +493,17 @@
         "label": "Força dos ancestrais +X/+Y",
         "desc": "Enquanto o teu cemitério contiver 7 ou mais criaturas, ganha +X ATK e +Y PV."
       },
-      "seuil_sacrificiel": {
-        "label": "Limiar de sacrifício +X/+Y",
-        "desc": "Enquanto o teu baralho tiver 25 cartas ou menos, ganha +X ATK e +Y PV."
-      },
       "purete": {
         "label": "Pureza +X/+Y",
         "desc": "Enquanto seu cemitério estiver vazio, ganha +X ATK e +Y PV."
       },
+      "seuil_sacrificiel": {
+        "label": "Limiar de sacrifício +X/+Y",
+        "desc": "Enquanto o teu baralho tiver 25 cartas ou menos, ganha +X ATK e +Y PV."
+      },
       "compagnons": {
         "label": "Companheiros",
-        "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
-      },
-      "lune": {
-        "label": "Lua X",
-        "desc": "A partir da segunda carta jogada no turno, todos os seus valores aumentam em X — de forma permanente."
-      },
-      "soleil": {
-        "label": "Sol X",
-        "desc": "Se for a primeira carta jogada no turno, todos os seus valores aumentam em X — de forma permanente."
+        "desc": "Embaralha seus companheiros (cartas vinculadas, escolhidas na criação) no seu deck, depois embaralhe o deck novamente. Apenas uma vez."
       }
     },
     "spell_keywords": {
@@ -530,6 +534,14 @@
       "chant": {
         "label": "Canto X",
         "desc": "Se você controlar uma criatura com Cântico, todos os valores desta magia são aumentados em X."
+      },
+      "lune": {
+        "label": "Lua X",
+        "desc": "A partir da segunda carta jogada no turno, todos os valores desta carta são aumentados em X."
+      },
+      "soleil": {
+        "label": "Sol X",
+        "desc": "Se for a primeira carta jogada no turno, todos os valores desta carta são aumentados em X."
       },
       "corruption": {
         "label": "Corrupção",
@@ -593,7 +605,7 @@
       },
       "boomerang": {
         "label": "Bumerangue",
-        "desc": "Após ser resolvido, este feitiço é embaralhado no seu deck em vez de ir para o cemitério."
+        "desc": "Após sua resolução, esta magia é embaralhada no seu deck em vez de ir para o cemitério."
       },
       "siphon": {
         "label": "Sifão X",
@@ -617,7 +629,7 @@
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o desta magia, +X/+Y a uma criatura aliada alvo."
+        "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o desta magia, +X/+Y a uma criatura aliada escolhida."
       },
       "affaiblissement": {
         "label": "Enfraquecimento -X/-Y",
@@ -637,7 +649,7 @@
       },
       "presage": {
         "label": "Presságio",
-        "desc": "Revela 3 cartas do topo em desordem; aponte a mais alta para levá-la à mão e depois embaralhe o baralho."
+        "desc": "Revela 3 cartas do topo em ordem aleatória; escolha a do topo para colocá-la na mão, depois embaralhe o deck."
       },
       "retour_differe": {
         "label": "Retorno Diferido",
@@ -650,6 +662,10 @@
       "foi": {
         "label": "Fé X",
         "desc": "Adiciona X à sua Fé (máx. 10). Gasto: descubra 1 de 3 cartas do baralho com custo ≤ Fé; só esse custo é deduzido"
+      },
+      "conquete": {
+        "label": "Conquista X",
+        "desc": "Adiciona X à sua Conquista (patamar 3). No patamar: descubra 1 carta entre 3 do baralho adversário e tome-a na mão; o contador volta a 0"
       },
       "inspiration": {
         "label": "Inspiração X",
@@ -705,15 +721,7 @@
       },
       "compagnons": {
         "label": "Companheiros",
-        "desc": "Baralha os seus companheiros (cartas ligadas, escolhidas na criação) no seu deck e depois volta a baralhá-lo. Apenas uma vez."
-      },
-      "lune": {
-        "label": "Lua X",
-        "desc": "A partir da segunda carta jogada no turno, todos os valores desta carta aumentam em X."
-      },
-      "soleil": {
-        "label": "Sol X",
-        "desc": "Se for a primeira carta jogada no turno, todos os valores desta carta aumentam em X."
+        "desc": "Embaralha seus companheiros (cartas vinculadas, escolhidas na criação) no seu deck, depois embaralhe o deck novamente. Apenas uma vez."
       }
     },
     "composed": {
@@ -755,6 +763,7 @@
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "epargne": "adiciona {x} ao seu contador de Poupança",
         "foi": "adiciona {x} ao seu contador de Fé",
+        "conquete": "adiciona {x} ao seu contador de Conquista",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "devoration": "devora",
         "retour_differe": "coloca debaixo do deck de seu dono",
@@ -941,7 +950,9 @@
       "Machines": "Máquinas",
       "Kobolds": "Kobolds",
       "Géants": "Gigantes",
+      "Mammouths": "Mamutes",
       "Humains": "Humanos",
+      "Nagas": "Nagas",
       "Esprits": "Espíritos",
       "Griffons": "Grifos",
       "Faucons": "Falcões",
@@ -999,9 +1010,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Guerreiros do Caos",
-      "Mammouths": "Mamutes",
-      "Nagas": "Nagas"
+      "Guerriers du Chaos": "Guerreiros do Caos"
     },
     "alignments": {
       "bon": "Bom",
@@ -1090,6 +1099,11 @@
         "bare": "Espírito",
         "de": "do Espírito"
       },
+      "Nagas": {
+        "def": "o Naga",
+        "bare": "Naga",
+        "de": "do Naga"
+      },
       "Griffons": {
         "def": "o Grifo",
         "bare": "Grifo",
@@ -1165,6 +1179,11 @@
         "def": "o Gigante",
         "bare": "Gigante",
         "de": "do Gigante"
+      },
+      "Mammouths": {
+        "def": "o Mamute",
+        "bare": "Mamute",
+        "de": "do Mamute"
       },
       "Ogres": {
         "def": "o Ogro",
@@ -1380,16 +1399,6 @@
         "def": "o Guerreiro do Caos",
         "bare": "Guerreiro do Caos",
         "de": "do Guerreiro do Caos"
-      },
-      "Mammouths": {
-        "def": "o Mamute",
-        "bare": "Mamute",
-        "de": "do Mamute"
-      },
-      "Nagas": {
-        "def": "o Naga",
-        "bare": "Naga",
-        "de": "do Naga"
       }
     },
     "clans_forms": {
@@ -1472,8 +1481,8 @@
       "rm_scope_clan": " do clã {v}",
       "rm_scope_all": "",
       "scope_target": "a uma unidade aliada",
-      "scope_all": "a todas as suas unidades",
-      "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV ao acaso (1 por cada criatura {clan_de} com Espírito de corpo já jogada)."
+      "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
+      "scope_all": "a todas as suas unidades"
     },
     "sets": {
       "1": "Set Básico"
@@ -1494,6 +1503,22 @@
       "end_of_turn": "Fim de turno",
       "draw": "Compra",
       "low_hp": "Abaixo de {n} PV"
+    },
+    "singulier": {
+      "label": "Singular",
+      "help": "Ativa-se {timing} se o seu deck inicial não contiver nenhuma carta duplicada.",
+      "help_permanent": "Ativo se o seu deck inicial não contiver nenhuma carta duplicada.",
+      "timing": {
+        "entry": "ao entrar",
+        "death": "à morte",
+        "tap": "à ativação",
+        "return": "ao retornar à mão",
+        "attack": "ao ataque",
+        "end_of_turn": "no fim do turno",
+        "draw": "à compra",
+        "low_hp": "abaixo de {n} PV",
+        "spell": "à resolução da magia"
+      }
     }
   },
   "home": {
@@ -1546,12 +1571,12 @@
     "hero_sub": "Forja sua lenda. Lidera sua facção. Escreva sua história.",
     "hero_cta": "Entrar na arena",
     "hero_cta_secondary": "Descobrir",
-    "hero_proof": "Mais de 500 cartas disponíveis desde a primeira partida",
+    "hero_proof": "Mais de 500 cartas oferecidas já na primeira partida",
     "features_title": "Por que Armies & Magic",
     "f1_title": "A profundidade das lendas.",
     "f1_desc": "Armies & Magic une a estratégia dos TCGs clássicos a mecânicas pensadas para os campeões de hoje.",
-    "f2_title": "O máximo de cartas desde o início.",
-    "f2_desc": "Receba gratuitamente todas as cartas clássicas da facção à sua escolha (cerca de 500 cartas). E tenha todas as facções por uma fração do custo de um TCG clássico.",
+    "f2_title": "Um máximo de cartas desde o início.",
+    "f2_desc": "Obtenha gratuitamente todas as cartas clássicas da facção de sua escolha (cerca de 500 cartas). Tenha acesso a todas as facções por uma fração do custo de um TCG clássico.",
     "f3_title": "Cada deck Expert, uma obra única.",
     "f3_desc": "As cartas em tiragem limitada tornam cada deck Expert singular. A cota comum garante que só a sua estratégia decide.",
     "f4_title": "A arena mobile, finalmente à altura.",
@@ -1566,10 +1591,10 @@
     "footer": "Armies & Magic — Todos os direitos reservados",
     "factions": {
       "Humains": {
-        "tagline": "Unidos sob o estandarte"
+        "tagline": "Unidos sob a bandeira"
       },
       "Elfes": {
-        "tagline": "Guardiões da floresta eterna"
+        "tagline": "Guardiões da selva eterna"
       },
       "Nains": {
         "tagline": "Forjados na pedra"
@@ -1584,13 +1609,13 @@
         "tagline": "As sombras têm um nome"
       },
       "Morts-Vivants": {
-        "tagline": "O silêncio dos túmulos foi rompido"
+        "tagline": "O silêncio dos túmulos se quebrou"
       },
       "EmpireDuMilieu": {
         "tagline": "A disciplina antes da fúria"
       },
       "RoyaumesDuSoleil": {
-        "tagline": "O deserto lembra os seus reis"
+        "tagline": "O deserto se lembra de seus reis"
       }
     }
   },
@@ -1766,7 +1791,7 @@
     "error_database_error": "A criação da conta falhou do nosso lado. Tente novamente em instantes; se o problema persistir, entre em contato conosco.",
     "error_captcha_failed": "A verificação anti-robô falhou ou expirou. Recarregue a página e tente novamente.",
     "faction_see_cards": "Ver as cartas de {faction} antes de decidir →",
-    "faction_browse": "Na dúvida? Descubra cada facção e as suas cartas →"
+    "faction_browse": "Está em dúvida? Descubra cada facção e suas cartas →"
   },
   "common": {
     "settings_title": "Configurações",
@@ -1792,7 +1817,7 @@
     "discard_cost_title": "Descarte {count, plural, one {# carta} other {# cartas}}",
     "sacrifice_cost_title": "Sacrifique {count, plural, one {# criatura} other {# criaturas}}",
     "exile_cost_title": "Exila {count, plural, one {# carta} other {# cartas}} do topo do teu baralho",
-    "topdeck_cost_title": "Devolva {count, plural, one {# carta} other {# cartas}} da sua mão ao topo do seu deck",
+    "topdeck_cost_title": "Recoloque {count, plural, one {# carta} other {# cartas}} de sua mão no topo do seu deck",
     "detail_note_all_allies": " (a todos os aliados)",
     "detail_note_target": " (à criatura alvo)",
     "trigger_on_play": "Ao entrar",
@@ -1807,7 +1832,7 @@
     "composed_effects_heading": "Efeitos compostos (avançado)",
     "composed_effects_subtitle": "conteúdo + amplitude + alvos",
     "composed_effect_n": "Efeito composto {n}",
-    "token_composed_hint": "Uma ficha não entra em jogo ao ser jogada: «à entrada» nunca dispararia, por isso não é oferecido.",
+    "token_composed_hint": "Um token não entra em jogo por uma jogada: \"à entrada\" nunca seria acionado e, por isso, não é proposto.",
     "remove": "Remover",
     "label_trigger": "GATILHO",
     "label_emblem": "EMBLEMA",
@@ -1859,8 +1884,8 @@
     "pool_any": "Indiferente",
     "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
     "label_magnitude": "MAGNITUDE",
-    "random_hint": "Sorteado ao acaso entre 1 e {max}, uma só vez, na resolução.",
-    "random_needs_ceiling": "É necessário um teto de pelo menos 2 para sortear.",
+    "random_hint": "Sorteado ao acaso entre 1 e {max}, uma única vez na resolução.",
+    "random_needs_ceiling": "É necessário um teto de pelo menos 2 para sortear ao acaso.",
     "label_granted_ability": "HABILIDADE CONCEDIDA",
     "label_grant_trigger": "GATILHO DA CONCESSÃO",
     "label_token": "TOKEN",
@@ -1945,8 +1970,8 @@
     "reset_short": "reinic.",
     "generating": "Gerando…",
     "illustrate": "Ilustrar",
-    "image_model_auto": "Modelo: auto",
-    "image_model_hint": "Modelo de imagem imposto para comparar dois resultados. «Auto» deixa a cascata habitual escolher. Um modelo imposto não recorre a nenhum outro: a sua falha é comunicada tal como é.",
+    "image_model_auto": "Modelo: automático",
+    "image_model_hint": "Modelo de imagem imposto para comparar duas renderizações. \"Automático\" deixa a cascata habitual escolher. Um modelo imposto não recorre a nenhum outro: sua falha é sinalizada como tal.",
     "history": "HISTÓRICO",
     "no_card": "Nenhuma carta",
     "edition_label": "EDIÇÃO",
@@ -1961,10 +1986,10 @@
     "discard_label": "DESCARTE",
     "sacrifice_cost_hint": "Número de criaturas aliadas que o jogador deve sacrificar para jogar esta carta.",
     "exile_cost_hint": "Número de cartas removidas do topo do baralho do jogador. Exiladas: não vão para o cemitério e não podem ser recuperadas.",
-    "topdeck_cost_hint": "Número de cartas que o jogador devolve da mão para o topo do seu deck. Elas não vão para o cemitério: serão compradas de novo. Custo de tempo, não redutível.",
+    "topdeck_cost_hint": "Número de cartas que o jogador recoloca da mão no topo do seu deck. Elas não vão para o cemitério: ele voltará a comprá-las. Custo de tempo, não redutível.",
     "sacrifice_label": "SACRIFÍCIO",
     "exile_label": "EXÍLIO",
-    "topdeck_label": "DEVOLUÇÃO",
+    "topdeck_label": "RECOLOCAÇÃO",
     "spell_effects_label": "EFEITOS DO FEITIÇO",
     "spell_keywords_label": "PALAVRAS-CHAVE DE FEITIÇO",
     "token_to_summon": "TOKEN A INVOCAR",
@@ -1979,7 +2004,7 @@
     "def_override": "DEF (substituição)",
     "add_token": "+ Adicionar token",
     "composable_effects_advanced": "FORMATO JSON ANTIGO (obsoleto)",
-    "json_hint": "Obsoleto: o motor só o lê para Relançar em cartas antigas. Para compor um efeito, use «Efeito composto» mais abaixo.",
+    "json_hint": "Obsoleto: o motor só lê isto para Relançar em cartas antigas. Para compor um efeito, use «Efeito composto» abaixo.",
     "abilities_count": "HABILIDADES ({count})",
     "mode_title_play": "Ao invocar (padrão)",
     "mode_title_death": "Ao morrer (deathrattle)",
@@ -2244,8 +2269,10 @@
     "illustration_generated": "Ilustração gerada ({model})",
     "import_error": "Erro de importação",
     "eveil_label": "DESPERTAR",
-    "eveil_cost_hint": "DESPERTAR: a carta pode ser posta em despertar EM VEZ de ser jogada. Sai da mão com este número de pontos; o jogador paga 1 por mana em cada um dos seus turnos, e no último ponto entra em jogo como se viesse da mão. Substitui o custo de mana, não se soma a ele. Não redutível.",
-    "eveil_cost_title": "Pode ser posta em despertar por {count, plural, one {# ponto} other {# pontos}}, pagos a 1 mana por turno — em vez do custo de mana"
+    "eveil_cost_hint": "DESPERTAR: a carta pode ser colocada em despertar EM VEZ de ser jogada. Ela sai da mão com este número de pontos; o jogador paga 1 mana por ponto a cada turno, e no último ponto ela entra em jogo como se viesse da mão. Substitui o custo em mana, não se soma a ele. Não redutível.",
+    "eveil_cost_title": "Pode ser colocada em despertar por {count, plural, one {# ponto} other {# pontos}}, pagos 1 mana por turno — em vez do custo em mana",
+    "singulier_toggle": "Singular",
+    "singulier_toggle_title": "Condição Singular: esta habilidade só se ativa se o deck inicial do jogador não contiver nenhuma carta duplicada."
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
@@ -2291,15 +2318,15 @@
     "graveyard_hint_touch": "Toque em uma carta para ampliar · toque novamente para ver a descrição",
     "graveyard_hint_hover": "Passe o mouse sobre uma carta para ampliar · clique direito para alternar imagem / descrição",
     "seconde_vie_hint": "Segunda vida: clique duas vezes numa criatura elegível.",
-    "seconde_vie_blocked_turn": "Não é a sua vez.",
+    "seconde_vie_blocked_turn": "Não é o seu turno.",
     "graveyard_empty": "Nenhuma carta no cemitério",
     "cost_default_card_name": "carta",
     "cost_pay_title": "Pague os custos de {name}",
     "cost_discard_label": "🃏 {count, plural, one {Descartar # carta} other {Descartar # cartas}}",
-    "cost_topdeck_label": "{count, plural, one {Devolver # carta ao deck} other {Devolver # cartas ao deck}}",
+    "cost_topdeck_label": "{count, plural, one {Recolocar # carta no deck} other {Recolocar # cartas no deck}}",
     "cost_topdeck_order_hint": "A primeira carta escolhida ficará no topo do deck.",
-    "cost_hand_order_hint": "Seus cliques preenchem primeiro o descarte, depois a devolução.",
-    "topdeck_cost_caption": "{count, plural, one {Devolução} other {Devolução ×#}}",
+    "cost_hand_order_hint": "Os seus cliques preenchem primeiro o descarte, depois a recolocação.",
+    "topdeck_cost_caption": "{count, plural, one {Recolocação} other {Recolocação ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Sacrificar # criatura} other {Sacrificar # criaturas}}",
     "tactique_title": "📋 Tática",
     "tactique_subtitle": "{count, plural, one {Escolha # habilidade para transferir} other {Escolha # habilidades para transferir}}",
@@ -2366,27 +2393,29 @@
     "mode_suffix_return": " · retorno à mão",
     "mode_suffix_end_of_turn": " · fim do turno",
     "presage_title": "🌙 Presságio",
-    "presage_subtitle": "Qual é a primeira carta do seu baralho?",
-    "presage_hit": "Bem visto — vai para a sua mão.",
-    "presage_miss": "Errou. A carta certa está em verde.",
+    "presage_subtitle": "Qual é a primeira carta do seu deck?",
+    "presage_hit": "Bem visto — ela junta-se à sua mão.",
+    "presage_miss": "Falhou. A carta certa está a verde.",
     "apprentissage_title": "📖 Aprendizagem",
     "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?",
     "foi_title": "✨ Fé",
     "foi_subtitle": "Escolha uma carta para a sua mão. O seu custo é deduzido da sua Fé; o resto é conservado.",
+    "conquete_title": "🚩 Conquista",
+    "conquete_subtitle": "Três cartas do baralho adversário. Escolha a que toma na mão: ela é sua pelo resto da partida.",
     "zone_eveil": "Despertar",
     "zone_eveil_yours": "O seu despertar",
-    "zone_eveil_opponent": "Despertar do adversário",
+    "zone_eveil_opponent": "Despertar adversário",
     "eveil_hint": "Pague 1 mana por clique. No último ponto, a carta entra em jogo como se viesse da sua mão.",
     "eveil_remaining": "{count, plural, one {# ponto restante} other {# pontos restantes}}",
     "eveil_next_point": "O próximo ponto custa 1 mana.",
     "eveil_next_arrives": "Último ponto: a carta entra em jogo.",
     "eveil_play_now": "Colocar em jogo",
     "eveil_blocked_mana": "Mana insuficiente.",
-    "eveil_blocked_board_plein": "O seu campo está cheio.",
-    "eveil_blocked_vie": "Pontos de vida insuficientes para o seu custo.",
-    "eveil_blocked_main": "Cartas na mão insuficientes para os seus custos adicionais.",
+    "eveil_blocked_board_plein": "O seu tabuleiro está cheio.",
+    "eveil_blocked_vie": "Não tem pontos de vida suficientes para o seu custo.",
+    "eveil_blocked_main": "Cartas insuficientes na mão para os seus custos adicionais.",
     "eveil_blocked_plateau": "Criaturas insuficientes para sacrificar.",
-    "eveil_blocked_deck": "Cartas insuficientes para exilar no seu baralho.",
+    "eveil_blocked_deck": "Cartas insuficientes para exilar no seu deck.",
     "eveil_blocked_sans_cible": "Nenhum alvo válido para este feitiço.",
     "eveil_suspend": "Pôr em despertar ({count, plural, one {# ponto} other {# pontos}})",
     "eveil_pay_n": "{count, plural, one {Pagar #} other {Pagar #}}",
@@ -2554,9 +2583,12 @@
     "locked_badge": "Bloqueada",
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
     "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
-    "unplayable_badge": "{count} carta(s) em falta",
-    "unplayable_reason": "Este baralho contem cartas de faccao(oes) que voce ja nao possui: {factions}. Continua intacto - recupere a faccao para voltar a joga-lo.",
-    "unplayable_rebuy": "Recuperar na loja"
+    "unplayable_badge": "{count} carta(s) faltando",
+    "unplayable_reason": "Este deck contém cartas de facção(ões) que você não possui mais: {factions}. Ele permanece intacto — recupere a facção para jogá-lo novamente.",
+    "unplayable_rebuy": "Resgatar na loja",
+    "singleton_yes": "Deck singular ✓",
+    "singleton_no": "Deck Singular ✗",
+    "singleton_hint": "Um deck singular não contém nenhuma carta duplicada: as habilidades marcadas como Singular só são ativadas nessa condição. Isso não é uma regra de construção."
   },
   "cardBacks": {
     "eyebrow": "Mostre seu estilo",
@@ -2618,48 +2650,48 @@
     "defense": "Defensivo",
     "commons": "{count, plural, one {# comum} other {# comuns}}",
     "more_races": "+{count}",
-    "free_commons": "{count, plural, one {# carta comum} other {# cartas comuns}} · {clans, plural, one {# clã} other {# clãs}} — suas desde o primeiro dia.",
+    "free_commons": "{count, plural, one {# carta comum} other {# cartas comuns}} · {clans, plural, one {# clã} other {# clãs}} — oferecidas desde o primeiro dia.",
     "no_clan_title": "Abertas a todos os clãs",
-    "no_clan_desc": "Estas cartas não pertencem a nenhum clã: entram em qualquer deck da facção, seja qual for o clã em torno do qual o monta.",
-    "other_factions": "Ver as outras facções",
+    "no_clan_desc": "Essas cartas não pertencem a nenhum clã: elas se juntam a qualquer deck da facção, seja qual for o clã ao redor do qual você o constrói.",
+    "other_factions": "Ver outras facções",
     "costs": "Custos adicionais",
     "cost_life": "Pontos de vida",
     "cost_discard": "Descarte",
     "cost_sacrifice": "Sacrifício",
     "cost_exile": "Exílio",
-    "cost_topdeck": "Devolução",
-    "cost_life_desc": "Estas cartas também custam pontos de vida do seu herói, além do custo em mana.",
-    "cost_discard_desc": "Estas cartas exigem descartar cartas da sua mão, além do custo em mana.",
-    "cost_sacrifice_desc": "Estas cartas exigem sacrificar criaturas que controla, além do custo em mana.",
-    "cost_exile_desc": "Estas cartas exilam cartas do topo do seu deck, além do custo em mana.",
-    "cost_topdeck_desc": "Estas cartas exigem devolver cartas da sua mão ao topo do seu deck, além do custo em mana.",
+    "cost_topdeck": "Retorno",
+    "cost_life_desc": "Essas cartas também custam pontos de vida do herói, além do custo em mana.",
+    "cost_discard_desc": "Essas cartas exigem descartar cartas da sua mão, além do custo em mana.",
+    "cost_sacrifice_desc": "Essas cartas exigem sacrificar criaturas que você controla, além do custo em mana.",
+    "cost_exile_desc": "Essas cartas exilam cartas do topo do seu deck, além do custo em mana.",
+    "cost_topdeck_desc": "Essas cartas exigem devolver cartas da sua mão para o topo do seu deck, além do custo em mana.",
     "commons_count": "{count, plural, one {# carta comum} other {# cartas comuns}} · {clans, plural, one {# clã} other {# clãs}}"
   },
   "faction_action": {
-    "visitor_pitch": "Crie a sua conta para começar com {faction}: todas as suas cartas comuns serão suas.",
+    "visitor_pitch": "Crie sua conta para começar com {faction}: todas as suas cartas comuns serão oferecidas a você.",
     "visitor_cta": "CRIAR UMA CONTA",
     "owned_just_chosen": "{faction} é a sua facção",
     "owned_bundle": "Incluída no seu pacote",
-    "owned_starter": "A sua facção inicial",
+    "owned_starter": "Sua facção inicial",
     "owned_bought": "Facção adquirida",
     "owned_note": "Todas as cartas comuns abaixo estão na sua coleção.",
     "enter_game": "ENTRAR NO JOGO",
-    "see_collection": "VER A MINHA COLEÇÃO",
-    "free_pitch": "Ainda não escolheu a sua facção inicial. Comece com <strong>{faction}</strong> e receba todas as suas cartas comuns, grátis.",
+    "see_collection": "VER MINHA COLEÇÃO",
+    "free_pitch": "Você ainda não escolheu sua facção inicial. Comece com <strong>{faction}</strong> e receba todas as suas cartas comuns, gratuitamente.",
     "free_cta": "COMEÇAR COM ESTA FACÇÃO",
-    "free_warning": "Esta escolha é definitiva: não poderá mudá-la, apenas adquirir outras facções mais tarde.",
+    "free_warning": "Esta escolha é definitiva: não poderá mais alterá-la, apenas adquirir outras facções mais tarde.",
     "free_confirm": "CONFIRMAR — {faction}",
     "cancel": "CANCELAR",
-    "buy_pitch": "Adicione {faction} à sua coleção: todas as suas cartas comuns, para sempre.",
-    "your_balance": "(tem {balance})",
-    "debt_blocks": "A sua dívida de {debt} de ouro tem de ser saldada antes de qualquer nova compra.",
+    "buy_pitch": "Adicione {faction} à sua coleção: todas as suas cartas comuns, definitivamente.",
+    "your_balance": "(você tem {balance})",
+    "debt_blocks": "Sua dívida de {debt} ouro deve ser paga antes de qualquer nova compra.",
     "not_enough_gold": "OURO INSUFICIENTE",
     "buy_cta": "DESBLOQUEAR ESTA FACÇÃO",
-    "err_already_chosen": "Já escolheu a sua facção inicial.",
-    "err_choice": "Não foi possível guardar a escolha.",
+    "err_already_chosen": "Você já escolheu sua facção inicial.",
+    "err_choice": "Não foi possível registrar a escolha.",
     "err_purchase": "Não foi possível concluir a compra.",
     "badge_starter": "INICIAL",
     "badge_owned": "ADQUIRIDA",
-    "bundle_hint": "Ou leve as {count} facções que lhe faltam por {price} de ouro →"
+    "bundle_hint": "Ou pegue as {count} facções que faltam por {price} ouro →"
   }
 }

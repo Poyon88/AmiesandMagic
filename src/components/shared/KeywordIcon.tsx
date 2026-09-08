@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { keywordModeColor, keywordModeFilter, ICON_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { keywordModeColor, keywordModeFilter, keywordIconPaint, ICON_CONTRAST_HALO, SINGULIER_EMOJI_FILTER } from "@/lib/game/keyword-labels";
 import type { KeywordMode } from "@/lib/game/types";
 
 /**
@@ -22,6 +22,11 @@ import type { KeywordMode } from "@/lib/game/types";
  *
  * `fill`: when true and an image is used, the image fills its parent.
  * Caller is responsible for sizing the wrapper.
+ *
+ * `singulier` : condition Singulier sur la capacité → icône BICOLORE (moitié
+ * gauche turquoise réservée, moitié droite couleur du déclencheur, blanc pour
+ * un passif), avec un fin liseré sombre quand la moitié droite est claire.
+ * Calculé par `keywordIconPaint` (pur, testé) ; ici on ne fait que peindre.
  */
 export default function KeywordIcon({
   symbol,
@@ -29,12 +34,14 @@ export default function KeywordIcon({
   keyword,
   fill = false,
   mode,
+  singulier,
 }: {
   symbol: string;
   size?: number;
   keyword?: string;
   fill?: boolean;
   mode?: KeywordMode;
+  singulier?: boolean;
 }) {
   const { overrides, scales, loaded, fetchOverrides } = useKeywordIconStore();
 
@@ -53,13 +60,20 @@ export default function KeywordIcon({
 
   const isImage = effectiveSymbol.startsWith("/") || effectiveSymbol.startsWith("http");
   const tint = keywordModeColor(mode);
+  const paint = keywordIconPaint(tint, singulier);
+  // Liseré sombre : deux ombres portées de rayon nul, soit un contour d'environ
+  // 1 px tout autour, posé sur le parent comme le halo (même contrainte
+  // filter-avant-mask).
+  const halo = paint.outline
+    ? `${ICON_CONTRAST_HALO} drop-shadow(0 0 0.6px #000) drop-shadow(0 0 0.6px #000)`
+    : ICON_CONTRAST_HALO;
 
   if (isImage) {
     // Teinte demandée → masque. Le halo DOIT être porté par un élément parent :
     // en CSS `filter` s'applique AVANT `mask` sur un même élément, le
     // drop-shadow serait calculé sur le carré plein puis rogné par le masque
     // (halo invisible). Le parent filtre le résultat déjà masqué.
-    if (tint) {
+    if (paint.background) {
       const box = fill
         ? { width: "100%", height: "100%" }
         : { width: Math.round(size * 1.8), height: Math.round(size * 1.8) };
@@ -67,7 +81,7 @@ export default function KeywordIcon({
         <span
           style={{
             display: "inline-flex",
-            filter: ICON_CONTRAST_HALO,
+            filter: halo,
             lineHeight: 0,
             verticalAlign: "middle",
             // En mode `fill`, l'enfant masqué est dimensionné en %. Le wrapper
@@ -81,7 +95,9 @@ export default function KeywordIcon({
             style={{
               ...box,
               display: "block",
-              backgroundColor: tint,
+              // Couleur unie OU dégradé bicolore : le masque découpe le fond,
+              // quel qu'il soit.
+              background: paint.background,
               maskImage: `url(${effectiveSymbol})`,
               WebkitMaskImage: `url(${effectiveSymbol})`,
               maskRepeat: "no-repeat",
@@ -120,6 +136,17 @@ export default function KeywordIcon({
   }
 
   // Emoji : non masquable, teinte via la chaîne `filter` historique.
+  if (singulier) {
+    // Bicolore sans masque : deux copies du glyphe superposées, chacune
+    // rognée à sa moitié (clip-path), la gauche en turquoise Singulier.
+    const glyphe = <span style={{ fontSize: size, lineHeight: 1, display: "inline-block", transform }}>{effectiveSymbol}</span>;
+    return (
+      <span style={{ position: "relative", display: "inline-flex", lineHeight: 0, filter: paint.outline ? "drop-shadow(0 0 0.6px #000)" : undefined }}>
+        <span style={{ display: "inline-flex", filter: keywordModeFilter(mode), lineHeight: 0, clipPath: "inset(0 0 0 50%)" }}>{glyphe}</span>
+        <span style={{ position: "absolute", inset: 0, display: "inline-flex", filter: `${SINGULIER_EMOJI_FILTER} ${ICON_CONTRAST_HALO}`, lineHeight: 0, clipPath: "inset(0 50% 0 0)" }}>{glyphe}</span>
+      </span>
+    );
+  }
   return (
     <span style={{ display: "inline-flex", filter: keywordModeFilter(mode), lineHeight: 0 }}>
       <span style={{ fontSize: size, lineHeight: 1, display: "inline-block", transform }}>{effectiveSymbol}</span>

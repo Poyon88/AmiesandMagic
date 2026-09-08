@@ -112,6 +112,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Épargne X": ALL_MODES,
   // Foi : même contrat que l'Épargne (compteur du contrôleur, sans cible).
   "Foi X": ALL_MODES,
+  // Conquête : même contrat (compteur du contrôleur, sans cible).
+  "Conquête X": ALL_MODES,
   "Incinération X": ALL_MODES,
   "Creuser X": ALL_MODES,
   "Retour différé": ALL_MODES,
@@ -478,7 +480,9 @@ export const FACTIONS: Record<string, {
       "Faucons": { statWeights: { atk: 1.15, def: 0.65 }, likelyKeywords: { "Vol": 0.90, "Célérité": 0.60, "Traque": 0.55, "Esquive": 0.50, "Précision": 0.45, "Augure": 0.35 } },
     },
     clanProfiles: {
-      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
+      // Conquête X en tête : signature du clan (compteur dépensé en découvertes
+      // dans le deck ADVERSE).
+      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Conquête X": 0.65, "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
       // Foi X en tête : c'est la signature du clan (compteur dépensé en
       // découvertes dans le deck).
       "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Foi X": 0.65, "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },

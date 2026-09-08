@@ -2,6 +2,7 @@ import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from
 import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS } from "./abilities";
+import { SINGULIER_COLOR } from "./singulier";
 
 /** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
  *  jeu (on-play) reçoit le mode "entry" (teinte jaune, comme les sorts) pour se
@@ -116,6 +117,9 @@ export interface KeywordDisplayEntry {
   kw: Keyword;
   x?: number;
   mode?: KeywordMode; // undefined = on-play
+  /** Condition SINGULIER portée par l'instance : l'icône devient bicolore
+   *  (moitié turquoise, moitié couleur du déclencheur). */
+  singulier?: boolean;
   /** Index back into card.keyword_instances when sourced from there —
    *  useful when the click handler needs to dispatch the right instance
    *  (tap activation). Undefined for legacy entries derived from the
@@ -213,9 +217,45 @@ export function buildKeywordDisplayEntries(
       mode: instance.mode ?? defaultDisplayMode(id),
       instanceIdx,
       instance,
+      ...(instance.singulier === true ? { singulier: true } : {}),
     };
   });
 }
+
+/** Une couleur hex est-elle CLAIRE (luminance perçue > 0,6) ? Sert à décider
+ *  du liseré sombre d'une icône bicolore Singulier. */
+export function isLightHexColor(hex: string): boolean {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
+}
+
+/** PEINTURE d'une icône de capacité.
+ *
+ *  Sans Singulier : la couleur unie du déclencheur (`null` = passif, l'icône
+ *  reste telle quelle). Avec Singulier : dégradé BICOLORE, moitié gauche
+ *  `SINGULIER_COLOR`, moitié droite couleur du déclencheur — blanc pour un
+ *  passif, jaune pour l'Entrée par défaut, sans cas particulier. `outline`
+ *  demande un fin liseré sombre quand la moitié droite est claire (blanc,
+ *  jaune) pour rester lisible sur fond clair en petit format. */
+export function keywordIconPaint(
+  tint: string | null,
+  singulier: boolean | undefined,
+): { background: string | null; outline: boolean } {
+  if (singulier !== true) return { background: tint, outline: false };
+  const droite = tint ?? "#ffffff";
+  return {
+    background: `linear-gradient(90deg, ${SINGULIER_COLOR} 0%, ${SINGULIER_COLOR} 50%, ${droite} 50%, ${droite} 100%)`,
+    outline: isLightHexColor(droite),
+  };
+}
+
+/** Chaîne `filter` approchant SINGULIER_COLOR (#0D9488) pour un EMOJI, qui ne
+ *  se masque pas. Même méthode que `keywordModeTint`. */
+export const SINGULIER_EMOJI_FILTER =
+  "brightness(0) saturate(100%) invert(42%) sepia(61%) saturate(1080%) hue-rotate(140deg) brightness(88%) contrast(92%)";
 
 /** Convert an integer to Roman numerals (1–10) */
 // Numéral affiché pour la valeur X d'un mot-clé (ex. « Rassemblement 3 »).
@@ -346,7 +386,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "soleil",
   "douleur",
   "pauvrete",
-  "inspiration", "epargne", "foi", "seconde_vie", "incineration", "devoration", "creuser", "retour_differe",
+  "inspiration", "epargne", "foi", "conquete", "seconde_vie", "incineration", "devoration", "creuser", "retour_differe",
   "concentration",
   "remontee",
   "renforcement_multiple",
@@ -409,7 +449,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   apprentissage: "Apprentissage",
   impact: "Impact X",
   douleur: "Douleur X",
-  inspiration: "Inspiration X", epargne: "Épargne X", foi: "Foi X",
+  inspiration: "Inspiration X", epargne: "Épargne X", foi: "Foi X", conquete: "Conquête X",
   seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé",
   concentration: "Concentration X",
   remontee: "Remontée",
@@ -575,7 +615,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   apprentissage: "📖",
   impact: "💥",
   douleur: "🤕",
-  inspiration: "📖", epargne: "🪙", foi: "✨",
+  inspiration: "📖", epargne: "🪙", foi: "✨", conquete: "🚩",
   seconde_vie: "🕰️", incineration: "🧨", devoration: "🦷", creuser: "⛏️", retour_differe: "🌀",
   concentration: "🎯",
   entrainement: "🏋️",

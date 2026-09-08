@@ -1744,6 +1744,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // card.keyword_instances at save time so the engine can route the
   // effect to the on-death or tap pipeline instead.
   const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
+  // SINGULIER par libellé : condition ajoutée au déclencheur (cf.
+  // lib/game/singulier.ts). Persistée dans keyword_instances[i].singulier.
+  const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -2261,7 +2264,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0);
@@ -2448,7 +2451,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
-    setKeywordModes({});
+    setKeywordModes({}); setKeywordSingulier({});
     setKeywordGrantScope({});
     setSpellKeywords([]);
     setSpellEffectsData(null);
@@ -2582,6 +2585,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         modes: keywordModes,
         grantScopes: keywordGrantScope,
         isSpellCard,
+        singulier: keywordSingulier,
         extras: {
           rmY, rmRace, rmClan, afY, rfY, dcY, glY, fdaY,
           invocCosts, invocRace, invocFaction, asRace,
@@ -2701,7 +2705,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3505,12 +3509,18 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         {/* Inline params for active keywords */}
                         {spellKeywords.map((kw, idx) => {
                           const def = SPELL_KEYWORDS[kw.id];
-                          // appel_supreme n'a pas de paramètre X mais porte une
-                          // race ciblée → ne pas l'éliminer ici.
-                          if (def.params.length === 0 && kw.id !== "appel_supreme") return null;
+                          // La ligne existe pour TOUT effet : elle porte au
+                          // minimum la bascule Singulier (et la race d'Appel
+                          // Suprême, sans paramètre X).
                           return (
                             <div key={kw.id} style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4, alignItems: "center" }}>
                               <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70, display: "inline-flex", alignItems: "center", gap: 3 }}><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: 4, background: "#2a2a3a", flexShrink: 0, overflow: "hidden" }}><KeywordIcon symbol={def.symbol || "✦"} size={10} keyword={`spell_${kw.id}`} fill /></span> {SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}</span>
+                              <button
+                                type="button"
+                                title={tf('singulier_toggle_title')}
+                                onClick={() => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, singulier: k.singulier ? undefined : true } : k))}
+                                style={{ marginLeft: 3, width: 18, height: 18, borderRadius: 3, background: kw.singulier === true ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: kw.singulier === true ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
+                              >S</button>
                               {def.params.includes("amount") && (
                                 <div>
                                   <label style={{ fontSize: 7, color: "#666" }}>X</label>
@@ -3734,6 +3744,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               }
                               if (selected) {
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
+                                setKeywordSingulier(prev => { const next = { ...prev }; delete next[id]; return next; });
                               }
                             }}
                               style={{
@@ -3760,6 +3771,17 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   textAlign: "center", outline: "none",
                                 }}
                               />
+                            )}
+                            {/* SINGULIER — condition ajoutée au déclencheur, pour
+                                TOUTE capacité (un passif comme « Provocation
+                                (Singulier) » y a droit). Turquoise réservé. */}
+                            {selected && (
+                              <button
+                                type="button"
+                                title={tf('singulier_toggle_title')}
+                                onClick={() => setKeywordSingulier(prev => { const next = { ...prev }; if (next[id]) delete next[id]; else next[id] = true; return next; })}
+                                style={{ marginLeft: 3, width: 18, height: 18, borderRadius: 3, background: keywordSingulier[id] ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: keywordSingulier[id] ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
+                              >S</button>
                             )}
                             {/* Trigger-mode picker for curated keywords —
                                 Play (default) / Death (red) / Tap (yellow).
@@ -4299,6 +4321,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             setKeywordXValues(prev => { const n = { ...prev }; delete n[label]; return n; });
             setKeywordModes(prev => { const n = { ...prev }; delete n[label]; return n; });
             setKeywordGrantScope(prev => { const n = { ...prev }; delete n[label]; return n; });
+            setKeywordSingulier(prev => { const n = { ...prev }; delete n[label]; return n; });
           };
           const addCreatureCap = (label: string) => {
             if (!label || manualKeywords.includes(label)) return;
@@ -4361,6 +4384,13 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             ) : (
                               <span style={valStyle}>{TRIGGER_FR[fixedTrigger]}</span>
                             )}
+
+                            <span style={labelStyle}>{tf('singulier_toggle')}</span>
+                            <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer" }} title={tf('singulier_toggle_title')}>
+                              <input type="checkbox" checked={keywordSingulier[label] === true}
+                                onChange={e => setKeywordSingulier(prev => { const n = { ...prev }; if (e.target.checked) n[label] = true; else delete n[label]; return n; })} />
+                              <span style={{ color: "#0D9488", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{tf('singulier_toggle')}</span>
+                            </label>
 
                             <span style={labelStyle}>{tf('effect_type_label')}</span>
                             <span style={valStyle}>{tf('immediate_effect')}</span>

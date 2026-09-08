@@ -379,6 +379,14 @@ export default function DeckBuilder({
     deckCards.forEach((entry) => (total += entry.quantity));
     return total;
   }, [deckCards]);
+  // SINGULIER : aucune carte en 2+ exemplaires. Simple indicateur — aucune
+  // règle de construction ne change, c'est une incitation (les capacités
+  // marquées Singulier ne se déclenchent qu'avec un deck sans doublon).
+  const deckSingulier = useMemo(() => {
+    let ok = true;
+    deckCards.forEach((entry) => { if (entry.quantity > 1) ok = false; });
+    return ok;
+  }, [deckCards]);
 
   const selectedFormat = useMemo(() => {
     if (!selectedFormatId) return null;
@@ -1227,6 +1235,14 @@ export default function DeckBuilder({
             >
               {totalCards}/{DECK_SIZE}
             </span>
+          </div>
+          <div
+            className="mt-1 flex items-center gap-1.5 text-[10px] font-bold"
+            style={{ color: deckSingulier ? "#0D9488" : "#9ca3af" }}
+            title={t("singleton_hint")}
+          >
+            <span aria-hidden className="inline-block w-2.5 h-2.5 rotate-45 rounded-[2px]" style={{ background: deckSingulier ? "#0D9488" : "transparent", border: "1.5px solid #0D9488" }} />
+            {deckSingulier ? t("singleton_yes") : t("singleton_no")}
           </div>
           <div className="mt-1 h-1.5 bg-am-bg-3 rounded-full overflow-hidden">
             <div

@@ -393,7 +393,7 @@ export default function GameCard({
               }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} />
+                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} singulier={entry.singulier} />
                   </span>
                   {isAllAllies && <ComposedMarker mode={undefined} color="#27ae60" size={15 * icoS} />}
                 </span>
@@ -426,7 +426,7 @@ export default function GameCard({
                 fontSize: 10 * s, overflow: "visible",
               }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode="spell" />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
                 </span>
                 {valueText && <span style={{
                   fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -454,9 +454,9 @@ export default function GameCard({
                       deux côtés, mais l'image des composés y occupait 40
                       contre 33 — soit ~21 % de plus à l'écran. */}
                   {hasImg ? (
-                    <div style={{ width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={33 * icoS} keyword={ic.keyword} fill mode={cmode} /></div>
+                    <div style={{ width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={33 * icoS} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} /></div>
                   ) : (
-                    <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} mode={cmode} />
+                    <KeywordIcon symbol={ic.symbol} size={22 * icoS} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
@@ -554,7 +554,7 @@ export default function GameCard({
               const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
@@ -579,7 +579,7 @@ export default function GameCard({
               const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
@@ -602,7 +602,7 @@ export default function GameCard({
               const nm = vocab.composedName(cap);
               return (
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
+                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
                     {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>

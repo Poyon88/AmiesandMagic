@@ -93,6 +93,14 @@
         "label": "Chant",
         "desc": "Your spells with Chant are strengthened while this unit is in play."
       },
+      "lune": {
+        "label": "Moon X",
+        "desc": "Starting from the second card played this turn, all its values are increased by X — permanently."
+      },
+      "soleil": {
+        "label": "Sun X",
+        "desc": "If this is the first card played this turn, all its values are increased by X — permanently."
+      },
       "rappel": {
         "label": "Recall",
         "desc": "Return a targeted card from your graveyard to your hand."
@@ -387,11 +395,19 @@
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "If every creature you control has a cost of the same parity as its own, permanently gains +X ATK and +Y HP."
+        "desc": "If all your creatures in play have a cost of the same parity as this one's, gains +X ATK and +Y HP permanently."
       },
       "esprit_de_corps": {
-        "label": "Esprit de Corps",
-        "desc": "Randomly gains +1 ATK or +1 HP for each creature {clan_de} with Esprit de Corps you have already played."
+        "label": "Camaraderie",
+        "desc": "Gains +1 ATK or +1 HP at random per creature {clan_de} with Camaraderie already played."
+      },
+      "presage": {
+        "label": "Presage",
+        "desc": "Reveals the top 3 cards in random order; choose the top one to take into hand, then shuffle the deck."
+      },
+      "apprentissage": {
+        "label": "Apprenticeship",
+        "desc": "Removes a spell from your hand and memorizes it: the creature can cast it by paying its costs."
       },
       "impact": {
         "label": "Impact X",
@@ -413,6 +429,10 @@
         "label": "Faith X",
         "desc": "Adds X to your Faith (max 10). Spend: discover 1 of 3 deck cards costing ≤ Faith; only that cost is deducted."
       },
+      "conquete": {
+        "label": "Conquest X",
+        "desc": "Adds X to your Conquest (threshold 3). At the threshold: discover 1 of 3 cards from the opponent's deck and take it in hand; the counter resets to 0."
+      },
       "seconde_vie": {
         "label": "Second Life X",
         "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
@@ -428,14 +448,6 @@
       "creuser": {
         "label": "Dig X",
         "desc": "Look at the bottom X cards of your deck; place one of them on top."
-      },
-      "presage": {
-        "label": "Portent",
-        "desc": "Reveals the top 3 cards in random order; name the topmost to take it in hand, then shuffle the deck."
-      },
-      "apprentissage": {
-        "label": "Learning",
-        "desc": "Removes a spell from your hand and memorises it: the creature can cast it by paying its costs."
       },
       "retour_differe": {
         "label": "Delayed Return",
@@ -481,25 +493,17 @@
         "label": "Ancestral Strength +X/+Y",
         "desc": "While your graveyard holds 7 or more creatures, gains +X ATK and +Y HP."
       },
-      "seuil_sacrificiel": {
-        "label": "Sacrificial Threshold +X/+Y",
-        "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
-      },
       "purete": {
         "label": "Purity +X/+Y",
         "desc": "While your graveyard is empty, gains +X ATK and +Y HP."
       },
+      "seuil_sacrificiel": {
+        "label": "Sacrificial Threshold +X/+Y",
+        "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
+      },
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
-      },
-      "lune": {
-        "label": "Moon X",
-        "desc": "From the second card played in the turn, all its values are increased by X — permanently."
-      },
-      "soleil": {
-        "label": "Sun X",
-        "desc": "If this is the first card played in the turn, all its values are increased by X — permanently."
       }
     },
     "spell_keywords": {
@@ -530,6 +534,14 @@
       "chant": {
         "label": "Chant X",
         "desc": "If you control a creature with Chant, all values of this spell are increased by X."
+      },
+      "lune": {
+        "label": "Moon X",
+        "desc": "Starting from the second card played this turn, all of this card's values are increased by X."
+      },
+      "soleil": {
+        "label": "Sun X",
+        "desc": "If this is the first card played this turn, all of this card's values are increased by X."
       },
       "corruption": {
         "label": "Corruption",
@@ -617,7 +629,7 @@
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "If every creature you control has a cost of the same parity as this spell's, +X/+Y to a targeted allied creature."
+        "desc": "If all your creatures in play have a cost of the same parity as this spell's, +X/+Y to a targeted allied creature."
       },
       "affaiblissement": {
         "label": "Weakening -X/-Y",
@@ -636,8 +648,8 @@
         "desc": "Look at the bottom X cards of your deck; place one of them on top"
       },
       "presage": {
-        "label": "Portent",
-        "desc": "Reveals the top 3 cards in random order; name the topmost to take it in hand, then shuffle the deck."
+        "label": "Presage",
+        "desc": "Reveals the top 3 cards in random order; choose the top one to take into hand, then shuffle the deck."
       },
       "retour_differe": {
         "label": "Delayed Return",
@@ -650,6 +662,10 @@
       "foi": {
         "label": "Faith X",
         "desc": "Adds X to your Faith (max 10). Spend: discover 1 of 3 deck cards costing ≤ Faith; only that cost is deducted"
+      },
+      "conquete": {
+        "label": "Conquest X",
+        "desc": "Adds X to your Conquest (threshold 3). At the threshold: discover 1 of 3 cards from the opponent's deck and take it in hand; the counter resets to 0"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -706,14 +722,6 @@
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
-      },
-      "lune": {
-        "label": "Moon X",
-        "desc": "From the second card played in the turn, all values of this card are increased by X."
-      },
-      "soleil": {
-        "label": "Sun X",
-        "desc": "If this is the first card played in the turn, all values of this card are increased by X."
       }
     },
     "composed": {
@@ -755,6 +763,7 @@
         "invocation": "summons a random creature with cost {x}{filter}",
         "epargne": "adds {x} to your Thrift counter",
         "foi": "adds {x} to your Faith counter",
+        "conquete": "adds {x} to your Conquest counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
         "devoration": "devours",
         "retour_differe": "places under its owner's deck",
@@ -812,7 +821,7 @@
         "des_random": "at random",
         "des_automatic": "automatically",
         "des_choice": "of your choice",
-        "max_cost": "costing {n} or less"
+        "max_cost": "with cost {n} or less"
       },
       "scatter": {
         "action_damage": "deals",
@@ -848,7 +857,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "The Middle Empire",
-        "description": "Strategy and control: discipline, formations, mysticism, stealth, and the naga guardians of the temples."
+        "description": "Strategy and control: discipline, formations, mysticism, stealth, and the temples' naga guardians."
       },
       "RoyaumesDuSoleil": {
         "displayName": "The Sun Kingdoms",
@@ -941,7 +950,9 @@
       "Machines": "Machines",
       "Kobolds": "Kobolds",
       "Géants": "Giants",
+      "Mammouths": "Mammoths",
       "Humains": "Humans",
+      "Nagas": "Nagas",
       "Esprits": "Spirits",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
@@ -999,9 +1010,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors",
-      "Mammouths": "Mammoths",
-      "Nagas": "Nagas"
+      "Guerriers du Chaos": "Chaos Warriors"
     },
     "alignments": {
       "bon": "Good",
@@ -1090,6 +1099,11 @@
         "bare": "Spirit",
         "de": "of the Spirit"
       },
+      "Nagas": {
+        "def": "the Naga",
+        "bare": "Naga",
+        "de": "of the Naga"
+      },
       "Griffons": {
         "def": "the Griffin",
         "bare": "Griffin",
@@ -1165,6 +1179,11 @@
         "def": "the Giant",
         "bare": "Giant",
         "de": "of the Giant"
+      },
+      "Mammouths": {
+        "def": "the Mammoth",
+        "bare": "Mammoth",
+        "de": "of the Mammoth"
       },
       "Ogres": {
         "def": "the Ogre",
@@ -1380,16 +1399,6 @@
         "def": "the Chaos Warrior",
         "bare": "Chaos Warrior",
         "de": "of the Chaos Warrior"
-      },
-      "Mammouths": {
-        "def": "the Mammoth",
-        "bare": "Mammoth",
-        "de": "of the Mammoth"
-      },
-      "Nagas": {
-        "def": "the Naga",
-        "bare": "Naga",
-        "de": "of the Naga"
       }
     },
     "clans_forms": {
@@ -1472,8 +1481,8 @@
       "rm_scope_clan": " of clan {v}",
       "rm_scope_all": "",
       "scope_target": "to an allied unit",
-      "scope_all": "to all your units",
-      "edc_compte": "Randomly gains +1 ATK or +1 HP {n} times (once per creature {clan_de} with Esprit de Corps already played)."
+      "edc_compte": "Gains {n} times +1 ATK or +1 HP at random (1 per creature {clan_de} with Camaraderie already played).",
+      "scope_all": "to all your units"
     },
     "sets": {
       "1": "Base Set"
@@ -1486,14 +1495,30 @@
     },
     "triggers": {
       "permanent": "Permanent",
-      "entry": "On play",
-      "attack": "On attack",
-      "death": "On death",
-      "return": "On return",
-      "tap": "Activated",
+      "entry": "Entry",
+      "attack": "Attack",
+      "death": "Death",
+      "return": "Return",
+      "tap": "Tap",
       "end_of_turn": "End of turn",
-      "draw": "On draw",
+      "draw": "Draw",
       "low_hp": "Below {n} HP"
+    },
+    "singulier": {
+      "label": "Singular",
+      "help": "Triggers {timing} if your starting deck contained no duplicate cards.",
+      "help_permanent": "Active if your starting deck contained no duplicate cards.",
+      "timing": {
+        "entry": "on entry",
+        "death": "on death",
+        "tap": "on activation",
+        "return": "on return to hand",
+        "attack": "on attack",
+        "end_of_turn": "at end of turn",
+        "draw": "on draw",
+        "low_hp": "below {n} HP",
+        "spell": "on spell resolution"
+      }
     }
   },
   "home": {
@@ -1766,7 +1791,7 @@
     "error_database_error": "Account creation failed on our end. Try again in a moment; if the problem persists, contact us.",
     "error_captcha_failed": "The anti-bot verification failed or expired. Reload the page and try again.",
     "faction_see_cards": "See {faction}'s cards before deciding →",
-    "faction_browse": "Unsure? Explore every faction and its cards →"
+    "faction_browse": "Not sure? Discover each faction and its cards →"
   },
   "common": {
     "settings_title": "Settings",
@@ -1792,7 +1817,7 @@
     "discard_cost_title": "Discard {count, plural, one {# card} other {# cards}}",
     "sacrifice_cost_title": "Sacrifice {count, plural, one {# creature} other {# creatures}}",
     "exile_cost_title": "Exile {count, plural, one {# card} other {# cards}} from the top of your deck",
-    "topdeck_cost_title": "Put {count, plural, one {# card} other {# cards}} from your hand on top of your deck",
+    "topdeck_cost_title": "Place {count, plural, one {# card} other {# cards}} from your hand back on top of your deck",
     "detail_note_all_allies": " (to all allies)",
     "detail_note_target": " (to the targeted creature)",
     "trigger_on_play": "On Enter",
@@ -1807,7 +1832,7 @@
     "composed_effects_heading": "Composed Effects (Advanced)",
     "composed_effects_subtitle": "content + magnitude + targets",
     "composed_effect_n": "Composed Effect {n}",
-    "token_composed_hint": "A token is not put into play by being cast: “on entry” would never fire on it, so it is not offered.",
+    "token_composed_hint": "A token doesn't enter play by being played: \"on entry\" would never trigger for it, so it isn't offered.",
     "remove": "Remove",
     "label_trigger": "TRIGGER",
     "label_emblem": "EMBLEM",
@@ -1859,8 +1884,8 @@
     "pool_any": "Any",
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
-    "random_hint": "Randomly drawn between 1 and {max}, once, on resolution.",
-    "random_needs_ceiling": "A ceiling of at least 2 is needed to draw at random.",
+    "random_hint": "Randomly drawn between 1 and {max}, only once on resolution.",
+    "random_needs_ceiling": "A ceiling of at least 2 is required to draw randomly.",
     "label_granted_ability": "GRANTED ABILITY",
     "label_grant_trigger": "GRANT TRIGGER",
     "label_token": "TOKEN",
@@ -1946,7 +1971,7 @@
     "generating": "Generating…",
     "illustrate": "Illustrate",
     "image_model_auto": "Model: auto",
-    "image_model_hint": "Force an image model to compare two renders. “Auto” lets the usual cascade choose. A forced model never falls back to another: its failure is reported as-is.",
+    "image_model_hint": "Forced image model to compare two renders. \"Auto\" lets the usual cascade choose. A forced model does not fall back to any other: its failure is reported as-is.",
     "history": "HISTORY",
     "no_card": "No card",
     "edition_label": "EDITION",
@@ -1961,10 +1986,10 @@
     "discard_label": "DISCARD",
     "sacrifice_cost_hint": "Number of allied creatures the player must sacrifice to play this card.",
     "exile_cost_hint": "Number of cards removed from the top of the player's deck. Exiled: they never reach the graveyard and cannot be recovered.",
-    "topdeck_cost_hint": "Number of cards the player puts from hand on top of their deck. They don't go to the graveyard — they will be drawn again. A tempo cost, not reducible.",
+    "topdeck_cost_hint": "Number of cards the player places from their hand back on top of their deck. They don't go to the graveyard: the player will draw them again. Tempo cost, not reducible.",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
-    "topdeck_label": "TUCK",
+    "topdeck_label": "TOPDECK",
     "spell_effects_label": "SPELL EFFECTS",
     "spell_keywords_label": "SPELL KEYWORDS",
     "token_to_summon": "TOKEN TO SUMMON",
@@ -1978,8 +2003,8 @@
     "atk_override": "ATK (override)",
     "def_override": "DEF (override)",
     "add_token": "+ Add a token",
-    "composable_effects_advanced": "LEGACY JSON FORMAT (deprecated)",
-    "json_hint": "Deprecated: the engine only reads it for Recast on old cards. To build an effect, use “Composed effect” below.",
+    "composable_effects_advanced": "OLD JSON FORMAT (deprecated)",
+    "json_hint": "Deprecated: the engine now only reads this for Relaunch on old cards. To compose an effect, use \"Composed effect\" below.",
     "abilities_count": "ABILITIES ({count})",
     "mode_title_play": "On play (default)",
     "mode_title_death": "On death (deathrattle)",
@@ -2243,9 +2268,11 @@
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
     "import_error": "Import error",
-    "eveil_label": "AWAKEN",
-    "eveil_cost_hint": "AWAKENING: the card can be set to awaken INSTEAD of being cast. It leaves the hand with this many points; the player pays 1 per mana on each of their turns, and on the last point it enters play as if cast from hand. Replaces the mana cost, does not add to it. Not reducible.",
-    "eveil_cost_title": "Can be set to awaken for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost"
+    "eveil_label": "AWAKENING",
+    "eveil_cost_hint": "AWAKENING: the card can be put into awakening INSTEAD of being played. It leaves the hand with this many points; the player pays 1 per mana each of their turns, and on the last point it enters play as if from the hand. Replaces the mana cost, does not add to it. Not reducible.",
+    "eveil_cost_title": "Can be put into awakening for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost",
+    "singulier_toggle": "Singular",
+    "singulier_toggle_title": "Singular condition: this ability only triggers if the player's starting deck contains no duplicate cards."
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2290,16 +2317,16 @@
     "graveyard_select_prompt": "Choose a card from the graveyard",
     "graveyard_hint_touch": "Tap a card to zoom · tap again to view description",
     "graveyard_hint_hover": "Hover over a card to zoom · right-click to toggle image / description",
-    "seconde_vie_hint": "Second Life: double-click an eligible creature.",
-    "seconde_vie_blocked_turn": "It is not your turn.",
+    "seconde_vie_hint": "Second life: double-click an eligible creature.",
+    "seconde_vie_blocked_turn": "It's not your turn.",
     "graveyard_empty": "No cards in the graveyard",
     "cost_default_card_name": "card",
     "cost_pay_title": "Pay the costs of {name}",
     "cost_discard_label": "🃏 {count, plural, one {Discard # card} other {Discard # cards}}",
-    "cost_topdeck_label": "{count, plural, one {Put # card back on your deck} other {Put # cards back on your deck}}",
-    "cost_topdeck_order_hint": "The first card you pick ends up on top of your deck.",
-    "cost_hand_order_hint": "Your clicks fill the discard first, then the tuck.",
-    "topdeck_cost_caption": "{count, plural, one {Tucked} other {Tucked ×#}}",
+    "cost_topdeck_label": "{count, plural, one {Topdeck # card} other {Topdeck # cards}}",
+    "cost_topdeck_order_hint": "The first card selected will end up on top of the deck.",
+    "cost_hand_order_hint": "Your clicks fill the discard first, then the topdeck.",
+    "topdeck_cost_caption": "{count, plural, one {Retreat} other {Retreat ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Sacrifice # creature} other {Sacrifice # creatures}}",
     "tactique_title": "📋 Tactic",
     "tactique_subtitle": "{count, plural, one {Choose # ability to transfer} other {Choose # abilities to transfer}}",
@@ -2365,28 +2392,30 @@
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
     "mode_suffix_end_of_turn": " · end of turn",
-    "presage_title": "🌙 Portent",
+    "presage_title": "🌙 Omen",
     "presage_subtitle": "Which one is the top card of your deck?",
-    "presage_hit": "Well seen — it joins your hand.",
-    "presage_miss": "Missed. The right card is in green.",
-    "apprentissage_title": "📖 Learning",
-    "apprentissage_subtitle": "Which spell should the creature memorise?",
+    "presage_hit": "Well spotted — it joins your hand.",
+    "presage_miss": "Missed. The correct card is highlighted in green.",
+    "apprentissage_title": "📖 Apprenticeship",
+    "apprentissage_subtitle": "Which spell should the creature memorize?",
     "foi_title": "✨ Faith",
     "foi_subtitle": "Choose a card to put in your hand. Its cost is deducted from your Faith; the rest is kept.",
+    "conquete_title": "🚩 Conquest",
+    "conquete_subtitle": "Three cards from the opponent's deck. Choose the one you take in hand: it is yours for the rest of the game.",
     "zone_eveil": "Awakening",
-    "zone_eveil_yours": "Your awakening",
-    "zone_eveil_opponent": "Opponent's awakening",
-    "eveil_hint": "Pay 1 mana per click. On the last point, the card enters play as if cast from your hand.",
-    "eveil_remaining": "{count, plural, one {# point left} other {# points left}}",
+    "zone_eveil_yours": "Your Awakening",
+    "zone_eveil_opponent": "Opponent's Awakening",
+    "eveil_hint": "Pay 1 mana per click. On the last point, the card enters play as if it came from your hand.",
+    "eveil_remaining": "{count, plural, one {# point remaining} other {# points remaining}}",
     "eveil_next_point": "The next point costs 1 mana.",
     "eveil_next_arrives": "Last point: the card enters play.",
     "eveil_play_now": "Bring into play",
     "eveil_blocked_mana": "Not enough mana.",
     "eveil_blocked_board_plein": "Your board is full.",
-    "eveil_blocked_vie": "Not enough health to pay its cost.",
+    "eveil_blocked_vie": "You don't have enough health for its cost.",
     "eveil_blocked_main": "Not enough cards in hand for its additional costs.",
     "eveil_blocked_plateau": "Not enough creatures to sacrifice.",
-    "eveil_blocked_deck": "Not enough cards to exile from your deck.",
+    "eveil_blocked_deck": "Not enough cards to exile in your deck.",
     "eveil_blocked_sans_cible": "No valid target for this spell.",
     "eveil_suspend": "Set to awaken ({count, plural, one {# point} other {# points}})",
     "eveil_pay_n": "{count, plural, one {Pay #} other {Pay #}}",
@@ -2554,9 +2583,12 @@
     "locked_badge": "Locked",
     "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
     "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
-    "unplayable_badge": "{count} card(s) missing",
-    "unplayable_reason": "This deck holds cards from faction(s) you no longer own: {factions}. It is untouched — reclaim the faction to play it again.",
-    "unplayable_rebuy": "Reclaim in the shop"
+    "unplayable_badge": "{count} missing card(s)",
+    "unplayable_reason": "This deck contains cards from faction(s) you no longer own: {factions}. It remains intact — reacquire the faction to play it again.",
+    "unplayable_rebuy": "Get it in the shop",
+    "singleton_yes": "Singleton deck ✓",
+    "singleton_no": "Singleton deck ✗",
+    "singleton_hint": "A singleton deck contains no duplicate cards: abilities marked Singleton only trigger under this condition. This is not a deckbuilding rule."
   },
   "cardBacks": {
     "eyebrow": "Show your style",
@@ -2612,45 +2644,45 @@
   "factions_page": {
     "back": "Back to home",
     "races": "Races",
-    "signature": "Signature abilities",
-    "profile": "Play profile",
-    "offense": "Offense",
-    "defense": "Defense",
-    "commons": "{count, plural, one {# common} other {# commons}}",
+    "signature": "Signature Abilities",
+    "profile": "Playstyle",
+    "offense": "Offensive",
+    "defense": "Defensive",
+    "commons": "{count, plural, one {# Common} other {# Commons}}",
     "more_races": "+{count}",
-    "free_commons": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}} — yours from day one.",
-    "no_clan_title": "Open to every clan",
-    "no_clan_desc": "These cards belong to no clan: they fit any deck of the faction, whichever clan you build it around.",
-    "other_factions": "See the other factions",
+    "free_commons": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}} — free from day one.",
+    "no_clan_title": "Open to all clans",
+    "no_clan_desc": "These cards belong to no clan: they can join any deck of the faction, regardless of the clan you build it around.",
+    "other_factions": "See other factions",
     "costs": "Additional costs",
-    "cost_life": "Life",
+    "cost_life": "Life points",
     "cost_discard": "Discard",
     "cost_sacrifice": "Sacrifice",
     "cost_exile": "Exile",
-    "cost_topdeck": "Tuck",
-    "cost_life_desc": "These cards also cost your hero's life points, on top of their mana cost.",
-    "cost_discard_desc": "These cards require discarding cards from your hand, on top of their mana cost.",
-    "cost_sacrifice_desc": "These cards require sacrificing creatures you control, on top of their mana cost.",
-    "cost_exile_desc": "These cards exile cards from the top of your deck, on top of their mana cost.",
-    "cost_topdeck_desc": "These cards require putting cards from your hand on top of your deck, on top of their mana cost.",
+    "cost_topdeck": "Topdeck",
+    "cost_life_desc": "These cards are also paid for in hero life points, in addition to their mana cost.",
+    "cost_discard_desc": "These cards require discarding cards from your hand, in addition to their mana cost.",
+    "cost_sacrifice_desc": "These cards require sacrificing creatures you control, in addition to their mana cost.",
+    "cost_exile_desc": "These cards exile cards from the top of your deck, in addition to their mana cost.",
+    "cost_topdeck_desc": "These cards require putting cards from your hand back on top of your deck, in addition to their mana cost.",
     "commons_count": "{count, plural, one {# common card} other {# common cards}} · {clans, plural, one {# clan} other {# clans}}"
   },
   "faction_action": {
-    "visitor_pitch": "Create your account to start with {faction}: all of its common cards will be yours.",
+    "visitor_pitch": "Create your account to start with {faction}: all its common cards will be given to you for free.",
     "visitor_cta": "CREATE AN ACCOUNT",
     "owned_just_chosen": "{faction} is your faction",
     "owned_bundle": "Included in your bundle",
     "owned_starter": "Your starting faction",
-    "owned_bought": "Faction acquired",
-    "owned_note": "Every common card below is in your collection.",
+    "owned_bought": "Faction owned",
+    "owned_note": "All common cards below are already in your collection.",
     "enter_game": "ENTER THE GAME",
-    "see_collection": "VIEW MY COLLECTION",
-    "free_pitch": "You have not chosen your starting faction yet. Begin with <strong>{faction}</strong> and receive all of its common cards, free.",
+    "see_collection": "SEE MY COLLECTION",
+    "free_pitch": "You haven't chosen your starting faction yet. Start with <strong>{faction}</strong> and receive all its common cards for free.",
     "free_cta": "START WITH THIS FACTION",
-    "free_warning": "This choice is final: you will not be able to change it, only acquire other factions later.",
+    "free_warning": "This choice is final: you won't be able to change it, only acquire other factions afterward.",
     "free_confirm": "CONFIRM — {faction}",
     "cancel": "CANCEL",
-    "buy_pitch": "Add {faction} to your collection: all of its common cards, for good.",
+    "buy_pitch": "Add {faction} to your collection: all its common cards, permanently.",
     "your_balance": "(you have {balance})",
     "debt_blocks": "Your debt of {debt} gold must be settled before any new purchase.",
     "not_enough_gold": "NOT ENOUGH GOLD",
@@ -2659,7 +2691,7 @@
     "err_choice": "The choice could not be saved.",
     "err_purchase": "The purchase could not be completed.",
     "badge_starter": "STARTER",
-    "badge_owned": "OWNED",
-    "bundle_hint": "Or take all {count} factions you are missing for {price} gold →"
+    "badge_owned": "ACQUIRED",
+    "bundle_hint": "Or get the {count} factions you're missing for {price} gold →"
   }
 }

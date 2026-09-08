@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { MAX_HAND_SIZE, MAX_BOARD_SIZE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
+import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
 import { secondeVieCost } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
@@ -156,6 +156,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearEpargneGainEvent,
     foiGainEvent,
     clearFoiGainEvent,
+    conqueteGainEvent,
+    clearConqueteGainEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -163,6 +165,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     activateHeroPower,
     openEpargnePicker,
     openFoiPicker,
+    openConquetePicker,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -468,6 +471,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     broadcast(openFoiPicker());
   }, [openFoiPicker, broadcast]);
 
+  // Conquête : même mécanique, modale de deck sur le deck ADVERSE.
+  const handleSpendConquete = useCallback(() => {
+    broadcast(openConquetePicker());
+  }, [openConquetePicker, broadcast]);
+
   // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
   // and creatures/hand cards can overlap the small portrait disc, so coarse-
   // pointer players get an explicit, single-tap HeroPowerButton. It lives in the
@@ -757,6 +765,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const canSpendFoi = myTurn
     && (myPlayer.foi ?? 0) >= 1
     && myPlayer.hand.length < MAX_HAND_SIZE;
+  // Conquête : découverte possible AU PALIER seulement, et s'il reste quelque
+  // chose à prendre dans le deck adverse.
+  const canSpendConquete = myTurn
+    && (myPlayer.conquete ?? 0) >= MAX_CONQUETE
+    && myPlayer.hand.length < MAX_HAND_SIZE
+    && opponent.deck.length > 0;
 
   // SECONDE VIE : créatures de MON cimetière jouables maintenant (mon tour,
   // mana suffisant, place sur le plateau). Le moteur re-valide tout.
@@ -1145,7 +1159,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             }
           />
           <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} side="theirs" />
         </div>
         )}
 
@@ -1176,7 +1190,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} side="theirs" />
           </div>
         )}
 
@@ -1447,7 +1461,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} side="mine" />
         </div>
         )}
 
@@ -1482,7 +1496,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} side="mine" />
           </div>
         )}
 
@@ -1884,6 +1898,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <DeckEffectOverlay event={deckEffectEvent} onComplete={clearDeckEffectEvent} />
       <EpargneGainOverlay event={epargneGainEvent} onComplete={clearEpargneGainEvent} />
       <EpargneGainOverlay kind="foi" event={foiGainEvent} onComplete={clearFoiGainEvent} />
+      <EpargneGainOverlay kind="conquete" event={conqueteGainEvent} onComplete={clearConqueteGainEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

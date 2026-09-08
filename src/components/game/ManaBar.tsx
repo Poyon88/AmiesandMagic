@@ -28,11 +28,24 @@ interface ManaBarProps {
   /** Foi dépensable MAINTENANT (mon tour, compteur ≥ 1, place en main). */
   canSpendFoi?: boolean;
   onSpendFoi?: () => void;
+  /** Compteur de Conquête. Contrairement aux deux autres, il est MASQUÉ à 0 et
+   *  à null : il n'apparaît qu'entre 1 et le palier (spec du clan). */
+  conquete?: number | null;
+  /** Conquête déclenchable MAINTENANT (mon tour, compteur AU PALIER, place en
+   *  main, deck adverse non vide). */
+  canSpendConquete?: boolean;
+  onSpendConquete?: () => void;
+  /** SINGULIER : deck de départ sans doublon. `true`/`false` pour SON propre
+   *  camp (toujours connu), `true` pour l'adversaire une fois RÉVÉLÉ, `null`
+   *  tant qu'il ne l'est pas (rien n'est affiché). */
+  singleton?: boolean | null;
 }
 
 export default function ManaBar({
   current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
   foi = null, canSpendFoi = false, onSpendFoi,
+  conquete = null, canSpendConquete = false, onSpendConquete,
+  singleton = null,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
   const available = current - held;
@@ -112,6 +125,57 @@ export default function ManaBar({
             {foi}
           </span>
         </button>
+      )}
+      {(conquete ?? 0) >= 1 && (
+        // Losange rouge sang : la conquête prend à l'adversaire. Il ne vit
+        // qu'entre 1 et le palier — un joueur sans carte Conquête ne le voit
+        // jamais.
+        <button
+          type="button"
+          data-conquete-badge={side}
+          onClick={canSpendConquete ? onSpendConquete : undefined}
+          disabled={!canSpendConquete}
+          aria-label={`Conquête : ${conquete}`}
+          title={
+            canSpendConquete
+              ? `Conquête ${conquete} — découvrir 1 carte parmi 3 du deck adverse et la prendre en main`
+              : `Conquête ${conquete}`
+          }
+          className={`relative w-7 h-7 rotate-45 rounded-[6px] border-2 transition-all ${
+            canSpendConquete
+              ? "border-red-300 bg-red-600/40 cursor-pointer hover:scale-110 shadow-[0_0_8px_#f87171]"
+              : "border-red-300/50 bg-red-600/15 cursor-default opacity-70"
+          }`}
+        >
+          <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold text-red-50 leading-none">
+            {conquete}
+          </span>
+        </button>
+      )}
+      {singleton !== null && (
+        // Losange turquoise (couleur réservée à Singulier) : plein si les
+        // capacités Singulier de ce camp sont actives, barré sinon.
+        <span
+          data-singulier-badge={side}
+          aria-label={singleton ? "Deck singulier" : "Deck non singulier"}
+          title={
+            side === "theirs"
+              ? "Deck singulier révélé : les capacités Singulier adverses sont actives"
+              : singleton
+                ? "Deck singulier : vos capacités Singulier sont actives"
+                : "Deck non singulier (une carte en double) : vos capacités Singulier sont inertes"
+          }
+          className="relative w-7 h-7 rotate-45 rounded-[6px] border-2 cursor-default"
+          style={{
+            borderColor: singleton ? "#0D9488" : "#0D948866",
+            background: singleton ? "#0D948855" : "#0D948814",
+            opacity: singleton ? 1 : 0.7,
+          }}
+        >
+          <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold leading-none" style={{ color: singleton ? "#ccfbf1" : "#5eead4" }}>
+            {singleton ? "S" : "S̶"}
+          </span>
+        </span>
       )}
     </div>
   );

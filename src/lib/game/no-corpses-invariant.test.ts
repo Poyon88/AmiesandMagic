@@ -48,6 +48,8 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   spend_epargne: "sans dégâts",
   // La Foi déplace une carte du deck vers la main : personne ne perd de PV.
   spend_foi: "sans dégâts",
+  // La Conquête déplace une carte du deck adverse vers la main : aucun PV.
+  spend_conquete: "sans dégâts",
   concede: "sans dégâts",
   // Éveil : mettre en éveil déplace une carte de la main vers une zone hors du
   // jeu, verser un point ne fait que dépenser du mana. Le seul moment où une

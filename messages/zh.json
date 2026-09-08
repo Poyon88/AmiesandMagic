@@ -93,6 +93,14 @@
         "label": "咏唱",
         "desc": "只要这个单位在场，你带有“咏唱”的法术就会得到强化。"
       },
+      "lune": {
+        "label": "月 X",
+        "desc": "从本回合打出的第二张牌起，其所有数值永久提升X点。"
+      },
+      "soleil": {
+        "label": "日 X",
+        "desc": "若这是本回合打出的第一张牌，其所有数值永久提升X点。"
+      },
       "rappel": {
         "label": "召回",
         "desc": "将你墓地中一张目标卡牌放回手牌。"
@@ -387,11 +395,19 @@
       },
       "discipline": {
         "label": "纪律 +X/+Y",
-        "desc": "若你场上所有生物的费用奇偶性与其自身相同，永久获得+X攻击力和+Y生命值。"
+        "desc": "若你场上所有随从的费用奇偶性与其相同，永久获得+X攻击力和+Y生命值。"
       },
       "esprit_de_corps": {
         "label": "团队精神",
-        "desc": "每有一个你已使用的{clan_de}团队精神生物，便随机获得+1攻击力或+1生命值。"
+        "desc": "场上每有一张已打出、拥有团队精神的{clan_de}随从，随机获得+1攻击力或+1生命值。"
+      },
+      "presage": {
+        "label": "预兆",
+        "desc": "以任意顺序展示牌库顶3张牌；选择其中一张纳入手牌，然后洗牌。"
+      },
+      "apprentissage": {
+        "label": "修习",
+        "desc": "从你的手牌中移除一张法术并将其记住：该随从可支付其费用来施放该法术。"
       },
       "impact": {
         "label": "冲击 X",
@@ -413,6 +429,10 @@
         "label": "信仰 X",
         "desc": "信仰+X（上限10）。消耗：从牌库费用≤信仰的3张牌中发现1张，只扣除该牌费用."
       },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "为你的征服计数器增加X（上限3）。达到上限时：从对手牌库的3张牌中发现1张加入手牌，计数器归零."
+      },
       "seconde_vie": {
         "label": "二次生命 X",
         "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
@@ -428,14 +448,6 @@
       "creuser": {
         "label": "挖掘 X",
         "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
-      },
-      "presage": {
-        "label": "预兆",
-        "desc": "以随机顺序展示牌库顶3张牌；指认最上方那张即可将其加入手牌，随后洗牌。"
-      },
-      "apprentissage": {
-        "label": "研习",
-        "desc": "从你的手牌移除一张法术并记住它：该生物可支付其费用来施放。"
       },
       "retour_differe": {
         "label": "延迟归还",
@@ -481,25 +493,17 @@
         "label": "先祖之力 +X/+Y",
         "desc": "只要你的墓地中有7个或更多生物，便获得+X攻击力和+Y生命值。"
       },
-      "seuil_sacrificiel": {
-        "label": "牺牲阈值 +X/+Y",
-        "desc": "只要你的牌库中有25张或更少的牌，便获得+X攻击力和+Y生命值。"
-      },
       "purete": {
         "label": "纯净 +X/+Y",
         "desc": "只要你的墓地为空，获得+X攻击力和+Y生命值。"
       },
+      "seuil_sacrificiel": {
+        "label": "牺牲阈值 +X/+Y",
+        "desc": "只要你的牌库中有25张或更少的牌，便获得+X攻击力和+Y生命值。"
+      },
       "compagnons": {
-        "label": "同伴",
-        "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
-      },
-      "lune": {
-        "label": "月 X",
-        "desc": "当它不是本回合打出的第一张牌时，其所有数值永久提升X点。"
-      },
-      "soleil": {
-        "label": "太阳 X",
-        "desc": "当它是本回合打出的第一张牌时，其所有数值永久提升X点。"
+        "label": "伙伴",
+        "desc": "将其伙伴（创建时选定的关联卡牌）洗入你的牌库，然后重新洗牌。仅限一次。"
       }
     },
     "spell_keywords": {
@@ -530,6 +534,14 @@
       "chant": {
         "label": "咏唱 X",
         "desc": "如果你控制一个拥有\"吟唱\"的随从，此法术的所有数值提升X点。"
+      },
+      "lune": {
+        "label": "月 X",
+        "desc": "从本回合打出的第二张牌起，此牌的所有数值提升X点。"
+      },
+      "soleil": {
+        "label": "日 X",
+        "desc": "若这是本回合打出的第一张牌，此牌的所有数值提升X点。"
       },
       "corruption": {
         "label": "腐化",
@@ -593,7 +605,7 @@
       },
       "boomerang": {
         "label": "回旋镖",
-        "desc": "结算后，此法术会洗入你的牌库，而非置入坟墓场。"
+        "desc": "结算后，此法术将被洗入你的牌库，而非进入墓地。"
       },
       "siphon": {
         "label": "虹吸 X",
@@ -617,7 +629,7 @@
       },
       "discipline": {
         "label": "纪律 +X/+Y",
-        "desc": "若你场上所有生物的费用奇偶性与本法术相同，使目标友方生物获得+X/+Y。"
+        "desc": "若你场上所有随从的费用奇偶性与此法术相同，使一个目标友方随从获得+X/+Y。"
       },
       "affaiblissement": {
         "label": "弱化 -X/-Y",
@@ -637,7 +649,7 @@
       },
       "presage": {
         "label": "预兆",
-        "desc": "以随机顺序展示牌库顶3张牌；指认最上方那张即可将其加入手牌，随后洗牌。"
+        "desc": "以任意顺序展示牌库顶3张牌；选择其中一张纳入手牌，然后洗牌。"
       },
       "retour_differe": {
         "label": "延迟归还",
@@ -650,6 +662,10 @@
       "foi": {
         "label": "信仰 X",
         "desc": "信仰+X（上限10）。消耗：从牌库费用≤信仰的3张牌中发现1张，只扣除该牌费用"
+      },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "为你的征服计数器增加X（上限3）。达到上限时：从对手牌库的3张牌中发现1张加入手牌，计数器归零"
       },
       "inspiration": {
         "label": "启示 X",
@@ -704,16 +720,8 @@
         "desc": "本回合获得 X 点法力"
       },
       "compagnons": {
-        "label": "同伴",
-        "desc": "将其同伴（创建时指定的关联卡牌）洗入你的牌组，然后重洗牌组。仅一次。"
-      },
-      "lune": {
-        "label": "月 X",
-        "desc": "当它不是本回合打出的第一张牌时，此牌的所有数值提升X点。"
-      },
-      "soleil": {
-        "label": "太阳 X",
-        "desc": "当它是本回合打出的第一张牌时，此牌的所有数值提升X点。"
+        "label": "伙伴",
+        "desc": "将其伙伴（创建时选定的关联卡牌）洗入你的牌库，然后重新洗牌。仅限一次。"
       }
     },
     "composed": {
@@ -755,6 +763,7 @@
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "epargne": "为你的储蓄计数器增加{x}点",
         "foi": "为你的信仰计数器增加{x}点",
+        "conquete": "为你的征服计数器增加{x}",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "devoration": "吞噬",
         "retour_differe": "放到其拥有者牌库底",
@@ -812,7 +821,7 @@
         "des_random": "随机",
         "des_automatic": "自动",
         "des_choice": "自选",
-        "max_cost": "费用{n}或更低的"
+        "max_cost": "费用为{n}或更低"
       },
       "scatter": {
         "action_damage": "造成",
@@ -848,7 +857,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
-        "description": "谋略与掌控：纪律、阵型、神秘主义、潜行，以及守护神庙的那伽。"
+        "description": "策略与掌控：纪律、阵形、玄术、隐匿，以及守护神庙的纳迦守卫。"
       },
       "RoyaumesDuSoleil": {
         "displayName": "太阳王国",
@@ -941,7 +950,9 @@
       "Machines": "机械",
       "Kobolds": "狗头人",
       "Géants": "巨人",
+      "Mammouths": "猛犸象",
       "Humains": "人类",
+      "Nagas": "纳迦",
       "Esprits": "灵体",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
@@ -999,9 +1010,7 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士",
-      "Mammouths": "猛犸象",
-      "Nagas": "那伽"
+      "Guerriers du Chaos": "混沌战士"
     },
     "alignments": {
       "bon": "善良",
@@ -1090,6 +1099,11 @@
         "bare": "灵体",
         "de": "灵体的"
       },
+      "Nagas": {
+        "def": "纳迦",
+        "bare": "纳迦",
+        "de": "纳迦的"
+      },
       "Griffons": {
         "def": "狮鹫",
         "bare": "狮鹫",
@@ -1165,6 +1179,11 @@
         "def": "巨人",
         "bare": "巨人",
         "de": "巨人的"
+      },
+      "Mammouths": {
+        "def": "猛犸象",
+        "bare": "猛犸象",
+        "de": "猛犸象的"
       },
       "Ogres": {
         "def": "食人魔",
@@ -1380,16 +1399,6 @@
         "def": "混沌战士",
         "bare": "混沌战士",
         "de": "混沌战士"
-      },
-      "Mammouths": {
-        "def": "猛犸象",
-        "bare": "猛犸象",
-        "de": "猛犸象的"
-      },
-      "Nagas": {
-        "def": "那伽",
-        "bare": "那伽",
-        "de": "那伽的"
       }
     },
     "clans_forms": {
@@ -1472,8 +1481,8 @@
       "rm_scope_clan": "{v}氏族的",
       "rm_scope_all": "",
       "scope_target": "给一个友方单位",
-      "scope_all": "给你所有的单位",
-      "edc_compte": "随机获得{n}次+1攻击力或+1生命值（每有一个你已使用的{clan_de}团队精神生物便获得1次）。"
+      "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
+      "scope_all": "给你所有的单位"
     },
     "sets": {
       "1": "基础系列"
@@ -1485,15 +1494,31 @@
       "classique-standard": "经典·标准"
     },
     "triggers": {
-      "permanent": "常驻",
-      "entry": "入场时",
-      "attack": "攻击时",
-      "death": "死亡时",
-      "return": "返回时",
+      "permanent": "永久",
+      "entry": "进场",
+      "attack": "攻击",
+      "death": "死亡",
+      "return": "回场",
       "tap": "可激活",
-      "end_of_turn": "回合结束时",
-      "draw": "抽牌时",
-      "low_hp": "{n} 点生命以下"
+      "end_of_turn": "回合结束",
+      "draw": "抽牌",
+      "low_hp": "生命值低于{n}点"
+    },
+    "singulier": {
+      "label": "独特",
+      "help": "若你的起始牌库中没有重复卡牌，则{timing}触发。",
+      "help_permanent": "若你的起始牌库中没有重复卡牌，则生效。",
+      "timing": {
+        "entry": "入场时",
+        "death": "死亡时",
+        "tap": "激活时",
+        "return": "返回手牌时",
+        "attack": "攻击时",
+        "end_of_turn": "回合结束时",
+        "draw": "抽牌时",
+        "low_hp": "生命值低于{n}点时",
+        "spell": "法术结算时"
+      }
     }
   },
   "home": {
@@ -1546,12 +1571,12 @@
     "hero_sub": "铸就传奇。统率阵营。书写历史。",
     "hero_cta": "进入竞技场",
     "hero_cta_secondary": "探索游戏",
-    "hero_proof": "首局即可获赠逾500张卡牌",
+    "hero_proof": "首局即赠超过500张卡牌",
     "features_title": "为何选择 Armies & Magic",
     "f1_title": "传奇的深度。",
     "f1_desc": "Armies & Magic 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
-    "f2_title": "开局即拥有尽可能多的卡牌。",
-    "f2_desc": "免费获得您所选阵营的全部经典卡牌（约500张）。并以传统集换式卡牌游戏零头的花费，集齐所有阵营。",
+    "f2_title": "从一开始就拥有海量卡牌。",
+    "f2_desc": "免费获得您所选阵营的全部经典卡牌（约500张）。以传统集换式卡牌游戏一小部分的价格，拥有全部阵营。",
     "f3_title": "每套专家牌组，皆为孤品。",
     "f3_desc": "限量发行的卡牌让每套专家牌组独一无二。统一配额确保胜负只取决于您的策略。",
     "f4_title": "移动竞技场，终于名副其实。",
@@ -1566,31 +1591,31 @@
     "footer": "Armies & Magic — 保留所有权利",
     "factions": {
       "Humains": {
-        "tagline": "同旗并肩"
+        "tagline": "旗帜下的团结"
       },
       "Elfes": {
-        "tagline": "永恒林木的守护者"
+        "tagline": "永恒林地的守护者"
       },
       "Nains": {
-        "tagline": "生于岩石"
+        "tagline": "石中锻造而生"
       },
       "Hommes-Bêtes": {
-        "tagline": "蛮荒之地的怒火"
+        "tagline": "荒野之怒"
       },
       "Élémentaires": {
-        "tagline": "元素苏醒"
+        "tagline": "元素觉醒"
       },
       "Elfes Noirs": {
-        "tagline": "暗影有其名"
+        "tagline": "暗影自有其名"
       },
       "Morts-Vivants": {
-        "tagline": "墓冢的沉寂已被打破"
+        "tagline": "墓冢的寂静已被打破"
       },
       "EmpireDuMilieu": {
-        "tagline": "先有法度，后有锋芒"
+        "tagline": "纪律先于狂怒"
       },
       "RoyaumesDuSoleil": {
-        "tagline": "大漠仍记得它的君王"
+        "tagline": "沙漠铭记着它的王"
       }
     }
   },
@@ -1765,8 +1790,8 @@
     "error_signups_disabled": "注册功能暂时关闭。",
     "error_database_error": "账号创建在我方出现问题。请稍后重试；如果问题持续，请联系我们。",
     "error_captcha_failed": "反机器人验证失败或已过期。请刷新页面后重试。",
-    "faction_see_cards": "决定前先查看{faction}的卡牌 →",
-    "faction_browse": "还在犹豫？ 浏览每个阵营及其卡牌 →"
+    "faction_see_cards": "决定前先看看{faction}的卡牌 →",
+    "faction_browse": "犹豫不决？了解每个阵营及其卡牌 →"
   },
   "common": {
     "settings_title": "设置",
@@ -1792,7 +1817,7 @@
     "discard_cost_title": "弃置 {count, plural, one {# 张牌} other {# 张牌}}",
     "sacrifice_cost_title": "献祭 {count, plural, one {# 个生物} other {# 个生物}}",
     "exile_cost_title": "从你的牌库顶部放逐{count}张牌",
-    "topdeck_cost_title": "将手牌中的 {count, plural, one {# 张牌} other {# 张牌}} 放回牌组顶部",
+    "topdeck_cost_title": "将手牌中的{count, plural, one {# 张牌} other {# 张牌}}放回牌库顶",
     "detail_note_all_allies": "（对所有友方）",
     "detail_note_target": "（对目标生物）",
     "trigger_on_play": "入场时",
@@ -1807,7 +1832,7 @@
     "composed_effects_heading": "复合效果（高级）",
     "composed_effects_subtitle": "内容 + 幅度 + 目标",
     "composed_effect_n": "复合效果 {n}",
-    "token_composed_hint": "衍生物不经由打出进场，因此「进场时」永远不会触发，故不提供该选项。",
+    "token_composed_hint": "衍生物并非通过打出而进场：“进场时”条件对其永远不会触发，因此不予提供。",
     "remove": "删除",
     "label_trigger": "触发条件",
     "label_emblem": "纹章",
@@ -1859,10 +1884,10 @@
     "pool_any": "不限",
     "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
     "label_magnitude": "幅度",
-    "random_hint": "结算时在 1 到 {max} 之间随机决定一次。",
-    "random_needs_ceiling": "随机决定需要上限至少为 2。",
+    "random_hint": "在1到{max}之间随机抽取一次，仅在结算时进行。",
+    "random_needs_ceiling": "随机抽取需要至少为2的上限。",
     "label_granted_ability": "赋予的异能",
-    "label_grant_trigger": "赋予的触发时机",
+    "label_grant_trigger": "赋予的触发条件",
     "label_token": "衍生物",
     "label_targets": "目标",
     "label_type": "类型",
@@ -1885,7 +1910,7 @@
     "location_graveyard": "墓地",
     "label_membership": "归属",
     "label_max_cost": "最高费用",
-    "max_cost_any": "— 不限 —",
+    "max_cost_any": "—不限—",
     "label_designation": "指定方式",
     "designation_choice": "自选",
     "designation_random": "随机",
@@ -1946,7 +1971,7 @@
     "generating": "生成中…",
     "illustrate": "生成插图",
     "image_model_auto": "模型：自动",
-    "image_model_hint": "指定图像模型以比较两种渲染效果。「自动」交由通常的顺序选择。指定的模型不会回退到其他模型，失败会如实报告。",
+    "image_model_hint": "强制指定图像模型以比较两种渲染效果。“自动”则由常规流程自行选择。指定的模型不会回退至其他模型：其失败将直接报告。",
     "history": "历史记录",
     "no_card": "无卡牌",
     "edition_label": "版本",
@@ -1961,7 +1986,7 @@
     "discard_label": "弃牌",
     "sacrifice_cost_hint": "出此牌时玩家须牺牲的我方生物数量。",
     "exile_cost_hint": "从玩家牌库顶部移除的牌数。被放逐的牌不会进入墓地，且无法回收。",
-    "topdeck_cost_hint": "玩家从手牌放回牌组顶部的牌数。它们不会进入坟场——之后还会再抽到。属于节奏代价，不可被减免。",
+    "topdeck_cost_hint": "玩家从手牌放回牌库顶部的卡牌数量。这些卡不会进入墓地：玩家之后会重新抽到它们。节奏消耗，不可减免。",
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
@@ -1978,8 +2003,8 @@
     "atk_override": "攻击（覆盖）",
     "def_override": "防御（覆盖）",
     "add_token": "+ 添加衍生物",
-    "composable_effects_advanced": "旧版 JSON 格式（已弃用）",
-    "json_hint": "已弃用：引擎仅在旧卡的「重施」时读取。要编排效果，请使用下方的「合成效果」。",
+    "composable_effects_advanced": "旧版JSON格式（已弃用）",
+    "json_hint": "已弃用：引擎现在仅在旧卡牌上读取此项以支持\"重掷\"。若要构建效果，请使用下方的\"复合效果\"。",
     "abilities_count": "技能（{count}）",
     "mode_title_play": "召唤时（默认）",
     "mode_title_death": "死亡时（亡语）",
@@ -2244,8 +2269,10 @@
     "illustration_generated": "插图已生成（{model}）",
     "import_error": "导入错误",
     "eveil_label": "觉醒",
-    "eveil_cost_hint": "觉醒：此牌可以置入觉醒而非使用。它带着这些点数离开手牌；玩家在自己的每个回合支付1点法力减少1点，支付最后一点时它如同从手上使用一般进场。取代法力费用，而非叠加。不可减少。",
-    "eveil_cost_title": "可以用{count, plural, other {#点}}置入觉醒，每回合支付1点法力 — 而非法力费用"
+    "eveil_cost_hint": "觉醒：这张卡可以选择进入觉醒状态，而不是直接打出。它带着这个点数离开手牌；玩家每回合支付1点法力值消耗1点，在最后一点时如同从手牌打出般进入战场。此花费取代法力值费用，而非叠加。不可减免。",
+    "eveil_cost_title": "可花费{count, plural, one {# 点} other {# 点}}进入觉醒状态，每回合支付1点法力值——以代替法力值费用",
+    "singulier_toggle": "唯一",
+    "singulier_toggle_title": "唯一条件：仅当玩家起始牌组中没有重复卡牌时，此能力才会触发。"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2290,15 +2317,15 @@
     "graveyard_select_prompt": "从墓地选择一张牌",
     "graveyard_hint_touch": "点击卡牌放大 · 再次点击查看描述",
     "graveyard_hint_hover": "悬停卡牌放大 · 右键切换图片／描述",
-    "seconde_vie_hint": "第二生命：双击符合条件的随从。",
-    "seconde_vie_blocked_turn": "现在不是你的回合。",
+    "seconde_vie_hint": "二次生命：双击一个符合条件的生物。",
+    "seconde_vie_blocked_turn": "现在不是您的回合。",
     "graveyard_empty": "墓地中没有卡牌",
     "cost_default_card_name": "卡牌",
     "cost_pay_title": "支付 {name} 的费用",
     "cost_discard_label": "🃏 {count, plural, one {弃置 # 张牌} other {弃置 # 张牌}}",
-    "cost_topdeck_label": "{count, plural, one {将 # 张牌放回牌组顶部} other {将 # 张牌放回牌组顶部}}",
-    "cost_topdeck_order_hint": "最先选中的牌会位于牌组顶部。",
-    "cost_hand_order_hint": "你的点击先填满弃牌，再填回置。",
+    "cost_topdeck_label": "{count, plural, one {将 # 张卡放回牌库} other {将 # 张卡放回牌库}}",
+    "cost_topdeck_order_hint": "最先选择的卡将被放在牌库最上方。",
+    "cost_hand_order_hint": "您的点击将先填满弃牌堆，再填充回置。",
     "topdeck_cost_caption": "{count, plural, one {回置} other {回置 ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {牺牲 # 个生物} other {牺牲 # 个生物}}",
     "tactique_title": "📋 战术",
@@ -2307,7 +2334,7 @@
     "convocation_title": "📣 召唤",
     "convocation_subtitle": "选择要召唤的token种族",
     "cycle_eternel_caption": "♻ 永恒循环",
-    "compagnons_caption": "🐾 同伴",
+    "compagnons_caption": "🐾 伙伴",
     "discard_label": "🔥 {count, plural, one {弃牌 — # 张} other {弃牌 — # 张}}",
     "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 张} other {墓地 — # 张}}",
     "zone_deck": "牌库",
@@ -2335,11 +2362,11 @@
     "history_collapse": "收起历史记录",
     "convocation_prefix": "生成{content}",
     "convocation_create_list": "创建 {content}",
-    "convocation_token_one_named": "一个 {token} token",
-    "convocation_token_many_named": "{count} 个 {token} token",
+    "convocation_token_one_named": "一个{token}衍生物",
+    "convocation_token_many_named": "{count} 个{token}衍生物",
     "convocation_invoke_one": "召唤一个 {token} {atk}/{hp}",
     "convocation_invoke_race": "召唤一个 {race} {atk}/{hp}",
-    "convocation_create_one_named": "生成一个 {token} token",
+    "convocation_create_one_named": "创造一个{token}衍生物",
     "convocation_none": "无token",
     "convocation_and": "{a} 和 {b}",
     "spell_countered": "🛡️ 反制！",
@@ -2366,28 +2393,30 @@
     "mode_suffix_return": " · 回手牌",
     "mode_suffix_end_of_turn": " · 回合结束",
     "presage_title": "🌙 预兆",
-    "presage_subtitle": "哪一张是你牌库顶的牌？",
-    "presage_hit": "猜中了 —— 它进入你的手牌。",
-    "presage_miss": "没猜中。正确的牌是绿框那张。",
-    "apprentissage_title": "📖 研习",
-    "apprentissage_subtitle": "这个生物要记住哪张法术？",
+    "presage_subtitle": "哪一张是您牌库的第一张卡？",
+    "presage_hit": "猜对了——它将进入您的手牌。",
+    "presage_miss": "猜错了。正确的卡以绿色标出。",
+    "apprentissage_title": "📖 学习",
+    "apprentissage_subtitle": "该生物应该记忆哪个法术？",
     "foi_title": "✨ 信仰",
     "foi_subtitle": "选择一张牌加入手牌。其费用将从你的信仰中扣除，其余保留。",
-    "zone_eveil": "觉醒",
-    "zone_eveil_yours": "你的觉醒",
-    "zone_eveil_opponent": "对手的觉醒",
-    "eveil_hint": "每次点击支付1点法力。支付最后一点时，此牌如同从你手上使用一般进场。",
-    "eveil_remaining": "{count, plural, other {剩余#点}}",
-    "eveil_next_point": "下一点需要1点法力。",
-    "eveil_next_arrives": "最后一点：此牌进场。",
-    "eveil_play_now": "使其进场",
-    "eveil_blocked_mana": "法力不足。",
-    "eveil_blocked_board_plein": "你的战场已满。",
-    "eveil_blocked_vie": "生命值不足以支付其费用。",
-    "eveil_blocked_main": "手牌不足以支付其附加费用。",
-    "eveil_blocked_plateau": "可供牺牲的生物不足。",
-    "eveil_blocked_deck": "牌库中可放逐的牌不足。",
-    "eveil_blocked_sans_cible": "此法术没有合法的目标。",
+    "conquete_title": "🚩 征服",
+    "conquete_subtitle": "对手牌库中的三张牌。选择一张加入手牌：这局游戏中它将归你所有。",
+    "zone_eveil": "觉醒区",
+    "zone_eveil_yours": "您的觉醒区",
+    "zone_eveil_opponent": "对手的觉醒区",
+    "eveil_hint": "每次点击消耗1点法力值。达到最后一点时，该卡将如同从您的手牌中打出一样进入战场。",
+    "eveil_remaining": "{count, plural, one {剩余 # 点} other {剩余 # 点}}",
+    "eveil_next_point": "下一点消耗1点法力值。",
+    "eveil_next_arrives": "最后一点：该卡将进入战场。",
+    "eveil_play_now": "使其进入战场",
+    "eveil_blocked_mana": "法力值不足。",
+    "eveil_blocked_board_plein": "您的场地已满。",
+    "eveil_blocked_vie": "您的生命值不足以支付此费用。",
+    "eveil_blocked_main": "手牌数量不足，无法支付额外费用。",
+    "eveil_blocked_plateau": "可献祭的生物数量不足。",
+    "eveil_blocked_deck": "您的牌库中可放逐的卡牌数量不足。",
+    "eveil_blocked_sans_cible": "该法术没有合法目标。",
     "eveil_suspend": "置入觉醒（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {支付#}}",
     "eveil_max": "最多{count}",
@@ -2555,8 +2584,11 @@
     "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
     "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
     "unplayable_badge": "缺少 {count} 张卡牌",
-    "unplayable_reason": "此套牌包含你已不再拥有的阵营卡牌：{factions}。套牌完好保留——重新获得该阵营即可再次使用。",
-    "unplayable_rebuy": "前往商店取回"
+    "unplayable_reason": "此卡组包含你已不再拥有的阵营卡牌：{factions}。卡组保持完整——重新获得该阵营即可继续使用。",
+    "unplayable_rebuy": "前往商店购买",
+    "singleton_yes": "单卡组 ✓",
+    "singleton_no": "单卡牌组 ✗",
+    "singleton_hint": "单卡牌组中不包含任何重复卡牌：标记为「唯一」的技能只有在此条件下才会触发。这并非组卡规则。"
   },
   "cardBacks": {
     "eyebrow": "展示你的风格",
@@ -2610,56 +2642,56 @@
     "privacy_s9": "联系与投诉方式"
   },
   "factions_page": {
-    "back": "返回首页",
+    "back": "返回主页",
     "races": "种族",
-    "signature": "标志性能力",
-    "profile": "战斗风格",
-    "offense": "攻击",
-    "defense": "防御",
-    "commons": "{count} 张普通卡",
+    "signature": "标志性技能",
+    "profile": "游戏风格",
+    "offense": "进攻型",
+    "defense": "防御型",
+    "commons": "{count, plural, one {# 张普通卡} other {# 张普通卡}}",
     "more_races": "+{count}",
-    "free_commons": "{count} 张普通卡 · {clans} 个氏族 —— 开局即免费拥有。",
-    "no_clan_title": "所有氏族通用",
-    "no_clan_desc": "这些卡牌不属于任何氏族：无论你围绕哪个氏族构筑，都能编入该阵营的牌组。",
+    "free_commons": "{count, plural, one {# 张普通卡} other {# 张普通卡}} · {clans, plural, one {# 个氏族} other {# 个氏族}} —— 第一天起即可获得。",
+    "no_clan_title": "对所有氏族开放",
+    "no_clan_desc": "这些卡牌不属于任何氏族：无论你围绕哪个氏族构筑该阵营的卡组，它们都可以加入其中。",
     "other_factions": "查看其他阵营",
-    "costs": "额外代价",
+    "costs": "额外费用",
     "cost_life": "生命值",
     "cost_discard": "弃牌",
     "cost_sacrifice": "献祭",
     "cost_exile": "放逐",
-    "cost_topdeck": "回置",
-    "cost_life_desc": "除法力值外，这些卡牌还需支付英雄的生命值。",
-    "cost_discard_desc": "除法力值外，这些卡牌还需从手牌中弃牌。",
-    "cost_sacrifice_desc": "除法力值外，这些卡牌还需献祭你操控的生物。",
-    "cost_exile_desc": "除法力值外，这些卡牌还会放逐你牌组顶部的卡牌。",
-    "cost_topdeck_desc": "除法力值外，这些卡牌还要求你将手牌放回牌组顶部。",
-    "commons_count": "普通卡牌 {count} 张 · {clans} 个氏族"
+    "cost_topdeck": "置顶",
+    "cost_life_desc": "这些卡牌除了法力值费用外，还需要消耗英雄的生命值。",
+    "cost_discard_desc": "这些卡牌除了法力值费用外，还需要弃置手牌。",
+    "cost_sacrifice_desc": "这些卡牌除了法力值费用外，还需要献祭你控制的生物。",
+    "cost_exile_desc": "这些卡牌除了法力值费用外，还会放逐你牌库顶的卡牌。",
+    "cost_topdeck_desc": "这些卡牌除了法力值费用外，还需要将手牌放回牌库顶。",
+    "commons_count": "{count, plural, one {# 张普通卡} other {# 张普通卡}} · {clans, plural, one {# 个氏族} other {# 个氏族}}"
   },
   "faction_action": {
-    "visitor_pitch": "创建账号即可以{faction}起步：其全部普通卡牌都归你所有。",
+    "visitor_pitch": "创建你的账号，从{faction}开始：其所有普通卡都将免费赠送给你。",
     "visitor_cta": "创建账号",
-    "owned_just_chosen": "{faction}已成为你的阵营",
+    "owned_just_chosen": "{faction} 是你的阵营",
     "owned_bundle": "已包含在你的套装中",
-    "owned_starter": "你的初始阵营",
+    "owned_starter": "你的起始阵营",
     "owned_bought": "已获得的阵营",
-    "owned_note": "下方所有普通卡牌都已在你的收藏中。",
+    "owned_note": "以下所有普通卡均已在你的收藏中。",
     "enter_game": "进入游戏",
     "see_collection": "查看我的收藏",
-    "free_pitch": "你尚未选择初始阵营。选择<strong>{faction}</strong>起步，免费获得其全部普通卡牌。",
-    "free_cta": "以此阵营起步",
-    "free_warning": "此选择不可更改：日后只能额外获取其他阵营。",
-    "free_confirm": "确认 — {faction}",
+    "free_pitch": "你还没有选择起始阵营。从 <strong>{faction}</strong> 开始，即可免费获得其所有普通卡。",
+    "free_cta": "以此阵营开始",
+    "free_warning": "此选择为最终决定：之后将无法更改，只能继续获取其他阵营。",
+    "free_confirm": "确认——{faction}",
     "cancel": "取消",
-    "buy_pitch": "将{faction}加入你的收藏：其全部普通卡牌，永久拥有。",
-    "your_balance": "（你拥有 {balance}）",
-    "debt_blocks": "你需先清偿 {debt} 金币的欠款，才能进行新的购买。",
+    "buy_pitch": "将{faction}加入您的收藏：其所有普通卡牌，永久拥有。",
+    "your_balance": "（您拥有{balance}）",
+    "debt_blocks": "您需先偿还{debt}金币的债务，才能进行新的购买。",
     "not_enough_gold": "金币不足",
-    "buy_cta": "解锁该阵营",
-    "err_already_chosen": "你已经选择了初始阵营。",
-    "err_choice": "未能保存选择。",
-    "err_purchase": "未能完成购买。",
+    "buy_cta": "解锁此阵营",
+    "err_already_chosen": "您已经选择过初始阵营。",
+    "err_choice": "选择未能保存。",
+    "err_purchase": "购买未能完成。",
     "badge_starter": "初始",
-    "badge_owned": "已获得",
-    "bundle_hint": "或以 {price} 金币获得你缺少的 {count} 个阵营 →"
+    "badge_owned": "已拥有",
+    "bundle_hint": "或以{price}金币获取您尚缺的{count}个阵营 →"
   }
 }

@@ -1,7 +1,7 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
 import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
-import { resolveMarkers } from "./desc-markers";
+import { resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -132,6 +132,17 @@ export function getSpellKeywordDesc(
   tokens?: TokenTemplate[],
   t?: SafeT,
 ): string {
+  const base = getSpellKeywordDescBase(kw, card, tokens, t);
+  // SINGULIER : la phrase d'aide suit, au moment de la résolution du sort.
+  return kw.singulier === true && base ? `${base} ${singulierHelp("spell", t)}` : base;
+}
+
+function getSpellKeywordDescBase(
+  kw: SpellKeywordInstance,
+  card?: Card | null,
+  tokens?: TokenTemplate[],
+  t?: SafeT,
+): string {
   const def = SPELL_KEYWORDS[kw.id];
   // Defensive: a stale spell_keyword.id (admin renamed/removed an ability
   // without migrating cards) would crash here on `def.desc`. Fall back to
@@ -195,7 +206,8 @@ export function getSpellKeywordLabel(kw: SpellKeywordInstance, t?: SafeT): strin
   else if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
   else if (def.params.includes("amount")) label = label.replace(/X/, String(kw.amount ?? 1));
   if (def.params.includes("health")) label = label.replace(/Y/, String(kw.health ?? 0));
-  return label;
+  // SINGULIER : annoncé dans le nom, faute de badge de déclencheur côté sort.
+  return kw.singulier === true ? `${label} · ${singulierLabel(t)}` : label;
 }
 
 /** Valeur à peindre sur le badge d'un mot-clé de SORT (à côté de l'icône).

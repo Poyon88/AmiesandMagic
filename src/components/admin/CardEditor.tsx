@@ -133,6 +133,8 @@ export default function CardEditor() {
   // Per-keyword trigger mode override, keyed by game keyword id. Missing
   // entry = on-play (default). Only curated keywords accept non-play modes.
   const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
+  // SINGULIER par id moteur (cf. keyword_instances[i].singulier).
+  const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
   // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
   // (single allied creature); "all_allies" = every allied creature on cast.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
@@ -327,6 +329,7 @@ export default function CardEditor() {
     // Trigger modes (and authoritative X) live in the keyword_instances
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
+    const singuliers: Record<string, boolean> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
@@ -334,6 +337,7 @@ export default function CardEditor() {
     let compagnonsLoaded: number[] = [];
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
+      if (inst.singulier === true) singuliers[inst.id] = true;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.id === "renforcement_multiple") {
@@ -359,6 +363,7 @@ export default function CardEditor() {
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setKeywordModes(modes);
+    setKeywordSingulier(singuliers);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
@@ -417,6 +422,7 @@ export default function CardEditor() {
       // Remove X value and trigger mode if keyword is removed
       setKeywordXValues(prev => { const n = { ...prev }; delete n[kw]; return n; });
       setKeywordModes(prev => { const n = { ...prev }; delete n[kw]; return n; });
+      setKeywordSingulier(prev => { const n = { ...prev }; delete n[kw]; return n; });
     } else {
       updateField("keywords", [...kws, kw]);
       // Set default X=1 for scalable keywords
@@ -594,6 +600,14 @@ export default function CardEditor() {
           if (!mode && x == null && !grantScope) return null;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
         })
+        // SINGULIER : la condition s'ajoute à l'instance — et CRÉE l'instance
+        // d'un mot-clé qui n'aurait sinon rien eu à stocker (même contrat que
+        // buildKeywordInstances côté forge).
+        .map((inst, i): KeywordInstance | null => {
+          const id = activeKeywords[i];
+          if (keywordSingulier[id] !== true) return inst;
+          return { ...(inst ?? { id: id as Keyword }), singulier: true };
+        })
         .filter((k): k is KeywordInstance => k !== null);
 
       const cardData = {
@@ -670,7 +684,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordSingulier, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1270,6 +1284,15 @@ export default function CardEditor() {
                       }}>
                         <KwIcon iconKey={kw} symbol={KEYWORD_SYMBOLS[kw]} />{label}
                       </button>
+                      {/* SINGULIER — condition ajoutée au déclencheur (tous mots-clés). */}
+                      {active && (
+                        <button
+                          type="button"
+                          title="Condition Singulier : ne se déclenche que si le deck de départ ne contient aucune carte en double"
+                          onClick={() => setKeywordSingulier(prev => { const n = { ...prev }; if (n[kw]) delete n[kw]; else n[kw] = true; return n; })}
+                          style={{ marginLeft: 1, width: 18, height: 18, borderRadius: 3, background: keywordSingulier[kw] ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: keywordSingulier[kw] ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
+                        >S</button>
+                      )}
                       {hoveredKw === kw && KEYWORD_DEFS[label]?.desc && (
                         <div style={{
                           position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)",
@@ -1540,13 +1563,19 @@ export default function CardEditor() {
                   </div>
                   {spellKws.map((kw, idx) => {
                     const def = SPELL_KEYWORDS[kw.id];
-                    const hasParams = def.params.length > 0 || kw.id === "invocation_multiple";
-                    if (!hasParams) return null;
+                    // La ligne existe pour TOUT effet : elle porte au minimum
+                    // la bascule Singulier.
                     return (
                       <div key={`${kw.id}-${idx}`} style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center", flexWrap: "wrap" }}>
                         <span style={{ fontSize: 9, color: "#9b59b6", fontWeight: 700, minWidth: 70, display: "inline-flex", alignItems: "center" }}>
                           <SpellKwIcon id={kw.id} symbol={def.symbol} />{SPELL_KEYWORD_LABELS[kw.id].replace(" X", "").replace(" +X/+Y", "")}
                         </span>
+                        <button
+                          type="button"
+                          title="Condition Singulier : ne se déclenche que si le deck de départ ne contient aucune carte en double"
+                          onClick={() => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, singulier: k.singulier ? undefined : true } : k))}
+                          style={{ marginLeft: 0, width: 18, height: 18, borderRadius: 3, background: kw.singulier === true ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: kw.singulier === true ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
+                        >S</button>
                         {def.params.includes("amount") && (
                           <div>
                             <label style={{ fontSize: 7, color: "#666" }}>X</label>

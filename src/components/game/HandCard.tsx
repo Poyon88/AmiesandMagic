@@ -11,6 +11,7 @@ import { useGameStore } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { REPLI_TEINTE } from "@/lib/game/repli-theme";
 import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { displayCardOf } from "@/lib/game/singulier";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints } from "@/lib/game/engine";
@@ -67,7 +68,9 @@ function HandCard({
   onSuspendEveil,
   boost = null,
 }: HandCardProps) {
-  const card = cardInstance.card;
+  // Vue d'AFFICHAGE : les capacités Singulier retirées chez un joueur non
+  // singleton restent visibles — une carte se lit pareil des deux côtés.
+  const card = displayCardOf(cardInstance);
   const t = useTranslations("game");
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
@@ -832,6 +835,35 @@ function HandCard({
           }}>EN JEU</div>
         )}
 
+        {/* CONQUÊTE — carte prise au deck adverse. Liseré rouge sang sur tout
+            le contour + fanion : le marqueur suit la carte en jeu (cf.
+            BoardCreature), pour que l'adversaire reconnaisse ce qu'on lui a
+            pris. Placé sous la pastille d'Éveil (coin haut-droit) pour ne pas
+            la recouvrir. */}
+        {cardInstance.conqueredFromId && (
+          <>
+            <div style={{
+              position: "absolute", inset: -1, borderRadius: 7, zIndex: 5,
+              border: "2px solid #dc262699",
+              boxShadow: "0 0 8px #dc262666, inset 0 0 6px #dc262633",
+              pointerEvents: "none",
+            }} />
+            <div
+              title="Conquise au deck adverse"
+              style={{
+                position: "absolute", top: onSuspendEveil ? 26 : 3, right: 3, zIndex: 6,
+                width: 20, height: 20, borderRadius: 5,
+                background: "radial-gradient(circle, #3d1010, #1c0606)",
+                border: "1.5px solid #dc2626",
+                color: "#fecaca", fontSize: 11, lineHeight: 1,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 0 8px #dc262677",
+                pointerEvents: "none",
+              }}
+            >🚩</div>
+          </>
+        )}
+
         {/* Bottom bar */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
@@ -866,7 +898,7 @@ function HandCard({
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                         <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
+                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
                         </span>
                       </span>
                       {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
@@ -895,7 +927,7 @@ function HandCard({
                 fontSize: 8, overflow: "visible",
               }}>
                 <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode="spell" />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
                 </span>
                 {valueText && <span style={{
                   fontSize: 12, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -923,9 +955,9 @@ function HandCard({
                       // 14×14 to match the keyword-chip icon size — was 24×24,
                       // which made composed-effect icons on hand cards render
                       // bigger than the same keyword shown as a chip in play.
-                      <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} /></div>
+                      <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} /></div>
                     ) : (
-                      <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} />
+                      <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
                     )}
                     </span>
                     <ComposedMarker mode={cmode} size={10} />
@@ -1015,7 +1047,7 @@ function HandCard({
                 return (
                 <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0, lineHeight: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} mode={mode} />
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} mode={mode} singulier={entry.singulier} />
                   </span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
@@ -1040,7 +1072,7 @@ function HandCard({
                 const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
@@ -1063,7 +1095,7 @@ function HandCard({
                 const nm = vocab.composedName(cap);
                 return (
                   <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                    <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} mode={cmode} /></span><ComposedMarker mode={cmode} size={6} /></span>
+                    <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={6} /></span>
                     <div>
                       {nm && <div style={{ fontSize: 7 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                       <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>

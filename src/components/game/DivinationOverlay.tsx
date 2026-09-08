@@ -30,6 +30,9 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
   // FOI — découverte d'une carte du deck de coût ≤ compteur. Pas d'annulation :
   // refermer reviendrait à regarder 3 cartes du deck gratuitement.
   const isFoi = useGameStore((s) => s.pendingFoiSelection);
+  // CONQUÊTE — 3 cartes du deck ADVERSE. Pas d'annulation non plus : refermer
+  // reviendrait à espionner le deck adverse gratuitement.
+  const isConquete = useGameStore((s) => s.pendingConqueteSelection);
   // Position AFFICHÉE de la carte qui était réellement au sommet du deck.
   const bonneReponse = deckPickerOrder ? deckPickerOrder.indexOf(0) : -1;
   const [choix, setChoix] = useState<number | null>(null);
@@ -46,14 +49,18 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
     }
     return false;
   });
-  const title = isFoi
+  const title = isConquete
+    ? t('conquete_title')
+    : isFoi
     ? t('foi_title')
     : isApprentissage
     ? t('apprentissage_title')
     : isPresage
       ? t('presage_title')
       : isTraqueDuDestin ? t('divination_traque_title') : t('divination_title');
-  const subtitle = isFoi
+  const subtitle = isConquete
+    ? t('conquete_subtitle')
+    : isFoi
     ? t('foi_subtitle')
     : isApprentissage
     ? t('apprentissage_subtitle')
@@ -122,7 +129,7 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
             reviendrait à regarder les 3 cartes gratuitement puis à rejouer,
             exactement le « scouting » que la règle anti-annulation de Sélection
             interdit déjà. */}
-        {!isPresage && !isFoi && <button
+        {!isPresage && !isFoi && !isConquete && <button
           onClick={onCancel}
           style={{
             padding: "8px 24px", borderRadius: 8,

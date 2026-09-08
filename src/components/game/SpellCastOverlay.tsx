@@ -331,7 +331,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       return (
                         <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
-                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} />
+                            <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={16} keyword={kw} singulier={entry.singulier} />
                           </span>
                           <div>
                             <div style={{ fontSize: "0.8rem", color: grantScope === "all_allies" ? "#2ecc71" : accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}<span style={{ fontSize: "0.65rem", opacity: 0.85 }}>{grantNote}</span></div>
@@ -361,7 +361,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       return (
                         <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
-                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} mode="spell" />
+                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} />
                           </span>
                           <div>
                             <div style={{ fontSize: "0.8rem", color: keywordModeColor("spell") ?? accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{label}</div>

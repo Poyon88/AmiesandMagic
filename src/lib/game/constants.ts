@@ -56,6 +56,10 @@ export const MAX_EPARGNE = 8;
 /** Plafond du compteur de Foi (signature de l'Ordre de l'Aube). Même règle
  *  d'écrêtage silencieux que l'Épargne. */
 export const MAX_FOI = 10;
+/** Palier ET plafond du compteur de Conquête (signature du Royaume du Nord).
+ *  Le compteur s'écrête au palier ; la découverte n'est possible QU'au palier,
+ *  et le remet à 0. */
+export const MAX_CONQUETE = 3;
 /** Nombre maximal de cartes qu'un joueur peut tenir en ÉVEIL simultanément.
  *
  *  Sans plafond, un joueur pourrait vider sa main dans la zone d'éveil et s'en

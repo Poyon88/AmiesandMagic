@@ -162,6 +162,8 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       linkedCardIds: sk.linkedCardIds,
       tokenId: sk.token_id ?? undefined,
       targets,
+      // Singulier : la condition suit l'effet dans le modèle unifié.
+      ...(sk.singulier === true ? { singulier: true } : {}),
     });
   });
 
@@ -185,6 +187,7 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       // don retombait sur le +Y=1 de repli, quelle que soit la saisie du forge.
       params: pruneParams({ x: inst?.x, y: inst?.y }),
       targets,
+      ...(inst?.singulier === true ? { singulier: true } : {}),
     });
   });
 
@@ -251,6 +254,9 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       tokenId,
       tokens,
       targets: [],
+      // Singulier : porté par la capacité dérivée, pour qu'un retrait chez un
+      // joueur non singleton touche `capabilities` ET `keyword_instances`.
+      ...(inst.singulier === true ? { singulier: true } : {}),
     };
   });
 }

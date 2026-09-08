@@ -12,6 +12,8 @@ import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMod
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { getClanName, getFactionDisplayName, getRaceName } from "@/lib/card-engine/constants";
 import { triggerBadge, type TriggerBadge } from "./keyword-display";
+import { singulierHelp, singulierLabel } from "./desc-markers";
+import { SINGULIER_COLOR } from "./singulier";
 import type { SafeT } from "@/i18n/config";
 
 // ─── fragments FR (source unique : repli runtime + graine vocab.composed) ────
@@ -100,6 +102,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
+  "content.conquete": "ajoute {x} à votre compteur de Conquête",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
   "content.devoration": "dévore",
   "content.retour_differe": "place sous le deck de son propriétaire",
@@ -259,6 +262,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
+    case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
     case "retour_differe": return { symbol: KEYWORD_SYMBOLS.retour_differe, keyword: "retour_differe" };
@@ -321,6 +325,15 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
  *  la capacité EST ; la couleur continue de dire à quoi elle réagit, et la
  *  description porte la cadence en toutes lettres. */
 export function composedBadge(cap: Capability, t?: SafeT): TriggerBadge | null {
+  const base = composedBadgeBase(cap, t);
+  // SINGULIER : même annonce que les mots-clés (« Mort · Singulier »), couleur réservée.
+  if (cap.singulier === true) {
+    return { label: base ? `${base.label} · ${singulierLabel(t)}` : singulierLabel(t), color: SINGULIER_COLOR };
+  }
+  return base;
+}
+
+function composedBadgeBase(cap: Capability, t?: SafeT): TriggerBadge | null {
   const mode = composedTriggerMode(cap);
   if (cap.effectKind !== "emblem") {
     // Pas de « Permanent » au dos d'une carte : même raison que pour les
@@ -452,6 +465,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "gain_mana": return frag(t, "content.gain_mana", { x: xAff });
     case "epargne": return frag(t, "content.epargne", { x: xAff });
     case "foi": return frag(t, "content.foi", { x: xAff });
+    case "conquete": return frag(t, "content.conquete", { x: xAff });
     case "incineration": return frag(t, "content.incineration", { x: xAff });
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");
@@ -634,6 +648,13 @@ function describeEmblemLead(cap: Capability, t?: SafeT): string {
  *  (templates) pour nommer/chiffrer les tokens d'un effet summon_token, et `t`
  *  (SafeT) pour la localisation (repli FR sinon). */
 export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[], t?: SafeT): string {
+  const base = describeComposedCapBase(cap, tokens, t);
+  if (cap.singulier !== true || !base) return base;
+  // SINGULIER : la phrase d'aide suit, avec le moment du déclencheur.
+  return `${base} ${singulierHelp(composedTriggerMode(cap), t)}`;
+}
+
+function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: SafeT): string {
   const eff = cap.composed;
   if (!eff) return "";
   // Pas de préfixe de déclencheur (« À l'entrée : », « À la fin du tour : », « Au

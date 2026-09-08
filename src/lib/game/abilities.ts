@@ -1192,6 +1192,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  conquete: {
+    id: "conquete", label: "Conquête X", symbol: "🚩",
+    desc: "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 8, costPerX: 5, se: 2.2, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0.",
+    },
+    spell: {
+      desc: "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
     desc: "Piochez X cartes.",
@@ -1610,7 +1623,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
-  "affaiblissement", "benediction", "tactique", "epargne", "foi",
+  "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.

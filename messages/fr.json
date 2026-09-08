@@ -429,6 +429,10 @@
         "label": "Foi X",
         "desc": "Ajoute X à votre Foi (max. 10). Dépense : découvrez 1 carte parmi 3 du deck de coût ≤ Foi, seul ce coût est retiré."
       },
+      "conquete": {
+        "label": "Conquête X",
+        "desc": "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0."
+      },
       "seconde_vie": {
         "label": "Seconde vie X",
         "desc": "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie."
@@ -659,6 +663,10 @@
         "label": "Foi X",
         "desc": "Ajoute X à votre Foi (max. 10). Dépense : découvrez 1 carte parmi 3 du deck de coût ≤ Foi, seul ce coût est retiré"
       },
+      "conquete": {
+        "label": "Conquête X",
+        "desc": "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Piochez X cartes"
@@ -755,6 +763,7 @@
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
         "epargne": "ajoute {x} à votre compteur d'Épargne",
         "foi": "ajoute {x} à votre compteur de Foi",
+        "conquete": "ajoute {x} à votre compteur de Conquête",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
         "devoration": "dévore",
         "retour_differe": "place sous le deck de son propriétaire",
@@ -1484,6 +1493,22 @@
       "classique-etendu": "Classique · Étendu",
       "classique-standard": "Classique · Standard"
     },
+    "singulier": {
+      "label": "Singulier",
+      "help": "Se déclenche {timing} si votre deck de départ ne contenait aucune carte en double.",
+      "help_permanent": "Actif si votre deck de départ ne contenait aucune carte en double.",
+      "timing": {
+        "entry": "à l'entrée",
+        "death": "à la mort",
+        "tap": "à l'activation",
+        "return": "au retour en main",
+        "attack": "à l'attaque",
+        "end_of_turn": "à la fin du tour",
+        "draw": "à la pioche",
+        "low_hp": "sous {n} PV",
+        "spell": "à la résolution du sort"
+      }
+    },
     "triggers": {
       "permanent": "Permanent",
       "entry": "Entrée",
@@ -1810,6 +1835,8 @@
     "token_composed_hint": "Un jeton n'entre pas en jeu par une pose : « à l'entrée » n'y partirait jamais et n'est donc pas proposé.",
     "remove": "Supprimer",
     "label_trigger": "DÉCLENCHEUR",
+    "singulier_toggle": "Singulier",
+    "singulier_toggle_title": "Condition Singulier : cette capacité ne se déclenche que si le deck de départ du joueur ne contient aucune carte en double.",
     "label_emblem": "EMBLÈME",
     "emblem_permanent": "Effet permanent posé sur un joueur",
     "emblem_trigger_note": "posé à l'arrivée de la carte ; le déclencheur dit à quoi il réagit ensuite",
@@ -2373,6 +2400,8 @@
     "apprentissage_subtitle": "Quel sort la créature doit-elle mémoriser ?",
     "foi_title": "✨ Foi",
     "foi_subtitle": "Choisissez une carte à prendre en main. Son coût sera retiré de votre Foi, le reste est conservé.",
+    "conquete_title": "🚩 Conquête",
+    "conquete_subtitle": "Trois cartes du deck adverse. Choisissez celle que vous prenez en main : elle est à vous pour le reste de la partie.",
     "zone_eveil": "Éveil",
     "zone_eveil_yours": "Votre éveil",
     "zone_eveil_opponent": "Éveil adverse",
@@ -2438,6 +2467,9 @@
     "max_capability_current": "Max {max} capacités « {label} » (actuellement {count})",
     "card_not_owned": "Carte non possédée",
     "deck_full": "Deck plein",
+    "singleton_yes": "Deck singulier ✓",
+    "singleton_no": "Deck singulier ✗",
+    "singleton_hint": "Un deck singulier ne contient aucune carte en double : les capacités marquées Singulier ne se déclenchent qu'à cette condition. Ce n'est pas une règle de construction.",
     "unique_copy": "Exemplaire unique",
     "max_three_copies": "Max 3 copies",
     "alignment_conflict": "Conflit d'alignement",

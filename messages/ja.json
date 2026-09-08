@@ -93,6 +93,14 @@
         "label": "詠唱",
         "desc": "このユニットが場に出ている限り、「詠唱」を持つあなたの呪文は強化される。"
       },
+      "lune": {
+        "label": "月X",
+        "desc": "このターン中に2枚目以降に出したカードは、そのすべての数値がXだけ永続的に上昇する。"
+      },
+      "soleil": {
+        "label": "太陽X",
+        "desc": "このターン最初に出したカードなら、そのすべての数値がXだけ永続的に上昇する。"
+      },
       "rappel": {
         "label": "帰還",
         "desc": "対象の墓地のカード1枚を手札に戻す。"
@@ -387,11 +395,19 @@
       },
       "discipline": {
         "label": "規律 +X/+Y",
-        "desc": "自分の場のクリーチャーすべてのコストが自身のコストと同じ偶奇であるなら、ATKを+X、HPを+Y永続的に得る。"
+        "desc": "場にいる自分のクリーチャーがすべてこのクリーチャーと同じ偶奇のコストを持つ場合、永続的に+X ATK/+Y HPを得る。"
       },
       "esprit_de_corps": {
         "label": "団結心",
-        "desc": "すでに出した{clan_de}〈団結心〉クリーチャー1体につき、ATK+1かHP+1をランダムに得る。"
+        "desc": "既に場に出ている「団結心」持ちの{clan_de}クリーチャー1体につき、ランダムで+1 ATKまたは+1 HPを得る。"
+      },
+      "presage": {
+        "label": "予兆",
+        "desc": "デッキの上から3枚を無作為な順序で公開し、一番上に置く1枚を選んで手札に加えたのち、デッキをシャッフルする。"
+      },
+      "apprentissage": {
+        "label": "習得",
+        "desc": "手札から呪文を1枚取り除き記憶する。このクリーチャーはそのコストを支払うことでその呪文を唱えられる。"
       },
       "impact": {
         "label": "衝撃 X",
@@ -413,6 +429,10 @@
         "label": "信仰X",
         "desc": "信仰を X 追加（最大10）。消費：デッキのコスト≤信仰のカード3枚から1枚を発見し、そのコストのみ差し引く."
       },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "征服カウンターにXを加える（上限3）。上限に達したら、相手のデッキから3枚のうち1枚を発見して手札に加え、カウンターは0に戻る."
+      },
       "seconde_vie": {
         "label": "セカンドライフX",
         "desc": "墓地からX魔力で使用できる。使用後、セカンドライフを失う。"
@@ -428,14 +448,6 @@
       "creuser": {
         "label": "発掘X",
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
-      },
-      "presage": {
-        "label": "前兆",
-        "desc": "デッキの上から3枚をランダムな順で公開。最も上の1枚を指名すると手札に加わる。その後デッキをシャッフルする。"
-      },
-      "apprentissage": {
-        "label": "習得",
-        "desc": "手札から呪文を1枚取り除いて記憶する。このクリーチャーはコストを支払ってそれを唱えられる。"
       },
       "retour_differe": {
         "label": "遅延帰還",
@@ -481,25 +493,17 @@
         "label": "祖霊の力 +X/+Y",
         "desc": "自分の墓地にクリーチャーが7体以上ある限り、+X ATKと+Y PVを得る。"
       },
-      "seuil_sacrificiel": {
-        "label": "犠牲の閾値 +X/+Y",
-        "desc": "自分のデッキが25枚以下である限り、+X ATKと+Y PVを得る。"
-      },
       "purete": {
         "label": "純粋 +X/+Y",
         "desc": "自分の墓地が空である限り、+X ATKと+Y HPを得る。"
       },
+      "seuil_sacrificiel": {
+        "label": "犠牲の閾値 +X/+Y",
+        "desc": "自分のデッキが25枚以下である限り、+X ATKと+Y PVを得る。"
+      },
       "compagnons": {
         "label": "仲間",
-        "desc": "自分の仲間（作成時に選ばれた関連カード）をデッキに加えて混ぜ、その後デッキを切り直す。一度だけ。"
-      },
-      "lune": {
-        "label": "月 X",
-        "desc": "そのターンに2枚目以降に出された場合、このユニットのすべての値がXだけ増加する（永続）。"
-      },
-      "soleil": {
-        "label": "太陽 X",
-        "desc": "そのターンに最初に出されたカードである場合、このユニットのすべての値がXだけ増加する（永続）。"
+        "desc": "仲間(このカード作成時に選ばれた紐付けカード)をデッキに混ぜ込み、デッキをシャッフルする。1回限り。"
       }
     },
     "spell_keywords": {
@@ -530,6 +534,14 @@
       "chant": {
         "label": "詠唱 X",
         "desc": "詠唱を持つクリーチャーをコントロールしている場合、このスペルのすべての値がXだけ増加する。"
+      },
+      "lune": {
+        "label": "月X",
+        "desc": "このターン中に2枚目以降に出したカードなら、このカードのすべての数値がXだけ上昇する。"
+      },
+      "soleil": {
+        "label": "太陽X",
+        "desc": "このターン最初に出したカードなら、このカードのすべての数値がXだけ上昇する。"
       },
       "corruption": {
         "label": "堕落",
@@ -593,7 +605,7 @@
       },
       "boomerang": {
         "label": "ブーメラン",
-        "desc": "解決後、この呪文は墓地に置かれる代わりに自分のデッキに混ぜられる。"
+        "desc": "解決後、この呪文は墓地に置かれる代わりにデッキに混ぜ込まれる。"
       },
       "siphon": {
         "label": "吸命 X",
@@ -617,7 +629,7 @@
       },
       "discipline": {
         "label": "規律 +X/+Y",
-        "desc": "自分の場のクリーチャーすべてのコストがこの呪文のコストと同じ偶奇であるなら、対象の味方クリーチャー1体に+X/+Y。"
+        "desc": "場にいる自分のクリーチャーがすべてこの呪文と同じ偶奇のコストを持つ場合、対象の味方クリーチャー1体に+X/+Yを与える。"
       },
       "affaiblissement": {
         "label": "弱体化 -X/-Y",
@@ -636,8 +648,8 @@
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
       },
       "presage": {
-        "label": "前兆",
-        "desc": "デッキの上から3枚をランダムな順で公開。最も上の1枚を指名すると手札に加わる。その後デッキをシャッフルする。"
+        "label": "予兆",
+        "desc": "デッキの上から3枚を無作為な順序で公開し、一番上に置く1枚を選んで手札に加えたのち、デッキをシャッフルする。"
       },
       "retour_differe": {
         "label": "遅延帰還",
@@ -650,6 +662,10 @@
       "foi": {
         "label": "信仰X",
         "desc": "信仰を X 追加（最大10）。消費：デッキのコスト≤信仰のカード3枚から1枚を発見し、そのコストのみ差し引く"
+      },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "征服カウンターにXを加える（上限3）。上限に達したら、相手のデッキから3枚のうち1枚を発見して手札に加え、カウンターは0に戻る"
       },
       "inspiration": {
         "label": "鼓舞 X",
@@ -705,15 +721,7 @@
       },
       "compagnons": {
         "label": "仲間",
-        "desc": "自分の仲間（作成時に選ばれた関連カード）をデッキに加えて混ぜ、その後デッキを切り直す。一度だけ。"
-      },
-      "lune": {
-        "label": "月 X",
-        "desc": "そのターンに2枚目以降に出された場合、このカードのすべての値がXだけ増加する。"
-      },
-      "soleil": {
-        "label": "太陽 X",
-        "desc": "そのターンに最初に出されたカードである場合、このカードのすべての値がXだけ増加する。"
+        "desc": "仲間(このカード作成時に選ばれた紐付けカード)をデッキに混ぜ込み、デッキをシャッフルする。1回限り。"
       }
     },
     "composed": {
@@ -755,6 +763,7 @@
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "epargne": "貯蓄カウンターに{x}を追加",
         "foi": "信仰カウンターに{x}を追加",
+        "conquete": "征服カウンターに{x}を加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
         "devoration": "捕食する",
         "retour_differe": "所有者のデッキの一番下に置く",
@@ -812,7 +821,7 @@
         "des_random": "ランダムに",
         "des_automatic": "自動的に",
         "des_choice": "任意に",
-        "max_cost": "コスト{n}以下の"
+        "max_cost": "コスト{n}以下"
       },
       "scatter": {
         "action_damage": "与える",
@@ -848,7 +857,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
-        "description": "戦略と制圧：規律、陣形、神秘主義、隠密、そして神殿を守るナーガ。"
+        "description": "戦略と支配:規律、陣形、神秘主義、隠密、そして寺院を守るナーガの守護者たち。"
       },
       "RoyaumesDuSoleil": {
         "displayName": "太陽の王国群",
@@ -941,7 +950,9 @@
       "Machines": "機械",
       "Kobolds": "コボルト",
       "Géants": "巨人",
+      "Mammouths": "マンモス",
       "Humains": "人間",
+      "Nagas": "ナーガ",
       "Esprits": "精霊",
       "Griffons": "グリフォン",
       "Faucons": "隼",
@@ -999,9 +1010,7 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士",
-      "Mammouths": "マンモス",
-      "Nagas": "ナーガ"
+      "Guerriers du Chaos": "カオスの戦士"
     },
     "alignments": {
       "bon": "善",
@@ -1090,6 +1099,11 @@
         "bare": "精霊",
         "de": "精霊の"
       },
+      "Nagas": {
+        "def": "ナーガ",
+        "bare": "ナーガ",
+        "de": "ナーガの"
+      },
       "Griffons": {
         "def": "グリフォン",
         "bare": "グリフォン",
@@ -1165,6 +1179,11 @@
         "def": "巨人",
         "bare": "巨人",
         "de": "巨人"
+      },
+      "Mammouths": {
+        "def": "マンモス",
+        "bare": "マンモス",
+        "de": "マンモス"
       },
       "Ogres": {
         "def": "オーガ",
@@ -1380,16 +1399,6 @@
         "def": "カオス戦士",
         "bare": "カオス戦士",
         "de": "カオス戦士の"
-      },
-      "Mammouths": {
-        "def": "マンモス",
-        "bare": "マンモス",
-        "de": "マンモス"
-      },
-      "Nagas": {
-        "def": "ナーガ",
-        "bare": "ナーガ",
-        "de": "ナーガの"
       }
     },
     "clans_forms": {
@@ -1472,8 +1481,8 @@
       "rm_scope_clan": "{v}クランの",
       "rm_scope_all": "",
       "scope_target": "味方ユニット1体に",
-      "scope_all": "あなたの全ユニットに",
-      "edc_compte": "ATK+1かHP+1をランダムに{n}回得る（すでに出した{clan_de}〈団結心〉クリーチャー1体につき1回）。"
+      "edc_compte": "{n}回、ランダムで+1 ATKまたは+1 HPを得る(既に場に出ている「団結心」持ちの{clan_de}クリーチャー1体につき1回)。",
+      "scope_all": "あなたの全ユニットに"
     },
     "sets": {
       "1": "基本セット"
@@ -1489,11 +1498,27 @@
       "entry": "登場時",
       "attack": "攻撃時",
       "death": "死亡時",
-      "return": "手札に戻る時",
-      "tap": "起動",
+      "return": "復帰時",
+      "tap": "起動可能",
       "end_of_turn": "ターン終了時",
       "draw": "ドロー時",
-      "low_hp": "{n}PV以下"
+      "low_hp": "HP{n}以下"
+    },
+    "singulier": {
+      "label": "唯一",
+      "help": "開始時のデッキに重複するカードが一切なかった場合、{timing}に発動する。",
+      "help_permanent": "開始時のデッキに重複するカードが一切なかった場合、常に有効になる。",
+      "timing": {
+        "entry": "登場時",
+        "death": "死亡時",
+        "tap": "起動時",
+        "return": "手札に戻った時",
+        "attack": "攻撃時",
+        "end_of_turn": "ターン終了時",
+        "draw": "ドロー時",
+        "low_hp": "HPが{n}以下のとき",
+        "spell": "呪文解決時"
+      }
     }
   },
   "home": {
@@ -1546,12 +1571,12 @@
     "hero_sub": "伝説を鍛えろ。勢力を率いろ。歴史を刻め。",
     "hero_cta": "アリーナへ",
     "hero_cta_secondary": "詳しく見る",
-    "hero_proof": "初戦から500枚以上のカードを無料獲得",
+    "hero_proof": "初回プレイから500枚以上のカードを進呈",
     "features_title": "Armies & Magicを選ぶ理由",
     "f1_title": "伝説の深み。",
     "f1_desc": "Armies & Magicは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
-    "f2_title": "最初から、できるだけ多くのカードを。",
-    "f2_desc": "お好きな勢力のクラシックカードをすべて無料で入手できます（約500枚）。さらに、従来のTCGのほんの一部の費用で全勢力を揃えられます。",
+    "f2_title": "最初から圧倒的な枚数のカードを。",
+    "f2_desc": "お好きな陣営のクラシックカードを全て無料で入手できます(約500枚)。通常のTCGの数分の一のコストで、全陣営を揃えられます。",
     "f3_title": "エキスパートデッキは、それぞれが唯一の作品。",
     "f3_desc": "限定カードがエキスパートデッキに個性をもたらします。共通枠の仕組みにより、勝敗を決めるのはあなたの戦略のみ。",
     "f4_title": "モバイルアリーナが、ついに本気になった。",
@@ -1566,31 +1591,31 @@
     "footer": "Armies & Magic — 無断転載禁止",
     "factions": {
       "Humains": {
-        "tagline": "旗印のもとに団結せよ"
+        "tagline": "旗の下に結束せし者"
       },
       "Elfes": {
         "tagline": "永遠の森の守護者"
       },
       "Nains": {
-        "tagline": "岩石に鍛えられし者たち"
+        "tagline": "石の中に鍛えられし者"
       },
       "Hommes-Bêtes": {
         "tagline": "荒野の怒り"
       },
       "Élémentaires": {
-        "tagline": "元素が目覚める"
+        "tagline": "目覚める元素"
       },
       "Elfes Noirs": {
-        "tagline": "闇には名がある"
+        "tagline": "影には名がある"
       },
       "Morts-Vivants": {
-        "tagline": "墓所の沈黙が破られた"
+        "tagline": "墓所の静寂は破られた"
       },
       "EmpireDuMilieu": {
-        "tagline": "猛りより、律を"
+        "tagline": "怒りより先に規律あり"
       },
       "RoyaumesDuSoleil": {
-        "tagline": "砂漠は王の名を忘れない"
+        "tagline": "砂漠は王たちを忘れない"
       }
     }
   },
@@ -1766,7 +1791,7 @@
     "error_database_error": "こちら側でアカウント作成に失敗しました。しばらくしてから再度お試しください。問題が続く場合はお問い合わせください。",
     "error_captcha_failed": "認証確認に失敗したか、有効期限が切れました。ページを再読み込みしてもう一度お試しください。",
     "faction_see_cards": "決める前に{faction}のカードを見る →",
-    "faction_browse": "迷っていますか？ 各勢力とそのカードを見る →"
+    "faction_browse": "迷っていますか?各陣営とそのカードを見てみましょう →"
   },
   "common": {
     "settings_title": "設定",
@@ -1792,7 +1817,7 @@
     "discard_cost_title": "{count, plural, one {カードを#枚捨てる} other {カードを#枚捨てる}}",
     "sacrifice_cost_title": "{count, plural, one {クリーチャーを#体生贄に捧げる} other {クリーチャーを#体生贄に捧げる}}",
     "exile_cost_title": "デッキの上から{count}枚のカードを追放する",
-    "topdeck_cost_title": "手札から {count, plural, one {# 枚} other {# 枚}} のカードをデッキの一番上に戻す",
+    "topdeck_cost_title": "手札から{count, plural, other {#枚}}をデッキの一番上に戻す",
     "detail_note_all_allies": "（全ての味方に）",
     "detail_note_target": "（対象のクリーチャーに）",
     "trigger_on_play": "場に出たとき",
@@ -1807,7 +1832,7 @@
     "composed_effects_heading": "複合エフェクト（上級）",
     "composed_effects_subtitle": "内容＋強度＋対象",
     "composed_effect_n": "複合エフェクト {n}",
-    "token_composed_hint": "トークンはプレイによって場に出ないため、「登場時」は決して誘発せず、選択肢に含まれません。",
+    "token_composed_hint": "トークンは配置によって場に出ないため、「登場時」は決して発動せず、選択肢として表示されません。",
     "remove": "削除",
     "label_trigger": "トリガー",
     "label_emblem": "エンブレム",
@@ -1859,10 +1884,10 @@
     "pool_any": "指定なし",
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
-    "random_hint": "解決時に1〜{max}の範囲で1回だけランダムに決定されます。",
-    "random_needs_ceiling": "ランダム決定には2以上の上限が必要です。",
+    "random_hint": "1から{max}の間でランダムに選ばれ、解決時に一度だけ適用される。",
+    "random_needs_ceiling": "ランダム抽選には上限2以上が必要です。",
     "label_granted_ability": "付与する能力",
-    "label_grant_trigger": "付与の発動条件",
+    "label_grant_trigger": "付与するトリガー",
     "label_token": "トークン",
     "label_targets": "対象",
     "label_type": "タイプ",
@@ -1945,8 +1970,8 @@
     "reset_short": "リセット",
     "generating": "生成中…",
     "illustrate": "イラスト生成",
-    "image_model_auto": "モデル: 自動",
-    "image_model_hint": "2つの描画を比べるために画像モデルを指定します。「自動」は通常の順序に任せます。指定したモデルは他へフォールバックせず、失敗はそのまま表示されます。",
+    "image_model_auto": "モデル:自動",
+    "image_model_hint": "2つのレンダリングを比較するために画像モデルを固定します。「自動」の場合は通常のカスケードに選択を委ねます。モデルを固定した場合、他のモデルへのフォールバックは行われず、失敗はそのまま表示されます。",
     "history": "履歴",
     "no_card": "カードなし",
     "edition_label": "エディション",
@@ -1961,10 +1986,10 @@
     "discard_label": "ディスカード",
     "sacrifice_cost_hint": "このカードをプレイするために生け贄に捧げる味方クリーチャーの数。",
     "exile_cost_hint": "プレイヤーのデッキの上から取り除かれるカードの枚数。追放されたカードは墓地に置かれず、回収できません。",
-    "topdeck_cost_hint": "プレイヤーが手札からデッキの一番上に戻すカードの枚数。墓地には行かず、再び引くことになります。テンポのコストで、軽減できません。",
+    "topdeck_cost_hint": "プレイヤーが手札からデッキの一番上に戻すカードの枚数。墓地には行かず、後で引き直すことになる。テンポコスト、軽減不可。",
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
-    "topdeck_label": "デッキに戻す",
+    "topdeck_label": "リプレイス",
     "spell_effects_label": "スペル効果",
     "spell_keywords_label": "スペルキーワード",
     "token_to_summon": "召喚するトークン",
@@ -1979,7 +2004,7 @@
     "def_override": "DEF（上書き）",
     "add_token": "＋トークンを追加",
     "composable_effects_advanced": "旧JSON形式（非推奨）",
-    "json_hint": "非推奨：エンジンは旧カードの「再詠唱」でのみ参照します。効果を組むには下の「合成効果」を使用してください。",
+    "json_hint": "非推奨：エンジンはリランサーの旧カードのみでこれを読み込みます。効果を組む場合は下の「複合効果」を使用してください。",
     "abilities_count": "能力 ({count})",
     "mode_title_play": "召喚時（デフォルト）",
     "mode_title_death": "死亡時（デスラトル）",
@@ -2244,8 +2269,10 @@
     "illustration_generated": "イラストを生成しました（{model}）",
     "import_error": "インポートエラー",
     "eveil_label": "覚醒",
-    "eveil_cost_hint": "覚醒：このカードは唱える代わりに覚醒させることができます。この点数を持って手札を離れ、プレイヤーは自分のターンごとにマナ1で1点ずつ支払い、最後の1点で手札から唱えたのと同じように場に出ます。マナ・コストに加算されるのではなく、置き換えます。軽減不可。",
-    "eveil_cost_title": "{count, plural, other {#点}}で覚醒させられます。毎ターンマナ1ずつ支払い ― マナ・コストの代わりに"
+    "eveil_cost_hint": "覚醒：プレイする代わりに、覚醒状態にすることができます。カードはこのポイント数を持って手札を離れ、プレイヤーは自分の各ターンにマナ1につき1ポイントを支払い、最後のポイントで手札からと同様に場に出ます。マナコストの代わりであり、加算はされません。軽減不可。",
+    "eveil_cost_title": "{count, plural, one {#ポイント} other {#ポイント}}で覚醒状態にできる（ターンごとにマナ1で1ポイント支払い）――マナコストの代わりに",
+    "singulier_toggle": "シングル",
+    "singulier_toggle_title": "シングル条件:このアビリティは、プレイヤーの初期デッキに重複するカードが一枚もない場合にのみ発動する。"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2290,16 +2317,16 @@
     "graveyard_select_prompt": "墓地からカードを選んでください",
     "graveyard_hint_touch": "カードをタップして拡大・もう一度タップで説明表示",
     "graveyard_hint_hover": "カードにカーソルを合わせて拡大・右クリックでイラスト／説明を切替",
-    "seconde_vie_hint": "セカンドライフ：対象のクリーチャーをダブルクリックしてください。",
+    "seconde_vie_hint": "セカンドライフ：対象となるクリーチャーをダブルクリック。",
     "seconde_vie_blocked_turn": "あなたのターンではありません。",
     "graveyard_empty": "墓地にカードはありません",
     "cost_default_card_name": "カード",
     "cost_pay_title": "{name} のコストを支払う",
     "cost_discard_label": "🃏 {count, plural, one {カードを # 枚捨てる} other {カードを # 枚捨てる}}",
-    "cost_topdeck_label": "{count, plural, one {カードを # 枚デッキの上に戻す} other {カードを # 枚デッキの上に戻す}}",
-    "cost_topdeck_order_hint": "最初に選んだカードがデッキの一番上になります。",
-    "cost_hand_order_hint": "クリックはまず捨て札、次に戻しに割り当てられます。",
-    "topdeck_cost_caption": "{count, plural, one {デッキに戻す} other {デッキに戻す ×#}}",
+    "cost_topdeck_label": "{count, plural, one {カード#枚をデッキに戻す} other {カード#枚をデッキに戻す}}",
+    "cost_topdeck_order_hint": "最初に指定したカードがデッキの一番上になります。",
+    "cost_hand_order_hint": "クリックはまず捨て札を、その後リプレイスを埋めます。",
+    "topdeck_cost_caption": "{count, plural, one {リプレイス} other {リプレイス×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {クリーチャーを # 体生贄に捧げる} other {クリーチャーを # 体生贄に捧げる}}",
     "tactique_title": "📋 タクティクス",
     "tactique_subtitle": "{count, plural, one {移転する能力を # つ選んでください} other {移転する能力を # つ選んでください}}",
@@ -2307,7 +2334,7 @@
     "convocation_title": "📣 召喚",
     "convocation_subtitle": "召喚するトークンの種族を選んでください",
     "cycle_eternel_caption": "♻ 永遠のサイクル",
-    "compagnons_caption": "🐾 仲間",
+    "compagnons_caption": "🐾 コンパニオン",
     "discard_label": "🔥 {count, plural, one {捨て札 — # 枚} other {捨て札 — # 枚}}",
     "graveyard_affect_label": "🪦 {count, plural, one {墓地 — # 枚} other {墓地 — # 枚}}",
     "zone_deck": "デッキ",
@@ -2335,11 +2362,11 @@
     "history_collapse": "履歴を折りたたむ",
     "convocation_prefix": "{content}を生成",
     "convocation_create_list": "{content} を生成",
-    "convocation_token_one_named": "{token} トークン×1",
-    "convocation_token_many_named": "{token} トークン×{count}",
+    "convocation_token_one_named": "{token}トークン1体",
+    "convocation_token_many_named": "{token}トークン{count}体",
     "convocation_invoke_one": "{token} {atk}/{hp} を1体召喚",
     "convocation_invoke_race": "{race} {atk}/{hp} を1体召喚",
-    "convocation_create_one_named": "{token} トークンを1体生成",
+    "convocation_create_one_named": "{token}トークンを1体生成",
     "convocation_none": "トークンなし",
     "convocation_and": "{a}と{b}",
     "spell_countered": "🛡️ 呪文無効！",
@@ -2365,29 +2392,31 @@
     "mode_suffix_tap": " · タップ",
     "mode_suffix_return": " · 手札に戻す",
     "mode_suffix_end_of_turn": " · ターン終了時",
-    "presage_title": "🌙 前兆",
-    "presage_subtitle": "デッキの一番上のカードはどれ？",
-    "presage_hit": "正解 — 手札に加わる。",
-    "presage_miss": "はずれ。正解は緑の枠のカード。",
+    "presage_title": "🌙 予兆",
+    "presage_subtitle": "あなたのデッキの一番上のカードはどれ？",
+    "presage_hit": "正解――手札に加わります。",
+    "presage_miss": "外れ。正しいカードは緑で表示されています。",
     "apprentissage_title": "📖 習得",
-    "apprentissage_subtitle": "どの呪文を記憶する？",
+    "apprentissage_subtitle": "クリーチャーはどの呪文を覚えるべきですか？",
     "foi_title": "✨ 信仰",
     "foi_subtitle": "手札に加えるカードを選んでください。そのコストが信仰から引かれ、残りは保持されます。",
+    "conquete_title": "🚩 制圧",
+    "conquete_subtitle": "相手のデッキから3枚。手札に加える1枚を選んでください。そのカードはこのゲームの間あなたのものになります。",
     "zone_eveil": "覚醒",
-    "zone_eveil_yours": "自分の覚醒",
+    "zone_eveil_yours": "あなたの覚醒",
     "zone_eveil_opponent": "相手の覚醒",
-    "eveil_hint": "クリックごとにマナを1支払います。最後の1点で、手札から唱えたのと同じようにカードが場に出ます。",
-    "eveil_remaining": "{count, plural, other {残り#点}}",
-    "eveil_next_point": "次の1点にはマナが1必要です。",
-    "eveil_next_arrives": "最後の1点：カードが場に出ます。",
+    "eveil_hint": "クリックごとにマナ1を投入。最後のポイントで、まるで手札から出したかのようにカードが場に出ます。",
+    "eveil_remaining": "{count, plural, one {残り#ポイント} other {残り#ポイント}}",
+    "eveil_next_point": "次のポイントはマナ1かかります。",
+    "eveil_next_arrives": "最後のポイント：カードが場に出ます。",
     "eveil_play_now": "場に出す",
     "eveil_blocked_mana": "マナが足りません。",
-    "eveil_blocked_board_plein": "自分の場が満杯です。",
-    "eveil_blocked_vie": "そのコストを払うライフが足りません。",
-    "eveil_blocked_main": "追加コストに必要な手札が足りません。",
-    "eveil_blocked_plateau": "生け贄に捧げるクリーチャーが足りません。",
-    "eveil_blocked_deck": "デッキに追放できるカードが足りません。",
-    "eveil_blocked_sans_cible": "この呪文の対象がありません。",
+    "eveil_blocked_board_plein": "あなたの場が満杯です。",
+    "eveil_blocked_vie": "そのコストを支払うだけのライフがありません。",
+    "eveil_blocked_main": "追加コストを支払うだけの手札がありません。",
+    "eveil_blocked_plateau": "生贄にできるクリーチャーが足りません。",
+    "eveil_blocked_deck": "デッキから追放できるカードが足りません。",
+    "eveil_blocked_sans_cible": "この呪文の有効な対象がありません。",
     "eveil_suspend": "覚醒させる（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {#支払う}}",
     "eveil_max": "最大{count}",
@@ -2554,9 +2583,12 @@
     "locked_badge": "ロック中",
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
     "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
-    "unplayable_badge": "不足カード {count} 枚",
-    "unplayable_reason": "このデッキには、現在所持していない勢力のカードが含まれています：{factions}。デッキはそのまま残っています。勢力を取り戻せば再び使用できます。",
-    "unplayable_rebuy": "ショップで取り戻す"
+    "unplayable_badge": "{count}枚のカードが不足",
+    "unplayable_reason": "このデッキには、もう所持していないファクション（{factions}）のカードが含まれています。デッキ自体はそのまま保持されます — 再びプレイするにはファクションを再入手してください。",
+    "unplayable_rebuy": "ショップで入手する",
+    "singleton_yes": "シングルトンデッキ ✓",
+    "singleton_no": "シングルトンデッキ ✗",
+    "singleton_hint": "シングルトンデッキには同名カードが1枚も重複しません。「シングルトン」と記された能力は、この条件下でのみ発動します。これは構築ルールではありません。"
   },
   "cardBacks": {
     "eyebrow": "スタイルを見せよう",
@@ -2613,53 +2645,53 @@
     "back": "ホームに戻る",
     "races": "種族",
     "signature": "象徴的な能力",
-    "profile": "戦闘傾向",
-    "offense": "攻撃",
-    "defense": "防御",
-    "commons": "コモン{count}枚",
-    "more_races": "他{count}",
-    "free_commons": "コモンカード{count}枚 ・ {clans}クラン — 初日からすべて無料。",
-    "no_clan_title": "すべてのクランで使える",
-    "no_clan_desc": "これらのカードはどのクランにも属しません。どのクランを軸に組んでも、この勢力のデッキに入れられます。",
-    "other_factions": "ほかの勢力を見る",
+    "profile": "プレイスタイル",
+    "offense": "攻撃的",
+    "defense": "防御的",
+    "commons": "{count, plural, one {#枚のコモン} other {#枚のコモン}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {#枚のコモンカード} other {#枚のコモンカード}} · {clans, plural, one {#クラン} other {#クラン}} — 初日から無料で提供。",
+    "no_clan_title": "すべてのクランに開放",
+    "no_clan_desc": "これらのカードはどのクランにも属しません。どのクランを軸に構築しても、そのファクションの任意のデッキに加えることができます。",
+    "other_factions": "他のファクションを見る",
     "costs": "追加コスト",
-    "cost_life": "ライフ",
-    "cost_discard": "手札を捨てる",
+    "cost_life": "ライフポイント",
+    "cost_discard": "捨て札",
     "cost_sacrifice": "生け贄",
     "cost_exile": "追放",
-    "cost_topdeck": "デッキに戻す",
-    "cost_life_desc": "これらのカードは、マナに加えてヒーローのライフも支払います。",
-    "cost_discard_desc": "これらのカードは、マナに加えて手札を捨てることを求めます。",
-    "cost_sacrifice_desc": "これらのカードは、マナに加えて自分のクリーチャーを生け贄に捧げることを求めます。",
-    "cost_exile_desc": "これらのカードは、マナに加えてデッキの上からカードを追放します。",
-    "cost_topdeck_desc": "これらのカードは、マナに加えて手札のカードをデッキの一番上に戻すことを求めます。",
-    "commons_count": "コモンカード {count} 枚 ・ {clans} クラン"
+    "cost_topdeck": "山札戻し",
+    "cost_life_desc": "これらのカードはマナコストに加えて、ヒーローのライフポイントも消費します。",
+    "cost_discard_desc": "これらのカードはマナコストに加えて、手札からカードを捨てる必要があります。",
+    "cost_sacrifice_desc": "これらのカードはマナコストに加えて、自分がコントロールするクリーチャーを生け贄に捧げる必要があります。",
+    "cost_exile_desc": "これらのカードはマナコストに加えて、山札の一番上からカードを追放します。",
+    "cost_topdeck_desc": "これらのカードはマナコストに加えて、手札のカードを山札の一番上に戻す必要があります。",
+    "commons_count": "{count, plural, one {#枚のコモンカード} other {#枚のコモンカード}} · {clans, plural, one {#クラン} other {#クラン}}"
   },
   "faction_action": {
-    "visitor_pitch": "アカウントを作成して{faction}で始めましょう。そのコモンカードがすべて手に入ります。",
+    "visitor_pitch": "アカウントを作成して{faction}から始めましょう。そのコモンカードすべてが無料で手に入ります。",
     "visitor_cta": "アカウントを作成",
-    "owned_just_chosen": "{faction}があなたの勢力です",
-    "owned_bundle": "パックに含まれています",
-    "owned_starter": "あなたの開始勢力",
-    "owned_bought": "取得済みの勢力",
-    "owned_note": "以下のコモンカードはすべてコレクションに入っています。",
-    "enter_game": "ゲームへ",
+    "owned_just_chosen": "{faction}があなたのファクションです",
+    "owned_bundle": "パッケージに含まれています",
+    "owned_starter": "あなたの初期ファクション",
+    "owned_bought": "入手済みファクション",
+    "owned_note": "以下のコモンカードはすべてあなたのコレクションに含まれています。",
+    "enter_game": "ゲームに入る",
     "see_collection": "コレクションを見る",
-    "free_pitch": "開始勢力がまだ選ばれていません。<strong>{faction}</strong>で始めれば、そのコモンカードをすべて無料で受け取れます。",
-    "free_cta": "この勢力で始める",
-    "free_warning": "この選択は最終決定です。後から変更はできず、他の勢力を追加で入手することのみ可能です。",
+    "free_pitch": "まだ初期ファクションを選んでいません。<strong>{faction}</strong>から始めて、そのコモンカードすべてを無料で受け取りましょう。",
+    "free_cta": "このファクションで始める",
+    "free_warning": "この選択は最終決定であり、後から変更することはできません。以降は他の陣営を追加で獲得することのみ可能です。",
     "free_confirm": "確定 — {faction}",
     "cancel": "キャンセル",
-    "buy_pitch": "{faction}をコレクションに追加します。そのコモンカードがすべて永久に手に入ります。",
-    "your_balance": "（所持: {balance}）",
-    "debt_blocks": "新たに購入する前に、{debt} ゴールドの負債を清算する必要があります。",
-    "not_enough_gold": "ゴールドが不足",
-    "buy_cta": "この勢力を解放",
-    "err_already_chosen": "開始勢力はすでに選択済みです。",
+    "buy_pitch": "{faction}をコレクションに追加：そのコモンカード全てを永久に入手します。",
+    "your_balance": "（所持金：{balance}）",
+    "debt_blocks": "{debt}ゴールドの負債を清算するまで、新たな購入はできません。",
+    "not_enough_gold": "ゴールド不足",
+    "buy_cta": "この陣営を解放する",
+    "err_already_chosen": "開始陣営は既に選択済みです。",
     "err_choice": "選択を保存できませんでした。",
     "err_purchase": "購入を完了できませんでした。",
-    "badge_starter": "開始",
-    "badge_owned": "取得済",
-    "bundle_hint": "または、不足している{count}勢力すべてを{price}ゴールドで →"
+    "badge_starter": "初期",
+    "badge_owned": "取得済み",
+    "bundle_hint": "または、不足している{count}陣営をまとめて{price}ゴールドで入手→"
   }
 }

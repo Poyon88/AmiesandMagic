@@ -93,6 +93,14 @@
         "label": "Gesang",
         "desc": "Eure Zaubersprüche mit Gesang werden verstärkt, solange diese Einheit im Spiel ist."
       },
+      "lune": {
+        "label": "Mond X",
+        "desc": "Ab der zweiten in diesem Zug gespielten Karte werden alle ihre Werte dauerhaft um X erhöht."
+      },
+      "soleil": {
+        "label": "Sonne X",
+        "desc": "Wenn dies die erste in diesem Zug gespielte Karte ist, werden alle ihre Werte dauerhaft um X erhöht."
+      },
       "rappel": {
         "label": "Rückruf",
         "desc": "Legt eine anvisierte Karte aus eurem Friedhof zurück auf eure Hand."
@@ -387,11 +395,19 @@
       },
       "discipline": {
         "label": "Disziplin +X/+Y",
-        "desc": "Wenn alle deine Kreaturen im Spiel Kosten derselben Parität wie ihre eigenen haben, erhält sie dauerhaft +X ATK und +Y LP."
+        "desc": "Wenn alle deine im Spiel befindlichen Kreaturen Kosten derselben Parität wie die ihren haben, erhält sie dauerhaft +X ATK und +Y LP."
       },
       "esprit_de_corps": {
         "label": "Korpsgeist",
-        "desc": "Erhält zufällig +1 ATK oder +1 LP für jede bereits gespielte Kreatur {clan_de} mit Korpsgeist."
+        "desc": "Erhält nach dem Zufallsprinzip +1 ATK oder +1 LP pro bereits gespielter Kreatur {clan_de} mit Korpsgeist."
+      },
+      "presage": {
+        "label": "Vorahnung",
+        "desc": "Deckt die obersten 3 Karten des Decks in beliebiger Reihenfolge auf; wählt die oberste aus, um sie auf die Hand zu nehmen, und mischt anschließend das Deck."
+      },
+      "apprentissage": {
+        "label": "Lehre",
+        "desc": "Entfernt einen Zauber aus deiner Hand und lernt ihn: Die Kreatur kann ihn wirken, indem sie seine Kosten bezahlt."
       },
       "impact": {
         "label": "Wucht X",
@@ -413,6 +429,10 @@
         "label": "Glaube X",
         "desc": "Gibt dir X Glaube (max. 10). Ausgabe: entdecke 1 von 3 Deckkarten mit Kosten ≤ Glaube; nur diese Kosten werden abgezogen."
       },
+      "conquete": {
+        "label": "Eroberung X",
+        "desc": "Erhöht deine Eroberung um X (Schwelle 3). An der Schwelle: entdecke 1 von 3 Karten aus dem gegnerischen Deck und nimm sie auf die Hand; der Zähler fällt auf 0 zurück."
+      },
       "seconde_vie": {
         "label": "Zweites Leben X",
         "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
@@ -428,14 +448,6 @@
       "creuser": {
         "label": "Graben X",
         "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf."
-      },
-      "presage": {
-        "label": "Vorzeichen",
-        "desc": "Deckt die obersten 3 Karten ungeordnet auf; benenne die oberste, um sie auf die Hand zu nehmen, dann mische das Deck."
-      },
-      "apprentissage": {
-        "label": "Lernen",
-        "desc": "Entfernt einen Zauber aus deiner Hand und merkt ihn sich: die Kreatur kann ihn gegen seine Kosten wirken."
       },
       "retour_differe": {
         "label": "Verzögerte Rückkehr",
@@ -481,25 +493,17 @@
         "label": "Kraft der Ahnen +X/+Y",
         "desc": "Solange dein Friedhof 7 oder mehr Kreaturen enthält, erhält diese Einheit +X ATK und +Y LP."
       },
-      "seuil_sacrificiel": {
-        "label": "Opferschwelle +X/+Y",
-        "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
-      },
       "purete": {
         "label": "Reinheit +X/+Y",
         "desc": "Solange euer Friedhof leer ist, erhält sie +X ATK und +Y LP."
       },
+      "seuil_sacrificiel": {
+        "label": "Opferschwelle +X/+Y",
+        "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
+      },
       "compagnons": {
-        "label": "Gefährten",
-        "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
-      },
-      "lune": {
-        "label": "Mond X",
-        "desc": "Ab der zweiten im Zug gespielten Karte werden alle ihre Werte um X erhöht — dauerhaft."
-      },
-      "soleil": {
-        "label": "Sonne X",
-        "desc": "Wenn dies die erste im Zug gespielte Karte ist, werden alle ihre Werte um X erhöht — dauerhaft."
+        "label": "Begleiter",
+        "desc": "Mischt seine Begleiter (verknüpfte Karten, die bei der Erstellung gewählt wurden) in dein Deck und mischt das Deck danach neu. Nur einmal."
       }
     },
     "spell_keywords": {
@@ -530,6 +534,14 @@
       "chant": {
         "label": "Gesang X",
         "desc": "Wenn du eine Kreatur mit Gesang kontrollierst, werden alle Werte dieses Zauberspruchs um X erhöht."
+      },
+      "lune": {
+        "label": "Mond X",
+        "desc": "Ab der zweiten in diesem Zug gespielten Karte werden alle Werte dieser Karte um X erhöht."
+      },
+      "soleil": {
+        "label": "Sonne X",
+        "desc": "Wenn dies die erste in diesem Zug gespielte Karte ist, werden alle Werte dieser Karte um X erhöht."
       },
       "corruption": {
         "label": "Korruption",
@@ -593,7 +605,7 @@
       },
       "boomerang": {
         "label": "Bumerang",
-        "desc": "Nach seiner Auflösung wird dieser Zauber in dein Deck gemischt, statt auf den Friedhof zu gehen."
+        "desc": "Nach seiner Auflösung wird dieser Zauber in dein Deck gemischt, anstatt auf den Friedhof zu gehen."
       },
       "siphon": {
         "label": "Siphon X",
@@ -617,7 +629,7 @@
       },
       "discipline": {
         "label": "Disziplin +X/+Y",
-        "desc": "Wenn alle deine Kreaturen im Spiel Kosten derselben Parität wie dieser Zauber haben, +X/+Y für eine anvisierte verbündete Kreatur."
+        "desc": "Wenn alle deine im Spiel befindlichen Kreaturen Kosten derselben Parität wie dieser Zauber haben, erhält eine gezielte verbündete Kreatur +X/+Y."
       },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",
@@ -636,8 +648,8 @@
         "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf"
       },
       "presage": {
-        "label": "Vorzeichen",
-        "desc": "Deckt die obersten 3 Karten ungeordnet auf; benenne die oberste, um sie auf die Hand zu nehmen, dann mische das Deck."
+        "label": "Vorahnung",
+        "desc": "Deckt die obersten 3 Karten des Decks in beliebiger Reihenfolge auf; wählt die oberste aus, um sie auf die Hand zu nehmen, und mischt anschließend das Deck."
       },
       "retour_differe": {
         "label": "Verzögerte Rückkehr",
@@ -650,6 +662,10 @@
       "foi": {
         "label": "Glaube X",
         "desc": "Gibt dir X Glaube (max. 10). Ausgabe: entdecke 1 von 3 Deckkarten mit Kosten ≤ Glaube; nur diese Kosten werden abgezogen"
+      },
+      "conquete": {
+        "label": "Eroberung X",
+        "desc": "Erhöht deine Eroberung um X (Schwelle 3). An der Schwelle: entdecke 1 von 3 Karten aus dem gegnerischen Deck und nimm sie auf die Hand; der Zähler fällt auf 0 zurück"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -704,16 +720,8 @@
         "desc": "Erhalte X Mana in diesem Zug."
       },
       "compagnons": {
-        "label": "Gefährten",
-        "desc": "Mischt seine Gefährten (verknüpfte Karten, bei der Erstellung gewählt) in dein Deck und mischt es danach erneut. Nur einmal."
-      },
-      "lune": {
-        "label": "Mond X",
-        "desc": "Ab der zweiten im Zug gespielten Karte werden alle Werte dieser Karte um X erhöht."
-      },
-      "soleil": {
-        "label": "Sonne X",
-        "desc": "Wenn dies die erste im Zug gespielte Karte ist, werden alle Werte dieser Karte um X erhöht."
+        "label": "Begleiter",
+        "desc": "Mischt seine Begleiter (verknüpfte Karten, die bei der Erstellung gewählt wurden) in dein Deck und mischt das Deck danach neu. Nur einmal."
       }
     },
     "composed": {
@@ -755,6 +763,7 @@
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "epargne": "fügt {x} zu deinem Sparzähler hinzu",
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
+        "conquete": "erhöht deinen Eroberungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "devoration": "verschlingt",
         "retour_differe": "legt unter das Deck ihres Besitzers",
@@ -812,7 +821,7 @@
         "des_random": "zufällig",
         "des_automatic": "automatisch",
         "des_choice": "nach Wahl",
-        "max_cost": "mit Kosten {n} oder weniger"
+        "max_cost": "mit Kosten von {n} oder weniger"
       },
       "scatter": {
         "action_damage": "verursacht",
@@ -848,7 +857,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "Das Mittlere Kaiserreich",
-        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystizismus, Heimlichkeit und die Naga-Wächter der Tempel."
+        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystik, Heimlichkeit und die Naga-Wächter der Tempel."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Die Sonnenreiche",
@@ -941,7 +950,9 @@
       "Machines": "Maschinen",
       "Kobolds": "Kobolde",
       "Géants": "Riesen",
+      "Mammouths": "Mammuts",
       "Humains": "Menschen",
+      "Nagas": "Nagas",
       "Esprits": "Geister",
       "Griffons": "Greifen",
       "Faucons": "Falken",
@@ -999,9 +1010,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer",
-      "Mammouths": "Mammuts",
-      "Nagas": "Nagas"
+      "Guerriers du Chaos": "Chaoskämpfer"
     },
     "alignments": {
       "bon": "Gut",
@@ -1090,6 +1099,11 @@
         "bare": "Geist",
         "de": "des Geistes"
       },
+      "Nagas": {
+        "def": "der Naga",
+        "bare": "Naga",
+        "de": "des Naga"
+      },
       "Griffons": {
         "def": "der Greif",
         "bare": "Greif",
@@ -1165,6 +1179,11 @@
         "def": "der Riese",
         "bare": "Riese",
         "de": "des Riesen"
+      },
+      "Mammouths": {
+        "def": "das Mammut",
+        "bare": "Mammut",
+        "de": "des Mammuts"
       },
       "Ogres": {
         "def": "der Oger",
@@ -1380,16 +1399,6 @@
         "def": "der Chaoskrieger",
         "bare": "Chaoskrieger",
         "de": "des Chaoskriegers"
-      },
-      "Mammouths": {
-        "def": "das Mammut",
-        "bare": "Mammut",
-        "de": "des Mammuts"
-      },
-      "Nagas": {
-        "def": "der Naga",
-        "bare": "Naga",
-        "de": "des Naga"
       }
     },
     "clans_forms": {
@@ -1472,8 +1481,8 @@
       "rm_scope_clan": " des Klans {v}",
       "rm_scope_all": "",
       "scope_target": "auf eine verbündete Einheit",
-      "scope_all": "auf alle deine Einheiten",
-      "edc_compte": "Erhält {n}-mal zufällig +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist)."
+      "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
+      "scope_all": "auf alle deine Einheiten"
     },
     "sets": {
       "1": "Basis-Set"
@@ -1494,6 +1503,22 @@
       "end_of_turn": "Rundenende",
       "draw": "Ziehen",
       "low_hp": "Unter {n} LP"
+    },
+    "singulier": {
+      "label": "Einzigartig",
+      "help": "Wird {timing} ausgelöst, wenn dein Startdeck keine doppelten Karten enthielt.",
+      "help_permanent": "Aktiv, wenn dein Startdeck keine doppelten Karten enthielt.",
+      "timing": {
+        "entry": "beim Eintritt",
+        "death": "beim Tod",
+        "tap": "bei der Aktivierung",
+        "return": "bei der Rückkehr auf die Hand",
+        "attack": "beim Angriff",
+        "end_of_turn": "am Rundenende",
+        "draw": "beim Ziehen",
+        "low_hp": "unter {n} LP",
+        "spell": "bei der Auflösung des Zaubers"
+      }
     }
   },
   "home": {
@@ -1546,12 +1571,12 @@
     "hero_sub": "Schmiede deine Legende. Führe deine Fraktion. Schreib deine Geschichte.",
     "hero_cta": "Die Arena betreten",
     "hero_cta_secondary": "Entdecken",
-    "hero_proof": "Über 500 Karten bereits ab der ersten Partie",
+    "hero_proof": "Über 500 Karten gratis ab dem ersten Spiel",
     "features_title": "Warum Armies & Magic",
     "f1_title": "Die Tiefe der Legenden.",
     "f1_desc": "Armies & Magic verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
-    "f2_title": "So viele Karten wie möglich, von Anfang an.",
-    "f2_desc": "Erhalte kostenlos alle klassischen Karten der Fraktion deiner Wahl (rund 500 Karten). Und alle Fraktionen zusammen für einen Bruchteil der Kosten eines klassischen TCG.",
+    "f2_title": "Maximale Kartenzahl von Anfang an.",
+    "f2_desc": "Erhaltet kostenlos alle klassischen Karten der Fraktion eurer Wahl (etwa 500 Karten). Sichert euch alle Fraktionen für einen Bruchteil der Kosten eines klassischen TCG.",
     "f3_title": "Jedes Experten-Deck ein Unikat.",
     "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
@@ -1569,28 +1594,28 @@
         "tagline": "Vereint unter dem Banner"
       },
       "Elfes": {
-        "tagline": "Hüter des ewigen Waldes"
+        "tagline": "Wächter des ewigen Waldes"
       },
       "Nains": {
-        "tagline": "Im Stein geschmiedet"
+        "tagline": "Geschmiedet im Stein"
       },
       "Hommes-Bêtes": {
-        "tagline": "Furor der Wildlande"
+        "tagline": "Zorn der wilden Lande"
       },
       "Élémentaires": {
         "tagline": "Die Elemente erwachen"
       },
       "Elfes Noirs": {
-        "tagline": "Die Schatten tragen einen Namen"
+        "tagline": "Die Schatten haben einen Namen"
       },
       "Morts-Vivants": {
         "tagline": "Die Stille der Gräber ist gebrochen"
       },
       "EmpireDuMilieu": {
-        "tagline": "Disziplin vor Raserei"
+        "tagline": "Disziplin vor Zorn"
       },
       "RoyaumesDuSoleil": {
-        "tagline": "Die Wüste erinnert sich ihrer Könige"
+        "tagline": "Die Wüste erinnert sich an ihre Könige"
       }
     }
   },
@@ -1765,8 +1790,8 @@
     "error_signups_disabled": "Neuanmeldungen sind derzeit geschlossen.",
     "error_database_error": "Die Kontoerstellung ist auf unserer Seite fehlgeschlagen. Versuch es gleich noch einmal; falls das Problem weiterhin besteht, kontaktiere uns.",
     "error_captcha_failed": "Die Anti-Bot-Überprüfung ist fehlgeschlagen oder abgelaufen. Lade die Seite neu und versuche es erneut.",
-    "faction_see_cards": "Die Karten von {faction} ansehen, bevor du dich entscheidest →",
-    "faction_browse": "Unsicher? Entdecke jede Fraktion und ihre Karten →"
+    "faction_see_cards": "Karten von {faction} ansehen, bevor ihr entscheidet →",
+    "faction_browse": "Unsicher? Entdeckt jede Fraktion und ihre Karten →"
   },
   "common": {
     "settings_title": "Einstellungen",
@@ -1792,7 +1817,7 @@
     "discard_cost_title": "Legt {count, plural, one {# Karte} other {# Karten}} ab",
     "sacrifice_cost_title": "Opfert {count, plural, one {# Kreatur} other {# Kreaturen}}",
     "exile_cost_title": "Verbanne {count, plural, one {# Karte} other {# Karten}} von der Oberseite deines Decks",
-    "topdeck_cost_title": "Lege {count, plural, one {# Karte} other {# Karten}} aus deiner Hand oben auf dein Deck",
+    "topdeck_cost_title": "Legt {count, plural, one {# Karte} other {# Karten}} von eurer Hand oben auf euer Deck zurück",
     "detail_note_all_allies": " (an alle Verbündeten)",
     "detail_note_target": " (an die Zielkreatur)",
     "trigger_on_play": "Beim Ausspielen",
@@ -1807,7 +1832,7 @@
     "composed_effects_heading": "Zusammengesetzte Effekte (erweitert)",
     "composed_effects_subtitle": "Inhalt + Stärke + Ziele",
     "composed_effect_n": "Zusammengesetzter Effekt {n}",
-    "token_composed_hint": "Ein Spielstein wird nicht ausgespielt: „Beim Eintreten“ würde bei ihm nie auslösen und wird daher nicht angeboten.",
+    "token_composed_hint": "Ein Marker kommt nicht durch das Ausspielen ins Spiel: „beim Eintritt\" würde hier niemals ausgelöst und wird daher nicht angeboten.",
     "remove": "Entfernen",
     "label_trigger": "AUSLÖSER",
     "label_emblem": "EMBLEM",
@@ -1859,10 +1884,10 @@
     "pool_any": "Beliebig",
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
-    "random_hint": "Zufällig zwischen 1 und {max} gezogen, einmalig bei der Auflösung.",
-    "random_needs_ceiling": "Für einen Zufallswurf ist eine Obergrenze von mindestens 2 nötig.",
+    "random_hint": "Zufällig gewählt zwischen 1 und {max}, nur einmal bei der Auflösung.",
+    "random_needs_ceiling": "Für eine Zufallsauswahl ist eine Obergrenze von mindestens 2 erforderlich.",
     "label_granted_ability": "VERLIEHENE FÄHIGKEIT",
-    "label_grant_trigger": "AUSLÖSER DER VERLEIHUNG",
+    "label_grant_trigger": "AUSLÖSER DER GABE",
     "label_token": "TOKEN",
     "label_targets": "ZIELE",
     "label_type": "TYP",
@@ -1945,8 +1970,8 @@
     "reset_short": "zurücks.",
     "generating": "Generierung…",
     "illustrate": "Illustrieren",
-    "image_model_auto": "Modell: auto",
-    "image_model_hint": "Erzwungenes Bildmodell, um zwei Ergebnisse zu vergleichen. „Auto“ überlässt die Wahl der üblichen Kaskade. Ein erzwungenes Modell weicht auf kein anderes aus: sein Fehlschlag wird direkt gemeldet.",
+    "image_model_auto": "Modell: automatisch",
+    "image_model_hint": "Erzwungenes Bildmodell zum Vergleich zweier Ergebnisse. „Automatisch\" lässt die übliche Kaskade wählen. Ein erzwungenes Modell weicht auf kein anderes aus: Ein Fehler wird direkt als solcher gemeldet.",
     "history": "VERLAUF",
     "no_card": "Keine Karte",
     "edition_label": "EDITION",
@@ -1961,10 +1986,10 @@
     "discard_label": "ABWURF",
     "sacrifice_cost_hint": "Anzahl der verbündeten Kreaturen, die der Spieler opfern muss, um diese Karte zu spielen.",
     "exile_cost_hint": "Anzahl der Karten, die oben vom Deck des Spielers entfernt werden. Verbannt: Sie landen nicht auf dem Friedhof und sind unwiederbringlich.",
-    "topdeck_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand oben auf sein Deck legt. Sie landen nicht auf dem Friedhof — er zieht sie erneut. Tempokosten, nicht reduzierbar.",
+    "topdeck_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand oben auf sein Deck zurücklegt. Sie wandern nicht auf den Friedhof: Er wird sie zurückziehen. Tempokosten, nicht reduzierbar.",
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
-    "topdeck_label": "ZURÜCKLEGEN",
+    "topdeck_label": "RÜCKZUG",
     "spell_effects_label": "ZAUBEREFFEKTE",
     "spell_keywords_label": "ZAUBERSCHLÜSSELWÖRTER",
     "token_to_summon": "ZU BESCHWÖRENDER TOKEN",
@@ -1979,7 +2004,7 @@
     "def_override": "DEF (Überschreib.)",
     "add_token": "+ Token hinzufügen",
     "composable_effects_advanced": "ALTES JSON-FORMAT (veraltet)",
-    "json_hint": "Veraltet: Die Engine liest es nur noch für Erneutes Wirken auf alten Karten. Nutzen Sie stattdessen „Zusammengesetzter Effekt“ weiter unten.",
+    "json_hint": "Veraltet: Die Engine liest es nur noch für „Neu ziehen“ bei älteren Karten. Um einen Effekt zusammenzusetzen, nutzen Sie weiter unten „Zusammengesetzter Effekt“.",
     "abilities_count": "FÄHIGKEITEN ({count})",
     "mode_title_play": "Bei Beschwörung (Standard)",
     "mode_title_death": "Bei Tod (Deathrattle)",
@@ -2244,8 +2269,10 @@
     "illustration_generated": "Illustration generiert ({model})",
     "import_error": "Importfehler",
     "eveil_label": "ERWACHEN",
-    "eveil_cost_hint": "ERWACHEN: Die Karte kann erwachen gelassen werden, ANSTATT gespielt zu werden. Sie verlässt die Hand mit dieser Anzahl Punkte; der Spieler zahlt 1 pro Mana in jedem seiner Züge, und beim letzten Punkt kommt sie ins Spiel, als käme sie aus der Hand. Ersetzt die Manakosten, kommt nicht hinzu. Nicht reduzierbar.",
-    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} erwachen gelassen werden, je 1 Mana pro Zug — anstelle der Manakosten"
+    "eveil_cost_hint": "ERWACHEN: Die Karte kann ins Erwachen versetzt werden, ANSTATT gespielt zu werden. Sie verlässt die Hand mit dieser Anzahl Punkte; der Spieler zahlt pro Zug 1 Mana pro Punkt, und beim letzten Punkt kommt sie ins Spiel, als käme sie aus der Hand. Ersetzt die Manakosten, statt sie zu ergänzen. Nicht reduzierbar.",
+    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} ins Erwachen versetzt werden, zahlbar mit 1 Mana pro Zug — anstelle der Manakosten",
+    "singulier_toggle": "Singulär",
+    "singulier_toggle_title": "Bedingung Singulär: Diese Fähigkeit wird nur ausgelöst, wenn das Startdeck des Spielers keine doppelten Karten enthält."
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2290,16 +2317,16 @@
     "graveyard_select_prompt": "Wähle eine Karte aus dem Friedhof",
     "graveyard_hint_touch": "Karte antippen zum Zoomen · erneut tippen für die Beschreibung",
     "graveyard_hint_hover": "Karte überfahren zum Zoomen · Rechtsklick für Bild / Beschreibung",
-    "seconde_vie_hint": "Zweites Leben: Doppelklicke eine geeignete Kreatur.",
-    "seconde_vie_blocked_turn": "Du bist nicht am Zug.",
+    "seconde_vie_hint": "Zweites Leben: Doppelklicken Sie eine berechtigte Kreatur.",
+    "seconde_vie_blocked_turn": "Sie sind nicht am Zug.",
     "graveyard_empty": "Keine Karten im Friedhof",
     "cost_default_card_name": "Karte",
     "cost_pay_title": "Bezahle die Kosten von {name}",
     "cost_discard_label": "🃏 {count, plural, one {# Karte abwerfen} other {# Karten abwerfen}}",
     "cost_topdeck_label": "{count, plural, one {# Karte auf das Deck zurücklegen} other {# Karten auf das Deck zurücklegen}}",
-    "cost_topdeck_order_hint": "Die zuerst gewählte Karte liegt am Ende obenauf.",
-    "cost_hand_order_hint": "Deine Klicks füllen erst das Abwerfen, dann das Zurücklegen.",
-    "topdeck_cost_caption": "{count, plural, one {Zurückgelegt} other {Zurückgelegt ×#}}",
+    "cost_topdeck_order_hint": "Die zuerst gewählte Karte landet oben auf dem Deck.",
+    "cost_hand_order_hint": "Ihre Klicks füllen zuerst den Friedhof, dann den Rückzug.",
+    "topdeck_cost_caption": "{count, plural, one {Rückzug} other {Rückzug ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {# Kreatur opfern} other {# Kreaturen opfern}}",
     "tactique_title": "📋 Taktik",
     "tactique_subtitle": "{count, plural, one {Wähle # Fähigkeit zum Übertragen} other {Wähle # Fähigkeiten zum Übertragen}}",
@@ -2336,10 +2363,10 @@
     "convocation_prefix": "Erschafft {content}",
     "convocation_create_list": "Erschafft {content}",
     "convocation_token_one_named": "ein {token}-Token",
-    "convocation_token_many_named": "{count} {token}-Tokens",
+    "convocation_token_many_named": "{count} {token}-Token",
     "convocation_invoke_one": "Beschwört einen {token} {atk}/{hp}",
     "convocation_invoke_race": "Beschwört einen {race} {atk}/{hp}",
-    "convocation_create_one_named": "Erzeugt einen {token}-Token",
+    "convocation_create_one_named": "Erschafft ein {token}-Token",
     "convocation_none": "kein Token",
     "convocation_and": "{a} und {b}",
     "spell_countered": "🛡️ Gegenzauber!",
@@ -2366,27 +2393,29 @@
     "mode_suffix_return": " · zurück auf die Hand",
     "mode_suffix_end_of_turn": " · Rundenende",
     "presage_title": "🌙 Vorzeichen",
-    "presage_subtitle": "Welche ist die oberste Karte deines Decks?",
-    "presage_hit": "Gut erkannt — sie wandert auf deine Hand.",
-    "presage_miss": "Daneben. Die richtige Karte ist grün.",
-    "apprentissage_title": "📖 Lernen",
-    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur lernen?",
+    "presage_subtitle": "Welche ist die oberste Karte Ihres Decks?",
+    "presage_hit": "Richtig erkannt — sie wandert in Ihre Hand.",
+    "presage_miss": "Daneben. Die richtige Karte ist grün markiert.",
+    "apprentissage_title": "📖 Lehre",
+    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur sich merken?",
     "foi_title": "✨ Glaube",
     "foi_subtitle": "Wähle eine Karte für deine Hand. Ihre Kosten werden von deinem Glauben abgezogen; der Rest bleibt erhalten.",
+    "conquete_title": "🚩 Eroberung",
+    "conquete_subtitle": "Drei Karten aus dem gegnerischen Deck. Wähle die, die du auf die Hand nimmst: sie gehört dir für den Rest der Partie.",
     "zone_eveil": "Erwachen",
-    "zone_eveil_yours": "Dein Erwachen",
-    "zone_eveil_opponent": "Erwachen des Gegners",
-    "eveil_hint": "Zahle 1 Mana pro Klick. Beim letzten Punkt kommt die Karte ins Spiel, als käme sie aus deiner Hand.",
-    "eveil_remaining": "{count, plural, one {# Punkt übrig} other {# Punkte übrig}}",
+    "zone_eveil_yours": "Ihr Erwachen",
+    "zone_eveil_opponent": "Gegnerisches Erwachen",
+    "eveil_hint": "Zahlen Sie 1 Mana pro Klick. Beim letzten Punkt kommt die Karte ins Spiel, als käme sie gerade aus Ihrer Hand.",
+    "eveil_remaining": "{count, plural, one {# Punkt verbleibend} other {# Punkte verbleibend}}",
     "eveil_next_point": "Der nächste Punkt kostet 1 Mana.",
     "eveil_next_arrives": "Letzter Punkt: Die Karte kommt ins Spiel.",
     "eveil_play_now": "Ins Spiel bringen",
     "eveil_blocked_mana": "Nicht genug Mana.",
-    "eveil_blocked_board_plein": "Dein Spielfeld ist voll.",
-    "eveil_blocked_vie": "Nicht genug Leben für ihre Kosten.",
-    "eveil_blocked_main": "Nicht genug Handkarten für ihre Zusatzkosten.",
+    "eveil_blocked_board_plein": "Ihr Feld ist voll.",
+    "eveil_blocked_vie": "Sie haben nicht genug Lebenspunkte für die Kosten.",
+    "eveil_blocked_main": "Nicht genug Karten auf der Hand für die zusätzlichen Kosten.",
     "eveil_blocked_plateau": "Nicht genug Kreaturen zum Opfern.",
-    "eveil_blocked_deck": "Nicht genug Karten zum Verbannen in deinem Deck.",
+    "eveil_blocked_deck": "Nicht genug Karten in Ihrem Deck zum Verbannen.",
     "eveil_blocked_sans_cible": "Kein gültiges Ziel für diesen Zauber.",
     "eveil_suspend": "Erwachen lassen ({count, plural, one {# Punkt} other {# Punkte}})",
     "eveil_pay_n": "{count, plural, one {# zahlen} other {# zahlen}}",
@@ -2555,8 +2584,11 @@
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
     "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
     "unplayable_badge": "{count} fehlende Karte(n)",
-    "unplayable_reason": "Dieses Deck enthaelt Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unveraendert - hole dir die Fraktion zurueck, um es wieder zu spielen.",
-    "unplayable_rebuy": "Im Shop zurueckholen"
+    "unplayable_reason": "Dieses Deck enthält Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unverändert – hol dir die Fraktion zurück, um es wieder zu spielen.",
+    "unplayable_rebuy": "Im Shop zurückholen",
+    "singleton_yes": "Singulär-Deck ✓",
+    "singleton_no": "Singleton-Deck ✗",
+    "singleton_hint": "Ein Singleton-Deck enthält keine doppelten Karten: Fähigkeiten mit der Kennzeichnung „Singulär“ werden nur unter dieser Bedingung ausgelöst. Dies ist keine Deckbau-Regel."
   },
   "cardBacks": {
     "eyebrow": "Zeig deinen Stil",
@@ -2611,55 +2643,55 @@
   },
   "factions_page": {
     "back": "Zurück zur Startseite",
-    "races": "Völker",
-    "signature": "Kennzeichnende Fähigkeiten",
+    "races": "Rassen",
+    "signature": "Charakteristische Fähigkeiten",
     "profile": "Spielprofil",
     "offense": "Offensiv",
     "defense": "Defensiv",
-    "commons": "{count, plural, one {# gewöhnliche} other {# gewöhnliche}}",
+    "commons": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}}",
     "more_races": "+{count}",
-    "free_commons": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Klan} other {# Klane}} — ab dem ersten Tag kostenlos.",
-    "no_clan_title": "Für alle Klane offen",
-    "no_clan_desc": "Diese Karten gehören keinem Klan an: Sie passen in jedes Deck der Fraktion, gleich um welchen Klan du es baust.",
-    "other_factions": "Die anderen Fraktionen ansehen",
+    "free_commons": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Clan} other {# Clans}} — ab dem ersten Tag geschenkt.",
+    "no_clan_title": "Für alle Clans offen",
+    "no_clan_desc": "Diese Karten gehören zu keinem Clan: Sie passen in jedes Deck der Fraktion, unabhängig davon, um welchen Clan du es baust.",
+    "other_factions": "Andere Fraktionen ansehen",
     "costs": "Zusätzliche Kosten",
     "cost_life": "Lebenspunkte",
     "cost_discard": "Abwerfen",
-    "cost_sacrifice": "Opferung",
+    "cost_sacrifice": "Opfer",
     "cost_exile": "Verbannung",
-    "cost_topdeck": "Zurücklegen",
-    "cost_life_desc": "Diese Karten kosten zusätzlich Lebenspunkte deines Helden, neben ihren Manakosten.",
-    "cost_discard_desc": "Diese Karten verlangen, Karten aus deiner Hand abzuwerfen, neben ihren Manakosten.",
-    "cost_sacrifice_desc": "Diese Karten verlangen, von dir kontrollierte Kreaturen zu opfern, neben ihren Manakosten.",
-    "cost_exile_desc": "Diese Karten verbannen Karten von deiner Deckoberseite, neben ihren Manakosten.",
-    "cost_topdeck_desc": "Diese Karten verlangen, Karten aus deiner Hand oben auf dein Deck zu legen, neben ihren Manakosten.",
-    "commons_count": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Klan} other {# Klans}}"
+    "cost_topdeck": "Rücklegen",
+    "cost_life_desc": "Diese Karten kosten zusätzlich zu ihren Manakosten auch Lebenspunkte des Helden.",
+    "cost_discard_desc": "Diese Karten erfordern zusätzlich zu ihren Manakosten das Abwerfen von Karten aus deiner Hand.",
+    "cost_sacrifice_desc": "Diese Karten erfordern zusätzlich zu ihren Manakosten das Opfern von Kreaturen, die du kontrollierst.",
+    "cost_exile_desc": "Diese Karten verbannen zusätzlich zu ihren Manakosten Karten vom oberen Ende deines Decks.",
+    "cost_topdeck_desc": "Diese Karten erfordern zusätzlich zu ihren Manakosten, Karten aus deiner Hand oben auf dein Deck zurückzulegen.",
+    "commons_count": "{count, plural, one {# gewöhnliche Karte} other {# gewöhnliche Karten}} · {clans, plural, one {# Clan} other {# Clans}}"
   },
   "faction_action": {
-    "visitor_pitch": "Erstelle dein Konto, um mit {faction} zu beginnen: alle gewöhnlichen Karten gehören dann dir.",
+    "visitor_pitch": "Erstelle dein Konto, um mit {faction} zu starten: Alle ihre gewöhnlichen Karten werden dir geschenkt.",
     "visitor_cta": "KONTO ERSTELLEN",
     "owned_just_chosen": "{faction} ist deine Fraktion",
-    "owned_bundle": "In deinem Paket enthalten",
+    "owned_bundle": "Im Paket enthalten",
     "owned_starter": "Deine Startfraktion",
     "owned_bought": "Fraktion erworben",
-    "owned_note": "Alle gewöhnlichen Karten unten sind in deiner Sammlung.",
-    "enter_game": "INS SPIEL",
-    "see_collection": "MEINE SAMMLUNG",
-    "free_pitch": "Du hast deine Startfraktion noch nicht gewählt. Beginne mit <strong>{faction}</strong> und erhalte alle ihre gewöhnlichen Karten, kostenlos.",
-    "free_cta": "MIT DIESER FRAKTION BEGINNEN",
-    "free_warning": "Diese Wahl ist endgültig: du kannst sie nicht mehr ändern, sondern später nur weitere Fraktionen erwerben.",
+    "owned_note": "Alle unten gezeigten gewöhnlichen Karten befinden sich in deiner Sammlung.",
+    "enter_game": "SPIEL BETRETEN",
+    "see_collection": "MEINE SAMMLUNG ANSEHEN",
+    "free_pitch": "Du hast noch keine Startfraktion gewählt. Beginne mit <strong>{faction}</strong> und erhalte alle ihre gewöhnlichen Karten kostenlos.",
+    "free_cta": "MIT DIESER FRAKTION STARTEN",
+    "free_warning": "Diese Entscheidung ist endgültig: Sie können sie später nicht mehr ändern, sondern nur noch weitere Fraktionen hinzuerwerben.",
     "free_confirm": "BESTÄTIGEN — {faction}",
     "cancel": "ABBRECHEN",
-    "buy_pitch": "Füge {faction} deiner Sammlung hinzu: alle gewöhnlichen Karten, dauerhaft.",
-    "your_balance": "(du hast {balance})",
-    "debt_blocks": "Deine Schuld von {debt} Gold muss vor jedem neuen Kauf beglichen werden.",
+    "buy_pitch": "Fügen Sie {faction} Ihrer Sammlung hinzu: alle gewöhnlichen Karten, dauerhaft.",
+    "your_balance": "(Sie haben {balance})",
+    "debt_blocks": "Ihre Schuld von {debt} Gold muss vor jedem weiteren Kauf begli­chen werden.",
     "not_enough_gold": "NICHT GENUG GOLD",
     "buy_cta": "DIESE FRAKTION FREISCHALTEN",
-    "err_already_chosen": "Du hast deine Startfraktion bereits gewählt.",
-    "err_choice": "Die Wahl konnte nicht gespeichert werden.",
+    "err_already_chosen": "Sie haben Ihre Startfraktion bereits gewählt.",
+    "err_choice": "Die Auswahl konnte nicht gespeichert werden.",
     "err_purchase": "Der Kauf konnte nicht abgeschlossen werden.",
     "badge_starter": "START",
     "badge_owned": "ERWORBEN",
-    "bundle_hint": "Oder nimm alle {count} fehlenden Fraktionen für {price} Gold →"
+    "bundle_hint": "Oder holen Sie sich die fehlenden {count} Fraktionen für {price} Gold →"
   }
 }

@@ -86,6 +86,9 @@ export type Keyword =
   // Alimente le compteur de Foi (plafond MAX_FOI) ; se dépense en découvrant
   // 1 carte parmi 3 du DECK de coût ≤ Foi, seul ce coût étant défalqué.
   | "foi"
+  // Alimente le compteur de Conquête (palier MAX_CONQUETE) ; au palier, le
+  // joueur découvre 1 carte parmi 3 du deck ADVERSE et la prend en main.
+  | "conquete"
   // Jouable depuis le cimetière pour un coût alternatif
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
@@ -202,6 +205,7 @@ export type SpellKeywordId =
   | "inspiration"
   | "epargne"
   | "foi"
+  | "conquete"
   | "incineration"
   | "creuser"
   | "presage"
@@ -258,6 +262,11 @@ export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "atta
 export interface KeywordInstance {
   id: Keyword;
   mode?: KeywordMode; // undefined ⇒ on-play
+  /** SINGULIER : condition AJOUTÉE au déclencheur. L'effet ne se résout que si
+   *  le contrôleur de la carte a `PlayerState.singleton` (deck de départ sans
+   *  doublon) ; sinon il est inerte. Mis en œuvre par retrait/restauration de
+   *  l'élément dans la vue `card` de l'instance (cf. lib/game/singulier.ts). */
+  singulier?: boolean;
   x?: number;
   /** Renforcement multiple : bonus de PV (+Y). `x` porte le bonus d'ATK (+X). */
   y?: number;
@@ -306,6 +315,8 @@ export interface SpellKeywordInstance {
   faction?: string;
   /** compagnons : ids des cartes liées mélangées dans le deck du lanceur. */
   linkedCardIds?: number[];
+  /** SINGULIER : même contrat que `KeywordInstance.singulier`. */
+  singulier?: boolean;
 }
 
 // --- Convocation tokens config ---
@@ -437,6 +448,10 @@ export interface Capability {
   faction?: string;
   /** GRANT uniquement : destinataires de la capacité conférée. */
   grantScope?: "target" | "all_allies";
+  /** SINGULIER : condition ajoutée au déclencheur (cf. KeywordInstance). Porté
+   *  aussi par les capacités dérivées, pour que `capabilities` et
+   *  `keyword_instances` se retirent ENSEMBLE chez un joueur non singleton. */
+  singulier?: boolean;
   /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */
   targets?: CapabilityTargetSlot[];
   /** Effet COMPOSÉ (modèle hybride). Présent ⇒ la capacité est exécutée par
@@ -500,6 +515,9 @@ export type ComposedEffectContent =
   // Alimente le compteur de Foi du contrôleur (plafond MAX_FOI). Même contrat
   // que `epargne` : aucune cible, `magnitude.x` porte le montant.
   | "foi"
+  // Alimente le compteur de Conquête du contrôleur (palier MAX_CONQUETE).
+  // Même contrat : aucune cible, `magnitude.x` porte le montant.
+  | "conquete"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
   | "incineration"
@@ -1051,6 +1069,18 @@ export interface CardInstance {
   // Utilisé par Remontée pour renvoyer une unité dans la main de son
   // propriétaire initial, pas du contrôleur actuel.
   trueOwnerId: string | null;
+  /** CONQUÊTE : id du joueur à qui cette carte a été PRISE (dans son deck).
+   *  Le conquérant en devient le propriétaire pour toute la partie — d'où
+   *  `trueOwnerId` laissé à null : Remontée, Retour différé et consorts la
+   *  renvoient chez lui, pas chez l'adversaire. Ce champ ne sert qu'au marqueur
+   *  visuel (main et plateau) : l'adversaire voit ce qu'on lui a pris.
+   *  Optionnel : undefined ⇒ carte jamais conquise (snapshots antérieurs). */
+  conqueredFromId?: string;
+  /** SINGULIER : éléments (mots-clés, instances, capacités, effets de sort)
+   *  RETIRÉS de la vue `card` parce que le contrôleur n'est pas singleton. Ils y
+   *  sont remis si la carte passe sous le contrôle d'un joueur singleton
+   *  (Conquête, Corruption…). Absent = rien de retiré. Cf. lib/game/singulier.ts. */
+  singulierStash?: SingulierStash;
   // Lycanthropie: has already transformed
   hasTransformedLycanthropie: boolean;
   // Mots-clés accordés runtime par un pouvoir héroïque (mode grant_keyword)
@@ -1255,6 +1285,23 @@ export interface PlayerState {
    *  carte de son DECK de coût ≤ Foi, et seul ce coût est retiré — le reste
    *  est conservé pour une découverte ultérieure. */
   foi: number | null;
+  /** Compteur de Conquête (signature du Royaume du Nord), plafonné au palier
+   *  MAX_CONQUETE. `null` = jamais alimenté ; contrairement à l'Épargne et à la
+   *  Foi, l'UI le MASQUE aussi à 0 : il n'est visible qu'entre 1 et le palier.
+   *
+   *  Dépense : au palier seulement, le joueur découvre 1 carte parmi 3 du deck
+   *  ADVERSE, la prend en main (définitivement), et le compteur repart à 0. */
+  conquete: number | null;
+  /** SINGULIER : le deck de DÉPART de ce joueur ne contenait aucune carte en
+   *  double. Calculé UNE FOIS à l'initialisation, jamais modifié ensuite (cartes
+   *  volées, jetons, copies n'y changent rien). Conditionne les capacités
+   *  marquées `singulier` des cartes qu'il contrôle. */
+  singleton: boolean;
+  /** Vrai dès qu'une carte portant une capacité Singulier ACTIVE de ce joueur
+   *  est devenue visible (plateau, cimetière, éveil). L'adversaire ne connaît
+   *  l'état singleton d'un joueur qu'à partir de là. Jamais posé pour un joueur
+   *  non singleton (rien ne se déclenche, rien n'est révélé). */
+  singletonRevealed?: boolean;
   /** Esprit de corps : combien de créatures portant ce mot-clé ce joueur a-t-il
    *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan.
    *
@@ -1311,6 +1358,16 @@ export interface PlayerState {
    *  l'ajout ne la portent pas (lire avec `?? []`). Vérité de jeu durable —
    *  hashée comme le reste de PlayerState, mutée uniquement sous applyAction. */
   eveil?: EveilEntry[];
+}
+
+/** SINGULIER — ce qui a été retiré de la vue `card` d'une instance, avec la
+ *  position d'origine de chaque élément pour le remettre au même rang (l'ordre
+ *  de `keywords[]` est l'ordre de résolution). */
+export interface SingulierStash {
+  keywords: { id: Keyword; index: number }[];
+  keyword_instances: { item: KeywordInstance; index: number }[];
+  capabilities: { item: Capability; index: number }[];
+  spell_keywords: { item: SpellKeywordInstance; index: number }[];
 }
 
 /** Une carte en attente d'éveil, avec ce qu'il reste à payer. */
@@ -1764,6 +1821,18 @@ export interface SpendFoiAction {
   cardInstanceId: string;
 }
 
+/** Dépense du compteur de CONQUÊTE : le joueur a désigné une carte parmi les 3
+ *  que `getConqueteOffer` a révélées du deck ADVERSE.
+ *
+ *  Même contrat que la Foi : une seule action, joueur = `players[currentPlayerIndex]`,
+ *  offre recalculée par le moteur (tirage semé sur l'état) — la carte doit en
+ *  faire partie et le compteur être au palier, sinon la demande est ignorée. */
+export interface SpendConqueteAction {
+  type: "spend_conquete";
+  /** Instance du deck ADVERSE choisie. */
+  cardInstanceId: string;
+}
+
 /** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
  *  autant de points que son `eveil_cost`. Ne coûte aucun mana : ce qu'on engage
  *  ici, c'est la carte elle-même et une place sous le plafond `MAX_EVEIL`. */
@@ -1788,7 +1857,7 @@ export interface PayEveilAction {
   amount?: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SuspendEveilAction | PayEveilAction;
+export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

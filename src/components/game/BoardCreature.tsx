@@ -10,6 +10,7 @@ import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { displayCardOf } from "@/lib/game/singulier";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -119,7 +120,8 @@ function BoardCreature({
   onMouseLeave,
   onAction,
 }: BoardCreatureProps) {
-  const card = creature.card;
+  // Vue d'AFFICHAGE (cf. HandCard) : capacités Singulier toujours visibles.
+  const card = displayCardOf(creature);
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
   // localizeName already localises token names (CardTextProvider →
@@ -780,6 +782,16 @@ function BoardCreature({
         }} />
       )}
 
+      {/* Conquête : liseré rouge sang, la créature a été prise au deck adverse */}
+      {creature.conqueredFromId && (
+        <div style={{
+          position: "absolute", inset: -1, borderRadius: 11,
+          border: "2px solid #dc262699",
+          boxShadow: "0 0 8px #dc262655",
+          pointerEvents: "none", zIndex: 1,
+        }} />
+      )}
+
       {/* Taunt ring */}
       {card.keywords.includes("taunt") && (
         <div style={{
@@ -827,7 +839,7 @@ function BoardCreature({
               }}>
                 <span style={{ display: "inline-flex" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} />
+                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
                   </span>
                 </span>
                 {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
@@ -853,9 +865,9 @@ function BoardCreature({
                     // 14×14 to match the keyword-chip icon size — was 24×24,
                     // which made composed-effect icons render bigger than the
                     // same keyword shown as a chip.
-                    <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} /></div>
+                    <div style={{ width: 20, height: 20, flexShrink: 0 }}><KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} /></div>
                   ) : (
-                    <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} />
+                    <KeywordIcon symbol={ic.symbol} size={20} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={10} />
@@ -971,6 +983,11 @@ function BoardCreature({
           if ((creature.gloireStacks ?? 0) > 0) {
             statuses.push({ kw: "gloire" as Keyword, label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
           }
+          // Conquête : information qui vaut toute la partie — l'adversaire
+          // sait que cette carte lui a été prise.
+          if (creature.conqueredFromId) {
+            statuses.push({ kw: "conquete" as Keyword, label: "Conquise au deck adverse", color: "#f87171" });
+          }
           // Deux états, comme la pastille de coin : le bloc STATUTS reste la
           // source unique de vérité sur ce qui affecte l'unité, et « Ombre déjà
           // dépensée » est une information qui vaut jusqu'à la fin de la partie.
@@ -1020,7 +1037,7 @@ function BoardCreature({
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
@@ -1055,7 +1072,7 @@ function BoardCreature({
                 <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
                     <span style={{ display: "inline-flex", lineHeight: 0 }}>
-                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} mode={cmode} />
+                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
                     </span>
                     <ComposedMarker mode={cmode} size={6} />
                   </span>

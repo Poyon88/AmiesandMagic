@@ -1,4 +1,5 @@
-import type { Card, Keyword, KeywordInstance, TokenTemplate } from "./types";
+import type { Card, Keyword, KeywordInstance, KeywordMode, TokenTemplate } from "./types";
+import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import type { SafeT } from "@/i18n/config";
 import { getAlignmentLabel, getClanName, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import { getClanForm, getFactionForm, getRaceForm } from "@/lib/card-engine/race-forms";
@@ -21,7 +22,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier"> | null;
   /** Esprit de corps : combien de points cette carte gagnerait si elle
    *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
    *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est
@@ -91,6 +92,32 @@ export const MARKERS_FR: Record<string, string> = {
 
 export function marker(key: string, t?: SafeT): string | undefined {
   return t?.(`vocab.markers.${key}`) ?? MARKERS_FR[key];
+}
+
+// ─── SINGULIER ──────────────────────────────────────────────────────────────
+
+/** Repli FR du moment de déclenchement, dans la phrase d'aide Singulier. */
+const SINGULIER_TIMING_FR: Record<string, string> = {
+  entry: "à l'entrée", death: "à la mort", tap: "à l'activation", return: "au retour en main",
+  attack: "à l'attaque", end_of_turn: "à la fin du tour", draw: "à la pioche",
+  low_hp: "sous {n} PV", spell: "à la résolution du sort",
+};
+const SINGULIER_HELP_FR = "Se déclenche {timing} si votre deck de départ ne contenait aucune carte en double.";
+const SINGULIER_HELP_PERMANENT_FR = "Actif si votre deck de départ ne contenait aucune carte en double.";
+
+/** Phrase d'aide de la condition Singulier, pour un moment de déclenchement
+ *  donné (`undefined` = passif/permanent). Localisée par `vocab.singulier.*`,
+ *  repli FR. */
+export function singulierHelp(mode: KeywordMode | undefined, t?: SafeT): string {
+  if (mode === undefined) return t?.("vocab.singulier.help_permanent") ?? SINGULIER_HELP_PERMANENT_FR;
+  const timing = (t?.(`vocab.singulier.timing.${mode}`) ?? SINGULIER_TIMING_FR[mode] ?? mode)
+    .replace("{n}", String(LOW_HP_TRIGGER_THRESHOLD));
+  return (t?.("vocab.singulier.help") ?? SINGULIER_HELP_FR).replace("{timing}", timing);
+}
+
+/** Mot « Singulier » tel qu'il s'annonce dans un badge. */
+export function singulierLabel(t?: SafeT): string {
+  return t?.("vocab.singulier.label") ?? "Singulier";
 }
 
 // Race ciblée par CE mot-clé. Priorité à l'instance (Appel Suprême, Sélection

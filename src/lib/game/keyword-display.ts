@@ -5,7 +5,8 @@ import { getRaceForm } from "@/lib/card-engine/race-forms";
 import { KEYWORD_LABELS, getKeywordDisplayLabel, keywordModeColor } from "./keyword-labels";
 import { AUTOMATIC_ABILITY_IDS, CURATED_MULTIMODE_IDS, DEATH_NATURE_IDS } from "./abilities";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
-import { marker, resolveMarkers, type MarkerCtx, type Resolver } from "./desc-markers";
+import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, type Resolver } from "./desc-markers";
+import { SINGULIER_COLOR } from "./singulier";
 import { getClanForm } from "@/lib/card-engine/race-forms";
 import {
   convocationPrefix,
@@ -103,8 +104,13 @@ export function keywordTriggerBadge(
   t?: SafeT,
 ): TriggerBadge | null {
   const mode = keywordTriggerMode(kw, inst);
-  if (mode === undefined) return null;
-  return triggerBadge(mode, t);
+  const base = mode === undefined ? null : triggerBadge(mode, t);
+  // SINGULIER : la condition s'annonce à côté du moment (« Mort · Singulier »),
+  // dans SA couleur réservée — un passif Singulier s'annonce « Singulier » seul.
+  if (inst?.singulier === true) {
+    return { label: base ? `${base.label} · ${singulierLabel(t)}` : singulierLabel(t), color: SINGULIER_COLOR };
+  }
+  return base;
 }
 
 /** Le mot seul, sans sa couleur. Conservé pour les appels qui n'affichent pas. */
@@ -199,13 +205,21 @@ export function describeKeyword(
   // Convocations multiples : phrase entièrement composée, pas un simple
   // remplacement (la liste groupe les tokens identiques).
   if (kw === "convocations_multiples" && ctx.card?.convocation_tokens?.length) {
-    return convocationPrefix(
+    return avecSingulier(convocationPrefix(
       formatConvocationTokens(ctx.card.convocation_tokens, ctx.tokens, t),
       t,
-    );
+    ));
   }
 
-  return s;
+  return avecSingulier(s);
+
+  /** SINGULIER : la phrase d'aide suit la description, avec le moment RÉEL du
+   *  déclencheur (mode explicite, sinon nature du mot-clé). */
+  function avecSingulier(desc: string): string {
+    if (ctx.instance?.singulier !== true) return desc;
+    const mode = keywordTriggerMode(kw, ctx.instance as KeywordInstance);
+    return `${desc} ${singulierHelp(mode, t)}`;
+  }
 }
 
 /**

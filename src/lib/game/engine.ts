@@ -29,6 +29,7 @@ import type {
   ResolvePendingTriggerAction,
   SpendEpargneAction,
   SpendFoiAction,
+  SpendConqueteAction,
   SuspendEveilAction,
   PayEveilAction,
   StackFrame,
@@ -48,10 +49,12 @@ import {
   MAX_MANA,
   MAX_EPARGNE,
   MAX_FOI,
+  MAX_CONQUETE,
   MAX_EVEIL,
   SEUIL_DECK_THRESHOLD,
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
+import { isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
 // ============================================================
@@ -1292,6 +1295,7 @@ function resolveComposedEffect(
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
+    case "conquete": addConquete(owner, x); return;
     // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
     // satisfait le filtre de pool.
     //
@@ -2299,10 +2303,24 @@ export function initializeGame(
     // null = Épargne / Foi jamais déclenchée ⇒ compteur masqué (cf. PlayerState).
     epargne: null,
     foi: null,
+    conquete: null,
+    // SINGULIER : figé ci-dessous, d'après le deck de DÉPART tel que soumis
+    // (avant mulligan, avant toute carte générée). Jamais recalculé ensuite.
+    singleton: false,
   });
 
+  const p1 = makePlayer(player1Id, p1Hand, p1Deck, player1Hero);
+  const p2 = makePlayer(player2Id, p2Hand, p2Deck, player2Hero);
+  p1.singleton = isSingletonDeck(player1Cards);
+  p2.singleton = isSingletonDeck(player2Cards);
+  // Les capacités Singulier d'un joueur non singleton sont retirées de la vue
+  // de ses cartes dès maintenant : la main de départ et le deck sont alignés
+  // avant le premier tour (cf. lib/game/singulier.ts).
+  syncSingulierPlayer(p1);
+  syncSingulierPlayer(p2);
+
   return {
-    players: [makePlayer(player1Id, p1Hand, p1Deck, player1Hero), makePlayer(player2Id, p2Hand, p2Deck, player2Hero)],
+    players: [p1, p2],
     currentPlayerIndex: firstPlayerIndex,
     turnNumber: 0,
     turnStartedAt: 0,
@@ -2545,6 +2563,12 @@ function fireEmblemsForEvent(
 }
 
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
+  // SINGULIER : aligner les cartes AVANT de relire leurs mots-clés. Une carte
+  // qui vient d'entrer chez un joueur non singleton (invocation, jeton, vol)
+  // doit avoir perdu ses capacités Singulier avant que les auras ne la lisent —
+  // la synchro de fin d'action arriverait trop tard pour cette lecture-ci.
+  syncSingulierPlayer(player);
+  syncSingulierPlayer(opponent);
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
@@ -3878,6 +3902,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Foi X : même contrat que l'Épargne, compteur distinct.
     if (hasKwOnPlay(cardInstance, "foi")) {
       addFoi(player, getKwX(cardInstance, "foi", undefined, 1));
+    }
+
+    // Conquête X : troisième compteur, indépendant des deux autres.
+    if (hasKwOnPlay(cardInstance, "conquete")) {
+      addConquete(player, getKwX(cardInstance, "conquete", undefined, 1));
     }
 
     // Concentration X: remplace chaque sort en main par un sort aléatoire
@@ -5348,6 +5377,9 @@ function resolveSpellKeywords(
             // getCapabilities() reads — leaving it would let a backfilled
             // creature keep every curated AND composed ability through silence.
             target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
+            // Singulier : le silence emporte aussi ce qui était retiré, sinon un
+            // changement de contrôle ultérieur ressusciterait ces pouvoirs.
+            delete target.singulierStash;
             // Apprentissage : la créature oublie son sort en même temps que ses
             // pouvoirs. Sans cela, une créature qui réapprendrait la capacité
             // (Mimique, Totem) verrait ressurgir un sort censé être oublié.
@@ -5539,6 +5571,10 @@ function resolveSpellKeywords(
       }
       case "foi": {
         addFoi(ctx.caster, kw.amount ?? 1);
+        break;
+      }
+      case "conquete": {
+        addConquete(ctx.caster, kw.amount ?? 1);
         break;
       }
       case "incineration": {
@@ -6030,6 +6066,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
             keyword_instances: null,
             capabilities: null,
           };
+          delete target.singulierStash; // même règle que le silence
           target.hasDivineShield = false;
         }
       }
@@ -6860,6 +6897,15 @@ function addEpargne(player: PlayerState, x: number): void {
 function addFoi(player: PlayerState, x: number): void {
   if (x <= 0) return;
   player.foi = Math.min(MAX_FOI, (player.foi ?? 0) + x);
+}
+
+/** Alimente le compteur de Conquête, écrêté au palier MAX_CONQUETE. Le surplus
+ *  est perdu en silence : une Conquête 2 sur un compteur à 2 le porte à 3, pas
+ *  à 4 — un compteur bloqué au palier attend que le joueur déclenche sa
+ *  découverte, il n'accumule rien au-delà. */
+function addConquete(player: PlayerState, x: number): void {
+  if (x <= 0) return;
+  player.conquete = Math.min(MAX_CONQUETE, (player.conquete ?? 0) + x);
 }
 
 /** Retrouve le contrôleur d'une instance dans l'état en cours de mutation.
@@ -8352,6 +8398,10 @@ function resolveCuratedKeywordEffect(
       addFoi(owner, x);
       break;
     }
+    case "conquete": {
+      addConquete(owner, x);
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -9129,6 +9179,79 @@ export function spendFoi(state: GameState, action: SpendFoiAction): GameState {
   const [inst] = me.deck.splice(idx, 1);
   me.hand.push(inst);
   me.foi = foi - cout; // peut rester > 0 ; ne redevient jamais null.
+  newState.lastAction = action;
+  return newState;
+}
+
+/** OFFRE de la Conquête : jusqu'à 3 cartes du deck ADVERSE, sans condition de
+ *  coût.
+ *
+ *  Vide tant que le compteur n'est pas au palier : le seul passage à
+ *  MAX_CONQUETE ouvre la découverte. Même tirage semé sur l'état visible que la
+ *  Foi (`getFoiOffer`), avec son propre sel (+7777) : les deux clients calculent
+ *  la même offre sans toucher à la RNG partagée, et le moteur la RECALCULE au
+ *  rejeu pour vérifier que la carte réclamée en faisait partie.
+ *
+ *  L'entropie mêle les deux camps : le deck adverse est la zone tirée, mais un
+ *  état où SEULE ma main a changé doit aussi donner une autre offre. */
+export function getConqueteOffer(state: GameState): CardInstance[] {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[1 - state.currentPlayerIndex];
+  if ((player.conquete ?? 0) < MAX_CONQUETE) return [];
+  if (opponent.deck.length === 0) return [];
+
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11
+    + opponent.deck.length * 19 + opponent.hand.length * 23 + opponent.board.length * 29;
+  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 7777;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const melange = [...opponent.deck];
+  for (let i = melange.length - 1; i > 0; i--) {
+    const j = Math.floor(pseudoRng() * (i + 1));
+    [melange[i], melange[j]] = [melange[j], melange[i]];
+  }
+  return melange.slice(0, Math.min(SELECTION_OFFER_COUNT, melange.length));
+}
+
+/** Dépense du compteur de CONQUÊTE : la carte désignée quitte le deck ADVERSE
+ *  pour MA main, définitivement, et le compteur repart à 0.
+ *
+ *  Mêmes principes que `spendFoi` : tout est re-validé ici parce que la fonction
+ *  rejoue aussi chez l'adversaire, et chaque refus renvoie `state` inchangé. La
+ *  garde décisive est l'appartenance à l'offre recalculée, qui couvre à la fois
+ *  « le compteur est au palier » et « la carte est bien dans le deck adverse ».
+ *
+ *  Propriété : la carte n'a AUCUN `trueOwnerId` — le conquérant en est le
+ *  propriétaire pour le reste de la partie (cimetière, retours en main, sous le
+ *  deck : tout le renvoie chez lui). Seul `conqueredFromId` garde la trace, pour
+ *  le marqueur visuel. Les deux cartes non retenues restent à leur place : le
+ *  deck adverse n'est pas remélangé, une Divination adverse en cours de tour
+ *  reste vraie. */
+export function spendConquete(state: GameState, action: SpendConqueteAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  if ((player.conquete ?? 0) < MAX_CONQUETE) return state;
+  // Main pleine : refus AVANT de consommer, comme pour l'Épargne et la Foi.
+  if (player.hand.length >= MAX_HAND_SIZE) return state;
+
+  const choisie = getConqueteOffer(state).find(c => c.instanceId === action.cardInstanceId);
+  if (!choisie) return state;
+
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = state.factionCardPool;
+  newState.allSpellsPool = state.allSpellsPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  const them = newState.players[1 - newState.currentPlayerIndex];
+  const idx = them.deck.findIndex(c => c.instanceId === choisie.instanceId);
+  if (idx < 0) return state;
+  const [inst] = them.deck.splice(idx, 1);
+  inst.conqueredFromId = them.id;
+  inst.originalOwnerId = null;
+  inst.trueOwnerId = null;
+  me.hand.push(inst);
+  me.conquete = 0; // le cycle repart ; à 0 l'UI masque le compteur.
   newState.lastAction = action;
   return newState;
 }
@@ -9951,6 +10074,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
     case "spend_epargne": result = spendEpargne(state, action); break;
     case "spend_foi": result = spendFoi(state, action); break;
+    case "spend_conquete": result = spendConquete(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
@@ -9993,6 +10117,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   if (drawTriggerSink.length > 0 && result !== state) {
     result.drawTriggerEvents = [...(result.drawTriggerEvents ?? []), ...drawTriggerSink];
   }
+  // SINGULIER : dernier alignement de l'action. Couvre les changements de
+  // contrôle (Conquête, Corruption, Domination) et toute carte créée depuis le
+  // dernier recalcul d'auras, pour que l'état publié — hashé, affiché — soit
+  // cohérent pour les deux clients.
+  if (result !== state) syncSingulier(result);
   // Rattache les capacités qui ont sonné (bruitage par capacité).
   if (abilitySfxSink.length > 0 && result !== state) {
     result.abilitySfxEvents = [...(result.abilitySfxEvents ?? []), ...abilitySfxSink];

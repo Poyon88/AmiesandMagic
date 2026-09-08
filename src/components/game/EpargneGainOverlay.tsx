@@ -12,7 +12,7 @@ interface Props {
   onComplete: () => void;
   /** Quel compteur a bougé : pilote l'ancre DOM (`data-<kind>-badge`) et
    *  l'icône du « +N ». Le mouvement est le même pour les deux. */
-  kind?: "epargne" | "foi";
+  kind?: "epargne" | "foi" | "conquete";
 }
 
 const DURATION_MS = 1500;
@@ -22,7 +22,7 @@ const DURATION_MS = 1500;
  *  premier qui a une surface réelle, sinon le popup atterrirait dans le coin
  *  haut-gauche. `overlayRect` (et non getBoundingClientRect) car le plateau est
  *  sous un `zoom` CSS que Safari ne répercute pas sur les coordonnées. */
-function epargneBadgeAnchor(kind: "epargne" | "foi", side: "mine" | "theirs"): { x: number; y: number } | null {
+function epargneBadgeAnchor(kind: "epargne" | "foi" | "conquete", side: "mine" | "theirs"): { x: number; y: number } | null {
   if (typeof document === "undefined") return null;
   const els = document.querySelectorAll(`[data-${kind}-badge="${side}"]`);
   for (const el of Array.from(els)) {
@@ -101,7 +101,7 @@ export default function EpargneGainOverlay({ event, onComplete, kind = "epargne"
                   whiteSpace: "nowrap",
                 }}
               >
-                +{p.amount} {kind === "foi" ? "✨" : <GoldCoin size={16} />}
+                +{p.amount} {kind === "foi" ? "✨" : kind === "conquete" ? "🚩" : <GoldCoin size={16} />}
               </span>
             </motion.div>
           </div>

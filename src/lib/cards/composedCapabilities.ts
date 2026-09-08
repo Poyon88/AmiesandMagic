@@ -27,10 +27,15 @@ export function sanitizeComposed(input: unknown): Capability[] {
   if (!Array.isArray(input)) return [];
   return (input as Capability[])
     .filter((c) => c && typeof c === 'object' && c.composed)
-    .map((c, i) => fillXYMagnitude({
-      ...c,
-      uid: `cx_${i}`,
-      effectKind: c.effectKind === 'emblem' ? ('emblem' as const) : ('immediate' as const),
-      abilityId: c.abilityId || '_composed',
-    }));
+    .map((c, i) => {
+      // Singulier : un booléen strict, ou rien — pas de valeur exotique en base.
+      const { singulier, ...reste } = c;
+      return fillXYMagnitude({
+        ...reste,
+        uid: `cx_${i}`,
+        effectKind: c.effectKind === 'emblem' ? ('emblem' as const) : ('immediate' as const),
+        abilityId: c.abilityId || '_composed',
+        ...(singulier === true ? { singulier: true } : {}),
+      });
+    });
 }
