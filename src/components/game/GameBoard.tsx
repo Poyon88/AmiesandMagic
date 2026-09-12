@@ -186,8 +186,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // pleine. Repli local à l'écran, hors état de partie ; se relève d'elle-même
   // au changement de tour pour ne pas laisser un joueur croire sa main vide.
   const [handHidden, setHandHidden] = useState(false);
-  // Molette sur la main : vers le BAS sur une carte → repli ; vers le HAUT sur
-  // le liseré replié → dépli. Anti-rebond : un pavé tactile émet une rafale
+  // Molette sur la main : vers le HAUT sur une carte → repli ; vers le BAS sur
+  // le liseré replié → dépli (sens choisi par l'auteur après essai : « tirer »
+  // la main vers le bas la fait revenir). Anti-rebond : un pavé tactile émet une rafale
   // d'événements (inertie), sans ce délai un seul geste basculerait plusieurs
   // fois. Seuil sur deltaY pour ignorer les micro-mouvements horizontaux.
   const derniereBasculeMolette = useRef(0);
@@ -196,7 +197,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     const maintenant = Date.now();
     if (maintenant - derniereBasculeMolette.current < 450) return;
     setHandHidden((cachee) => {
-      const suivant = deltaY > 0 ? true : false;
+      const suivant = deltaY < 0;
       if (suivant === cachee) return cachee;
       derniereBasculeMolette.current = maintenant;
       return suivant;
