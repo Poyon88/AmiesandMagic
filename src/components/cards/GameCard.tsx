@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
-import CostBadges from "./CostBadges";
 import { CostShield, StatShields, cardAriaLabel, statShieldsReserve } from "@/components/card/CardCounters";
+import { RightSlots, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
 import { useCardText } from "@/components/game/CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 
@@ -79,6 +79,9 @@ interface GameCardProps {
   selected?: boolean;
   size?: "sm" | "md" | "lg";
   count?: number;
+  /** Progression d'ÉVEIL à afficher dans l'écu à jauge (zone d'éveil). Absente
+   *  ⇒ jauge vide (carte en main / au catalogue), `total` = coût d'éveil. */
+  eveil?: { total: number; paid: number } | null;
   printNumber?: number;
   maxPrints?: number;
   disableHoverZoom?: boolean;
@@ -112,6 +115,7 @@ export default function GameCard({
   selected = false,
   size = "md",
   count,
+  eveil,
   printNumber,
   maxPrints,
   disableHoverZoom = false,
@@ -211,6 +215,8 @@ export default function GameCard({
   // inner card) scales together with it. Without that, a 1.5× card would
   // grow past a frame that stayed at its original size.
   const isZoomed = !disabled && !disableHoverZoom && hovered;
+  // Écu d'Éveil : progression fournie (zone d'éveil) ou jauge vide (catalogue, main).
+  const awakenAffiche = eveil ?? awakenOf(card, 0);
 
   return (
     <div
@@ -266,7 +272,7 @@ export default function GameCard({
         setInternalShowDetails(prev => !prev);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
-      aria-label={cardAriaLabel(localizeName(card), displayedManaCost, isCreature ? { atk: card.attack ?? 0, hp: card.health ?? 0 } : null)}
+      aria-label={cardAriaLabel(localizeName(card), displayedManaCost, isCreature ? { atk: card.attack ?? 0, hp: card.health ?? 0 } : null, rightSlotsAriaParts(card, awakenAffiche))}
       style={{
         ...LONG_PRESS_RESET_STYLE,
         width: w, height: h,
@@ -323,30 +329,29 @@ export default function GameCard({
 
       {/* ── Coût : écu héraldique en haut à GAUCHE ; les coûts additionnels
              (vie, défausse, sacrifice, exil, repli, éveil) restent en pastilles,
-             déplacées en haut à DROITE — décalées du badge « ×N » s'il existe. ── */}
+             en JETONS à droite (Éveil d'abord, coût additionnel ensuite), et le
+             badge « ×N » de la collection descend d'un cran par jeton. ── */}
       <CostShield
         value={displayedManaCost}
         discounted={effectiveManaCost != null && effectiveManaCost < card.mana_cost}
         title={`Coût en mana : ${displayedManaCost}`}
       />
-      <CostBadges
-        card={card} size={27 * s * CARD_STAT_MULT} effectiveManaCost={effectiveManaCost}
-        omitMana corner="right" offset={count !== undefined ? 26 * s : 0}
+      <RightSlots
+        awaken={awakenAffiche}
+        cost={additionalCostOf(card, card.name)}
+        after={count !== undefined ? (
+          <div style={{
+            width: "12cqw", height: "12cqw", borderRadius: "50%",
+            background: "#c8a84e", color: "#0d0d1a",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "5.6cqw", fontWeight: 700, lineHeight: 1,
+            boxShadow: "0 0.4cqw 0.8cqw rgba(0,0,0,.4)",
+          }}>x{count}</div>
+        ) : undefined}
       />
       {/* ── ATK / PV : écus héraldiques en bas à droite (créatures seulement).
              Carte « catalogue » : valeurs de la définition, ton neutre. ── */}
       {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
-
-      {/* ── Count badge ── */}
-      {count !== undefined && (
-        <div style={{
-          position: "absolute", top: 5 * s, right: 5 * s, zIndex: 2,
-          width: 22 * s, height: 22 * s, borderRadius: "50%",
-          background: "#c8a84e",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 10 * s, color: "#0d0d1a", fontWeight: 700,
-        }}>x{count}</div>
-      )}
 
       {/* ── Card name — top bar (ocre, 2 lignes, ombre). Padding horizontal
              pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}

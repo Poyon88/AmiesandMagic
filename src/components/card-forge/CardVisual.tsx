@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { CostShield, StatShields } from "@/components/card/CardCounters";
-import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
-import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
-import ExileGlyph from "@/components/cards/ExileGlyph";
+import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
 import KeywordIcon from '@/components/shared/KeywordIcon';
@@ -361,13 +359,20 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       {/* ── Coût en écu héraldique (haut gauche) ; les coûts additionnels
              restent en pastilles dans le bandeau, à droite. ── */}
       <CostShield value={card!.mana} title={t('mana_cost_title', { mana: card!.mana })} />
+      <RightSlots
+        awaken={awakenOf({ eveil_cost: card!.eveilCost ?? 0 }, 0)}
+        cost={additionalCostOf({
+          life_cost: card!.lifeCost ?? 0, discard_cost: card!.discardCost ?? 0, sacrifice_cost: card!.sacrificeCost ?? 0,
+          exile_cost: card!.exileCost ?? 0, topdeck_cost: card!.topdeckCost ?? 0,
+        }, card!.name)}
+      />
       {card!.type === "Unité" && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} />}
 
       {/* ── Top bar: name + additional costs ── */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
         // À gauche : la place de l'écu de coût (17.4cqw + marge).
-        padding: `${8 * s}px ${12 * s}px ${8 * s}px 21cqw`,
+        padding: `${8 * s}px 21cqw ${8 * s}px 21cqw`,
         background: `linear-gradient(180deg, ${fac.bg}aa 0%, transparent 60%)`,
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6,
       }}>
@@ -378,99 +383,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         }}>
           {card!.name}
         </span>
-        {/* Cost row: mana + alternative costs (life/discard/sacrifice) */}
-        <div style={{ display: "flex", flexDirection: "row", gap: 4 * s, alignItems: "center", flexShrink: 0 }}>
-          {card!.lifeCost && card!.lifeCost > 0 ? (
-            <div title={t('life_cost_title', { life: card!.lifeCost })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#6a1a1a,#3c0d0d)",
-              border: `${2 * s}px solid #e74c3c`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#ffb3b3", fontWeight: 700,
-              boxShadow: "0 0 8px #e74c3c66",
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -2 * s, right: -2 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>♥</span>
-              {card!.lifeCost}
-            </div>
-          ) : null}
-          {card!.discardCost && card!.discardCost > 0 ? (
-            <div title={t('discard_cost_title', { count: card!.discardCost })} style={{
-              width: 24 * s, height: 28 * s, borderRadius: 5 * s,
-              background: "radial-gradient(circle,#3a3a4a,#1f1f2c)",
-              border: `${2 * s}px solid #bbbbbb`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#e0e0e0", fontWeight: 700,
-              boxShadow: "0 0 8px #00000088",
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>🃏</span>
-              {card!.discardCost}
-            </div>
-          ) : null}
-          {card!.sacrificeCost && card!.sacrificeCost > 0 ? (
-            <div title={t('sacrifice_cost_title', { count: card!.sacrificeCost })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#3a1a3a,#1f0d1f)",
-              border: `${2 * s}px solid #a060a0`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#e0c0e0", fontWeight: 700,
-              boxShadow: "0 0 8px #a060a066",
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -2 * s, right: -2 * s, fontSize: 11 * s, filter: "drop-shadow(0 0 2px #000)" }}>☠</span>
-              {card!.sacrificeCost}
-            </div>
-          ) : null}
-          {card!.exileCost && card!.exileCost > 0 ? (
-            <div title={t('exile_cost_title', { count: card!.exileCost })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#1e2a3a,#0c131c)",
-              border: `${2 * s}px solid #7f8fa6`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#cfd8e3", fontWeight: 700,
-              boxShadow: "0 0 8px #7f8fa666",
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, filter: "drop-shadow(0 0 2px #000)" }}>
-                <ExileGlyph size={11 * s} color="#cfd8e3" />
-              </span>
-              {card!.exileCost}
-            </div>
-          ) : null}
-          {card!.topdeckCost && card!.topdeckCost > 0 ? (
-            <div title={t('topdeck_cost_title', { count: card!.topdeckCost })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#16323d,#08161c)",
-              border: `${2 * s}px solid ${REPLI_TEINTE}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#d6f2fb", fontWeight: 700,
-              boxShadow: `0 0 8px ${REPLI_TEINTE}66`,
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, fontSize: 12 * s, color: REPLI_TEINTE, filter: "drop-shadow(0 0 2px #000)" }}>
-                {REPLI_GLYPHE}
-              </span>
-              {card!.topdeckCost}
-            </div>
-          ) : null}
-          {card!.eveilCost && card!.eveilCost > 0 ? (
-            <div title={t('eveil_cost_title', { count: card!.eveilCost })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#3d2a10,#1c1206)",
-              border: `${2 * s}px solid ${EVEIL_TEINTE}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#ffe0b0", fontWeight: 700,
-              boxShadow: `0 0 8px ${EVEIL_TEINTE}66`,
-              position: "relative",
-            }}>
-              <span style={{ position: "absolute", top: -3 * s, right: -3 * s, lineHeight: 1, fontSize: 12 * s, filter: "drop-shadow(0 0 2px #000)" }}>
-                {EVEIL_GLYPHE}
-              </span>
-              {card!.eveilCost}
-            </div>
-          ) : null}
-        </div>
+        {/* Les coûts additionnels et l'Éveil sont des JETONS à droite (RightSlots),
+            plus une rangée de pastilles dans le bandeau. */}
       </div>
 
       {/* ── Bottom bar: stats + keywords + rarity ── */}

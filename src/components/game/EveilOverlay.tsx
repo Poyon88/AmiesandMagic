@@ -157,6 +157,9 @@ function LigneEveil({ entry, payable, onAction, onClose }: LigneProps) {
         size="sm"
         disableHoverZoom
         effectiveManaCost={getTokenManaCost(entry.instance.card)}
+        // Jauge d'Éveil : `remaining` vit ici, pas sur la carte ; on lui donne
+        // total et versé pour que l'écu décompte ce qu'il RESTE.
+        eveil={{ total: entry.instance.card.eveil_cost ?? entry.remaining, paid: Math.max(0, (entry.instance.card.eveil_cost ?? entry.remaining) - entry.remaining) }}
       />
       <div className="flex-1 flex flex-col gap-1">
         <div style={{ color: EVEIL_TEINTE, fontFamily: "'Cinzel', serif", fontSize: 20, fontWeight: 800 }}>

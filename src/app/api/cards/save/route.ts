@@ -218,6 +218,23 @@ export async function POST(request: Request) {
       image_url = urlData.publicUrl;
     }
 
+    // RÈGLE DE DESIGN : une carte ne porte qu'UN coût additionnel (vie,
+    // défausse, sacrifice, exil ou repli) — l'Éveil, coût ALTERNATIF, est à
+    // part. Le coin droit de la carte n'a que deux slots (Éveil + un jeton) ;
+    // plutôt que d'en cacher un à l'affichage, on refuse la sauvegarde.
+    {
+      const additionnels = [
+        ['vie', card.life_cost], ['défausse', card.discard_cost], ['sacrifice', card.sacrifice_cost],
+        ['exil', card.exile_cost], ['repli', card.topdeck_cost],
+      ].filter(([, v]) => (Number(v) || 0) > 0).map(([k]) => k as string);
+      if (additionnels.length > 1) {
+        return NextResponse.json(
+          { error: `Une carte ne porte qu'un seul coût additionnel — celle-ci en déclare ${additionnels.length} (${additionnels.join(', ')}).` },
+          { status: 400 },
+        );
+      }
+    }
+
     const cardData: Record<string, unknown> = {
       name: card.name,
       mana_cost: card.mana_cost,

@@ -20,8 +20,8 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import CostBadges from "@/components/cards/CostBadges";
 import { CostShield, StatShields, cardAriaLabel, statShieldsReserve, toneFor } from "@/components/card/CardCounters";
+import { RightSlots, RIGHT_SLOT, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -31,7 +31,6 @@ import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
-import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -172,6 +171,13 @@ function HandCard({
   const { attack: displayAttack, health: displayHealth } = isCreature
     ? persistentStats(cardInstance)
     : { attack: card.attack ?? 0, health: card.health ?? 0 };
+  // Colonne de droite : Éveil (jauge vide en main) puis coût additionnel. Les
+  // marqueurs qui vivaient dans ce coin (« EN JEU », conquête) descendent sous
+  // les jetons présents.
+  const awakenEnMain = awakenOf(card, 0);
+  const coutAdditionnel = additionalCostOf(card, card.name);
+  const slotsDroite = (awakenEnMain ? 1 : 0) + (coutAdditionnel ? 1 : 0);
+  const sousLesJetons = `calc(3px + ${slotsDroite * RIGHT_SLOT.step}cqw)`;
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -634,7 +640,7 @@ function HandCard({
           if (!canPlay) return;
           onClick?.();
         }}
-        aria-label={cardAriaLabel(localizeName(card), effectiveManaCost ?? card.mana_cost, isCreature ? { atk: displayAttack, hp: displayHealth } : null)}
+        aria-label={cardAriaLabel(localizeName(card), effectiveManaCost ?? card.mana_cost, isCreature ? { atk: displayAttack, hp: displayHealth } : null, rightSlotsAriaParts(card, awakenEnMain))}
         style={{
           ...LONG_PRESS_RESET_STYLE,
           touchAction: "none",
@@ -745,12 +751,15 @@ function HandCard({
             (haut droite). ATK / PV : écus en bas à droite, tons par rapport à la
             définition (bonus conservés → vert, malus → rouge). */}
         <CostShield value={effectiveManaCost ?? card.mana_cost} discounted={isCostReduced} />
-        <CostBadges
-          card={card} size={22} effectiveManaCost={effectiveManaCost} isCostReduced={isCostReduced} omitMana corner="right"
-          // Le coin haut droit est déjà pris par la pastille d'Éveil, le marqueur
-          // « EN JEU » du paiement de coûts ou le drapeau de conquête : les
-          // pastilles se décalent d'une case vers la gauche dans ce cas.
-          offset={(onSuspendEveil || (isCostPaymentMode && isPendingCostSource) || (cardInstance.conqueredFromId)) ? 24 : 0}
+        {/* Jetons de droite. L'écu d'Éveil EST le bouton « mettre en éveil » :
+            le second geste de la carte (cliquer la carte la joue, cliquer l'écu
+            l'éveille). Rendu cliquable seulement quand l'éveil est réellement
+            possible (`onSuspendEveil` n'est passée que dans ce cas). */}
+        <RightSlots
+          awaken={awakenEnMain}
+          cost={coutAdditionnel}
+          onAwaken={onSuspendEveil && !isCostPaymentMode ? onSuspendEveil : undefined}
+          awakenTitle={t('eveil_suspend', { count: card.eveil_cost ?? 0 })}
         />
         {isCreature && (
           <StatShields
@@ -758,38 +767,6 @@ function HandCard({
             atkTone={toneFor(displayAttack, card.attack ?? 0)}
             hpTone={toneFor(displayHealth, card.health ?? 0)}
           />
-        )}
-
-        {/* ÉVEIL — le SECOND geste de la carte.
-            Cliquer la carte la joue normalement ; cliquer cette pastille la met
-            en éveil. Un bouton explicite plutôt qu'un appui long : l'appui long
-            sert déjà à l'aperçu, et un geste caché rendrait la moitié du
-            mécanisme introuvable. Rendue seulement quand la mise en éveil est
-            réellement possible (`onSuspendEveil` n'est passée que dans ce cas),
-            pour qu'aucun clic ne reste sans effet. */}
-        {onSuspendEveil && !isCostPaymentMode && (
-          <button
-            type="button"
-            title={t('eveil_suspend', { count: card.eveil_cost ?? 0 })}
-            onClick={(e) => {
-              // Sans cet arrêt, le clic remonterait au conteneur et JOUERAIT la
-              // carte — soit exactement l'inverse de ce qu'on demande.
-              e.stopPropagation();
-              onSuspendEveil();
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            style={{
-              position: "absolute", top: 3, right: 3, zIndex: 6,
-              width: 20, height: 20, borderRadius: 5,
-              background: "radial-gradient(circle, #3d2a10, #1c1206)",
-              border: `1.5px solid ${EVEIL_TEINTE}`,
-              color: EVEIL_TEINTE, fontSize: 11, lineHeight: 1,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", padding: 0,
-              boxShadow: `0 0 8px ${EVEIL_TEINTE}77`,
-            }}
-          >{EVEIL_GLYPHE}</button>
         )}
 
         {/* Name — top bar (nom en haut, taille réduite de 30% : 10 → 7). Centré
@@ -848,7 +825,7 @@ function HandCard({
         )}
         {isCostPaymentMode && isPendingCostSource && (
           <div style={{
-            position: "absolute", top: 4, right: 4, zIndex: 4,
+            position: "absolute", top: sousLesJetons, right: 4, zIndex: 4,
             background: "#c8a84e", color: "#0d0d1a",
             fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 3,
             pointerEvents: "none",
@@ -871,7 +848,7 @@ function HandCard({
             <div
               title="Conquise au deck adverse"
               style={{
-                position: "absolute", top: onSuspendEveil ? 26 : 3, right: 3, zIndex: 6,
+                position: "absolute", top: sousLesJetons, right: 3, zIndex: 6,
                 width: 20, height: 20, borderRadius: 5,
                 background: "radial-gradient(circle, #3d1010, #1c0606)",
                 border: "1.5px solid #dc2626",

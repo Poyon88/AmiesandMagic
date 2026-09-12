@@ -22,10 +22,8 @@ import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
-import CostBadges from "@/components/cards/CostBadges";
 import { CostShield, StatShields, statShieldsReserve } from "@/components/card/CardCounters";
-import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
-import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
+import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -214,7 +212,7 @@ function MulliganCard({
           dégradé du bandeau est presque opaque en haut et ternirait les
           pastilles. L'ordre du DOM tranche, les deux étant au même z-index. */}
       <CostShield value={card.mana_cost} />
-      <CostBadges card={card} size={28} omitMana corner="right" />
+      <RightSlots awaken={awakenOf(card, 0)} cost={additionalCostOf(card, card.name)} />
       {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
 
       {/* Bottom bar */}
@@ -452,15 +450,8 @@ function MulliganCard({
           fontSize: 9 * d, color: "#555",
         }}>
           <span>{"💧"} {card.mana_cost}</span>
-          {/* Les coûts non nuls, en toutes lettres. Le recto porte les
-              pastilles ; ce verso est là pour qui veut le détail, et il ne
-              pouvait pas rester muet sur ce qu'une carte réclame vraiment. */}
-          {(card.life_cost ?? 0) > 0 && <span style={{ color: "#e74c3c" }}>{"♥"} {card.life_cost}</span>}
-          {(card.discard_cost ?? 0) > 0 && <span>{"🃏"} {card.discard_cost}</span>}
-          {(card.sacrifice_cost ?? 0) > 0 && <span style={{ color: "#a060a0" }}>{"☠"} {card.sacrifice_cost}</span>}
-          {(card.exile_cost ?? 0) > 0 && <span style={{ color: "#7f8fa6" }}>{"⌦"} {card.exile_cost}</span>}
-          {(card.topdeck_cost ?? 0) > 0 && <span style={{ color: REPLI_TEINTE }}>{REPLI_GLYPHE} {card.topdeck_cost}</span>}
-          {(card.eveil_cost ?? 0) > 0 && <span style={{ color: EVEIL_TEINTE }}>{EVEIL_GLYPHE} {card.eveil_cost}</span>}
+          {/* Les coûts additionnels et l'Éveil ne sont plus répétés ici : le
+              recto les porte en jetons (une seule représentation par coût). */}
           {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}
         </div>
       </div>

@@ -86,7 +86,7 @@ function Shield({
         // Cible d'animation : ce div extérieur (transform), jamais `width` —
         // la découpe sauterait.
         filter: "drop-shadow(0 0.6cqw 1cqw rgba(0,0,0,.45))",
-        transition: "width 0.2s ease",
+        // Jamais de transition sur width : la découpe sauterait (brief §8.9).
         flexShrink: 0,
       }}
     >
@@ -178,8 +178,12 @@ export const toneFor = (value: number, base: number): Tone =>
   value > base ? "buff" : value < base ? "debuff" : "neutral";
 
 /** Libellé d'accessibilité de la racine de carte. */
-export function cardAriaLabel(name: string, cost: number, stats?: { atk: number; hp: number } | null): string {
-  return stats
-    ? `${name}, coût ${cost}, attaque ${stats.atk}, points de vie ${stats.hp}`
-    : `${name}, coût ${cost}`;
+export function cardAriaLabel(
+  name: string, cost: number, stats?: { atk: number; hp: number } | null,
+  // Tout ce que la carte AFFICHE en plus (jetons, Éveil) — cf. rightSlotsAriaParts.
+  extras: string[] = [],
+): string {
+  const parts = [name, `coût ${cost}`, ...extras];
+  if (stats) parts.push(`attaque ${stats.atk}`, `points de vie ${stats.hp}`);
+  return parts.join(", ");
 }

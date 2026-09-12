@@ -174,10 +174,10 @@ describe("Câblage", () => {
   });
 
   it("n'alourdit PAS les listes compactes ni les badges de la forge", () => {
-    // CardPreview et CardVisual peignent des pastilles sans description : une
-    // parenthèse y doublerait la largeur pour rien. CardPreview peint en outre
-    // ses effets composés en doré fixe, hors de la convention de couleur.
-    for (const f of ["src/components/game/CardPreview.tsx", "src/components/card-forge/CardVisual.tsx"]) {
+    // CardVisual peint des pastilles sans description : une parenthèse y
+    // doublerait la largeur pour rien. (CardPreview, qui figurait ici, était un
+    // composant mort — supprimé avec les compteurs héraldiques.)
+    for (const f of ["src/components/card-forge/CardVisual.tsx"]) {
       expect(lire(f)).not.toContain("keywordTrigger");
       expect(lire(f)).not.toContain("vocab.triggerBadge(");
       expect(lire(f)).not.toContain("vocab.composedBadge(");
