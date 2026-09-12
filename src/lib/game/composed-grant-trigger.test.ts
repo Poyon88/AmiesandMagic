@@ -87,8 +87,39 @@ describe("le déclencheur voyage avec la capacité conférée", () => {
     const s = lancer(s0, don("vol", undefined), porteuse);
     const apres = trouve(s, porteuse.instanceId)!;
 
-    expect((apres.card.keywords as unknown as string[])).toContain("vol");
+    // `vol` (id de registre) est posé sous son id moteur `ranged`, celui des
+    // cartes et de l'icône — voir le test dédié ci-dessous.
+    expect((apres.card.keywords as unknown as string[])).toContain("ranged");
     expect(instancesDe(apres)).toHaveLength(0);
+  });
+
+  // Vol a deux ids : `vol` au registre, `ranged` sur toutes les cartes (et sur
+  // l'icône importée). Un Serment qui conférait `vol` posait un mot-clé jumeau
+  // affiché avec l'emoji de repli, et une créature déjà volante en cumulait
+  // deux. Quel que soit l'id reçu, le don doit aboutir à UN seul `ranged`.
+  describe("Vol conféré : un seul id moteur", () => {
+    it.each(["vol", "ranged"])("« %s » est posé comme `ranged`, jamais `vol`", (id) => {
+      const s0 = mkState();
+      const porteuse = creature("Porteuse");
+      s0.players[0].board = [porteuse];
+
+      const apres = trouve(lancer(s0, don(id, undefined), porteuse), porteuse.instanceId)!;
+      const kws = apres.card.keywords as unknown as string[];
+
+      expect(kws).toContain("ranged");
+      expect(kws).not.toContain("vol");
+    });
+
+    it("ne double pas une créature déjà volante", () => {
+      const s0 = mkState();
+      const porteuse = creature("Volante");
+      porteuse.card = { ...porteuse.card, keywords: ["ranged"] as never };
+      s0.players[0].board = [porteuse];
+
+      const apres = trouve(lancer(s0, don("vol", undefined), porteuse), porteuse.instanceId)!;
+
+      expect((apres.card.keywords as unknown as string[]).filter((k) => k === "ranged" || k === "vol")).toEqual(["ranged"]);
+    });
   });
 });
 

@@ -95,6 +95,8 @@ describe("pose — à l'ARRIVÉE de la carte, quel que soit le déclencheur", ()
   });
 });
 
+// Un emblème de « vol » (id de registre) pose `ranged`, l'id moteur de Vol porté
+// par toutes les cartes — cf. idMoteurDuDon. Les attentes lisent donc `ranged`.
 describe("l'emblème SURVIT à sa source — c'est ce qui le définit", () => {
   it("le don reste actif sur le plateau après la mort du porteur", () => {
     const s = etat();
@@ -104,7 +106,7 @@ describe("l'emblème SURVIT à sa source — c'est ce qui le définit", () => {
     s.players[0].board.push(allie);
 
     let st = applyAction(s, { type: "play_card", cardInstanceId: porteur.instanceId } as never);
-    expect(st.players[0].board.find(c => c.card.name === "Allié")!.card.keywords).toContain("vol");
+    expect(st.players[0].board.find(c => c.card.name === "Allié")!.card.keywords).toContain("ranged");
 
     // Le porteur meurt.
     const tueur = mkInstance(mkCard({ name: "Tueur", attack: 9, health: 9 }));
@@ -117,7 +119,7 @@ describe("l'emblème SURVIT à sa source — c'est ce qui le définit", () => {
     expect(st.players[0].board.some(c => c.card.name === "Porteur")).toBe(false);
     expect(st.players[0].emblems).toHaveLength(1);
     recalculateAuras(st.players[0], st.players[1]);
-    expect(st.players[0].board.find(c => c.card.name === "Allié")!.card.keywords).toContain("vol");
+    expect(st.players[0].board.find(c => c.card.name === "Allié")!.card.keywords).toContain("ranged");
   });
 });
 
@@ -333,11 +335,11 @@ describe("emblèmes ÉPHÉMÈRES — durée en tours", () => {
     s.players[0].board.push(mkInstance(mkCard({ name: "Allié", attack: 2, health: 4 })));
 
     let st = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId } as never);
-    expect(st.players[0].board.find(x => x.card.name === "Allié")!.card.keywords).toContain("vol");
+    expect(st.players[0].board.find(x => x.card.name === "Allié")!.card.keywords).toContain("ranged");
 
     st = tourComplet(st, 1);
     expect(st.players[0].emblems).toHaveLength(0);
-    expect(st.players[0].board.find(x => x.card.name === "Allié")!.card.keywords).not.toContain("vol");
+    expect(st.players[0].board.find(x => x.card.name === "Allié")!.card.keywords).not.toContain("ranged");
   });
 
   it("deux durées RESTANTES différentes ne fusionnent PAS", () => {

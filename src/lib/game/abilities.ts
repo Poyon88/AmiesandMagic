@@ -169,7 +169,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: "vol", label: "Vol", symbol: "🦅",
     desc: "Ignore les provocations adverses.",
     applicable_to: ["creature"],
-    creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
+    // `creature.id: "ranged"` : l'id RÉELLEMENT stocké sur les cartes (la forge
+    // traduit « Vol » → ranged, cf. FORGE_TO_GAME_KEYWORD) et la clé de l'icône
+    // importée. Sans cet alias, « Conférer une capacité » (GRANTABLE) émettait
+    // `vol` : la créature recevait un mot-clé jumeau, affiché avec l'emoji de
+    // repli au lieu de l'icône de Vol (Serment de la Plume et de la Feuille).
+    creature: { id: "ranged", cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
   },
   touche_mortel: {
     id: "touche_mortel", label: "Touché mortel", symbol: "💀⚔️",

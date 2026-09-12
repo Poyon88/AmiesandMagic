@@ -813,6 +813,16 @@ function rearmGrantedKeyword(creature: CardInstance, kwId: string): void {
   }
 }
 
+/** Id moteur RÉELLEMENT posé par un don. `vol` est l'id de registre, `ranged`
+ *  l'id porté par TOUTES les cartes et par l'icône : les données déjà en base
+ *  (grantAbilityId: "vol" sur des sorts, pouvoirs et emblèmes de héros)
+ *  doivent conférer le même mot-clé que la forge d'aujourd'hui — sinon une
+ *  créature peut cumuler deux « Vol », l'un avec l'emoji de repli. À utiliser
+ *  partout où l'on compare ou trace un id conféré (purge des emblèmes). */
+function idMoteurDuDon(kwId: string): string {
+  return kwId === "vol" ? "ranged" : kwId;
+}
+
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
@@ -825,6 +835,7 @@ function applyGrantedKeyword(
   // comportement historique : le mot-clé seul, donc son mode par défaut.
   trigger?: import("./types").CapabilityTrigger,
 ) {
+  kwId = idMoteurDuDon(kwId);
   const list = creature.card.keywords as string[];
   if (!list.includes(kwId)) {
     // Cast through unknown — `keywords` is typed as Keyword[] but at runtime
@@ -2770,9 +2781,13 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         // On ne trace QUE ce que l'emblème ajoute réellement : si la créature
         // portait déjà le mot-clé (natif, ou don d'un sort), il ne nous
         // appartient pas et ne doit pas être purgé au tour suivant.
-        const deja = (ally.card.keywords as unknown as string[]).includes(aura.abilityId);
+        // Id MOTEUR (vol → ranged) : c'est lui qu'applyGrantedKeyword pose,
+        // donc lui qu'il faut tracer — sinon la purge ci-dessus cherche `vol`,
+        // ne trouve rien, et le don d'un emblème expiré reste à jamais.
+        const idPose = idMoteurDuDon(aura.abilityId);
+        const deja = (ally.card.keywords as unknown as string[]).includes(idPose);
         applyGrantedKeyword(ally, aura.abilityId, params);
-        if (!deja) (ally.emblemGrantedKeywords ??= []).push(aura.abilityId);
+        if (!deja) (ally.emblemGrantedKeywords ??= []).push(idPose);
       }
     }
   }
