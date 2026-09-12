@@ -112,3 +112,18 @@ describe("pouvoir de héros composé — cible héros + gardes", () => {
     expect(next).toBe(s);
   });
 });
+
+describe("pouvoir de héros composé — Tuteur", () => {
+  it("ajoute la carte désignée à la main du contrôleur, sans cible", () => {
+    const s = mkState();
+    const manuel = mkCard({ id: 9201, name: "Manuel du Précepteur", faction: "Mercenaires", rarity: "Rare", mana_cost: 4, attack: 2, health: 2 });
+    s.factionCardPool = [manuel];
+    setHero(s, { content: "tuteur", cardId: 9201 });
+    s.players[0].mana = 5;
+
+    const next = applyAction(s, { type: "hero_power", targetMap: {} });
+
+    expect(next.players[0].hand.map((c) => c.card.name)).toContain("Manuel du Précepteur");
+    expect(next.players[0].hero.heroPowerUsedThisTurn).toBe(true);
+  });
+});

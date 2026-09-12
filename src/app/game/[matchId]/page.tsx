@@ -370,6 +370,14 @@ export default function GamePage() {
         [...p1Cards, ...p2Cards].forEach(({ card }) => collectLinked(card));
         factionCards.forEach(collectLinked);
         allSpells.forEach(collectLinked);
+        // POUVOIRS DE HÉROS composés : un Tuteur ou une Invocation désignée y
+        // nomme une carte qui n'est dans aucun deck ni aucun pool — sans cette
+        // passe, le pouvoir serait un no-op (warn moteur) alors que l'admin l'a
+        // configuré correctement.
+        for (const h of [p1Hero, p2Hero]) {
+          const c = h?.powerEffect?.mode === "composed" ? h.powerEffect.composed : null;
+          if (c && (c.content === "invocation" || c.content === "tuteur") && c.cardId != null) linkedIds.add(c.cardId);
+        }
         const loadedCardIds = new Set([...factionCards, ...allSpells].map((c) => c.id));
         const missingLinkedIds = Array.from(linkedIds)
           .filter((id) => !loadedCardIds.has(id))
