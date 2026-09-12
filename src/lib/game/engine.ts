@@ -6552,11 +6552,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
         dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
       }
 
-      // Apply poison from attacker
-      if (hasKw(attacker, "poison") && target.currentHealth > 0) {
-        target.isPoisoned = true;
-      }
-      // Paralysie : posée par dealDamageToCreature (tous les dégâts d'une créature).
+      // Poison et Paralysie : posés par dealDamageToCreature (tous les dégâts d'une créature).
 
       // If target survived, it retaliates. NB : Première Frappe est séquentielle
       // par définition — si la cible a gagné une Gloire en encaissant le premier
@@ -6564,9 +6560,6 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // prix de frapper une unité qui grandit en survivant.
       if (target.currentHealth > 0) {
         dealDamageToCreature(attacker, target.currentAttack, false, false, target, undefined, true);
-        if (hasKw(target, "poison") && attacker.currentHealth > 0) {
-          attacker.isPoisoned = true;
-        }
       }
     } else {
       // Simultaneous damage. Double Attaque doubles the attacker's
@@ -6585,10 +6578,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
       dealDamageToCreature(attacker, retaliationPower, hasKw(target, "precision"), false, target, undefined, true);
 
-      // Poison application
-      if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
-      if (hasKw(target, "poison") && attacker.currentHealth > 0) attacker.isPoisoned = true;
-      // Paralysie : posée par dealDamageToCreature (tous les dégâts d'une créature).
+      // Poison et Paralysie : posés par dealDamageToCreature (tous les dégâts d'une créature).
     }
 
     // Souffle de feu X: X dégâts à toutes les unités ennemies (cible incluse,
@@ -7243,9 +7233,11 @@ function dealDamageToCreature(
   // paralyser, l'état n'étant posé que dans le flux d'attaque. Ici, au point de
   // passage unique, après réductions et immunités (une blessure RÉELLE) et sur
   // une cible SURVIVANTE ; jamais sur elle-même (Cataclysme touche son camp).
-  if (creature.currentHealth > 0 && source && "instanceId" in source
-    && source !== creature && hasKw(source, "paralysie")) {
-    creature.isParalyzed = true;
+  if (creature.currentHealth > 0 && source && "instanceId" in source && source !== creature) {
+    if (hasKw(source, "paralysie")) creature.isParalyzed = true;
+    // POISON : même règle — « les unités blessées » par une créature qui le
+    // porte, quel que soit le chemin des dégâts, pas seulement le combat.
+    if (hasKw(source, "poison")) creature.isPoisoned = true;
   }
 
   // Gloire +X/+Y : l'unité qui encaisse des dégâts de COMBAT et y survit gagne

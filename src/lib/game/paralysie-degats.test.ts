@@ -56,3 +56,37 @@ describe("Paralysie hors combat", () => {
     expect(next.players[0].board[0].isParalyzed).toBe(false);
   });
 });
+
+// POISON : même règle que Paralysie — « les unités blessées » par la créature,
+// quel que soit le chemin des dégâts.
+describe("Poison hors combat", () => {
+  it("Tempête en fin de tour empoisonne les unités blessées qui survivent", () => {
+    const s = mkState();
+    const vipere = mkInstance(mkCard({
+      name: "Vipère", attack: 1, health: 1,
+      keywords: ["poison", "tempete"] as unknown as Keyword[],
+      keyword_instances: [{ id: "tempete" as Keyword, x: 1, mode: "end_of_turn" }] as KeywordInstance[],
+    }));
+    vipere.hasSummoningSickness = false;
+    s.players[0].board.push(vipere);
+    s.players[1].board.push(ennemi("Cible", 9));
+    initRNG(2);
+    const next = applyAction(s, { type: "end_turn" });
+    const c = next.players[1].board.find(u => u.card.name === "Cible")!;
+    expect(c.currentHealth).toBeLessThan(9);
+    expect(c.isPoisoned).toBe(true);
+  });
+
+  it("le combat empoisonne toujours, dans les deux sens", () => {
+    const s = mkState();
+    const a = mkInstance(mkCard({ name: "Assaillant", attack: 1, health: 9, keywords: ["poison"] as unknown as Keyword[] }));
+    a.hasSummoningSickness = false;
+    s.players[0].board.push(a);
+    const d = mkInstance(mkCard({ name: "Défenseur", attack: 1, health: 9, keywords: ["poison"] as unknown as Keyword[] }));
+    s.players[1].board.push(d);
+    initRNG(1);
+    const next = applyAction(s, { type: "attack", attackerInstanceId: a.instanceId, targetInstanceId: d.instanceId });
+    expect(next.players[1].board[0].isPoisoned).toBe(true);
+    expect(next.players[0].board[0].isPoisoned).toBe(true);
+  });
+});
