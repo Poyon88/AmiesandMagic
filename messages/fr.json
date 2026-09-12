@@ -2442,6 +2442,8 @@
     "zone_eveil": "Éveil",
     "zone_eveil_yours": "Votre éveil",
     "zone_eveil_opponent": "Éveil adverse",
+    "hand_hide": "Masquer la main",
+    "hand_show": "Afficher la main",
     "eveil_hint": "Versez 1 mana par clic. Au dernier point, la carte entre en jeu comme si elle venait de votre main.",
     "eveil_remaining": "{count, plural, one {# point restant} other {# points restants}}",
     "eveil_next_point": "Le prochain point coûte 1 mana.",

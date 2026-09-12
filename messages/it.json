@@ -2442,6 +2442,8 @@
     "zone_eveil": "Risveglio",
     "zone_eveil_yours": "Il vostro risveglio",
     "zone_eveil_opponent": "Risveglio avversario",
+    "hand_hide": "Nascondi la mano",
+    "hand_show": "Mostra la mano",
     "eveil_hint": "Versate 1 mana per clic. All'ultimo punto, la carta entra in gioco come se venisse dalla vostra mano.",
     "eveil_remaining": "{count, plural, one {# punto rimanente} other {# punti rimanenti}}",
     "eveil_next_point": "Il prossimo punto costa 1 mana.",

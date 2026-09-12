@@ -2442,6 +2442,8 @@
     "zone_eveil": "覚醒",
     "zone_eveil_yours": "あなたの覚醒",
     "zone_eveil_opponent": "相手の覚醒",
+    "hand_hide": "手札を隠す",
+    "hand_show": "手札を表示",
     "eveil_hint": "クリックごとにマナ1を投入。最後のポイントで、まるで手札から出したかのようにカードが場に出ます。",
     "eveil_remaining": "{count, plural, one {残り#ポイント} other {残り#ポイント}}",
     "eveil_next_point": "次のポイントはマナ1かかります。",

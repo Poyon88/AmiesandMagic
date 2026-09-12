@@ -2442,6 +2442,8 @@
     "zone_eveil": "Despertar",
     "zone_eveil_yours": "Tu despertar",
     "zone_eveil_opponent": "Despertar del rival",
+    "hand_hide": "Ocultar la mano",
+    "hand_show": "Mostrar la mano",
     "eveil_hint": "Aporta 1 maná por clic. En el último punto, la carta entra en juego como si viniera de tu mano.",
     "eveil_remaining": "{count, plural, one {# punto restante} other {# puntos restantes}}",
     "eveil_next_point": "El próximo punto cuesta 1 maná.",

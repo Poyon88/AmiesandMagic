@@ -2442,6 +2442,8 @@
     "zone_eveil": "Erwachen",
     "zone_eveil_yours": "Ihr Erwachen",
     "zone_eveil_opponent": "Gegnerisches Erwachen",
+    "hand_hide": "Hand ausblenden",
+    "hand_show": "Hand einblenden",
     "eveil_hint": "Zahlen Sie 1 Mana pro Klick. Beim letzten Punkt kommt die Karte ins Spiel, als käme sie gerade aus Ihrer Hand.",
     "eveil_remaining": "{count, plural, one {# Punkt verbleibend} other {# Punkte verbleibend}}",
     "eveil_next_point": "Der nächste Punkt kostet 1 Mana.",

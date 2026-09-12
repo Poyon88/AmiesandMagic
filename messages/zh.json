@@ -2442,6 +2442,8 @@
     "zone_eveil": "觉醒区",
     "zone_eveil_yours": "您的觉醒区",
     "zone_eveil_opponent": "对手的觉醒区",
+    "hand_hide": "隐藏手牌",
+    "hand_show": "显示手牌",
     "eveil_hint": "每次点击消耗1点法力值。达到最后一点时，该卡将如同从您的手牌中打出一样进入战场。",
     "eveil_remaining": "{count, plural, one {剩余 # 点} other {剩余 # 点}}",
     "eveil_next_point": "下一点消耗1点法力值。",
