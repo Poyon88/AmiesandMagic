@@ -1721,6 +1721,14 @@ export interface PlayCardAction {
   tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
   selectionCardId?: number;  // chosen card ID from faction pool
+  /** Carte choisie PAR mot-clé de Sélection, quand la créature en porte
+   *  PLUSIEURS à l'entrée en jeu (« Voyante des Quatre Horizons » : Sélection 3
+   *  + Sélection magique 3 + Sélection Royale 5). `selectionCardId` est un
+   *  champ UNIQUE : tant qu'il était seul, un seul sélecteur s'ouvrait et une
+   *  seule carte était gagnée, les deux autres capacités restant muettes.
+   *  Même patron que `deckChoiceIndices` ; `selectionCardId` reste le REPLI
+   *  (cartes à une seule Sélection, actions déjà journalisées). */
+  selectionCardIds?: Partial<Record<"selection" | "renfort_royal" | "selection_magique", number>>;
   // Alternative-cost payments chosen by the player. discardInstanceIds picks
   // cards from the player's hand to discard (length must equal card.discard_cost);
   // sacrificeInstanceIds picks allied creatures to sacrifice (length must

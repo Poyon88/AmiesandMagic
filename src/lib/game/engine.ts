@@ -4511,18 +4511,30 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Sélection X / Renfort Royal X / Sélection magique X : same picker
-    // flow, all resolve by looking up `selectionCardId`. Lookup tries the
-    // factionCardPool first (Sélection / Renfort Royal) and falls back to
-    // allSpellsPool (Sélection magique sources its choices there).
-    if (
-      (cardHasKwOnPlay(cardInstance.card, "selection") || cardHasKwOnPlay(cardInstance.card, "renfort_royal") || cardHasKwOnPlay(cardInstance.card, "selection_magique"))
-      && action.selectionCardId != null
-    ) {
-      const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
-        ?? newState.allSpellsPool?.find(c => c.id === action.selectionCardId);
-      if (chosenCard && player.hand.length < MAX_HAND_SIZE) {
-        const chosen = createCardInstance(chosenCard);
-        player.hand.push(chosen);
+    // flow. Lookup tries the factionCardPool first (Sélection / Renfort Royal)
+    // and falls back to allSpellsPool (Sélection magique sources its choices
+    // there).
+    //
+    // UNE carte PAR mot-clé porté : `selectionCardIds[kw]` d'abord, sinon le
+    // champ unique `selectionCardId` — consommé UNE seule fois, pour le premier
+    // mot-clé sans réponse dédiée, sans quoi une action ancienne (un seul
+    // choix journalisé) ferait gagner trois fois la même carte à une créature
+    // à trois Sélections.
+    {
+      let repliConsomme = false;
+      for (const kw of SELECTION_KWS_CREATURE) {
+        if (!cardHasKwOnPlay(cardInstance.card, kw)) continue;
+        let id = action.selectionCardIds?.[kw];
+        if (id == null && !repliConsomme && action.selectionCardId != null) {
+          id = action.selectionCardId;
+          repliConsomme = true;
+        }
+        if (id == null) continue;
+        const chosenCard = newState.factionCardPool?.find(c => c.id === id)
+          ?? newState.allSpellsPool?.find(c => c.id === id);
+        if (chosenCard && player.hand.length < MAX_HAND_SIZE) {
+          player.hand.push(createCardInstance(chosenCard));
+        }
       }
     }
 
@@ -11052,6 +11064,31 @@ export function getTraqueDuDestinX(card: Card): number {
 // Ces helpers gouvernent l'ouverture de la modale « 1 parmi 3 » À L'INVOCATION.
 // Ils doivent donc être gatés sur le mode on_play : une Sélection réglée en
 // tap/fin de tour ne doit PAS proposer de carte à l'entrée.
+/** Les trois Sélections « 1 parmi 3 » d'une créature, dans l'ordre de repli
+ *  historique (celui des anciens blocs du store). L'ordre d'AUTEUR, quand la
+ *  carte le donne (`keyword_instances`), prime côté client — cf.
+ *  ordreSelectionsCreature. */
+export const SELECTION_KWS_CREATURE = ["selection", "renfort_royal", "selection_magique"] as const;
+export type SelectionKwCreature = typeof SELECTION_KWS_CREATURE[number];
+
+/** Sélections d'une créature qui s'ouvrent à l'ENTRÉE, dans l'ordre d'auteur
+ *  (`keyword_instances`) — les mots-clés hors de cette liste suivent, dans
+ *  l'ordre de repli. Le client ouvre un sélecteur par entrée, dans cet ordre. */
+export function ordreSelectionsCreature(card: Card): SelectionKwCreature[] {
+  const presentes = SELECTION_KWS_CREATURE.filter((kw) => card.card_type === "creature" && cardHasKwOnPlay(card, kw));
+  const auteur = (card.keyword_instances ?? [])
+    .map((i) => i.id as string)
+    .filter((id): id is SelectionKwCreature => (presentes as readonly string[]).includes(id));
+  const vues = new Set<string>();
+  const out: SelectionKwCreature[] = [];
+  for (const kw of [...auteur, ...presentes]) {
+    if (vues.has(kw)) continue;
+    vues.add(kw);
+    out.push(kw);
+  }
+  return out;
+}
+
 export function creatureNeedsSelection(card: Card): boolean {
   return card.card_type === "creature" && cardHasKwOnPlay(card, "selection" as Keyword);
 }

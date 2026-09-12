@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import type { DeckPickerKeyword } from "@/lib/game/engine";
+import type { SelectionKwCreature } from "@/lib/game/engine";
 import { useAudioStore } from "./audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
@@ -43,13 +44,11 @@ import {
   tempoBonusForCard,
   creatureNeedsTraqueDuDestin,
   getTraqueDuDestinX,
-  creatureNeedsSelection,
+  ordreSelectionsCreature,
   getSelectionCards,
   getFoiOffer,
   getConqueteOffer,
-  creatureNeedsRenfortRoyal,
   getRenfortRoyalCards,
-  creatureNeedsMagicalSelection,
   getMagicalSelectionCards,
   deckAfterDivination,
   deckAfterCreuser,
@@ -611,6 +610,13 @@ interface GameStore {
   /** Réponses déjà données pour la carte en cours de pose, par mot-clé. Vidé à
    *  chaque nouvelle pose ; part dans l'action sous `deckChoiceIndices`. */
   collectedDeckChoices: Partial<Record<DeckPickerKeyword, number>>;
+  /** Réponses déjà données aux Sélections « 1 parmi 3 » de la créature en cours
+   *  de pose, par mot-clé — une créature peut en porter trois (Voyante des
+   *  Quatre Horizons). Pendant de `collectedDeckChoices`. */
+  collectedSelectionChoices: Partial<Record<SelectionKwCreature, number>>;
+  /** Mot-clé dont le sélecteur de créature est OUVERT (null hors sélecteur de
+   *  créature) : c'est sous lui que la réponse sera rangée. */
+  selectionPickerKeyword: SelectionKwCreature | null;
   selectionCards: Card[];
   tactiqueAvailableKeywords: string[];
   tactiqueMaxSelections: number;
@@ -1630,22 +1636,34 @@ export const useGameStore = create<GameStore>((set, get) => {
     const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "creature") return false;
     const card = cardInst.card;
-    let choices: Card[] | null = null;
-    if (creatureNeedsSelection(card)) {
-      choices = getSelectionCards(gs, plafondSelectionEntree(card, "selection"), card);
-    } else if (creatureNeedsRenfortRoyal(card)) {
-      choices = getRenfortRoyalCards(gs, plafondSelectionEntree(card, "renfort_royal"), card);
-    } else if (creatureNeedsMagicalSelection(card)) {
-      choices = getMagicalSelectionCards(gs, plafondSelectionEntree(card, "selection_magique"), card);
+    // UNE Sélection à la fois, dans l'ordre d'auteur, en sautant celles déjà
+    // répondues. C'était un if / else if : une créature à trois Sélections
+    // (Voyante des Quatre Horizons) n'ouvrait que la première, et les deux
+    // autres capacités restaient muettes — le moteur ne recevait qu'un choix.
+    const deja = get().collectedSelectionChoices;
+    for (const kw of ordreSelectionsCreature(card)) {
+      if (deja[kw] != null) continue;
+      const choices = kw === "selection"
+        ? getSelectionCards(gs, plafondSelectionEntree(card, "selection"), card)
+        : kw === "renfort_royal"
+          ? getRenfortRoyalCards(gs, plafondSelectionEntree(card, "renfort_royal"), card)
+          : getMagicalSelectionCards(gs, plafondSelectionEntree(card, "selection_magique"), card);
+      // Rien à proposer (pool vide) : on passe à la suivante plutôt que de
+      // bloquer la pose sur un sélecteur vide.
+      if (choices.length === 0) continue;
+      set({
+        selectedCardInstanceId: instanceId,
+        selectedAttackerInstanceId: null,
+        targetingMode: "selection",
+        selectionCards: choices,
+        selectionPickerKeyword: kw,
+        validTargets: [],
+        pendingCreatureChain: carried,
+        ...(carried.boardPosition !== undefined ? { pendingBoardPosition: carried.boardPosition } : {}),
+      });
+      return true;
     }
-    if (!choices || choices.length === 0) return false;
-    set({
-      targetingMode: "selection",
-      selectionCards: choices,
-      validTargets: [],
-      pendingCreatureChain: carried,
-    });
-    return true;
+    return false;
   };
 
   return ({
@@ -1675,6 +1693,8 @@ export const useGameStore = create<GameStore>((set, get) => {
   learnPickerFor: null,
   deckPickerKeyword: null,
   collectedDeckChoices: {},
+  collectedSelectionChoices: {},
+  selectionPickerKeyword: null,
   selectionCards: [],
   tactiqueAvailableKeywords: [],
   tactiqueMaxSelections: 0,
@@ -3109,6 +3129,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapInstanceIdx: null,
         pendingTapComposedUid: null,
         pendingCreatureChain: null,
+        collectedSelectionChoices: {},
+        selectionPickerKeyword: null,
         damageEvents: [],
         entryEvents: playedCreatureId ? [playedCreatureId] : [],
         lastSfxEvents: sfxEvents,
@@ -3746,7 +3768,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Table des réponses de deck REMISE À ZÉRO : une pose abandonnée en cours
     // de modale (annulation, carte injouable) laisserait sinon ses choix en
     // place, et la pose suivante croirait avoir déjà répondu.
-    set({ collectedDeckChoices: {}, deckPickerKeyword: null });
+    set({ collectedDeckChoices: {}, deckPickerKeyword: null, collectedSelectionChoices: {}, selectionPickerKeyword: null });
     const joueurCourant = gameState.players[gameState.currentPlayerIndex];
     // Même dérogation qu'au-dessus pour un sort MÉMORISÉ.
     const apprenanteDirecte = apprenanteDuSort(joueurCourant, instanceId);
@@ -3864,49 +3886,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    if (card && creatureNeedsSelection(card.card)) {
-      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
-    }
-
-    if (card && creatureNeedsRenfortRoyal(card.card)) {
-      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
-    }
-
-    if (card && creatureNeedsMagicalSelection(card.card)) {
-      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition ?? null,
-        });
-        return null;
-      }
+    // Sélections « 1 parmi 3 » de la créature, une par mot-clé, dans l'ordre
+    // d'auteur (cf. openCreaturePickerIfNeeded) — remplace trois blocs qui ne
+    // s'excluaient pas seulement entre eux : le premier servi coupait les autres.
+    if (card && openCreaturePickerIfNeeded(gameState, instanceId, { boardPosition: boardPosition ?? null })) {
+      return null;
     }
 
     return get().dispatchAction({
@@ -4086,52 +4070,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // Check if creature needs selection
-    if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
-      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if creature needs renfort_royal
-    if (card.card.card_type === "creature" && creatureNeedsRenfortRoyal(card.card)) {
-      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    // Check if creature needs selection_magique
-    if (card.card.card_type === "creature" && creatureNeedsMagicalSelection(card.card)) {
-      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
+    // Sélections « 1 parmi 3 » de la créature, une par mot-clé, dans l'ordre
+    // d'auteur (cf. openCreaturePickerIfNeeded) — remplace trois blocs qui ne
+    // s'excluaient pas seulement entre eux : le premier servi coupait les autres.
+    if (card.card.card_type === "creature" && openCreaturePickerIfNeeded(gameState, instanceId, { boardPosition: null })) {
+      return null;
     }
 
     // Check if spell needs a target (new multi-target system) — runs BEFORE
@@ -4837,14 +4780,35 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Creature selection: merge in pendingCreatureChain (carries the
       // target / graveyard / divination choice from an earlier picker on
       // the same creature, e.g. mimique + selection).
+      //
+      // La réponse est rangée sous SON mot-clé, puis on regarde si la créature
+      // porte une autre Sélection : une carte à trois Sélections pose ses trois
+      // questions avant de partir, en UNE action.
+      const kwSel = get().selectionPickerKeyword;
+      const choixSel: Partial<Record<SelectionKwCreature, number>> = kwSel
+        ? { ...get().collectedSelectionChoices, [kwSel]: cardId }
+        : get().collectedSelectionChoices;
+      if (kwSel) set({ collectedSelectionChoices: choixSel, selectionPickerKeyword: null });
+      if (gs && kwSel && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, pendingCreatureChain ?? {})) {
+        return null;
+      }
+      const choixDeckCreature = get().collectedDeckChoices;
+      const reponses = Object.values(choixSel).filter((v): v is number => v != null);
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
-        selectionCardId: cardId,
+        // Champ historique : la PREMIÈRE réponse (seule lue par le moteur pour
+        // une carte à une Sélection, et par les actions déjà journalisées).
+        selectionCardId: reponses[0] ?? cardId,
+        ...(reponses.length > 1 ? { selectionCardIds: choixSel } : {}),
         boardPosition: pendingCreatureChain?.boardPosition ?? pendingBoardPosition ?? undefined,
         targetInstanceId: pendingCreatureChain?.targetInstanceId,
         graveyardTargetInstanceId: pendingCreatureChain?.graveyardTargetInstanceId,
         divinationChoiceIndex: pendingCreatureChain?.divinationChoiceIndex,
+        // Réponses de deck PAR mot-clé (Divination puis Présage sur la même
+        // créature) : sans elles, la seconde modale de deck lisait l'index de
+        // la première.
+        ...(Object.keys(choixDeckCreature).length > 0 ? { deckChoiceIndices: choixDeckCreature } : {}),
       });
     } else if (targetingMode === "hero_power") {
       // Pouvoir composé multi-cibles "au choix" : collecte N cibles puis dispatch
@@ -4944,6 +4908,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       learnPickerFor: null,
       deckPickerKeyword: null,
       collectedDeckChoices: {},
+      collectedSelectionChoices: {},
+      selectionPickerKeyword: null,
       tactiqueAvailableKeywords: [],
       tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
@@ -5192,47 +5158,11 @@ export const useGameStore = create<GameStore>((set, get) => {
         return null;
       }
     }
-    if (creatureNeedsSelection(card.card)) {
-      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition,
-        });
-        return null;
-      }
-    }
-    if (creatureNeedsRenfortRoyal(card.card)) {
-      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition,
-        });
-        return null;
-      }
-    }
-    if (creatureNeedsMagicalSelection(card.card)) {
-      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: boardPosition,
-        });
-        return null;
-      }
+    // Sélections « 1 parmi 3 » de la créature, une par mot-clé, dans l'ordre
+    // d'auteur (cf. openCreaturePickerIfNeeded) — remplace trois blocs qui ne
+    // s'excluaient pas seulement entre eux : le premier servi coupait les autres.
+    if (openCreaturePickerIfNeeded(gameState, instanceId, { boardPosition: boardPosition })) {
+      return null;
     }
 
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
