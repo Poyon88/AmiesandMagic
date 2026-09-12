@@ -106,7 +106,7 @@ export async function POST(request: Request) {
   const supabaseAdmin = auth.supabase;
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, sfxExileBase64, sfxExileMimeType, partial, composed_capabilities, allowDuplicateName } = await request.json();
+    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, sfxExileBase64, sfxExileMimeType, clearSfxPlay, partial, composed_capabilities, allowDuplicateName } = await request.json();
     const composedCaps = sanitizeComposed(composed_capabilities);
 
     // Partial update path: only update the fields explicitly present in
@@ -257,6 +257,14 @@ export async function POST(request: Request) {
     // une fois lue (getCapabilities) ; sinon repli adaptateur.
     cardData.capabilities = [...deriveCapabilities(cardData as unknown as Card), ...composedCaps];
     if (image_url) cardData.image_url = image_url;
+
+    // Retrait du son d'entrée en jeu : la carte retombe sur le bruitage
+    // générique de pose. Drapeau EXPLICITE, et non « sfx_play_url absent du
+    // payload » — cardData ne recopie jamais les colonnes sfx_*, ce qui est
+    // précisément ce qui préserve un son posé dans la forge à chaque
+    // sauvegarde de l'éditeur. Un nouveau fichier dans la même requête
+    // l'emporte (écrit plus bas).
+    if (clearSfxPlay === true) cardData.sfx_play_url = null;
 
     // Upload SFX files if provided
     for (const [base64Key, mimeKey, urlKey] of [

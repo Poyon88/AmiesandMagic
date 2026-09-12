@@ -69,6 +69,8 @@ interface DbCard {
   discard_cost: number | null;
   sacrifice_cost: number | null;
   exile_cost: number | null;
+  /** Bruitage propre d'entrée en jeu (remplace le son générique de pose). */
+  sfx_play_url?: string | null;
   topdeck_cost: number | null;
   eveil_cost: number | null;
   capabilities: Capability[] | null;
@@ -173,6 +175,12 @@ export default function CardEditor() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [newImageFile, setNewImageFile] = useState<{ base64: string; mimeType: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
+  // Bruitage d'entrée en jeu — même contrat que le pouvoir de héros : un
+  // fichier choisi remplace le son générique de pose ; sans fichier, la carte
+  // garde le son qu'elle a (ou le générique). `clearSfxPlay` demande le retour
+  // au générique à la prochaine sauvegarde.
+  const [sfxPlayFile, setSfxPlayFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
+  const [clearSfxPlay, setClearSfxPlay] = useState(false);
   const [generatingPrints, setGeneratingPrints] = useState(false);
   const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
@@ -420,6 +428,8 @@ export default function CardEditor() {
     });
     setNewImageFile(null);
     setNewImagePreview(null);
+    setSfxPlayFile(null);
+    setClearSfxPlay(false);
     setSaveResult(null);
     setDeleteConfirmId(null);
   }, []);
@@ -678,6 +688,12 @@ export default function CardEditor() {
         body.imageBase64 = newImageFile.base64;
         body.imageMimeType = newImageFile.mimeType;
       }
+      if (sfxPlayFile) {
+        body.sfxPlayBase64 = sfxPlayFile.base64;
+        body.sfxPlayMimeType = sfxPlayFile.mimeType;
+      } else if (clearSfxPlay) {
+        body.clearSfxPlay = true;
+      }
 
       const res = await fetch("/api/cards/save", {
         method: "POST",
@@ -693,6 +709,8 @@ export default function CardEditor() {
       setSaveResult({ ok: true, msg: "Carte mise à jour" });
       setNewImageFile(null);
       setNewImagePreview(null);
+      setSfxPlayFile(null);
+      setClearSfxPlay(false);
     } catch (err) {
       setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur" });
       setSaving(false);
@@ -713,7 +731,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -805,6 +823,30 @@ export default function CardEditor() {
     }
     setGeneratingPrints(false);
   }, []);
+
+  const handleSfxPlayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // `currentTarget` est nul après le premier await : on capture l'input
+    // avant toute lecture asynchrone (même précaution que HeroManager).
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setSaveResult({ ok: false, msg: "Son trop volumineux (max 5 Mo)" }); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setSfxPlayFile({ base64: result.split(",")[1], mimeType: file.type || "audio/mpeg", name: file.name });
+      setClearSfxPlay(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Aperçu d'un son : celui déjà enregistré (URL) ou celui qu'on vient de
+  // choisir (data URL reconstruite depuis le base64).
+  const ecouter = (src: string) => {
+    const audio = new Audio(src);
+    audio.play().catch(() => { /* lecture refusée sans geste utilisateur : rien à faire */ });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1096,6 +1138,49 @@ export default function CardEditor() {
                 {generatingImage ? "Génération…" : "🎨 Générer l'image depuis le prompt"}
               </button>
             </div>
+
+            {/* Bruitage d'entrée en jeu — créatures seulement : côté sort le
+                moteur joue `spell_cast`, cette colonne n'y sert pas. Le son
+                générique de pose reste le repli (cf. onPlaySfxChain). */}
+            {editFields.card_type === "creature" && (() => {
+              const sonActuel = !clearSfxPlay && !sfxPlayFile ? (selectedCard.sfx_play_url ?? null) : null;
+              return (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={S.label}>Bruitage d&apos;entrée en jeu</div>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <label style={{ ...S.btn("#333"), cursor: "pointer" }}>
+                      {sonActuel || sfxPlayFile ? "Remplacer" : "Choisir un son"}
+                      <input type="file" accept="audio/*" style={{ display: "none" }} onChange={handleSfxPlayChange} />
+                    </label>
+                    {sonActuel && (
+                      <>
+                        <button type="button" onClick={() => ecouter(sonActuel)} style={S.btn("#4a90d9")}>▶ Écouter</button>
+                        <button type="button" onClick={() => setClearSfxPlay(true)} style={S.btn("#e74c3c")}>Retirer</button>
+                      </>
+                    )}
+                    {sfxPlayFile && (
+                      <>
+                        <button type="button" onClick={() => ecouter(`data:${sfxPlayFile.mimeType};base64,${sfxPlayFile.base64}`)} style={S.btn("#4a90d9")}>▶ Écouter</button>
+                        <span style={{ fontSize: 10, color: "#666", fontFamily: "'Crimson Text',serif" }}>{sfxPlayFile.name}</span>
+                        <button type="button" onClick={() => setSfxPlayFile(null)} style={S.btn("#e74c3c")}>Annuler</button>
+                      </>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#999", fontStyle: "italic", fontFamily: "'Crimson Text',serif", marginTop: 4 }}>
+                    {clearSfxPlay
+                      ? "Le son sera retiré à l'enregistrement : la créature reprendra le bruitage générique de pose."
+                      : sfxPlayFile
+                        ? "Nouveau son : il remplacera le bruitage générique de pose à l'enregistrement."
+                        : sonActuel
+                          ? "Son propre en place : il remplace le bruitage générique de pose."
+                          : "Sans son propre, la créature joue le bruitage générique de pose."}
+                    {clearSfxPlay && (
+                      <button type="button" onClick={() => setClearSfxPlay(false)} style={{ ...S.btn("#888"), marginLeft: 6, padding: "2px 8px" }}>Garder</button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Name */}
             <div style={{ marginBottom: 8 }}>
