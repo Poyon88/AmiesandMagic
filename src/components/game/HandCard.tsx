@@ -18,9 +18,10 @@ import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDe
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
-import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import CostBadges from "@/components/cards/CostBadges";
+import { CostShield, StatShields, cardAriaLabel, statShieldsReserve, toneFor } from "@/components/card/CardCounters";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -633,6 +634,7 @@ function HandCard({
           if (!canPlay) return;
           onClick?.();
         }}
+        aria-label={cardAriaLabel(localizeName(card), effectiveManaCost ?? card.mana_cost, isCreature ? { atk: displayAttack, hp: displayHealth } : null)}
         style={{
           ...LONG_PRESS_RESET_STYLE,
           touchAction: "none",
@@ -699,7 +701,7 @@ function HandCard({
             All card content (art, badges, bar, overlay) lives inside and
             gets clipped to the card's rounded corners. borderRadius:6
             matches the inner edge of the card's 2px border (8 outer − 2). */}
-        <div style={{ position: "absolute", inset: 0, borderRadius: 6, overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, borderRadius: 6, overflow: "hidden", containerType: "inline-size" }}>
 
         {/* Full-bleed art */}
         <div style={{ position: "absolute", inset: 0 }}>
@@ -739,8 +741,24 @@ function HandCard({
         </div>
 
 
-        {/* Cost badges (mana + life + discard + sacrifice) */}
-        <CostBadges card={card} size={22} effectiveManaCost={effectiveManaCost} isCostReduced={isCostReduced} />
+        {/* Coût : écu héraldique (haut gauche) ; coûts additionnels en pastilles
+            (haut droite). ATK / PV : écus en bas à droite, tons par rapport à la
+            définition (bonus conservés → vert, malus → rouge). */}
+        <CostShield value={effectiveManaCost ?? card.mana_cost} discounted={isCostReduced} />
+        <CostBadges
+          card={card} size={22} effectiveManaCost={effectiveManaCost} isCostReduced={isCostReduced} omitMana corner="right"
+          // Le coin haut droit est déjà pris par la pastille d'Éveil, le marqueur
+          // « EN JEU » du paiement de coûts ou le drapeau de conquête : les
+          // pastilles se décalent d'une case vers la gauche dans ce cas.
+          offset={(onSuspendEveil || (isCostPaymentMode && isPendingCostSource) || (cardInstance.conqueredFromId)) ? 24 : 0}
+        />
+        {isCreature && (
+          <StatShields
+            atk={displayAttack} hp={displayHealth}
+            atkTone={toneFor(displayAttack, card.attack ?? 0)}
+            hpTone={toneFor(displayHealth, card.health ?? 0)}
+          />
+        )}
 
         {/* ÉVEIL — le SECOND geste de la carte.
             Cliquer la carte la joue normalement ; cliquer cette pastille la met
@@ -779,7 +797,8 @@ function HandCard({
             indicateurs de coin. Gradient descendant pour la lisibilité. */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
-          padding: "3px 26px 6px",
+          // Retrait latéral = écu de coût (17.4cqw) + marge (2.6) + 1 d'air.
+          padding: "3px 21cqw 6px",
           background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
         }}>
           {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden`
@@ -868,7 +887,9 @@ function HandCard({
         {/* Bottom bar */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-          padding: "5px 6px 4px",
+          // À droite : la place des écus ATK / PV (absolus), pour que les icônes
+          // s'arrêtent avant au lieu de passer dessous.
+          padding: isCreature ? `5px ${statShieldsReserve(displayAttack, displayHealth)}cqw 4px 6px` : "5px 6px 4px",
           background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
           display: "flex", flexDirection: "column", gap: 3,
         }}>
@@ -968,24 +989,6 @@ function HandCard({
               );
             })}
 
-            {isCreature && (
-              <div style={{ display: "flex", gap: 4, marginLeft: "auto", order: POWER_ORDER_LAST }}>
-                <div style={{
-                  display: "flex", alignItems: "center",
-                  padding: "1px 5px", borderRadius: 4,
-                  background: "#e74c3c18", border: "1px solid #e74c3c55",
-                }}>
-                  <span style={{ fontSize: 13, color: "#e74c3c", fontWeight: 700 }}>{displayAttack}</span>
-                </div>
-                <div style={{
-                  display: "flex", alignItems: "center",
-                  padding: "1px 5px", borderRadius: 4,
-                  background: "#f1c40f18", border: "1px solid #f1c40f55",
-                }}>
-                  <span style={{ fontSize: 13, color: "#f1c40f", fontWeight: 700 }}>{displayHealth}</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

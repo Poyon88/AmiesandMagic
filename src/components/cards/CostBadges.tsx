@@ -13,13 +13,22 @@ interface Props {
   // /Entraide reduced cost). The blue-vs-green colour is driven by isCostReduced.
   effectiveManaCost?: number;
   isCostReduced?: boolean;
+  /** true ⇒ la pastille de MANA n'est pas rendue (le coût est porté par
+   *  l'écu héraldique CostShield) : ne restent que les coûts additionnels. */
+  omitMana?: boolean;
+  /** Coin d'ancrage. "right" : haut DROIT de la carte (les coûts additionnels
+   *  y ont déménagé quand l'écu de coût a pris le coin gauche). */
+  corner?: "left" | "right";
+  /** Décalage supplémentaire (px) depuis le bord d'ancrage — laisse la place
+   *  au badge de quantité « ×N » de GameCard dans le coin droit. */
+  offset?: number;
 }
 
 // Centralised cost row rendered absolute-positioned in the top-left of a card.
 // Replaces the standalone mana orb in GameCard / HandCard / CardPreview. Hides
 // any badge whose value is 0 — a card with mana_cost 0 and life_cost 1 will
 // only show the heart pip.
-export default function CostBadges({ card, size = 22, effectiveManaCost, isCostReduced }: Props) {
+export default function CostBadges({ card, size = 22, effectiveManaCost, isCostReduced, omitMana = false, corner = "left", offset = 0 }: Props) {
   const manaCost = effectiveManaCost ?? card.mana_cost;
   const lifeCost = card.life_cost ?? 0;
   const discardCost = card.discard_cost ?? 0;
@@ -28,7 +37,7 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
   const topdeckCost = card.topdeck_cost ?? 0;
   const eveilCost = card.eveil_cost ?? 0;
 
-  const showMana = manaCost > 0;
+  const showMana = manaCost > 0 && !omitMana;
   const showLife = lifeCost > 0;
   const showDiscard = discardCost > 0;
   const showSacrifice = sacrificeCost > 0;
@@ -40,14 +49,17 @@ export default function CostBadges({ card, size = 22, effectiveManaCost, isCostR
 
   // Edge case: a card declares no costs at all (rare — e.g. "0-cost token").
   // Still render the mana 0 pip so the slot doesn't look empty.
-  const renderEmpty = !showMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck && !showEveil;
+  const renderEmpty = !omitMana && !showMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck && !showEveil;
+  // Mana porté ailleurs et aucun coût additionnel : rien à afficher.
+  if (omitMana && !showLife && !showDiscard && !showSacrifice && !showExile && !showTopdeck && !showEveil) return null;
 
   const fontSize = Math.round(size * 0.6);
   const glyphSize = Math.round(size * 0.5);
 
   return (
     <div style={{
-      position: "absolute", top: size * 0.18, left: size * 0.18, zIndex: 2,
+      position: "absolute", top: size * 0.18, zIndex: 2,
+      ...(corner === "right" ? { right: size * 0.18 + offset } : { left: size * 0.18 + offset }),
       display: "flex", flexDirection: "row", gap: size * 0.18, alignItems: "center",
     }}>
       {(showMana || renderEmpty) && (

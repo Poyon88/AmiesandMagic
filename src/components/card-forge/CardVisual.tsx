@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CostShield, StatShields } from "@/components/card/CardCounters";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
@@ -295,6 +296,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       onMouseLeave={() => setHovered(false)}
       style={{
         width: W, height: H, borderRadius: 12 * s, position: "relative",
+        containerType: "inline-size",
         background: `linear-gradient(160deg,${fac.bg} 0%,#0d0d1a 100%)`,
         border: `${compact ? 1.5 : 2}px solid ${rar.color}`,
         boxShadow: `0 0 ${20 * s}px ${rar.glow}44,0 0 ${50 * s}px ${rar.glow}11,inset 0 0 ${30 * s}px ${fac.color}18`,
@@ -356,10 +358,16 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       )}
 
 
-      {/* ── Top bar: name + mana ── */}
+      {/* ── Coût en écu héraldique (haut gauche) ; les coûts additionnels
+             restent en pastilles dans le bandeau, à droite. ── */}
+      <CostShield value={card!.mana} title={t('mana_cost_title', { mana: card!.mana })} />
+      {card!.type === "Unité" && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} />}
+
+      {/* ── Top bar: name + additional costs ── */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
-        padding: `${8 * s}px ${12 * s}px`,
+        // À gauche : la place de l'écu de coût (17.4cqw + marge).
+        padding: `${8 * s}px ${12 * s}px ${8 * s}px 21cqw`,
         background: `linear-gradient(180deg, ${fac.bg}aa 0%, transparent 60%)`,
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6,
       }}>
@@ -372,16 +380,6 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         </span>
         {/* Cost row: mana + alternative costs (life/discard/sacrifice) */}
         <div style={{ display: "flex", flexDirection: "row", gap: 4 * s, alignItems: "center", flexShrink: 0 }}>
-          {card!.mana > 0 && (
-            <div title={t('mana_cost_title', { mana: card!.mana })} style={{
-              width: 28 * s, height: 28 * s, borderRadius: "50%",
-              background: "radial-gradient(circle,#1a3a6a,#0d1f3c)",
-              border: `${2 * s}px solid #74b9ff`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13 * s, color: "#74b9ff", fontWeight: 700,
-              boxShadow: "0 0 8px #74b9ff55",
-            }}>{card!.mana}</div>
-          )}
           {card!.lifeCost && card!.lifeCost > 0 ? (
             <div title={t('life_cost_title', { life: card!.lifeCost })} style={{
               width: 28 * s, height: 28 * s, borderRadius: "50%",
@@ -618,26 +616,6 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
 
           {/* Stats */}
           <div style={{ display: "flex", gap: 6 * s, alignItems: "center" }}>
-            {card!.type === "Unité" && (
-              <>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 3 * s,
-                  padding: `${2 * s}px ${6 * s}px`, borderRadius: 4 * s,
-                  background: "#ff6b6b18", border: "1px solid #ff6b6b55",
-                }}>
-                  <span style={{ fontSize: 8 * s, color: "#ff6b6b88" }}>⚔</span>
-                  <span style={{ fontSize: 14 * s, color: "#ff6b6b", fontWeight: 700 }}>{card!.attack}</span>
-                </div>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 3 * s,
-                  padding: `${2 * s}px ${6 * s}px`, borderRadius: 4 * s,
-                  background: "#74b9ff18", border: "1px solid #74b9ff55",
-                }}>
-                  <span style={{ fontSize: 8 * s, color: "#74b9ff88" }}>🛡</span>
-                  <span style={{ fontSize: 14 * s, color: "#74b9ff", fontWeight: 700 }}>{card!.defense}</span>
-                </div>
-              </>
-            )}
             {card!.power != null && (
               <div style={{
                 display: "flex", alignItems: "center", gap: 3 * s,

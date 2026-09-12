@@ -12,9 +12,10 @@ import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import { StatShields, statShieldsReserve } from "@/components/card/CardCounters";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
-import { composedDisplayOrder, keywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
+import { composedDisplayOrder, keywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -563,7 +564,7 @@ function BoardCreature({
           content (art, badges, bars, overlays) lives inside and gets
           clipped to the card's rounded corners. borderRadius:8 matches
           the inner edge of the card's 2px border (10 outer − 2 = 8). */}
-      <div style={{ position: "absolute", inset: 0, borderRadius: 8, overflow: "hidden" }}>
+      <div style={{ position: "absolute", inset: 0, borderRadius: 8, overflow: "hidden", containerType: "inline-size" }}>
 
       {/* Full-bleed art */}
       <div style={{ position: "absolute", inset: 0 }}>
@@ -812,10 +813,19 @@ function BoardCreature({
         }} />
       )}
 
+      {/* ATK / PV : écus héraldiques en bas à droite. Le TON du chiffre dit
+          l'état (buff vert, dégâts ou malus rouge), l'or ne change jamais. */}
+      <StatShields
+        atk={creature.currentAttack} hp={creature.currentHealth}
+        atkTone={isBuffedAtk ? "buff" : creature.currentAttack < (card.attack ?? 0) ? "debuff" : "neutral"}
+        hpTone={isDamaged ? "debuff" : isBuffedHp ? "buff" : "neutral"}
+      />
+
       {/* Bottom bar */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-        padding: "6px 6px 5px",
+        // À droite : la place des écus ATK / PV (absolus).
+        padding: `6px ${statShieldsReserve(creature.currentAttack, creature.currentHealth)}cqw 5px 6px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 3,
       }}>
@@ -878,28 +888,6 @@ function BoardCreature({
             );
           })}
 
-          <div style={{ display: "flex", gap: 4, marginLeft: "auto", order: POWER_ORDER_LAST }}>
-            <div style={{
-              display: "flex", alignItems: "center",
-              padding: "1px 5px", borderRadius: 4,
-              background: isBuffedAtk ? "#2ecc7133" : "#e74c3c18",
-              border: `1px solid ${isBuffedAtk ? "#2ecc7188" : "#e74c3c55"}`,
-            }}>
-              <span style={{ fontSize: 14, color: isBuffedAtk ? "#2ecc71" : "#e74c3c", fontWeight: 700 }}>
-                {creature.currentAttack}
-              </span>
-            </div>
-            <div style={{
-              display: "flex", alignItems: "center",
-              padding: "1px 5px", borderRadius: 4,
-              background: isDamaged ? "#e74c3c33" : isBuffedHp ? "#2ecc7133" : "#f1c40f18",
-              border: `1px solid ${isDamaged ? "#e74c3c88" : isBuffedHp ? "#2ecc7188" : "#f1c40f55"}`,
-            }}>
-              <span style={{ fontSize: 14, color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f", fontWeight: 700 }}>
-                {creature.currentHealth}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
 

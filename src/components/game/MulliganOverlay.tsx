@@ -23,6 +23,7 @@ import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import CostBadges from "@/components/cards/CostBadges";
+import { CostShield, StatShields, statShieldsReserve } from "@/components/card/CardCounters";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 
@@ -122,6 +123,7 @@ function MulliganCard({
       style={{
         ...LONG_PRESS_RESET_STYLE,
         width: W, height: H, borderRadius: 12, position: "relative",
+        containerType: "inline-size",
         background: isCreature
           ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
           : "linear-gradient(160deg, #1a0a2a, #0d0d1a)",
@@ -184,7 +186,8 @@ function MulliganCard({
           Forge Runique ») au lieu de les tronquer par « … ». */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
-        padding: "6px 34px 8px",
+        // Retrait latéral = écu de coût (17.4cqw) + marge (2.6) + 1 d'air.
+        padding: "6px 21cqw 8px",
         background: "linear-gradient(180deg, #0d0d1aee 0%, #0d0d1abb 55%, transparent 85%)",
       }}>
         {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden`
@@ -210,12 +213,14 @@ function MulliganCard({
           Rendue APRÈS la barre de nom, et non avant comme ailleurs : le
           dégradé du bandeau est presque opaque en haut et ternirait les
           pastilles. L'ordre du DOM tranche, les deux étant au même z-index. */}
-      <CostBadges card={card} size={28} />
+      <CostShield value={card.mana_cost} />
+      <CostBadges card={card} size={28} omitMana corner="right" />
+      {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
 
       {/* Bottom bar */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-        padding: "8px 8px 6px",
+        padding: isCreature ? `8px ${statShieldsReserve(card.attack ?? 0, card.health ?? 0)}cqw 6px 8px` : "8px 8px 6px",
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4,
       }}>
@@ -312,24 +317,6 @@ function MulliganCard({
             couleur d'accent et la présence même des stats le disent déjà.
             `flex-end` remplace `space-between`, qui ne tenait que par la
             présence du libellé à gauche. */}
-        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-          {isCreature && (
-            <div style={{ display: "flex", gap: 6 }}>
-              <div style={{
-                padding: "2px 6px", borderRadius: 4,
-                background: "#e74c3c18", border: "1px solid #e74c3c55",
-              }}>
-                <span style={{ fontSize: 14, color: "#e74c3c", fontWeight: 700 }}>{card.attack}</span>
-              </div>
-              <div style={{
-                padding: "2px 6px", borderRadius: 4,
-                background: "#f1c40f18", border: "1px solid #f1c40f55",
-              }}>
-                <span style={{ fontSize: 14, color: "#f1c40f", fontWeight: 700 }}>{card.health}</span>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Hover overlay (delayed) */}

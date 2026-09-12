@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
 import CostBadges from "./CostBadges";
+import { CostShield, StatShields, cardAriaLabel, statShieldsReserve } from "@/components/card/CardCounters";
 import { useCardText } from "@/components/game/CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 
@@ -56,7 +57,7 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { titleFontScale } from "@/lib/game/card-title";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
-import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
@@ -265,11 +266,15 @@ export default function GameCard({
         setInternalShowDetails(prev => !prev);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
+      aria-label={cardAriaLabel(localizeName(card), displayedManaCost, isCreature ? { atk: card.attack ?? 0, hp: card.health ?? 0 } : null)}
       style={{
         ...LONG_PRESS_RESET_STYLE,
         width: w, height: h,
         borderRadius: isCreature ? 10 * s : 0,
         position: "relative",
+        // Conteneur de taille : les écus héraldiques (CardCounters) sont
+        // dimensionnés en cqw, 1cqw = 1 % de la largeur de la carte.
+        containerType: "inline-size",
         background: bgGradient,
         border: isCreature ? `2px solid ${borderColor}` : "none",
         clipPath: isCreature ? undefined : spellClipPath,
@@ -316,8 +321,21 @@ export default function GameCard({
       </div>
 
 
-      {/* ── Cost badges (mana + life + discard + sacrifice) ── */}
-      <CostBadges card={card} size={27 * s * CARD_STAT_MULT} effectiveManaCost={effectiveManaCost} />
+      {/* ── Coût : écu héraldique en haut à GAUCHE ; les coûts additionnels
+             (vie, défausse, sacrifice, exil, repli, éveil) restent en pastilles,
+             déplacées en haut à DROITE — décalées du badge « ×N » s'il existe. ── */}
+      <CostShield
+        value={displayedManaCost}
+        discounted={effectiveManaCost != null && effectiveManaCost < card.mana_cost}
+        title={`Coût en mana : ${displayedManaCost}`}
+      />
+      <CostBadges
+        card={card} size={27 * s * CARD_STAT_MULT} effectiveManaCost={effectiveManaCost}
+        omitMana corner="right" offset={count !== undefined ? 26 * s : 0}
+      />
+      {/* ── ATK / PV : écus héraldiques en bas à droite (créatures seulement).
+             Carte « catalogue » : valeurs de la définition, ton neutre. ── */}
+      {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
 
       {/* ── Count badge ── */}
       {count !== undefined && (
@@ -334,7 +352,9 @@ export default function GameCard({
              pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, zIndex: 2,
-        padding: `${4 * s}px ${42 * s}px ${8 * s}px`,
+        // Retrait latéral = largeur de l'écu de coût (17.4cqw) + sa marge
+        // (2.6cqw) + 1cqw d'air, des deux côtés pour garder le titre centré.
+        padding: `${4 * s}px 21cqw ${8 * s}px`,
         background: "linear-gradient(180deg, #0d0d1add 0%, #0d0d1a88 45%, transparent 78%)",
       }}>
         {/* La boîte tronquée ne porte AUCUN padding : `overflow: hidden` découpe
@@ -353,7 +373,9 @@ export default function GameCard({
       {/* ── Bottom bar: keywords + stats ── */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-        padding: `${6 * s}px ${8 * s}px ${isCreature ? 6 * s : spellPointDepth + 4}px`,
+        // À droite : la place des écus ATK / PV (en absolu, bas droite) pour
+        // que les icônes s'arrêtent avant, au lieu de passer dessous.
+        padding: `${6 * s}px ${isCreature ? `${statShieldsReserve(card.attack ?? 0, card.health ?? 0)}cqw` : `${8 * s}px`} ${isCreature ? 6 * s : spellPointDepth + 4}px ${8 * s}px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4 * s,
       }}>
@@ -468,25 +490,8 @@ export default function GameCard({
             );
           })}
 
-          {/* Stats — pushed to right */}
-          {isCreature && (
-            <div style={{ display: "flex", gap: 6 * s, marginLeft: "auto", order: POWER_ORDER_LAST }}>
-              <div style={{
-                display: "flex", alignItems: "center",
-                padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
-                background: "#e74c3c18", border: "1px solid #e74c3c55",
-              }}>
-                <span style={{ fontSize: 17 * s * CARD_STAT_MULT, color: "#e74c3c", fontWeight: 700, lineHeight: 1 }}>{card.attack}</span>
-              </div>
-              <div style={{
-                display: "flex", alignItems: "center",
-                padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
-                background: "#f1c40f18", border: "1px solid #f1c40f55",
-              }}>
-                <span style={{ fontSize: 17 * s * CARD_STAT_MULT, color: "#f1c40f", fontWeight: 700, lineHeight: 1 }}>{card.health}</span>
-              </div>
-            </div>
-          )}
+          {/* Les stats ne vivent plus dans la barre : écus héraldiques en
+              absolu (StatShields, ci-dessous), la barre leur réserve la place. */}
         </div>
 
         {/* Print number */}
