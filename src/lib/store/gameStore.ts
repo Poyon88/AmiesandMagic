@@ -4756,6 +4756,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       // DERNIER, et sans ce report la cible collectée juste avant serait perdue —
       // l'effet ciblé repartait à vide.
       const carte = get().collectedTargetMap;
+      // Pendant SORT de l'enchaînement ci-dessus : un sort qui porte une modale
+      // de deck ET une Sélection (Carrefour des Destins : Divination · Présage ·
+      // Sélection Royale 5) doit encore poser sa question « 1 parmi 3 ». Sans
+      // ce maillon, le sort partait sans slot `selection_0` et le moteur
+      // laissait tomber la Sélection EN SILENCE. Les réponses de deck restent
+      // dans `collectedDeckChoices` : le dispatch du mode sélection les relit.
+      if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, carte)) {
+        return null;
+      }
       return get().dispatchAction({
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
@@ -4808,10 +4817,21 @@ export const useGameStore = create<GameStore>((set, get) => {
         // carries any on-board targets gathered before this picker (e.g.
         // Renforcement → Sélection magique), so they reach the engine on
         // the same dispatch.
+        //
+        // Réponses de deck données AVANT ce picker (Divination / Présage /
+        // Creuser puis Sélection) : elles voyagent aussi, sinon le moteur
+        // résoudrait les modales de deck avec l'index 0 par défaut.
+        const choixDeck = get().collectedDeckChoices;
+        const kwDeck = get().deckPickerKeyword;
+        const aDesChoixDeck = Object.keys(choixDeck).length > 0;
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
           targetMap: { ...collectedTargetMap, selection_0: String(cardId) },
+          ...(aDesChoixDeck ? { deckChoiceIndices: choixDeck } : {}),
+          // Champ historique : l'index de la DERNIÈRE modale de deck répondue,
+          // comme le dispatch direct du mode divination.
+          ...(aDesChoixDeck && kwDeck && choixDeck[kwDeck] != null ? { divinationChoiceIndex: choixDeck[kwDeck] } : {}),
         });
       }
       // Creature selection: merge in pendingCreatureChain (carries the
