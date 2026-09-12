@@ -6949,26 +6949,40 @@ export const PRESAGE_REVEAL_COUNT = 3;
  *  déclencheur curé), qui dupliquaient chacun la même boucle. */
 function resolveDivination(player: PlayerState, choiceIndex: number | undefined): void {
   if (player.deck.length === 0) return;
-  const top = player.deck.splice(0, Math.min(3, player.deck.length));
-  const idx = choiceIndex != null
-    ? Math.min(Math.max(0, choiceIndex), top.length - 1)
-    : Math.floor(rng() * top.length);
-  player.deck.unshift(top[idx]);
-  for (let i = 0; i < top.length; i++) {
-    if (i !== idx) player.deck.push(top[i]);
-  }
+  const n = Math.min(3, player.deck.length);
+  const idx = choiceIndex != null ? choiceIndex : Math.floor(rng() * n);
+  player.deck = deckAfterDivination(player.deck, idx);
+}
+
+/** DIVINATION — le deck RÉSULTANT, sans mutation : la carte révélée d'indice
+ *  `choiceIndex` reste dessus, les autres révélées passent au fond dans leur
+ *  ordre. PURE et exportée : le client s'en sert pour construire la modale
+ *  SUIVANTE (Présage, Creuser…) sur le deck tel que le moteur le laissera —
+ *  sans quoi un Présage enchaîné après une Divination montrait les trois cartes
+ *  d'AVANT le remontage, et l'index désigné visait une autre carte. Une seule
+ *  source pour les deux côtés. */
+export function deckAfterDivination<T>(deck: readonly T[], choiceIndex: number): T[] {
+  if (deck.length === 0) return [...deck];
+  const n = Math.min(3, deck.length);
+  const top = deck.slice(0, n);
+  const idx = Math.min(Math.max(0, choiceIndex), n - 1);
+  return [top[idx], ...deck.slice(n), ...top.filter((_, i) => i !== idx)];
 }
 
 function resolveCreuser(player: PlayerState, x: number, choiceIndex: number | undefined): void {
-  if (x <= 0 || player.deck.length === 0) return;
-  const count = Math.min(x, player.deck.length);
-  const bottom = player.deck.splice(player.deck.length - count, count);
-  const idx = Math.min(Math.max(0, choiceIndex ?? 0), bottom.length - 1);
-  const chosen = bottom[idx];
-  for (let i = 0; i < bottom.length; i++) {
-    if (i !== idx) player.deck.push(bottom[i]); // les autres repartent au fond
-  }
-  player.deck.unshift(chosen); // la carte choisie passe sur le dessus
+  player.deck = deckAfterCreuser(player.deck, x, choiceIndex ?? 0);
+}
+
+/** CREUSER X — le deck RÉSULTANT, sans mutation : la carte du fond d'indice
+ *  `choiceIndex` (dans l'ordre où le picker les montre, cf. getCreuserCards)
+ *  passe sur le dessus, les autres restent au fond. Même contrat et même raison
+ *  d'être que `deckAfterDivination`. */
+export function deckAfterCreuser<T>(deck: readonly T[], x: number, choiceIndex: number): T[] {
+  if (x <= 0 || deck.length === 0) return [...deck];
+  const count = Math.min(x, deck.length);
+  const bottom = deck.slice(deck.length - count);
+  const idx = Math.min(Math.max(0, choiceIndex), count - 1);
+  return [bottom[idx], ...deck.slice(0, deck.length - count), ...bottom.filter((_, i) => i !== idx)];
 }
 
 /** PRÉSAGE — révèle les 3 premières cartes du deck ; le joueur en désigne une,

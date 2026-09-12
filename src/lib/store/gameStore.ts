@@ -51,6 +51,8 @@ import {
   getRenfortRoyalCards,
   creatureNeedsMagicalSelection,
   getMagicalSelectionCards,
+  deckAfterDivination,
+  deckAfterCreuser,
   plafondSelection,
   selectionAmplitudeOnPlay,
   getSpellGraveyardTargets,
@@ -1519,6 +1521,39 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   /** X de Creuser — même calcul qu'à la résolution (amplification comprise),
    *  sans quoi la modale montrerait un autre nombre de cartes que le moteur. */
+  /** Le deck TEL QUE LE MOTEUR LE LAISSERA après les réponses déjà données aux
+   *  modales de deck de cette carte (dans l'ordre d'auteur), en partant du deck
+   *  après Repli. C'est sur ce deck que la modale SUIVANTE doit être bâtie :
+   *  Présage après Divination doit révéler la carte que Divination vient de
+   *  remonter, et non les trois cartes d'avant — sinon l'index désigné, appliqué
+   *  par le moteur APRÈS le remontage, visait une autre carte (vu en partie sur
+   *  « Carrefour des Destins »). Présage remélange tout le deck : rien à
+   *  simuler après lui, le deck reste tel quel (approximation assumée, Présage
+   *  est presque toujours dernier). */
+  const deckApresReponses = (gs: GameState, card: Card, deck: CardInstance[]): CardInstance[] => {
+    const choix = get().collectedDeckChoices;
+    let d = deck;
+    for (const kw of onPlayDeckPickers(card)) {
+      const idx = choix[kw];
+      if (idx == null) continue;
+      if (kw === "divination") d = deckAfterDivination(d, idx);
+      else if (kw === "creuser") d = deckAfterCreuser(d, creuserXFor(gs, card), idx);
+    }
+    return d;
+  };
+
+  /** Deck après le REPLI en cours de paiement (cartes désignées remises sur le
+   *  dessus, dans l'ordre du moteur). Identique à `deckApresRepli` du flux de
+   *  coûts ; ici pour les modales ENCHAÎNÉES, qui repartaient du deck brut. */
+  const deckApresRepliCourant = (player: PlayerState): CardInstance[] => {
+    const ids = get().selectedTopdeckIds;
+    if (ids.length === 0) return player.deck;
+    return [
+      ...ids.map(id => player.hand.find(c => c.instanceId === id)).filter((c): c is CardInstance => !!c),
+      ...player.deck,
+    ];
+  };
+
   const creuserXFor = (gs: GameState, card: Card): number => {
     const base = card.card_type === "spell"
       ? ((card.spell_keywords ?? []).find(kw => kw.id === "creuser")?.amount ?? 1)
@@ -4659,8 +4694,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (kwCourant) set({ collectedDeckChoices: choix });
 
       const carteJouee = gs ? carteJouable(gs.players[gs.currentPlayerIndex], selectedCardInstanceId) : null;
+      // La modale SUIVANTE se bâtit sur le deck tel que les réponses déjà
+      // données (et le Repli) le laisseront — cf. deckApresReponses.
       if (gs && kwCourant && carteJouee && openNextDeckPicker(
-        gs, carteJouee.card, selectedCardInstanceId, gs.players[gs.currentPlayerIndex].deck,
+        gs, carteJouee.card, selectedCardInstanceId,
+        deckApresReponses(gs, carteJouee.card, deckApresRepliCourant(gs.players[gs.currentPlayerIndex])),
       )) {
         return null;
       }
