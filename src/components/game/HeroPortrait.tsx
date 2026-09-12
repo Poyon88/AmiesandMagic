@@ -106,14 +106,19 @@ export default function HeroPortrait({
           ? { ...LONG_PRESS_RESET_STYLE, boxShadow: `0 0 0 2px ${validTargetColor}, 0 0 14px 2px ${validTargetColor}66` }
           : LONG_PRESS_RESET_STYLE}
         className={`
-          pointer-events-none relative w-40 h-48 rounded-xl overflow-hidden
+          pointer-events-none relative w-48 h-48 lg:w-52 lg:h-52 rounded-xl overflow-hidden
           transition-[box-shadow,transform]
           ${isValidTarget && !powerRing ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] hover:scale-105" : ""}
           ${powerRing ? "hover:scale-105" : ""}
           ${onClick && !isValidTarget ? "hover:scale-105" : ""}
         `}
       >
-        {/* Hero portrait — admin-uploaded 2D image (`thumbnailUrl`) wins
+        {/* Cadre CARRÉ (192 px, 208 px sur grand écran) : les vignettes de héros
+            sont carrées (768² / 2048²) et l'ancien cadre 160 × 192 en `cover`
+            rognait 16 px de chaque côté du médaillon. La pile de main adverse
+            (GameBoard, disposition MTGO) se cale sur cette largeur — à garder
+            en phase si elle change.
+            Hero portrait — admin-uploaded 2D image (`thumbnailUrl`) wins
             over the faction-default fallback so per-hero artwork shows up
             for 2D-only heroes. The race-default keeps the legacy 3D
             heroes' portraits looking right when they're shown in a
@@ -157,7 +162,7 @@ export default function HeroPortrait({
             (pointer-events-none above); only this ~55%-wide disc over the
             crest captures clicks/taps. This keeps hand cards that peek out
             from behind the floating portrait tappable on touch/iPad, where
-            the full 160×192 box used to steal their taps. */}
+            the full portrait box used to steal their taps. */}
         <div
           data-target-id={isOpponent ? "enemy_hero" : "friendly_hero"}
           {...longPress.handlers}

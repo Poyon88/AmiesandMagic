@@ -1088,7 +1088,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           <div
             className={`absolute z-20 flex items-center gap-3 ${
               isMtgo
-                ? "top-[1%] left-[14%]"
+                // Calée sur la LARGEUR du portrait de héros (1 % de marge +
+                // 192 / 208 px de cadre + 12 px d'air) plutôt qu'un 14 % de
+                // la largeur d'écran : à 14 %, la pile mordait sur le portrait
+                // dès qu'on l'agrandissait ou que l'écran rétrécissait.
+                ? "top-[1%] left-[calc(1%_+_204px)] lg:left-[calc(1%_+_220px)]"
                 : "top-[1%] right-[2%]"
             }`}
           >
