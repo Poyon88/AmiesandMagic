@@ -1064,6 +1064,16 @@ function applyComposedToHero(
   else if (content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
 }
 
+/** Un effet composé CIBLE-t-il ses unités ? Seul « au choix » désigne ; au
+ *  hasard / toutes / répartition / automatique atteignent sans cibler, donc
+ *  sans se heurter aux protections de ciblage (Ombre non révélée, Invisible).
+ *  Le sélecteur « au choix » les avait déjà exclues du pool (cf.
+ *  composedChoiceTargetIds) ; ici on empêche seulement le résolveur par unité
+ *  de les ré-appliquer à un effet qui n'a désigné personne. */
+function designationCiblee(composed: import("./types").ComposedEffect): boolean {
+  return composed.target?.designation === "choice";
+}
+
 function applyComposedToUnit(
   composed: import("./types").ComposedEffect,
   u: CardInstance,
@@ -1087,7 +1097,7 @@ function applyComposedToUnit(
       return;
     }
     case "retour_differe": {
-      resolveRetourDiffere(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell);
+      resolveRetourDiffere(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell, designationCiblee(composed));
       return;
     }
     case "deal_damage": {
@@ -1136,7 +1146,7 @@ function applyComposedToUnit(
     // à l'attaque, à l'entrée ou en fin de tour, la capacité était inerte.
     case "bounce":
       if (source && u.instanceId === source.instanceId) resolveSelfBounce(u, owner, opponent);
-      else resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell);
+      else resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell, designationCiblee(composed));
       break;
     case "grant_keyword":
       if (composed.grantAbilityId) {
@@ -6832,12 +6842,14 @@ function resolveRetourDiffere(
   controller: PlayerState,
   other: PlayerState,
   sourceIsSpell = false,
+  // Même contrat que resolveRemontee : false pour une désignation NON ciblée.
+  targeted = true,
 ): void {
   let target: CardInstance | undefined;
   if (targetInstanceId) {
     const cand = findCreatureOnBoard(controller, targetInstanceId)
       ?? findCreatureOnBoard(other, targetInstanceId);
-    if (cand && canBeRemonteed(cand, sourceInstanceId, sourceIsSpell)) target = cand;
+    if (cand && canBeRemonteed(cand, sourceInstanceId, sourceIsSpell, targeted)) target = cand;
   } else {
     // Sans cible explicite (sort relancé, mode attaque) : tirage au sort, comme
     // Remontée — le flux synchrone ne peut pas ouvrir de picker.
@@ -7351,12 +7363,18 @@ function triggerReturnToHand(ci: CardInstance, owner: PlayerState, opponent: Pla
 // `sourceIsSpell` : Transcendance n'immunise que les sorts. Un renvoi en main
 // (Remontée) déclenché par une capacité de créature peut donc viser une unité
 // transcendante ; seul un sort la respecte. Défaut true (compat sûre).
-function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null, sourceIsSpell = true): boolean {
+// `targeted` : l'unité est-elle DÉSIGNÉE (au choix, ou tirage qui tient lieu de
+// choix) ? Invisible et Ombre non révélée sont des protections de CIBLAGE — « ne
+// peut être ciblée » — pas des immunités : un effet composé « au hasard » ou
+// « toutes » ne cible personne, il les atteint (Les Vents Renversent la
+// Bataille : 3 unités ennemies au hasard, toutes dans l'ombre → aucune ne
+// partait, en silence). Ancré (immunité au renvoi) et Transcendance (immunité
+// aux sorts) tiennent dans tous les cas.
+function canBeRemonteed(c: CardInstance, sourceInstanceId: string | null, sourceIsSpell = true, targeted = true): boolean {
   return c.instanceId !== sourceInstanceId
     && !hasKw(c, "ancre")
-    && !hasKw(c, "invisible")
     && (!sourceIsSpell || !hasKw(c, "transcendance"))
-    && !(hasKw(c, "ombre") && !c.ombreRevealed);
+    && (!targeted || (!hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed)));
 }
 
 // Auto-renvoi à la mort, exprimé par le modèle COMPOSÉ : une capacité « bounce » sur on_death
@@ -7432,13 +7450,16 @@ function resolveRemontee(
   // Transcendance n'immunise que des sorts : par défaut (capacité de créature)
   // une unité transcendante est renvoyable. Les sorts passent sourceIsSpell=true.
   sourceIsSpell = false,
+  // false ⇒ l'unité vient d'une désignation NON ciblée (composé au hasard /
+  // toutes) : les protections de ciblage ne jouent pas (cf. canBeRemonteed).
+  targeted = true,
 ): void {
   const sourceId = sourceInstanceId;
   let target: CardInstance | undefined;
   if (targetInstanceId) {
     const cand = findCreatureOnBoard(controller, targetInstanceId)
       ?? findCreatureOnBoard(other, targetInstanceId);
-    if (cand && canBeRemonteed(cand, sourceId, sourceIsSpell)) target = cand;
+    if (cand && canBeRemonteed(cand, sourceId, sourceIsSpell, targeted)) target = cand;
   } else {
     const pool = [...controller.board, ...other.board].filter(c => canBeRemonteed(c, sourceId, sourceIsSpell));
     if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
