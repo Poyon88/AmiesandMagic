@@ -183,7 +183,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Main REPLIÉE : glissée sous le bord bas, un liseré reste visible. Sert à
   // voir ce que la main recouvre (plateau, pioche, cimetière) quand elle est
-  // pleine. Repli local à l'écran, hors état de partie ; se relève d'elle-même
+  // pleine. Pilotée à la MOLETTE (cf. basculerMainMolette) et au clic sur le
+  // liseré — le bouton dédié a été retiré à la demande de l'auteur, la molette
+  // suffit. Repli local à l'écran, hors état de partie ; se relève d'elle-même
   // au changement de tour pour ne pas laisser un joueur croire sa main vide.
   const [handHidden, setHandHidden] = useState(false);
   // Molette sur la main : vers le HAUT sur une carte → repli ; vers le BAS sur
@@ -1591,21 +1593,6 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               END TURN
             </span>
           </button>
-          {/* Replier / déplier la MAIN. Ici, dans la colonne que la main
-              n'atteint jamais : le bouton reste accessible quand elle est
-              pleine — c'est précisément là qu'on en a besoin. */}
-          {myPlayer.hand.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setHandHidden((h) => !h)}
-              aria-pressed={handHidden}
-              className="text-xs text-foreground/80 hover:text-foreground transition-colors bg-black/50 border border-card-border rounded px-3 py-2 min-h-[36px] flex items-center gap-1.5"
-              title={handHidden ? t("hand_show") : t("hand_hide")}
-            >
-              <span aria-hidden>{handHidden ? "▲" : "▼"}</span>
-              <span>{handHidden ? t("hand_show") : t("hand_hide")}</span>
-            </button>
-          )}
           {/* Pouvoir héroïque tactile, dans la zone toujours dégagée du bord
               droit (cf. commentaire ci-dessus). Tactile uniquement ; sur desktop
               le clic/double-clic du portrait pilote le pouvoir. */}

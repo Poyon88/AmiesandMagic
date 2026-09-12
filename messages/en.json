@@ -2442,7 +2442,6 @@
     "zone_eveil": "Awakening",
     "zone_eveil_yours": "Your Awakening",
     "zone_eveil_opponent": "Opponent's Awakening",
-    "hand_hide": "Hide hand",
     "hand_show": "Show hand",
     "eveil_hint": "Pay 1 mana per click. On the last point, the card enters play as if it came from your hand.",
     "eveil_remaining": "{count, plural, one {# point remaining} other {# points remaining}}",
