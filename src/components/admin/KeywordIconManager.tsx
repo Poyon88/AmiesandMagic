@@ -10,8 +10,9 @@ import type { Keyword } from "@/lib/game/types";
 // Liste unifiée des icônes gérables. Une capacité peut vivre côté créature
 // (clé = id), côté sort (clé de stockage = `spell_<id>`), ou LES DEUX
 // (polymorphe). Pour les polymorphes, on n'affiche qu'UNE ligne (clé créature
-// canonique) : l'upload/échelle s'y applique et se propage à la forme sort via
-// POLYMORPHIC_ICON_KEY_FALLBACK (miroir déjà en place dans le store + le rendu).
+// canonique) : l'API écrit upload/échelle/reset sur les DEUX clés de stockage
+// (cf. storageKeysFor dans /api/keyword-icons) — le miroir du store ne couvre
+// que le cas où la clé sœur n'a aucune ligne, or les deux existent souvent.
 type IconEntry = { key: string; label: string; symbol: string; kind: "creature" | "spell" | "both" };
 
 const ICON_ENTRIES: IconEntry[] = (() => {

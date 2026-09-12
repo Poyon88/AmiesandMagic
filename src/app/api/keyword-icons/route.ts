@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { POLYMORPHIC_ICON_KEY_FALLBACK } from '@/lib/game/abilities';
+
+/** Clés de stockage visées par une écriture sur `keyword`.
+ *
+ *  Une capacité POLYMORPHE (créature + sort) a historiquement DEUX lignes :
+ *  `<id>` et `spell_<id>`, chacune avec sa propre image et sa propre échelle.
+ *  L'admin n'affiche pourtant qu'UNE ligne « CRÉ. + SORT » (clé créature) et
+ *  n'écrivait que celle-là : la ligne sort gardait son ancienne valeur, donc
+ *  l'échelle « ne s'enregistrait pas » sur les sorts. Le miroir du store ne
+ *  couvre que le cas où la sœur n'a AUCUNE ligne. Toute écriture (échelle,
+ *  import, réinitialisation) porte donc sur les deux clés. */
+function storageKeysFor(keyword: string): string[] {
+  const sibling = POLYMORPHIC_ICON_KEY_FALLBACK[keyword];
+  return sibling && sibling !== keyword ? [keyword, sibling] : [keyword];
+}
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -112,12 +127,21 @@ export async function POST(request: Request) {
   // Mise à jour de l'échelle seule (sans nouveau fichier) : l'icône doit déjà
   // exister (l'échelle n'a de sens qu'avec une image uploadée).
   if (!file && scale != null) {
-    const { error } = await supabase
+    const { data: touched, error } = await supabase
       .from('keyword_icons')
       .update({ scale, updated_at: new Date().toISOString() })
-      .eq('keyword', keyword);
+      .in('keyword', storageKeysFor(keyword))
+      .select('keyword');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, scale });
+    // Un UPDATE sans ligne réussissait en silence : l'admin voyait « Échelle
+    // enregistrée » alors que rien n'avait bougé.
+    if (!touched?.length) {
+      return NextResponse.json(
+        { error: `Aucune icône importée pour « ${keyword} » : importez d'abord une image.` },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json({ success: true, scale, keys: touched.map((r) => r.keyword) });
   }
 
   if (file) {
@@ -140,11 +164,14 @@ export async function POST(request: Request) {
 
     // Upsert in keyword_icons table. `scale` n'est inclus que s'il est fourni,
     // pour ne pas réinitialiser l'échelle existante lors d'un simple ré-upload.
-    const row: Record<string, unknown> = { keyword, icon_url: iconUrl, updated_at: new Date().toISOString() };
-    if (scale != null) row.scale = scale;
+    const rows = storageKeysFor(keyword).map((k) => {
+      const row: Record<string, unknown> = { keyword: k, icon_url: iconUrl, updated_at: new Date().toISOString() };
+      if (scale != null) row.scale = scale;
+      return row;
+    });
     const { error } = await supabase
       .from('keyword_icons')
-      .upsert(row, { onConflict: 'keyword' });
+      .upsert(rows, { onConflict: 'keyword' });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -175,7 +202,7 @@ export async function DELETE(request: Request) {
 
   if (!keyword) return NextResponse.json({ error: 'keyword requis' }, { status: 400 });
 
-  await supabase.from('keyword_icons').delete().eq('keyword', keyword);
+  await supabase.from('keyword_icons').delete().in('keyword', storageKeysFor(keyword));
 
   return NextResponse.json({ success: true });
 }
