@@ -66,17 +66,24 @@ export async function GET() {
   // Le nombre de communes par faction : c'est l'information qui décide l'achat.
   // Une faction à trois cartes et une à cent au même prix, il faut que le joueur
   // le voie AVANT de payer, pas après.
-  const { data: commons } = await supabase
-    .from("cards")
-    .select("faction")
-    .eq("rarity", FREE_RARITY)
-    .not("set_id", "is", null);
-
-  const compte = new Map<string, number>();
-  for (const c of commons ?? []) {
-    const f = (c as { faction: string | null }).faction;
-    if (f) compte.set(f, (compte.get(f) ?? 0) + 1);
-  }
+  //
+  // COMPTAGE SERVEUR (`count: "exact", head: true`), une requête par faction :
+  // l'ancien `select("faction")` sur toutes les Communes dépassait le plafond
+  // PostgREST de 1 000 lignes et comptait EN SILENCE sur un sous-ensemble
+  // arbitraire — les nombres affichés étaient faux. Aucune ligne transférée ici.
+  const comptages = await Promise.all(
+    STARTER_FACTION_IDS.map(async (id) => {
+      const { count, error } = await supabase
+        .from("cards")
+        .select("id", { count: "exact", head: true })
+        .eq("rarity", FREE_RARITY)
+        .eq("faction", id)
+        .not("set_id", "is", null);
+      if (error) console.warn(`[faction-shop] comptage des communes de ${id} en échec :`, error.message);
+      return [id, count ?? 0] as const;
+    }),
+  );
+  const compte = new Map<string, number>(comptages);
 
   const possedees = new Set((unlocks ?? []).map((u) => u.faction as string));
   const forfait = profile?.all_commons_unlocked === true;
