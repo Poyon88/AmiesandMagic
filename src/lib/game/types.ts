@@ -635,7 +635,12 @@ export interface ComposedEffect {
    *  saisi, qui devient donc un PLAFOND. Le tirage a lieu une seule fois, au
    *  moment où l'effet entre dans la pile — jamais deux fois, sans quoi le
    *  sélecteur de cibles et la résolution verraient deux nombres différents
-   *  (cf. `getComposedGraveyardTargets`, dont le pool dépend de X). */
+   *  (cf. `getComposedGraveyardTargets`, dont le pool dépend de X).
+   *
+   *  EXCEPTION — `content: "invocation"` : `randomX` ne tire pas X, il fait de
+   *  X un PLAFOND de coût (créature au hasard parmi celles de coût 1 à X),
+   *  comme le `randomY` de Déchainement. Un tirage de coût suivi d'un coût
+   *  EXACT rendait l'effet muet dès qu'un palier n'a pas de candidat. */
   magnitude?: { x?: number; y?: number; randomX?: boolean; randomY?: boolean };
   /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
   target?: TargetSpec;

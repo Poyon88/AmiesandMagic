@@ -5,15 +5,15 @@
 // Comme les Sélections composées, il se restreint par `pool` : race, faction,
 // clan ou mot-clé porté. Une restriction REMPLACE le filtre d'alignement, sans
 // quoi « race Loups » sur une carte neutre ne trouverait jamais rien.
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { applyAction } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, Card, CardInstance, ComposedPoolFilter, GameState } from "./types";
 
-function invocationSpell(x: number, pool?: ComposedPoolFilter): CardInstance {
+function invocationSpell(x: number, pool?: ComposedPoolFilter, randomX = false): CardInstance {
   const caps: Capability[] = [{
     uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
-    composed: { content: "invocation", magnitude: { x }, ...(pool ? { pool } : {}) },
+    composed: { content: "invocation", magnitude: { x, ...(randomX ? { randomX: true } : {}) }, ...(pool ? { pool } : {}) },
   }];
   return mkInstance(mkCard({
     name: "Appel", card_type: "spell", attack: null, health: null, capabilities: caps as never,
@@ -30,6 +30,8 @@ function cast(s: GameState, spell: CardInstance): GameState {
   s.players[0].hand.push(spell);
   return applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
 }
+
+afterEach(() => vi.restoreAllMocks());
 
 describe("Invocation composée", () => {
   it("invoque une créature au coût EXACT, pas « au plus »", () => {
@@ -72,6 +74,57 @@ describe("Invocation composée", () => {
     const next = cast(s, invocationSpell(2, { keywordId: "charge" }));
 
     expect(summoned(next)).toEqual(["Rapide"]);
+  });
+
+  it("tirage vide : un warn console, pour que le silence se voie", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const s = mkState();
+    s.factionCardPool = [poolCard("Elfe", 6, { race: "Elfes" })];
+
+    cast(s, invocationSpell(6, { race: "Phoenix" }));
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("aucune créature au coût 6"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Phoenix"));
+  });
+
+  // « X au hasard » sur une Invocation : X est un PLAFOND de coût, pas un
+  // tirage de coût suivi d'un coût exact — sinon l'Aspirant Prince-Dragon
+  // (dragons à 4 seulement, X tiré entre 1 et 4) restait muet 3 fois sur 4.
+  describe("X au hasard = plafond de coût", () => {
+    it("invoque toujours quand un seul palier est peuplé", () => {
+      for (let seed = 0; seed < 12; seed++) {
+        const s = mkState();
+        s.rngState = 1000 + seed;
+        s.factionCardPool = [
+          poolCard("Jeune Dragon", 4, { race: "Dragons" }),
+          poolCard("Nain", 2, { race: "Nains" }),
+        ];
+
+        const next = cast(s, invocationSpell(4, { race: "Dragons" }, true));
+
+        expect(summoned(next)).toEqual(["Jeune Dragon"]);
+      }
+    });
+
+    it("le plafond exclut les coûts supérieurs à X et le hasard porte sur la créature", () => {
+      const vus = new Set<string>();
+      for (let seed = 0; seed < 30; seed++) {
+        const s = mkState();
+        s.rngState = 2000 + seed;
+        s.factionCardPool = [
+          poolCard("Dragonnet", 2, { race: "Dragons" }),
+          poolCard("Jeune Dragon", 4, { race: "Dragons" }),
+          poolCard("Grand Dragon", 9, { race: "Dragons" }),
+        ];
+
+        const next = cast(s, invocationSpell(4, { race: "Dragons" }, true));
+
+        expect(summoned(next)).toHaveLength(1);
+        expect(summoned(next)[0]).not.toBe("Grand Dragon");
+        vus.add(summoned(next)[0]);
+      }
+      expect(vus).toEqual(new Set(["Dragonnet", "Jeune Dragon"]));
+    });
   });
 
   it("sans restriction : repli sur l'alignement de la carte source", () => {

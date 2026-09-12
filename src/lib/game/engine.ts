@@ -1465,6 +1465,8 @@ function resolveComposedEffect(
         owner, invocCard, x,
         currentCardPools.factionCardPool, currentFormatCode,
         composed.pool,
+        // « X au hasard » ⇒ X est un plafond de coût (cf. figerAmplitudeAleatoire).
+        composed.magnitude?.randomX === true,
       );
       return;
     }
@@ -7662,6 +7664,15 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
 function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): import("./types").ComposedEffect {
   const m = composed.magnitude;
   if (!m?.randomX && !m?.randomY) return composed;
+  // INVOCATION : « X au hasard » n'est PAS un tirage de coût. Invocation exige
+  // un coût EXACT, et tirer X avant de chercher une créature à ce coût précis
+  // rend l'effet muet dès que la race visée n'a pas de représentant à chaque
+  // palier (Aspirant Prince-Dragon : dragons à 4 seulement, X tiré entre 1 et
+  // 4 ⇒ trois fois sur quatre aucun candidat). Même arbitrage que Déchainement
+  // Y au hasard : X reste un PLAFOND qui filtre le pool (coût 1 à X), et le
+  // hasard porte sur la créature. Le drapeau est donc CONSERVÉ pour que le
+  // résolveur le lise — toujours idempotent, rien n'est tiré ici.
+  if (composed.content === "invocation") return composed;
   const tirer = (plafond: number | undefined): number | undefined => {
     if (plafond == null || plafond < 1) return plafond;
     return 1 + Math.floor(rng() * plafond);
@@ -11292,6 +11303,9 @@ function resolveInvocationSummon(
   // pouvoir piocher hors de l'alignement de la carte source. Vide ⇒ comportement
   // historique d'Invocation X (factions du même alignement).
   restrict?: ComposedPoolFilter,
+  // Invocation composée « X au hasard » : X devient un PLAFOND (coût 1 à X)
+  // au lieu d'un coût exact, et le hasard porte sur la créature tirée.
+  plafond = false,
 ): void {
   if (owner.board.length >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
@@ -11302,7 +11316,7 @@ function resolveInvocationSummon(
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "creature"
-    && c.mana_cost === x
+    && (plafond ? (c.mana_cost >= 1 && c.mana_cost <= x) : c.mana_cost === x)
     && (restricted
       // matchesPoolFilter : même prédicat que les Sélections composées, donc
       // clan et « mot-clé porté » deviennent utilisables ici aussi.
@@ -11312,7 +11326,18 @@ function resolveInvocationSummon(
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
     && (!legal || legal(c)),
   );
-  if (candidates.length === 0) return;
+  if (candidates.length === 0) {
+    // Un tirage vide est un no-op TOTALEMENT silencieux en partie (Renaissance
+    // de l'Aube Immémoriale : « race Phoenix, coût 6 » quand aucun phénix ne
+    // coûte 6) : autant que ça se voie en console, comme pour Compagnons et
+    // l'Invocation désignée.
+    console.warn(
+      `[engine] Invocation : aucune créature au coût ${plafond ? `1 à ${x}` : x}`
+      + (restricted ? ` pour le filtre ${JSON.stringify(restrict)}` : "")
+      + ` dans la collection pour « ${sourceCard.name} » — rien n'est invoqué.`,
+    );
+    return;
+  }
   // Pondération 2:1 en faveur de l'alignement propre — sauf quand `restrict`
   // a REMPLACÉ le filtre d'alignement : « invoque un Loup » ne doit pas se voir
   // réintroduire une préférence d'alignement par la bande.
