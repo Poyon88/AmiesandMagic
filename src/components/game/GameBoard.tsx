@@ -186,6 +186,22 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // pleine. Repli local à l'écran, hors état de partie ; se relève d'elle-même
   // au changement de tour pour ne pas laisser un joueur croire sa main vide.
   const [handHidden, setHandHidden] = useState(false);
+  // Molette sur la main : vers le BAS sur une carte → repli ; vers le HAUT sur
+  // le liseré replié → dépli. Anti-rebond : un pavé tactile émet une rafale
+  // d'événements (inertie), sans ce délai un seul geste basculerait plusieurs
+  // fois. Seuil sur deltaY pour ignorer les micro-mouvements horizontaux.
+  const derniereBasculeMolette = useRef(0);
+  const basculerMainMolette = useCallback((deltaY: number) => {
+    if (Math.abs(deltaY) < 8) return;
+    const maintenant = Date.now();
+    if (maintenant - derniereBasculeMolette.current < 450) return;
+    setHandHidden((cachee) => {
+      const suivant = deltaY > 0 ? true : false;
+      if (suivant === cachee) return cachee;
+      derniereBasculeMolette.current = maintenant;
+      return suivant;
+    });
+  }, []);
   const [heroDescriptionDef, setHeroDescriptionDef] = useState<HeroDefinition | null>(null);
   // « Voir le plateau » : masque temporairement (visuel-only) l'overlay de
   // sélection plein écran pour laisser le joueur consulter le gameboard avant
@@ -1622,6 +1638,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           // Dépliée : pointer-events-none (cf. ci-dessus), chaque carte réactive.
           style={{ gap: handGap, transform: handHidden ? "translateY(calc(100% - 28px))" : "none" }}
           onClick={handHidden ? () => setHandHidden(false) : undefined}
+          // Les cartes (pointer-events auto quand la main est dépliée) laissent
+          // remonter la molette jusqu'ici ; repliée, c'est le liseré du
+          // conteneur qui la reçoit.
+          onWheel={(e) => basculerMainMolette(e.deltaY)}
           title={handHidden ? t("hand_show") : undefined}
         >
           {myPlayer.hand.map((cardInstance) => {
