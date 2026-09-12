@@ -56,6 +56,8 @@ import KeywordIcon from "@/components/shared/KeywordIcon";
 import { titleFontScale } from "@/lib/game/card-title";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
+
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
@@ -383,7 +385,7 @@ export default function GameCard({
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
                 minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
                 padding: x != null ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
@@ -417,7 +419,7 @@ export default function GameCard({
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (
-              <div key={`sk_${i}`} title={displayTitle} style={{
+              <div key={`sk_${i}`} title={displayTitle} style={{ order: spellKeywordDisplayOrder(i),
                 minWidth: 40 * icoS, height: 40 * icoS, borderRadius: 4 * s,
                 padding: hasValue ? `0 ${4 * s}px` : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
@@ -446,7 +448,7 @@ export default function GameCard({
             const val = composedValueText(cap);
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             return (
-              <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ minWidth: 40 * icoS, height: 40 * icoS, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
+              <div key={`cx-${i}`} title={vocab.composedDesc(cap, effectiveTokens)} style={{ order: composedDisplayOrder(cap), minWidth: 40 * icoS, height: 40 * icoS, padding: val ? `0 ${4 * s}px` : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", lineHeight: 0 }}>
                   {/* Boîte image alignée sur celle des mots-clés normaux
@@ -468,7 +470,7 @@ export default function GameCard({
 
           {/* Stats — pushed to right */}
           {isCreature && (
-            <div style={{ display: "flex", gap: 6 * s, marginLeft: "auto" }}>
+            <div style={{ display: "flex", gap: 6 * s, marginLeft: "auto", order: POWER_ORDER_LAST }}>
               <div style={{
                 display: "flex", alignItems: "center",
                 padding: `${1 * s}px ${6 * s}px`, borderRadius: 5 * s,
@@ -530,13 +532,19 @@ export default function GameCard({
           </div>
         )}
 
+        {/* ORDRE D'AUTEUR : les trois listes (mots-clés, mécaniques de sort,
+            effets composés) partagent un seul conteneur en colonne ; chaque ligne
+            porte un `order` (composed-position.ts), ce qui intercale les composés
+            à leur place sans réécrire les boucles. */}
+        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0 || (card.spell_keywords?.length ?? 0) > 0 || composedCapsOf(card.capabilities).length > 0) && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
         {/* Capacités detail */}
         {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
           const entries = buildKeywordDisplayEntries(card)
             .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
           if (entries.length === 0) return null;
           return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode, instance } = entry;
               const ctx = { card, instance, x, tokens: effectiveTokens };
@@ -553,7 +561,7 @@ export default function GameCard({
               // (l'icône d'un effet persistant/passif est une silhouette blanche).
               const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
@@ -573,12 +581,12 @@ export default function GameCard({
 
         {/* Spell keyword details */}
         {card.spell_keywords && card.spell_keywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {card.spell_keywords.map((spellKw, i) => {
               const label = vocab.spellKeywordLabel(spellKw);
               const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
-              <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+              <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
@@ -595,23 +603,28 @@ export default function GameCard({
 
         {/* Effets composés — détail (icône + texte généré) */}
         {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
               const nm = vocab.composedName(cap);
               return (
-                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <div key={`cxd-${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
                     {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, effectiveTokens)} scale={s} />
+                    {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
+                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={s} />}
                   </div>
                 </div>
               );
             })}
           </div>
+        )}
+
+        </div>
         )}
 
         {/* Effect text */}

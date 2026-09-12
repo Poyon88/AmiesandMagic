@@ -14,6 +14,7 @@ import { displayCardOf } from "@/lib/game/singulier";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { composedDisplayOrder, keywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -829,7 +830,7 @@ function BoardCreature({
               const modeColor = keywordModeColor(mode);
               const tint = modeColor ?? accentColor;
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: keywordDisplayOrder(card, kw),
                 minWidth: 32, height: 32, borderRadius: 3,
                 padding: x != null ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
@@ -855,7 +856,7 @@ function BoardCreature({
             const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
             const hasImg = !!iconOverrides[ic.keyword];
             return (
-              <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{
+              <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ order: composedDisplayOrder(cap),
                 minWidth: 32, height: 32, padding: val ? "0 2px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "visible",
               }}>
@@ -877,7 +878,7 @@ function BoardCreature({
             );
           })}
 
-          <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+          <div style={{ display: "flex", gap: 4, marginLeft: "auto", order: POWER_ORDER_LAST }}>
             <div style={{
               display: "flex", alignItems: "center",
               padding: "1px 5px", borderRadius: 4,
@@ -1019,13 +1020,16 @@ function BoardCreature({
           );
         })()}
 
+        {/* ORDRE D'AUTEUR : conteneur unique + `order` par ligne (cf. GameCard). */}
+        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0 || composedCapsOf(card.capabilities).length > 0) && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
         {/* Capacités detail */}
         {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
           const grantedX = creature.grantedKeywordX ?? {};
           const entries = buildKeywordDisplayEntries(card);
           if (entries.length === 0) return null;
           return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div style={{ display: "contents" }}>
             {entries.map((entry, idx) => {
               const { kw, mode } = entry;
               const x = entry.x ?? grantedX[kw];
@@ -1036,7 +1040,7 @@ function BoardCreature({
               const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: keywordDisplayOrder(card, kw), display: "flex", alignItems: "flex-start", gap: 4 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
@@ -1063,13 +1067,13 @@ function BoardCreature({
 
         {/* Effets composés — détail (icône + texte généré, comme la collection) */}
         {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div style={{ display: "contents" }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
               const nm = vocab.composedName(cap);
               return (
-                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                <div key={`cxd-${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
                     <span style={{ display: "inline-flex", lineHeight: 0 }}>
                       <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
@@ -1080,11 +1084,16 @@ function BoardCreature({
                     {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.18} />
+                    {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
+                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={d * 0.18} />}
                   </div>
                 </div>
               );
             })}
           </div>
+        )}
+
+        </div>
         )}
 
         {/* Effect text */}

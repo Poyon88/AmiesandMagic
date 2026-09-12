@@ -26,6 +26,10 @@ interface AudioStore {
 
   // Context track URLs (fetched once)
   menuTrackUrl: string | null;
+  /** TOUTES les pistes « menu » : elles s'enchaînent au hasard, comme la
+   *  playlist du plateau. `menuTrackUrl` (la première) reste le repli à une
+   *  seule piste. */
+  menuTrackUrls: string[];
   tenseTrackUrl: string | null;
   victoryTrackUrl: string | null;
   defeatTrackUrl: string | null;
@@ -45,6 +49,7 @@ interface AudioStore {
   setUserHasInteracted: () => void;
   setContextTracks: (tracks: {
     menu?: string;
+    menuAll?: string[];
     tense?: string;
     victory?: string;
     defeat?: string;
@@ -85,6 +90,7 @@ export const useAudioStore = create<AudioStore>()(
 
       // Context tracks
       menuTrackUrl: null,
+      menuTrackUrls: [],
       tenseTrackUrl: null,
       victoryTrackUrl: null,
       defeatTrackUrl: null,
@@ -99,6 +105,7 @@ export const useAudioStore = create<AudioStore>()(
       setContextTracks: (tracks) =>
         set({
           menuTrackUrl: tracks.menu ?? null,
+          menuTrackUrls: tracks.menuAll ?? (tracks.menu ? [tracks.menu] : []),
           tenseTrackUrl: tracks.tense ?? null,
           victoryTrackUrl: tracks.victory ?? null,
           defeatTrackUrl: tracks.defeat ?? null,

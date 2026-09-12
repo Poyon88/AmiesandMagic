@@ -17,8 +17,11 @@ import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+import { RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
 import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCardsPicker";
-import { movePowerInKeywords } from "@/lib/card-forge/power-order";
+import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
+import { positionAfterExisting } from "@/lib/game/composed-position";
+import { describeComposedCap } from "@/lib/game/composed-display";
 
 // Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
 // n'ont pas de clan. Même clé que TokenCascadePicker.
@@ -135,6 +138,10 @@ export default function CardEditor() {
   const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
   // SINGULIER par id moteur (cf. keyword_instances[i].singulier).
   const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
+  // SÉLECTION AU HASARD (selection / selection_magique / renfort_royal) : le X
+  // devient un plafond tiré entre 1 et lui à chaque déclenchement. Persisté
+  // dans keyword_instances[i].randomX, comme la case « ? » des effets composés.
+  const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
   // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
   // (single allied creature); "all_allies" = every allied creature on cast.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
@@ -191,6 +198,8 @@ export default function CardEditor() {
   // Déchainement X/Y (créature) : le coût Y des sorts lancés. Le X (nombre de
   // sorts) réutilise keywordXValues ; sérialisé dans keyword_instances.
   const [dcY, setDcY] = useState<number>(1);
+  // Déchainement : « ? » sur Y (coût plafond 1 à Y). Persisté dans keyword_instances[i].randomY.
+  const [dcRandomY, setDcRandomY] = useState<boolean>(false);
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [fdaY, setFdaY] = useState<number>(1);
@@ -330,7 +339,9 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const singuliers: Record<string, boolean> = {};
+    const aleatoires: Record<string, boolean> = {};
     const grantScopes: Record<string, "all_allies"> = {};
+    let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
@@ -338,6 +349,7 @@ export default function CardEditor() {
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
+      if (inst.randomX === true) aleatoires[inst.id] = true;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.id === "renforcement_multiple") {
@@ -347,7 +359,7 @@ export default function CardEditor() {
       if (inst.id === "discipline") dscYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
-      if (inst.id === "dechainement") dcYLoaded = inst.y ?? 1;
+      if (inst.id === "dechainement") { dcYLoaded = inst.y ?? 1; dcRandomYLoaded = inst.randomY === true; }
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
       if (inst.id === "seuil_sacrificiel") ssYLoaded = inst.y ?? 1;
       if (inst.id === "purete") purYLoaded = inst.y ?? 1;
@@ -359,11 +371,12 @@ export default function CardEditor() {
       }
       if (inst.id === "compagnons") compagnonsLoaded = inst.linkedCardIds ?? [];
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setKeywordModes(modes);
     setKeywordSingulier(singuliers);
+    setKeywordRandomX(aleatoires);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
@@ -433,12 +446,26 @@ export default function CardEditor() {
     }
   };
 
-  /** Déplace un pouvoir d'un rang dans l'ordre de RÉSOLUTION. Le calcul vit dans
-   *  `movePowerInKeywords` (fonction pure, testée) : il doit préserver les
-   *  passifs intercalés, que le panneau n'affiche pas. */
-  const deplacerPouvoir = (kw: string, sens: -1 | 1, voisins: string[]) => {
+  /** Déplace un pouvoir — mot-clé OU effet composé — d'un rang dans l'ordre de
+   *  RÉSOLUTION. Le calcul vit dans `movePowerUnified` (fonction pure, testée) :
+   *  il préserve les passifs intercalés, que le panneau n'affiche pas, et ne
+   *  touche qu'à la `position` des composés quand c'est elle qui change. */
+  const deplacerPouvoir = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }, sens: -1 | 1, voisins: string[]) => {
     const kws = (editFields.keywords as string[]) || [];
-    updateField("keywords", movePowerInKeywords(kws, kw, sens, voisins));
+    const r = movePowerUnified(kws, voisins, composedCaps, cible, sens);
+    updateField("keywords", r.keywords);
+    setComposedCaps(r.composed);
+  };
+
+  /** ORDRE D'AUTEUR : un composé qui vient d'être ajouté se place après les
+   *  mots-clés déjà saisis (cf. positionAfterExisting). Sur un sort, la liste
+   *  unifiée le positionne déjà elle-même — on ne touche pas à une position posée. */
+  const positionnerNouveaux = (next: Capability[]): Capability[] => {
+    const connus = new Set(composedCaps.map((c) => c.uid));
+    const n = editFields.card_type === "spell"
+      ? ((editFields.spell_keywords as SpellKeywordInstance[]) || []).length
+      : ((editFields.keywords as string[]) || []).length;
+    return next.map((c) => (!connus.has(c.uid) && c.position == null ? { ...c, position: positionAfterExisting(n) } : c));
   };
 
   // Save
@@ -556,7 +583,7 @@ export default function CardEditor() {
           }
           // Déchainement X/Y (créature) : porte X (nombre de sorts) / Y (coût) ; toujours émis.
           if (id === "dechainement" && !isSpellCard) {
-            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY };
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY, ...(dcRandomY ? { randomY: true } : {}) };
           }
           // Invocations multiples : porte la liste des coûts ; toujours émise.
           if (id === "invocations_multiples") {
@@ -597,8 +624,10 @@ export default function CardEditor() {
           if (id === "fortifier" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: foY };
           }
-          if (!mode && x == null && !grantScope) return null;
-          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
+          // Sélection au hasard : le drapeau seul justifie l'instance.
+          const alea = RANDOM_X_ABILITY_IDS.has(id) && keywordRandomX[id] === true;
+          if (!mode && x == null && !grantScope && !alea) return null;
+          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}) };
         })
         // SINGULIER : la condition s'ajoute à l'instance — et CRÉE l'instance
         // d'un mot-clé qui n'aurait sinon rien eu à stocker (même contrat que
@@ -684,7 +713,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordSingulier, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1377,6 +1406,26 @@ export default function CardEditor() {
                             onChange={e => setKeywordXValues(prev => ({ ...prev, [kw]: parseInt(e.target.value) || 1 }))}
                             style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #d0c8ff", fontSize: 11, textAlign: "center" }}
                           />
+                          {/* SÉLECTION AU HASARD : le X devient un plafond, tiré
+                              entre 1 et lui à chaque déclenchement. Inerte sous
+                              2 — « entre 1 et 1 » est une constante. */}
+                          {RANDOM_X_ABILITY_IDS.has(kw) && (() => {
+                            const plafond = keywordXValues[kw] ?? 1;
+                            const inerte = plafond < 2;
+                            const actif = keywordRandomX[kw] === true && !inerte;
+                            return (
+                              <label
+                                title={inerte ? "Un plafond d'au moins 2 est nécessaire pour tirer au hasard." : `Tiré au hasard entre 1 et ${plafond}, à chaque déclenchement.`}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
+                              >
+                                <input
+                                  type="checkbox" disabled={inerte} checked={actif}
+                                  onChange={e => setKeywordRandomX(prev => { const n = { ...prev }; if (e.target.checked) n[kw] = true; else delete n[kw]; return n; })}
+                                />
+                                ?
+                              </label>
+                            );
+                          })()}
                         </div>
                       );
                     })}
@@ -1436,10 +1485,39 @@ export default function CardEditor() {
                 return label && CURATED_KEYWORD_MODES[label];
               });
               if (activeCurated.length === 0) return null;
+              // ORDRE D'AUTEUR : les effets composés d'entrée en jeu s'intercalent
+              // dans cette liste (composed-position.ts) ; c'est elle qui fait foi
+              // pour la résolution ET l'affichage sur la carte.
+              const kws = (editFields.keywords as string[]) || [];
+              const liste = unifiedPowerList(kws, activeCurated, composedCaps);
+              const fleches = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }, rang: number) => liste.length > 1 && (
+                <div style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
+                  {([-1, 1] as const).map(sens => {
+                    const possible = sens === -1 ? rang > 0 : rang < liste.length - 1;
+                    return (
+                      <button
+                        key={sens}
+                        disabled={!possible}
+                        onClick={() => deplacerPouvoir(cible, sens, activeCurated)}
+                        title={sens === -1 ? "Résoudre plus tôt" : "Résoudre plus tard"}
+                        style={{
+                          width: 18, height: 11, borderRadius: 3, padding: 0,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          border: `1px solid ${possible ? "#d8c48a" : "#eee"}`,
+                          background: possible ? "#fff" : "transparent",
+                          color: possible ? "#b8860b" : "#ddd",
+                          fontSize: 7, lineHeight: 1,
+                          cursor: possible ? "pointer" : "not-allowed",
+                        }}
+                      >{sens === -1 ? "▲" : "▼"}</button>
+                    );
+                  })}
+                </div>
+              );
               return (
                 <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#fffaf2", border: "1px solid #f0e2c8" }}>
                   <div style={{ ...S.label, color: "#b8860b", marginBottom: 6 }}>Déclenchement des pouvoirs</div>
-                  {activeCurated.length > 1 && (
+                  {liste.length > 1 && (
                     <div style={{ fontSize: 8.5, color: "#a08a5b", marginBottom: 6, lineHeight: 1.35 }}>
                       De haut en bas : l&apos;ordre dans lequel les pouvoirs se
                       résolvent. Il compte dès qu&apos;un pouvoir prépare le
@@ -1447,39 +1525,31 @@ export default function CardEditor() {
                     </div>
                   )}
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {activeCurated.map((kw, rang) => {
+                    {liste.map((item, rang) => {
+                      if (item.kind === "composed") {
+                        // Effet composé : sa place seule se règle ici, son contenu
+                        // s'édite dans « Effets composés » plus bas.
+                        return (
+                          <div key={item.uid} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            {fleches({ kind: "composed", uid: item.uid }, rang)}
+                            <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#8a6d3b", flex: 1 }}>
+                              {liste.length > 1 && (
+                                <span style={{ color: "#b8860b", fontWeight: 700, marginRight: 4 }}>{rang + 1}.</span>
+                              )}
+                              🧩 Effet composé
+                              <span style={{ fontWeight: 400, color: "#666", fontFamily: "'Crimson Text',serif", fontSize: 10, marginLeft: 6 }}>{describeComposedCap(item.cap, tokenTemplates)}</span>
+                            </span>
+                          </div>
+                        );
+                      }
+                      const kw = item.id;
                       const label = KEYWORD_LABELS[kw as Keyword];
                       const allowedModes = CURATED_KEYWORD_MODES[label];
                       return (
                         <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {/* Réordonnancement — masqué s'il n'y a qu'un pouvoir,
-                              où il n'aurait aucun sens. */}
-                          {activeCurated.length > 1 && (
-                            <div style={{ display: "inline-flex", flexDirection: "column", gap: 1 }}>
-                              {([-1, 1] as const).map(sens => {
-                                const possible = sens === -1 ? rang > 0 : rang < activeCurated.length - 1;
-                                return (
-                                  <button
-                                    key={sens}
-                                    disabled={!possible}
-                                    onClick={() => deplacerPouvoir(kw, sens, activeCurated)}
-                                    title={sens === -1 ? "Résoudre plus tôt" : "Résoudre plus tard"}
-                                    style={{
-                                      width: 18, height: 11, borderRadius: 3, padding: 0,
-                                      display: "flex", alignItems: "center", justifyContent: "center",
-                                      border: `1px solid ${possible ? "#d8c48a" : "#eee"}`,
-                                      background: possible ? "#fff" : "transparent",
-                                      color: possible ? "#b8860b" : "#ddd",
-                                      fontSize: 7, lineHeight: 1,
-                                      cursor: possible ? "pointer" : "not-allowed",
-                                    }}
-                                  >{sens === -1 ? "▲" : "▼"}</button>
-                                );
-                              })}
-                            </div>
-                          )}
+                          {fleches({ kind: "keyword", id: kw }, rang)}
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>
-                            {activeCurated.length > 1 && (
+                            {liste.length > 1 && (
                               <span style={{ color: "#b8860b", fontWeight: 700, marginRight: 4 }}>{rang + 1}.</span>
                             )}
                             {label}
@@ -1588,6 +1658,25 @@ export default function CardEditor() {
                             />
                           </div>
                         )}
+                        {/* SÉLECTION AU HASARD (forme sort) : même case « ? »
+                            que côté créature ; persistée dans spell_keywords[i].randomX. */}
+                        {RANDOM_X_ABILITY_IDS.has(kw.id) && def.params.includes("amount") && (() => {
+                          const plafond = kw.amount ?? 1;
+                          const inerte = plafond < 2;
+                          const actif = kw.randomX === true && !inerte;
+                          return (
+                            <label
+                              title={inerte ? "Un plafond d'au moins 2 est nécessaire pour tirer au hasard." : `Tiré au hasard entre 1 et ${plafond}, à la résolution.`}
+                              style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
+                            >
+                              <input
+                                type="checkbox" disabled={inerte} checked={actif}
+                                onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined } : k))}
+                              />
+                              ?
+                            </label>
+                          );
+                        })()}
                         {def.params.includes("attack") && (
                           <div>
                             <label style={{ fontSize: 7, color: "#e74c3c" }}>ATK</label>
@@ -1610,6 +1699,7 @@ export default function CardEditor() {
                               }}
                               style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
                             />
+                            {kw.id === "dechainement" && <label title={`Coût tiré au hasard entre 1 et ${kw.health ?? 1} pour chaque sort lancé.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomY: e.target.checked ? true : undefined } : k))} />?</label>}
                           </div>
                         )}
                         {kw.id === "invocation_multiple" && (
@@ -1976,6 +2066,7 @@ export default function CardEditor() {
                     onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
                   />
+                  <label title={`Coût tiré au hasard entre 1 et ${dcY} pour chaque sort lancé.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                 </div>
               </div>
             )}
@@ -1988,7 +2079,7 @@ export default function CardEditor() {
             <div style={{ marginTop: 10, borderTop: "1px solid #eee", paddingTop: 8 }}>
               <ComposedEffectsEditor
                 value={composedCaps}
-                onChange={setComposedCaps}
+                onChange={(next) => setComposedCaps(positionnerNouveaux(next))}
                 isUnit={editFields.card_type === "creature"}
                 tokenTemplates={tokenTemplates}
                 {...(editFields.card_type === "spell" ? {

@@ -421,6 +421,10 @@
         "label": "Ispirazione X",
         "desc": "Pesca X carte."
       },
+      "afflux": {
+        "label": "Afflusso X",
+        "desc": "Guadagna X mana questo turno."
+      },
       "epargne": {
         "label": "Risparmio X",
         "desc": "Aggiunge X al tuo contatore Risparmio (massimo 8)."
@@ -535,6 +539,18 @@
         "label": "Canto X",
         "desc": "Se controlli una creatura con Canto, tutti i valori di questa magia sono aumentati di X."
       },
+      "divination": {
+        "label": "Divinazione",
+        "desc": "Rivela le prime 3 carte del mazzo; rimettine 1 sopra e 2 sotto, nell'ordine scelto."
+      },
+      "contresort": {
+        "label": "Contromalia",
+        "desc": "Annulla il prossimo incantesimo avversario."
+      },
+      "seconde_vie": {
+        "label": "Seconda vita X",
+        "desc": "Può essere lanciato dal vostro cimitero per X mana. Perde quindi Seconda vita."
+      },
       "lune": {
         "label": "Luna X",
         "desc": "A partire dalla seconda carta giocata nel turno, tutti i valori di questa carta aumentano di X."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Richiamo",
-        "desc": "Riporta una creatura dal tuo cimitero in mano"
+        "desc": "Riporta una carta dal vostro cimitero nella vostra mano"
       },
       "exhumation": {
         "label": "Esumazione X",
@@ -760,6 +776,17 @@
         "exhum_one": "una creatura",
         "exhum_all": "tutte le creature",
         "exhum_upto": "fino a {n} creature",
+        "rappel": "riporta {who} dal vostro cimitero nella vostra mano{cost}",
+        "rappel_cost": " (costo ≤ {max})",
+        "rappel_one_any": "una carta",
+        "rappel_one_creature": "un'unità",
+        "rappel_one_spell": "un incantesimo",
+        "rappel_all_any": "tutte le carte",
+        "rappel_all_creature": "tutte le unità",
+        "rappel_all_spell": "tutti gli incantesimi",
+        "rappel_upto_any": "fino a {n} carte",
+        "rappel_upto_creature": "fino a {n} unità",
+        "rappel_upto_spell": "fino a {n} incantesimi",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "epargne": "aggiunge {x} al tuo contatore Risparmio",
         "foi": "aggiunge {x} al tuo contatore di Fede",
@@ -843,6 +870,7 @@
         "poison": "scegli una creatura da avvelenare",
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
+        "rappel": "scegli una carta da riprendere in mano",
         "default": "scegli un bersaglio"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Evocare un token",
     "content_gain_mana": "Guadagnare mana",
     "content_exhumation": "Resuscitare (cimitero)",
+    "content_rappel": "Richiamo (cimitero → mano)",
+    "label_card_kind": "CARTE BERSAGLIO",
+    "card_kind_all": "Tutte",
+    "card_kind_creature": "Solo unità",
+    "card_kind_spell": "Solo incantesimi",
     "legacy_grants_heading": "Doni ereditati (vecchio formato) — convertili per poterli indirizzare all'avversario",
     "convert_to_composed": "Converti",
     "effects_heading": "Effetti della carta",
@@ -1878,6 +1911,8 @@
     "group_curated": "Meccaniche speciali",
     "content_invocation": "Invocazione (creatura casuale)",
     "pool_hint_invocation": "Filtri cumulativi. Senza di essi, il pool segue l'allineamento della carta; il costo evocato è ESATTAMENTE X.",
+    "label_designated_card": "CARTA DESIGNATA",
+    "designated_card_hint": "Scegli una creatura per evocarla così com'è. Senza scelta, viene estratta una creatura casuale di costo X secondo i filtri.",
     "content_selection": "Selezione (1 su 3)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
     "label_pool_membership": "POOL — APPARTENENZA",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta).",
     "label_magnitude": "AMPIEZZA",
     "random_hint": "Estratto a caso tra 1 e {max}, una sola volta alla risoluzione.",
+    "move_earlier": "Risolvere prima",
+    "move_later": "Risolvere dopo",
     "random_needs_ceiling": "È necessario un tetto di almeno 2 per estrarre a caso.",
     "label_granted_ability": "ABILITÀ CONFERITA",
     "label_grant_trigger": "INNESCO DEL DONO",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Scegli una carta dal cimitero",
     "graveyard_hint_touch": "Tocca una carta per ingrandirla · toccala di nuovo per vedere la descrizione",
     "graveyard_hint_hover": "Passa su una carta per ingrandirla · clic destro per alternare immagine / descrizione",
-    "seconde_vie_hint": "Seconda vita: fai doppio clic su una creatura idonea.",
+    "seconde_vie_hint": "Seconda vita: fai doppio clic su una carta idonea.",
     "seconde_vie_blocked_turn": "Non è il vostro turno.",
     "graveyard_empty": "Nessuna carta nel cimitero",
     "cost_default_card_name": "carta",

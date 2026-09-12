@@ -386,7 +386,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "soleil",
   "douleur",
   "pauvrete",
-  "inspiration", "epargne", "foi", "conquete", "seconde_vie", "incineration", "devoration", "creuser", "retour_differe",
+  "inspiration", "afflux", "epargne", "foi", "conquete", "seconde_vie", "incineration", "devoration", "creuser", "retour_differe",
   "concentration",
   "remontee",
   "renforcement_multiple",
@@ -449,7 +449,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   apprentissage: "Apprentissage",
   impact: "Impact X",
   douleur: "Douleur X",
-  inspiration: "Inspiration X", epargne: "Épargne X", foi: "Foi X", conquete: "Conquête X",
+  inspiration: "Inspiration X", afflux: "Afflux X", epargne: "Épargne X", foi: "Foi X", conquete: "Conquête X",
   seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé",
   concentration: "Concentration X",
   remontee: "Remontée",
@@ -528,9 +528,11 @@ export function keywordBadgeValue(
   // libellé de la capacité donnée, que la description résout déjà.
   if (kw === "conferer") return null;
   if (NEUTRAL_PAIR_KEYWORDS.has(kw)) {
-    return `${x ?? inst?.x ?? 0}/${inst?.y ?? 0}`;
+    // Déchainement au hasard : « 2/3? » — le plafond, marqué comme tel.
+    return `${x ?? inst?.x ?? 0}/${inst?.y ?? 0}${inst?.randomY === true && (inst?.y ?? 0) > 1 ? "?" : ""}`;
   }
-  if (!isStatPairKeyword(kw)) return x != null ? xNumeral(x) : null;
+  // Sélection au hasard : « 3? » — le plafond, marqué comme tel.
+  if (!isStatPairKeyword(kw)) return x != null ? (inst?.randomX === true && x > 1 ? `${xNumeral(x)}?` : xNumeral(x)) : null;
   const sign = NEGATIVE_STAT_PAIRS.has(kw) ? "-" : "+";
   return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;
 }
@@ -615,7 +617,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   apprentissage: "📖",
   impact: "💥",
   douleur: "🤕",
-  inspiration: "📖", epargne: "🪙", foi: "✨", conquete: "🚩",
+  inspiration: "📖", afflux: "💎", epargne: "🪙", foi: "✨", conquete: "🚩",
   seconde_vie: "🕰️", incineration: "🧨", devoration: "🦷", creuser: "⛏️", retour_differe: "🌀",
   concentration: "🎯",
   entrainement: "🏋️",

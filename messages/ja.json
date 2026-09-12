@@ -421,6 +421,10 @@
         "label": "霊感 X",
         "desc": "カードをX枚引く。"
       },
+      "afflux": {
+        "label": "魔力流入 X",
+        "desc": "このターン、マナをX獲得する。"
+      },
       "epargne": {
         "label": "貯蓄X",
         "desc": "貯蓄カウンターに X を追加します（最大8）。"
@@ -535,6 +539,18 @@
         "label": "詠唱 X",
         "desc": "詠唱を持つクリーチャーをコントロールしている場合、このスペルのすべての値がXだけ増加する。"
       },
+      "divination": {
+        "label": "占術",
+        "desc": "デッキの上から3枚を公開する。任意の順序で1枚を一番上に、2枚を一番下に戻す。"
+      },
+      "contresort": {
+        "label": "呪文封じ",
+        "desc": "相手の次の呪文を無効化する。"
+      },
+      "seconde_vie": {
+        "label": "セカンドライフX",
+        "desc": "墓地からX魔力で唱えられる。使用後、セカンドライフを失う。"
+      },
       "lune": {
         "label": "月X",
         "desc": "このターン中に2枚目以降に出したカードなら、このカードのすべての数値がXだけ上昇する。"
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "帰還",
-        "desc": "墓地のクリーチャー1体を手札に戻す。"
+        "desc": "墓地からカードを1枚手札に戻す"
       },
       "exhumation": {
         "label": "発掘 X",
@@ -760,6 +776,17 @@
         "exhum_one": "クリーチャー1体",
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
+        "rappel": "墓地から{who}を手札に戻す{cost}",
+        "rappel_cost": "（コスト{max}以下）",
+        "rappel_one_any": "カード1枚",
+        "rappel_one_creature": "ユニット1体",
+        "rappel_one_spell": "呪文1枚",
+        "rappel_all_any": "すべてのカード",
+        "rappel_all_creature": "すべてのユニット",
+        "rappel_all_spell": "すべての呪文",
+        "rappel_upto_any": "最大{n}枚のカード",
+        "rappel_upto_creature": "最大{n}体のユニット",
+        "rappel_upto_spell": "最大{n}枚の呪文",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "epargne": "貯蓄カウンターに{x}を追加",
         "foi": "信仰カウンターに{x}を追加",
@@ -843,6 +870,7 @@
         "poison": "毒を与えるクリーチャーを選択してください",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
+        "rappel": "手札に戻すカードを選んでください",
         "default": "対象を選んでください"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "トークンを召喚する",
     "content_gain_mana": "マナを得る",
     "content_exhumation": "蘇生する（墓地）",
+    "content_rappel": "回収（墓地→手札）",
+    "label_card_kind": "対象カード",
+    "card_kind_all": "すべて",
+    "card_kind_creature": "ユニットのみ",
+    "card_kind_spell": "呪文のみ",
     "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
     "convert_to_composed": "変換",
     "effects_heading": "カード効果",
@@ -1878,6 +1911,8 @@
     "group_curated": "特殊メカニクス",
     "content_invocation": "召喚(ランダムなクリーチャー)",
     "pool_hint_invocation": "フィルターは累積します。フィルターがない場合、プールはカードの属性に従い、召喚されるコストは正確にXになります。",
+    "label_designated_card": "指定カード",
+    "designated_card_hint": "クリーチャーを指定すると、そのまま召喚します。指定がなければ、フィルターに従ってコストXのクリーチャーをランダムに選びます。",
     "content_selection": "選択（3枚中1枚）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
     "label_pool_membership": "プール — 所属",
@@ -1887,6 +1922,8 @@
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
     "random_hint": "1から{max}の間でランダムに選ばれ、解決時に一度だけ適用される。",
+    "move_earlier": "先に解決する",
+    "move_later": "後に解決する",
     "random_needs_ceiling": "ランダム抽選には上限2以上が必要です。",
     "label_granted_ability": "付与する能力",
     "label_grant_trigger": "付与するトリガー",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "墓地からカードを選んでください",
     "graveyard_hint_touch": "カードをタップして拡大・もう一度タップで説明表示",
     "graveyard_hint_hover": "カードにカーソルを合わせて拡大・右クリックでイラスト／説明を切替",
-    "seconde_vie_hint": "セカンドライフ：対象となるクリーチャーをダブルクリック。",
+    "seconde_vie_hint": "セカンドライフ：対象となるカードをダブルクリック。",
     "seconde_vie_blocked_turn": "あなたのターンではありません。",
     "graveyard_empty": "墓地にカードはありません",
     "cost_default_card_name": "カード",

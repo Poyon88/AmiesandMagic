@@ -1,7 +1,7 @@
 // Cinq pouvoirs ajoutés en lot : Seconde vie, Incinération, Dévoration,
 // Creuser, Retour différé. Un describe par pouvoir.
 import { describe, expect, it } from "vitest";
-import { applyAction } from "./engine";
+import { applyAction, canPlayFromGraveyard } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { CardInstance, GameState } from "./types";
 
@@ -103,6 +103,81 @@ describe("Seconde vie — jouer depuis le cimetière", () => {
     const c = creatureSecondeVie(2);
     s.players[1].graveyard.push(c);
     expect(applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, fromGraveyard: true })).toBe(s);
+  });
+});
+
+// Forme SORT : le sort se relance depuis le cimetière pour le X de Seconde vie,
+// puis y retourne SANS la capacité. Impact 2 sert de témoin d'effet.
+function sortSecondeVie(x: number, extra: Record<string, unknown> = {}): CardInstance {
+  return mkInstance(mkCard({
+    name: "Écho", card_type: "spell", attack: null, health: null, mana_cost: 6,
+    spell_keywords: [{ id: "impact", amount: 2 }, { id: "seconde_vie", amount: x }] as never,
+    ...extra,
+  }));
+}
+
+describe("Seconde vie — forme SORT, relancé depuis le cimetière", () => {
+  it("se relance pour son coût alternatif et produit son effet", () => {
+    const s = mkState();
+    const sort = sortSecondeVie(2);
+    s.players[0].graveyard.push(sort);
+    s.players[0].mana = 3; // < 6 (coût normal), ≥ 2 (Seconde vie)
+    const pvAvant = s.players[1].hero.hp;
+
+    const next = applyAction(s, {
+      type: "play_card", cardInstanceId: sort.instanceId, fromGraveyard: true,
+      targetMap: { target_0: "enemy_hero" },
+    });
+
+    expect(next.players[1].hero.hp).toBe(pvAvant - 2);
+    expect(next.players[0].mana).toBe(1); // 3 − 2
+  });
+
+  it("retourne au cimetière SANS Seconde vie, donc ne se relance qu'une fois", () => {
+    const s = mkState();
+    const sort = sortSecondeVie(1);
+    s.players[0].graveyard.push(sort);
+
+    const next = applyAction(s, {
+      type: "play_card", cardInstanceId: sort.instanceId, fromGraveyard: true,
+      targetMap: { target_0: "enemy_hero" },
+    });
+    const auCimetiere = next.players[0].graveyard.find((c) => c.card.name === "Écho")!;
+    expect(auCimetiere).toBeDefined();
+    expect((auCimetiere.card.spell_keywords ?? []).map((k) => k.id)).not.toContain("seconde_vie");
+    expect(canPlayFromGraveyard(next, sort.instanceId)).toBe(false);
+
+    const encore = applyAction(next, {
+      type: "play_card", cardInstanceId: sort.instanceId, fromGraveyard: true,
+      targetMap: { target_0: "enemy_hero" },
+    });
+    expect(encore).toBe(next);
+  });
+
+  it("canPlayFromGraveyard : jouable au X de Seconde vie, pas au coût imprimé", () => {
+    const s = mkState();
+    const sort = sortSecondeVie(2);
+    s.players[0].graveyard.push(sort);
+    s.players[0].mana = 2;
+    expect(canPlayFromGraveyard(s, sort.instanceId)).toBe(true);
+    s.players[0].mana = 1;
+    expect(canPlayFromGraveyard(s, sort.instanceId)).toBe(false);
+  });
+
+  it("canPlayFromGraveyard : une carte sans Seconde vie n'est jamais jouable d'ici", () => {
+    const s = mkState();
+    const c = inst("Quelconque");
+    s.players[0].graveyard.push(c);
+    expect(canPlayFromGraveyard(s, c.instanceId)).toBe(false);
+  });
+
+  it("canPlayFromGraveyard : une créature à Seconde vie reste soumise à la place sur le plateau", () => {
+    const s = mkState();
+    const c = creatureSecondeVie(2);
+    s.players[0].graveyard.push(c);
+    expect(canPlayFromGraveyard(s, c.instanceId)).toBe(true);
+    for (let i = 0; i < 8; i++) s.players[0].board.push(inst(`Occupant${i}`));
+    expect(canPlayFromGraveyard(s, c.instanceId)).toBe(false);
   });
 });
 

@@ -236,3 +236,45 @@ describe("Déchainement — le sort tiré se résout INTÉGRALEMENT", () => {
     expect(() => playCard(s, { type: "play_card", cardInstanceId: spell.instanceId })).not.toThrow();
   });
 });
+
+// « ? » SUR Y : le coût devient un plafond — chaque sort est tiré parmi ceux
+// de coût 1 à Y, au lieu d'exactement Y.
+describe("Déchainement X/Y — coût au hasard (randomY)", () => {
+  function mkAlea(x: number, y: number) {
+    return mkInstance(mkCard({
+      mana_cost: 0, card_type: "spell", attack: null as unknown as number, health: null as unknown as number,
+      faction: "Elfes",
+      spell_keywords: [{ id: "dechainement", amount: x, health: y, randomY: true }],
+    }));
+  }
+  it("tire dans TOUT l'intervalle 1..Y, jamais au-dessus", () => {
+    const vus = new Set<number>();
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = withSpellPool([
+        poolSpell({ name: "C1", mana_cost: 1, spell_keywords: [{ id: "inspiration", amount: 1 }] }),
+        poolSpell({ name: "C2", mana_cost: 2, spell_keywords: [{ id: "inspiration", amount: 2 }] }),
+        poolSpell({ name: "C3", mana_cost: 3, spell_keywords: [{ id: "inspiration", amount: 3 }] }),
+        poolSpell({ name: "C5", mana_cost: 5, spell_keywords: [{ id: "inspiration", amount: 5 }] }),
+      ]);
+      fillDeck(s, 30);
+      s.rngState = seed;
+      const spell = mkAlea(1, 3);
+      s.players[0].hand.push(spell);
+      const next = playCard(s, { type: "play_card", cardInstanceId: spell.instanceId });
+      const pioches = next.players[0].hand.length; // = coût du sort lancé (Inspiration N)
+      expect([1, 2, 3]).toContain(pioches);
+      vus.add(pioches);
+    }
+    expect(vus.size).toBeGreaterThan(1);
+  });
+  it("sans le drapeau, seul le coût exact Y est lancé (inchangé)", () => {
+    const s = withSpellPool([
+      poolSpell({ name: "C1", mana_cost: 1 }),
+      poolSpell({ name: "C3", mana_cost: 3, spell_keywords: [{ id: "inspiration", amount: 3 }] }),
+    ]);
+    fillDeck(s, 10);
+    const spell = mkDechainementSpell(1, 3);
+    s.players[0].hand.push(spell);
+    expect(playCard(s, { type: "play_card", cardInstanceId: spell.instanceId }).players[0].hand.length).toBe(3);
+  });
+});

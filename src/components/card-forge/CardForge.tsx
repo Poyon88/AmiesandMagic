@@ -22,8 +22,11 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, XY_ABILITY_IDS, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
 import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
+import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
+import { positionAfterExisting } from "@/lib/game/composed-position";
+import { describeComposedCap } from "@/lib/game/composed-display";
 import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
 import CardEditor from "@/components/admin/CardEditor";
 import NewsForge from "@/components/card-forge/NewsForge";
@@ -149,6 +152,8 @@ interface ForgeCard {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  /** SÉLECTION AU HASARD par libellé : l'aperçu peint « 1 à X » et « X? ». */
+  keywordRandomX?: Record<string, boolean>;
   /** +Y des mots-clés en paire de stats (Gloire, Renforcement, …) — cf. CardVisual. */
   keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
@@ -1747,6 +1752,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // SINGULIER par libellé : condition ajoutée au déclencheur (cf.
   // lib/game/singulier.ts). Persistée dans keyword_instances[i].singulier.
   const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
+  // SÉLECTION AU HASARD par libellé forge : le X devient un plafond tiré à
+  // chaque déclenchement. Persisté dans keyword_instances[i].randomX.
+  const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -1786,6 +1794,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Déchainement X/Y (créature) : le coût Y des sorts lancés (le nombre de
   // sorts = la valeur X générique).
   const [dcY, setDcY] = useState<number>(1);
+  // Déchainement : « ? » sur Y (coût plafond 1 à Y) — cf. keyword-instances (dcRandomY).
+  const [dcRandomY, setDcRandomY] = useState<boolean>(false);
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
   const [fdaY, setFdaY] = useState<number>(1);
   // Second membre des couples +X/+Y qui n'ont PAS d'état dédié ci-dessus, keyé
@@ -1889,6 +1899,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     power: type !== "Unité" ? manualPower : null,
     keywords: manualKeywords,
     keywordXValues,
+    keywordRandomX,
     // Les mots-clés « paire de stats » gardent leur +Y hors de keywordXValues :
     // on le transmet à l'aperçu pour qu'il peigne « +2/+1 » et non le seul X.
     // La grille générique d'abord, les six états dédiés ensuite (ils font foi
@@ -2264,9 +2275,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2451,14 +2462,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
-    setKeywordModes({}); setKeywordSingulier({});
+    setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({});
     setKeywordGrantScope({});
     setSpellKeywords([]);
     setSpellEffectsData(null);
     setComposedCaps([]);
     setDeclenchementTriggers([]);
     // Paramètres Y / race / faction portés par des états dédiés
-    setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setFdaY(1);
+    setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1);
     setKeywordYValues({});
     setCardDiscoverable(true);
     setRmRace(""); setRmClan(""); setAsRace("");
@@ -2586,8 +2597,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         grantScopes: keywordGrantScope,
         isSpellCard,
         singulier: keywordSingulier,
+        randomX: keywordRandomX,
         extras: {
-          rmY, rmRace, rmClan, afY, rfY, dcY, glY, fdaY,
+          rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction, asRace,
           conferAbilityId, conferX, conferY, declenchementTriggers,
           compagnonsCardIds,
@@ -2705,7 +2717,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3533,6 +3545,25 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   />
                                 </div>
                               )}
+                              {/* SÉLECTION AU HASARD (forme sort) : persistée dans
+                                  spell_keywords[i].randomX. */}
+                              {RANDOM_X_ABILITY_IDS.has(kw.id) && def.params.includes("amount") && (() => {
+                                const plafond = kw.amount ?? 1;
+                                const inerte = plafond < 2;
+                                const actif = kw.randomX === true && !inerte;
+                                return (
+                                  <label
+                                    title={inerte ? tf('random_needs_ceiling') : tf('random_hint', { max: plafond })}
+                                    style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
+                                  >
+                                    <input
+                                      type="checkbox" disabled={inerte} checked={actif}
+                                      onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined } : k))}
+                                    />
+                                    ?
+                                  </label>
+                                );
+                              })()}
                               {def.params.includes("attack") && (
                                 <div>
                                   <label style={{ fontSize: 7, color: "#e74c3c" }}>ATK</label>
@@ -3555,6 +3586,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                     }}
                                     style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
                                   />
+                                  {kw.id === "dechainement" && <label title={tf('random_hint', { max: kw.health ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, randomY: e.target.checked ? true : undefined } : k))} />?</label>}
                                 </div>
                               )}
                               {kw.id === "invocation_multiple" && (
@@ -3745,6 +3777,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               if (selected) {
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordSingulier(prev => { const next = { ...prev }; delete next[id]; return next; });
+                                setKeywordRandomX(prev => { const next = { ...prev }; delete next[id]; return next; });
                               }
                             }}
                               style={{
@@ -3772,6 +3805,26 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 }}
                               />
                             )}
+                            {/* SÉLECTION AU HASARD : le X devient un plafond tiré
+                                entre 1 et lui. Même case « ? » que les amplitudes
+                                composées ; inerte sous 2. */}
+                            {xSurPuce && RANDOM_X_ABILITY_IDS.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && (() => {
+                              const plafond = keywordXValues[id] ?? 1;
+                              const inerte = plafond < 2;
+                              const actif = keywordRandomX[id] === true && !inerte;
+                              return (
+                                <label
+                                  title={inerte ? tf('random_needs_ceiling') : tf('random_hint', { max: plafond })}
+                                  style={{ marginLeft: 3, display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
+                                >
+                                  <input
+                                    type="checkbox" disabled={inerte} checked={actif}
+                                    onChange={e => setKeywordRandomX(prev => { const n = { ...prev }; if (e.target.checked) n[id] = true; else delete n[id]; return n; })}
+                                  />
+                                  ?
+                                </label>
+                              );
+                            })()}
                             {/* SINGULIER — condition ajoutée au déclencheur, pour
                                 TOUTE capacité (un passif comme « Provocation
                                 (Singulier) » y a droit). Turquoise réservé. */}
@@ -4033,6 +4086,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
+                          <label title={tf('random_hint', { max: dcY })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                           <span style={{ fontSize: 8, color: "#888" }}>{tf('spell_count_is_x')}</span>
                         </div>
                       </div>
@@ -4316,6 +4370,28 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             if (!engineId) return undefined;
             return Object.values(ABILITIES).find(a => creatureEngineId(a) === engineId) ?? ABILITIES[engineId];
           };
+          // ORDRE D'AUTEUR (composed-position.ts) : la liste des pouvoirs mêle
+          // mots-clés (ordre de `manualKeywords`, celui que la sauvegarde écrit
+          // dans `keywords[]`) et effets composés (leur `position`).
+          const listeForge = unifiedPowerList(manualKeywords, manualKeywords, composedCaps);
+          const deplacerPouvoirForge = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }, sens: -1 | 1) => {
+            const r = movePowerUnified(manualKeywords, manualKeywords, composedCaps, cible, sens);
+            setManualKeywords(r.keywords);
+            setComposedCaps(r.composed);
+          };
+          const flechesForge = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }, rang: number) => listeForge.length > 1 && (
+            <span style={{ display: "inline-flex", flexDirection: "column", gap: 1, marginRight: 2 }}>
+              {([-1, 1] as const).map(sens => {
+                const possible = sens === -1 ? rang > 0 : rang < listeForge.length - 1;
+                return (
+                  <button key={sens} type="button" disabled={!possible} onClick={() => deplacerPouvoirForge(cible, sens)}
+                    title={sens === -1 ? tf('move_earlier') : tf('move_later')}
+                    style={{ width: 18, height: 11, borderRadius: 3, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${possible ? "#d8c48a" : "#eee"}`, background: possible ? "#fff" : "transparent", color: possible ? "#b8860b" : "#ddd", fontSize: 7, lineHeight: 1, cursor: possible ? "pointer" : "not-allowed" }}
+                  >{sens === -1 ? "▲" : "▼"}</button>
+                );
+              })}
+            </span>
+          );
           const removeCreatureCap = (label: string) => {
             setManualKeywords(prev => prev.filter(k => k !== label));
             setKeywordXValues(prev => { const n = { ...prev }; delete n[label]; return n; });
@@ -4353,7 +4429,21 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     {manualKeywords.length === 0 && (
                       <div style={{ fontSize: 11, color: "#aaa", fontStyle: "italic", padding: "12px 0" }}>{tf('no_ability_add_below')}</div>
                     )}
-                    {manualKeywords.map(label => {
+                    {listeForge.map((item, rang) => {
+                      if (item.kind === "composed") {
+                        // Effet composé : sa PLACE se règle ici (flèches), son
+                        // contenu dans la liste « Effets composés » plus bas.
+                        return (
+                          <div key={item.uid} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf6" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              {flechesForge({ kind: "composed", uid: item.uid }, rang)}
+                              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#8a6d3b" }}>🧩 {tf('composed_effect_n', { n: composedCaps.findIndex(c => c.uid === item.uid) + 1 })}</span>
+                              <span style={{ fontSize: 11, color: "#666", fontFamily: "'Crimson Text',serif", flex: 1 }}>{describeComposedCap(item.cap, tokenTemplates)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      const label = item.id;
                       const def = abilityForLabel(label);
                       const meta = def?.triggers;
                       const scalable = KEYWORDS[label]?.scalable;
@@ -4362,6 +4452,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       return (
                         <div key={label} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf8" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            {flechesForge({ kind: "keyword", id: label }, rang)}
                             <KeywordIcon symbol={KEYWORD_SYMBOLS[label] || "✦"} size={16} keyword={CREATURE_LABEL_TO_ENGINE_ID[label] ?? label} />
                             <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: fac.accent, flex: 1 }}>{label}</span>
                             <button onClick={() => removeCreatureCap(label)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tf('remove')}>✕</button>
@@ -4503,6 +4594,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#b3541e" }}>Y</span>
                                 <input type="number" min={1} max={10} value={dcY} onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <label title={tf('random_hint', { max: dcY })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                               </div>
                             </div>
                           )}
@@ -4584,7 +4676,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 {/* ── Liste unique d'effets ── (sort : mécaniques curées + composés) */}
                 <div style={{ marginTop: 18, borderTop: "2px solid #efe7d2", paddingTop: 12 }}>
                   <ComposedEffectsEditor
-                    value={composedCaps} onChange={setComposedCaps}
+                    value={composedCaps}
+                    // ORDRE D'AUTEUR : un composé ajouté sur une CRÉATURE se place
+                    // après les mots-clés déjà cochés (sur un sort, la liste
+                    // unifiée le positionne elle-même).
+                    onChange={(next) => {
+                      const connus = new Set(composedCaps.map(c => c.uid));
+                      setComposedCaps(next.map(c => (!connus.has(c.uid) && c.position == null ? { ...c, position: positionAfterExisting(isUnit ? manualKeywords.length : spellKeywords.length) } : c)));
+                    }}
                     isUnit={isUnit} tokenTemplates={tokenTemplates}
                     {...(isUnit ? {} : { curated: spellKeywords, onCuratedChange: setSpellKeywords })}
                   />

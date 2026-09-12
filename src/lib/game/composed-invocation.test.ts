@@ -86,3 +86,54 @@ describe("Invocation composée", () => {
     expect(summoned(next)).toEqual(["Merco"]);
   });
 });
+
+// INVOCATION DÉSIGNÉE : `composed.cardId` remplace le tirage. La carte est
+// résolue par id dans les pools du match (complétés au chargement, comme pour
+// Compagnons) ; X, filtre et alignement ne comptent plus.
+function designatedSpell(cardId: number, x = 1): CardInstance {
+  const caps: Capability[] = [{
+    uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+    composed: { content: "invocation", magnitude: { x }, cardId },
+  }];
+  return mkInstance(mkCard({
+    name: "Appel nommé", card_type: "spell", attack: null, health: null, capabilities: caps as never,
+  }));
+}
+
+describe("Invocation composée — carte DÉSIGNÉE", () => {
+  it("invoque la carte désignée, quel que soit son coût ou X", () => {
+    const s = mkState();
+    const elue = poolCard("Élue", 7, { id: 9001, rarity: "Rare" });
+    s.factionCardPool = [poolCard("Autre", 1), elue];
+    const next = cast(s, designatedSpell(9001, 1));
+    expect(summoned(next)).toEqual(["Élue"]);
+    expect(next.players[0].board[0].hasSummoningSickness).toBe(true);
+  });
+
+  it("la trouve aussi dans le pool des sorts, mais n'invoque pas un sort", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Autre", 1)];
+    s.allSpellsPool = [
+      poolCard("Créature égarée", 2, { id: 9002 }),
+      mkCard({ id: 9003, name: "Sortilège", card_type: "spell", attack: null, health: null }),
+    ];
+    expect(summoned(cast(s, designatedSpell(9002)))).toEqual(["Créature égarée"]);
+    const t = mkState();
+    t.factionCardPool = [poolCard("Autre", 1)];
+    t.allSpellsPool = [mkCard({ id: 9003, name: "Sortilège", card_type: "spell", attack: null, health: null })];
+    expect(summoned(cast(t, designatedSpell(9003)))).toEqual([]);
+  });
+
+  it("id introuvable : rien n'est invoqué, et surtout pas un tirage aléatoire de repli", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Tentante", 1)];
+    expect(summoned(cast(s, designatedSpell(4242, 1)))).toEqual([]);
+  });
+
+  it("plateau plein : no-op", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Élue", 3, { id: 9004 })];
+    for (let i = 0; i < 8; i++) s.players[0].board.push(mkInstance(poolCard(`Occupant${i}`, 1)));
+    expect(cast(s, designatedSpell(9004)).players[0].board).toHaveLength(8);
+  });
+});

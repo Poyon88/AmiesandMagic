@@ -421,6 +421,10 @@
         "label": "Inspiración X",
         "desc": "Roba X cartas."
       },
+      "afflux": {
+        "label": "Afluencia X",
+        "desc": "Gana X de maná este turno."
+      },
       "epargne": {
         "label": "Ahorro X",
         "desc": "Añade X a tu contador de Ahorro (máximo 8)."
@@ -535,6 +539,18 @@
         "label": "Canto X",
         "desc": "Si controlas una criatura con Canto, todos los valores de este hechizo aumentan en X."
       },
+      "divination": {
+        "label": "Adivinación",
+        "desc": "Revela las 3 primeras cartas del mazo; coloca 1 arriba y 2 abajo, en el orden que elijas."
+      },
+      "contresort": {
+        "label": "Contrahechizo",
+        "desc": "Anula el próximo hechizo rival."
+      },
+      "seconde_vie": {
+        "label": "Segunda vida X",
+        "desc": "Puede lanzarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
+      },
       "lune": {
         "label": "Luna X",
         "desc": "A partir de la segunda carta jugada en el turno, todos los valores de esta carta aumentan en X."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Retorno",
-        "desc": "Devuelve una criatura de tu cementerio a tu mano."
+        "desc": "Devuelve una carta de tu cementerio a tu mano"
       },
       "exhumation": {
         "label": "Exhumación X",
@@ -760,6 +776,17 @@
         "exhum_one": "una criatura",
         "exhum_all": "todas las criaturas",
         "exhum_upto": "hasta {n} criaturas",
+        "rappel": "devuelve {who} de tu cementerio a tu mano{cost}",
+        "rappel_cost": " (coste ≤ {max})",
+        "rappel_one_any": "una carta",
+        "rappel_one_creature": "una unidad",
+        "rappel_one_spell": "un hechizo",
+        "rappel_all_any": "todas las cartas",
+        "rappel_all_creature": "todas las unidades",
+        "rappel_all_spell": "todos los hechizos",
+        "rappel_upto_any": "hasta {n} cartas",
+        "rappel_upto_creature": "hasta {n} unidades",
+        "rappel_upto_spell": "hasta {n} hechizos",
         "invocation": "invoca una criatura aleatoria de coste {x}{filter}",
         "epargne": "añade {x} a tu contador de Ahorro",
         "foi": "añade {x} a tu contador de Fe",
@@ -843,6 +870,7 @@
         "poison": "elige una criatura para envenenar",
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
+        "rappel": "elige una carta para devolver a tu mano",
         "default": "elige un objetivo"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Invocar un token",
     "content_gain_mana": "Ganar maná",
     "content_exhumation": "Resucitar (cementerio)",
+    "content_rappel": "Retorno (cementerio → mano)",
+    "label_card_kind": "CARTAS OBJETIVO",
+    "card_kind_all": "Todas",
+    "card_kind_creature": "Solo unidades",
+    "card_kind_spell": "Solo hechizos",
     "legacy_grants_heading": "Dones heredados (formato antiguo) — conviértelos para poder apuntar al oponente",
     "convert_to_composed": "Convertir",
     "effects_heading": "Efectos de la carta",
@@ -1878,6 +1911,8 @@
     "group_curated": "Mecánicas particulares",
     "content_invocation": "Invocación (criatura aleatoria)",
     "pool_hint_invocation": "Filtros acumulativos. Sin ellos, el conjunto sigue la alineación de la carta; el coste invocado es EXACTAMENTE X.",
+    "label_designated_card": "CARTA DESIGNADA",
+    "designated_card_hint": "Elige una criatura para invocarla tal cual. Sin elección, se sortea una criatura de coste X según los filtros.",
     "content_selection": "Selección (1 de 3)",
     "content_renfort_royal": "Selección Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENENCIA",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
     "label_magnitude": "MAGNITUD",
     "random_hint": "Sorteado al azar entre 1 y {max}, una sola vez al resolverse.",
+    "move_earlier": "Resolver antes",
+    "move_later": "Resolver después",
     "random_needs_ceiling": "Se necesita un límite de al menos 2 para sortear al azar.",
     "label_granted_ability": "HABILIDAD OTORGADA",
     "label_grant_trigger": "DESENCADENANTE DEL DON",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Elige una carta del cementerio",
     "graveyard_hint_touch": "Toca una carta para ampliar · toca de nuevo para ver la descripción",
     "graveyard_hint_hover": "Pasa el cursor sobre una carta para ampliar · clic derecho para alternar imagen / descripción",
-    "seconde_vie_hint": "Segunda vida: haz doble clic en una criatura elegible.",
+    "seconde_vie_hint": "Segunda vida: haz doble clic en una carta elegible.",
     "seconde_vie_blocked_turn": "No es tu turno.",
     "graveyard_empty": "No hay cartas en el cementerio",
     "cost_default_card_name": "carta",

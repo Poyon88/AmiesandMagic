@@ -421,6 +421,10 @@
         "label": "启示 X",
         "desc": "抽X张卡。"
       },
+      "afflux": {
+        "label": "涌流 X",
+        "desc": "本回合获得 X 点法力。"
+      },
       "epargne": {
         "label": "储蓄 X",
         "desc": "为你的储蓄计数器增加X点（上限8点）。"
@@ -535,6 +539,18 @@
         "label": "咏唱 X",
         "desc": "如果你控制一个拥有\"吟唱\"的随从，此法术的所有数值提升X点。"
       },
+      "divination": {
+        "label": "占卜",
+        "desc": "展示牌库顶3张卡；按你选择的顺序将1张放回顶部，2张放到底部。"
+      },
+      "contresort": {
+        "label": "反制法术",
+        "desc": "抵消对手的下一个法术。"
+      },
+      "seconde_vie": {
+        "label": "二次生命 X",
+        "desc": "可从你的墓地中支付X点法力值施放。此后失去二次生命。"
+      },
       "lune": {
         "label": "月 X",
         "desc": "从本回合打出的第二张牌起，此牌的所有数值提升X点。"
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "召回",
-        "desc": "将你墓地中的一个生物返回手牌。"
+        "desc": "将一张牌从你的墓地返回手牌"
       },
       "exhumation": {
         "label": "掘墓 X",
@@ -760,6 +776,17 @@
         "exhum_one": "一个生物",
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物",
+        "rappel": "将{who}从你的墓地返回手牌{cost}",
+        "rappel_cost": "（费用≤{max}）",
+        "rappel_one_any": "一张牌",
+        "rappel_one_creature": "一个单位",
+        "rappel_one_spell": "一张法术",
+        "rappel_all_any": "所有牌",
+        "rappel_all_creature": "所有单位",
+        "rappel_all_spell": "所有法术",
+        "rappel_upto_any": "至多{n}张牌",
+        "rappel_upto_creature": "至多{n}个单位",
+        "rappel_upto_spell": "至多{n}张法术",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "epargne": "为你的储蓄计数器增加{x}点",
         "foi": "为你的信仰计数器增加{x}点",
@@ -843,6 +870,7 @@
         "poison": "选择一个要使其中毒的生物",
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
+        "rappel": "选择一张牌返回手牌",
         "default": "选择一个目标"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "召唤衍生物",
     "content_gain_mana": "获得法力",
     "content_exhumation": "复活（墓地）",
+    "content_rappel": "召回（墓地→手牌）",
+    "label_card_kind": "目标卡牌",
+    "card_kind_all": "全部",
+    "card_kind_creature": "仅单位",
+    "card_kind_spell": "仅法术",
     "legacy_grants_heading": "遗留赠予效果(旧格式)——请转换以便可以指向对手",
     "convert_to_composed": "转换",
     "effects_heading": "卡牌效果",
@@ -1878,6 +1911,8 @@
     "group_curated": "特殊机制",
     "content_invocation": "召唤（随机生物）",
     "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
+    "label_designated_card": "指定卡牌",
+    "designated_card_hint": "指定一张生物牌即可原样召唤。未指定时，将按筛选条件随机召唤一张费用为X的生物。",
     "content_selection": "选择（三选一）",
     "content_renfort_royal": "皇家甄选（三选一）",
     "label_pool_membership": "卡池 — 归属",
@@ -1887,6 +1922,8 @@
     "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
     "label_magnitude": "幅度",
     "random_hint": "在1到{max}之间随机抽取一次，仅在结算时进行。",
+    "move_earlier": "提前结算",
+    "move_later": "延后结算",
     "random_needs_ceiling": "随机抽取需要至少为2的上限。",
     "label_granted_ability": "赋予的异能",
     "label_grant_trigger": "赋予的触发条件",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "从墓地选择一张牌",
     "graveyard_hint_touch": "点击卡牌放大 · 再次点击查看描述",
     "graveyard_hint_hover": "悬停卡牌放大 · 右键切换图片／描述",
-    "seconde_vie_hint": "二次生命：双击一个符合条件的生物。",
+    "seconde_vie_hint": "二次生命：双击一张符合条件的卡牌。",
     "seconde_vie_blocked_turn": "现在不是您的回合。",
     "graveyard_empty": "墓地中没有卡牌",
     "cost_default_card_name": "卡牌",

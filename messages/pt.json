@@ -421,6 +421,10 @@
         "label": "Inspiração X",
         "desc": "Compre X cartas."
       },
+      "afflux": {
+        "label": "Afluxo X",
+        "desc": "Ganhe X de mana neste turno."
+      },
       "epargne": {
         "label": "Poupança X",
         "desc": "Adiciona X ao seu contador de Poupança (máximo 8)."
@@ -535,6 +539,18 @@
         "label": "Canto X",
         "desc": "Se você controlar uma criatura com Cântico, todos os valores desta magia são aumentados em X."
       },
+      "divination": {
+        "label": "Divinação",
+        "desc": "Revela as 3 primeiras cartas do deck; recoloque 1 no topo e 2 embaixo, na ordem escolhida."
+      },
+      "contresort": {
+        "label": "Contramagia",
+        "desc": "Anula o próximo feitiço adversário."
+      },
+      "seconde_vie": {
+        "label": "Segunda Vida X",
+        "desc": "Pode ser lançado do seu cemitério por X de mana. Ele perde então Segunda Vida."
+      },
       "lune": {
         "label": "Lua X",
         "desc": "A partir da segunda carta jogada no turno, todos os valores desta carta são aumentados em X."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Recall",
-        "desc": "Retorna uma criatura do seu cemitério para a sua mão"
+        "desc": "Devolve uma carta do seu cemitério à sua mão"
       },
       "exhumation": {
         "label": "Exumação X",
@@ -760,6 +776,17 @@
         "exhum_one": "uma criatura",
         "exhum_all": "todas as criaturas",
         "exhum_upto": "até {n} criaturas",
+        "rappel": "devolve {who} do seu cemitério à sua mão{cost}",
+        "rappel_cost": " (custo ≤ {max})",
+        "rappel_one_any": "uma carta",
+        "rappel_one_creature": "uma unidade",
+        "rappel_one_spell": "um feitiço",
+        "rappel_all_any": "todas as cartas",
+        "rappel_all_creature": "todas as unidades",
+        "rappel_all_spell": "todos os feitiços",
+        "rappel_upto_any": "até {n} cartas",
+        "rappel_upto_creature": "até {n} unidades",
+        "rappel_upto_spell": "até {n} feitiços",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "epargne": "adiciona {x} ao seu contador de Poupança",
         "foi": "adiciona {x} ao seu contador de Fé",
@@ -843,6 +870,7 @@
         "poison": "escolha uma criatura para envenenar",
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
+        "rappel": "escolha uma carta para voltar à mão",
         "default": "escolha um alvo"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Invocar um token",
     "content_gain_mana": "Ganhar mana",
     "content_exhumation": "Ressuscitar (cemitério)",
+    "content_rappel": "Retorno (cemitério → mão)",
+    "label_card_kind": "CARTAS VISADAS",
+    "card_kind_all": "Todas",
+    "card_kind_creature": "Só unidades",
+    "card_kind_spell": "Só feitiços",
     "legacy_grants_heading": "Dons herdados (formato antigo) — converta-os para poder visar o adversário",
     "convert_to_composed": "Converter",
     "effects_heading": "Efeitos da carta",
@@ -1878,6 +1911,8 @@
     "group_curated": "Mecânicas específicas",
     "content_invocation": "Invocação (criatura aleatória)",
     "pool_hint_invocation": "Filtros cumulativos. Sem eles, o pool segue o alinhamento da carta; o custo invocado é EXATAMENTE X.",
+    "label_designated_card": "CARTA DESIGNADA",
+    "designated_card_hint": "Escolha uma criatura para a invocar tal como está. Sem escolha, é sorteada uma criatura de custo X segundo os filtros.",
     "content_selection": "Seleção (1 de 3)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENÇA",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
     "label_magnitude": "MAGNITUDE",
     "random_hint": "Sorteado ao acaso entre 1 e {max}, uma única vez na resolução.",
+    "move_earlier": "Resolver antes",
+    "move_later": "Resolver depois",
     "random_needs_ceiling": "É necessário um teto de pelo menos 2 para sortear ao acaso.",
     "label_granted_ability": "HABILIDADE CONCEDIDA",
     "label_grant_trigger": "GATILHO DA CONCESSÃO",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Escolha uma carta do cemitério",
     "graveyard_hint_touch": "Toque em uma carta para ampliar · toque novamente para ver a descrição",
     "graveyard_hint_hover": "Passe o mouse sobre uma carta para ampliar · clique direito para alternar imagem / descrição",
-    "seconde_vie_hint": "Segunda vida: clique duas vezes numa criatura elegível.",
+    "seconde_vie_hint": "Segunda vida: clique duas vezes numa carta elegível.",
     "seconde_vie_blocked_turn": "Não é o seu turno.",
     "graveyard_empty": "Nenhuma carta no cemitério",
     "cost_default_card_name": "carta",

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } fro
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
-import { secondeVieCost } from "@/lib/game/engine";
+import { canPlayFromGraveyard, hasSecondeVie } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
 import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
@@ -772,31 +772,32 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     && myPlayer.hand.length < MAX_HAND_SIZE
     && opponent.deck.length > 0;
 
-  // SECONDE VIE : créatures de MON cimetière jouables maintenant (mon tour,
-  // mana suffisant, place sur le plateau). Le moteur re-valide tout.
+  // SECONDE VIE : cartes de MON cimetière jouables maintenant — créatures
+  // (place sur le plateau) comme sorts (au moins une cible). Le verdict vient
+  // de `canPlayFromGraveyard`, la même source que le moteur : l'écran ne
+  // surligne que ce qui partira vraiment.
   // Valeurs dérivées SIMPLES, sans useMemo/useCallback : on se trouve après le
   // return anticipé qui garde `myPlayer`, et un hook conditionnel casserait
   // l'ordre des hooks entre deux rendus.
-  const secondeViePlayableIds = (myTurn && myPlayer.board.length < MAX_BOARD_SIZE)
+  const secondeViePlayableIds = myTurn
     ? myPlayer.graveyard
-        .filter((c) => c.card.card_type === "creature"
-          && c.card.keywords.includes("seconde_vie")
-          && secondeVieCost(c) <= myPlayer.mana)
+        .filter((c) => canPlayFromGraveyard(gameState, c.instanceId))
         .map((c) => c.instanceId)
     : [];
 
   // Pourquoi une Seconde vie n'est-elle pas jouable ? Le filtre ci-dessus est
-  // muet : une créature inéligible s'affiche comme les autres et le double-clic
+  // muet : une carte inéligible s'affiche comme les autres et le double-clic
   // ne fait rien. On formule donc la raison, en ne parlant QUE si le cimetière
-  // contient au moins une créature à Seconde vie — sinon il n'y a rien à dire.
+  // contient au moins une carte à Seconde vie — sinon il n'y a rien à dire.
   const secondeVieNotice = (() => {
-    const candidates = myPlayer.graveyard.filter(
-      (c) => c.card.card_type === "creature" && c.card.keywords.includes("seconde_vie"),
-    );
+    const candidates = myPlayer.graveyard.filter(hasSecondeVie);
     if (candidates.length === 0) return null;
     if (secondeViePlayableIds.length > 0) return t("seconde_vie_hint");
     if (!myTurn) return t("seconde_vie_blocked_turn");
-    if (myPlayer.board.length >= MAX_BOARD_SIZE) return t("eveil_blocked_board_plein");
+    // Le plateau plein n'explique le blocage que si toutes les candidates y
+    // auraient besoin d'une place — un sort, lui, n'en réclame pas.
+    if (myPlayer.board.length >= MAX_BOARD_SIZE
+      && candidates.every((c) => c.card.card_type === "creature")) return t("eveil_blocked_board_plein");
     return t("eveil_blocked_mana");
   })();
 
@@ -827,9 +828,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     return { cards, side: inTheirs ? ("theirs" as const) : ("mine" as const) };
   })();
 
+  // SECONDE VIE — la carte passe par le MÊME flux qu'une carte de la main :
+  // paiement des coûts additionnels, ciblage, modales de deck, puis envoi.
+  // Dispatcher l'action directement, comme avant, faisait partir un sort à
+  // cible SANS cible (il se consumait dans le vide) et sautait les pickers des
+  // créatures. `dispatchAction` estampille `fromGraveyard` lui-même.
   const handlePlayFromGraveyard = (instanceId: string) => {
     setGraveyardView(null);
-    broadcast(dispatchAction({ type: "play_card", cardInstanceId: instanceId, fromGraveyard: true }));
+    const action = selectCardInHand(instanceId);
+    if (action) broadcast(action);
   };
 
   // Une carte de la main ADVERSE vient d'être boostée (Entrainement côté
@@ -1159,7 +1166,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             }
           />
           <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} side="theirs" />
         </div>
         )}
 
@@ -1190,7 +1197,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} side="theirs" />
           </div>
         )}
 
@@ -1461,7 +1468,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} side="mine" />
         </div>
         )}
 
@@ -1496,7 +1503,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} side="mine" />
           </div>
         )}
 

@@ -56,6 +56,8 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   pillage: { content: "discard", magnitude: { x: 1 } },
   convocation_simple: { content: "summon_token", magnitude: { x: 1 }, tokenId: null },
   exhumation: { content: "exhumation", magnitude: { x: 1 }, target: board({ side: "ally", location: "graveyard" }) },
+  // Rappel : cimetière allié → main ; la nature (unités / sorts) se règle ensuite.
+  rappel: { content: "rappel", target: board({ side: "ally", location: "graveyard" }) },
   // Invocation X : le coût X est EXACT (pas un plafond) — cf. resolveInvocationSummon.
   invocation: { content: "invocation", magnitude: { x: 1 } },
   epargne: { content: "epargne", magnitude: { x: 1 } },

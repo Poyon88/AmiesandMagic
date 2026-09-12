@@ -344,8 +344,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   contresort: {
     id: "contresort", label: "Contresort", symbol: "🚫",
     desc: "Annule le prochain sort adverse.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
+    // Forme sort : le sort ARME un contre chez son lanceur (PlayerState.contresort),
+    // que le prochain sort adverse consomme. Ce n'est pas un don : pour poser la
+    // garde sur une unité, passer par l'effet composé « Conférer une capacité ».
+    spell: {
+      desc: "Annule le prochain sort adverse.",
+      params: [], needsTarget: false,
+    },
   },
   convocation: {
     id: "convocation", label: "Convocation X", symbol: "📣",
@@ -564,8 +571,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   divination: {
     id: "divination", label: "Divination", symbol: "🔍",
     desc: "Révèle les 3 premières cartes du deck ; replacez-en 1 dessus et 2 dessous, dans l'ordre choisi.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Mixte" },
+    // Forme sort : même modale de deck que Creuser et Présage, résolue pour le
+    // lanceur. Sans fenêtre de choix (sort relancé, déchaîné), la carte gardée
+    // sur le dessus est tirée au hasard, comme la forme créature hors invocation.
+    spell: {
+      desc: "Révèle les 3 premières cartes du deck ; replacez-en 1 dessus et 2 dessous, dans l'ordre choisi.",
+      params: [], needsTarget: false,
+    },
   },
 
   // ─── Creature-only — Tier 3 ───────────────────────────────────────────────
@@ -812,7 +826,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Remettez une carte ciblée de votre cimetière dans votre main.",
     },
     spell: {
-      desc: "Renvoie une créature de votre cimetière dans votre main",
+      desc: "Renvoie une carte de votre cimetière dans votre main",
       params: [], needsTarget: true, targetType: "friendly_graveyard",
     },
   },
@@ -1059,8 +1073,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
   seconde_vie: {
     id: "seconde_vie", label: "Seconde vie X", symbol: "🕰️",
     desc: "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 14, costPerX: -2, se: 3.5, minTier: 2, scalable: true, zone: "Cimetière" },
+    // Côté sort, même règle : une fois résolu, le sort retourne au cimetière
+    // SANS Seconde vie — il ne se relance qu'une fois. Marqueur inerte à la
+    // résolution : la capacité vit dans playCard (zone source + coût), pas dans
+    // resolveSpellKeywords, qui n'a aucun `case` pour elle.
+    spell: {
+      params: ["amount"], needsTarget: false,
+      desc: "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie.",
+    },
   },
   incineration: {
     id: "incineration", label: "Incinération X", symbol: "🧨",
@@ -1367,7 +1389,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   afflux: {
     id: "afflux", label: "Afflux X", symbol: "💎",
     desc: "Gagnez X mana ce tour",
-    applicable_to: ["spell"],
+    applicable_to: ["creature", "spell"],
+    // Forme créature : même gain, à l'entrée en jeu par défaut, ou sur tout
+    // déclencheur curé (tap, mort, retour, fin de tour, attaque, pioche —
+    // CURATED_MULTIMODE_IDS). Calibrage de DÉPART : sous Inspiration (9/+5),
+    // un mana ne valant pas une carte ; à réajuster après essai.
+    creature: {
+      cost: 6, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Gagnez X mana ce tour.",
+    },
     spell: { params: ["amount"], needsTarget: false },
   },
   conferer: {
@@ -1470,6 +1500,12 @@ export interface DerivedSpellKeywordDef {
   needsTarget: boolean;
   targetType?: SpellTargetType;
 }
+
+/** Capacités dont le X peut être « tiré au hasard entre 1 et X » à chaque
+ *  déclenchement (drapeau `randomX` sur l'instance). Réservé aux SÉLECTIONS :
+ *  leur X est un plafond de coût, donc une borne naturelle de tirage. Une
+ *  seule liste pour la forge, l'éditeur et le moteur. */
+export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal"]);
 
 export const SPELL_KEYWORDS: Record<SpellKeywordId, DerivedSpellKeywordDef> = (() => {
   const out: Partial<Record<SpellKeywordId, DerivedSpellKeywordDef>> = {};
@@ -1615,7 +1651,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration",
+  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration", "afflux",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis

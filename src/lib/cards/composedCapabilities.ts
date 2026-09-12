@@ -29,13 +29,15 @@ export function sanitizeComposed(input: unknown): Capability[] {
     .filter((c) => c && typeof c === 'object' && c.composed)
     .map((c, i) => {
       // Singulier : un booléen strict, ou rien — pas de valeur exotique en base.
-      const { singulier, ...reste } = c;
+      const { singulier, position, ...reste } = c;
       return fillXYMagnitude({
         ...reste,
         uid: `cx_${i}`,
         effectKind: c.effectKind === 'emblem' ? ('emblem' as const) : ('immediate' as const),
         abilityId: c.abilityId || '_composed',
         ...(singulier === true ? { singulier: true } : {}),
+        // Ordre d'auteur : un entier ≥ 0, ou rien (cf. composed-position.ts).
+        ...(Number.isInteger(position) && (position as number) >= 0 ? { position } : {}),
       });
     });
 }

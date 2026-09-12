@@ -82,6 +82,9 @@ export type Keyword =
   | "sacrifice_demoniaque"
   // Polymorphic — draw X cards
   | "inspiration"
+  // Polymorphe — gagne X mana ce tour (sort : à la résolution ; créature : à
+  // l'entrée en jeu ou sur tout déclencheur curé).
+  | "afflux"
   | "epargne"
   // Alimente le compteur de Foi (plafond MAX_FOI) ; se dépense en découvrant
   // 1 carte parmi 3 du DECK de coût ≤ Foi, seul ce coût étant défalqué.
@@ -243,7 +246,17 @@ export type SpellKeywordId =
   | "lune"
   | "soleil"
   | "dechainement"
-  | "compagnons";
+  | "compagnons"
+  // Seconde vie côté SORT : le sort se relance depuis le cimetière pour X mana,
+  // puis perd la capacité. Marqueur inerte à la résolution (aucun `case`).
+  | "seconde_vie"
+  // Contresort côté SORT : arme un contre chez le lanceur (PlayerState.contresort),
+  // consommé par le prochain sort adverse.
+  | "contresort"
+  // Divination côté SORT : même modale de deck que Creuser/Présage
+  // (onPlayDeckPickers lit spell_keywords) ; l'index choisi voyage dans
+  // targetMap["divination_0"].
+  | "divination";
 
 /** Trigger mode for a creature keyword (also reused to tint spell effects).
  *  Undefined = neutral default (passive / permanent effect, kept white).
@@ -299,6 +312,14 @@ export interface KeywordInstance {
    *  autorisés (ordre sans effet — le deck est remélangé). Stocké dans la
    *  colonne JSONB existante — aucune migration. */
   linkedCardIds?: number[];
+  /** SÉLECTION (selection / selection_magique / renfort_royal) : le X saisi
+   *  devient un PLAFOND, et le coût maximal de l'offre est tiré entre 1 et lui
+   *  à chaque déclenchement. Même contrat que `ComposedEffect.magnitude.randomX`.
+   *  Stocké dans la colonne JSONB existante — aucune migration. */
+  randomX?: boolean;
+  /** DÉCHAINEMENT X/Y : le coût Y devient un PLAFOND — chaque sort lancé est
+   *  tiré parmi ceux de coût 1 à Y (et non exactement Y). */
+  randomY?: boolean;
 }
 
 export interface SpellKeywordInstance {
@@ -317,6 +338,10 @@ export interface SpellKeywordInstance {
   linkedCardIds?: number[];
   /** SINGULIER : même contrat que `KeywordInstance.singulier`. */
   singulier?: boolean;
+  /** SÉLECTION au hasard : même contrat que `KeywordInstance.randomX`. */
+  randomX?: boolean;
+  /** DÉCHAINEMENT : même contrat que `KeywordInstance.randomY`. */
+  randomY?: boolean;
 }
 
 // --- Convocation tokens config ---
@@ -434,7 +459,7 @@ export interface Capability {
    *  +X/+Y — cf. XY_ABILITY_IDS, calqué sur KeywordInstance.x/y) ;
    *  `attack`/`health` = paire +X/+Y (renforcement, renforcement_multiple,
    *  invocation). */
-  params?: { x?: number; y?: number; attack?: number; health?: number };
+  params?: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean };
   /** Race/clan ciblé (renforcement_multiple, entraide, race du token). */
   race?: string;
   clan?: string;
@@ -471,6 +496,13 @@ export interface Capability {
   /** EMBLÈME uniquement : durée de vie en tours de son porteur. Absent ⇒
    *  permanent (cf. `Emblem.duration`). */
   duration?: number;
+  /** COMPOSÉ uniquement : ORDRE D'AUTEUR. Index, dans la liste des mots-clés de
+   *  la carte (`keywords[]` créature / `spell_keywords[]` sort), du mot-clé
+   *  DEVANT lequel cet effet se place — donc s'affiche et se résout. `0` = avant
+   *  tous. Absent ⇒ en queue, l'ancien comportement (aucune migration ; cf.
+   *  composed-position.ts). Persisté avec la capacité dans la colonne
+   *  `capabilities`. */
+  position?: number;
 }
 
 // ─── Capacités composables (modèle hybride) ─────────────────────────────────
@@ -503,6 +535,11 @@ export type ComposedEffectContent =
   // empoisonneuse). C'est l'équivalent composé du mot-clé de sort `poison`.
   | "poison"
   | "exhumation"
+  // RAPPEL composé : renvoie des cartes du cimetière du contrôleur dans sa
+  // main. Contrairement au mot-clé (une carte, au choix ou au hasard), il se
+  // paramètre : nombre, plafond de coût, et `target.cardKind` pour ne viser
+  // que les unités ou que les sorts. X n'a aucun rôle.
+  | "rappel"
   // Invoque une créature aléatoire de la collection au coût EXACT X. Comme les
   // Sélections, elle se paramètre par `pool` (race / faction / clan / mot-clé).
   | "invocation"
@@ -563,6 +600,11 @@ export interface TargetSpec {
    *  jetons à coût nul) : la distinction se fait sur `undefined`, jamais sur la
    *  fausseté du nombre. */
   maxCost?: number;
+  /** NATURE de la carte visée : ne garder que les unités, ou que les sorts.
+   *  Absent ⇒ les deux. Pensé pour les zones hors plateau (cimetière, main,
+   *  deck), où sorts et unités cohabitent ; sur le plateau il n'y a que des
+   *  unités et le filtre est sans effet. Cumulatif avec le reste (ET logique). */
+  cardKind?: "creature" | "spell";
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
   /** Désignation :
@@ -612,6 +654,12 @@ export interface ComposedEffect {
   grantTrigger?: CapabilityTrigger;
   /** content === "summon_token" : token à invoquer. */
   tokenId?: number | null;
+  /** content === "invocation" : carte DÉSIGNÉE à invoquer (id de la table
+   *  `cards`), choisie à la création. Renseignée, elle REMPLACE le tirage
+   *  aléatoire : X, le filtre de pool et l'alignement ne comptent plus. La
+   *  carte est résolue par id dans les pools du match, complétés au chargement
+   *  comme pour Compagnons (cf. page du match). Une créature seulement. */
+  cardId?: number | null;
   /** content === "selection" / "renfort_royal" : restriction du POOL de cartes
    *  révélées, EN PLUS des règles de base (rareté Commune, coût ≤ X, factions de
    *  l'alignement de la carte source). Volontairement distinct de `target` : on
@@ -1278,6 +1326,13 @@ export interface PlayerState {
    *  piloté exclusivement par des actions journalisées, donc identique sur les
    *  deux clients. */
   epargne: number | null;
+  /** CONTRESORT armé par un SORT : nombre de contres en attente chez ce
+   *  joueur. Chaque sort Contresort en ajoute un ; le prochain sort adverse en
+   *  consomme un et est annulé. Distinct de `CardInstance.contresortActive`,
+   *  la garde d'une UNITÉ, qui reste visible sur le plateau — celui-ci n'a
+   *  pas d'autre logement que le joueur. Optionnel : absent vaut 0 (aucune
+   *  migration d'état, les parties en cours restent valides). */
+  contresort?: number;
   /** Compteur de Foi, plafonné à MAX_FOI. Mêmes conventions que `epargne`
    *  (`null` = jamais déclenchée ⇒ masqué ; ne redevient jamais `null`).
    *

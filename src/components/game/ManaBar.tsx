@@ -39,6 +39,10 @@ interface ManaBarProps {
    *  camp (toujours connu), `true` pour l'adversaire une fois RÉVÉLÉ, `null`
    *  tant qu'il ne l'est pas (rien n'est affiché). */
   singleton?: boolean | null;
+  /** CONTRESORT armé par un sort : nombre de contres en attente. Masqué à 0
+   *  ou absent ; visible dans les DEUX camps (comme la garde d'une unité sur le
+   *  plateau), pour que l'adversaire sache que son prochain sort sera annulé. */
+  contresort?: number | null;
 }
 
 export default function ManaBar({
@@ -46,6 +50,7 @@ export default function ManaBar({
   foi = null, canSpendFoi = false, onSpendFoi,
   conquete = null, canSpendConquete = false, onSpendConquete,
   singleton = null,
+  contresort = null,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
   const available = current - held;
@@ -100,6 +105,19 @@ export default function ManaBar({
             {epargne}
           </span>
         </button>
+      )}
+      {(contresort ?? 0) > 0 && (
+        // Contre(s) armé(s) par un sort Contresort : pastille rouge, un nombre
+        // seulement au-delà d'un contre.
+        <span
+          data-contresort-badge={side}
+          aria-label={`Contresort armé : ${contresort}`}
+          title={`Contresort armé — le prochain sort adverse est annulé${(contresort ?? 0) > 1 ? ` (×${contresort})` : ""}`}
+          className="relative inline-flex items-center justify-center gap-0.5 h-7 min-w-7 px-1 rounded-full border-2 border-red-400/70 bg-red-900/40 text-red-100 text-[13px] font-bold leading-none shadow-[0_0_8px_rgba(248,113,113,0.6)]"
+        >
+          <span aria-hidden>🚫</span>
+          {(contresort ?? 0) > 1 && <span>{contresort}</span>}
+        </span>
       )}
       {foi !== null && (
         // Même losange que l'Épargne, en teinte d'aube (blanc doré) pour que

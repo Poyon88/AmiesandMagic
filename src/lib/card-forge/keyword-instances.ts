@@ -13,7 +13,7 @@
 // reste décrit par le seul `keywords[]`, et l'adaptateur lui attribue son
 // déclencheur naturel.
 
-import { CREATURE_LABEL_TO_ENGINE_ID, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { CREATURE_LABEL_TO_ENGINE_ID, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import type { CapabilityTrigger, Keyword, KeywordInstance, KeywordMode } from "@/lib/game/types";
 
 /** Libellé FR de la forge → id moteur. Base dérivée du registre (exhaustive par
@@ -92,6 +92,8 @@ export interface ForgeKeywordExtras {
   rmY?: number; rmRace?: string; rmClan?: string;
   /** Seconds membres des capacités à couple X/Y. */
   afY?: number; rfY?: number; dcY?: number; glY?: number; fdaY?: number;
+  /** Déchainement : « ? » sur Y (coût plafond, 1 à Y). */
+  dcRandomY?: boolean;
   /** Invocations multiples : coûts à invoquer + restriction de pool. */
   invocCosts?: number[]; invocRace?: string; invocFaction?: string;
   /** Appel Suprême : race ciblée. */
@@ -135,13 +137,16 @@ export interface BuildKeywordInstancesInput {
    *  n'aurait sinon rien à stocker (à l'invocation, sans X) produit quand même
    *  une instance `{ id, singulier: true }` — c'est elle qui porte la condition. */
   singulier?: Record<string, boolean>;
+  /** SÉLECTION AU HASARD par libellé : le X devient un plafond tiré à chaque
+   *  déclenchement. N'a de sens que pour RANDOM_X_ABILITY_IDS ; ignoré ailleurs. */
+  randomX?: Record<string, boolean>;
   extras?: ForgeKeywordExtras;
 }
 
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
@@ -177,7 +182,7 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // / Y (coût des sorts, dédié) ; toujours émis — sans le Y persisté, le
       // moteur retomberait sur coût 1 quelle que soit la saisie.
       if (id === "dechainement" && !isSpellCard) {
-        return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: extras.dcY ?? 1 };
+        return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: extras.dcY ?? 1, ...(extras.dcRandomY ? { randomY: true } : {}) };
       }
       // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
       // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
@@ -230,8 +235,11 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       if (id === "compagnons" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.compagnonsCardIds?.length ? { linkedCardIds: extras.compagnonsCardIds } : {}) };
       }
-      if (!mode && x == null && !grantScope) return null; // pure play + no X + default scope → nothing to store
-      return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}) };
+      // Sélection au hasard : le drapeau seul suffit à créer l'instance (le X
+      // est toujours là pour une capacité scalable, mais on ne s'y fie pas).
+      const alea = RANDOM_X_ABILITY_IDS.has(id) && randomX[label] === true;
+      if (!mode && x == null && !grantScope && !alea) return null; // pure play + no X + default scope → nothing to store
+      return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}) };
     }
   }
 }

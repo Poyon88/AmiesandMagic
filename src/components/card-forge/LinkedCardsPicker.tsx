@@ -69,11 +69,19 @@ const normalize = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function LinkedCardsPicker({
-  value, onChange, accent = "#8a6d3b",
+  value, onChange, accent = "#8a6d3b", title, single = false, required = true, creaturesOnly = false,
 }: {
   value: number[];
   onChange: (v: number[]) => void;
   accent?: string;
+  /** En-tête ; par défaut celui des Compagnons. */
+  title?: string;
+  /** Désignation UNIQUE (Invocation désignée) : choisir remplace au lieu d'ajouter. */
+  single?: boolean;
+  /** Affiche « requis » tant que rien n'est choisi. */
+  required?: boolean;
+  /** Ne propose que des créatures (une Invocation ne met en jeu qu'une créature). */
+  creaturesOnly?: boolean;
 }) {
   const [catalog, setCatalog] = useState<PickableCard[]>(catalogCache ?? []);
   const [search, setSearch] = useState("");
@@ -91,9 +99,9 @@ export default function LinkedCardsPicker({
     const needle = normalize(search.trim());
     if (!needle) return [];
     return catalog
-      .filter((c) => normalize(c.name).includes(needle))
+      .filter((c) => (!creaturesOnly || c.card_type === "creature") && normalize(c.name).includes(needle))
       .slice(0, 20);
-  }, [catalog, search]);
+  }, [catalog, search, creaturesOnly]);
 
   const cardLabel = (c: PickableCard) => {
     const stats = c.card_type === "creature" ? ` ${c.attack ?? 0}/${c.health ?? 0}` : " (sort)";
@@ -104,8 +112,8 @@ export default function LinkedCardsPicker({
   return (
     <div style={{ border: `1px solid ${accent}33`, borderRadius: 6, padding: 8, background: "#fff" }}>
       <div style={{ fontSize: 8, color: accent, letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-        🐾 COMPAGNONS — CARTES LIÉES
-        {ids.length === 0 && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· requis</span>}
+        {title ?? "🐾 COMPAGNONS — CARTES LIÉES"}
+        {required && ids.length === 0 && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· requis</span>}
       </div>
 
       {/* Cartes liées déjà choisies (doublons permis, une puce par copie). */}
@@ -139,8 +147,8 @@ export default function LinkedCardsPicker({
           {matches.map((c) => (
             <button
               key={c.id}
-              onClick={() => onChange([...ids, c.id])}
-              title="Ajouter aux Compagnons"
+              onClick={() => { onChange(single ? [c.id] : [...ids, c.id]); if (single) setSearch(""); }}
+              title={single ? "Désigner cette carte" : "Ajouter aux Compagnons"}
               style={{ display: "block", width: "100%", textAlign: "left", padding: "3px 8px", border: "none", borderBottom: `1px solid ${accent}11`, background: "#fff", fontSize: 9, fontFamily: "'Cinzel',serif", color: "#444", cursor: "pointer" }}
             >{cardLabel(c)}</button>
           ))}

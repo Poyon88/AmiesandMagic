@@ -18,6 +18,7 @@ import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDe
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import CostBadges from "@/components/cards/CostBadges";
 import RarityFrame from "@/components/cards/RarityFrame";
@@ -888,7 +889,7 @@ function HandCard({
                     : null;
                   const isAllAllies = grantScope === "all_allies";
                   return (
-                    <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{
+                    <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
                       minWidth: 32, height: 32, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
                       background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
@@ -918,7 +919,7 @@ function HandCard({
               const spellKey = `spell_${spellKw.id}`;
               const hasImg = !!iconOverrides[spellKey];
               return (
-              <div key={`sk_${i}`} title={displayTitle} style={{
+              <div key={`sk_${i}`} title={displayTitle} style={{ order: spellKeywordDisplayOrder(i),
                 minWidth: 32, height: 32, borderRadius: 3,
                 padding: hasValue ? "0 2px" : 0,
                 background: hasImg ? "transparent" : `${accentColor}33`,
@@ -945,7 +946,7 @@ function HandCard({
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               const hasImg = !!iconOverrides[ic.keyword];
               return (
-                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{
+                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ order: composedDisplayOrder(cap),
                   minWidth: 32, height: 32, padding: val ? "0 2px" : 0,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1, overflow: "visible",
                 }}>
@@ -968,7 +969,7 @@ function HandCard({
             })}
 
             {isCreature && (
-              <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+              <div style={{ display: "flex", gap: 4, marginLeft: "auto", order: POWER_ORDER_LAST }}>
                 <div style={{
                   display: "flex", alignItems: "center",
                   padding: "1px 5px", borderRadius: 4,
@@ -1029,13 +1030,16 @@ function HandCard({
             </div>
           )}
 
+          {/* ORDRE D'AUTEUR : conteneur unique + `order` par ligne (cf. GameCard). */}
+          {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0 || (card.spell_keywords?.length ?? 0) > 0 || composedCapsOf(card.capabilities).length > 0) && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {/* Capacités detail */}
           {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
             const visible = buildKeywordDisplayEntries(card)
               .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
             if (visible.length === 0) return null;
             return (
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ display: "contents" }}>
               {visible.map((entry, idx) => {
                 const { kw, x, mode } = entry;
                 const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates, espritCount };
@@ -1045,7 +1049,7 @@ function HandCard({
                 const desc = vocab.keywordDesc(kw, ctx);
                 const modeColor = keywordModeColor(mode);
                 return (
-                <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0, lineHeight: 0 }}>
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} mode={mode} singulier={entry.singulier} />
                   </span>
@@ -1066,12 +1070,12 @@ function HandCard({
 
           {/* Spell keyword details */}
           {card.spell_keywords && card.spell_keywords.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ display: "contents" }}>
               {card.spell_keywords.map((spellKw, i) => {
                 const label = vocab.spellKeywordLabel(spellKw);
                 const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
-                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
@@ -1088,23 +1092,28 @@ function HandCard({
 
           {/* Effets composés — détail (icône + texte généré) */}
           {composedCapsOf(card.capabilities).length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ display: "contents" }}>
               {composedCapsOf(card.capabilities).map((cap, i) => {
                 const ic = composedIcon(cap);
                 const cmode = composedTriggerMode(cap);
                 const nm = vocab.composedName(cap);
                 return (
-                  <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+                  <div key={`cxd-${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 4 }}>
                     <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={6} /></span>
                     <div>
                       {nm && <div style={{ fontSize: 7 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                       <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.16} />
+                    {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
+                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={d * 0.16} />}
                     </div>
                   </div>
                 );
               })}
             </div>
+          )}
+
+          </div>
           )}
 
           {/* Effect text */}

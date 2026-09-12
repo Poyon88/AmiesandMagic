@@ -22,7 +22,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY"> | null;
   /** Esprit de corps : combien de points cette carte gagnerait si elle
    *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
    *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est
@@ -31,7 +31,18 @@ export interface MarkerCtx {
   espritCount?: number | null;
   x?: number | null;
   y?: number | null;
+  /** SÉLECTION AU HASARD : X s'affiche « 1 à X ». Lu ici, sinon sur
+   *  `instance.randomX` — les appelants qui passent l'instance n'ont rien à
+   *  ajouter. */
+  randomX?: boolean | null;
   tokens?: TokenTemplate[];
+}
+
+/** « 1 à {max} », localisé — la même formule que les amplitudes composées
+ *  (`vocab.composed.content.random_range`), pour que les deux modèles parlent
+ *  d'une seule voix sur la carte. */
+export function plageAleatoire(max: number, t?: SafeT): string {
+  return (t?.("vocab.composed.content.random_range") ?? "1 à {max}").replace("{max}", String(max));
 }
 
 // Replis employés quand la carte ne porte pas encore la valeur (carte en cours
@@ -238,8 +249,15 @@ export function resolveMarkers(
     const resolver = extra?.[key] ?? BASE_RESOLVERS[key];
     return resolver?.(kw, ctx, t) ?? marker(key, t) ?? literal;
   });
-  if (ctx.x != null) s = s.replace(/X/g, String(ctx.x));
+  if (ctx.x != null) {
+    const alea = (ctx.randomX ?? ctx.instance?.randomX) === true && ctx.x > 1;
+    s = s.replace(/X/g, alea ? plageAleatoire(ctx.x, t) : String(ctx.x));
+  }
   const y = ctx.y ?? ctx.instance?.y;
-  if (y != null) s = s.replace(/Y/g, String(y));
+  if (y != null) {
+    // Déchainement au hasard : « coût 1 à Y ».
+    const aleaY = ctx.instance?.randomY === true && y > 1;
+    s = s.replace(/Y/g, aleaY ? plageAleatoire(y, t) : String(y));
+  }
   return s;
 }

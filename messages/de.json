@@ -421,6 +421,10 @@
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
       },
+      "afflux": {
+        "label": "Zufluss X",
+        "desc": "Erhalte X Mana in diesem Zug."
+      },
       "epargne": {
         "label": "Sparen X",
         "desc": "Fügt X zu deinem Sparzähler hinzu (maximal 8)."
@@ -535,6 +539,18 @@
         "label": "Gesang X",
         "desc": "Wenn du eine Kreatur mit Gesang kontrollierst, werden alle Werte dieses Zauberspruchs um X erhöht."
       },
+      "divination": {
+        "label": "Divination",
+        "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten in gewählter Reihenfolge zurück."
+      },
+      "contresort": {
+        "label": "Gegenzauber",
+        "desc": "Neutralisiert den nächsten gegnerischen Zauber."
+      },
+      "seconde_vie": {
+        "label": "Zweites Leben X",
+        "desc": "Kann für X Mana aus deinem Friedhof gewirkt werden. Er verliert danach Zweites Leben."
+      },
       "lune": {
         "label": "Mond X",
         "desc": "Ab der zweiten in diesem Zug gespielten Karte werden alle Werte dieser Karte um X erhöht."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Rückruf",
-        "desc": "Gibt eine Kreatur aus deinem Friedhof auf deine Hand zurück."
+        "desc": "Bringt eine Karte aus deinem Friedhof auf deine Hand zurück"
       },
       "exhumation": {
         "label": "Exhumierung X",
@@ -760,6 +776,17 @@
         "exhum_one": "eine Kreatur",
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
+        "rappel": "bringt {who} aus deinem Friedhof auf deine Hand zurück{cost}",
+        "rappel_cost": " (Kosten ≤ {max})",
+        "rappel_one_any": "eine Karte",
+        "rappel_one_creature": "eine Einheit",
+        "rappel_one_spell": "einen Zauber",
+        "rappel_all_any": "alle Karten",
+        "rappel_all_creature": "alle Einheiten",
+        "rappel_all_spell": "alle Zauber",
+        "rappel_upto_any": "bis zu {n} Karten",
+        "rappel_upto_creature": "bis zu {n} Einheiten",
+        "rappel_upto_spell": "bis zu {n} Zauber",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "epargne": "fügt {x} zu deinem Sparzähler hinzu",
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
@@ -843,6 +870,7 @@
         "poison": "Wählt eine Kreatur zum Vergiften",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
+        "rappel": "wähle eine Karte, die auf die Hand zurückkehrt",
         "default": "wähle ein Ziel"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Token beschwören",
     "content_gain_mana": "Mana erhalten",
     "content_exhumation": "Wiederbeleben (Friedhof)",
+    "content_rappel": "Rückruf (Friedhof → Hand)",
+    "label_card_kind": "ZIELKARTEN",
+    "card_kind_all": "Alle",
+    "card_kind_creature": "Nur Einheiten",
+    "card_kind_spell": "Nur Zauber",
     "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
     "convert_to_composed": "Konvertieren",
     "effects_heading": "Karteneffekte",
@@ -1878,6 +1911,8 @@
     "group_curated": "Besondere Mechaniken",
     "content_invocation": "Beschwörung (zufällige Kreatur)",
     "pool_hint_invocation": "Kumulative Filter. Ohne sie folgt der Pool der Ausrichtung der Karte; die beschworenen Kosten betragen EXAKT X.",
+    "label_designated_card": "BESTIMMTE KARTE",
+    "designated_card_hint": "Wähle eine Kreatur, um sie unverändert zu beschwören. Ohne Auswahl wird eine zufällige Kreatur mit Kosten X nach den Filtern gezogen.",
     "content_selection": "Auswahl (1 von 3)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
     "random_hint": "Zufällig gewählt zwischen 1 und {max}, nur einmal bei der Auflösung.",
+    "move_earlier": "Früher auflösen",
+    "move_later": "Später auflösen",
     "random_needs_ceiling": "Für eine Zufallsauswahl ist eine Obergrenze von mindestens 2 erforderlich.",
     "label_granted_ability": "VERLIEHENE FÄHIGKEIT",
     "label_grant_trigger": "AUSLÖSER DER GABE",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Wähle eine Karte aus dem Friedhof",
     "graveyard_hint_touch": "Karte antippen zum Zoomen · erneut tippen für die Beschreibung",
     "graveyard_hint_hover": "Karte überfahren zum Zoomen · Rechtsklick für Bild / Beschreibung",
-    "seconde_vie_hint": "Zweites Leben: Doppelklicken Sie eine berechtigte Kreatur.",
+    "seconde_vie_hint": "Zweites Leben: Doppelklicken Sie eine berechtigte Karte.",
     "seconde_vie_blocked_turn": "Sie sind nicht am Zug.",
     "graveyard_empty": "Keine Karten im Friedhof",
     "cost_default_card_name": "Karte",

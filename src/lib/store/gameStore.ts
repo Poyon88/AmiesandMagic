@@ -34,6 +34,8 @@ import {
   creatureCanCastLearnedSpell,
   canSuspendToEveil,
   canPayEveil,
+  canPlayFromGraveyard,
+  hasSecondeVie,
   maxEveilPayment,
   creatureNeedsApprentissage,
   handSpellsFor,
@@ -49,6 +51,8 @@ import {
   getRenfortRoyalCards,
   creatureNeedsMagicalSelection,
   getMagicalSelectionCards,
+  plafondSelection,
+  selectionAmplitudeOnPlay,
   getSpellGraveyardTargets,
   getComposedGraveyardTargets,
   creatureNeedsComposedGraveyardTarget,
@@ -164,7 +168,32 @@ function carteJouable(player: PlayerState, instanceId: string | null | undefined
   // quinzaine de `hand.find` remplacés lors d'Apprentissage.
   const enEveil = (player.eveil ?? []).find((e) => e.instance.instanceId === instanceId);
   if (enEveil) return enEveil.instance;
+  // SECONDE VIE — quatrième source : une carte du cimetière qui porte encore la
+  // capacité. Restreinte à celles-là : le reste du cimetière n'est jouable par
+  // aucun chemin, et l'y rendre « trouvable » ferait croire le contraire aux
+  // pickers de coûts et de ciblage. Ce point unique est ce qui permet à un
+  // SORT à Seconde vie de traverser le même flux de ciblage qu'en main.
+  const auCimetiere = player.graveyard.find((c) => c.instanceId === instanceId);
+  if (auCimetiere && hasSecondeVie(auCimetiere)) return auCimetiere;
   return undefined;
+}
+
+/** SECONDE VIE — la carte attend-elle au cimetière ? Sert à estampiller
+ *  l'action sortante de `fromGraveyard`. */
+function auCimetiereAvecSecondeVie(player: PlayerState, instanceId: string | null | undefined): boolean {
+  if (!instanceId) return false;
+  const c = player.graveyard.find((x) => x.instanceId === instanceId);
+  return !!c && hasSecondeVie(c);
+}
+
+/** SÉLECTION à l'entrée en jeu — plafond de coût de l'offre, lu dans le modèle
+ *  unifié (et non plus dans effect_text, qui ne porte pas le drapeau
+ *  `randomX`). Le tirage se fait ICI, côté client : c'est le seul chemin que le
+ *  joueur décide lui-même, et la carte choisie voyage ensuite dans l'action —
+ *  l'adversaire n'a rien à recalculer. */
+function plafondSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): number {
+  const a = selectionAmplitudeOnPlay(card, id);
+  return plafondSelection(a.x, a.randomX);
 }
 
 /** ÉVEIL — l'entrée correspondante, si la carte attend dans la zone d'éveil.
@@ -1436,7 +1465,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!found) return false;
       // Plafond de coût de l'offre = X + bonus d'amplification (Chant, tempo),
       // comme à la résolution.
-      const x = (found.amount ?? 0)
+      // Sélection au hasard : le plafond est tiré AVANT les bonus, qui
+      // s'ajoutent au résultat (« 1 à X, puis +Chant »).
+      const x = plafondSelection(found.amount ?? 0, found.randomX)
         + chantBonusForSpell(gs, cardInst.card)
         + tempoBonusForCard(gs, cardInst.card);
       const choices = getter(x);
@@ -1566,14 +1597,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     const card = cardInst.card;
     let choices: Card[] | null = null;
     if (creatureNeedsSelection(card)) {
-      const x = parseXValuesFromEffectText(card.effect_text)["selection"] ?? 0;
-      choices = getSelectionCards(gs, x, card);
+      choices = getSelectionCards(gs, plafondSelectionEntree(card, "selection"), card);
     } else if (creatureNeedsRenfortRoyal(card)) {
-      const x = parseXValuesFromEffectText(card.effect_text)["renfort_royal"] ?? 0;
-      choices = getRenfortRoyalCards(gs, x, card);
+      choices = getRenfortRoyalCards(gs, plafondSelectionEntree(card, "renfort_royal"), card);
     } else if (creatureNeedsMagicalSelection(card)) {
-      const x = parseXValuesFromEffectText(card.effect_text)["selection_magique"] ?? 0;
-      choices = getMagicalSelectionCards(gs, x, card);
+      choices = getMagicalSelectionCards(gs, plafondSelectionEntree(card, "selection_magique"), card);
     }
     if (!choices || choices.length === 0) return false;
     set({
@@ -1785,6 +1813,17 @@ export const useGameStore = create<GameStore>((set, get) => {
         action.cardInstanceId,
       );
       if (enEveil) action = { ...action, fromEveil: true };
+    }
+
+    // SECONDE VIE — même point de passage unique. La modale du cimetière ne
+    // dispatche plus l'action elle-même : elle passe par `selectCardInHand`,
+    // pour qu'un sort à cible collecte sa cible comme depuis la main. C'est donc
+    // ici que l'action apprend d'où vient la carte — sans quoi le moteur la
+    // chercherait en main et refuserait en silence.
+    if (action.type === "play_card" && !action.fromEveil && !action.fromGraveyard && !action.learnedFromInstanceId) {
+      if (auCimetiereAvecSecondeVie(gameState.players[gameState.currentPlayerIndex], action.cardInstanceId)) {
+        action = { ...action, fromGraveyard: true };
+      }
     }
 
     if (action.type === "play_card") {
@@ -2069,7 +2108,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       const hadCounter = oldOpponent.board.some(c => c.contresortActive);
       const newOpponent = newState.players[opponentIdx];
       const stillHasCounter = newOpponent.board.some(c => c.contresortActive);
-      if (hadCounter && !stillHasCounter) {
+      // Contre armé par un SORT adverse : consommé ⇒ le compteur baisse.
+      const counterSpent = (oldOpponent.contresort ?? 0) > (newOpponent.contresort ?? 0);
+      if ((hadCounter && !stillHasCounter) || counterSpent) {
         spellEvent = { ...spellEvent, countered: true, effectText: "Contré !" };
       }
     }
@@ -3676,11 +3717,15 @@ export const useGameStore = create<GameStore>((set, get) => {
     const apprenanteDirecte = apprenanteDuSort(joueurCourant, instanceId);
     // Même dérogation pour une carte en ÉVEIL (cf. selectCardInHand).
     const enEveilDirect = entreeEnEveil(joueurCourant, instanceId);
+    // Même dérogation pour une carte du CIMETIÈRE à Seconde vie.
+    const auCimetiereDirect = auCimetiereAvecSecondeVie(joueurCourant, instanceId);
     if (apprenanteDirecte
       ? !creatureCanCastLearnedSpell(gameState, apprenanteDirecte.instanceId)
       : enEveilDirect
         ? !canPayEveil(gameState, instanceId)
-        : !canPlayCard(gameState, instanceId)) return null;
+        : auCimetiereDirect
+          ? !canPlayFromGraveyard(gameState, instanceId)
+          : !canPlayCard(gameState, instanceId)) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = carteJouable(player, instanceId);
@@ -3785,9 +3830,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (card && creatureNeedsSelection(card.card)) {
-      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x, card.card);
+      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -3802,9 +3845,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (card && creatureNeedsRenfortRoyal(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x, card.card);
+      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -3819,9 +3860,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (card && creatureNeedsMagicalSelection(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x, card.card);
+      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -3896,11 +3935,17 @@ export const useGameStore = create<GameStore>((set, get) => {
     // injouable. Son pendant vérifie le DERNIER point (1 mana) et la
     // faisabilité de l'arrivée — plateau, cibles, coûts additionnels.
     const enEveilIci = entreeEnEveil(player, instanceId);
+    // SECONDE VIE : la carte est au cimetière, `canPlayCard` la déclarerait
+    // injouable. Son pendant vérifie le coût de Seconde vie et les mêmes
+    // coûts additionnels, cibles et place sur le plateau.
+    const auCimetiereIci = auCimetiereAvecSecondeVie(player, instanceId);
     if (apprenanteIci
       ? !creatureCanCastLearnedSpell(gameState, apprenanteIci.instanceId)
       : enEveilIci
         ? !canPayEveil(gameState, instanceId)
-        : !canPlayCard(gameState, instanceId)) return null;
+        : auCimetiereIci
+          ? !canPlayFromGraveyard(gameState, instanceId)
+          : !canPlayCard(gameState, instanceId)) return null;
 
     // Alternative-cost gating — see playCardDirect for the same pattern.
     {
@@ -4008,9 +4053,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Check if creature needs selection
     if (card.card.card_type === "creature" && creatureNeedsSelection(card.card)) {
-      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x, card.card);
+      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -4026,9 +4069,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Check if creature needs renfort_royal
     if (card.card.card_type === "creature" && creatureNeedsRenfortRoyal(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x, card.card);
+      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -4044,9 +4085,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Check if creature needs selection_magique
     if (card.card.card_type === "creature" && creatureNeedsMagicalSelection(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x, card.card);
+      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -5055,9 +5094,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
     if (creatureNeedsSelection(card.card)) {
-      const selXVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = selXVals["selection"] ?? 0;
-      const choices = getSelectionCards(gameState, x, card.card);
+      const choices = getSelectionCards(gameState, plafondSelectionEntree(card.card, "selection"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -5071,9 +5108,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
     if (creatureNeedsRenfortRoyal(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["renfort_royal"] ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x, card.card);
+      const choices = getRenfortRoyalCards(gameState, plafondSelectionEntree(card.card, "renfort_royal"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -5087,9 +5122,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
     if (creatureNeedsMagicalSelection(card.card)) {
-      const xVals = parseXValuesFromEffectText(card.card.effect_text);
-      const x = xVals["selection_magique"] ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x, card.card);
+      const choices = getMagicalSelectionCards(gameState, plafondSelectionEntree(card.card, "selection_magique"), card.card);
       if (choices.length > 0) {
         set({
           selectedCardInstanceId: instanceId,

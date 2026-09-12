@@ -346,6 +346,8 @@ export default function GamePage() {
           }
           for (const cap of c.capabilities ?? []) {
             if (cap.abilityId === "compagnons") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
+            // Invocation DÉSIGNÉE (effet composé) : même besoin, même passe.
+            if (cap.composed?.content === "invocation" && cap.composed.cardId != null) linkedIds.add(cap.composed.cardId);
           }
         };
         [...p1Cards, ...p2Cards].forEach(({ card }) => collectLinked(card));

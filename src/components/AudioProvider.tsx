@@ -20,6 +20,7 @@ export default function AudioProvider() {
     currentPlaylistUrls,
     userHasInteracted,
     menuTrackUrl,
+    menuTrackUrls,
     tenseTrackUrl,
     victoryTrackUrl,
     defeatTrackUrl,
@@ -40,12 +41,17 @@ export default function AudioProvider() {
       .then((data) => {
         if (!Array.isArray(data)) return;
         const tracks: Record<string, string> = {};
+        // MENU : toutes les pistes, enchaînées au hasard comme la playlist du
+        // plateau. Les autres catégories gardent la plus récente (une seule
+        // piste, en boucle ou jouée une fois).
+        const menuAll: string[] = [];
         for (const t of data) {
+          if (t.category === "menu" && t.file_url) menuAll.push(t.file_url);
           if (!tracks[t.category]) {
             tracks[t.category] = t.file_url;
           }
         }
-        setContextTracks(tracks);
+        setContextTracks({ ...tracks, menuAll });
       })
       .catch(() => {});
   }, [setContextTracks]);
@@ -144,9 +150,9 @@ export default function AudioProvider() {
     if (SILENT_PREFIXES.some((p) => pathname?.startsWith(p))) {
       setMusicContext(null);
     } else if (!pathname?.startsWith(GAME_ROUTE_PREFIX)) {
-      setMusicContext("menu", menuTrackUrl ?? undefined);
+      setMusicContext("menu", menuTrackUrl ?? undefined, menuTrackUrls);
     }
-  }, [pathname, menuTrackUrl, setMusicContext]);
+  }, [pathname, menuTrackUrl, menuTrackUrls, setMusicContext]);
 
   // Apply volume/mute changes immediately
   useEffect(() => {
@@ -186,9 +192,9 @@ export default function AudioProvider() {
         break;
     }
 
-    // Board context: if multiple tracks are configured, play them as a shuffled
-    // playlist; otherwise fall back to the single-track path below.
-    if (musicContext === "board" && currentPlaylistUrls.length > 1) {
+    // Plateau ET menu : plusieurs pistes ⇒ playlist mélangée (fondu enchaîné,
+    // jamais la même deux fois de suite) ; une seule ⇒ chemin mono-piste.
+    if ((musicContext === "board" || musicContext === "menu") && currentPlaylistUrls.length > 1) {
       engine.playPlaylist(currentPlaylistUrls);
       return;
     }
@@ -205,6 +211,7 @@ export default function AudioProvider() {
     currentTrackUrl,
     currentPlaylistUrls,
     menuTrackUrl,
+    menuTrackUrls,
     tenseTrackUrl,
     victoryTrackUrl,
     defeatTrackUrl,

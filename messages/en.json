@@ -421,6 +421,10 @@
         "label": "Inspiration X",
         "desc": "Draw X cards."
       },
+      "afflux": {
+        "label": "Surge X",
+        "desc": "Gain X mana this turn."
+      },
       "epargne": {
         "label": "Thrift X",
         "desc": "Adds X to your Thrift counter (max 8)."
@@ -535,6 +539,18 @@
         "label": "Chant X",
         "desc": "If you control a creature with Chant, all values of this spell are increased by X."
       },
+      "divination": {
+        "label": "Divination",
+        "desc": "Reveals the top 3 cards of your deck; place 1 back on top and 2 on the bottom, in the chosen order."
+      },
+      "contresort": {
+        "label": "Counterspell",
+        "desc": "Cancels the next enemy spell."
+      },
+      "seconde_vie": {
+        "label": "Second Life X",
+        "desc": "Can be cast from your graveyard for X mana. It then loses Second Life."
+      },
       "lune": {
         "label": "Moon X",
         "desc": "Starting from the second card played this turn, all of this card's values are increased by X."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Recall",
-        "desc": "Return a creature from your graveyard to your hand."
+        "desc": "Returns a card from your graveyard to your hand"
       },
       "exhumation": {
         "label": "Exhumation X",
@@ -760,6 +776,17 @@
         "exhum_one": "a creature",
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
+        "rappel": "returns {who} from your graveyard to your hand{cost}",
+        "rappel_cost": " (cost ≤ {max})",
+        "rappel_one_any": "a card",
+        "rappel_one_creature": "a unit",
+        "rappel_one_spell": "a spell",
+        "rappel_all_any": "every card",
+        "rappel_all_creature": "every unit",
+        "rappel_all_spell": "every spell",
+        "rappel_upto_any": "up to {n} cards",
+        "rappel_upto_creature": "up to {n} units",
+        "rappel_upto_spell": "up to {n} spells",
         "invocation": "summons a random creature with cost {x}{filter}",
         "epargne": "adds {x} to your Thrift counter",
         "foi": "adds {x} to your Faith counter",
@@ -843,6 +870,7 @@
         "poison": "choose a creature to poison",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
+        "rappel": "choose a card to return to your hand",
         "default": "choose a target"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Summon a token",
     "content_gain_mana": "Gain mana",
     "content_exhumation": "Reanimate (graveyard)",
+    "content_rappel": "Recall (graveyard → hand)",
+    "label_card_kind": "CARDS TARGETED",
+    "card_kind_all": "All",
+    "card_kind_creature": "Units only",
+    "card_kind_spell": "Spells only",
     "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
     "convert_to_composed": "Convert",
     "effects_heading": "Card effects",
@@ -1878,6 +1911,8 @@
     "group_curated": "Special mechanics",
     "content_invocation": "Summon (random creature)",
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
+    "label_designated_card": "DESIGNATED CARD",
+    "designated_card_hint": "Pick a creature to summon it as is. Without one, a random creature of cost X is drawn according to the filters.",
     "content_selection": "Selection (1 of 3)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
     "random_hint": "Randomly drawn between 1 and {max}, only once on resolution.",
+    "move_earlier": "Resolve earlier",
+    "move_later": "Resolve later",
     "random_needs_ceiling": "A ceiling of at least 2 is required to draw randomly.",
     "label_granted_ability": "GRANTED ABILITY",
     "label_grant_trigger": "GRANT TRIGGER",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Choose a card from the graveyard",
     "graveyard_hint_touch": "Tap a card to zoom · tap again to view description",
     "graveyard_hint_hover": "Hover over a card to zoom · right-click to toggle image / description",
-    "seconde_vie_hint": "Second life: double-click an eligible creature.",
+    "seconde_vie_hint": "Second life: double-click an eligible card.",
     "seconde_vie_blocked_turn": "It's not your turn.",
     "graveyard_empty": "No cards in the graveyard",
     "cost_default_card_name": "card",

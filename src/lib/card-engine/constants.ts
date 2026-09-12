@@ -61,6 +61,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocations multiples": ALL_MODES,
   "Appel du clan X": ALL_MODES,
   "Inspiration X": ALL_MODES,
+  "Afflux X": ALL_MODES,
   "Pillage X": ALL_MODES,
   "Douleur X": ALL_MODES,
   // Vampirisme à l'attaque : draine une créature ennemie au hasard (héros à

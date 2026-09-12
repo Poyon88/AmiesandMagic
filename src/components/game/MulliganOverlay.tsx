@@ -9,6 +9,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { MULLIGAN_TIMER_SECONDS } from "@/lib/game/constants";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -218,13 +219,16 @@ function MulliganCard({
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4,
       }}>
+        {/* ORDRE D'AUTEUR : une seule rangée pour les trois familles, `order`
+            par pastille (composed-position.ts). */}
+        <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
         {/* Keyword symbols */}
         {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
           const entries = buildKeywordDisplayEntries(card)
             .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
           if (entries.length === 0) return null;
           return (
-          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {entries.map((entry, idx) => {
               const { kw, x, mode } = entry;
               const label = vocab.keywordLabel(kw);
@@ -232,7 +236,7 @@ function MulliganCard({
               const displayTitle = applyKeywordValueToLabel(kw, label, x, entry.instance);
               const modeColor = keywordModeColor(mode);
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
                 minWidth: 34, height: 34,
                 padding: x != null ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
@@ -253,7 +257,7 @@ function MulliganCard({
 
         {/* Spell keyword symbols */}
         {card.spell_keywords && card.spell_keywords.length > 0 && (
-          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
@@ -263,7 +267,7 @@ function MulliganCard({
               const valueText = getSpellKeywordBadgeValue(spellKw);
               const hasValue = valueText != null;
               return (
-              <div key={`sk_${i}`} title={displayTitle} style={{
+              <div key={`sk_${i}`} title={displayTitle} style={{ order: spellKeywordDisplayOrder(i),
                 minWidth: 34, height: 34,
                 padding: hasValue ? "0 3px" : 0,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2,
@@ -285,14 +289,14 @@ function MulliganCard({
         {/* Effets composés (icônes sans cadre, teintées selon le déclencheur).
             Alignées à gauche comme les keywords classiques. */}
         {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {composedCapsOf(card.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
               const val = composedValueText(cap);
               const tint = keywordModeColor(composedTriggerMode(cap)) ?? accentColor;
               return (
-                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ minWidth: 38, height: 38, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ order: composedDisplayOrder(cap), minWidth: 38, height: 38, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
                   <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={26} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={13} /></span>
                   {val && <span style={{ fontSize: 13, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
                 </div>
@@ -300,6 +304,8 @@ function MulliganCard({
             })}
           </div>
         )}
+
+        </div>
 
         {/* Stats */}
         {/* Le type (créature/sort) n'est plus affiché : l'illustration, la
@@ -370,7 +376,7 @@ function MulliganCard({
               const desc = vocab.keywordDesc(kw, ctx);
               const modeColor = keywordModeColor(mode);
               return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 5 }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
@@ -398,7 +404,7 @@ function MulliganCard({
               const label = vocab.spellKeywordLabel(spellKw);
               const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
               return (
-                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
+                <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 5 }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
                   <div>
                     <div style={{ fontSize: 10 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>

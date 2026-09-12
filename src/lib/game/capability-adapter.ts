@@ -22,6 +22,7 @@ import {
   isCreatureKwShadowedBySpell,
 } from "./abilities";
 import { orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
+import { orderCapabilitiesByAuthor } from "./composed-position";
 import type {
   Capability,
   CapabilityTargetSlot,
@@ -32,13 +33,17 @@ import type {
 } from "./types";
 
 function pruneParams(
-  p: { x?: number | null; y?: number | null; attack?: number | null; health?: number | null },
+  p: { x?: number | null; y?: number | null; attack?: number | null; health?: number | null; randomX?: boolean | null; randomY?: boolean | null },
 ): Capability["params"] {
-  const out: { x?: number; y?: number; attack?: number; health?: number } = {};
+  const out: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean } = {};
   if (p.x != null) out.x = p.x;
   if (p.y != null) out.y = p.y;
   if (p.attack != null) out.attack = p.attack;
   if (p.health != null) out.health = p.health;
+  // Sélection au hasard : le drapeau voyage avec le X, sinon les lecteurs du
+  // modèle unifié (selectionAmplitudeOnPlay) ne le verraient jamais.
+  if (p.randomX === true) out.randomX = true;
+  if (p.randomY === true) out.randomY = true;
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
@@ -151,7 +156,7 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       trigger: "spell_resolution",
       effectKind: "immediate",
       abilityId: sk.id,
-      params: pruneParams({ x: sk.amount, attack: sk.attack, health: sk.health }),
+      params: pruneParams({ x: sk.amount, attack: sk.attack, health: sk.health, randomX: sk.randomX, randomY: sk.randomY }),
       race: sk.race,
       clan: sk.clan,
       // invocations_multiples : liste des coûts + restriction de pool, portées
@@ -216,7 +221,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       // x = bonus ATK (+X), y = bonus PV (+Y).
       params = pruneParams({ attack: x, health: inst.y });
     } else {
-      params = pruneParams({ x });
+      params = pruneParams({ x, randomX: inst.randomX, randomY: inst.randomY });
     }
 
     let race = inst.race;
@@ -279,45 +284,21 @@ export function deriveCapabilities(card: Card): Capability[] {
     : deriveCreatureCapabilities(card);
 }
 
-/** Réordonne les capacités d'une CRÉATURE selon `keywords[]`, l'ordre composé par
- *  l'auteur — celui que la forge affiche dans « Déclenchement des pouvoirs ».
+/** Réordonnancement dans l'ORDRE D'AUTEUR (cf. composed-position.ts) :
+ *  mots-clés selon `keywords[]` (créature) ou `spell_keywords[]` (sort), effets
+ *  composés à leur `position`, le reste en queue.
  *
  *  Appliqué APRÈS le choix de la source, donc aussi bien aux capacités
  *  PERSISTÉES qu'aux dérivées. C'est indispensable : `getCapabilities` privilégie
  *  `card.capabilities` quand la colonne existe — c'est-à-dire pour toutes les
  *  cartes de la forge — et cette colonne a été écrite AVANT que la dérivation ne
- *  respecte `keywords[]`. Corriger la seule dérivation ne changeait donc rien aux
- *  cartes réellement en jeu : sur « Devin du Ciel Fendu », Préincanter se
- *  résolvait toujours avant Divination, et ne pouvait donc pas voir le sort que
- *  Divination venait de placer sur le dessus du deck.
+ *  respecte `keywords[]`. Sur « Devin du Ciel Fendu », Préincanter se résolvait
+ *  toujours avant Divination, et ne pouvait donc pas voir le sort que Divination
+ *  venait de placer sur le dessus du deck.
  *
  *  Réordonner à la LECTURE plutôt que réécrire la base : aucune migration, les
- *  699 cartes existantes sont corrigées d'un coup, et les `uid` — qui servent de
- *  clé aux pickers composés — restent inchangés.
- *
- *  Les SORTS sont laissés tels quels : leurs `sk_${i}` suivent l'ordre de
- *  `spell_keywords`, qui EST l'ordre d'auteur.
- *
- *  Tri STABLE : une capacité dont l'abilityId n'est pas dans `keywords[]`
- *  (effet composé `_composed`, mot-clé conféré au runtime) garde sa place
- *  relative, en queue — exactement ce que produit déjà la sauvegarde
- *  (`[...deriveCapabilities(), ...keptComposed]`). */
-function orderCreatureCapsByKeywords(card: Card, caps: Capability[]): Capability[] {
-  if (card.card_type !== "creature") return caps;
-  const kws = (card.keywords ?? []) as unknown as string[];
-  if (kws.length < 2 || caps.length < 2) return caps;
-
-  const rang = new Map<string, number>();
-  kws.forEach((kw, i) => { if (!rang.has(kw)) rang.set(kw, i); });
-
-  return caps
-    .map((c, i) => ({ c, i, r: rang.get(c.abilityId) ?? Number.POSITIVE_INFINITY }))
-    // Comparaison et non soustraction : `Infinity - Infinity` vaut NaN, ce qui
-    // rendrait le tri instable pour toutes les capacités hors `keywords[]`.
-    .sort((a, b) => (a.r === b.r ? a.i - b.i : a.r < b.r ? -1 : 1))
-    .map((x) => x.c);
-}
-
+ *  cartes existantes sont corrigées d'un coup, et les `uid` — qui servent de
+ *  clé aux pickers composés — restent inchangés. */
 // Mémoïsation par objet `card`. Le moteur remplace toujours `card` par une copie
 // immuable quand il mute les keywords (grant / silence / corruption), donc une
 // nouvelle identité d'objet ⇒ re-dérivation correcte. Évite de re-dériver à
@@ -381,7 +362,7 @@ export function getCapabilities(card: Card): Capability[] {
     caps = deriveCapabilities(card);
   }
 
-  caps = orderCreatureCapsByKeywords(card, caps);
+  caps = orderCapabilitiesByAuthor(card, caps);
   capabilitiesMemo.set(card, caps);
   return caps;
 }

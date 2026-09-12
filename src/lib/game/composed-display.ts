@@ -98,8 +98,23 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_one": "une créature",
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
+  // Rappel composé : {who} = « une carte / une unité / un sort », etc.
+  "content.rappel": "renvoie {who} de votre cimetière dans votre main{cost}",
+  "content.rappel_cost": " (coût ≤ {max})",
+  "content.rappel_one_any": "une carte",
+  "content.rappel_one_creature": "une unité",
+  "content.rappel_one_spell": "un sort",
+  "content.rappel_all_any": "toutes les cartes",
+  "content.rappel_all_creature": "toutes les unités",
+  "content.rappel_all_spell": "tous les sorts",
+  "content.rappel_upto_any": "jusqu'à {n} cartes",
+  "content.rappel_upto_creature": "jusqu'à {n} unités",
+  "content.rappel_upto_spell": "jusqu'à {n} sorts",
   // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
   "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
+  // Invocation DÉSIGNÉE : le nom de la carte est peint à part (pastille
+  // CompagnonsNames), la phrase reste générique.
+  "content.invocation_card": "invoque la carte désignée",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
@@ -184,6 +199,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.poison": "choisissez une créature à empoisonner",
   "choice.grant_keyword": "choisissez une créature à qui conférer la capacité",
   "choice.exhumation": "choisissez une créature à ressusciter",
+  "choice.rappel": "choisissez une carte à reprendre en main",
   "choice.default": "choisissez une cible",
 };
 
@@ -200,6 +216,8 @@ function frag(t: SafeT | undefined, key: string, params?: Record<string, string 
 export function composedValueText(cap: Capability): string | null {
   const m = cap.composed?.magnitude;
   if (!m) return null;
+  // Invocation désignée : X ne compte plus, rien à peindre.
+  if (cap.composed!.content === "invocation" && cap.composed!.cardId != null) return null;
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
   const grantedXY = cap.composed!.content === "grant_keyword"
     && XY_ABILITY_IDS.has(grantedEngineId(cap.composed!) ?? "");
@@ -258,6 +276,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "summon_token": return { symbol: "📣", keyword: "spell_invocation" };
     case "gain_mana": return { symbol: "💎", keyword: "spell_afflux" };
     case "exhumation": return { symbol: "🪦", keyword: "exhumation" };
+    case "rappel": return { symbol: KEYWORD_SYMBOLS.rappel, keyword: "rappel" };
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
@@ -477,7 +496,18 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
         : frag(t, "content.exhum_one");
       return frag(t, "content.exhumation", { who, x });
     }
+    case "rappel": {
+      const n = eff.target?.count;
+      const kind = eff.target?.cardKind ?? "any";
+      const who = typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
+        : n === "all" ? frag(t, `content.rappel_all_${kind}`)
+        : frag(t, `content.rappel_one_${kind}`);
+      const cost = eff.target?.maxCost != null ? frag(t, "content.rappel_cost", { max: eff.target.maxCost }) : "";
+      return frag(t, "content.rappel", { who, cost });
+    }
     case "invocation":
+      if (eff.cardId != null) return frag(t, "content.invocation_card");
+      return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
     case "selection":
     case "selection_magique":
     case "renfort_royal":
@@ -663,7 +693,7 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
   // Exhumation : la phrase de contenu décrit déjà le nombre + la zone (cimetière)
   // → on n'y accole pas le descripteur de cible générique (qui dirait « à N unités
   // alliées du cimetière au choix », redondant).
-  const skipTarget = eff.content === "exhumation";
+  const skipTarget = eff.content === "exhumation" || eff.content === "rappel";
   // Capacité qui se vise elle-même : tournure réfléchie, sans complément de
   // cible (« Se renvoie en main. »). Les contenus sans forme réfléchie
   // déclarée gardent l'assemblage contenu + « à elle-même ».

@@ -8,6 +8,8 @@
 import { useTranslations } from "next-intl";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
+import { composedDisplayOrder, positionAfterExisting, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
+import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
@@ -39,9 +41,12 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "summon_token", l: "Invoquer un token", target: "none" },
   { v: "gain_mana", l: "Gagner du mana", target: "none" },
   { v: "exhumation", l: "Ressusciter (cimetière)", target: "unit" },
+  // Rappel : cimetière allié → main ; `target.cardKind` restreint aux unités ou
+  // aux sorts. X sans rôle.
+  { v: "rappel", l: "Rappel (cimetière → main)", target: "unit" },
   // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
-  { v: "invocation", l: "Invocation (créature aléatoire)", target: "none" },
+  { v: "invocation", l: "Invocation (créature aléatoire ou désignée)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
@@ -206,7 +211,13 @@ export default function ComposedEffectsEditor({
   const aleaX = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomX", eff.magnitude?.x ?? 0);
   const aleaY = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomY", eff.magnitude?.y ?? 0);
 
+  // ORDRE D'AUTEUR (composed-position.ts) : un composé ajouté maintenant se
+  // place APRÈS les mécaniques déjà saisies et AVANT celles qui viendront —
+  // « ajouté en premier ⇒ résolu en premier ». Hors mode unifié (créature), le
+  // nombre de mots-clés n'est pas connu ici : c'est l'appelant qui positionne.
+  const positionNouveau = unified ? { position: positionAfterExisting((curated ?? []).length) } : {};
   const addComposed = () => onChange([...value, {
+    ...positionNouveau,
     uid: `c_${Math.random().toString(36).slice(2, 9)}`,
     // Un token n'a pas d'entrée en jeu : son premier déclencheur proposé est le
     // premier qui parte réellement chez lui.
@@ -256,6 +267,7 @@ export default function ComposedEffectsEditor({
     if (!entry) return;
     if (entry.kind === "composed") {
       onChange([...value, {
+        ...positionNouveau,
         uid: `c_${Math.random().toString(36).slice(2, 9)}`,
         trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
         composed: instantiatePreset(entry),
@@ -273,8 +285,42 @@ export default function ComposedEffectsEditor({
     onCuratedChange?.([...curatedRows, init]);
   };
 
+  // ORDRE D'AUTEUR — liste unifiée (sort) : mécaniques et composés dans un seul
+  // ordre, celui de résolution et d'affichage. Les lignes portent un `order`
+  // CSS (le conteneur est une colonne flex) et des flèches ▲▼ ; le calcul du
+  // déplacement vit dans `movePowerUnified` (pur, testé).
+  const idsCurated = curatedRows.map((k) => k.id as string);
+  const listeUnifiee = unified ? unifiedPowerList(idsCurated, idsCurated, value) : [];
+  const rangDe = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }) =>
+    listeUnifiee.findIndex((p) => p.kind === cible.kind && (p.kind === "keyword" ? p.id === (cible as { id: string }).id : p.uid === (cible as { uid: string }).uid));
+  const deplacer = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }, sens: -1 | 1) => {
+    const r = movePowerUnified(idsCurated, idsCurated, value, cible, sens);
+    const parId = new Map(curatedRows.map((k) => [k.id as string, k] as const));
+    onCuratedChange?.(r.keywords.map((id) => parId.get(id)).filter((k): k is SpellKeywordInstance => !!k));
+    onChange(r.composed);
+  };
+  const fleches = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }) => {
+    if (!unified || listeUnifiee.length < 2) return null;
+    const rang = rangDe(cible);
+    return (
+      <span style={{ display: "inline-flex", flexDirection: "column", gap: 1, marginRight: 2 }}>
+        {([-1, 1] as const).map((sens) => {
+          const possible = sens === -1 ? rang > 0 : rang < listeUnifiee.length - 1;
+          return (
+            <button key={sens} type="button" disabled={!possible} onClick={() => deplacer(cible, sens)}
+              title={sens === -1 ? tr('move_earlier') : tr('move_later')}
+              style={{ width: 18, height: 11, borderRadius: 3, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `1px solid ${possible ? "#d8c48a" : "#eee"}`, background: possible ? "#fff" : "transparent", color: possible ? "#b8860b" : "#ddd", fontSize: 7, lineHeight: 1, cursor: possible ? "pointer" : "not-allowed" }}
+            >{sens === -1 ? "▲" : "▼"}</button>
+          );
+        })}
+      </span>
+    );
+  };
+  const numero = (cible: { kind: "keyword"; id: string } | { kind: "composed"; uid: string }) =>
+    unified && listeUnifiee.length > 1 ? <span style={{ color: "#b8860b", fontWeight: 700, marginRight: 4 }}>{rangDe(cible) + 1}.</span> : null;
+
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <span style={{ fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, color: "#8a6d3b" }}>🧩 {tr(unified ? 'effects_heading' : 'composed_effects_heading')}</span>
         <span style={{ fontSize: 9, color: "#aaa" }}>{tr(unified ? 'effects_subtitle' : 'composed_effects_subtitle')}</span>
@@ -287,10 +333,11 @@ export default function ComposedEffectsEditor({
         const def = SPELL_KEYWORDS[kw.id];
         if (!def) return null;
         return (
-          <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff" }}>
+          <div key={kw.id} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fbf7ff", order: spellKeywordDisplayOrder(idx) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              {fleches({ kind: "keyword", id: kw.id })}
               <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[kw.id] || def.symbol || "✦"} size={16} keyword={`spell_${kw.id}`} />
-              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
+              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#9b59b6", flex: 1 }}>{numero({ kind: "keyword", id: kw.id })}{SPELL_KEYWORD_LABELS[kw.id] ?? kw.id}</span>
               <span style={{ fontSize: 8, color: "#9b59b6", letterSpacing: 1 }}>{tr('effect_kind_curated')}</span>
               <button onClick={() => removeCurated(idx)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tr('remove')}>✕</button>
             </div>
@@ -307,6 +354,8 @@ export default function ComposedEffectsEditor({
                 {def.params.includes("health") && (
                   <label style={{ fontSize: 9, color: "#c79a0a" }}>{kw.id === "dechainement" ? tr('spell_cost_y') : "PV"} {numInput(kw.health ?? 1, (n) => patchCurated(idx, { health: n }))}</label>
                 )}
+                {/* Déchainement : « ? » sur Y — coût plafond, chaque sort tiré entre 1 et Y. */}
+                {kw.id === "dechainement" && <label title={tr('random_hint', { max: kw.health ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={(e) => patchCurated(idx, { randomY: e.target.checked ? true : undefined })} />?</label>}
               </span>
               {kw.id === "renforcement_multiple" && (
                 <>
@@ -362,9 +411,10 @@ export default function ComposedEffectsEditor({
         const t = eff.target ?? DEFAULT_TARGET;
         const countMode = t.count === "all" ? "all" : t.count === 1 ? "1" : "N";
         return (
-          <div key={cap.uid} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf6" }}>
+          <div key={cap.uid} style={{ border: cardBorder, borderRadius: 8, padding: 10, marginBottom: 8, background: "#fffdf6", order: composedDisplayOrder(cap) }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#8a6d3b", flex: 1 }}>{tr('composed_effect_n', { n: idx + 1 })}</span>
+              {fleches({ kind: "composed", uid: cap.uid })}
+              <span style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, color: "#8a6d3b", flex: 1 }}>{numero({ kind: "composed", uid: cap.uid })}{tr('composed_effect_n', { n: idx + 1 })}</span>
               {!singleEffect && (
                 <button onClick={() => removeComposed(idx)} style={{ border: "none", background: "transparent", color: "#c0392b", cursor: "pointer", fontSize: 14 }} title={tr('remove')}>✕</button>
               )}
@@ -485,7 +535,7 @@ export default function ComposedEffectsEditor({
                 // Exhumation : cible pré-remplie cimetière allié « au choix » (sinon
                 // composedSlotType ne produirait pas de picker). Champs éditables ensuite.
                 const nextTarget = m.target === "none" ? undefined
-                  : v === "exhumation"
+                  : v === "exhumation" || v === "rappel"
                     ? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const }
                     : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
                 patchEffect(idx, {
@@ -497,9 +547,34 @@ export default function ComposedEffectsEditor({
                   // Le filtre de pool ne survit pas à un changement vers un
                   // contenu qui n'en a pas (sinon champ fantôme en base).
                   pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
+                  // Idem pour la carte désignée d'une Invocation.
+                  cardId: v === "invocation" ? eff.cardId : undefined,
                 });
               })}
 
+              {eff.content === "invocation" && (
+                <>
+                  <span style={labelStyle}>{tr('label_designated_card')}</span>
+                  <div>
+                    <LinkedCardsPicker
+                      title={`📣 ${tr('label_designated_card')}`} single required={false} creaturesOnly
+                      value={eff.cardId != null ? [eff.cardId] : []}
+                      onChange={(v) => patchEffect(idx, { cardId: v.length ? v[v.length - 1] : undefined })}
+                    />
+                    <div style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic", marginTop: 4 }}>{tr('designated_card_hint')}</div>
+                  </div>
+                </>
+              )}
+              {/* Invocation DÉSIGNÉE : ni amplitude ni filtre de pool — la carte
+                  est nommée, il n'y a rien à tirer. */}
+              {eff.content === "rappel" && (
+                <>
+                  <span style={labelStyle}>{tr('label_card_kind')}</span>
+                  {sel(t.cardKind ?? "", [{ v: "", l: tr('card_kind_all') }, { v: "creature", l: tr('card_kind_creature') }, { v: "spell", l: tr('card_kind_spell') }],
+                    (v) => patchTarget(idx, { cardKind: (v || undefined) as TargetSpec["cardKind"] }))}
+                </>
+              )}
+              {!(eff.content === "invocation" && eff.cardId != null) && eff.content !== "rappel" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
@@ -509,6 +584,7 @@ export default function ComposedEffectsEditor({
                 {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
                 {showY && aleaY(idx, eff)}
               </span>
+              </>)}
 
               {eff.content === "grant_keyword" && (() => {
                 const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";
@@ -549,7 +625,7 @@ export default function ComposedEffectsEditor({
                   <TokenCascadePicker value={eff.tokenId ?? null} onChange={(id) => patchEffect(idx, { tokenId: id })} tokens={tokenTemplates} compact />
                 </>
               )}
-              {POOL_CONTENTS.has(eff.content) && (
+              {POOL_CONTENTS.has(eff.content) && !(eff.content === "invocation" && eff.cardId != null) && (
                 <>
                   <span style={labelStyle}>{tr('label_pool_membership')}</span>
                   <RaceClanPicker
@@ -695,7 +771,7 @@ export default function ComposedEffectsEditor({
           mélange effets paramétrables (preset composé) et mécaniques curées ;
           l'auteur choisit un EFFET, pas une technologie de stockage. */}
       {unified ? (
-        <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", order: POWER_ORDER_LAST }}>
           <span style={{ fontSize: 11, color: "#666" }}>{tr('add_effect')}</span>
           <SpellEffectPicker
             placeholder={tr('spell_effect_dash')}
@@ -708,7 +784,7 @@ export default function ComposedEffectsEditor({
           />
         </div>
       ) : !singleEffect && (
-        <button onClick={addComposed} style={{ marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
+        <button onClick={addComposed} style={{ order: POWER_ORDER_LAST, marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
 import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
-import { resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
+import { plageAleatoire, resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -169,8 +169,15 @@ function getSpellKeywordDescBase(
   // l'ancienne ATK est devenue le coût X.
   if (kw.id === "invocation") desc = desc.replace(/X/g, String(kw.amount ?? kw.attack ?? 1));
   else if (def.params.includes("attack")) desc = desc.replace(/X/g, String(kw.attack ?? 0));
-  else if (def.params.includes("amount")) desc = desc.replace(/X/g, String(kw.amount ?? 1));
-  if (def.params.includes("health")) desc = desc.replace(/Y/g, String(kw.health ?? 0));
+  else if (def.params.includes("amount")) {
+    // Sélection au hasard : « coût ≤ 1 à X ».
+    const amount = kw.amount ?? 1;
+    desc = desc.replace(/X/g, kw.randomX === true && amount > 1 ? plageAleatoire(amount, t) : String(amount));
+  }
+  if (def.params.includes("health")) {
+    const h = kw.health ?? 0;
+    desc = desc.replace(/Y/g, kw.randomY === true && h > 1 ? plageAleatoire(h, t) : String(h));
+  }
 
   // Override for invocation_multiple with actual token details. With the
   // token registry passed in we resolve names + apply effective stats
@@ -230,8 +237,12 @@ export function getSpellKeywordBadgeValue(kw: SpellKeywordInstance): string | nu
     const sign = def.label.includes("+X") ? "+" : def.label.includes("-X") ? "-" : "";
     return `${sign}${kw.attack ?? 0}/${sign}${kw.health ?? 0}`;
   }
-  if (usesAmount && usesHealth) return `${kw.amount ?? 1}/${kw.health ?? 1}`;
-  if (usesAmount) return String(kw.id === "invocation" ? (kw.amount ?? kw.attack ?? 1) : (kw.amount ?? 1));
+  if (usesAmount && usesHealth) return `${kw.amount ?? 1}/${kw.health ?? 1}${kw.randomY === true && (kw.health ?? 1) > 1 ? "?" : ""}`;
+  if (usesAmount) {
+    const v = kw.id === "invocation" ? (kw.amount ?? kw.attack ?? 1) : (kw.amount ?? 1);
+    // Sélection au hasard : « 3? » — le plafond, marqué comme tel.
+    return kw.randomX === true && v > 1 ? `${v}?` : String(v);
+  }
   return null;
 }
 

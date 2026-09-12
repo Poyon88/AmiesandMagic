@@ -421,6 +421,10 @@
         "label": "Inspiration X",
         "desc": "Piochez X cartes."
       },
+      "afflux": {
+        "label": "Afflux X",
+        "desc": "Gagnez X mana ce tour."
+      },
       "epargne": {
         "label": "Épargne X",
         "desc": "Ajoute X à votre compteur d'Épargne (maximum 8)."
@@ -535,6 +539,18 @@
         "label": "Chant X",
         "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X."
       },
+      "divination": {
+        "label": "Divination",
+        "desc": "Révèle les 3 premières cartes du deck ; replacez-en 1 dessus et 2 dessous, dans l'ordre choisi."
+      },
+      "contresort": {
+        "label": "Contresort",
+        "desc": "Annule le prochain sort adverse."
+      },
+      "seconde_vie": {
+        "label": "Seconde vie X",
+        "desc": "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie."
+      },
       "lune": {
         "label": "Lune X",
         "desc": "À partir de la deuxième carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X."
@@ -565,7 +581,7 @@
       },
       "rappel": {
         "label": "Rappel",
-        "desc": "Renvoie une créature de votre cimetière dans votre main"
+        "desc": "Renvoie une carte de votre cimetière dans votre main"
       },
       "exhumation": {
         "label": "Exhumation X",
@@ -760,6 +776,17 @@
         "exhum_one": "une créature",
         "exhum_all": "toutes les créatures",
         "exhum_upto": "jusqu'à {n} créatures",
+        "rappel": "renvoie {who} de votre cimetière dans votre main{cost}",
+        "rappel_cost": " (coût ≤ {max})",
+        "rappel_one_any": "une carte",
+        "rappel_one_creature": "une unité",
+        "rappel_one_spell": "un sort",
+        "rappel_all_any": "toutes les cartes",
+        "rappel_all_creature": "toutes les unités",
+        "rappel_all_spell": "tous les sorts",
+        "rappel_upto_any": "jusqu'à {n} cartes",
+        "rappel_upto_creature": "jusqu'à {n} unités",
+        "rappel_upto_spell": "jusqu'à {n} sorts",
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
         "epargne": "ajoute {x} à votre compteur d'Épargne",
         "foi": "ajoute {x} à votre compteur de Foi",
@@ -843,6 +870,7 @@
         "poison": "choisissez une créature à empoisonner",
         "grant_keyword": "choisissez une créature à qui conférer la capacité",
         "exhumation": "choisissez une créature à ressusciter",
+        "rappel": "choisissez une carte à reprendre en main",
         "default": "choisissez une cible"
       }
     },
@@ -1869,6 +1897,11 @@
     "content_summon_token": "Invoquer un token",
     "content_gain_mana": "Gagner du mana",
     "content_exhumation": "Ressusciter (cimetière)",
+    "content_rappel": "Rappel (cimetière → main)",
+    "label_card_kind": "CARTES VISÉES",
+    "card_kind_all": "Toutes",
+    "card_kind_creature": "Unités seulement",
+    "card_kind_spell": "Sorts seulement",
     "legacy_grants_heading": "Dons hérités (ancien format) — convertissez-les pour pouvoir viser l'adversaire",
     "convert_to_composed": "Convertir",
     "effects_heading": "Effets de la carte",
@@ -1878,6 +1911,8 @@
     "group_curated": "Mécaniques particulières",
     "content_invocation": "Invocation (créature aléatoire)",
     "pool_hint_invocation": "Filtres cumulatifs. Sans eux, le pool suit l'alignement de la carte ; le coût invoqué est EXACTEMENT X.",
+    "label_designated_card": "CARTE DÉSIGNÉE",
+    "designated_card_hint": "Désignez une créature pour l'invoquer telle quelle. Sans désignation, tirage aléatoire au coût X selon les filtres.",
     "content_selection": "Sélection (1 parmi 3)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
     "label_pool_membership": "POOL — APPARTENANCE",
@@ -1887,6 +1922,8 @@
     "pool_hint": "Filtres cumulatifs, en plus des règles de base (Commune, coût ≤ X, alignement de la carte).",
     "label_magnitude": "AMPLITUDE",
     "random_hint": "Tiré au hasard entre 1 et {max}, une seule fois à la résolution.",
+    "move_earlier": "Résoudre plus tôt",
+    "move_later": "Résoudre plus tard",
     "random_needs_ceiling": "Un plafond d'au moins 2 est nécessaire pour tirer au hasard.",
     "label_granted_ability": "CAPACITÉ CONFÉRÉE",
     "label_grant_trigger": "DÉCLENCHEUR DU DON",
@@ -2317,7 +2354,7 @@
     "graveyard_select_prompt": "Choisissez une carte du cimetière",
     "graveyard_hint_touch": "Touche une carte pour zoomer · touche encore pour voir la description",
     "graveyard_hint_hover": "Survole une carte pour zoomer · clic droit pour basculer image / description",
-    "seconde_vie_hint": "Seconde vie : double-cliquez une créature éligible.",
+    "seconde_vie_hint": "Seconde vie : double-cliquez une carte éligible.",
     "seconde_vie_blocked_turn": "Ce n'est pas votre tour.",
     "graveyard_empty": "Aucune carte dans le cimetière",
     "cost_default_card_name": "carte",

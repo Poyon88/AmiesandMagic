@@ -12,7 +12,9 @@ import { isCreatureKwShadowedBySpell, CREATURE_LABEL_TO_ENGINE_ID } from '@/lib/
 import { useVocab } from '@/i18n/useVocab';
 import { KEYWORD_LABELS, keywordModeColor, isStatPairKeyword, TEXT_CONTRAST_HALO } from '@/lib/game/keyword-labels';
 import { composedCapsOf, composedIcon, composedKeywordName, composedTriggerMode, composedValueText, describeComposedCap } from '@/lib/game/composed-display';
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import TokenNames from '@/components/cards/TokenNames';
+import CompagnonsNames from '@/components/cards/CompagnonsNames';
 import { tokenCardsForKeyword, tokenCardsForComposed } from '@/lib/game/token-preview';
 import ComposedMarker from '@/components/cards/ComposedMarker';
 import type { Capability } from '@/lib/game/types';
@@ -149,6 +151,8 @@ interface CardData {
   power: number | null;
   keywords: string[];
   keywordXValues?: Record<string, number>;
+  /** SÉLECTION AU HASARD par libellé forge — cf. CardForge.CardData. */
+  keywordRandomX?: Record<string, boolean>;
   /** Mots-clés « paire de stats » (Gloire +X/+Y, Renforcement +X/+Y,
    *  Renforcement multiple, Affaiblissement -X/-Y) : le +Y dédié, keyé comme
    *  keywordXValues (libellé forge). Sans lui l'aperçu n'affiche que le X, ce
@@ -211,6 +215,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       ? ({ grantScope: card.keywordGrantScope[kw] } as const)
       : null,
     x: card?.keywordXValues?.[kw] ?? null,
+    // Sélection au hasard : la description peint « coût ≤ 1 à X ».
+    randomX: card?.keywordRandomX?.[kw] === true,
     tokens,
   });
 
@@ -238,7 +244,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     const isPair = isStatPairKeyword(id as never);
     const badgeText = isPair
       ? `${kw.includes("-X/-Y") ? "-" : "+"}${xVal ?? 0}/${kw.includes("-X/-Y") ? "-" : "+"}${card?.keywordYValues?.[kw] ?? 0}`
-      : xVal != null ? xNumeral(xVal) : null;
+      // Sélection au hasard : « 3? », comme keywordBadgeValue en jeu.
+      : xVal != null ? (card?.keywordRandomX?.[kw] === true && xVal > 1 ? `${xNumeral(xVal)}?` : xNumeral(xVal)) : null;
     return {
       id,
       xVal,
@@ -475,9 +482,12 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         background: `linear-gradient(0deg, ${fac.bg}dd 0%, ${fac.bg}88 40%, transparent 65%)`,
         display: "flex", flexDirection: "column", gap: 6 * s,
       }}>
+        {/* ORDRE D'AUTEUR : une seule rangée, `order` par pastille (composed-position.ts). */}
+        {((card!.keywords?.length ?? 0) > 0 || (card!.spellKeywords?.length ?? 0) > 0 || composedCapsOf(card!.capabilities).length > 0) && (
+        <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
         {/* Keyword symbols row */}
         {card!.keywords?.length > 0 && (
-          <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const { xVal, badgeText, displayName, displayDesc } = forgeKeyword(kw);
               const grantScope = card!.type !== "Unité"
@@ -491,7 +501,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const badgeColor = grantScope === "target" ? "#cfd8dc" : fac.color;
               const scopeNote = isAllAllies ? ` · ${t('detail_note_all_allies')}` : "";
               return (
-                <div key={kw} title={`${displayName}${scopeNote}: ${displayDesc}`} style={{
+                <div key={kw} title={`${displayName}${scopeNote}: ${displayDesc}`} style={{ order: (card!.type === "Unité" ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)),
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${badgeText != null ? 5 * s : 0}px`,
                   background: `${badgeColor}33`, border: `1px solid ${badgeColor}88`,
@@ -520,7 +530,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
 
         {/* Spell keyword symbols row */}
         {card!.spellKeywords && card!.spellKeywords.length > 0 && (
-          <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
@@ -532,7 +542,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const valueText = getSpellKeywordBadgeValue(spellKw);
               const hasValue = valueText != null;
               return (
-                <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{
+                <div key={`sk_${i}`} title={`${label}: ${desc}`} style={{ order: spellKeywordDisplayOrder(i),
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${hasValue ? 5 * s : 0}px`,
                   background: `${fac.color}33`, border: `1px solid ${fac.color}88`,
@@ -561,13 +571,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Composed effect icons row (modèle hybride) — icône réutilisée la plus
             proche, teintée selon le déclencheur (blanc/rouge/bleu/jaune). */}
         {composedCapsOf(card!.capabilities).length > 0 && (
-          <div style={{ display: "flex", gap: 4 * s, flexWrap: "wrap" }}>
+          <div style={{ display: "contents" }}>
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
               const val = composedValueText(cap);
               return (
-                <div key={`cx_${i}`} title={describeComposedCap(cap, tokens)} style={{
+                <div key={`cx_${i}`} title={describeComposedCap(cap, tokens)} style={{ order: composedDisplayOrder(cap),
                   minWidth: 19 * s, height: 19 * s, padding: val ? `0 ${4 * s}px` : 0,
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                   fontSize: 13 * s, cursor: "default",
@@ -581,6 +591,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               );
             })}
           </div>
+        )}
+
+        </div>
         )}
 
         {/* Stats + rarity row */}
@@ -684,9 +697,12 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           </div>
         )}
 
+        {/* ORDRE D'AUTEUR : conteneur unique + `order` par ligne. */}
+        {((card!.keywords?.length ?? 0) > 0 || (card!.spellKeywords?.length ?? 0) > 0 || composedCapsOf(card!.capabilities).length > 0) && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
         {/* Capacités detail */}
         {card!.keywords?.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {card!.keywords.filter(kw => !isCreatureKwShadowedBySpell(kw, card!.spellKeywords)).map(kw => {
               const { displayName, displayDesc } = forgeKeyword(kw);
               const detailScope = card!.type !== "Unité"
@@ -694,7 +710,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 : null;
               const detailNote = detailScope === "all_allies" ? t('detail_note_all_allies') : detailScope === "target" ? t('detail_note_target') : "";
               return (
-                <div key={kw} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <div key={kw} style={{ order: (card!.type === "Unité" ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={forgeKeywordId(kw)} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
@@ -710,7 +726,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
 
         {/* Spell keyword details */}
         {card!.spellKeywords && card!.spellKeywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {card!.spellKeywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
@@ -718,7 +734,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const label = getSpellKeywordLabel(spellKw);
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               return (
-                <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
@@ -768,23 +784,27 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
 
         {/* Effets composés (verso) — sous les capacités classiques, même style. */}
         {composedCapsOf(card!.capabilities).length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 * s }}>
+          <div style={{ display: "contents" }}>
             {composedCapsOf(card!.capabilities).map((cap, i) => {
               const ic = composedIcon(cap);
               const cmode = composedTriggerMode(cap);
               const nm = composedKeywordName(cap);
               return (
-                <div key={`cxd_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <div key={`cxd_${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ position: "relative", flexShrink: 0, display: "inline-flex" }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={18 * s} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={9 * s} /></span>
                   <div>
                     {nm && <div style={{ fontSize: 14 * s, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}</div>}
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{describeComposedCap(cap, tokens)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokens)} scale={s} />
+                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={s} />}
                   </div>
                 </div>
               );
             })}
           </div>
+        )}
+
+        </div>
         )}
 
         {/* Flavor text */}

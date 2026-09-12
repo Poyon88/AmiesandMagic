@@ -1005,6 +1005,11 @@ function composedTargetPool(
     const plafond = spec.maxCost;
     pool = pool.filter((c) => (c.card.mana_cost ?? 0) <= plafond);
   }
+  // NATURE de carte (unités / sorts) — cf. TargetSpec.cardKind.
+  if (spec.cardKind) {
+    const kind = spec.cardKind;
+    pool = pool.filter((c) => c.card.card_type === kind);
+  }
   return pool;
 }
 
@@ -1364,6 +1369,43 @@ function resolveComposedEffect(
       }
       return;
     }
+    case "rappel": {
+      // Renvoie jusqu'à `count` cartes du cimetière du contrôleur dans sa main
+      // (pool = composedTargetPool : nature, coût, appartenance). Cibles
+      // CHOISIES via chosenTargetIds ; sinon (déclencheur non interactif) repli
+      // DÉTERMINISTE = les plus récentes (fin du cimetière), jamais rng.
+      const cnt = composed.target?.count;
+      const desired = typeof cnt === "number" ? cnt : Infinity;
+      const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
+      const recall = (inst: CardInstance | undefined): boolean => {
+        if (!inst || owner.hand.length >= MAX_HAND_SIZE) return false;
+        if (!owner.graveyard.includes(inst)) return false;
+        owner.graveyard = owner.graveyard.filter((c) => c !== inst);
+        // Conserve les bonus accumulés (nouvelle identité d'instance), comme le
+        // mot-clé. `triggerReturnToHand` ne s'occupe que des créatures.
+        returnInstanceToPlay(inst);
+        inst.instanceId = generateInstanceId();
+        owner.hand.push(inst);
+        triggerReturnToHand(inst, owner, opponent);
+        return true;
+      };
+      let done = 0;
+      const chosen = chosenTargetIds ?? [];
+      if (chosen.length > 0) {
+        for (const id of chosen) {
+          if (done >= desired) break;
+          if (recall(owner.graveyard.find((c) => c.instanceId === id))) done++;
+        }
+      } else {
+        while (done < desired) {
+          const eligible = composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, owner, opponent);
+          if (eligible.length === 0) break;
+          if (!recall(eligible[eligible.length - 1])) break;
+          done++;
+        }
+      }
+      return;
+    }
     case "exhumation": {
       // Ressuscite jusqu'à `count` créatures du cimetière du contrôleur (coût
       // ≤ x) sur le plateau. Réutilise returnInstanceToPlay (conserve les bonus
@@ -1408,6 +1450,12 @@ function resolveComposedEffect(
       return;
     }
     case "invocation": {
+      // Carte DÉSIGNÉE : invoquée telle quelle, sans tirage ni filtre.
+      if (composed.cardId != null) {
+        resolveDesignatedSummon(owner, composed.cardId, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
+          source?.card.name ?? opts?.sourceCard?.name ?? "?");
+        return;
+      }
       // Créature aléatoire de la collection au coût EXACT x, mêmes règles
       // qu'Invocation X (alignement de la carte, format, collection), plus le
       // filtre de pool s'il est renseigné.
@@ -1619,6 +1667,20 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
 /** Exécute les capacités composées d'une carte pour un déclencheur donné.
  *  `targetMap[cap.uid]` (ou `fallbackTargetId`) fournit la cible choisie pour
  *  les capacités en désignation "choice" (count = 1 en v1). */
+/** ORDRE D'AUTEUR — uids des effets composés de ce déclencheur rangés AVANT le
+ *  premier mot-clé CURÉ du même déclencheur. Vide s'il n'y a aucun mot-clé
+ *  curé derrière eux : tout reste alors après la cascade, comme avant — le
+ *  découpage n'a de sens que s'il y a quelque chose à devancer. */
+function composedBeforeFirstCurated(card: Card, trigger: import("./types").CapabilityTrigger): Set<string> {
+  const candidats: string[] = [];
+  for (const cap of getCapabilities(card)) {
+    if (cap.trigger !== trigger) continue;
+    if (cap.composed) { candidats.push(cap.uid); continue; }
+    return new Set(candidats); // premier mot-clé curé : la coupure est là
+  }
+  return new Set();
+}
+
 function runComposedCapsForCard(
   card: Card,
   trigger: import("./types").CapabilityTrigger,
@@ -1627,6 +1689,11 @@ function runComposedCapsForCard(
   opponent: PlayerState,
   targetMap?: Record<string, string>,
   fallbackTargetId?: string,
+  // `only` : sous-ensemble à résoudre (ordre d'auteur — cf. resolveSpellCard,
+  // qui appelle plusieurs fois pour intercaler les composés entre les
+  // mécaniques). `skipEmblems` : les emblèmes ne se posent qu'UNE fois, à
+  // l'appel final ; sans ce drapeau, chaque appel intercalé les reposerait.
+  opts?: { only?: (cap: import("./types").Capability) => boolean; skipEmblems?: boolean },
 ): void {
   // Un SORT pose ici ses emblèmes, à sa résolution.
   //
@@ -1635,9 +1702,10 @@ function runComposedCapsForCard(
   // emblème est un guetteur du JOUEUR — il ne doit rien devoir aux capacités de
   // la carte qui agit. Chaque événement a donc son propre point d'accroche,
   // inconditionnel.
-  if (trigger === "spell_resolution") placeEmblemsForCard(card, owner, opponent);
+  if (trigger === "spell_resolution" && !opts?.skipEmblems) placeEmblemsForCard(card, owner, opponent);
   for (const cap of getCapabilities(card)) {
     if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
+    if (opts?.only && !opts.only(cap)) continue;
     // no-op pour les effets sur mesure (`_composed`), qui n'ont pas d'ability
     // nommée — cf. noteAbilitySfx.
     noteAbilitySfx(cap.abilityId, trigger);
@@ -3312,7 +3380,7 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
-        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId);
+        const options = selectionCardsForKeyword(inst.id, newState, plafondSelection(inst.x ?? 0, inst.randomX, rng), creature.card, undefined, creature.instanceId);
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
             id: `${creature.instanceId}#${inst.id}`,
@@ -3568,11 +3636,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // être atteinte par ce chemin.
   if (apprenante && card.card_type !== "spell") return state;
 
-  // Depuis le cimetière : réservé aux CRÉATURES portant encore Seconde vie.
-  // Re-validé ici parce que le moteur rejoue l'action chez l'adversaire.
-  if (fromGraveyard && (card.card_type !== "creature" || !hasKw(cardInstance, "seconde_vie"))) {
-    return state;
-  }
+  // Depuis le cimetière : réservé aux cartes portant encore Seconde vie —
+  // créature (elle revient en jeu) comme sort (il se relance). Re-validé ici
+  // parce que le moteur rejoue l'action chez l'adversaire.
+  if (fromGraveyard && !hasKw(cardInstance, "seconde_vie")) return state;
 
   // Canalisation: reduce spell cost by 1 per unit with Canalisation on board.
   // Entraide: reduce creature cost by 1 per allied creature whose race
@@ -3592,7 +3659,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const manaCost = fromEveil
     ? 1
     : fromGraveyard
-      ? getKwX(cardInstance, "seconde_vie", undefined, 1)
+      ? secondeVieCost(cardInstance)
       : effectiveManaCost(cardInstance, player);
 
   if (manaCost > player.mana) return state;
@@ -3675,13 +3742,22 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     player.eveil = (player.eveil ?? []).filter(e => e !== eveilEntry);
     eveilSink.push({ ownerId: player.id, kind: "arrive", card: cardInstance.card, remaining: 0 });
   }
-  // La créature ressuscitée PERD Seconde vie : sans ça elle retournerait au
-  // cimetière avec sa capacité intacte et serait rejouable indéfiniment.
+  // La carte rejouée PERD Seconde vie : sans ça elle retournerait au cimetière
+  // avec sa capacité intacte et serait rejouable indéfiniment. Retirée sur les
+  // QUATRE supports où `hasKw` peut la lire : un sort la porte dans
+  // `spell_keywords`, une carte backfillée dans `capabilities` — ne purger que
+  // les deux champs créature laissait ces deux-là rejouables à l'infini.
   if (fromGraveyard) {
     cardInstance.card = {
       ...cardInstance.card,
       keywords: cardInstance.card.keywords.filter(k => k !== "seconde_vie"),
       keyword_instances: (cardInstance.card.keyword_instances ?? []).filter(k => k.id !== "seconde_vie"),
+      spell_keywords: cardInstance.card.spell_keywords
+        ? cardInstance.card.spell_keywords.filter(k => k.id !== "seconde_vie")
+        : cardInstance.card.spell_keywords,
+      capabilities: cardInstance.card.capabilities
+        ? cardInstance.card.capabilities.filter(c => c.abilityId !== "seconde_vie")
+        : cardInstance.card.capabilities,
     };
   }
   // Discard chosen hand cards.
@@ -3799,10 +3875,32 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // ── On-summon triggers ──
 
+    // ORDRE D'AUTEUR (composed-position.ts) : les effets composés d'entrée en
+    // jeu rangés AVANT le premier mot-clé curé d'entrée en jeu se résolvent
+    // ici, avant la cascade ; les autres gardent leur place après elle. La
+    // cascade elle-même est figée (un `if` par mot-clé), on ne sait donc pas y
+    // intercaler un composé entre deux mots-clés : « avant » ou « après », et
+    // c'est ce que la carte affiche.
+    const composesAvantCascade = composedBeforeFirstCurated(cardInstance.card, "on_play");
+    if (composesAvantCascade.size > 0) {
+      pushFrames(newState, buildComposedFrames(
+        cardInstance.card, "on_play", cardInstance, player.id, action.targetMap, action.targetInstanceId,
+        { only: (c) => composesAvantCascade.has(c.uid) },
+      ));
+      drainStack(newState);
+    }
+
     // Douleur X: drawback — la créature inflige X dégâts à votre héros
     // dès son arrivée en jeu, avant tout autre effet d'invocation. Le
     // moteur ne s'arrête pas si l'auto-dégât est létal — checkWinCondition
     // appelé en fin de playCard détectera la défaite.
+    // Afflux X : gagne X mana ce tour, à l'entrée en jeu. Même règle que la
+    // forme sort et que le contenu composé `gain_mana` : aucun plafond, le
+    // surplus se perd à la fin du tour.
+    if (hasKwOnPlay(cardInstance, "afflux")) {
+      player.mana += getKwX(cardInstance, "afflux", undefined, 1);
+    }
+
     if (hasKwOnPlay(cardInstance, "douleur")) {
       const douleurXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = douleurXVals["douleur"] ?? 1;
@@ -3835,17 +3933,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // unique, qui les remet dans l'ordre d'auteur les uns par rapport aux autres.
     for (const kw of onPlayDeckEffectsInOrder(cardInstance.card)) {
       switch (kw) {
-        case "divination": {
-          if (player.deck.length === 0) break;
-          const count = Math.min(3, player.deck.length);
-          const top3 = player.deck.splice(0, count);
-          const chosenIdx = Math.min(deckChoiceFor(action, "divination") ?? 0, top3.length - 1);
-          player.deck.unshift(top3[chosenIdx]); // la carte choisie sur le dessus
-          for (let i = 0; i < top3.length; i++) {
-            if (i !== chosenIdx) player.deck.push(top3[i]); // les autres au fond
-          }
+        case "divination":
+          // Index absent (client sans modale) → 0 : déterministe, rejouable.
+          resolveDivination(player, deckChoiceFor(action, "divination") ?? 0);
           break;
-        }
         case "creuser":
           resolveCreuser(player, getKwX(cardInstance, "creuser", undefined, 1), deckChoiceFor(action, "creuser"));
           break;
@@ -4118,7 +4209,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const inst = cardInstance.card.keyword_instances?.find(i => i.id === "dechainement" && !i.mode);
       const x = inst?.x ?? getKwX(cardInstance, "dechainement", undefined, 1);
       const y = inst?.y ?? 1;
-      resolveDechainement(newState, player, opponent, cardInstance.card, x, y);
+      resolveDechainement(newState, player, opponent, cardInstance.card, x, y, inst?.randomY === true);
     }
 
     // Convocation (sans X) : variante non scalable de Convocation X. Crée le
@@ -4636,6 +4727,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // traitées par settleDeaths pendant le drain.
     pushFrames(newState, buildComposedFrames(
       cardInstance.card, "on_play", cardInstance, player.id, action.targetMap, action.targetInstanceId,
+      { only: (c) => !composesAvantCascade.has(c.uid) },
     ));
     drainStack(newState);
 
@@ -4654,6 +4746,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     recalculateAuras(player, opponent);
 
   } else if (card.card_type === "spell") {
+    // Contresort : un contre ARMÉ PAR UN SORT adverse (PlayerState.contresort)
+    // est consommé en premier — il n'a pas d'autre logement et ne se réarme
+    // jamais, alors que la garde d'une UNITÉ reste visible sur le plateau et
+    // se réarme au retour en jeu. Dans les deux cas le sort part au cimetière
+    // sans effet.
+    if ((opponent.contresort ?? 0) > 0) {
+      opponent.contresort = (opponent.contresort ?? 0) - 1;
+      player.graveyard.push(cardInstance);
+      newState.lastAction = action;
+      return newState;
+    }
     // Contresort: check if opponent has an active counter-spell
     const counterUnit = opponent.board.find(c => c.contresortActive);
     if (counterUnit) {
@@ -4688,6 +4791,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     const presageIdx = deckChoiceFor(action, "presage");
     if (presageIdx != null && targetMap["presage_0"] == null) {
       targetMap["presage_0"] = String(presageIdx);
+    }
+    // DIVINATION : même picker, même conversion, slot dédié.
+    const divinationIdx = deckChoiceFor(action, "divination");
+    if (divinationIdx != null && targetMap["divination_0"] == null) {
+      targetMap["divination_0"] = String(divinationIdx);
     }
 
     // Track spell in history (exclude spells with "relancer" to prevent loops)
@@ -4986,7 +5094,7 @@ function castSpellWithRandomTargets(
       players: [player, opponent],
       currentPlayerIndex: 0,
     } as GameState;
-    const options = selectionCardsForKeyword(selId, selState, kw.amount ?? 0, card);
+    const options = selectionCardsForKeyword(selId, selState, plafondSelection(kw.amount ?? 0, kw.randomX, rng), card);
     if (options.length === 0) continue;
     targetMap[`${selId}_0`] = String(options[Math.floor(rng() * options.length)].id);
   }
@@ -5037,7 +5145,11 @@ function castSpellWithRandomTargets(
  *  cible sur le mauvais effet, en silence. Verrouillé par spell-slot-index.test.ts. */
 function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
   return getCapabilities(card)
-    .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate")
+    // `!c.composed` : depuis l'ordre d'auteur (composed-position.ts), un effet
+    // composé peut être rangé AU MILIEU des mécaniques. Le laisser ici décalait
+    // les index `kw_${i}` des mécaniques suivantes — le slot de cible d'un
+    // Impact placé après un composé aurait désigné une autre cible.
+    .filter((c) => c.trigger === "spell_resolution" && c.effectKind === "immediate" && !c.composed)
     // `boosted` : Chant et les amplificateurs de tempo majorent ici les trois
     // porteurs d'amplitude. Les couples
     // X/Y ne passent pas tous par les mêmes champs — Renforcement utilise
@@ -5050,6 +5162,8 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
       race: c.race,
       clan: c.clan,
       token_id: c.tokenId ?? null,
+      // Déchainement : « ? » sur le coût Y (plafond au lieu d'un coût exact).
+      ...(c.params?.randomY === true ? { randomY: true } : {}),
     }));
 }
 
@@ -5111,10 +5225,23 @@ function resolveSpellCard(
   withTempo(tempoAmount, () =>
   withWrathThreshold(wrath, () =>
   withLethalSpell(cardHasLethalTouch(card), () => {
-    // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet).
+    // ORDRE D'AUTEUR (composed-position.ts) : un effet composé positionné
+    // devant la mécanique `p` se résout juste avant elle ; sans position, ou
+    // positionné après la dernière, il se résout en phase 4 comme avant. Le
+    // créneau est borné par le nombre de mécaniques : `min(position, n)`.
     const instances = spellResolutionInstances(card);
+    const creneauCompose = (cap: import("./types").Capability): number =>
+      Math.min(cap.position ?? Number.POSITIVE_INFINITY, instances.length);
+    const resoudreComposesDu = (creneau: number) => {
+      runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
+        { only: (cap) => creneauCompose(cap) === creneau, skipEmblems: true });
+      settleSpellDeaths(ctx);
+    };
+
+    // Phase 1 — mots-clés de sort (règlent leurs morts effet par effet), les
+    // composés intercalés à leur place.
     if (instances.length) {
-      resolveSpellKeywords(ctx, instances);
+      resolveSpellKeywords(ctx, instances, resoudreComposesDu);
       settleSpellDeaths(ctx); // filet : la boucle a déjà réglé au fil de l'eau
     }
 
@@ -5133,8 +5260,11 @@ function resolveSpellCard(
       }
     }
 
-    // Phase 4 — effets composés à la résolution du sort (modèle hybride).
-    runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap);
+    // Phase 4 — effets composés à la résolution du sort (modèle hybride) : ceux
+    // qui restent, c'est-à-dire sans position ou placés après la dernière
+    // mécanique. C'est aussi l'appel qui pose les emblèmes, une seule fois.
+    runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
+      { only: (cap) => creneauCompose(cap) === instances.length });
     settleSpellDeaths(ctx);
 
     // Repli legacy (cartes sans mots-clés ni effets composables).
@@ -5216,7 +5346,10 @@ function settleSpellDeaths(ctx: SpellResolutionContext): number {
 
 function resolveSpellKeywords(
   ctx: SpellResolutionContext,
-  keywords: SpellKeywordInstance[]
+  keywords: SpellKeywordInstance[],
+  // ORDRE D'AUTEUR : appelé juste avant la mécanique `i`, pour y intercaler les
+  // effets composés positionnés devant elle (cf. resolveSpellCard).
+  beforeKeyword?: (i: number) => void,
 ): void {
   // Précision, forme SORT : modificateur GLOBAL du sort, pas un don. Sa seule
   // présence dans la liste fait que TOUS les dégâts que ce sort inflige aux
@@ -5227,6 +5360,7 @@ function resolveSpellKeywords(
   // aucune cible pour ce mot-clé (needsTarget:false dans le registre).
   const spellPierces = keywords.some(k => k.id === "precision");
   for (let i = 0; i < keywords.length; i++) {
+    beforeKeyword?.(i);
     const kw = keywords[i];
     const def = SPELL_KEYWORDS[kw.id];
     if (!def) continue;
@@ -5347,6 +5481,12 @@ function resolveSpellKeywords(
         // tous les dégâts que ce sort inflige aux créatures. Le sort « a »
         // Touché mortel, il ne le confère pas — pour le donner à une unité,
         // passer par l'effet composé « Conférer une capacité ».
+        break;
+      }
+      case "contresort": {
+        // Forme sort : arme un contre chez le lanceur. Cumulatif — deux sorts
+        // Contresort annulent les deux prochains sorts adverses.
+        ctx.caster.contresort = (ctx.caster.contresort ?? 0) + 1;
         break;
       }
       case "precision": {
@@ -5496,7 +5636,7 @@ function resolveSpellKeywords(
         // exactement Y (health) de la collection, cibles au hasard.
         const x = kw.amount ?? 1;
         const y = kw.health ?? 1;
-        resolveDechainement(ctx.state, ctx.caster, ctx.opponent, ctx.card, x, y);
+        resolveDechainement(ctx.state, ctx.caster, ctx.opponent, ctx.card, x, y, kw.randomY === true);
         break;
       }
       case "convocation_simple": {
@@ -5589,6 +5729,14 @@ function resolveSpellKeywords(
         resolveCreuser(ctx.caster, kw.amount ?? 1, Number.isNaN(idx) ? 0 : idx);
         break;
       }
+      case "divination": {
+        // Slot absent ⇒ désignation AU HASARD (sort relancé ou déchaîné,
+        // personne n'est là pour choisir) — même repli que Présage.
+        const rawD = ctx.targetMap["divination_0"];
+        const idxD = rawD != null ? parseInt(rawD, 10) : NaN;
+        resolveDivination(ctx.caster, Number.isNaN(idxD) ? undefined : idxD);
+        break;
+      }
       case "presage": {
         // Slot absent ⇒ `undefined`, donc désignation AU HASARD. C'est le
         // comportement voulu pour un sort RELANCÉ ou DÉCHAÎNÉ : personne n'est
@@ -5636,7 +5784,8 @@ function resolveSpellKeywords(
           const gravIdx = ctx.caster.graveyard.findIndex(c => c.instanceId === targetId);
           if (gravIdx !== -1) {
             const target = ctx.caster.graveyard[gravIdx];
-            if (target.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
+            // Toute carte, sort compris (triggerReturnToHand ignore les sorts).
+            if (ctx.caster.hand.length < MAX_HAND_SIZE) {
               ctx.caster.graveyard.splice(gravIdx, 1);
               // Conserve les bonus accumulés (nouvelle identité d'instance).
               returnInstanceToPlay(target);
@@ -6790,6 +6939,26 @@ export const PRESAGE_REVEAL_COUNT = 3;
  *  `choiceIndex` indexe la tranche révélée (du haut de la liste affichée vers
  *  le bas), pas le deck : deux exemplaires d'une même carte restent donc
  *  distinguables, là où un id de carte serait ambigu. */
+/** DIVINATION — révèle les 3 premières cartes du deck ; la carte désignée
+ *  reste sur le dessus, les autres passent au fond dans leur ordre.
+ *
+ *  `choiceIndex` indexe la tranche révélée (0 = carte du sommet). `undefined`
+ *  ⇒ personne n'a pu choisir (déclencheur hors invocation, sort relancé) : on
+ *  désigne au hasard avec la RNG semée, donc à l'identique des deux côtés.
+ *  Point de résolution UNIQUE des quatre chemins (entrée en jeu, tap, sort,
+ *  déclencheur curé), qui dupliquaient chacun la même boucle. */
+function resolveDivination(player: PlayerState, choiceIndex: number | undefined): void {
+  if (player.deck.length === 0) return;
+  const top = player.deck.splice(0, Math.min(3, player.deck.length));
+  const idx = choiceIndex != null
+    ? Math.min(Math.max(0, choiceIndex), top.length - 1)
+    : Math.floor(rng() * top.length);
+  player.deck.unshift(top[idx]);
+  for (let i = 0; i < top.length; i++) {
+    if (i !== idx) player.deck.push(top[i]);
+  }
+}
+
 function resolveCreuser(player: PlayerState, x: number, choiceIndex: number | undefined): void {
   if (x <= 0 || player.deck.length === 0) return;
   const count = Math.min(x, player.deck.length);
@@ -7503,7 +7672,7 @@ function buildComposedFrames(
   ownerId: string,
   targetMap?: Record<string, string>,
   fallbackTargetId?: string,
-  opts?: { valueMode?: boolean; depth?: number; originTag?: string; sourceIdOverride?: string | null; noSuspend?: boolean },
+  opts?: { valueMode?: boolean; depth?: number; originTag?: string; sourceIdOverride?: string | null; noSuspend?: boolean; only?: (cap: import("./types").Capability) => boolean },
 ): StackFrame[] {
   const frames: StackFrame[] = [];
   const sourceId = opts && "sourceIdOverride" in opts ? opts.sourceIdOverride ?? null : (source?.instanceId ?? null);
@@ -7511,6 +7680,9 @@ function buildComposedFrames(
   let seq = 0;
   for (const cap of getCapabilities(card)) {
     if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
+    // Ordre d'auteur : playCard pousse en deux temps (avant / après la cascade
+    // des mots-clés curés), cf. composedBeforeFirstCurated.
+    if (opts?.only && !opts.only(cap)) continue;
     // Chemin pile LIFO : mêmes capacités, autre mécanique d'exécution.
     noteAbilitySfx(cap.abilityId, trigger);
     let chosen: string[] | undefined;
@@ -8350,6 +8522,13 @@ function resolveCuratedKeywordEffect(
       for (let i = 0; i < x; i++) drawCard(owner);
       break;
     }
+    case "afflux": {
+      // Tap / mort / retour / fin de tour / attaque / pioche : même gain qu'à
+      // l'entrée en jeu. En fin de tour du contrôleur, le mana gagné est perdu
+      // aussitôt — c'est l'auteur qui choisit, pas le moteur.
+      owner.mana += x;
+      break;
+    }
     case "incineration": {
       resolveIncineration(incinerationVictim(targetInstanceId, owner, opponent), x);
       break;
@@ -8697,14 +8876,7 @@ function resolveCuratedKeywordEffect(
     case "divination": {
       // Révèle les 3 cartes du dessus, en garde une AU HASARD sur le dessus,
       // replace les autres dessous (pas de modale hors invocation).
-      if (owner.deck.length === 0) return;
-      const countDiv = Math.min(3, owner.deck.length);
-      const topDiv = owner.deck.splice(0, countDiv);
-      const keepIdx = Math.floor(rng() * topDiv.length);
-      owner.deck.unshift(topDiv[keepIdx]);
-      for (let i = 0; i < topDiv.length; i++) {
-        if (i !== keepIdx) owner.deck.push(topDiv[i]);
-      }
+      resolveDivination(owner, undefined);
       return;
     }
     case "traque_du_destin": {
@@ -8741,7 +8913,7 @@ function resolveCuratedKeywordEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId);
+      const options = selectionCardsForKeyword(kw, selState, plafondSelection(inst?.x ?? 0, inst?.randomX, rng), source.card, undefined, source.instanceId);
       if (options.length === 0) return;
       // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
   // premier est au milieu du flux de combat, le second au milieu de startTurn
@@ -9010,15 +9182,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
     // texte du mot-clé, qui promet « dans l'ordre choisi ».
     // Index absent (client sans modale, deck trop court) → 0 : on garde la
     // première carte. Déterministe, donc rejouable à l'identique par le pair.
-    const countDiv = Math.min(3, player.deck.length);
-    if (countDiv > 0) {
-      const topDiv = player.deck.splice(0, countDiv);
-      const idxDiv = Math.min(Math.max(0, action.divinationChoiceIndex ?? 0), topDiv.length - 1);
-      player.deck.unshift(topDiv[idxDiv]);
-      for (let i = 0; i < topDiv.length; i++) {
-        if (i !== idxDiv) player.deck.push(topDiv[i]);
-      }
-    }
+    resolveDivination(player, action.divinationChoiceIndex ?? 0);
   } else if (instance.id === "apprentissage") {
     // Apprentissage AU TAP : le joueur désigne le sort. Sans cette branche le
     // résolveur curé tirerait au hasard — inacceptable ici, la carte retirée de
@@ -10734,7 +10898,54 @@ export function creatureNeedsDivination(card: Card): boolean {
  *  pas payable) et par le moteur (qui débite) : un écart entre les deux
  *  laisserait proposer des créatures injouables. */
 export function secondeVieCost(inst: CardInstance): number {
-  return getKwX(inst, "seconde_vie", undefined, 1);
+  // Lecture SANS déclencheur : sur une créature la capacité vit sous
+  // `on_play`, sur un sort sous `spell_resolution`. `getKwX` ne regarde que le
+  // premier et rendait 1 (le défaut) pour tout sort, quel que soit son X.
+  const cap = getCapabilities(inst.card).find(c => c.abilityId === "seconde_vie" && c.effectKind !== "emblem");
+  return cap?.params?.x ?? 1;
+}
+
+/** La carte porte-t-elle encore Seconde vie ? Lecture unifiée (créature ou
+ *  sort, quel que soit le support) — l'interface ne doit pas relire
+ *  `card.keywords` à la main, ce qui ignorait les sorts. */
+export function hasSecondeVie(inst: CardInstance): boolean {
+  return hasKw(inst, "seconde_vie");
+}
+
+/** SECONDE VIE — cette carte de MON cimetière est-elle jouable MAINTENANT ?
+ *
+ *  Pendant de `canPlayCard` pour la provenance cimetière, et source UNIQUE des
+ *  deux côtés : `playCard` refuse l'action sur les mêmes critères, et
+ *  l'interface ne surligne que ce qui partira vraiment. Trois différences avec
+ *  `canPlayCard`, et elles comptent :
+ *    · le coût en mana est le X de Seconde vie, sans les remises de main ;
+ *    · le test défausse/repli perd son `-1` : la carte jouée n'est pas en main ;
+ *    · une carte SANS Seconde vie n'est jamais jouable d'ici, quel que soit
+ *      son coût. */
+export function canPlayFromGraveyard(state: GameState, cardInstanceId: string): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  const inst = player.graveyard.find(c => c.instanceId === cardInstanceId);
+  if (!inst) return false;
+  if (!hasKw(inst, "seconde_vie")) return false;
+  if (secondeVieCost(inst) > player.mana) return false;
+  const card = inst.card;
+  const lifeCost = getLifeCost(card);
+  if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return false;
+  if (player.hand.length < getDiscardCost(card) + getTopdeckCost(card)) return false;
+  const sacrificeCost = getSacrificeCost(card);
+  if (player.board.length < sacrificeCost) return false;
+  if (getExileCost(card) > player.deck.length) return false;
+  if (card.card_type === "creature"
+    && player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+  // Même garde que depuis la main : un sort sans AUCUNE cible se consumerait
+  // dans le vide, et ici la carte n'aurait même plus de Seconde vie à retenter.
+  if (card.card_type === "spell") {
+    const slots = getSpellTargetSlots(card);
+    if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** CREUSER X — la carte doit-elle ouvrir le picker « 1 parmi X » à son entrée ?
@@ -11098,15 +11309,45 @@ function resolveInvocationSummon(
   const chosen = restricted
     ? candidates[Math.floor(rng() * candidates.length)]
     : tirageUniquePondere(candidates, buckets)!;
-  const summoned = createCardInstance(chosen);
-  // Mal d'invocation par défaut (précédent Appel du Clan), MAIS la créature
-  // invoquée garde ses propres mots-clés : une Traque (id moteur `charge`) doit
-  // pouvoir attaquer le tour de son arrivée, comme quand elle est jouée depuis
-  // la main ou ressuscitée par Exhumation. `hasKw` plutôt que
-  // `keywords.includes` : il lit le modèle unifié, donc aussi une Traque portée
-  // par `keyword_instances` / `capabilities` seuls.
+  mettreEnJeuInvoquee(owner, chosen);
+}
+
+/** Met en jeu une créature INVOQUÉE (Invocation aléatoire ou désignée).
+ *  Mal d'invocation par défaut (précédent Appel du Clan), MAIS la créature
+ *  invoquée garde ses propres mots-clés : une Traque (id moteur `charge`) doit
+ *  pouvoir attaquer le tour de son arrivée, comme quand elle est jouée depuis
+ *  la main ou ressuscitée par Exhumation. `hasKw` plutôt que
+ *  `keywords.includes` : il lit le modèle unifié, donc aussi une Traque portée
+ *  par `keyword_instances` / `capabilities` seuls. */
+function mettreEnJeuInvoquee(owner: PlayerState, card: Card): void {
+  const summoned = createCardInstance(card);
   summoned.hasSummoningSickness = !hasKw(summoned, "charge");
   owner.board.push(summoned);
+}
+
+/** INVOCATION DÉSIGNÉE (effet composé, `composed.cardId`) : met en jeu la
+ *  carte choisie à la création, résolue par id dans les pools du match —
+ *  complétés au chargement par les cartes désignées hors pool, comme pour
+ *  Compagnons. Un id introuvable, ou un sort, est un no-op signalé par un warn :
+ *  un silence total serait indiscernable d'un effet cassé. */
+function resolveDesignatedSummon(
+  owner: PlayerState,
+  cardId: number,
+  factionPool: Card[] | undefined,
+  spellsPool: Card[] | undefined,
+  sourceName: string,
+): void {
+  if (owner.board.length >= MAX_BOARD_SIZE) return;
+  const def = [...(factionPool ?? []), ...(spellsPool ?? [])].find((c) => c.id === cardId);
+  if (!def) {
+    console.warn(`[engine] Invocation désignée : carte id=${cardId} introuvable dans les pools du match pour « ${sourceName} » — no-op.`);
+    return;
+  }
+  if (def.card_type !== "creature") {
+    console.warn(`[engine] Invocation désignée : la carte id=${cardId} n'est pas une créature (« ${sourceName} ») — no-op.`);
+    return;
+  }
+  mettreEnJeuInvoquee(owner, def);
 }
 
 /** Déchainement X/Y : lance X sorts aléatoires de coût EXACTEMENT Y issus de
@@ -11127,6 +11368,10 @@ function resolveDechainement(
   sourceCard: Card,
   x: number,
   y: number,
+  // « ? » sur Y : le coût devient un PLAFOND, chaque sort est tiré parmi ceux
+  // de coût 1 à Y — un sort par tirage, donc un coût effectif variable d'un
+  // lancement à l'autre. Sans le drapeau, coût EXACTEMENT Y (règle d'origine).
+  randomY = false,
 ): void {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0 || x <= 0 || y <= 0) return;
@@ -11136,7 +11381,7 @@ function resolveDechainement(
   const ownedLimited = new Set(player.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "spell"
-    && c.mana_cost === y
+    && (randomY ? (c.mana_cost >= 1 && c.mana_cost <= y) : c.mana_cost === y)
     && !!c.faction && allowedFactions.has(c.faction)
     && ((c.rarity ?? "Commune") === "Commune"
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
@@ -11335,6 +11580,34 @@ export function getMagicalSelectionCards(
   return offrePonderee(filtered, buckets, Math.min(SELECTION_OFFER_COUNT, filtered.length), melanger);
 }
 
+/** SÉLECTION AU HASARD — fige le plafond de coût d'une offre.
+ *
+ *  Sans drapeau, ou sous un plafond < 2 (« entre 1 et 1 » est une constante),
+ *  le X est rendu tel quel. Sinon, tirage entier entre 1 et X inclus.
+ *
+ *  `tirage` est injecté : le moteur passe `rng` (la graine de l'état de
+ *  partie, identique chez les deux joueurs — un `Math.random` ici
+ *  désynchroniserait les tours adverses et les relances de sorts) ; le client
+ *  prend `Math.random` pour le SEUL chemin qu'il décide lui-même, l'entrée en
+ *  jeu, dont la carte choisie voyage ensuite dans l'action. */
+export function plafondSelection(x: number, randomX: boolean | undefined, tirage: () => number = Math.random): number {
+  if (!randomX || x < 2) return x;
+  return 1 + Math.floor(tirage() * x);
+}
+
+/** Amplitude d'une Sélection curée à l'ENTRÉE EN JEU, lue dans le modèle
+ *  unifié (donc `keyword_instances` d'abord, repli sur la notation
+ *  [Sélection X] de effect_text). Point de lecture unique pour le client, qui
+ *  lisait effect_text à la main — et n'aurait jamais vu le drapeau `randomX`,
+ *  qui ne vit que sur l'instance. */
+export function selectionAmplitudeOnPlay(
+  card: Card,
+  id: "selection" | "selection_magique" | "renfort_royal",
+): { x: number; randomX: boolean } {
+  const cap = getCapabilities(card).find(c => c.abilityId === id && c.trigger === "on_play" && c.effectKind !== "emblem");
+  return { x: cap?.params?.x ?? 0, randomX: cap?.params?.randomX === true };
+}
+
 /** Aiguille vers le bon builder de cartes selon la famille de Sélection. */
 function selectionCardsForKeyword(
   id: "selection" | "selection_magique" | "renfort_royal",
@@ -11467,9 +11740,9 @@ export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTa
     case "enemy_creature":
       return filterEnemyTargetable(opponent.board).map(c => c.instanceId);
     case "friendly_graveyard":
-      return player.graveyard
-        .filter(c => c.card.card_type === "creature")
-        .map(c => c.instanceId);
+      // Rappel (seul utilisateur de ce type) : toute carte du cimetière, sort
+      // compris — comme la forme créature, qui n'a jamais filtré.
+      return player.graveyard.map(c => c.instanceId);
     case "friendly_graveyard_to_board":
       return player.graveyard
         .filter(c => c.card.card_type === "creature")
@@ -11486,9 +11759,7 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
   if (!kw) return [];
 
   if (kw.id === "rappel") {
-    return player.graveyard
-      .filter(c => c.card.card_type === "creature")
-      .map(c => c.instanceId);
+    return player.graveyard.map(c => c.instanceId); // sorts compris
   }
   if (kw.id === "exhumation") {
     // Plafond de coût = X du mot-clé + bonus de Chant. Le moteur applique déjà
@@ -11517,6 +11788,13 @@ export function getComposedGraveyardTargets(state: GameState, card: Card, capUid
   // désaccord picker/moteur que cette fonction existe pour éviter.
   const frame = state.effectStack?.find(f => f.awaitingChoice && f.capUid === capUid && f.composed);
   const composed = frame?.composed ?? cap?.composed;
+  // RAPPEL composé : pas de plafond X — le pool est celui du TargetSpec
+  // (nature de carte, coût, appartenance), exactement ce que la résolution lit.
+  if (composed?.content === "rappel") {
+    const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+    const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
+    return composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, player, opponent).map(c => c.instanceId);
+  }
   // Même plafond que la résolution, bonus de Chant compris (cf.
   // chantBonusForSpell / tempoBonusForCard) — sinon le picker et le moteur ne
   // s'accordent pas.
