@@ -62,13 +62,18 @@ export default function HeroPortrait({
   const powerRing = isValidTarget && !!validTargetColor;
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center pt-4">
       {/* HP overlay — overlaid on the portrait (no background frame), big
           and bold, with a heavy drop-shadow so it stays legible against
           any artwork. Positioned at top-center so it reads like the HP
-          number floating above the head. */}
+          number floating above the head.
+          Une bande de 16 px (`pt-4`) est réservée au-dessus du portrait et le
+          chiffre y remonte (`-top-4`) : à `-top-5` sans bande, ses 36 px de
+          haut recouvraient le cadre de l'illustration sur 16 px — il n'en
+          mord plus que 4. Le décalage vers le HAUT du conteneur reste le
+          même à 4 px près, pour ne pas sortir du plateau sur grand écran. */}
       <div
-        className={`pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 z-10 text-4xl font-black tracking-wide ${
+        className={`pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 z-10 text-4xl font-black tracking-wide ${
           hero.hp <= 10 ? "text-accent" : "text-white"
         }`}
         style={{
