@@ -1322,6 +1322,11 @@ function resolveComposedEffect(
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
+    // TUTEUR : la carte désignée rejoint la main du contrôleur.
+    case "tuteur":
+      resolveTuteur(owner, composed.cardId ?? null, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
+        source?.card.name ?? opts?.sourceCard?.name ?? "?");
+      return;
     // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
     // satisfait le filtre de pool.
     //
@@ -11456,6 +11461,32 @@ function resolveDesignatedSummon(
     return;
   }
   mettreEnJeuInvoquee(owner, def);
+}
+
+/** TUTEUR (effet composé, `composed.cardId`) : ajoute à la main du contrôleur
+ *  la carte désignée à la création — créature OU sort — résolue par id dans
+ *  les pools du match (complétés au chargement par les cartes désignées hors
+ *  pool, cf. page du match). Id absent ou introuvable : no-op signalé par un
+ *  warn, un silence total serait indiscernable d'un effet cassé. Main pleine :
+ *  rien, comme une pioche sur main pleine. */
+function resolveTuteur(
+  owner: PlayerState,
+  cardId: number | null,
+  factionPool: Card[] | undefined,
+  spellsPool: Card[] | undefined,
+  sourceName: string,
+): void {
+  if (cardId == null) {
+    console.warn(`[engine] Tuteur : aucune carte désignée sur « ${sourceName} » — no-op.`);
+    return;
+  }
+  const def = [...(factionPool ?? []), ...(spellsPool ?? [])].find((c) => c.id === cardId);
+  if (!def) {
+    console.warn(`[engine] Tuteur : carte id=${cardId} introuvable dans les pools du match pour « ${sourceName} » — no-op.`);
+    return;
+  }
+  if (owner.hand.length >= MAX_HAND_SIZE) return;
+  owner.hand.push(createCardInstance(def));
 }
 
 /** Déchainement X/Y : lance X sorts aléatoires de coût EXACTEMENT Y issus de

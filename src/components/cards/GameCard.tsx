@@ -621,7 +621,7 @@ export default function GameCard({
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, effectiveTokens)} scale={s} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={s} />}
+                    {(cap.composed?.content === "invocation" || cap.composed?.content === "tuteur") && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon={cap.composed.content === "tuteur" ? "🎓" : "📣"} scale={s} />}
                   </div>
                 </div>
               );

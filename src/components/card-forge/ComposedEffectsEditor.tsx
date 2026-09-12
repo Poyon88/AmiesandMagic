@@ -47,6 +47,9 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
   { v: "invocation", l: "Invocation (créature aléatoire ou désignée)", target: "none" },
+  // Tuteur : la carte désignée (créature ou sort) rejoint la main. Ni cible,
+  // ni amplitude, ni filtre de pool.
+  { v: "tuteur", l: "Tuteur (carte désignée → main)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
@@ -548,7 +551,7 @@ export default function ComposedEffectsEditor({
                   // contenu qui n'en a pas (sinon champ fantôme en base).
                   pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
                   // Idem pour la carte désignée d'une Invocation.
-                  cardId: v === "invocation" ? eff.cardId : undefined,
+                  cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
                 });
               })}
 
@@ -565,8 +568,21 @@ export default function ComposedEffectsEditor({
                   </div>
                 </>
               )}
-              {/* Invocation DÉSIGNÉE : ni amplitude ni filtre de pool — la carte
-                  est nommée, il n'y a rien à tirer. */}
+              {eff.content === "tuteur" && (
+                <>
+                  <span style={labelStyle}>{tr('label_designated_card')}</span>
+                  <div>
+                    <LinkedCardsPicker
+                      title={`🎓 ${tr('label_designated_card')}`} single required
+                      value={eff.cardId != null ? [eff.cardId] : []}
+                      onChange={(v) => patchEffect(idx, { cardId: v.length ? v[v.length - 1] : undefined })}
+                    />
+                    <div style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic", marginTop: 4 }}>{tr('tuteur_card_hint')}</div>
+                  </div>
+                </>
+              )}
+              {/* Invocation DÉSIGNÉE et Tuteur : ni amplitude ni filtre de pool —
+                  la carte est nommée, il n'y a rien à tirer. */}
               {eff.content === "rappel" && (
                 <>
                   <span style={labelStyle}>{tr('label_card_kind')}</span>
@@ -574,7 +590,7 @@ export default function ComposedEffectsEditor({
                     (v) => patchTarget(idx, { cardKind: (v || undefined) as TargetSpec["cardKind"] }))}
                 </>
               )}
-              {!(eff.content === "invocation" && eff.cardId != null) && eff.content !== "rappel" && (<>
+              {!(eff.content === "invocation" && eff.cardId != null) && eff.content !== "rappel" && eff.content !== "tuteur" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>

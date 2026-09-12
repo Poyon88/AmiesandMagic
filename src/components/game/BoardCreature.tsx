@@ -1073,7 +1073,7 @@ function BoardCreature({
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.18} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {cap.composed?.content === "invocation" && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon="📣" scale={d * 0.18} />}
+                    {(cap.composed?.content === "invocation" || cap.composed?.content === "tuteur") && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon={cap.composed.content === "tuteur" ? "🎓" : "📣"} scale={d * 0.18} />}
                   </div>
                 </div>
               );

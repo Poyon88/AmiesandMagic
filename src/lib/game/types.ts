@@ -543,6 +543,12 @@ export type ComposedEffectContent =
   // Invoque une créature aléatoire de la collection au coût EXACT X. Comme les
   // Sélections, elle se paramètre par `pool` (race / faction / clan / mot-clé).
   | "invocation"
+  // TUTEUR : ajoute à la MAIN du contrôleur la carte DÉSIGNÉE (`cardId`),
+  // créature ou sort. Aucune cible, aucune amplitude : la carte est nommée à
+  // la création. Résolue par id dans les pools du match, complétés au
+  // chargement comme pour Compagnons et l'Invocation désignée. Rien si la
+  // main est pleine.
+  | "tuteur"
   // Révèle 3 cartes de la collection et en garde 1 en main. Comme exhumation,
   // ces deux contenus existent AUSSI en mot-clé curé : la variante composée
   // ajoute le filtre de pool (`ComposedEffect.pool`) et tous les déclencheurs.
@@ -663,7 +669,9 @@ export interface ComposedEffect {
    *  `cards`), choisie à la création. Renseignée, elle REMPLACE le tirage
    *  aléatoire : X, le filtre de pool et l'alignement ne comptent plus. La
    *  carte est résolue par id dans les pools du match, complétés au chargement
-   *  comme pour Compagnons (cf. page du match). Une créature seulement. */
+   *  comme pour Compagnons (cf. page du match). Une créature seulement.
+   *  content === "tuteur" : carte DÉSIGNÉE ajoutée à la main (créature ou sort),
+   *  même résolution par id. */
   cardId?: number | null;
   /** content === "selection" / "renfort_royal" : restriction du POOL de cartes
    *  révélées, EN PLUS des règles de base (rareté Commune, coût ≤ X, factions de

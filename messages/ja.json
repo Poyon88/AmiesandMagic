@@ -1913,6 +1913,7 @@
     "pool_hint_invocation": "フィルターは累積します。フィルターがない場合、プールはカードの属性に従い、召喚されるコストは正確にXになります。",
     "label_designated_card": "指定カード",
     "designated_card_hint": "クリーチャーを指定すると、そのまま召喚します。指定がなければ、フィルターに従ってコストXのクリーチャーをランダムに選びます。",
+    "tuteur_card_hint": "クリーチャーか呪文を指定します。そのカードがそのまま手札に加わります。指定がなければ効果はありません。",
     "content_selection": "選択（3枚中1枚）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
     "label_pool_membership": "プール — 所属",

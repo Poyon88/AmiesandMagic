@@ -1913,6 +1913,7 @@
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "label_designated_card": "DESIGNATED CARD",
     "designated_card_hint": "Pick a creature to summon it as is. Without one, a random creature of cost X is drawn according to the filters.",
+    "tuteur_card_hint": "Pick a creature or a spell: that card is added to your hand as is. Without a pick, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",

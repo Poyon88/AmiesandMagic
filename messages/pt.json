@@ -1913,6 +1913,7 @@
     "pool_hint_invocation": "Filtros cumulativos. Sem eles, o pool segue o alinhamento da carta; o custo invocado é EXATAMENTE X.",
     "label_designated_card": "CARTA DESIGNADA",
     "designated_card_hint": "Escolha uma criatura para a invocar tal como está. Sem escolha, é sorteada uma criatura de custo X segundo os filtros.",
+    "tuteur_card_hint": "Designe uma criatura ou um feitiço: a carta é adicionada à sua mão tal como está. Sem designação, o efeito não faz nada.",
     "content_selection": "Seleção (1 de 3)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENÇA",

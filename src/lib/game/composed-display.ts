@@ -115,6 +115,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // Invocation DÉSIGNÉE : le nom de la carte est peint à part (pastille
   // CompagnonsNames), la phrase reste générique.
   "content.invocation_card": "invoque la carte désignée",
+  "content.tuteur": "ajoutez la carte désignée à votre main",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
@@ -218,6 +219,7 @@ export function composedValueText(cap: Capability): string | null {
   if (!m) return null;
   // Invocation désignée : X ne compte plus, rien à peindre.
   if (cap.composed!.content === "invocation" && cap.composed!.cardId != null) return null;
+  if (cap.composed!.content === "tuteur") return null;
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
   const grantedXY = cap.composed!.content === "grant_keyword"
     && XY_ABILITY_IDS.has(grantedEngineId(cap.composed!) ?? "");
@@ -279,6 +281,8 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "rappel": return { symbol: KEYWORD_SYMBOLS.rappel, keyword: "rappel" };
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
+    // Tuteur : icône propre (clé « tuteur » pour une icône importable dans l'admin).
+    case "tuteur": return { symbol: "🎓", keyword: "tuteur" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
@@ -508,6 +512,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "invocation":
       if (eff.cardId != null) return frag(t, "content.invocation_card");
       return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
+    case "tuteur": return frag(t, "content.tuteur");
     case "selection":
     case "selection_magique":
     case "renfort_royal":
