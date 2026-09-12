@@ -4190,6 +4190,7 @@ export const useGameStore = create<GameStore>((set, get) => {
               validTargets: firstTargets,
               targetingMode: "graveyard",
               creatureComposedCollected: [],
+              collectedTargetMap: {},
               pendingComposedGraveyard: { caps, capIndex: 0, picked: {}, context: "spell" },
             });
             return null;
@@ -4564,13 +4565,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         return null; // on passe à la résurrection suivante
       }
 
-      const targetMap: Record<string, string> = {};
+      // Les cibles de MOTS-CLÉS collectées avant la bascule (Exhumation puis
+      // composé) partent avec : sans ce report, l'Exhumation résolvait sans cible.
+      const targetMap: Record<string, string> = context === "spell" ? { ...get().collectedTargetMap } : {};
       for (const cap of caps) {
         (nextPicked[cap.uid] ?? []).forEach((id, i) => { targetMap[`${cap.uid}#${i}`] = id; });
       }
       const boardPos = get().pendingBoardPosition;
       const selId = get().selectedCardInstanceId;
-      set({ creatureComposedCollected: [], pendingComposedGraveyard: null });
+      set({ creatureComposedCollected: [], pendingComposedGraveyard: null, collectedTargetMap: {} });
       if (context === "hero_power") {
         return get().dispatchAction({ type: "hero_power", targetMap });
       }
@@ -4596,6 +4599,44 @@ export const useGameStore = create<GameStore>((set, get) => {
         if (nextIndex < spellTargetSlots.length) {
           const nextSlot = spellTargetSlots[nextIndex];
           if (nextSlot.type === "friendly_graveyard" || nextSlot.type === "friendly_graveyard_to_board") {
+            // Slot COMPOSÉ (`${uid}#i`) après un mot-clé (ex. « Grâce du Phénix
+            // Blanc » : Exhumation 6 puis « Conférer Seconde vie » au cimetière).
+            // Ce cas passait par `parseInt("cx_0#0")` = NaN et une liste vide :
+            // la modale restait ouverte sans rien de sélectionnable. On bascule
+            // sur la collecte composée, la cible du mot-clé déjà choisie
+            // (`newMap`) voyageant jusqu'au dispatch.
+            if (nextSlot.slot.includes("#")) {
+              const uids: string[] = [];
+              for (let j = nextIndex; j < spellTargetSlots.length; j++) {
+                const sl = spellTargetSlots[j];
+                if ((sl.type !== "friendly_graveyard" && sl.type !== "friendly_graveyard_to_board") || !sl.slot.includes("#")) continue;
+                const u = sl.slot.split("#")[0];
+                if (!uids.includes(u)) uids.push(u);
+              }
+              const caps = uids
+                .map(u => ({
+                  uid: u,
+                  count: Math.min(
+                    spellTargetSlots.filter(sl => sl.slot.startsWith(`${u}#`)).length,
+                    gs ? getComposedGraveyardTargets(gs, cardInHand.card, u).length : 0,
+                  ),
+                }))
+                .filter(c => c.count > 0);
+              const firstTargets = gs && caps.length > 0 ? getComposedGraveyardTargets(gs, cardInHand.card, caps[0].uid) : [];
+              if (caps.length > 0 && firstTargets.length > 0) {
+                set({
+                  validTargets: firstTargets,
+                  currentTargetSlotIndex: nextIndex,
+                  collectedTargetMap: newMap,
+                  creatureComposedCollected: [],
+                  pendingComposedGraveyard: { caps, capIndex: 0, picked: {}, context: "spell" },
+                });
+                return null;
+              }
+              // Aucune cible éligible pour les composés : on joue avec ce qui
+              // est collecté, l'effet sans cible se résout sans effet.
+              return get().dispatchAction({ type: "play_card", cardInstanceId: selectedCardInstanceId, targetMap: newMap });
+            }
             const kwIndex = parseInt(nextSlot.slot.replace("kw_", ""));
             const nextTargets = gs ? getSpellGraveyardTargets(gs, cardInHand.card, kwIndex) : [];
             set({

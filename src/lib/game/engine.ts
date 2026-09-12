@@ -11813,7 +11813,19 @@ export function getComposedGraveyardTargets(state: GameState, card: Card, capUid
     const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
     return composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, player, opponent).map(c => c.instanceId);
   }
-  // Même plafond que la résolution, bonus de Chant compris (cf.
+  // Tout AUTRE contenu visant le cimetière (Conférer une capacité, buff…) :
+  // X est une amplitude, pas un plafond de coût. Appliquer le plafond
+  // d'Exhumation vidait la liste — « Grâce du Phénix Blanc » (Conférer Seconde
+  // vie 1 à une unité du cimetière) n'offrait aucune cible. Pool du TargetSpec
+  // (appartenance, coût, nature), unités seulement.
+  if (composed && composed.content !== "exhumation") {
+    const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+    const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
+    return composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, player, opponent)
+      .filter(c => c.card.card_type === "creature")
+      .map(c => c.instanceId);
+  }
+  // EXHUMATION : même plafond que la résolution, bonus de Chant compris (cf.
   // chantBonusForSpell / tempoBonusForCard) — sinon le picker et le moteur ne
   // s'accordent pas.
   const x = (composed?.magnitude?.x ?? 0)
