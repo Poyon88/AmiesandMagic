@@ -6556,10 +6556,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       if (hasKw(attacker, "poison") && target.currentHealth > 0) {
         target.isPoisoned = true;
       }
-      // Apply paralysie from attacker
-      if (hasKw(attacker, "paralysie") && target.currentHealth > 0) {
-        target.isParalyzed = true;
-      }
+      // Paralysie : posée par dealDamageToCreature (tous les dégâts d'une créature).
 
       // If target survived, it retaliates. NB : Première Frappe est séquentielle
       // par définition — si la cible a gagné une Gloire en encaissant le premier
@@ -6569,9 +6566,6 @@ export function attack(state: GameState, action: AttackAction): GameState {
         dealDamageToCreature(attacker, target.currentAttack, false, false, target, undefined, true);
         if (hasKw(target, "poison") && attacker.currentHealth > 0) {
           attacker.isPoisoned = true;
-        }
-        if (hasKw(target, "paralysie") && attacker.currentHealth > 0) {
-          attacker.isParalyzed = true;
         }
       }
     } else {
@@ -6594,9 +6588,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Poison application
       if (hasKw(attacker, "poison") && target.currentHealth > 0) target.isPoisoned = true;
       if (hasKw(target, "poison") && attacker.currentHealth > 0) attacker.isPoisoned = true;
-      // Paralysie application
-      if (hasKw(attacker, "paralysie") && target.currentHealth > 0) target.isParalyzed = true;
-      if (hasKw(target, "paralysie") && attacker.currentHealth > 0) attacker.isParalyzed = true;
+      // Paralysie : posée par dealDamageToCreature (tous les dégâts d'une créature).
     }
 
     // Souffle de feu X: X dégâts à toutes les unités ennemies (cible incluse,
@@ -7242,6 +7234,18 @@ function dealDamageToCreature(
   // donc sans mort : il faut avoir été RÉELLEMENT blessé.
   if (creature.currentHealth > 0 && isLethalTouch(source, isSpellDamage)) {
     creature.currentHealth = 0;
+  }
+
+  // PARALYSIE : « les unités qu'elle blesse » — TOUS les dégâts infligés par une
+  // créature qui la porte, pas seulement le combat : Tempête en fin de tour,
+  // Cataclysme, Souffle de feu, Carnage, Riposte, effet composé de dégâts… Vu en
+  // partie : une Tisseuse (Paralysie + Tempête 2 fin de tour) blessait sans
+  // paralyser, l'état n'étant posé que dans le flux d'attaque. Ici, au point de
+  // passage unique, après réductions et immunités (une blessure RÉELLE) et sur
+  // une cible SURVIVANTE ; jamais sur elle-même (Cataclysme touche son camp).
+  if (creature.currentHealth > 0 && source && "instanceId" in source
+    && source !== creature && hasKw(source, "paralysie")) {
+    creature.isParalyzed = true;
   }
 
   // Gloire +X/+Y : l'unité qui encaisse des dégâts de COMBAT et y survit gagne
