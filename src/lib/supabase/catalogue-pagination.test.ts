@@ -28,6 +28,11 @@ const LECTURES_DE_CATALOGUE = [
   "src/app/decks/builder/page.tsx",
   "src/lib/collection/hubBackgrounds.ts",
   "src/lib/cards/nameCollision.ts",
+  // Page du MATCH : pool des factions (Sélection, Invocation…) et pool des
+  // sorts (Concentration, Déchainement). Oubliée deux fois : le pool d'un deck
+  // Elfes dépasse 1 000 cartes, et « Renaissance de l'Aube Immémoriale »
+  // n'invoquait jamais son phénix, absent du sous-ensemble tronqué.
+  "src/app/game/[matchId]/page.tsx",
 ];
 
 /** Source DÉPOUILLÉE de ses commentaires. Sans ça, la garde est illusoire : le

@@ -15,6 +15,7 @@ import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { excludeSpecialSets, excludeNonDiscoverable } from "@/lib/game/deck-rules";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
@@ -296,14 +297,29 @@ export default function GamePage() {
         }
         // `.returns<Card[]>()` : la projection est une string dynamique, donc
         // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
-        const [factionCardsRes, manaSparkRes, allSpellsRes, specialSetsRes] = await Promise.all([
-          supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).returns<Card[]>(),
+        //
+        // PAGINÉ (fetchAllRows) : PostgREST plafonne à 1 000 lignes EN SILENCE.
+        // Un deck Elfes charge toutes les factions bonnes ET neutres — plus de
+        // 1 700 cartes en septembre 2026 — et le pool s'arrêtait à un
+        // sous-ensemble arbitraire : le Phénix du Dernier Crépuscule n'y était
+        // pas, et « Renaissance de l'Aube Immémoriale » (Invocation race Phoenix,
+        // coût 6) n'invoquait jamais rien, sans la moindre erreur. Ordre TOTAL
+        // par `id`, exigé par le helper — et c'est aussi ce qui garantit aux
+        // deux clients un pool identique.
+        const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes] = await Promise.all([
+          fetchAllRows<Card>(
+            (from, to) => supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).order("id").range(from, to).returns<Card[]>(),
+            { label: "Pool des factions du match" },
+          ),
           // `.in(...)` et non `.eq(...)` : le nom exact de la ligne dépend de la
           // saisie admin dans la forge (cf. MANA_SPARK_NAMES).
           supabase.from("cards").select(GAME_CARD_COLUMNS).in("name", MANA_SPARK_NAMES as unknown as string[]).eq("card_type", "spell").limit(1).returns<Card[]>(),
           // Concentration X: needs every spell across every faction/set, not
           // just the deck-faction subset that factionCardPool covers.
-          supabase.from("cards").select(GAME_CARD_COLUMNS).eq("card_type", "spell").returns<Card[]>(),
+          fetchAllRows<Card>(
+            (from, to) => supabase.from("cards").select(GAME_CARD_COLUMNS).eq("card_type", "spell").order("id").range(from, to).returns<Card[]>(),
+            { label: "Pool des sorts du match" },
+          ),
           // Sets « spéciaux » : leurs cartes sont écartées des pools de tirage
           // (cf. excludeSpecialSets). Requête à part plutôt qu'un filtre dans
           // les deux requêtes ci-dessus — PostgREST ne sait pas faire un
@@ -314,7 +330,7 @@ export default function GamePage() {
         // bâtissent donc des pools identiques, condition de la synchro des
         // tirages semés.
         const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
-        const factionCards = excludeNonDiscoverable(excludeSpecialSets(factionCardsRes.data ?? [], specialSetIds));
+        const factionCards = excludeNonDiscoverable(excludeSpecialSets(factionCardsData, specialSetIds));
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
@@ -327,7 +343,7 @@ export default function GamePage() {
             "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
           );
         }
-        const allSpells = excludeNonDiscoverable(excludeSpecialSets(allSpellsRes.data ?? [], specialSetIds));
+        const allSpells = excludeNonDiscoverable(excludeSpecialSets(allSpellsData, specialSetIds));
 
         // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
         // par id au déclenchement, or elles peuvent tomber hors des pools déjà
