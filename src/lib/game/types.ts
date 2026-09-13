@@ -1684,6 +1684,15 @@ export interface GameState {
      *  repartaient dans la PREMIÈRE vague — le défaut d'origine, déplacé d'un
      *  cran. Le store tranche la liste ici. */
     sequentialHitsBefore: number;
+    /** Nombre de sorts RELANCÉS (recastEvents) déjà annoncés à cet instant.
+     *
+     *  Même besoin que le rang séquentiel : Relancer X et Déchainement X/Y
+     *  annoncent chaque sort AVANT de le résoudre, et chaque sort imbriqué pose
+     *  sa propre frontière « effet » APRÈS. Le store révèle donc le sort k dans
+     *  l'intervalle que sa résolution a ouvert — « un sort est lancé, il se
+     *  résout, puis le suivant » — au lieu d'enchaîner les sept révélations
+     *  avant de peindre la première salve. */
+    recastsBefore: number;
   }>;
   // Transient : un end_turn est en pause sur des déclencheurs « fin de tour »
   // interactifs (cibles au choix). Tant que c'est vrai et que des

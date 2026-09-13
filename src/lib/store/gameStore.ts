@@ -2137,6 +2137,25 @@ export const useGameStore = create<GameStore>((set, get) => {
       }),
     }));
 
+    // RELANCES PAR INTERVALLE. Chaque sort relancé est annoncé AVANT sa
+    // résolution, et le sort imbriqué pose sa frontière « effet » APRÈS : le
+    // rang `recastsBefore` porté par chaque frontière tranche donc la liste
+    // exactement comme `sequentialHitsBefore` tranche les points séquentiels.
+    // Ce qui précède la première frontière se révèle avant la salve principale
+    // (comme avant) ; le reste se révèle dans SA vague, juste avant ses dégâts
+    // — « un sort est lancé, il se résout, puis le suivant », au lieu de sept
+    // révélations d'affilée suivies de toutes les salves. Un sort relancé qui
+    // n'a rien produit de visible ne pose pas de frontière : sa révélation
+    // rejoint celle du sort suivant.
+    const rangRelances = (f: typeof frontieres[number]): number => f.recastsBefore ?? recastSpells.length;
+    const relancesAvantFrontieres = recastSpells.slice(0, frontieres.length > 0 ? rangRelances(frontieres[0]) : recastSpells.length);
+    /** Sorts relancés dont les effets vivent dans l'intervalle ouvert par `f`. */
+    const relancesDeLIntervalle = (f: typeof frontieres[number]): SpellCastEvent[] => {
+      const i = frontieres.indexOf(f);
+      const fin = frontieres[i + 1] ? rangRelances(frontieres[i + 1]) : recastSpells.length;
+      return recastSpells.slice(rangRelances(f), fin);
+    };
+
     // Effets « à la pioche » : le moteur a noté chaque carte dont le
     // déclencheur a résolu. Elle n'est PAS jouée — elle rejoint la main — donc
     // rien à l'écran n'expliquait ses dégâts ou ses invocations, et l'adversaire
@@ -3370,6 +3389,9 @@ export const useGameStore = create<GameStore>((set, get) => {
        *  le type (les boosts sont bien plus lents que les dégâts) : un
        *  `count × pas` mentirait dès qu'une vague les mélange. */
       seqDuree: number;
+      /** Sorts relancés à révéler AVANT de peindre cet intervalle : ce sont
+       *  leurs effets qu'il contient. */
+      reveals: SpellCastEvent[];
     };
 
     const construireVague = (f: typeof frontieres[number]): Vague => {
@@ -3438,6 +3460,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         hasDeaths,
         seqCount: seq.length,
         seqDuree: dernierIntervalle,
+        reveals: relancesDeLIntervalle(f),
       };
     };
 
@@ -3450,6 +3473,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     const programmerVague = (v: Vague | null, at: number): number => {
       if (!v) return at;
       let c = at;
+      // Les sorts relancés de l'intervalle se révèlent d'abord, un par un : la
+      // salve qui suit est la leur. Même écart que les révélations d'avant la
+      // salve principale, tenu ≥ la lecture pleine de la carte (RECAST_GAP_MS).
+      for (const reveal of v.reveals) {
+        setTimeout(() => set({ spellCastEvent: reveal }), c);
+        c += RECAST_GAP_MS;
+      }
       const aPeindre = v.dmg.length > 0 || v.hasDeaths;
       if (!aPeindre) return c;
       setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
@@ -3681,7 +3711,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Une frontière de pioche déplace ces révélations APRÈS la pioche (voir la
     // fin de la séquence) : les annoncer ici les ferait passer devant des dégâts
     // qui leur sont antérieurs — le défaut signalé en partie.
-    const revelationsAvantImpacts = drawWave ? recastSpells : [...recastSpells, ...drawTriggerSpells];
+    // Seules les relances ANTÉRIEURES à la première frontière passent ici : les
+    // suivantes se révèlent chacune dans sa vague (programmerVague).
+    const revelationsAvantImpacts = drawWave ? relancesAvantFrontieres : [...relancesAvantFrontieres, ...drawTriggerSpells];
     for (const reveal of revelationsAvantImpacts) {
       setTimeout(() => set({ spellCastEvent: reveal }), cursor);
       cursor += RECAST_GAP_MS;

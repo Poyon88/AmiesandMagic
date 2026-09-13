@@ -210,6 +210,7 @@ let animationCheckpointSink: Array<{
   label: import("./types").AnimationCheckpointLabel;
   state: GameState;
   sequentialHitsBefore: number;
+  recastsBefore: number;
   /** Interne au moteur : sert à ne pas poser deux frontières qui n'encadrent
    *  rien. Retiré avant d'attacher la file à l'état. */
   empreinte: string;
@@ -255,6 +256,10 @@ function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLab
     // Rang dans le registre des points séquentiels : ce que ce registre contient
     // déjà appartient à ce qui PRÉCÈDE la frontière.
     sequentialHitsBefore: sequentialHitsSink.length,
+    // Même rang pour les sorts relancés : un sort annoncé avant la frontière a
+    // ses effets DANS l'intervalle qu'elle ferme (castSpellWithRandomTargets
+    // annonce puis résout ; le sort imbriqué pose sa frontière en sortant).
+    recastsBefore: live.recastEvents?.length ?? 0,
   });
   live.factionCardPool = fp; live.allSpellsPool = ap; live.onAttackWave = wave;
 }
@@ -10433,8 +10438,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // store risquait de rejouer une vague périmée.
   if (result !== state) {
     result.animationCheckpoints = animationCheckpointSink.length > 0
-      ? animationCheckpointSink.map(({ label, state, sequentialHitsBefore }) =>
-        ({ label, state, sequentialHitsBefore }))
+      ? animationCheckpointSink.map(({ label, state, sequentialHitsBefore, recastsBefore }) =>
+        ({ label, state, sequentialHitsBefore, recastsBefore }))
       : undefined;
   }
   // Rattache le repli payé pendant l'action (dos de carte qui file vers le deck).

@@ -130,7 +130,7 @@ describe("frontière de pioche — ce que l'instantané contient", () => {
 describe("frontière de pioche — c'est un indice, pas une vérité de jeu", () => {
   it("exclue du hash de synchronisation", () => {
     const s = mkState();
-    const b: GameState = { ...s, animationCheckpoints: [{ label: "pioche", state: s, sequentialHitsBefore: 0 }] };
+    const b: GameState = { ...s, animationCheckpoints: [{ label: "pioche", state: s, sequentialHitsBefore: 0, recastsBefore: 0 }] };
     expect(syncHash(s)).toBe(syncHash(b));
   });
 

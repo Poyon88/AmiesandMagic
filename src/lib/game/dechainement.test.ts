@@ -5,7 +5,7 @@
 // filtre de coût exact, le filtre d'alignement, l'anti-récursion (sorts
 // porteurs de Déchainement/Relancer exclus) et le no-op sans candidat.
 import { describe, expect, it } from "vitest";
-import { playCard } from "./engine";
+import { applyAction, playCard } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Card } from "./types";
 
@@ -276,5 +276,43 @@ describe("Déchainement X/Y — coût au hasard (randomY)", () => {
     const spell = mkDechainementSpell(1, 3);
     s.players[0].hand.push(spell);
     expect(playCard(s, { type: "play_card", cardInstanceId: spell.instanceId }).players[0].hand.length).toBe(3);
+  });
+});
+
+describe("Déchainement — chaque sort lancé ouvre son propre intervalle d'animation", () => {
+  it("annonce X relances et pose une frontière « effet » APRÈS chacune, avec son rang", () => {
+    // Un seul candidat, Inspiration 1 : chaque lancement change la main, donc
+    // l'empreinte visible — chaque sort imbriqué laisse sa frontière.
+    const s = withSpellPool([poolSpell({ name: "Pioche1", mana_cost: 1 })]);
+    fillDeck(s, 5);
+    const spell = mkDechainementSpell(3, 1);
+    s.players[0].hand.push(spell);
+
+    const next = applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    expect(next.recastEvents?.map((r) => r.card.name)).toEqual(["Pioche1", "Pioche1", "Pioche1"]);
+    const effets = (next.animationCheckpoints ?? []).filter((c) => c.label === "effet");
+    // Le sort k est annoncé AVANT sa résolution, sa frontière posée APRÈS : le
+    // rang vaut k. La frontière du mot-clé Déchainement lui-même, posée en
+    // sortant de la boucle, n'encadre rien et n'est pas répétée.
+    expect(effets.map((c) => c.recastsBefore)).toEqual([1, 2, 3]);
+    // L'instantané k contient bien k pioches, pas les suivantes.
+    expect(effets.map((c) => c.state.players[0].hand.length)).toEqual([1, 2, 3]);
+  });
+
+  it("un sort relancé sans effet visible ne pose pas de frontière : sa révélation rejoint la suivante", () => {
+    const s = withSpellPool([poolSpell({ name: "Muet1", mana_cost: 1, spell_keywords: [] })]);
+    fillDeck(s, 5);
+    const spell = mkDechainementSpell(2, 1);
+    s.players[0].hand.push(spell);
+
+    const next = applyAction(s, { type: "play_card", cardInstanceId: spell.instanceId });
+
+    expect(next.recastEvents).toHaveLength(2);
+    // Aucune frontière ne SÉPARE les deux relances : la seule posée (celle du
+    // mot-clé Déchainement, en sortant de sa boucle) les a toutes deux derrière
+    // elle — le store les révèle donc ensemble, avant la salve principale.
+    const effets = (next.animationCheckpoints ?? []).filter((c) => c.label === "effet");
+    expect(effets.every((c) => c.recastsBefore === 2)).toBe(true);
   });
 });
