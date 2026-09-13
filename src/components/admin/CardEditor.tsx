@@ -7,7 +7,7 @@ import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
@@ -1313,10 +1313,14 @@ export default function CardEditor() {
             {/* Alignment */}
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Alignement</div>
+              {/* Mêmes ids que le moteur (ALIGNMENTS) : bon / neutre / maléfique.
+                  « spéciale » est l'alignement de la faction Mercenaires, jamais
+                  celui d'une carte — exclu. Les anciens ids `lumiere` / `tenebres`
+                  ont été migrés en base vers bon / maléfique (2026-09-13). */}
               <select value={(editFields.card_alignment as string) || "neutre"} onChange={e => updateField("card_alignment", e.target.value)} style={S.select}>
-                <option value="neutre">Neutre</option>
-                <option value="lumiere">Lumière</option>
-                <option value="tenebres">Ténèbres</option>
+                {ALIGNMENTS.filter(a => a.id !== "spéciale").map(a => (
+                  <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                ))}
               </select>
             </div>
 
