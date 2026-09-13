@@ -15,7 +15,7 @@ import type { Keyword } from "@/lib/game/types";
 // que le cas où la clé sœur n'a aucune ligne, or les deux existent souvent.
 type IconEntry = { key: string; label: string; symbol: string; kind: "creature" | "spell" | "both" };
 
-const ICON_ENTRIES: IconEntry[] = (() => {
+export const ICON_ENTRIES: IconEntry[] = (() => {
   const creature = (Object.entries(KEYWORD_LABELS) as [Keyword, string][]).map(
     ([kw, label]): IconEntry => ({ key: kw, label, symbol: KEYWORD_SYMBOLS[kw], kind: "creature" }),
   );
