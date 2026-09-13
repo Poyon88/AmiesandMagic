@@ -40,7 +40,7 @@ import { SPELL_KEYWORDS } from "./spell-keywords";
 import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
-import { tuteurCardIds } from "./tuteur";
+import { designatedCardIds, tuteurCardIds } from "./tuteur";
 import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -1477,10 +1477,16 @@ function resolveComposedEffect(
       return;
     }
     case "invocation": {
-      // Carte DÉSIGNÉE : invoquée telle quelle, sans tirage ni filtre.
-      if (composed.cardId != null) {
-        resolveDesignatedSummon(owner, composed.cardId, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
-          source?.card.name ?? opts?.sourceCard?.name ?? "?");
+      // Cartes DÉSIGNÉES : invoquées telles quelles, dans l'ordre, sans tirage
+      // ni filtre — plusieurs et doublons permis (Invocations multiples
+      // désignées) ; on s'arrête au plateau plein.
+      const designees = designatedCardIds(composed);
+      if (designees.length > 0) {
+        for (const id of designees) {
+          if (owner.board.length >= MAX_BOARD_SIZE) break;
+          resolveDesignatedSummon(owner, id, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
+            source?.card.name ?? opts?.sourceCard?.name ?? "?");
+        }
         return;
       }
       // Créature aléatoire de la collection au coût EXACT x, mêmes règles

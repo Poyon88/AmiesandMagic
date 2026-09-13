@@ -190,3 +190,48 @@ describe("Invocation composée — carte DÉSIGNÉE", () => {
     expect(cast(s, designatedSpell(9004)).players[0].board).toHaveLength(8);
   });
 });
+
+// INVOCATIONS MULTIPLES DÉSIGNÉES : `composed.cardIds` (liste ordonnée, doublons
+// permis) invoque chaque carte dans l'ordre, jusqu'au plateau plein.
+describe("Invocation composée — PLUSIEURS cartes désignées", () => {
+  function designatedManySpell(cardIds: number[]): CardInstance {
+    const caps: Capability[] = [{
+      uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+      composed: { content: "invocation", magnitude: { x: 1 }, cardIds },
+    }];
+    return mkInstance(mkCard({ name: "Appel multiple", card_type: "spell", attack: null, health: null, capabilities: caps as never }));
+  }
+
+  it("invoque chaque désignée dans l'ordre, doublons compris, instances distinctes", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", 1, { id: 9501 }), poolCard("Bêta", 7, { id: 9502, rarity: "Rare" })];
+
+    const next = cast(s, designatedManySpell([9502, 9501, 9502]));
+
+    expect(next.players[0].board.map((c) => c.card.name)).toEqual(["Bêta", "Alpha", "Bêta"]);
+    expect(new Set(next.players[0].board.map((c) => c.instanceId)).size).toBe(3);
+  });
+
+  it("`cardIds` prime sur le `cardId` legacy, et un id inconnu est sauté", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", 1, { id: 9501 })];
+    const spell = designatedManySpell([9501, 4242, 9501]);
+    (spell.card.capabilities![0].composed as { cardId?: number }).cardId = 9999;
+
+    const next = cast(s, spell);
+
+    expect(summoned(next)).toEqual(["Alpha", "Alpha"]);
+  });
+
+  it("s'arrête au plateau plein", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", 1, { id: 9501 })];
+    for (let i = 0; i < 6; i++) s.players[0].board.push(mkInstance(mkCard({ name: `Occupant ${i}` })));
+
+    const next = cast(s, designatedManySpell([9501, 9501, 9501, 9501]));
+
+    // 6 occupants + 2 places libres sur MAX_BOARD_SIZE (8) : deux Alphas, pas quatre.
+    expect(next.players[0].board.length).toBe(8);
+    expect(next.players[0].board.filter((c) => c.card.name === "Alpha")).toHaveLength(2);
+  });
+});

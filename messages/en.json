@@ -1926,7 +1926,7 @@
     "content_invocation": "Summon (random creature)",
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "label_designated_card": "DESIGNATED CARD",
-    "designated_card_hint": "Pick a creature to summon it as is. Without one, a random creature of cost X is drawn according to the filters.",
+    "designated_card_hint": "Pick one or more creatures: they are summoned as is, in that order (the same card can be picked several times). Without a pick, a random draw at cost X according to the filters.",
     "tuteur_card_hint": "Pick one or more cards, creatures or spells: they are added to your hand in that order. The same card can be picked several times (that many copies). Without a pick, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
     "content_renfort_royal": "Royal Selection (1 of 3)",

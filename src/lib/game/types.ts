@@ -681,8 +681,10 @@ export interface ComposedEffect {
   cardId?: number | null;
   /** content === "tuteur" : cartes DÉSIGNÉES ajoutées à la main, dans l'ordre,
    *  DOUBLONS PERMIS (désigner deux fois la même carte en donne deux
-   *  exemplaires) — même contrat que `linkedCardIds` des Compagnons. Prime sur
-   *  `cardId` quand renseignée ; lecture unique dans `tuteur.ts`. */
+   *  exemplaires) — même contrat que `linkedCardIds` des Compagnons.
+   *  content === "invocation" : créatures DÉSIGNÉES invoquées dans l'ordre
+   *  (une Invocation multiple désignée), jusqu'au plateau plein.
+   *  Prime sur `cardId` quand renseignée ; lecture unique dans `tuteur.ts`. */
   cardIds?: number[];
   /** content === "selection" / "renfort_royal" : restriction du POOL de cartes
    *  révélées, EN PLUS des règles de base (rareté Commune, coût ≤ X, factions de

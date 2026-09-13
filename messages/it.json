@@ -1926,7 +1926,7 @@
     "content_invocation": "Invocazione (creatura casuale)",
     "pool_hint_invocation": "Filtri cumulativi. Senza di essi, il pool segue l'allineamento della carta; il costo evocato è ESATTAMENTE X.",
     "label_designated_card": "CARTA DESIGNATA",
-    "designated_card_hint": "Scegli una creatura per evocarla così com'è. Senza scelta, viene estratta una creatura casuale di costo X secondo i filtri.",
+    "designated_card_hint": "Designa una o più creature: vengono evocate così come sono, in quest'ordine (la stessa carta può essere designata più volte). Senza designazione, pesca casuale al costo X secondo i filtri.",
     "tuteur_card_hint": "Designa una o più carte, creature o magie: vengono aggiunte alla tua mano in quest'ordine. La stessa carta può essere designata più volte (altrettante copie). Senza designazione, l'effetto non fa nulla.",
     "content_selection": "Selezione (1 su 3)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",

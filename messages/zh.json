@@ -1926,7 +1926,7 @@
     "content_invocation": "召唤（随机生物）",
     "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
     "label_designated_card": "指定卡牌",
-    "designated_card_hint": "指定一张生物牌即可原样召唤。未指定时，将按筛选条件随机召唤一张费用为X的生物。",
+    "designated_card_hint": "指定一个或多个生物：它们按此顺序原样被召唤（同一张牌可指定多次）。未指定时，按筛选条件以费用 X 随机抽取。",
     "tuteur_card_hint": "指定一张或多张牌（生物或法术）：它们按此顺序加入你的手牌。同一张牌可指定多次（获得相应数量的副本）。未指定时，此效果无作用。",
     "content_selection": "选择（三选一）",
     "content_renfort_royal": "皇家甄选（三选一）",

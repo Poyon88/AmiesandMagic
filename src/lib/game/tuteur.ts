@@ -1,9 +1,9 @@
 // Cartes DÉSIGNÉES d'un effet composé — lecture unique, partagée par le moteur,
 // l'affichage, l'éditeur et la page du match.
 //
-// Tuteur accepte PLUSIEURS cartes, doublons compris (`cardIds`, liste ordonnée
-// comme les Compagnons) ; `cardId` reste lu pour les cartes enregistrées avant
-// (une seule désignation). L'Invocation désignée n'en a qu'une (`cardId`).
+// Tuteur ET l'Invocation désignée acceptent PLUSIEURS cartes, doublons compris
+// (`cardIds`, liste ordonnée comme les Compagnons) ; `cardId` reste lu pour les
+// cartes enregistrées avant (une seule désignation).
 import type { ComposedEffect } from "./types";
 
 /** Ids des cartes qu'un Tuteur ajoute à la main, dans l'ordre d'auteur. */
@@ -13,12 +13,11 @@ export function tuteurCardIds(composed: Pick<ComposedEffect, "cardId" | "cardIds
   return composed.cardId != null ? [composed.cardId] : [];
 }
 
-/** Ids désignés par un effet composé, quel que soit son contenu (Tuteur :
- *  toutes ; Invocation désignée : une) — pour nommer les cartes dans les
- *  volets de description et les charger au démarrage du match. */
+/** Ids désignés par un effet composé, quel que soit son contenu (Tuteur et
+ *  Invocation désignée : la liste, ou le `cardId` legacy) — pour résoudre,
+ *  nommer les cartes dans les volets et les charger au démarrage du match. */
 export function designatedCardIds(composed: ComposedEffect | null | undefined): number[] {
   if (!composed) return [];
-  if (composed.content === "tuteur") return tuteurCardIds(composed);
-  if (composed.content === "invocation" && composed.cardId != null) return [composed.cardId];
+  if (composed.content === "tuteur" || composed.content === "invocation") return tuteurCardIds(composed);
   return [];
 }

@@ -7,7 +7,7 @@
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "./abilities";
-import { tuteurCardIds } from "./tuteur";
+import { designatedCardIds, tuteurCardIds } from "./tuteur";
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
@@ -116,6 +116,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // Invocation DÉSIGNÉE : le nom de la carte est peint à part (pastille
   // CompagnonsNames), la phrase reste générique.
   "content.invocation_card": "invoque la carte désignée",
+  "content.invocation_cards": "invoque les {n} cartes désignées",
   "content.tuteur": "ajoutez la carte désignée à votre main",
   "content.tuteur_many": "ajoutez les {n} cartes désignées à votre main",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
@@ -220,7 +221,7 @@ export function composedValueText(cap: Capability): string | null {
   const m = cap.composed?.magnitude;
   if (!m) return null;
   // Invocation désignée : X ne compte plus, rien à peindre.
-  if (cap.composed!.content === "invocation" && cap.composed!.cardId != null) return null;
+  if (cap.composed!.content === "invocation" && designatedCardIds(cap.composed).length > 0) return null;
   if (cap.composed!.content === "tuteur") return null;
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
   const grantedXY = cap.composed!.content === "grant_keyword"
@@ -512,7 +513,11 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
       return frag(t, "content.rappel", { who, cost });
     }
     case "invocation":
-      if (eff.cardId != null) return frag(t, "content.invocation_card");
+      {
+        const n = designatedCardIds(eff).length;
+        if (n > 1) return frag(t, "content.invocation_cards", { n });
+        if (n === 1) return frag(t, "content.invocation_card");
+      }
       return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
     case "tuteur": {
       const n = tuteurCardIds(eff).length;

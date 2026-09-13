@@ -13,7 +13,7 @@ import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
-import { tuteurCardIds } from "@/lib/game/tuteur";
+import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
@@ -47,7 +47,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "rappel", l: "Rappel (cimetière → main)", target: "unit" },
   // Sélections : pas de cible en jeu (on filtre un pool de cartes hors jeu),
   // d'où target "none" — le bloc « Pool » ci-dessous les paramètre.
-  { v: "invocation", l: "Invocation (créature aléatoire ou désignée)", target: "none" },
+  { v: "invocation", l: "Invocation (aléatoire, ou cartes désignées)", target: "none" },
   // Tuteur : la carte désignée (créature ou sort) rejoint la main. Ni cible,
   // ni amplitude, ni filtre de pool.
   { v: "tuteur", l: "Tuteur (cartes désignées → main)", target: "none" },
@@ -564,7 +564,7 @@ export default function ComposedEffectsEditor({
                   pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
-                  cardIds: v === "tuteur" ? eff.cardIds : undefined,
+                  cardIds: v === "invocation" || v === "tuteur" ? eff.cardIds : undefined,
                 });
               })}
 
@@ -572,10 +572,12 @@ export default function ComposedEffectsEditor({
                 <>
                   <span style={labelStyle}>{tr('label_designated_card')}</span>
                   <div>
+                    {/* Liste ORDONNÉE, doublons permis : plusieurs créatures désignées
+                        = Invocations multiples désignées. Vide ⇒ tirage aléatoire. */}
                     <LinkedCardsPicker
-                      title={`📣 ${tr('label_designated_card')}`} single required={false} creaturesOnly
-                      value={eff.cardId != null ? [eff.cardId] : []}
-                      onChange={(v) => patchEffect(idx, { cardId: v.length ? v[v.length - 1] : undefined })}
+                      title={`📣 ${tr('label_designated_card')}`} required={false} creaturesOnly
+                      value={designatedCardIds(eff)}
+                      onChange={(v) => patchEffect(idx, { cardIds: v, cardId: undefined })}
                     />
                     <div style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic", marginTop: 4 }}>{tr('designated_card_hint')}</div>
                   </div>
@@ -605,7 +607,7 @@ export default function ComposedEffectsEditor({
                     (v) => patchTarget(idx, { cardKind: (v || undefined) as TargetSpec["cardKind"] }))}
                 </>
               )}
-              {!(eff.content === "invocation" && eff.cardId != null) && eff.content !== "rappel" && eff.content !== "tuteur" && (<>
+              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
@@ -656,7 +658,7 @@ export default function ComposedEffectsEditor({
                   <TokenCascadePicker value={eff.tokenId ?? null} onChange={(id) => patchEffect(idx, { tokenId: id })} tokens={tokenTemplates} compact />
                 </>
               )}
-              {POOL_CONTENTS.has(eff.content) && !(eff.content === "invocation" && eff.cardId != null) && (
+              {POOL_CONTENTS.has(eff.content) && !(eff.content === "invocation" && designatedCardIds(eff).length > 0) && (
                 <>
                   <span style={labelStyle}>{tr('label_pool_membership')}</span>
                   <RaceClanPicker

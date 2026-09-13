@@ -1926,7 +1926,7 @@
     "content_invocation": "Invocación (criatura aleatoria)",
     "pool_hint_invocation": "Filtros acumulativos. Sin ellos, el conjunto sigue la alineación de la carta; el coste invocado es EXACTAMENTE X.",
     "label_designated_card": "CARTA DESIGNADA",
-    "designated_card_hint": "Elige una criatura para invocarla tal cual. Sin elección, se sortea una criatura de coste X según los filtros.",
+    "designated_card_hint": "Designa una o varias criaturas: se invocan tal cual, en ese orden (la misma carta puede designarse varias veces). Sin designación, tirada aleatoria al coste X según los filtros.",
     "tuteur_card_hint": "Designa una o varias cartas, criaturas o hechizos: se añaden a tu mano en ese orden. La misma carta puede designarse varias veces (tantas copias). Sin designación, el efecto no hace nada.",
     "content_selection": "Selección (1 de 3)",
     "content_renfort_royal": "Selección Real (1 de 3)",
