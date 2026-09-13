@@ -65,6 +65,7 @@ import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import CompagnonsNames from "./CompagnonsNames";
+import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 
@@ -626,7 +627,7 @@ export default function GameCard({
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, effectiveTokens)} scale={s} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {(cap.composed?.content === "invocation" || cap.composed?.content === "tuteur") && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon={cap.composed.content === "tuteur" ? "🎓" : "📣"} scale={s} />}
+                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : "📣"} scale={s} />}
                   </div>
                 </div>
               );

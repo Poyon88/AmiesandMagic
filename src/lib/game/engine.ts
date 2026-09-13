@@ -40,6 +40,7 @@ import { SPELL_KEYWORDS } from "./spell-keywords";
 import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
+import { tuteurCardIds } from "./tuteur";
 import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
 import {
   HERO_MAX_HP,
@@ -1324,7 +1325,7 @@ function resolveComposedEffect(
     case "conquete": addConquete(owner, x); return;
     // TUTEUR : la carte désignée rejoint la main du contrôleur.
     case "tuteur":
-      resolveTuteur(owner, composed.cardId ?? null, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
+      resolveTuteur(owner, tuteurCardIds(composed), currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
         source?.card.name ?? opts?.sourceCard?.name ?? "?");
       return;
     // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
@@ -11471,22 +11472,29 @@ function resolveDesignatedSummon(
  *  rien, comme une pioche sur main pleine. */
 function resolveTuteur(
   owner: PlayerState,
-  cardId: number | null,
+  cardIds: number[],
   factionPool: Card[] | undefined,
   spellsPool: Card[] | undefined,
   sourceName: string,
 ): void {
-  if (cardId == null) {
+  if (cardIds.length === 0) {
     console.warn(`[engine] Tuteur : aucune carte désignée sur « ${sourceName} » — no-op.`);
     return;
   }
-  const def = [...(factionPool ?? []), ...(spellsPool ?? [])].find((c) => c.id === cardId);
-  if (!def) {
-    console.warn(`[engine] Tuteur : carte id=${cardId} introuvable dans les pools du match pour « ${sourceName} » — no-op.`);
-    return;
+  const byId = new Map<number, Card>();
+  for (const c of [...(factionPool ?? []), ...(spellsPool ?? [])]) if (!byId.has(c.id)) byId.set(c.id, c);
+  // Dans l'ORDRE d'auteur, une instance NEUVE par entrée (deux fois le même id
+  // = deux exemplaires) ; on s'arrête à la main pleine, les suivantes sont
+  // perdues comme une pioche sur main pleine.
+  for (const id of cardIds) {
+    const def = byId.get(id);
+    if (!def) {
+      console.warn(`[engine] Tuteur : carte id=${id} introuvable dans les pools du match pour « ${sourceName} » — entrée sautée.`);
+      continue;
+    }
+    if (owner.hand.length >= MAX_HAND_SIZE) return;
+    owner.hand.push(createCardInstance(def));
   }
-  if (owner.hand.length >= MAX_HAND_SIZE) return;
-  owner.hand.push(createCardInstance(def));
 }
 
 /** Déchainement X/Y : lance X sorts aléatoires de coût EXACTEMENT Y issus de

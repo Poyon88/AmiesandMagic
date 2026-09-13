@@ -7,6 +7,7 @@
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "./abilities";
+import { tuteurCardIds } from "./tuteur";
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
@@ -116,6 +117,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // CompagnonsNames), la phrase reste générique.
   "content.invocation_card": "invoque la carte désignée",
   "content.tuteur": "ajoutez la carte désignée à votre main",
+  "content.tuteur_many": "ajoutez les {n} cartes désignées à votre main",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
@@ -512,7 +514,10 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "invocation":
       if (eff.cardId != null) return frag(t, "content.invocation_card");
       return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
-    case "tuteur": return frag(t, "content.tuteur");
+    case "tuteur": {
+      const n = tuteurCardIds(eff).length;
+      return n > 1 ? frag(t, "content.tuteur_many", { n }) : frag(t, "content.tuteur");
+    }
     case "selection":
     case "selection_magique":
     case "renfort_royal":

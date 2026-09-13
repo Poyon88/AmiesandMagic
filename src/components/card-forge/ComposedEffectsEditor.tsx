@@ -13,6 +13,7 @@ import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
+import { tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
@@ -49,7 +50,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "invocation", l: "Invocation (créature aléatoire ou désignée)", target: "none" },
   // Tuteur : la carte désignée (créature ou sort) rejoint la main. Ni cible,
   // ni amplitude, ni filtre de pool.
-  { v: "tuteur", l: "Tuteur (carte désignée → main)", target: "none" },
+  { v: "tuteur", l: "Tuteur (cartes désignées → main)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
@@ -552,6 +553,7 @@ export default function ComposedEffectsEditor({
                   pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
+                  cardIds: v === "tuteur" ? eff.cardIds : undefined,
                 });
               })}
 
@@ -572,10 +574,12 @@ export default function ComposedEffectsEditor({
                 <>
                   <span style={labelStyle}>{tr('label_designated_card')}</span>
                   <div>
+                    {/* Liste ORDONNÉE, doublons permis (comme les Compagnons) :
+                        deux fois la même carte = deux exemplaires en main. */}
                     <LinkedCardsPicker
-                      title={`🎓 ${tr('label_designated_card')}`} single required
-                      value={eff.cardId != null ? [eff.cardId] : []}
-                      onChange={(v) => patchEffect(idx, { cardId: v.length ? v[v.length - 1] : undefined })}
+                      title={`🎓 ${tr('label_designated_card')}`} required
+                      value={tuteurCardIds(eff)}
+                      onChange={(v) => patchEffect(idx, { cardIds: v, cardId: undefined })}
                     />
                     <div style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic", marginTop: 4 }}>{tr('tuteur_card_hint')}</div>
                   </div>

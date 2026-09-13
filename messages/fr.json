@@ -1919,7 +1919,7 @@
     "pool_hint_invocation": "Filtres cumulatifs. Sans eux, le pool suit l'alignement de la carte ; le coût invoqué est EXACTEMENT X.",
     "label_designated_card": "CARTE DÉSIGNÉE",
     "designated_card_hint": "Désignez une créature pour l'invoquer telle quelle. Sans désignation, tirage aléatoire au coût X selon les filtres.",
-    "tuteur_card_hint": "Désignez une créature ou un sort : la carte rejoint votre main telle quelle. Sans désignation, l'effet ne fait rien.",
+    "tuteur_card_hint": "Désignez une ou plusieurs cartes, créatures ou sorts : elles rejoignent votre main dans cet ordre. La même carte peut être désignée plusieurs fois (autant d'exemplaires). Sans désignation, l'effet ne fait rien.",
     "content_selection": "Sélection (1 parmi 3)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
     "label_pool_membership": "POOL — APPARTENANCE",

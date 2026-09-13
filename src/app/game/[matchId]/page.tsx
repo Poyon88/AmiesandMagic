@@ -16,6 +16,7 @@ import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { excludeSpecialSets, excludeNonDiscoverable } from "@/lib/game/deck-rules";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
+import { designatedCardIds } from "@/lib/game/tuteur";
 import { useTranslations } from "next-intl";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
@@ -364,7 +365,7 @@ export default function GamePage() {
             if (cap.abilityId === "compagnons") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
             // Invocation DÉSIGNÉE (effet composé) : même besoin, même passe.
             // Invocation DÉSIGNÉE et TUTEUR (effets composés) : même besoin, même passe.
-            if ((cap.composed?.content === "invocation" || cap.composed?.content === "tuteur") && cap.composed.cardId != null) linkedIds.add(cap.composed.cardId);
+            for (const id of designatedCardIds(cap.composed)) linkedIds.add(id);
           }
         };
         [...p1Cards, ...p2Cards].forEach(({ card }) => collectLinked(card));
@@ -376,7 +377,7 @@ export default function GamePage() {
         // configuré correctement.
         for (const h of [p1Hero, p2Hero]) {
           const c = h?.powerEffect?.mode === "composed" ? h.powerEffect.composed : null;
-          if (c && (c.content === "invocation" || c.content === "tuteur") && c.cardId != null) linkedIds.add(c.cardId);
+          for (const id of designatedCardIds(c)) linkedIds.add(id);
         }
         const loadedCardIds = new Set([...factionCards, ...allSpells].map((c) => c.id));
         const missingLinkedIds = Array.from(linkedIds)

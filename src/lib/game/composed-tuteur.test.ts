@@ -7,10 +7,10 @@ import { applyAction } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, Card, CardInstance, GameState } from "./types";
 
-function tuteurSpell(cardId: number | null): CardInstance {
+function tuteurSpell(cardId: number | null, cardIds?: number[]): CardInstance {
   const caps: Capability[] = [{
     uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
-    composed: { content: "tuteur", cardId },
+    composed: { content: "tuteur", cardId, ...(cardIds ? { cardIds } : {}) },
   }];
   return mkInstance(mkCard({ name: "Leçon", card_type: "spell", attack: null, health: null, capabilities: caps as never }));
 }
@@ -85,5 +85,48 @@ describe("Tuteur (composé)", () => {
 
     expect(apres.players[0].hand.some((c) => c.card.name === "Manuel")).toBe(false);
     expect(apres.players[0].hand.length).toBeLessThanOrEqual(tailleAvant);
+  });
+});
+
+describe("Tuteur — plusieurs cartes, doublons compris", () => {
+  it("ajoute chaque carte désignée, dans l'ordre, une instance NEUVE par entrée", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", { id: 9301 }), poolCard("Bêta", { id: 9302 })];
+
+    const apres = jouer(s, tuteurSpell(null, [9302, 9301, 9302]));
+
+    expect(apres.players[0].hand.map((c) => c.card.name)).toEqual(["Bêta", "Alpha", "Bêta"]);
+    const ids = apres.players[0].hand.map((c) => c.instanceId);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it("`cardIds` prime sur le `cardId` legacy ; un id inconnu au milieu est sauté, pas bloquant", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", { id: 9301 }), poolCard("Bêta", { id: 9302 })];
+
+    const apres = jouer(s, tuteurSpell(9301, [9302, 4242, 9302]));
+
+    expect(main(apres)).toEqual(["Bêta", "Bêta"]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("id=4242 introuvable"));
+  });
+
+  it("s'arrête à la main pleine : les entrées suivantes sont perdues", () => {
+    const s = mkState();
+    s.factionCardPool = [poolCard("Alpha", { id: 9301 })];
+    for (let i = 0; i < 6; i++) s.players[0].hand.push(mkInstance(mkCard({ name: `Bourre ${i}` })));
+
+    const apres = jouer(s, tuteurSpell(null, [9301, 9301, 9301, 9301, 9301]));
+
+    // 6 en main + le sort joué (qui la quitte) → 2 places libres sur 8.
+    expect(apres.players[0].hand.length).toBe(8);
+    expect(apres.players[0].hand.filter((c) => c.card.name === "Alpha")).toHaveLength(2);
+  });
+
+  it("l'affichage compte les cartes désignées", async () => {
+    const { describeComposedCap } = await import("./composed-display");
+    const cap: Capability = { uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: { content: "tuteur", cardIds: [1, 1, 2] } };
+    expect(describeComposedCap(cap)).toContain("3 cartes désignées");
+    expect(describeComposedCap({ ...cap, composed: { content: "tuteur", cardId: 1 } })).toContain("la carte désignée");
   });
 });

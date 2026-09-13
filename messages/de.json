@@ -1919,7 +1919,7 @@
     "pool_hint_invocation": "Kumulative Filter. Ohne sie folgt der Pool der Ausrichtung der Karte; die beschworenen Kosten betragen EXAKT X.",
     "label_designated_card": "BESTIMMTE KARTE",
     "designated_card_hint": "Wähle eine Kreatur, um sie unverändert zu beschwören. Ohne Auswahl wird eine zufällige Kreatur mit Kosten X nach den Filtern gezogen.",
-    "tuteur_card_hint": "Wähle eine Kreatur oder einen Zauber: die Karte kommt unverändert auf deine Hand. Ohne Auswahl bewirkt der Effekt nichts.",
+    "tuteur_card_hint": "Wähle eine oder mehrere Karten, Kreaturen oder Zauber: sie kommen in dieser Reihenfolge auf deine Hand. Dieselbe Karte kann mehrfach gewählt werden (so viele Exemplare). Ohne Auswahl bewirkt der Effekt nichts.",
     "content_selection": "Auswahl (1 von 3)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",

@@ -670,9 +670,13 @@ export interface ComposedEffect {
    *  aléatoire : X, le filtre de pool et l'alignement ne comptent plus. La
    *  carte est résolue par id dans les pools du match, complétés au chargement
    *  comme pour Compagnons (cf. page du match). Une créature seulement.
-   *  content === "tuteur" : carte DÉSIGNÉE ajoutée à la main (créature ou sort),
-   *  même résolution par id. */
+   *  content === "tuteur" : forme LEGACY à une seule carte (cf. `cardIds`). */
   cardId?: number | null;
+  /** content === "tuteur" : cartes DÉSIGNÉES ajoutées à la main, dans l'ordre,
+   *  DOUBLONS PERMIS (désigner deux fois la même carte en donne deux
+   *  exemplaires) — même contrat que `linkedCardIds` des Compagnons. Prime sur
+   *  `cardId` quand renseignée ; lecture unique dans `tuteur.ts`. */
+  cardIds?: number[];
   /** content === "selection" / "renfort_royal" : restriction du POOL de cartes
    *  révélées, EN PLUS des règles de base (rareté Commune, coût ≤ X, factions de
    *  l'alignement de la carte source). Volontairement distinct de `target` : on

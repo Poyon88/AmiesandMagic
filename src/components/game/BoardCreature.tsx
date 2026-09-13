@@ -25,6 +25,7 @@ import { SPRINGS } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
+import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 
@@ -1073,7 +1074,7 @@ function BoardCreature({
                     <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.18} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {(cap.composed?.content === "invocation" || cap.composed?.content === "tuteur") && cap.composed.cardId != null && <CompagnonsNames ids={[cap.composed.cardId]} icon={cap.composed.content === "tuteur" ? "🎓" : "📣"} scale={d * 0.18} />}
+                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : "📣"} scale={d * 0.18} />}
                   </div>
                 </div>
               );

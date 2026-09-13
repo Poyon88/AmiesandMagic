@@ -1919,7 +1919,7 @@
     "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
     "label_designated_card": "指定卡牌",
     "designated_card_hint": "指定一张生物牌即可原样召唤。未指定时，将按筛选条件随机召唤一张费用为X的生物。",
-    "tuteur_card_hint": "指定一张生物或法术：该牌原样加入你的手牌。未指定时，此效果无作用。",
+    "tuteur_card_hint": "指定一张或多张牌（生物或法术）：它们按此顺序加入你的手牌。同一张牌可指定多次（获得相应数量的副本）。未指定时，此效果无作用。",
     "content_selection": "选择（三选一）",
     "content_renfort_royal": "皇家甄选（三选一）",
     "label_pool_membership": "卡池 — 归属",
