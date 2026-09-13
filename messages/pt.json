@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "Habilidade ativável (tap)",
     "trigger_on_attack": "Ao atacar",
     "trigger_on_end_of_turn": "No fim do turno",
+    "trigger_on_end_of_turn_in_hand": "No fim do turno, enquanto estiver na mão",
     "trigger_on_draw": "Quando esta carta é comprada",
     "trigger_on_low_hp": "Abaixo de 15 PV",
     "trigger_spell_resolution": "Ao resolver",

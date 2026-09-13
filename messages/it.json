@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "Potere attivabile (tap)",
     "trigger_on_attack": "All'attacco",
     "trigger_on_end_of_turn": "Alla fine del turno",
+    "trigger_on_end_of_turn_in_hand": "A fine turno, finché è in mano",
     "trigger_on_draw": "Quando questa carta viene pescata",
     "trigger_on_low_hp": "Sotto i 15 PV",
     "trigger_spell_resolution": "Alla risoluzione",

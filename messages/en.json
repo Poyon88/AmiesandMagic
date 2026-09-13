@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "Activated Ability (tap)",
     "trigger_on_attack": "On Attack",
     "trigger_on_end_of_turn": "At End of Turn",
+    "trigger_on_end_of_turn_in_hand": "At end of turn, while in hand",
     "trigger_on_draw": "When this card is drawn",
     "trigger_on_low_hp": "Below 15 HP",
     "trigger_spell_resolution": "On Resolution",

@@ -167,7 +167,7 @@ export default function ComposedEffectsEditor({
   const tr = useTranslations("forge");
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
-  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }];
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui

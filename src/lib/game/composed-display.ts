@@ -25,6 +25,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.on_activation": "À l'activation",
   "trigger.on_attack": "À l'attaque",
   "trigger.on_end_of_turn": "À la fin du tour",
+  "trigger.on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
+  "trigger.in_hand_suffix": "en main",
   "trigger.on_draw": "Quand cette carte est piochée",
   "trigger.on_low_hp": "Sous 15 PV",
 
@@ -336,6 +338,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_end_of_turn_in_hand": return "end_of_turn"; // même couleur, badge suffixé « en main »
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
     case "spell_resolution": return "spell"; // sort (résolution immédiate) → gris
@@ -366,7 +369,13 @@ function composedBadgeBase(cap: Capability, t?: SafeT): TriggerBadge | null {
     // mots-clés (cf. keywordTriggerBadge). Le mot appartient désormais aux seuls
     // EMBLÈMES, où il qualifie une durée de vie réelle.
     if (mode === undefined) return null;
-    return triggerBadge(mode, t);
+    const badge = triggerBadge(mode, t);
+    // « Fin de tour · en main » : même couleur que la fin de tour, mais le joueur
+    // doit savoir que l'effet ne part QUE tant que la carte attend en main.
+    if (badge && cap.trigger === "on_end_of_turn_in_hand") {
+      return { ...badge, label: `${badge.label} · ${frag(t, "trigger.in_hand_suffix")}` };
+    }
+    return badge;
   }
   return {
     label: frag(t, "emblem.badge"),

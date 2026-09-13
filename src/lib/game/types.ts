@@ -425,6 +425,12 @@ export type CapabilityTrigger =
   | "on_activation"
   | "on_attack"
   | "on_end_of_turn"
+  /** À la fin du tour de son contrôleur, TANT QUE LA CARTE EST EN MAIN. La
+   *  source est l'instance en main (comme `on_draw`) : l'usage attendu est un
+   *  buff « self » qui s'accumule tour après tour tant que la carte attend, et
+   *  qu'elle emporte en jeu (les bonus survivent aux zones). Ne part jamais
+   *  depuis le plateau, et jamais sur un jeton (jamais en main). */
+  | "on_end_of_turn_in_hand"
   /** Au moment où la carte est PIOCHÉE — la source est alors en main, pas en
    *  jeu (même zone que `on_return`). Ne concerne que la carte tirée
    *  elle-même : ce n'est pas un réactif « chaque fois que vous piochez ». */
@@ -1964,6 +1970,9 @@ export interface EndOfTurnStep {
   curated?: KeywordInstance;
   /** uid d'une capacité composée on_end_of_turn de la carte source. */
   capUid?: string;
+  /** Pas « en main » (on_end_of_turn_in_hand) : la source se cherche dans la
+   *  MAIN du joueur sortant, pas sur son plateau. */
+  inHand?: true;
   /** EMBLÈME composé : indice dans `PlayerState.emblems` du joueur sortant.
    *  Un pas d'emblème échappe au filtre « source absente ou morte » qui écarte
    *  les pas de créature — sans quoi tout emblème serait silencieusement sauté,

@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "Habilidad activada (tap)",
     "trigger_on_attack": "Al atacar",
     "trigger_on_end_of_turn": "Al final del turno",
+    "trigger_on_end_of_turn_in_hand": "Al final del turno, mientras esté en la mano",
     "trigger_on_draw": "Cuando se roba esta carta",
     "trigger_on_low_hp": "Menos de 15 PV",
     "trigger_spell_resolution": "Al resolver",

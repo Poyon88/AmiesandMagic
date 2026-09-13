@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "激活异能（横置）",
     "trigger_on_attack": "攻击时",
     "trigger_on_end_of_turn": "回合结束时",
+    "trigger_on_end_of_turn_in_hand": "回合结束时，只要仍在手牌中",
     "trigger_on_draw": "当此牌被抽到时",
     "trigger_on_low_hp": "生命值低于15",
     "trigger_spell_resolution": "结算时",

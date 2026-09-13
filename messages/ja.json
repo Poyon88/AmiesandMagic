@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "起動能力（タップ）",
     "trigger_on_attack": "攻撃時",
     "trigger_on_end_of_turn": "ターン終了時",
+    "trigger_on_end_of_turn_in_hand": "ターン終了時、手札にある間",
     "trigger_on_draw": "このカードが引かれたとき",
     "trigger_on_low_hp": "HP15未満",
     "trigger_spell_resolution": "解決時",

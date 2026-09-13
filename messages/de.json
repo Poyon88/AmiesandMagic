@@ -1868,6 +1868,7 @@
     "trigger_on_activation": "Aktivierbarer Effekt (tap)",
     "trigger_on_attack": "Beim Angriff",
     "trigger_on_end_of_turn": "Am Zugende",
+    "trigger_on_end_of_turn_in_hand": "Am Zugende, solange sie auf der Hand ist",
     "trigger_on_draw": "Wenn diese Karte gezogen wird",
     "trigger_on_low_hp": "Unter 15 LP",
     "trigger_spell_resolution": "Bei der Auflösung",

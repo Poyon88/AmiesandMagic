@@ -1692,6 +1692,7 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_activation": return "tap";
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_end_of_turn_in_hand": return "end_of_turn"; // même teinte que la fin de tour
     case "on_low_hp": return "low_hp";
     case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
     case "spell_resolution": return "spell"; // sort → jaune (cohérence flèche/icône)
@@ -3314,6 +3315,17 @@ function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurn
       }
     }
   }
+  // Cartes EN MAIN (créatures) portant un effet « fin de tour, en main » :
+  // après le plateau, avant les emblèmes, dans l'ordre de la main. Source =
+  // l'instance en main ; l'effet s'y résout (buff self accumulé tour après tour).
+  for (const carte of outgoing.hand) {
+    if (carte.card.card_type !== "creature") continue;
+    for (const cap of getCapabilities(carte.card)) {
+      if (composeExecutable(cap) && cap.trigger === "on_end_of_turn_in_hand") {
+        steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inHand: true });
+      }
+    }
+  }
   // EMBLÈMES composés, APRÈS toutes les créatures : le plateau parle d'abord,
   // les effets permanents ensuite. Une pile de N résout l'effet N fois.
   (outgoing.emblems ?? []).forEach((emblem, i) => {
@@ -3400,8 +3412,10 @@ function advanceEndOfTurn(newState: GameState): GameState {
       continue;
     }
 
-    const creature = outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
-    // Source partie du plateau entre pause et reprise → on saute ses effets.
+    const creature = step.inHand
+      ? outgoing.hand.find(c => c.instanceId === step.sourceInstanceId)
+      : outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
+    // Source partie du plateau (ou de la main) entre pause et reprise → on saute ses effets.
     if (!creature) { queue.shift(); continue; }
     // Source ABATTUE par un effet situé à sa GAUCHE : elle ne parle plus. Les
     // morts n'étant balayées qu'à la fin de la séquence (finalizeEndOfTurn),
@@ -3411,7 +3425,7 @@ function advanceEndOfTurn(newState: GameState): GameState {
     // Même doctrine que le ciblage, qui écarte déjà les unités à 0 PV du
     // plateau comme des « cadavres en sursis », et que la résolution des sorts,
     // qui règle ses morts après chaque effet.
-    if (creature.currentHealth <= 0) { queue.shift(); continue; }
+    if (!step.inHand && creature.currentHealth <= 0) { queue.shift(); continue; }
 
     if (step.curated) {
       const inst = step.curated;
@@ -3438,10 +3452,19 @@ function advanceEndOfTurn(newState: GameState): GameState {
       continue;
     }
 
-    // Effet composé on_end_of_turn.
+    // Effet composé on_end_of_turn (ou « en main »).
     const cap = getCapabilities(creature.card).find(c => c.uid === step.capUid && c.composed);
     queue.shift();
     if (!cap || !cap.composed) continue;
+    if (step.inHand) {
+      // Depuis la main : jamais de pause (aucun sélecteur ne peut s'ancrer sur
+      // une source hors plateau) — un « au choix » retombe sur le repli
+      // déterministe de selectComposedTargets.
+      withComposedMode("end_of_turn", () =>
+        resolveComposedEffect(cap.composed!, creature, outgoing, opponent, undefined, false,
+          { trigger: "on_end_of_turn_in_hand", capUid: cap.uid }));
+      continue;
+    }
     // `entity: "self"` vise toujours la source → jamais mis en file de choix
     // (déterministe, cf. régression Ours Maudit). Un « au choix » non-self avec
     // au moins une cible éligible met le tour en pause.
