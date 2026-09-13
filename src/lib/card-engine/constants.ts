@@ -494,7 +494,7 @@ export const FACTIONS: Record<string, {
   "Hommes-Bêtes": {
     displayName: "La Meute",
     color: "#7B5B3A", accent: "#CD853F", emoji: "🐺", bg: "#1a1008", alignment: "neutre",
-    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs", "Hommes-Singes", "Hommes-Poissons", "Hommes-Oiseaux"],
+    races: ["Hommes-Loups", "Hommes-Ours", "Hommes-Félins", "Centaures", "Mimis", "Hommes-Chiens", "Hommes-Renards", "Hommes-Cerfs", "Hommes-Singes", "Hommes-Poissons", "Hommes-Oiseaux", "Insectes"],
     clans: [
       { names: ["Les Seigneurs Fauves"], appliesTo: "Hommes-Félins" },
       { names: ["Les Enfants de la Lune"], appliesTo: "Hommes-Ours" },
@@ -503,12 +503,28 @@ export const FACTIONS: Record<string, {
       { names: ["La Harde Sauvage"], appliesTo: "Centaures" },
       { names: ["La Harde Sauvage"], appliesTo: "Hommes-Cerfs" },
       { names: ["La Forêt Enchantée"], appliesTo: "Mimis" },
+      // Insectes (2026-09-13) : l'essaim de la forêt enchantée, aux côtés des
+      // Mimis. Le clan GARDE ses statWeights (arbitrage des Ghoules : les Mimis
+      // n'ont aucun profil de race, céder les renverrait à l'ombrelle) ; la
+      // race ne porte qu'une table de pouvoirs — cf. raceProfiles.
+      { names: ["La Forêt Enchantée"], appliesTo: "Insectes" },
     ],
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Gloire +X/+Y": 0.55, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération": 0.40, "Bravoure": 0.40, "Combustion": 0.35, "Esquive": 0.35, "Persécution X": 0.30, "Augure": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré", "Canalisation", "Contresort"],
     description: "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage.",
+    // Première (et seule) race de la Meute à porter un profil : la faction et
+    // ses clans suffisaient jusqu'ici aux hommes-bêtes, qui partagent un corps.
+    // L'insecte, lui, ne mord pas comme un loup : il empoisonne, pullule,
+    // vole et se dérobe. AUCUN statWeights (le clan les garde) ; aucun pouvoir
+    // du clan n'est repris (le poids de clan gagne pouvoir par pouvoir, un
+    // doublon serait une ligne morte) ; Vol et Esquive, présents à l'ombrelle
+    // de faction, y sont DÉPASSÉS (0.20 → 0.45, 0.35 → 0.40), sinon la ligne
+    // ne vaudrait rien.
+    raceProfiles: {
+      "Insectes": { likelyKeywords: { "Poison": 0.55, "Convocations multiples": 0.50, "Célérité": 0.45, "Vol": 0.45, "Esquive": 0.40, "Paralysie": 0.35 } },
+    },
     clanProfiles: {
       "Les Seigneurs Fauves": { statWeights: { atk: 1.30, def: 0.85 }, likelyKeywords: { "Persécution X": 0.55, "Célérité": 0.50, "Traque": 0.50, "Bravoure": 0.45, "Première Frappe": 0.45, "Double Attaque": 0.40 } },
       "Les Enfants de la Lune": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Lycanthropie X": 0.55, "Gloire +X/+Y": 0.50, "Fureur": 0.50, "Traque": 0.45, "Régénération": 0.40, "Résistance X": 0.40 } },

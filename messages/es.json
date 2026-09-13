@@ -992,6 +992,7 @@
       "Hommes-Chiens": "Hombres-Perro",
       "Hommes-Renards": "Hombres-Zorro",
       "Hommes-Cerfs": "Hombres-Ciervo",
+      "Insectes": "Insectos",
       "Hommes-Singes": "Hombres-Mono",
       "Hommes-Poissons": "Hombres-Pez",
       "Hommes-Oiseaux": "Hombres-Pájaro",
@@ -1181,6 +1182,11 @@
         "def": "el Hombre-Ciervo",
         "bare": "Hombre-Ciervo",
         "de": "del Hombre-Ciervo"
+      },
+      "Insectes": {
+        "def": "el Insecto",
+        "bare": "Insecto",
+        "de": "del Insecto"
       },
       "Hommes-Singes": {
         "def": "el Hombre-Mono",

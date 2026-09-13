@@ -58,6 +58,7 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Hommes-Chiens": { def: "l'Homme-Chien", bare: "Homme-Chien", de: "de l'Homme-Chien" },
   "Hommes-Renards": { def: "l'Homme-Renard", bare: "Homme-Renard", de: "de l'Homme-Renard" },
   "Hommes-Cerfs": { def: "l'Homme-Cerf", bare: "Homme-Cerf", de: "de l'Homme-Cerf" },
+  "Insectes": { def: "l'Insecte", bare: "Insecte", de: "de l'Insecte" },
   "Hommes-Singes": { def: "l'Homme-Singe", bare: "Homme-Singe", de: "de l'Homme-Singe" },
   "Hommes-Poissons": { def: "l'Homme-Poisson", bare: "Homme-Poisson", de: "de l'Homme-Poisson" },
   "Hommes-Oiseaux": { def: "l'Homme-Oiseau", bare: "Homme-Oiseau", de: "de l'Homme-Oiseau" },

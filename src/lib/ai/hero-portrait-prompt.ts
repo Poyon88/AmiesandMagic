@@ -97,6 +97,8 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid centaur — humanoid torso and head atop equine lower body (only the upper humanoid half framed in this bust portrait), wild mane braided into the hair, weathered features.',
   'Mimis':
     'An adorable little beast-folk — small rounded humanoid silhouette, oversized soft fur, big innocent eyes, tiny twitching nose, stubby paws, an endearingly cute and harmless expression that belies a brave little warrior.',
+  'Insectes':
+    'A humanoid insectoid warrior — bipedal humanoid silhouette, chitinous carapace plates in iridescent dark greens and bronze, faceted compound eyes, twitching antennae, small mandibles, translucent wing-cases folded at the shoulders, poised and predatory.',
   // Élémentaires faction
   'La Colère des Flammes':
     'A humanoid fire elemental warrior — clearly bipedal humanoid silhouette, skin of glowing embers and flowing flame, hair made of living fire, eyes like burning coals.',

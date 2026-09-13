@@ -992,6 +992,7 @@
       "Hommes-Chiens": "Weredogs",
       "Hommes-Renards": "Werefoxes",
       "Hommes-Cerfs": "Weredeer",
+      "Insectes": "Insects",
       "Hommes-Singes": "Ape-Men",
       "Hommes-Poissons": "Fish-Men",
       "Hommes-Oiseaux": "Bird-Men",
@@ -1181,6 +1182,11 @@
         "def": "the Werestag",
         "bare": "Deer-Man",
         "de": "of the Deer-Man"
+      },
+      "Insectes": {
+        "def": "the Insect",
+        "bare": "Insect",
+        "de": "of the Insect"
       },
       "Hommes-Singes": {
         "def": "the Ape-Man",

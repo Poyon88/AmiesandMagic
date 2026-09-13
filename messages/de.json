@@ -992,6 +992,7 @@
       "Hommes-Chiens": "Hundsmenschen",
       "Hommes-Renards": "Fuchsmenschen",
       "Hommes-Cerfs": "Hirschmenschen",
+      "Insectes": "Insekten",
       "Hommes-Singes": "Affenmenschen",
       "Hommes-Poissons": "Fischmenschen",
       "Hommes-Oiseaux": "Vogelmenschen",
@@ -1181,6 +1182,11 @@
         "def": "der Hirschmensch",
         "bare": "Hirschmensch",
         "de": "des Hirschmenschen"
+      },
+      "Insectes": {
+        "def": "das Insekt",
+        "bare": "Insekt",
+        "de": "des Insekts"
       },
       "Hommes-Singes": {
         "def": "der Affenmensch",

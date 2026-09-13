@@ -992,6 +992,7 @@
       "Hommes-Chiens": "犬人間",
       "Hommes-Renards": "狐人間",
       "Hommes-Cerfs": "シカ人",
+      "Insectes": "昆虫",
       "Hommes-Singes": "猿人",
       "Hommes-Poissons": "魚人",
       "Hommes-Oiseaux": "鳥人",
@@ -1181,6 +1182,11 @@
         "def": "鹿男",
         "bare": "鹿人",
         "de": "鹿人"
+      },
+      "Insectes": {
+        "def": "昆虫",
+        "bare": "昆虫",
+        "de": "昆虫の"
       },
       "Hommes-Singes": {
         "def": "猿人",

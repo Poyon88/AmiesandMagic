@@ -992,6 +992,7 @@
       "Hommes-Chiens": "Hommes-Chiens",
       "Hommes-Renards": "Hommes-Renards",
       "Hommes-Cerfs": "Hommes-Cerfs",
+      "Insectes": "Insectes",
       "Hommes-Singes": "Hommes-Singes",
       "Hommes-Poissons": "Hommes-Poissons",
       "Hommes-Oiseaux": "Hommes-Oiseaux",
@@ -1181,6 +1182,11 @@
         "def": "l'Homme-Cerf",
         "bare": "Homme-Cerf",
         "de": "de l'Homme-Cerf"
+      },
+      "Insectes": {
+        "def": "l'Insecte",
+        "bare": "Insecte",
+        "de": "de l'Insecte"
       },
       "Hommes-Singes": {
         "def": "l'Homme-Singe",

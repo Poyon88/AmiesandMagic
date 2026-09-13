@@ -992,6 +992,7 @@
       "Hommes-Chiens": "Uomini-Cane",
       "Hommes-Renards": "Uomini-Volpe",
       "Hommes-Cerfs": "Uomini-Cervo",
+      "Insectes": "Insetti",
       "Hommes-Singes": "Uomini-Scimmia",
       "Hommes-Poissons": "Uomini-Pesce",
       "Hommes-Oiseaux": "Uomini-Uccello",
@@ -1181,6 +1182,11 @@
         "def": "l'Uomo-Cervo",
         "bare": "Uomo-Cervo",
         "de": "dell'Uomo-Cervo"
+      },
+      "Insectes": {
+        "def": "l'Insetto",
+        "bare": "Insetto",
+        "de": "dell'Insetto"
       },
       "Hommes-Singes": {
         "def": "l'Uomo-Scimmia",
