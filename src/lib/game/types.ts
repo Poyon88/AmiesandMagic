@@ -556,6 +556,11 @@ export type ComposedEffectContent =
   // Invoque une créature aléatoire de la collection au coût EXACT X. Comme les
   // Sélections, elle se paramètre par `pool` (race / faction / clan / mot-clé).
   | "invocation"
+  // APPEL SUPRÊME composé : cherche dans le DECK du contrôleur la carte au coût
+  // le plus élevé qui satisfait le filtre de pool (race / faction / clan /
+  // mot-clé porté) et le plafond X (0 = sans plafond), et la met en MAIN (au
+  // hasard si égalité). Le mot-clé curé, lui, prend simplement la plus chère.
+  | "appel_supreme"
   // TUTEUR : ajoute à la MAIN du contrôleur la carte DÉSIGNÉE (`cardId`),
   // créature ou sort. Aucune cible, aucune amplitude : la carte est nommée à
   // la création. Résolue par id dans les pools du match, complétés au

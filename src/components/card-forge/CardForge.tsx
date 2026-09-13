@@ -1809,7 +1809,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
   // keyword_instances[i].race (créature) / spell_keywords[i].race (sort).
-  const [asRace, setAsRace] = useState<string>("");
   const [cardSetId, setCardSetId] = useState<number | null>(null);
   // Carte proposée par les TIRAGES (Sélection, Invocation X, Concentration…) ?
   // Défaut OUI : une carte créée sans y penser reste découvrable. La mettre à NON
@@ -2281,7 +2280,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setAsRace(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2476,7 +2475,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1);
     setKeywordYValues({});
     setCardDiscoverable(true);
-    setRmRace(""); setRmClan(""); setAsRace("");
+    setRmRace(""); setRmClan("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setCompagnonsCardIds([]);
     setTuteurCardIds([]);
@@ -2531,14 +2530,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       }
       if (gameKeywords.includes("entraide") && !entraideRace) {
         setSaveResult({ ok: false, msg: tf('validation_entraide') });
-        setSaving(false);
-        return;
-      }
-      // Appel Suprême (créature) : la race ciblée est obligatoire — sans elle,
-      // le moteur ne récupère rien (no-op silencieux). gameKeywords ne porte
-      // que les mots-clés créature, donc ce guard ne touche pas les sorts.
-      if (gameKeywords.includes("appel_supreme") && !asRace) {
-        setSaveResult({ ok: false, msg: tf('validation_appel_supreme') });
         setSaving(false);
         return;
       }
@@ -2618,7 +2609,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         randomX: keywordRandomX,
         extras: {
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
-          invocCosts, invocRace, invocFaction, asRace,
+          invocCosts, invocRace, invocFaction,
           conferAbilityId, conferX, conferY, declenchementTriggers,
           compagnonsCardIds, tuteurCardIds,
         },
@@ -2735,7 +2726,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -4120,21 +4111,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         </div>
                       </div>
                     )}
-                    {/* Appel Suprême — race ciblée (récupère la créature de cette race au plus haut coût) */}
-                    {manualKeywords.includes("Appel Suprême") && (
-                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${asRace ? "#10b98144" : "#e74c3c"}`, background: "#f0fdf4" }}>
-                        <div style={{ fontSize: 8, color: "#10b981", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>
-                          🎺 {tf('target_race_label')} {!asRace && <span style={{ color: "#e74c3c", marginLeft: 4 }}>· {tf('required_caps_f')}</span>}
-                        </div>
-                        <select value={asRace} onChange={e => setAsRace(e.target.value)}
-                          style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                          <option value="">{tf('choose_race')}</option>
-                          {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
-                            <option key={r} value={r}>{r}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
                     {/* Invocations multiples — un coût par invocation */}
                     {manualKeywords.includes("Invocations multiples") && (
                       <div style={{ marginTop: 6 }}>
@@ -4631,15 +4607,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 <input type="number" min={1} max={10} value={dcY} onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
                                 <label title={tf('random_hint', { max: dcY })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                               </div>
-                            </div>
-                          )}
-                          {label === "Appel Suprême" && (
-                            <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🎺 {tf('target_race_label')} {!asRace && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
-                              <select value={asRace} onChange={e => setAsRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
-                                <option value="">{tf('choose_race')}</option>
-                                {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
-                              </select>
                             </div>
                           )}
                         </div>

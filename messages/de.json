@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Oberster Ruf",
-        "desc": "Fügt {race} mit den höchsten Kosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
+        "desc": "Fügt die teuerste Karte deines Decks deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
         "label": "Sammlung X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Supremer Ruf",
-        "desc": "Fügt {race} mit den höchsten Kosten aus deinem Deck deiner Hand hinzu (bei Gleichstand zufällig)."
+        "desc": "Fügt die teuerste Karte deines Decks deiner Hand hinzu (bei Gleichstand zufällig)."
       },
       "rassemblement": {
         "label": "Sammlung X",

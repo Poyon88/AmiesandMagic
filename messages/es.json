@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Llamada Suprema",
-        "desc": "Añade a la mano {race} con el coste más alto de tu mazo (al azar si hay empate)."
+        "desc": "Añade a tu mano la carta de mayor coste de tu mazo (al azar en caso de empate)."
       },
       "rassemblement": {
         "label": "Reunión X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Llamada Suprema",
-        "desc": "Añade a la mano {race} con el coste más alto de tu mazo (al azar si hay empate)."
+        "desc": "Añade a tu mano la carta de mayor coste de tu mazo (al azar en caso de empate)."
       },
       "rassemblement": {
         "label": "Reunión X",

@@ -120,6 +120,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.invocation_card": "invoque la carte désignée",
   "content.invocation_cards": "invoque les {n} cartes désignées",
   "content.tuteur": "ajoutez la carte désignée à votre main",
+  "content.appel_supreme": "ajoutez à votre main la carte au coût le plus élevé de votre deck{filter}{cost}",
+  "content.appel_supreme_cost": " (coût ≤ {max})",
   "content.tuteur_many": "ajoutez les {n} cartes désignées à votre main",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
@@ -225,6 +227,8 @@ export function composedValueText(cap: Capability): string | null {
   // Invocation désignée : X ne compte plus, rien à peindre.
   if (cap.composed!.content === "invocation" && designatedCardIds(cap.composed).length > 0) return null;
   if (cap.composed!.content === "tuteur") return null;
+  // Appel Suprême composé : X est un PLAFOND optionnel — 0 = sans, rien à peindre.
+  if (cap.composed!.content === "appel_supreme" && !(m.x && m.x > 0)) return null;
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
   const grantedXY = cap.composed!.content === "grant_keyword"
     && XY_ABILITY_IDS.has(grantedEngineId(cap.composed!) ?? "");
@@ -286,6 +290,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "rappel": return { symbol: KEYWORD_SYMBOLS.rappel, keyword: "rappel" };
     // Mêmes symboles que les mots-clés curés homonymes (source unique).
     case "invocation": return { symbol: KEYWORD_SYMBOLS.invocation, keyword: "invocation" };
+    case "appel_supreme": return { symbol: KEYWORD_SYMBOLS.appel_supreme, keyword: "appel_supreme" };
     // Tuteur : icône propre (clé « tuteur » pour une icône importable dans l'admin).
     case "tuteur": return { symbol: "🎓", keyword: "tuteur" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
@@ -484,6 +489,11 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
     case "appel": return frag(t, "content.appel", { x: xAff }) + describePoolFilter(eff, t);
+    case "appel_supreme":
+      return frag(t, "content.appel_supreme", {
+        filter: describePoolFilter(eff, t),
+        cost: x > 0 ? frag(t, "content.appel_supreme_cost", { max: xAff }) : "",
+      });
     case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
     case "summon_token": {

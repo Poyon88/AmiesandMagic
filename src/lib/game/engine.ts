@@ -1323,6 +1323,12 @@ function resolveComposedEffect(
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
+    // APPEL SUPRÊME composé : la carte la plus chère du deck qui satisfait le
+    // filtre de pool et le plafond X (0 = sans plafond) rejoint la main.
+    case "appel_supreme":
+      appelSupreme(owner, owner.deck.filter(c =>
+        matchesPoolFilter(c.card, composed.pool) && (x <= 0 || c.card.mana_cost <= x)));
+      return;
     // TUTEUR : la carte désignée rejoint la main du contrôleur.
     case "tuteur":
       resolveTuteur(owner, tuteurCardIds(composed), currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
@@ -4656,10 +4662,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Appel Suprême: récupère en main la créature de la race fixée au coût en
     // mana le plus élevé restante dans le deck (au hasard si égalité). La race
     // est portée par la capacité (keyword_instances[i].race).
-    if (hasKwOnPlay(cardInstance, "appel_supreme")) {
-      const race = getCapabilities(cardInstance.card).find(c => c.abilityId === "appel_supreme")?.race;
-      if (race) appelSupreme(player, race);
-    }
+    // Appel Suprême : la carte la plus chère du deck rejoint la main (plus de
+    // race depuis le 2026-09-13 — une éventuelle race héritée est ignorée).
+    if (hasKwOnPlay(cardInstance, "appel_supreme")) appelSupreme(player);
 
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
     if (hasKwOnPlay(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
@@ -5364,10 +5369,13 @@ function resolveSpellCard(
 // tirage via la RNG seedée (déterministe sur les deux clients). No-op si aucune
 // créature de cette race, main pleine, deck vide ou race absente. Les sorts de
 // la race sont ignorés (créatures uniquement).
-function appelSupreme(player: PlayerState, race: string): void {
-  if (!race || player.hand.length >= MAX_HAND_SIZE) return;
-  const cands = player.deck.filter(c => c.card.card_type === "creature" && c.card.race === race);
-  if (cands.length === 0) return;
+/** Appel Suprême : met en main la carte (créature OU sort) au coût le plus
+ *  élevé parmi `cands` — au hasard si égalité (RNG semée, donc identique sur
+ *  les deux clients). `cands` est un sous-ensemble du deck : le mot-clé curé
+ *  passe tout le deck (plus de race depuis le 2026-09-13), la forme composée un
+ *  deck filtré (pool + plafond). Rien si la main est pleine. */
+function appelSupreme(player: PlayerState, cands: CardInstance[] = player.deck): void {
+  if (player.hand.length >= MAX_HAND_SIZE || cands.length === 0) return;
   const maxCost = Math.max(...cands.map(c => c.card.mana_cost));
   const tied = cands.filter(c => c.card.mana_cost === maxCost);
   const chosen = tied[Math.floor(rng() * tied.length)];
@@ -5954,9 +5962,9 @@ function resolveSpellKeywords(
         break;
       }
       case "appel_supreme": {
-        // Récupère en main la créature de la race choisie (kw.race) au coût en
-        // mana le plus élevé restante dans le deck (au hasard si égalité).
-        if (kw.race) appelSupreme(ctx.caster, kw.race);
+        // La carte au coût le plus élevé du deck du lanceur rejoint sa main
+        // (au hasard si égalité) — la race éventuelle de l'instance est ignorée.
+        appelSupreme(ctx.caster);
         break;
       }
       case "rassemblement": {
@@ -8876,8 +8884,7 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "appel_supreme": {
-      const race = inst?.race ?? getCapabilities(source.card).find(c => c.abilityId === "appel_supreme")?.race;
-      if (race) appelSupreme(owner, race);
+      appelSupreme(owner);
       return;
     }
     case "rassemblement": {

@@ -38,7 +38,7 @@ describe("Chantier multi-déclencheurs — effets sans ciblage", () => {
     expect(next.players[1].hand).toHaveLength(2); // x = 2
   });
 
-  it("Appel Suprême à l'ATTAQUE : récupère en main la créature de la race au plus haut coût", () => {
+  it("Appel Suprême à l'ATTAQUE : récupère en main la carte au plus haut coût du deck (race ignorée)", () => {
     const s = mkState();
     s.rngState = 7;
     const src = mkInstance(creature("Héraut", 2, 4, {
@@ -53,8 +53,9 @@ describe("Chantier multi-déclencheurs — effets sans ciblage", () => {
     );
 
     const next = applyAction(s, atk(src.instanceId, "enemy_hero"));
-    expect(next.players[0].hand.some(c => c.card.name === "Orc-5")).toBe(true);
-    expect(next.players[0].hand.some(c => c.card.name === "Humain-9")).toBe(false);
+    // Plus de race depuis le 2026-09-13 : la plus chère du deck, point.
+    expect(next.players[0].hand.some(c => c.card.name === "Humain-9")).toBe(true);
+    expect(next.players[0].hand.some(c => c.card.name === "Orc-5")).toBe(false);
   });
 
   it("Rassemblement en FIN DE TOUR : garde les créatures de même race, défausse le reste", () => {

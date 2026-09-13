@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Appel Suprême",
-        "desc": "Ajoute en main {race} au coût le plus élevé de votre deck (au hasard si égalité)."
+        "desc": "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité)."
       },
       "rassemblement": {
         "label": "Rassemblement X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Appel Suprême",
-        "desc": "Ajoute en main {race} au coût le plus élevé de votre deck (au hasard si égalité)."
+        "desc": "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité)."
       },
       "rassemblement": {
         "label": "Rassemblement X",

@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Richiamo Supremo",
-        "desc": "Aggiunge in mano {race} dal costo più alto del tuo mazzo (a caso in caso di parità)."
+        "desc": "Aggiunge alla tua mano la carta dal costo più alto del tuo mazzo (a caso in caso di parità)."
       },
       "rassemblement": {
         "label": "Raduno X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Richiamo Supremo",
-        "desc": "Aggiunge in mano {race} dal costo più alto del tuo mazzo (a caso in caso di parità)."
+        "desc": "Aggiunge alla tua mano la carta dal costo più alto del tuo mazzo (a caso in caso di parità)."
       },
       "rassemblement": {
         "label": "Raduno X",

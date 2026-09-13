@@ -9,30 +9,8 @@ import type { Card, TokenTemplate } from "./types";
 const card = (over: Partial<Card> = {}) => over as Card;
 
 describe("describeKeyword — valeurs concrètes", () => {
-  it("nomme la race au singulier avec son article", () => {
-    const d = describeKeyword("appel_supreme", { card: card({ race: "Démons" }) });
-    expect(d).toBe(
-      "Ajoute en main le Démon au coût le plus élevé de votre deck (au hasard si égalité).",
-    );
-  });
 
-  it("élide l'article devant une voyelle", () => {
-    const d = describeKeyword("appel_supreme", { card: card({ race: "Elfes" }) });
-    expect(d).toContain("l'Elfe");
-  });
 
-  // Seule race stockée au singulier : ne doit pas être « dé-pluralisée ».
-  it("gère Élémentaire, déjà singulier en base", () => {
-    const d = describeKeyword("appel_supreme", { card: card({ race: "Élémentaire" }) });
-    expect(d).toContain("l'Élémentaire");
-  });
-
-  // h aspiré : « le Hobbit », pas « l'Hobbit ».
-  it("n'élide pas devant un h aspiré", () => {
-    const d = describeKeyword("appel_supreme", { card: card({ race: "Hobbits" }) });
-    expect(d).toContain("le Hobbit");
-    expect(d).not.toContain("l'Hobbit");
-  });
 
   it("place le qualificatif post-nominal au pluriel des formes nues", () => {
     expect(describeKeyword("loyaute", { card: card({ race: "Démons" }) }))
@@ -52,14 +30,6 @@ describe("describeKeyword — valeurs concrètes", () => {
     expect(d).not.toContain("Démon");
   });
 
-  it("la race de l'instance prime sur celle de la carte", () => {
-    const d = describeKeyword("appel_supreme", {
-      card: card({ race: "Démons" }),
-      instance: { race: "Nains" },
-    });
-    expect(d).toContain("le Nain");
-    expect(d).not.toContain("Démon");
-  });
 
   it("nomme le clan avec son article contracté", () => {
     const d = describeKeyword("appel_du_clan", { card: card({ clan: "L'Empire de Jade" }), x: 3 });
@@ -82,8 +52,10 @@ describe("describeKeyword — valeurs concrètes", () => {
 describe("describeKeyword — replis génériques", () => {
   // Cas nominal de la forge : la carte n'a pas encore de race choisie.
   it("retombe sur l'ancienne formulation générique", () => {
+    // Appel Suprême n'a plus de marqueur de race (2026-09-13) : sa description
+    // est fixe, quelle que soit la carte.
     expect(describeKeyword("appel_supreme", { card: card({}) })).toBe(
-      "Ajoute en main la créature de la race choisie au coût le plus élevé de votre deck (au hasard si égalité).",
+      "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité).",
     );
   });
 

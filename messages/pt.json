@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Chamado Supremo",
-        "desc": "Adiciona à mão {race} de maior custo do seu deck (aleatório em caso de empate)."
+        "desc": "Adiciona à sua mão a carta de maior custo do seu baralho (ao acaso em caso de empate)."
       },
       "rassemblement": {
         "label": "Reunião X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Chamado Supremo",
-        "desc": "Adiciona à mão {race} de maior custo do seu deck (aleatório em caso de empate)."
+        "desc": "Adiciona à sua mão a carta de maior custo do seu baralho (ao acaso em caso de empate)."
       },
       "rassemblement": {
         "label": "Reunião X",

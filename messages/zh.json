@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "至高召唤",
-        "desc": "将你牌库中费用最高的{race}加入手牌（若费用相同则随机选择）。"
+        "desc": "将你牌库中费用最高的牌加入手牌（相同时随机）。"
       },
       "rassemblement": {
         "label": "集结 X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "至高召唤",
-        "desc": "将你牌库中费用最高的{race}加入手牌（若费用相同则随机选择）。"
+        "desc": "将你牌库中费用最高的牌加入手牌（相同时随机）。"
       },
       "rassemblement": {
         "label": "集结 X",

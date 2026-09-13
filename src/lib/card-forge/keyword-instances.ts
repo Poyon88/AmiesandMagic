@@ -96,8 +96,6 @@ export interface ForgeKeywordExtras {
   dcRandomY?: boolean;
   /** Invocations multiples : coûts à invoquer + restriction de pool. */
   invocCosts?: number[]; invocRace?: string; invocFaction?: string;
-  /** Appel Suprême : race ciblée. */
-  asRace?: string;
   /** Conférer : capacité donnée et son amplitude. */
   conferAbilityId?: string; conferX?: number; conferY?: number;
   /** Déclenchement : sous-ensemble figé de déclencheurs rejoués. */
@@ -214,10 +212,6 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
           ...(extras.invocRace ? { race: extras.invocRace } : {}),
           ...(extras.invocFaction ? { faction: extras.invocFaction } : {}),
         };
-      }
-      // Appel Suprême (créature) : porte la race ciblée ; toujours émis.
-      if (id === "appel_supreme" && !isSpellCard) {
-        return { id, ...(mode ? { mode } : {}), ...(extras.asRace ? { race: extras.asRace } : {}) };
       }
       // Conférer (créature) : porte l'ability conférée + la portée ; toujours émis.
       if (id === "conferer" && !isSpellCard) {

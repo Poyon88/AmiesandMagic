@@ -343,7 +343,7 @@
       },
       "appel_supreme": {
         "label": "Supreme Call",
-        "desc": "Adds {race} with the highest cost from your deck to your hand (random if tied)."
+        "desc": "Adds the highest-cost card from your deck to your hand (random if tied)."
       },
       "rassemblement": {
         "label": "Rally X",
@@ -577,7 +577,7 @@
       },
       "appel_supreme": {
         "label": "Supreme Call",
-        "desc": "Adds {race} with the highest cost from your deck to your hand (random if tied)."
+        "desc": "Adds the highest-cost card from your deck to your hand (random if tied)."
       },
       "rassemblement": {
         "label": "Rally X",

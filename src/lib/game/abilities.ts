@@ -790,14 +790,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   appel_supreme: {
     id: "appel_supreme", label: "Appel Suprême", symbol: "🎺",
-    desc: "Ajoute en main {race} au coût le plus élevé de votre deck (au hasard si égalité).",
+    desc: "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 10, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Deck",
-      desc: "Ajoute en main {race} au coût le plus élevé de votre deck (au hasard si égalité).",
+      desc: "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité).",
     },
     spell: {
-      desc: "Ajoute en main {race} au coût le plus élevé de votre deck (au hasard si égalité).",
+      desc: "Ajoute en main la carte au coût le plus élevé de votre deck (au hasard si égalité).",
       params: [], needsTarget: false,
     },
   },
