@@ -5,6 +5,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { applyAction } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
+import { groupDesignatedIds } from "./tuteur";
 import type { Capability, Card, CardInstance, GameState } from "./types";
 
 function tuteurSpell(cardId: number | null, cardIds?: number[]): CardInstance {
@@ -128,5 +129,23 @@ describe("Tuteur — plusieurs cartes, doublons compris", () => {
     const cap: Capability = { uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: { content: "tuteur", cardIds: [1, 1, 2] } };
     expect(describeComposedCap(cap)).toContain("3 cartes désignées");
     expect(describeComposedCap({ ...cap, composed: { content: "tuteur", cardId: 1 } })).toContain("la carte désignée");
+  });
+
+  it("une SEULE carte désignée N fois : « N exemplaires », pas « les N cartes »", async () => {
+    const { describeComposedCap } = await import("./composed-display");
+    const cap: Capability = { uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: { content: "tuteur", cardIds: [7, 7, 7, 7, 7, 7, 7] } };
+    expect(describeComposedCap(cap)).toContain("7 exemplaires de la carte désignée");
+    expect(describeComposedCap(cap)).not.toContain("cartes désignées");
+    // Même règle pour l'Invocation désignée.
+    const inv: Capability = { ...cap, composed: { content: "invocation", cardIds: [7, 7] } };
+    expect(describeComposedCap(inv)).toContain("2 exemplaires de la carte désignée");
+    // Deux cartes distinctes : la formule générique reste.
+    expect(describeComposedCap({ ...cap, composed: { content: "tuteur", cardIds: [7, 8] } })).toContain("2 cartes désignées");
+  });
+
+  it("groupDesignatedIds : une entrée par carte, ordre de première apparition, exemplaires comptés", () => {
+    expect(groupDesignatedIds([7, 7, 7])).toEqual([{ id: 7, count: 3 }]);
+    expect(groupDesignatedIds([2, 1, 2, 3, 1])).toEqual([{ id: 2, count: 2 }, { id: 1, count: 2 }, { id: 3, count: 1 }]);
+    expect(groupDesignatedIds([])).toEqual([]);
   });
 });

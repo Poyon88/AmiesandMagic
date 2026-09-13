@@ -16,6 +16,7 @@ import GameCard from "./GameCard";
 import { useCardText } from "@/components/game/CardTextProvider";
 import { useLinkedCards } from "./useLinkedCards";
 import { overlayRect } from "@/lib/fx/overlayMotion";
+import { groupDesignatedIds } from "@/lib/game/tuteur";
 import type { Card } from "@/lib/game/types";
 
 interface Props {
@@ -54,6 +55,12 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
   // des points de suspension qui clignotent.
   if (cartes.length === 0) return null;
 
+  // Une pastille PAR CARTE, pas par exemplaire : un Tuteur qui désigne sept fois
+  // « Sac de provision » peint « 7 × Sac de provision », et un seul lien vers le
+  // verso. L'ordre reste celui de première apparition.
+  const parCarte = new Map(cartes.map((c) => [c.id, c]));
+  const groupes = groupDesignatedIds(cartes.map((c) => c.id)).map((g) => ({ ...g, carte: parCarte.get(g.id)! }));
+
   const montrer = (c: Card) => {
     const el = refs.current.get(c.id);
     if (!el) return;
@@ -66,7 +73,7 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
 
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 4 * scale, marginTop: 3 * scale }}>
-      {cartes.map((c) => (
+      {groupes.map(({ carte: c, count }) => (
         <span
           key={c.id}
           ref={(el) => { if (el) refs.current.set(c.id, el); }}
@@ -86,6 +93,7 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
           }}
         >
           <span aria-hidden="true">{icon}</span>
+          {count > 1 && <span style={{ fontWeight: 700 }}>{count} ×</span>}
           {nameOf ? nameOf(c) : localizeName(c)}
         </span>
       ))}

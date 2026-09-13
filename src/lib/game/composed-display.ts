@@ -7,7 +7,7 @@
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "./abilities";
-import { designatedCardIds, tuteurCardIds } from "./tuteur";
+import { designatedCardIds, groupDesignatedIds, tuteurCardIds } from "./tuteur";
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
@@ -119,7 +119,12 @@ export const COMPOSED_FR: Record<string, string> = {
   // CompagnonsNames), la phrase reste générique.
   "content.invocation_card": "invoque la carte désignée",
   "content.invocation_cards": "invoque les {n} cartes désignées",
+  // Toutes les désignations visent la MÊME carte : on compte les exemplaires
+  // plutôt que « les 7 cartes désignées » — la pastille, elle, n'est peinte
+  // qu'une fois (CompagnonsNames regroupe).
+  "content.invocation_copies": "invoque {n} exemplaires de la carte désignée",
   "content.tuteur": "ajoutez la carte désignée à votre main",
+  "content.tuteur_copies": "ajoutez {n} exemplaires de la carte désignée à votre main",
   "content.appel_supreme": "ajoutez à votre main la carte au coût le plus élevé de votre deck{filter}{cost}",
   "content.appel_supreme_cost": " (coût ≤ {max})",
   "content.tuteur_many": "ajoutez les {n} cartes désignées à votre main",
@@ -533,14 +538,18 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     }
     case "invocation":
       {
-        const n = designatedCardIds(eff).length;
-        if (n > 1) return frag(t, "content.invocation_cards", { n });
+        const ids = designatedCardIds(eff);
+        const n = ids.length;
+        if (n > 1) return frag(t, groupDesignatedIds(ids).length === 1 ? "content.invocation_copies" : "content.invocation_cards", { n });
         if (n === 1) return frag(t, "content.invocation_card");
       }
       return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
     case "tuteur": {
-      const n = tuteurCardIds(eff).length;
-      return n > 1 ? frag(t, "content.tuteur_many", { n }) : frag(t, "content.tuteur");
+      const ids = tuteurCardIds(eff);
+      const n = ids.length;
+      if (n <= 1) return frag(t, "content.tuteur");
+      // Une seule carte désignée N fois : « N exemplaires », pas « les N cartes ».
+      return frag(t, groupDesignatedIds(ids).length === 1 ? "content.tuteur_copies" : "content.tuteur_many", { n });
     }
     case "selection":
     case "selection_magique":
