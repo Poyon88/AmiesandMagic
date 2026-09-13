@@ -37,9 +37,9 @@ const ICON_ENTRIES: IconEntry[] = (() => {
   // Icônes PROPRES à un contenu composé, sans mot-clé curé homonyme : la clé
   // est celle que composedIcon() renvoie (cf. composed-display.ts). Sans cette
   // liste, Tuteur restait sur son emoji de repli, introuvable dans l'admin.
-  const composedOnly: IconEntry[] = [
+  const composedOnly: IconEntry[] = ([
     { key: "tuteur", label: "Tuteur", symbol: "🎓", kind: "both" },
-  ].filter((e) => !creatureKeys.has(e.key) && !spell.some((sp) => sp.key === e.key));
+  ] satisfies IconEntry[]).filter((e) => !creatureKeys.has(e.key) && !spell.some((sp) => sp.key === e.key));
   return [...creature, ...spell, ...composedOnly];
 })();
 
