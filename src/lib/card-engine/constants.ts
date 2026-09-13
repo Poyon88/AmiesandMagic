@@ -887,7 +887,25 @@ export function getAssignableRaces(factionId: string | null | undefined): string
   if (!factionId || !FACTIONS[factionId]) {
     return [...new Set(Object.values(FACTIONS).flatMap((f) => f.races))];
   }
-  return [...new Set([...(FACTIONS[factionId]?.races ?? []), ...neutral])];
+  return [...new Set([...(FACTIONS[factionId]?.races ?? []), ...neutral, ...RACES_TRANSVERSES])];
+}
+
+/** Races TRANSVERSES : déclarées dans UNE faction d'origine (profil, clans,
+ *  icône), mais assignables à une carte de N'IMPORTE quelle faction depuis
+ *  l'éditeur — comme le pool neutre des Mercenaires, sans en être. Insectes
+ *  (2026-09-13) : un essaim n'a pas de patrie, une faction morte-vivante ou
+ *  chaotique doit pouvoir en aligner. Hors de sa faction d'origine, la race
+ *  n'ouvre que les clans `appliesTo: "all"` de la faction hôte, et son profil
+ *  de pouvoirs est repris via RACE_PROFILES_TRANSVERSES (cf. generator). */
+export const RACES_TRANSVERSES: readonly string[] = ["Insectes"];
+
+/** Profil de pouvoirs d'une race transverse, servi par le générateur quand la
+ *  faction hôte n'en déclare pas pour elle (toutes sauf la faction d'origine).
+ *  Source unique : la table de la faction d'origine. */
+export function getTransverseRaceProfile(race: string | null | undefined): { statWeights?: { atk: number; def: number }; likelyKeywords?: Record<string, number> } | undefined {
+  if (!race || !RACES_TRANSVERSES.includes(race)) return undefined;
+  const home = getFactionForRace(race);
+  return home ? FACTIONS[home]?.raceProfiles?.[race] : undefined;
 }
 
 // Races « principales » d'un clan, pour l'affichage. Les noms de clan étant

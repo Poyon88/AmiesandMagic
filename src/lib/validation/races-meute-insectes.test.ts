@@ -10,9 +10,13 @@
 import { describe, expect, it } from "vitest";
 import {
   FACTIONS,
+  RACES_TRANSVERSES,
+  getAllClanNames,
+  getAssignableRaces,
   getClanNamesForRace,
   getFactionForRace,
   getRacesForClan,
+  getTransverseRaceProfile,
 } from "@/lib/card-engine/constants";
 import { generateCardStats } from "@/lib/card-engine/generator";
 import { RACE_FORMS_FR } from "@/lib/card-engine/race-forms";
@@ -38,9 +42,46 @@ describe("rattachement", () => {
     expect(getRacesForClan("La Forêt Enchantée")).toEqual(["Mimis", "Insectes"]);
   });
 
-  it("passe la validation serveur, et seulement dans sa faction", () => {
+  it("passe la validation serveur dans sa faction", () => {
     expect(validateRace("Insectes", "Hommes-Bêtes")).toEqual({ ok: true, race: "Insectes" });
-    expect(validateRace("Insectes", "Elfes").ok).toBe(false);
+  });
+});
+
+// Race TRANSVERSE (demande de l'auteur du 2026-09-13) : assignable à une carte
+// de n'importe quelle faction depuis l'éditeur, comme le pool neutre des
+// Mercenaires — la Meute reste sa faction d'ORIGINE (profil, clans, icône).
+describe("transversalité", () => {
+  it("est déclarée transverse, et la Meute reste sa faction d'origine", () => {
+    expect(RACES_TRANSVERSES).toContain("Insectes");
+    expect(getFactionForRace("Insectes")).toBe("Hommes-Bêtes");
+  });
+
+  it("est assignable depuis l'éditeur dans TOUTES les factions", () => {
+    for (const f of Object.keys(FACTIONS)) {
+      expect(getAssignableRaces(f), f).toContain("Insectes");
+    }
+  });
+
+  it("passe la validation serveur dans une autre faction — là où une race ordinaire est refusée", () => {
+    expect(validateRace("Insectes", "Elfes")).toEqual({ ok: true, race: "Insectes" });
+    expect(validateRace("Insectes", "Morts-Vivants")).toEqual({ ok: true, race: "Insectes" });
+    expect(validateRace("Ghoules", "Elfes").ok).toBe(false);
+  });
+
+  it("hors de la Meute, n'ouvre que des clans de la faction hôte (ceux qui acceptent toutes les races)", () => {
+    const clans = getClanNamesForRace("Elfes", "Insectes");
+    const tous = new Set(getAllClanNames("Elfes"));
+    for (const c of clans) expect(tous.has(c), c).toBe(true);
+    expect(clans).not.toContain("La Forêt Enchantée");
+  });
+
+  it("garde son profil de pouvoirs hors de sa faction d'origine", () => {
+    expect(getTransverseRaceProfile("Insectes")).toBe(FACTIONS["Hommes-Bêtes"].raceProfiles?.["Insectes"]);
+    expect(getTransverseRaceProfile("Ghoules")).toBeUndefined();
+    // Génération dans une faction hôte : la race est conservée et la carte sort.
+    const c = generateCardStats("Elfes", "Unité", "Rare", 4, "Insectes");
+    expect(c.race).toBe("Insectes");
+    expect((c.attack ?? 0) + (c.defense ?? 0)).toBeGreaterThan(0);
   });
 });
 

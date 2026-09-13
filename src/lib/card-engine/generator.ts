@@ -1,4 +1,4 @@
-import {
+import { getTransverseRaceProfile,
   RARITIES, RARITY_MAP, KEYWORDS, FACTIONS, deriveRaceForClan,
   STAT_COST, BUDGET,
   MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_WEIGHTS_BY_MANA,
@@ -68,7 +68,9 @@ function getAvailableKeywords(factionId: string, rarityId: string, raceId?: stri
   // profil de race (ex. l'Aigle Géant garde son poids de Vol dans un clan elfe),
   // puis sur l'ombrelle de faction, puis sur le défaut 0.12.
   const clanKws = clanId ? faction.clanProfiles?.[clanId]?.likelyKeywords : undefined;
-  const raceKws = raceId ? faction.raceProfiles?.[raceId]?.likelyKeywords : undefined;
+  // Race transverse (Insectes) hors de sa faction d'origine : son profil de
+  // pouvoirs la suit, sinon un insecte elfe ne serait qu'un elfe.
+  const raceKws = raceId ? (faction.raceProfiles?.[raceId] ?? getTransverseRaceProfile(raceId))?.likelyKeywords : undefined;
   return Object.entries(KEYWORDS)
     .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
     .map(([id, kw]) => ({ id, ...kw, weight: clanKws?.[id] ?? raceKws?.[id] ?? faction.likelyKeywords[id] ?? 0.12 }));

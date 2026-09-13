@@ -1,4 +1,4 @@
-import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
+import { getAssignableRaces, FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 export type FactionClanResult =
   | { ok: true; faction: string | null; clan: string | null }
@@ -44,7 +44,10 @@ export function validateRace(race: unknown, faction: string | null): RaceResult 
   }
   if (faction) {
     const def = FACTIONS[faction];
-    if (!def?.races.includes(race)) {
+    // Même liste que l'éditeur (getAssignableRaces) : races de la faction, pool
+    // neutre des Mercenaires et races TRANSVERSES (Insectes). Sans cet accord,
+    // l'éditeur proposait une race que le serveur refusait.
+    if (!def || !getAssignableRaces(faction).includes(race)) {
       return { ok: false, error: 'Race invalide pour cette faction' };
     }
     return { ok: true, race };
