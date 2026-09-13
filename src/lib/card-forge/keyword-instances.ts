@@ -104,6 +104,8 @@ export interface ForgeKeywordExtras {
   declenchementTriggers?: CapabilityTrigger[];
   /** Compagnons : ids des cartes liées mélangées dans le deck (doublons permis). */
   compagnonsCardIds?: number[];
+  /** Tuteur : ids des cartes liées ajoutées à la main (doublons permis). */
+  tuteurCardIds?: number[];
 }
 
 /** Couples X/Y traités par une branche DÉDIÉE ci-dessous (leur second membre
@@ -234,6 +236,10 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // vit dans spell_keywords[i].linkedCardIds, pas ici.
       if (id === "compagnons" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.compagnonsCardIds?.length ? { linkedCardIds: extras.compagnonsCardIds } : {}) };
+      }
+      // Tuteur (créature) : même annexe que Compagnons, même logement.
+      if (id === "tuteur" && !isSpellCard) {
+        return { id, ...(mode ? { mode } : {}), ...(extras.tuteurCardIds?.length ? { linkedCardIds: extras.tuteurCardIds } : {}) };
       }
       // Sélection au hasard : le drapeau seul suffit à créer l'instance (le X
       // est toujours là pour une capacité scalable, mais on ne s'y fie pas).

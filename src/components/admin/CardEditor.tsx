@@ -227,6 +227,8 @@ export default function CardEditor() {
   const [invocFaction, setInvocFaction] = useState<string>("");
   // Compagnons : ids des cartes liées mélangées dans le deck (doublons permis).
   const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
+  // Tuteur : ids des cartes liées ajoutées en main (doublons permis).
+  const [tuteurCardIds, setTuteurCardIds] = useState<number[]>([]);
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -354,6 +356,7 @@ export default function CardEditor() {
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     let compagnonsLoaded: number[] = [];
+    let tuteurLoaded: number[] = [];
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
@@ -378,10 +381,12 @@ export default function CardEditor() {
         invocFactionLoaded = inst.faction ?? "";
       }
       if (inst.id === "compagnons") compagnonsLoaded = inst.linkedCardIds ?? [];
+      if (inst.id === "tuteur") tuteurLoaded = inst.linkedCardIds ?? [];
     }
     setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
+    setTuteurCardIds(tuteurLoaded);
     setKeywordModes(modes);
     setKeywordSingulier(singuliers);
     setKeywordRandomX(aleatoires);
@@ -540,6 +545,19 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      if (activeKeywords.includes("tuteur") && editFields.card_type === "creature" && tuteurCardIds.length === 0) {
+        setSaveResult({ ok: false, msg: "Tuteur : choisissez au moins une carte à ajouter en main avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
+      if (
+        spellKws.some((k) => k.id === "tuteur") &&
+        !spellKws.find((k) => k.id === "tuteur")?.linkedCardIds?.length
+      ) {
+        setSaveResult({ ok: false, msg: "Tuteur (sort) : choisissez au moins une carte à ajouter en main avant de sauvegarder." });
+        setSaving(false);
+        return;
+      }
       if (
         spellKws.some((k) => k.id === "compagnons") &&
         !spellKws.find((k) => k.id === "compagnons")?.linkedCardIds?.length
@@ -610,6 +628,12 @@ export default function CardEditor() {
             return {
               id: id as Keyword, ...(mode ? { mode } : {}),
               ...(compagnonsCardIds.length ? { linkedCardIds: compagnonsCardIds } : {}),
+            };
+          }
+          if (id === "tuteur" && !isSpellCard) {
+            return {
+              id: id as Keyword, ...(mode ? { mode } : {}),
+              ...(tuteurCardIds.length ? { linkedCardIds: tuteurCardIds } : {}),
             };
           }
           // Force des ancêtres +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émis
@@ -731,7 +755,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps]);
+  }, [selectedCard, editFields, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1999,6 +2023,12 @@ export default function CardEditor() {
             {((editFields.keywords as string[]) || []).includes("compagnons") && editFields.card_type === "creature" && (
               <div style={{ marginBottom: 8 }}>
                 <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
+              </div>
+            )}
+            {/* Tuteur (créature) : cartes ajoutées en main. */}
+            {((editFields.keywords as string[]) || []).includes("tuteur") && editFields.card_type === "creature" && (
+              <div style={{ marginBottom: 8 }}>
+                <LinkedCardsPicker title="🎓 Tuteur — cartes ajoutées en main" value={tuteurCardIds} onChange={setTuteurCardIds} accent="#8a6d3b" />
               </div>
             )}
 

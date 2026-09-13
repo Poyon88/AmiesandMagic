@@ -505,6 +505,10 @@
         "label": "Umbral de sacrificio +X/+Y",
         "desc": "Mientras tu mazo tenga 25 cartas o menos, gana +X ATK y +Y PV."
       },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
+      },
       "compagnons": {
         "label": "Compañeros",
         "desc": "Mezcla sus compañeros (cartas vinculadas, elegidas al crearla) en tu mazo, luego vuelve a mezclar el mazo. Una sola vez."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Afluencia X",
         "desc": "Gana X de maná este turno"
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
       },
       "compagnons": {
         "label": "Compañeros",

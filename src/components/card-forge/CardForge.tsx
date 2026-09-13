@@ -1771,6 +1771,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Compagnons : ids des cartes liées mélangées dans le deck au déclenchement
   // (doublons permis). Vit dans keyword_instances — pas de migration.
   const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
+  // Tuteur : ids des cartes liées ajoutées à la MAIN (doublons permis).
+  const [tuteurCardIds, setTuteurCardIds] = useState<number[]>([]);
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
@@ -1875,7 +1877,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       // Compagnons : le « X » du budget est le NOMBRE de cartes liées (la
       // capacité n'a pas de X saisi — coût de base + costPerX par carte au-delà
       // de la première).
-      const x = kw === "Compagnons" ? Math.max(1, compagnonsCardIds.length) : keywordXValues[kw] ?? 1;
+      const x = kw === "Compagnons" ? Math.max(1, compagnonsCardIds.length)
+        : kw === "Tuteur" ? Math.max(1, tuteurCardIds.length)
+        : keywordXValues[kw] ?? 1;
       return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
     }, 0)
   );
@@ -2475,6 +2479,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setRmRace(""); setRmClan(""); setAsRace("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setCompagnonsCardIds([]);
+    setTuteurCardIds([]);
     setConferAbilityId(""); setConferX(1); setConferY(1);
     // Jetons et races ciblées
     setConvocationTokenId(null);
@@ -2544,6 +2549,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         setSaving(false);
         return;
       }
+      if (gameKeywords.includes("tuteur") && tuteurCardIds.length === 0) {
+        setSaveResult({ ok: false, msg: "Tuteur : choisissez au moins une carte à ajouter en main." });
+        setSaving(false);
+        return;
+      }
       // Same guard on the spell side: a sort with `invocation_multiple`
       // (= "Convocations multiples" in the picker) must carry the token
       // list — without it the engine's case fires but spawns nothing.
@@ -2565,6 +2575,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       }
       // Compagnons côté SORT : même guard — la liste vit sur l'instance de
       // spell_keywords, pas dans l'état créature compagnonsCardIds.
+      if (
+        spellKeywords.some((k) => k.id === "tuteur") &&
+        !spellKeywords.find((k) => k.id === "tuteur")?.linkedCardIds?.length
+      ) {
+        setSaveResult({ ok: false, msg: "Tuteur : choisissez au moins une carte à ajouter en main." });
+        setSaving(false);
+        return;
+      }
       if (
         spellKeywords.some((k) => k.id === "compagnons") &&
         !spellKeywords.find((k) => k.id === "compagnons")?.linkedCardIds?.length
@@ -2602,7 +2620,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction, asRace,
           conferAbilityId, conferX, conferY, declenchementTriggers,
-          compagnonsCardIds,
+          compagnonsCardIds, tuteurCardIds,
         },
       });
 
@@ -2717,7 +2735,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, asRace, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3646,6 +3664,17 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                           />
                         </div>
                       )}
+                      {/* Tuteur (sort) : même annexe, les cartes arrivent en main. */}
+                      {spellKeywords.some(k => k.id === "tuteur") && (
+                        <div style={{ marginTop: 6 }}>
+                          <LinkedCardsPicker
+                            title="🎓 Tuteur — cartes ajoutées en main"
+                            value={spellKeywords.find(k => k.id === "tuteur")?.linkedCardIds ?? []}
+                            onChange={(linked) => setSpellKeywords(prev => prev.map(k => k.id === "tuteur" ? { ...k, linkedCardIds: linked } : k))}
+                            accent="#9b59b6"
+                          />
+                        </div>
+                      )}
 
                       {/* Token list for invocation_multiple spell keyword */}
                       {spellKeywords.some(k => k.id === "invocation_multiple") && (
@@ -4120,6 +4149,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     {manualKeywords.includes("Compagnons") && (
                       <div style={{ marginTop: 6 }}>
                         <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
+                      </div>
+                    )}
+                    {/* Tuteur — cartes liées ajoutées en MAIN au déclenchement */}
+                    {manualKeywords.includes("Tuteur") && (
+                      <div style={{ marginTop: 6 }}>
+                        <LinkedCardsPicker title="🎓 Tuteur — cartes ajoutées en main" value={tuteurCardIds} onChange={setTuteurCardIds} accent="#8a6d3b" />
                       </div>
                     )}
                     {/* Conférer — capacité conférée + portée */}

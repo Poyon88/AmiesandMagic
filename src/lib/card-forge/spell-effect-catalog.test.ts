@@ -4,7 +4,7 @@
 // le nom affiché sur la carte reste celui que l'auteur a choisi dans la liste
 // (« Déferlement » doit rester « Déferlement », pas « Infliger des dégâts »).
 import { describe, expect, it } from "vitest";
-import { buildSpellEffectCatalog, GRANT_ENTRY, TUTEUR_ENTRY, instantiatePreset } from "./spell-effect-catalog";
+import { buildSpellEffectCatalog, GRANT_ENTRY, instantiatePreset } from "./spell-effect-catalog";
 import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
 import type { Capability, ComposedEffect } from "@/lib/game/types";
@@ -110,20 +110,9 @@ describe("entrée « Appel depuis le deck »", () => {
 });
 
 describe("entrée Tuteur", () => {
-  it("figure dans la liste unifiée, en composé, sans carte au départ", () => {
-    const tut = catalog.find((e) => e.id === "tuteur");
-    expect(tut).toBe(TUTEUR_ENTRY);
-    expect(tut!.kind).toBe("composed");
-    const eff = instantiatePreset(TUTEUR_ENTRY);
-    expect(eff.content).toBe("tuteur");
-    expect(eff.cardIds).toEqual([]);
-    expect(eff.target).toBeUndefined();
-  });
-
-  it("chaque ligne ajoutée a sa PROPRE liste de cartes", () => {
-    const a = instantiatePreset(TUTEUR_ENTRY);
-    const b = instantiatePreset(TUTEUR_ENTRY);
-    a.cardIds!.push(42);
-    expect(b.cardIds).toEqual([]);
+  it("est la forme CURÉE (mot-clé de sort), une seule fois, sans doublon composé", () => {
+    const tut = catalog.filter((e) => e.id === "tuteur");
+    expect(tut).toHaveLength(1);
+    expect(tut[0].kind).toBe("curated");
   });
 });

@@ -341,7 +341,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                               </div>
                             )}
                             {/* Compagnons : cartes liées nommées, verso au survol. */}
-                            {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={0.95} />}
+                            {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={0.95} icon={kw === "tuteur" ? "🎓" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={0.95} />
                           </div>
@@ -369,7 +369,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                               {desc}
                             </div>
                             {/* Compagnons (sort) : les cartes liées, nommées. */}
-                            {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={0.95} />}
+                            {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={0.95} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={0.95} />
                           </div>
                         </div>

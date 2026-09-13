@@ -505,6 +505,10 @@
         "label": "Soglia sacrificale +X/+Y",
         "desc": "Finché il tuo mazzo contiene 25 carte o meno, guadagna +X ATK e +Y PV."
       },
+      "tuteur": {
+        "label": "Tutore",
+        "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
+      },
       "compagnons": {
         "label": "Compagni",
         "desc": "Mescola i suoi compagni (carte collegate, scelte alla creazione) nel vostro mazzo, poi rimescola il mazzo. Una sola volta."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Afflusso X",
         "desc": "Guadagna X mana questo turno"
+      },
+      "tuteur": {
+        "label": "Tutore",
+        "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
       },
       "compagnons": {
         "label": "Compagni",

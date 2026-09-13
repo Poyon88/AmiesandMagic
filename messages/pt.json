@@ -505,6 +505,10 @@
         "label": "Limiar de sacrifício +X/+Y",
         "desc": "Enquanto o teu baralho tiver 25 cartas ou menos, ganha +X ATK e +Y PV."
       },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
       "compagnons": {
         "label": "Companheiros",
         "desc": "Embaralha seus companheiros (cartas vinculadas, escolhidas na criação) no seu deck, depois embaralhe o deck novamente. Apenas uma vez."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Afluxo X",
         "desc": "Ganhe X de mana neste turno"
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
       },
       "compagnons": {
         "label": "Companheiros",

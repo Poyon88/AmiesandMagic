@@ -505,6 +505,10 @@
         "label": "Opferschwelle +X/+Y",
         "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
       },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
       "compagnons": {
         "label": "Begleiter",
         "desc": "Mischt seine Begleiter (verknüpfte Karten, die bei der Erstellung gewählt wurden) in dein Deck und mischt das Deck danach neu. Nur einmal."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       },
       "compagnons": {
         "label": "Begleiter",

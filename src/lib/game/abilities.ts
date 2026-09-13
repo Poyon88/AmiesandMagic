@@ -1429,6 +1429,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 8, costPerX: 3, se: 2.0, minTier: 2, scalable: false, zone: "Deck" },
     spell: { params: [], needsTarget: false },
   },
+  tuteur: {
+    id: "tuteur", label: "Tuteur", symbol: "🎓",
+    desc: "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois).",
+    applicable_to: ["creature", "spell"],
+    // Même annexe que Compagnons (liste de cartes liées, X = nombre de cartes,
+    // dérivé par la forge) mais la carte arrive EN MAIN au lieu du deck : plus
+    // fort, d'où un coût de base et un costPerX supérieurs. minTier 2 pour la
+    // même raison que Compagnons (annexe non stockable sur un token).
+    creature: { cost: 10, costPerX: 4, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
+    spell: { params: [], needsTarget: false },
+  },
 };
 
 // ─── Derived views ──────────────────────────────────────────────────────────
@@ -1668,7 +1679,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.
-  "fortifier", "preincanter", "compagnons", "presage",
+  "fortifier", "preincanter", "compagnons", "tuteur", "presage",
   // Apprentissage : le sort mémorisé n'est activable que sur le plateau, d'où
   // sa présence AUSSI dans CURATED_ONBOARD_ONLY_IDS juste en dessous.
   "apprentissage",
@@ -1717,9 +1728,9 @@ export const TOKEN_UNSUPPORTED_IDS: ReadonlySet<string> = new Set([
   "lycanthropie", "entraide",
   // 2. annexes d'instance sans champ dans l'éditeur de tokens
   "invocations_multiples", "appel_supreme", "conferer", "declenchement",
-  // Compagnons : les cartes liées (linkedCardIds) n'ont pas de champ dans
-  // l'éditeur de tokens — le mot-clé y serait un no-op silencieux.
-  "compagnons",
+  // Compagnons / Tuteur : les cartes liées (linkedCardIds) n'ont pas de champ
+  // dans l'éditeur de tokens — le mot-clé y serait un no-op silencieux.
+  "compagnons", "tuteur",
 ]);
 
 /** LE point dur des capacités sur un jeton : un token est poussé directement

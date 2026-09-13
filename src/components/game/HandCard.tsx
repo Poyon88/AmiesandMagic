@@ -1038,7 +1038,7 @@ function HandCard({
                     <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                     {desc && <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                     {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                    {kw === "compagnons" && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.16} />}
+                    {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.16} icon={kw === "tuteur" ? "🎓" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.16} />
                   </div>
@@ -1062,7 +1062,7 @@ function HandCard({
                     <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                     {/* Compagnons (sort) : les cartes liées, nommées. */}
-                    {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.16} />}
+                    {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.16} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={d * 0.16} />
                   </div>
                 </div>

@@ -94,19 +94,12 @@ export const APPEL_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "appel", magnitude: { x: 1 } },
 };
 
-/** Entrée « Tuteur » : ajoute à la main les cartes désignées à la création
- *  (créatures ou sorts, doublons permis). Aucun mot-clé de sort ne lui
- *  correspond — sans cette entrée, le contenu n'était atteignable qu'en
- *  ajoutant une autre ligne puis en changeant son contenu, comme l'Appel.
- *  Le preset part SANS carte : le sélecteur de la ligne la marque « requis ». */
-export const TUTEUR_ENTRY: SpellEffectCatalogEntry = {
-  kind: "composed", id: "tuteur", label: "Tuteur (cartes désignées → main)", symbol: "🎓",
-  preset: { content: "tuteur", cardIds: [] },
-};
-
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY];
+  // Tuteur n'a plus d'entrée composée ici : sa forme CURÉE (mot-clé de sort
+  // `tuteur`, cartes liées) arrive par allSpellKeywordIds ; le contenu composé
+  // reste atteignable dans le bloc « Effets composés ».
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

@@ -147,7 +147,12 @@ export type Keyword =
   // Polymorphe — mélange dans le deck du contrôleur les cartes LIÉES (choisies
   // à la création, cf. linkedCardIds), puis remélange tout le deck. Une seule
   // fois par instance (CardInstance.compagnonsFired).
-  | "compagnons";
+  | "compagnons"
+  // TUTEUR (forme curée) : ajoute à la MAIN du contrôleur les cartes liées
+  // choisies à la création (linkedCardIds, doublons = exemplaires). Même
+  // annexe que Compagnons, destination différente ; rejoue à chaque
+  // déclenchement (pas de garde « une seule fois »).
+  | "tuteur";
 
 export type SpellTargetType =
   | "any"
@@ -247,6 +252,8 @@ export type SpellKeywordId =
   | "soleil"
   | "dechainement"
   | "compagnons"
+  // Tuteur côté SORT : cartes liées ajoutées à la main du lanceur.
+  | "tuteur"
   // Seconde vie côté SORT : le sort se relance depuis le cimetière pour X mana,
   // puis perd la capacité. Marqueur inerte à la résolution (aucun `case`).
   | "seconde_vie"
@@ -307,8 +314,8 @@ export interface KeywordInstance {
    *  dont les capacités composées des AUTRES alliés sont rejouées une fois à
    *  l'entrée en jeu du porteur. ⊆ {on_play, on_death, on_end_of_turn, on_return}. */
   replayTriggers?: CapabilityTrigger[];
-  /** Mot-clé "compagnons" : ids des cartes LIÉES (table `cards`) mélangées dans
-   *  le deck du contrôleur au déclenchement. Choisies à la création, doublons
+  /** Mots-clés "compagnons" et "tuteur" : ids des cartes LIÉES (table `cards`)
+   *  — mélangées dans le deck (Compagnons) ou ajoutées à la main (Tuteur). Choisies à la création, doublons
    *  autorisés (ordre sans effet — le deck est remélangé). Stocké dans la
    *  colonne JSONB existante — aucune migration. */
   linkedCardIds?: number[];

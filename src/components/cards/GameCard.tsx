@@ -579,7 +579,7 @@ export default function GameCard({
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                  {kw === "compagnons" && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} />}
+                  {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, effectiveTokens, x)} scale={s} />
                 </div>
@@ -603,7 +603,7 @@ export default function GameCard({
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
-                  {spellKw.id === "compagnons" && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} />}
+                  {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, effectiveTokens)} scale={s} />
                 </div>
               </div>

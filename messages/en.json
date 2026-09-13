@@ -505,6 +505,10 @@
         "label": "Sacrificial Threshold +X/+Y",
         "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
       },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Surge X",
         "desc": "Gain X mana this turn."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       },
       "compagnons": {
         "label": "Companions",

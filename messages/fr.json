@@ -505,6 +505,10 @@
         "label": "Seuil Sacrificiel +X/+Y",
         "desc": "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV."
       },
+      "tuteur": {
+        "label": "Tuteur",
+        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
+      },
       "compagnons": {
         "label": "Compagnons",
         "desc": "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois."
@@ -734,6 +738,10 @@
       "afflux": {
         "label": "Afflux X",
         "desc": "Gagnez X mana ce tour"
+      },
+      "tuteur": {
+        "label": "Tuteur",
+        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
       },
       "compagnons": {
         "label": "Compagnons",

@@ -4234,6 +4234,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveCompagnons(player, cardInstance.card, newState.factionCardPool, newState.allSpellsPool);
     }
 
+    // Tuteur (forme curée) : les cartes liées arrivent en MAIN. Pas de garde
+    // « une seule fois » : à la différence de Compagnons, rejouer l'effet
+    // (retour en main puis nouvelle pose) est un choix d'auteur légitime.
+    if (hasKwOnPlay(cardInstance, "tuteur")) {
+      resolveTuteurLie(player, cardInstance.card, newState.factionCardPool, newState.allSpellsPool);
+    }
+
     // Déchainement X/Y : lance X sorts aléatoires de coût exactement Y issus de
     // la collection du joueur, même alignement que cette carte, cibles au
     // hasard. X/Y lus depuis keyword_instances (patron Affaiblissement).
@@ -5674,6 +5681,12 @@ function resolveSpellKeywords(
         // deck. Les ids vivent sur la capacité (lus via getCapabilities), pas
         // sur l'instance de résolution — comme les coûts d'Invocations multiples.
         resolveCompagnons(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.allSpellsPool);
+        break;
+      }
+      case "tuteur": {
+        // Les cartes liées arrivent dans la main du LANCEUR (même lecture des
+        // ids que Compagnons : sur la capacité, via getCapabilities).
+        resolveTuteurLie(ctx.caster, ctx.card, ctx.state.factionCardPool, ctx.state.allSpellsPool);
         break;
       }
       case "dechainement": {
@@ -8537,6 +8550,12 @@ function resolveCuratedKeywordEffect(
       if (source.compagnonsFired) return;
       source.compagnonsFired = true;
       resolveCompagnons(owner, source.card, currentCardPools.factionCardPool, currentCardPools.allSpellsPool);
+      break;
+    }
+    case "tuteur": {
+      // Mort / attaque / retour / fin de tour / activation / pioche : les cartes
+      // liées arrivent en main. Rejoue à chaque déclenchement (pas de garde).
+      resolveTuteurLie(owner, source.card, currentCardPools.factionCardPool, currentCardPools.allSpellsPool);
       break;
     }
     case "convocations_multiples": {
@@ -11495,6 +11514,20 @@ function resolveTuteur(
     if (owner.hand.length >= MAX_HAND_SIZE) return;
     owner.hand.push(createCardInstance(def));
   }
+}
+
+/** TUTEUR (forme curée, créature ou sort) : lit les cartes liées sur la
+ *  capacité (`linkedCardIds`, même annexe que Compagnons) et les ajoute à la
+ *  main via resolveTuteur — le même résolveur que le contenu composé. */
+function resolveTuteurLie(
+  owner: PlayerState,
+  sourceCard: Card,
+  factionPool: Card[] | undefined,
+  spellsPool: Card[] | undefined,
+): void {
+  const cap = getCapabilities(sourceCard).find((c) => c.abilityId === "tuteur");
+  const ids = (cap?.linkedCardIds ?? []).filter((n) => typeof n === "number" && n > 0);
+  resolveTuteur(owner, ids, factionPool, spellsPool, sourceCard.name);
 }
 
 /** Déchainement X/Y : lance X sorts aléatoires de coût EXACTEMENT Y issus de

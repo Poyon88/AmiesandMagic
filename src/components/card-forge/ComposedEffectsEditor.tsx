@@ -395,6 +395,17 @@ export default function ComposedEffectsEditor({
                   />
                 </>
               )}
+              {/* Tuteur (forme curée, sort) : cartes ajoutées en main, doublons permis. */}
+              {kw.id === "tuteur" && (
+                <>
+                  <span style={labelStyle}>🎓</span>
+                  <LinkedCardsPicker
+                    value={kw.linkedCardIds ?? []}
+                    onChange={(linked) => patchCurated(idx, { linkedCardIds: linked })}
+                    accent="#9b59b6"
+                  />
+                </>
+              )}
               <span style={labelStyle}>{tr('label_targets')}</span>
               <span style={{ fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif" }}>
                 {def.needsTarget ? `${tr('one_target')}${def.targetType ? ` (${def.targetType})` : ""}` : "—"}
