@@ -94,12 +94,24 @@ export const APPEL_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "appel", magnitude: { x: 1 } },
 };
 
+/** Entrée « Tuteur » COMPOSÉE : ajoute à la main les cartes désignées à la
+ *  création (créatures ou sorts, doublons permis). Le preset part SANS carte :
+ *  le sélecteur de la ligne la marque « requis ».
+ *
+ *  Elle coexiste avec la forme CURÉE (mot-clé de sort `tuteur`, cartes liées),
+ *  qui arrive par allSpellKeywordIds sous l'id `tuteur`. Les deux résolvent la
+ *  même mécanique (resolveTuteur) ; la composée se prête aux lignes multiples et
+ *  au réordonnancement, la curée est unique par carte. Le catalogue exige des
+ *  ids distincts (le picker et addFromCatalog retrouvent l'entrée par id), d'où
+ *  `tuteur_compose` — l'id n'est pas persisté, seul le preset l'est. */
+export const TUTEUR_ENTRY: SpellEffectCatalogEntry = {
+  kind: "composed", id: "tuteur_compose", label: "Tuteur (cartes désignées → main)", symbol: "🎓",
+  preset: { content: "tuteur", cardIds: [] },
+};
+
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  // Tuteur n'a plus d'entrée composée ici : sa forme CURÉE (mot-clé de sort
-  // `tuteur`, cartes liées) arrive par allSpellKeywordIds ; le contenu composé
-  // reste atteignable dans le bloc « Effets composés ».
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";
