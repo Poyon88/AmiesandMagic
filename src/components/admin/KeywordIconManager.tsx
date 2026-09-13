@@ -34,7 +34,13 @@ const ICON_ENTRIES: IconEntry[] = (() => {
     }
     spell.push({ key: spellKey, label: SPELL_KEYWORD_LABELS[id], symbol: SPELL_KEYWORD_SYMBOLS[id], kind: "spell" });
   }
-  return [...creature, ...spell];
+  // Icônes PROPRES à un contenu composé, sans mot-clé curé homonyme : la clé
+  // est celle que composedIcon() renvoie (cf. composed-display.ts). Sans cette
+  // liste, Tuteur restait sur son emoji de repli, introuvable dans l'admin.
+  const composedOnly: IconEntry[] = [
+    { key: "tuteur", label: "Tuteur", symbol: "🎓", kind: "both" },
+  ].filter((e) => !creatureKeys.has(e.key) && !spell.some((sp) => sp.key === e.key));
+  return [...creature, ...spell, ...composedOnly];
 })();
 
 // Libellé par clé de stockage, pour les messages (couvre créatures + sorts).
