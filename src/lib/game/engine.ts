@@ -1140,7 +1140,14 @@ function applyComposedToUnit(
       if (y > 0) { u.currentHealth -= y; u.maxHealth = u.maxHealth - y; }
       u.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
       break;
-    case "destroy": u.currentHealth = 0; break;
+    case "destroy":
+      // HORS PLATEAU (deck, main) : mettre les PV à zéro ne retire rien — seul
+      // le balayage du plateau envoie les 0 PV au cimetière, et une carte du
+      // deck y serait restée « morte » sans jamais en sortir (Jugement du
+      // Soleil Éternel : « détruit 3 unités ennemies au hasard dans le deck »).
+      // La carte quitte donc sa zone pour le cimetière de son propriétaire.
+      if (!destroyOutsideBoard(u, owner, opponent)) u.currentHealth = 0;
+      break;
     case "paralyze": u.isParalyzed = true; break;
     // ÉTAT empoisonné (1 PV perdu à chaque fin de tour), pas le mot-clé Poison :
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
@@ -2500,6 +2507,22 @@ function discardFromHand(
   player.graveyard.push(card);
   triggerRichesse(players);
   return card;
+}
+
+/** « Détruire » une carte qui n'est PAS sur le plateau : elle quitte le deck
+ *  ou la main de son propriétaire pour son cimetière. Depuis la main, c'est une
+ *  défausse (Richesse sonne) ; depuis le deck, un simple retrait — rien n'a été
+ *  « défaussé ». Rend false si la carte n'est ni dans un deck ni dans une main
+ *  (elle est sur le plateau, ou déjà au cimetière) : l'appelant garde alors le
+ *  chemin plateau (PV à zéro, balayage). */
+function destroyOutsideBoard(u: CardInstance, a: PlayerState, b: PlayerState): boolean {
+  for (const p of [a, b]) {
+    const iMain = p.hand.indexOf(u);
+    if (iMain !== -1) { discardFromHand(p, iMain, [a, b]); return true; }
+    const iDeck = p.deck.indexOf(u);
+    if (iDeck !== -1) { p.deck.splice(iDeck, 1); p.graveyard.push(u); return true; }
+  }
+  return false;
 }
 
 // ============================================================
