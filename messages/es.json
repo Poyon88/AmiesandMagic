@@ -238,8 +238,8 @@
         "desc": "No recibe daño de combate."
       },
       "regeneration": {
-        "label": "Regeneración",
-        "desc": "Recupera 2 PV al inicio de tu turno."
+        "label": "Regeneración X",
+        "desc": "Recupera X PV al inicio de tu turno."
       },
       "corruption": {
         "label": "Corrupción",
@@ -267,7 +267,7 @@
       },
       "tactique": {
         "label": "Táctica X",
-        "desc": "Otorga X habilidad(es) elegida(s) a una unidad aliada objetivo de forma permanente."
+        "desc": "Otorga permanentemente a una unidad aliada objetivo X de sus habilidades permanentes, elegidas al azar."
       },
       "exhumation": {
         "label": "Exhumación X",
@@ -359,15 +359,15 @@
       },
       "selection": {
         "label": "Selección X",
-        "desc": "Revela 3 comunes {alignment} de coste ≤ X; añade una a la mano."
+        "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano."
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Revela 3 hechizos comunes {alignment} de coste ≤ X; añade uno a la mano."
+        "desc": "Revela 3 hechizos comunes {alignment} de coste X; añade uno a la mano."
       },
       "renfort_royal": {
         "label": "Selección Real X",
-        "desc": "Revela 3 de tus ediciones limitadas de coste ≤ X (se requieren ≥30; si no, 3 comunes {alignment}); conserva una."
+        "desc": "Revela 3 de tus ediciones limitadas de coste X (se requieren ≥30; si no, 3 comunes {alignment}); conserva una."
       },
       "lycanthropie": {
         "label": "Licantropía X",
@@ -801,10 +801,17 @@
         "conquete": "añade {x} a tu contador de Conquista",
         "incineration": "devuelve {x} cartas del cementerio objetivo bajo su mazo",
         "devoration": "devora",
+        "tactique_one": "transmite al azar una de sus habilidades permanentes",
+        "tactique_many": "transmite al azar {x} de sus habilidades permanentes",
         "retour_differe": "coloca bajo el mazo de su propietario",
-        "selection": "revela 3 cartas{filter} (coste ≤ {x}) y se queda una en mano",
-        "selection_magique": "revela 3 hechizos{filter} (coste ≤ {x}) y conserva uno en mano",
-        "renfort_royal": "revela 3 cartas de colección{filter} (coste ≤ {x}) y se queda una en mano"
+        "selection": "revela 3 cartas{filter} (coste {x}) y se queda una en mano",
+        "selection_magique": "revela 3 hechizos{filter} (coste {x}) y conserva uno en mano",
+        "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano",
+        "occurrences": "{n} veces: ",
+        "alternative": "A elegir: ",
+        "silence": "silencia",
+        "dechainement": "lanza {x} hechizos aleatorios de coste {y}",
+        "dechainement_one": "lanza un hechizo aleatorio de coste {y}"
       },
       "pool": {
         "race": " de raza {v}",
@@ -2325,7 +2332,27 @@
     "import_error": "Error de importación",
     "eveil_label": "DESPERTAR",
     "eveil_cost_hint": "DESPERTAR: la carta puede ponerse en despertar EN LUGAR de jugarse. Sale de la mano con este número de puntos; el jugador paga 1 maná por cada uno de sus turnos, y en el último punto entra en juego como si viniera de la mano. Sustituye el coste en maná, no se suma a él. No reducible.",
-    "eveil_cost_title": "Puede ponerse en despertar por {count, plural, one {# punto} other {# puntos}}, pagados a 1 maná por turno — en lugar del coste en maná"
+    "eveil_cost_title": "Puede ponerse en despertar por {count, plural, one {# punto} other {# puntos}}, pagados a 1 maná por turno — en lugar del coste en maná",
+    "label_occurrences": "OCURRENCIAS",
+    "occurrences_hint": "1 = una sola vez. Por encima, el contenido se repite seguido (10 como máximo).",
+    "alternative_toggle": "O",
+    "alternative_toggle_title": "Este efecto pasa a ser una rama de la elección de la carta: el jugador resolverá SOLO UNA de las marcadas.",
+    "alternative_warn_alone": "solo una rama marcada: el efecto se resuelve normalmente",
+    "alternative_warn_triggers": "ramas en disparadores distintos: no se excluyen entre sí",
+    "random_hint_selection": "Cada carta revelada saca SU PROPIO coste, entre 1 y {max}. Sin marcar, las tres cuestan exactamente {max}.",
+    "content_appel": "Llamada desde el mazo",
+    "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",
+    "content_tuteur": "Tutor (cartas designadas → mano)",
+    "content_epargne": "Ahorro (contador)",
+    "content_foi": "Fe (contador)",
+    "content_conquete": "Conquista (contador)",
+    "content_incineration": "Incineración (reciclar un cementerio)",
+    "content_devoration": "Devoración (destruir y absorber)",
+    "content_tactique": "Táctica (comparte sus habilidades permanentes)",
+    "content_retour_differe": "Retorno diferido (bajo el mazo)",
+    "content_silence": "Silencio (despoja al objetivo)",
+    "content_dechainement": "Desencadenamiento X/Y (hechizos aleatorios)",
+    "content_selection_magique": "Selección mágica (1 hechizo de 3)"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
@@ -2381,9 +2408,6 @@
     "cost_hand_order_hint": "Tus clics llenan primero el descarte, luego el repliegue.",
     "topdeck_cost_caption": "{count, plural, one {Repliegue} other {Repliegue ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Sacrificar # criatura} other {Sacrificar # criaturas}}",
-    "tactique_title": "📋 Táctica",
-    "tactique_subtitle": "{count, plural, one {Elige # habilidad para transferir} other {Elige # habilidades para transferir}}",
-    "tactique_confirm": "Confirmar ({selected}/{max})",
     "convocation_title": "📣 Convocación",
     "convocation_subtitle": "Elige la raza del token a invocar",
     "cycle_eternel_caption": "♻ Ciclo Eterno",
@@ -2474,7 +2498,9 @@
     "eveil_suspend": "Poner en despertar ({count, plural, one {# punto} other {# puntos}})",
     "eveil_pay_n": "{count, plural, one {Pagar #} other {Pagar #}}",
     "eveil_max": "máx {count}",
-    "eveil_max_hint": "El último punto es la entrada en juego: se paga aparte, junto con la elección de objetivos."
+    "eveil_max_hint": "El último punto es la entrada en juego: se paga aparte, junto con la elección de objetivos.",
+    "choix_ou_title": "⚖️ A elegir",
+    "choix_ou_subtitle": "Solo uno de estos efectos se resolverá."
   },
   "tutorial": {
     "page_eyebrow": "Aprende el arte del duelo",

@@ -28,9 +28,9 @@ describe("Relancer — un sort relancé résout aussi sa Sélection", () => {
     const s = mkState();
     s.rngState = 7;
     // Pool d'options : commune, faction autorisée par le repli (Mercenaires),
-    // coût ≤ 2 (Sélection 2).
+    // coût EXACTEMENT 2 — c'est l'amplitude de la Sélection du sort rejoué.
     s.factionCardPool = [
-      mkCard({ name: "Recrue", faction: "Mercenaires", rarity: "Commune", mana_cost: 1 }),
+      mkCard({ name: "Recrue", faction: "Mercenaires", rarity: "Commune", mana_cost: 2 }),
     ];
     s.players[0].spellHistory = [{ card: selectionSpellCard(), targetMap: {} }];
 
@@ -44,7 +44,7 @@ describe("Relancer — un sort relancé résout aussi sa Sélection", () => {
   it("ne casse rien quand le pool ne propose aucune option éligible", () => {
     const s = mkState();
     s.rngState = 7;
-    // Coût 5 > Sélection 2 → aucune option : le sort relancé se résout sans
+    // Coût 5 ≠ Sélection 2 → aucune option : le sort relancé se résout sans
     // rien ajouter, et surtout sans lever d'erreur.
     s.factionCardPool = [
       mkCard({ name: "Trop chère", faction: "Mercenaires", rarity: "Commune", mana_cost: 5 }),

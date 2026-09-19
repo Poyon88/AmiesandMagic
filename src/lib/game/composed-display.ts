@@ -132,11 +132,18 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
+  "content.occurrences": "{n} fois : ",
+  "content.alternative": "Au choix : ",
   "content.devoration": "dévore",
+  "content.silence": "réduit au silence",
+  "content.dechainement": "lance {x} sorts aléatoires de coût {y}",
+  "content.dechainement_one": "lance un sort aléatoire de coût {y}",
+  "content.tactique_one": "transmet au hasard une de ses capacités permanentes",
+  "content.tactique_many": "transmet au hasard {x} de ses capacités permanentes",
   "content.retour_differe": "place sous le deck de son propriétaire",
-  "content.selection": "révèle 3 cartes{filter} (coût ≤ {x}) et en garde une en main",
-  "content.selection_magique": "révèle 3 sorts{filter} (coût ≤ {x}) et en garde un en main",
-  "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût ≤ {x}) et en garde une en main",
+  "content.selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
+  "content.selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
+  "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
   "pool.race": " de race {v}",
   "pool.faction": " de la faction {v}",
   "pool.clan": " du clan {v}",
@@ -237,6 +244,12 @@ export function composedValueText(cap: Capability): string | null {
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
   const grantedXY = cap.composed!.content === "grant_keyword"
     && XY_ABILITY_IDS.has(grantedEngineId(cap.composed!) ?? "");
+  // Déchainement : couple NEUTRE « X sorts de coût Y », peint « 2/3 » comme son
+  // homologue curé (cf. NEUTRAL_PAIR_KEYWORDS) — jamais « +2/+3 », qui ferait
+  // croire à un buff.
+  if (cap.composed!.content === "dechainement") {
+    return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
+  }
   if (cap.composed!.content === "buff" || cap.composed!.content === "debuff" || grantedXY) {
     return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
   }
@@ -303,6 +316,11 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
+    // Silence n'existe QUE côté sort : sa clé prend le préfixe `spell_`, comme
+    // Impact ou Déferlement, pour que le nom se résolve dans le bon vocabulaire.
+    case "silence": return { symbol: "🤫", keyword: "spell_silence" };
+    case "dechainement": return { symbol: KEYWORD_SYMBOLS.dechainement, keyword: "dechainement" };
+    case "tactique": return { symbol: KEYWORD_SYMBOLS.tactique, keyword: "tactique" };
     case "retour_differe": return { symbol: KEYWORD_SYMBOLS.retour_differe, keyword: "retour_differe" };
     case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
@@ -477,7 +495,19 @@ function amplitudeAffichee(v: number, aleatoire: boolean | undefined, t?: SafeT)
 }
 
 
+/** Préfixe « 3 fois : » des contenus répétés (cf. ComposedEffect.occurrences).
+ *  En TÊTE de phrase, et non en queue : la répétition porte sur tout ce qui
+ *  suit, filtre de pool et plafond de coût compris. */
+function prefixeOccurrences(eff: ComposedEffect, t?: SafeT): string {
+  const n = eff.occurrences;
+  return typeof n === "number" && n > 1 ? frag(t, "content.occurrences", { n: Math.floor(n) }) : "";
+}
+
 function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
+  return prefixeOccurrences(eff, t) + describeContentBody(eff, tokens, t);
+}
+
+function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
   const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
   const y = eff.magnitude?.y ?? 0;
@@ -519,6 +549,16 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
     case "incineration": return frag(t, "content.incineration", { x: xAff });
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");
+    // Verbe transitif direct lui aussi : « réduit au silence une unité ennemie ».
+    case "silence": return frag(t, "content.silence");
+    // Déchainement : X sorts de coût Y. Le « ? » sur Y en fait un plafond, que
+    // `amplitudeAffichee` rend « 1 à 4 » — le texte ne doit pas promettre un
+    // coût exact quand le moteur tire dans une fourchette.
+    case "dechainement":
+      return frag(t, x > 1 ? "content.dechainement" : "content.dechainement_one", { x: xAff, y: yAff });
+    // « … à une unité alliée » : verbe à complément indirect, donc hors de
+    // DIRECT_OBJECT_CONTENT.
+    case "tactique": return frag(t, x > 1 ? "content.tactique_many" : "content.tactique_one", { x: xAff });
     case "retour_differe": return frag(t, "content.retour_differe");
     case "exhumation": {
       const n = eff.target?.count;
@@ -589,7 +629,7 @@ function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean):
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence"]);
 
 /** Libellé d'une appartenance de cible.
  *
@@ -721,10 +761,21 @@ function describeEmblemLead(cap: Capability, t?: SafeT): string {
  *  (templates) pour nommer/chiffrer les tokens d'un effet summon_token, et `t`
  *  (SafeT) pour la localisation (repli FR sinon). */
 export function describeComposedCap(cap: Capability, tokens?: TokenTemplate[], t?: SafeT): string {
-  const base = describeComposedCapBase(cap, tokens, t);
+  const base = alternativePrefixe(cap, describeComposedCapBase(cap, tokens, t), t);
   if (cap.singulier !== true || !base) return base;
   // SINGULIER : la phrase d'aide suit, avec le moment du déclencheur.
   return `${base} ${singulierHelp(composedTriggerMode(cap), t)}`;
+}
+
+/** « Au choix : » devant une BRANCHE d'un groupe OU.
+ *
+ *  Chaque branche porte le marqueur, et c'est voulu : les descriptions se lisent
+ *  une par une (infobulle d'une pastille, volet de détail), jamais en bloc. Sans
+ *  lui, deux effets qui s'excluent se liraient comme deux effets cumulés — le
+ *  contresens exact que le « / » entre les icônes sert à prévenir. */
+function alternativePrefixe(cap: Capability, phrase: string, t?: SafeT): string {
+  if (cap.alternative !== true || !phrase) return phrase;
+  return frag(t, "content.alternative") + phrase.charAt(0).toLowerCase() + phrase.slice(1);
 }
 
 function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: SafeT): string {
@@ -757,6 +808,24 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
 }
 
 /** Capacités composées portées par une carte (pour les renderers). */
+/** La pastille de cette branche doit-elle être suivie d'un « / » ?
+ *
+ *  Vrai pour toutes les branches d'un groupe OU sauf la dernière : « 📚6 / ✨6 ».
+ *  Le séparateur vit DANS la pastille de gauche, ce qui le colle à ses deux
+ *  voisines sans toucher à l'espacement de la rangée — les pastilles ordinaires
+ *  gardent exactement leur écart d'avant.
+ *
+ *  Une branche isolée (l'auteur n'en a coché qu'une) ne reçoit rien : le moteur
+ *  la résout comme un effet ordinaire, la carte doit le dire pareil. */
+export function alternativeSuivieDunSlash(
+  capabilities: Capability[] | null | undefined,
+  cap: Capability,
+): boolean {
+  if (cap.alternative !== true) return false;
+  const branches = composedCapsOf(capabilities).filter((c) => c.alternative === true);
+  return branches.length >= 2 && branches[branches.length - 1] !== cap;
+}
+
 export function composedCapsOf(capabilities: Capability[] | null | undefined): Capability[] {
   return (capabilities ?? []).filter((c) => !!c.composed);
 }

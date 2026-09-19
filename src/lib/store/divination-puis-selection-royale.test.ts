@@ -27,7 +27,12 @@ function table(noms: string[]): GameState {
   const s = mkState();
   s.players[0].deck = noms.map(n => mkInstance(mkCard({ name: n })));
   // Aucune édition limitée possédée ⇒ Sélection Royale retombe sur 3 communes.
-  s.factionCardPool = [commune("Recrue", 1), commune("Garde", 2), commune("Vétéran", 3), commune("Champion", 4)];
+  // Coût EXACT : l'offre ne retient que les communes à 5, et il en faut trois
+  // pour que le sélecteur en présente trois.
+  s.factionCardPool = [
+    commune("Recrue", 1), commune("Garde", 2),
+    commune("Champion", 5), commune("Colosse", 5), commune("Titan", 5),
+  ];
   return s;
 }
 const nomsDe = (l: CardInstance[]) => l.map(c => c.card.name);

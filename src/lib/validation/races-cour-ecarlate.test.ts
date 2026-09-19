@@ -110,7 +110,7 @@ describe("table de mots-clés — le clan garde le noyau, les races le reste", (
 
   it("les Vampires récupèrent à l'identique ce que le clan a lâché", () => {
     expect(prof("Vampires").likelyKeywords).toEqual({
-      "Célérité": 0.45, "Régénération": 0.45, "Terreur": 0.35, "Vol": 0.30,
+      "Célérité": 0.45, "Régénération X": 0.45, "Terreur": 0.35, "Vol": 0.30,
     });
   });
 
@@ -148,7 +148,7 @@ describe("table de mots-clés — le clan garde le noyau, les races le reste", (
       "Homuncules de Sang": "Sacrifice",
       // Pas « Célérité » : le Chiroptère la partage, et c'est voulu — deux
       // corps rapides. La signature doit être un registre RÉELLEMENT exclusif.
-      "Vampires": "Régénération",
+      "Vampires": "Régénération X",
     };
     for (const [race, kw] of Object.entries(signatures)) {
       expect(Object.keys(prof(race).likelyKeywords ?? {}), race).toContain(kw);

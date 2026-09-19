@@ -8,7 +8,7 @@ import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordMo
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import { MULLIGAN_TIMER_SECONDS } from "@/lib/game/constants";
@@ -302,6 +302,8 @@ function MulliganCard({
                 <div key={`cx-${i}`} title={vocab.composedDesc(cap, tokenTemplates)} style={{ order: composedDisplayOrder(cap), minWidth: 38, height: 38, padding: val ? "0 3px" : 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
                   <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={26} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={13} /></span>
                   {val && <span style={{ fontSize: 13, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
+                  {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}
+                  {alternativeSuivieDunSlash(card.capabilities, cap) && <span style={{ fontSize: 13, color: "#bbb", fontWeight: 700, margin: `0 2px`, fontFamily: "'Cinzel',serif" }}>/</span>}
                 </div>
               );
             })}

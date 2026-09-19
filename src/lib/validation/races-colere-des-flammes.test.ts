@@ -106,7 +106,7 @@ describe("le clan GARDE ses stats — même règle que l'Eau et la Terre", () =>
 describe("table de pouvoirs — ce qui SURVIT au feu", () => {
   it("elle repousse, elle file, elle brûle qui la saisit", () => {
     const kws = Object.keys(prof().likelyKeywords ?? {});
-    expect(kws).toContain("Régénération");
+    expect(kws).toContain("Régénération X");
     expect(kws).toContain("Célérité");
     expect(kws).toContain("Riposte X");
   });
@@ -126,7 +126,7 @@ describe("table de pouvoirs — ce qui SURVIT au feu", () => {
     for (const [kw, poids] of Object.entries(prof().likelyKeywords ?? {})) {
       if (faction[kw] !== undefined) expect(poids, kw).toBeGreaterThan(faction[kw]);
     }
-    expect(prof().likelyKeywords?.["Régénération"]).toBeGreaterThan(faction["Régénération"]);
+    expect(prof().likelyKeywords?.["Régénération X"]).toBeGreaterThan(faction["Régénération X"]);
   });
 
   it("ne sollicite aucun pouvoir interdit de la faction", () => {

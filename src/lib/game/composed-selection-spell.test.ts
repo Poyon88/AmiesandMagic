@@ -12,7 +12,8 @@ import { applyAction } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, Card, GameState } from "./types";
 
-function selectionCap(uid: string, x = 6): Capability {
+// x = 1 : les cartes du vivier valent 1, et l'offre vise un coût EXACT.
+function selectionCap(uid: string, x = 1): Capability {
   return {
     uid, trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
     composed: { content: "selection", magnitude: { x }, pool: { race: "Kobolds" } },

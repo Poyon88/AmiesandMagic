@@ -618,11 +618,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 25, costPerX: 0, se: 5.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
+  // Régénération X : le soin de début de tour est désormais RÉGLABLE. Barème
+  // calé pour que X = 2 coûte exactement les 20 points de l'ancienne forme
+  // forfaitaire (13 + 7), afin que les cartes déjà en base gardent leur prix.
   regeneration: {
-    id: "regeneration", label: "Régénération", symbol: "💚",
-    desc: "Récupère 2 PV au début de votre tour.",
+    id: "regeneration", label: "Régénération X", symbol: "💚",
+    desc: "Récupère X PV au début de votre tour.",
     applicable_to: ["creature"],
-    creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
+    creature: { cost: 13, costPerX: 7, se: 4.5, minTier: 3, scalable: true, zone: "Terrain" },
   },
   corruption: {
     id: "corruption", label: "Corruption", symbol: "🖤",
@@ -669,7 +672,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   tactique: {
     id: "tactique", label: "Tactique X", symbol: "📋",
-    desc: "Attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.",
+    desc: "Attribue définitivement à une unité alliée ciblée X de ses capacités permanentes, tirées au hasard.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 7, se: 4.0, minTier: 3, scalable: true, zone: "Terrain" },
   },
@@ -850,40 +853,40 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   selection: {
     id: "selection", label: "Sélection X", symbol: "🎴",
-    desc: "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main.",
+    desc: "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main.",
+      desc: "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main.",
     },
     spell: {
-      desc: "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main",
+      desc: "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main",
       params: ["amount"], needsTarget: false,
     },
   },
   selection_magique: {
     id: "selection_magique", label: "Sélection magique X", symbol: "🪄",
-    desc: "Révèle 3 sorts communs {alignment} de coût ≤ X ; ajoutez-en un en main.",
+    desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Révèle 3 sorts communs {alignment} de coût ≤ X ; ajoutez-en un en main.",
+      desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main.",
     },
     spell: {
-      desc: "Révèle 3 sorts communs {alignment} de coût ≤ X ; ajoutez-en un en main",
+      desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main",
       params: ["amount"], needsTarget: false,
     },
   },
   renfort_royal: {
     id: "renfort_royal", label: "Sélection Royale X", symbol: "👑",
-    desc: "Révèle 3 de vos éditions limitées de coût ≤ X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
+    desc: "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 14, costPerX: 5, se: 3.5, minTier: 3, scalable: true, zone: "Mixte",
-      desc: "Révèle 3 de vos éditions limitées de coût ≤ X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
+      desc: "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
     },
     spell: {
-      desc: "Révèle 3 de vos éditions limitées de coût ≤ X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une",
+      desc: "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une",
       params: ["amount"], needsTarget: false,
     },
   },

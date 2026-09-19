@@ -101,7 +101,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Sacrifice":        "💔",
   "Maléfice":         "🕯️",
   "Indestructible":   "♾️",
-  "Régénération":     "💚",
+  "Régénération X":   "💚",
   "Corruption":       "🖤",
   "Carnage X":        "💥",
   "Héritage X":       "📜",

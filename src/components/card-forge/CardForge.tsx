@@ -3562,7 +3562,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 const actif = kw.randomX === true && !inerte;
                                 return (
                                   <label
-                                    title={inerte ? tf('random_needs_ceiling') : tf('random_hint', { max: plafond })}
+                                    title={inerte ? tf('random_needs_ceiling') : tf('random_hint_selection', { max: plafond })}
                                     style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
                                   >
                                     <input
@@ -3834,7 +3834,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               const actif = keywordRandomX[id] === true && !inerte;
                               return (
                                 <label
-                                  title={inerte ? tf('random_needs_ceiling') : tf('random_hint', { max: plafond })}
+                                  title={inerte ? tf('random_needs_ceiling') : tf('random_hint_selection', { max: plafond })}
                                   style={{ marginLeft: 3, display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
                                 >
                                   <input

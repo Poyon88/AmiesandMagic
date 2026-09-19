@@ -30,6 +30,8 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   // Alias legacy : brouillons de forge (localStorage / JSON exportés) créés
   // avant le renommage Berserk → Gloire +X/+Y.
   "Berserk": "gloire",
+  // Idem avant le passage de Régénération (forfait 2 PV) à Régénération X.
+  "Régénération": "regeneration",
   // Tier 1 — Terrain
   "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
   "Poison": "poison", "Célérité": "celerite",
@@ -54,7 +56,7 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   // Tier 3
   "Liaison de vie": "liaison_de_vie", "Ombre": "ombre",
   "Sacrifice": "sacrifice", "Maléfice": "malefice",
-  "Indestructible": "indestructible", "Régénération": "regeneration", "Corruption": "corruption",
+  "Indestructible": "indestructible", "Régénération X": "regeneration", "Corruption": "corruption",
   "Carnage X": "carnage", "Héritage X": "heritage", "Mimique": "mimique",
   "Métamorphose": "metamorphose", "Tactique X": "tactique",
   "Exhumation X": "exhumation", "Héritage du cimetière": "heritage_du_cimetiere",
@@ -77,11 +79,26 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Inspiration X": "inspiration",
 };
 
+/** Libellés de RETOUR forcés. La réciproque ci-dessous retient le DERNIER
+ *  libellé inséré pour un id ; or un alias legacy ajouté après coup gagne
+ *  mécaniquement ce duel, même quand le picker n'affiche plus que le libellé
+ *  courant. C'était le cas de « Régénération » (forfait) face à
+ *  « Régénération X » : à la réédition d'un token, la case serait revenue
+ *  décochée et la capacité perdue EN SILENCE à l'enregistrement. Les alias qui
+ *  doivent gagner (« Vol » → `ranged`) restent gérés par l'ordre d'insertion. */
+const LIBELLE_RETOUR_FORCE: Record<string, string> = {
+  regeneration: "Régénération X",
+};
+
 /** Réciproque id moteur → libellé forge. Un id visé par plusieurs libellés
- *  (alias legacy) retient le DERNIER, comme la construction historique. */
-export const GAME_TO_FORGE_KEYWORD: Record<string, string> = Object.fromEntries(
-  Object.entries(FORGE_TO_GAME_KEYWORD).map(([label, id]) => [id, label]),
-);
+ *  (alias legacy) retient le DERNIER, comme la construction historique — sauf
+ *  ceux que `LIBELLE_RETOUR_FORCE` arbitre explicitement. */
+export const GAME_TO_FORGE_KEYWORD: Record<string, string> = {
+  ...Object.fromEntries(
+    Object.entries(FORGE_TO_GAME_KEYWORD).map(([label, id]) => [id, label]),
+  ),
+  ...LIBELLE_RETOUR_FORCE,
+};
 
 /** Données annexes saisies dans des champs DÉDIÉS du formulaire (hors grille
  *  X générique), portées par une poignée de mots-clés. Toutes optionnelles :

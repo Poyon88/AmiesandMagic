@@ -145,7 +145,7 @@ describe("tables de pouvoirs — c'est elles qui séparent les trois", () => {
     // morte. Régénération et Drain de vie, les évidences aquatiques, viennent
     // toutes deux du clan.
     const duClan = new Set(Object.keys(clan().likelyKeywords ?? {}));
-    expect(duClan.has("Régénération")).toBe(true);
+    expect(duClan.has("Régénération X")).toBe(true);
     for (const r of NOUVELLES) {
       expect(Object.keys(prof(r).likelyKeywords ?? {}).filter((k) => duClan.has(k)), r).toEqual([]);
     }

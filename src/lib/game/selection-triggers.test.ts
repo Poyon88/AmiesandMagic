@@ -46,8 +46,11 @@ function mkState(): GameState {
 }
 // Carte « Commune Mercenaires » : éligible quel que soit l'alignement de la
 // source (le pool de Sélection retombe sur Mercenaires sans alignement).
+// `mana_cost: 5` : l'offre d'une Sélection vise un coût EXACT, et les
+// Sélections de ce fichier portent toutes X = 5. Sans ce coût, le vivier
+// n'aurait aucun candidat et les tests de DÉCLENCHEUR ne testeraient plus rien.
 const commune = (id: number, type: Card["card_type"] = "creature") =>
-  mkCard({ id, faction: "Mercenaires", rarity: "Commune", card_type: type, attack: type === "spell" ? null : 1, health: type === "spell" ? null : 1 });
+  mkCard({ id, faction: "Mercenaires", rarity: "Commune", mana_cost: 5, card_type: type, attack: type === "spell" ? null : 1, health: type === "spell" ? null : 1 });
 
 describe("gating forge — modes des capacités Sélection", () => {
   it("propose les 5 modes (chantier multi-déclencheurs : mort/retour → modale sur le tour du contrôleur, hasard sinon)", () => {

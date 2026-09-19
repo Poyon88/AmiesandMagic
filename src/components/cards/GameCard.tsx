@@ -56,7 +56,7 @@ import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { titleFontScale } from "@/lib/game/card-title";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 
 import ComposedMarker from "@/components/cards/ComposedMarker";
@@ -492,6 +492,8 @@ export default function GameCard({
                   <ComposedMarker mode={cmode} size={11 * icoS} />
                 </span>
                 {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{val}</span>}
+                {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}
+                {alternativeSuivieDunSlash(card.capabilities, cap) && <span style={{ fontSize: 15 * s, color: "#bbb", fontWeight: 700, margin: `0 2 * spx`, fontFamily: "'Cinzel',serif" }}>/</span>}
               </div>
             );
           })}

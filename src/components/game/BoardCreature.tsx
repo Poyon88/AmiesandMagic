@@ -14,7 +14,7 @@ import { displayCardOf } from "@/lib/game/singulier";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { StatShields, statShieldsReserve } from "@/components/card/CardCounters";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
-import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, keywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import RarityFrame from "@/components/cards/RarityFrame";
@@ -885,6 +885,8 @@ function BoardCreature({
                   <ComposedMarker mode={cmode} size={10} />
                 </span>
                 {val && <span style={{ fontSize: 12, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
+                {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}
+                {alternativeSuivieDunSlash(card.capabilities, cap) && <span style={{ fontSize: 12, color: "#bbb", fontWeight: 700, margin: `0 2px`, fontFamily: "'Cinzel',serif" }}>/</span>}
               </div>
             );
           })}

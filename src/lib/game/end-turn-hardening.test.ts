@@ -93,7 +93,8 @@ describe("déclencheur ORPHELIN : le moteur le purge au lieu de bloquer", () => 
     const s = mkState();
     s.players[0].id = "MOI";
     s.players[1].id = "LUI";
-    s.factionCardPool = [mkCard({ name: "Offerte", faction: "Mercenaires", rarity: "Commune", mana_cost: 1 })];
+    // Coût EXACTEMENT 3 : c'est l'amplitude de la Sélection du barde.
+    s.factionCardPool = [mkCard({ name: "Offerte", faction: "Mercenaires", rarity: "Commune", mana_cost: 3 })];
     const barde = mkInstance(mkCard({
       name: "Barde", attack: 1, health: 3,
       keywords: ["selection"] as never,

@@ -21,7 +21,8 @@ import type { Capability, Card, GameState } from "./types";
 function sortEmblemeSelection(): ReturnType<typeof mkInstance> {
   const caps = [{
     uid: "cx_0", trigger: "on_end_of_turn", effectKind: "emblem", abilityId: "_composed",
-    composed: { content: "selection", magnitude: { x: 3 } },
+    // Coût EXACT : X vaut le coût des communes du vivier ci-dessous.
+    composed: { content: "selection", magnitude: { x: 1 } },
   }] as unknown as Capability[];
   return mkInstance(mkCard({
     name: "Œil dans les feuillages", card_type: "spell", attack: null, health: null,

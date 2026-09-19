@@ -50,14 +50,14 @@ describe("effet sur les tirages", () => {
       [commune("Base1", 1), commune("Base2", 1), commune("Spé1", 2), commune("Spé2", 2)],
       new Set([2]),
     );
-    const offre = getSelectionCards(s, 5).map((c) => c.name).sort();
+    const offre = getSelectionCards(s, 1).map((c) => c.name).sort();
     expect(offre).toEqual(["Base1", "Base2"]);
   });
 
   it("pool entièrement spécial ⇒ offre vide, pas de repli élargi", () => {
     const s = mkState();
     s.factionCardPool = excludeSpecialSets([commune("Spé1", 2)], new Set([2]));
-    expect(getSelectionCards(s, 5)).toEqual([]);
+    expect(getSelectionCards(s, 1)).toEqual([]);
   });
 });
 

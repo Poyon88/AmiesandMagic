@@ -15,7 +15,8 @@ import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
-import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ABILITIES, creatureEngineId, getCapabilityTriggers, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
@@ -59,7 +60,17 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
   { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
   { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
+  // Tactique : la SOURCE partage X de ses capacités permanentes, tirées au
+  // hasard. Réservé de fait aux créatures — un sort n'a pas de capacités
+  // permanentes à donner, et l'effet reste alors muet (comme Dévoration).
+  { v: "tactique", l: "Tactique (partage ses capacités permanentes, créature)", target: "unit" },
   { v: "retour_differe", l: "Retour différé (sous le deck)", target: "unit" },
+  // Silence : même corps que la mécanique de sort, mais la cible se déclare —
+  // « toutes les unités ennemies », « une au hasard »… deviennent possibles.
+  { v: "silence", l: "Silence (retire tout à la cible)", target: "unit" },
+  // Déchainement X/Y : X sorts aléatoires de coût Y (« ? » sur Y = plafond).
+  // Aucune cible : les sorts déchainés tirent les leurs au hasard.
+  { v: "dechainement", l: "Déchainement X/Y (sorts aléatoires)", target: "none", xy: true },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
   { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
@@ -197,7 +208,11 @@ export default function ComposedEffectsEditor({
     const inerte = plafond < 2;
     return (
       <label
-        title={inerte ? tr('random_needs_ceiling') : tr('random_hint', { max: plafond })}
+        // Les SÉLECTIONS ne tirent pas leur amplitude une fois pour toutes :
+        // chaque carte révélée tire son propre coût. L'infobulle doit le dire,
+        // sinon la case promet la mauvaise chose.
+        title={inerte ? tr('random_needs_ceiling')
+          : tr(RANDOM_X_ABILITY_IDS.has(eff.content) ? 'random_hint_selection' : 'random_hint', { max: plafond })}
         style={{
           display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9,
           color: inerte ? "#ccc" : eff.magnitude?.[champ] ? "#b3541e" : "#666",
@@ -215,6 +230,36 @@ export default function ComposedEffectsEditor({
       </label>
     );
   };
+  /** Ce que l'auteur doit savoir quand il coche « OU ».
+   *
+   *  Deux pièges, tous deux silencieux au moment de la saisie : une branche
+   *  toute seule (il n'y a plus de choix, l'effet redevient ordinaire) et des
+   *  branches déclarées sur des DÉCLENCHEURS différents — le groupe se forme
+   *  par moment de jeu, deux branches qui ne se rencontrent jamais ne
+   *  s'excluent pas davantage. */
+  /** Libellé d'un contenu dans le sélecteur.
+   *
+   *  next-intl rend la CLÉ quand la traduction manque (« forge.content_appel »
+   *  s'affichait tel quel dans la liste). Le libellé français porté par
+   *  `COMPOSED_CONTENTS` sert donc de repli : un contenu ajouté sans sa clé
+   *  reste lisible, au lieu d'exposer sa plomberie à l'auteur. */
+  const libelleContenu = (o: { v: string; l: string }): string => {
+    const traduit = tr(`content_${o.v}`);
+    return traduit.startsWith("forge.") ? o.l : traduit;
+  };
+
+  const avertissementOu = (idx: number) => {
+    const branches = value.filter((c) => c.alternative === true);
+    const moi = value[idx];
+    const message = branches.length < 2
+      ? tr('alternative_warn_alone')
+      : branches.some((c) => c.trigger !== moi.trigger)
+        ? tr('alternative_warn_triggers')
+        : null;
+    if (!message) return null;
+    return <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>{message}</span>;
+  };
+
   const aleaX = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomX", eff.magnitude?.x ?? 0);
   const aleaY = (idx: number, eff: ComposedEffect) => caseAlea(idx, eff, "randomY", eff.magnitude?.y ?? 0);
 
@@ -457,6 +502,17 @@ export default function ComposedEffectsEditor({
                 <span style={{ color: "#0D9488", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{tr('singulier_toggle')}</span>
               </label>
 
+              {/* « OU » — cet effet devient une BRANCHE du choix de la carte.
+                  Une carte n'a qu'un groupe : tout ce qui est coché s'exclut
+                  mutuellement, et le joueur tranche à la résolution. */}
+              <span style={labelStyle}>{tr('alternative_toggle')}</span>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer" }} title={tr('alternative_toggle_title')}>
+                <input type="checkbox" checked={cap.alternative === true}
+                  onChange={(e) => patchCap(idx, { alternative: e.target.checked ? true : undefined })} />
+                <span style={{ color: "#b3541e", fontWeight: 700, fontFamily: "'Cinzel',serif" }}>{tr('alternative_toggle')}</span>
+                {cap.alternative === true && avertissementOu(idx)}
+              </label>
+
               {/* EMBLÈME — l'effet n'est pas joué maintenant : il est DÉPOSÉ sur
                   un joueur et survit à cette carte. Un emblème composé se résout
                   à chaque fin de tour de son porteur.
@@ -539,7 +595,7 @@ export default function ComposedEffectsEditor({
               )}
 
               <span style={labelStyle}>{tr('label_content')}</span>
-              {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: tr(`content_${o.v}`) })), (v) => {
+              {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: libelleContenu(o) })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;
                 const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
                 const scatterOk = scatterAllowed(v, prev.location);
@@ -614,6 +670,20 @@ export default function ComposedEffectsEditor({
                 {showY && aleaY(idx, eff)}
               </span>
               </>)}
+
+              {/* OCCURRENCES — combien de fois le contenu se rejoue. Proposé
+                  exactement sur les contenus que le moteur sait répéter
+                  (OCCURRENCE_CONTENTS, importée plutôt que recopiée). 1 = une
+                  passe, soit le comportement d'avant. */}
+              {OCCURRENCE_CONTENTS.has(eff.content) && (
+                <>
+                  <span style={labelStyle}>{tr('label_occurrences')}</span>
+                  <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    {numInput(eff.occurrences ?? 1, (n) => patchEffect(idx, { occurrences: n > 1 ? n : undefined }), 1, MAX_OCCURRENCES)}
+                    <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>{tr('occurrences_hint')}</span>
+                  </span>
+                </>
+              )}
 
               {eff.content === "grant_keyword" && (() => {
                 const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";

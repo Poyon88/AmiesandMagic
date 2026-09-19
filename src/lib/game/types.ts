@@ -492,6 +492,18 @@ export interface Capability {
   singulier?: boolean;
   /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */
   targets?: CapabilityTargetSlot[];
+  /** « OU » — cette capacité est une BRANCHE du choix de la carte.
+   *
+   *  Une carte n'a qu'UN groupe : toutes les capacités marquées forment les
+   *  options entre lesquelles le contrôleur tranche, et une seule se résout.
+   *  Le groupe se forme par DÉCLENCHEUR (les frames se construisent déclencheur
+   *  par déclencheur) : deux branches déclarées sur des moments différents ne
+   *  se rencontrent jamais et redeviennent chacune un effet ordinaire — c'est
+   *  la dégradation voulue, l'éditeur prévient l'auteur en amont.
+   *
+   *  Une seule branche marquée ⇒ aucun choix : l'effet se résout normalement.
+   *  Absent partout ⇒ comportement d'avant, aucune migration. */
+  alternative?: boolean;
   /** Effet COMPOSÉ (modèle hybride). Présent ⇒ la capacité est exécutée par
    *  l'interpréteur générique (`resolveComposedEffect`) au lieu du chemin curé
    *  via `abilityId`. Absent ⇒ comportement curé inchangé. */
@@ -585,8 +597,24 @@ export type ComposedEffectContent =
   // Détruit l'unité ciblée ; la SOURCE absorbe définitivement ses stats. Sans
   // instance source (effet porté par un sort), l'effet ne fait rien.
   | "devoration"
+  // TACTIQUE : la SOURCE transmet X de ses capacités PERMANENTES (icône
+  // blanche), tirées au hasard, à l'unité visée. Même règle et même code que le
+  // mot-clé curé homonyme. Comme `devoration`, l'effet a besoin d'une instance
+  // source pour avoir quelque chose à donner : porté par un sort, il ne fait
+  // rien. Une cible qui EST la source ne reçoit rien non plus.
+  | "tactique"
   // Place l'unité ciblée sous le deck de son propriétaire.
   | "retour_differe"
+  // SILENCE : l'unité ciblée perd TOUT — mots-clés, capacités composées, sort
+  // appris, boucliers et états — et retombe à ses ATK/PV imprimés. Même corps
+  // que la mécanique de sort homonyme, mais ouvert à n'importe quelle cible
+  // (« toutes les unités ennemies », « au hasard »…) et à tout déclencheur.
+  | "silence"
+  // DÉCHAINEMENT X/Y : lance X sorts aléatoires de coût Y de la collection, sur
+  // des cibles au hasard. Aucune cible propre (X et Y vivent dans `magnitude`,
+  // `randomY` faisant de Y un PLAFOND). L'alignement et le format viennent de
+  // la carte source, comme pour la forme curée.
+  | "dechainement"
   | "selection"
   // Même mécanique, pool restreint aux SORTS. Le filtre `pool` (race / faction
   // / clan / mot-clé) ne sait pas exprimer un type de carte : c'est donc un
@@ -668,6 +696,30 @@ export interface ComposedEffect {
   magnitude?: { x?: number; y?: number; randomX?: boolean; randomY?: boolean };
   /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
   target?: TargetSpec;
+  /** NOMBRE D'OCCURRENCES : combien de fois le contenu se REJOUE, d'affilée.
+   *
+   *  Réservé aux contenus « sans cible en jeu » qui n'agissaient qu'une fois —
+   *  Appel, Appel Suprême, Invocation, Tuteur et les trois Sélections (cf.
+   *  OCCURRENCE_CONTENTS). Les autres expriment déjà leur multiplicité par
+   *  `target.count` : leur en donner une seconde n'aurait fait que semer le
+   *  doute sur celle qui compte.
+   *
+   *  Absent ou ≤ 1 ⇒ une seule passe, exactement comme avant (aucune migration,
+   *  et le premier passage reste rigoureusement identique — même germe de
+   *  tirage, même id de déclencheur).
+   *
+   *  Chaque passe est INDÉPENDANTE : une Sélection ×3 ouvre trois fenêtres
+   *  successives de trois cartes, et rien n'empêche une carte d'y reparaître.
+   *  Sur les contenus qui puisent dans le DECK (Appel, Appel Suprême), la carte
+   *  sortie ne peut évidemment plus ressortir — d'où « les N premières » et
+   *  « les N plus chères ». Sur les formes à cartes NOMMÉES (Invocation
+   *  désignée, Tuteur), c'est la liste ENTIÈRE qui se rejoue : [A, B] ×3 = A B
+   *  A B A B.
+   *
+   *  On s'arrête en chemin dès qu'il n'y a plus de place (plateau, main) ou
+   *  plus de candidat : une passe qui ne peut rien faire interrompt les
+   *  suivantes plutôt que de tourner à vide. */
+  occurrences?: number;
   /** content === "grant_keyword" : id de l'ability conférée. */
   grantAbilityId?: string;
   /** content === "grant_keyword" : déclencheur que la capacité conférée portera
@@ -1759,7 +1811,6 @@ export interface PlayCardAction {
    *  deck continuent de ne remplir que lui, et les actions déjà journalisées
    *  (rejeu, resync) se relisent à l'identique. */
   deckChoiceIndices?: Partial<Record<"divination" | "creuser" | "presage", number>>;
-  tactiqueKeywords?: Keyword[];
   convocationRace?: string;  // chosen race for token
   selectionCardId?: number;  // chosen card ID from faction pool
   /** Carte choisie PAR mot-clé de Sélection, quand la créature en porte
@@ -1891,6 +1942,9 @@ export interface ResolvePendingTriggerAction {
   targetInstanceIds?: string[];
   /** Carte choisie pour une Sélection en fin de tour (selectionType présent). */
   selectionCardId?: number;
+  /** Branche choisie pour un déclencheur « OU » (alternativeOptions présent) :
+   *  uid de la capacité qui se résout, les autres sont abandonnées. */
+  alternativeCapUid?: string;
 }
 
 /** Repli automatique à l'expiration du chrono : résout TOUS les déclencheurs
@@ -2018,6 +2072,13 @@ export interface PendingTrigger {
   selectionType?: "selection" | "selection_magique" | "renfort_royal";
   /** Ids des cartes offertes (résolus en Card côté store via les pools). */
   selectionOptionIds?: number[];
+  /** Présent ⇒ variante « OU » : le contrôleur choisit LAQUELLE de ces branches
+   *  se résout. L'effet composé de chaque branche voyage AVEC le déclencheur
+   *  (et non par référence à la carte) pour deux raisons : un sort n'a plus
+   *  d'instance en jeu au moment du choix, et l'amplitude aléatoire a déjà été
+   *  figée dans la frame — le client doit annoncer le nombre qui se résoudra,
+   *  pas le plafond. */
+  alternativeOptions?: { capUid: string; composed: ComposedEffect }[];
 }
 
 /** Frame de la pile d'effets LIFO unifiée. UN frame = UN effet atomique (un
@@ -2040,10 +2101,27 @@ export interface StackFrame {
   composed?: ComposedEffect;
   /** uid de la capability d'origine (reconstruction du sélecteur de choix). */
   capUid?: string;
+  /** Carte D'ORIGINE de l'effet, en réduction.
+   *
+   *  Une frame re-localise sa source par `sourceInstanceId` — mais un SORT n'a
+   *  plus d'instance en jeu quand il se résout, et c'est justement sa carte que
+   *  lisent l'Invocation (alignement, faction) et les Sélections (pool). Sans
+   *  cette référence, un sort résolu par la pile abandonnait en silence.
+   *  Réduction et non `Card` entière : la pile est sérialisée, hashée et
+   *  transportée à chaque action. */
+  sourceCardRef?: { id: number; name: string; faction?: string | null; card_alignment?: string | null };
   /** Cibles choisies (pré-connues via targetMap, ou fixées après choix joueur). */
   chosenTargetIds?: string[];
   /** true ⇒ frame suspendue au sommet, en attente d'un choix de cible. */
   awaitingChoice?: boolean;
+  /** « OU » : cette frame est une BRANCHE du choix (cf. Capability.alternative).
+   *  Le groupe = les frames marquées qui partagent `originTag` ET `trigger` —
+   *  elles sont poussées ensemble, par le même appel. */
+  alternative?: boolean;
+  /** Le choix est TRANCHÉ pour cette frame : elle se résout comme n'importe
+   *  quelle autre. Les branches perdantes, elles, quittent la pile. Sans ce
+   *  drapeau, la gagnante re-poserait la question à chaque tour de boucle. */
+  alternativeSettled?: boolean;
   /** true ⇒ ne JAMAIS suspendre sur un choix : ciblage en repli déterministe
    *  (pool.slice) sans UI. Utilisé par Déclenchement pour rejouer les effets des
    *  alliés sans empiler N sélections interactives (évite l'explosion + desync). */

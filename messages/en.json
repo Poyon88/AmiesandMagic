@@ -238,8 +238,8 @@
         "desc": "Takes no combat damage."
       },
       "regeneration": {
-        "label": "Regeneration",
-        "desc": "Restores 2 HP at the start of your turn."
+        "label": "Regeneration X",
+        "desc": "Restores X HP at the start of your turn."
       },
       "corruption": {
         "label": "Corruption",
@@ -267,7 +267,7 @@
       },
       "tactique": {
         "label": "Tactics X",
-        "desc": "Permanently grants X chosen ability(ies) to a targeted allied unit."
+        "desc": "Permanently grants a targeted allied unit X of its own permanent abilities, drawn at random."
       },
       "exhumation": {
         "label": "Exhumation X",
@@ -359,15 +359,15 @@
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand."
+        "desc": "Reveal 3 {alignment} commons with cost X; add one to your hand."
       },
       "selection_magique": {
         "label": "Arcane Selection X",
-        "desc": "Reveal 3 {alignment} common spells with cost ≤ X; add one to your hand."
+        "desc": "Reveal 3 {alignment} common spells with cost X; add one to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Reveal 3 of your limited editions with cost ≤ X (≥30 required; otherwise 3 {alignment} commons); keep one."
+        "desc": "Reveal 3 of your limited editions with cost X (≥30 required; otherwise 3 {alignment} commons); keep one."
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
@@ -801,10 +801,17 @@
         "conquete": "adds {x} to your Conquest counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
         "devoration": "devours",
+        "tactique_one": "passes on one of its permanent abilities at random",
+        "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
-        "selection": "reveals 3 cards{filter} (cost ≤ {x}) and keeps one in hand",
-        "selection_magique": "reveals 3 spells{filter} (cost ≤ {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost ≤ {x}) and keeps one in hand"
+        "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
+        "selection_magique": "reveals 3 spells{filter} (cost {x}) and keeps one in hand",
+        "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
+        "occurrences": "{n} times: ",
+        "alternative": "One of: ",
+        "silence": "silences",
+        "dechainement": "casts {x} random spells of cost {y}",
+        "dechainement_one": "casts a random spell of cost {y}"
       },
       "pool": {
         "race": " of race {v}",
@@ -2325,7 +2332,27 @@
     "import_error": "Import error",
     "eveil_label": "AWAKENING",
     "eveil_cost_hint": "AWAKENING: the card can be put into awakening INSTEAD of being played. It leaves the hand with this many points; the player pays 1 per mana each of their turns, and on the last point it enters play as if from the hand. Replaces the mana cost, does not add to it. Not reducible.",
-    "eveil_cost_title": "Can be put into awakening for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost"
+    "eveil_cost_title": "Can be put into awakening for {count, plural, one {# point} other {# points}}, paid 1 mana per turn — instead of the mana cost",
+    "label_occurrences": "OCCURRENCES",
+    "occurrences_hint": "1 = once. Above that, the content replays back to back (10 max).",
+    "alternative_toggle": "OR",
+    "alternative_toggle_title": "This effect becomes a branch of the card's choice: the player resolves only ONE of the checked branches.",
+    "alternative_warn_alone": "only one branch checked: the effect resolves normally",
+    "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
+    "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
+    "content_appel": "Call from the deck",
+    "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
+    "content_tuteur": "Tutor (named cards → hand)",
+    "content_epargne": "Savings (counter)",
+    "content_foi": "Faith (counter)",
+    "content_conquete": "Conquest (counter)",
+    "content_incineration": "Incineration (recycle a graveyard)",
+    "content_devoration": "Devour (destroy and absorb)",
+    "content_tactique": "Tactics (shares its permanent abilities)",
+    "content_retour_differe": "Delayed return (under the deck)",
+    "content_silence": "Silence (strips the target)",
+    "content_dechainement": "Unleashing X/Y (random spells)",
+    "content_selection_magique": "Magical Selection (1 spell of 3)"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2381,9 +2408,6 @@
     "cost_hand_order_hint": "Your clicks fill the discard first, then the topdeck.",
     "topdeck_cost_caption": "{count, plural, one {Retreat} other {Retreat ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Sacrifice # creature} other {Sacrifice # creatures}}",
-    "tactique_title": "📋 Tactic",
-    "tactique_subtitle": "{count, plural, one {Choose # ability to transfer} other {Choose # abilities to transfer}}",
-    "tactique_confirm": "Confirm ({selected}/{max})",
     "convocation_title": "📣 Convocation",
     "convocation_subtitle": "Choose the race of the token to summon",
     "cycle_eternel_caption": "♻ Eternal Cycle",
@@ -2474,7 +2498,9 @@
     "eveil_suspend": "Set to awaken ({count, plural, one {# point} other {# points}})",
     "eveil_pay_n": "{count, plural, one {Pay #} other {Pay #}}",
     "eveil_max": "max {count}",
-    "eveil_max_hint": "The last point is the card entering play: it is paid separately, along with target selection."
+    "eveil_max_hint": "The last point is the card entering play: it is paid separately, along with target selection.",
+    "choix_ou_title": "⚖️ Choose one",
+    "choix_ou_subtitle": "Only one of these effects will resolve."
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

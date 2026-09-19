@@ -25,8 +25,10 @@ const sortCommun = (name: string, mana: number): Card =>
 
 function table(): GameState {
   const s = mkState();
-  s.factionCardPool = [commune("Recrue", 1), commune("Garde", 2), commune("Vétéran", 3), commune("Champion", 4)];
-  s.allSpellsPool = [sortCommun("Étincelle", 1), sortCommun("Éclair", 2), sortCommun("Brume", 3), sortCommun("Orage", 5)];
+  // Coût EXACT : chaque amplitude de la Voyante (3, 3, 5) doit trouver son
+  // compte dans le vivier, sinon le sélecteur ne s'ouvre pas.
+  s.factionCardPool = [commune("Recrue", 1), commune("Garde", 2), commune("Vétéran", 3), commune("Sage", 3), commune("Champion", 5)];
+  s.allSpellsPool = [sortCommun("Étincelle", 1), sortCommun("Éclair", 3), sortCommun("Brume", 3), sortCommun("Orage", 5)];
   return s;
 }
 
@@ -46,20 +48,20 @@ describe("créature à trois Sélections", () => {
     s.players[0].hand.push(c);
     useGameStore.setState({ gameState: s, localPlayerId: "P1" });
 
-    // 1) Sélection 3 : des créatures de coût ≤ 3.
+    // 1) Sélection 3 : des créatures de coût EXACTEMENT 3.
     expect(useGameStore.getState().selectCardInHand(c.instanceId)).toBeNull();
     let st = useGameStore.getState();
     expect(st.targetingMode).toBe("selection");
     expect(st.selectionPickerKeyword).toBe("selection");
-    expect(st.selectionCards.every(k => k.card_type === "creature" && k.mana_cost <= 3)).toBe(true);
+    expect(st.selectionCards.every(k => k.card_type === "creature" && k.mana_cost === 3)).toBe(true);
     const premiere = st.selectionCards[0];
 
-    // 2) Sélection magique 3 : des sorts de coût ≤ 3.
+    // 2) Sélection magique 3 : des sorts de coût EXACTEMENT 3.
     expect(st.selectTarget(String(premiere.id))).toBeNull();
     st = useGameStore.getState();
     expect(st.targetingMode).toBe("selection");
     expect(st.selectionPickerKeyword).toBe("selection_magique");
-    expect(st.selectionCards.every(k => k.card_type === "spell" && k.mana_cost <= 3)).toBe(true);
+    expect(st.selectionCards.every(k => k.card_type === "spell" && k.mana_cost === 3)).toBe(true);
     const deuxieme = st.selectionCards[0];
 
     // 3) Sélection Royale 5 (repli communes, aucune limitée possédée).

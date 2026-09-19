@@ -3,6 +3,9 @@ import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent
 import type { DeckPickerKeyword } from "@/lib/game/engine";
 import type { SelectionKwCreature } from "@/lib/game/engine";
 import { useAudioStore } from "./audioStore";
+
+/** Une branche d'un « OU » proposée au joueur (cf. PendingTrigger.alternativeOptions). */
+export type AlternativeOption = NonNullable<import("@/lib/game/types").PendingTrigger["alternativeOptions"]>[number];
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
 import { findInstanceEl, overlayRect, OVERLAY } from "@/lib/fx/overlayMotion";
@@ -52,7 +55,6 @@ import {
   getMagicalSelectionCards,
   deckAfterDivination,
   deckAfterCreuser,
-  plafondSelection,
   selectionAmplitudeOnPlay,
   getSpellGraveyardTargets,
   getComposedGraveyardTargets,
@@ -187,14 +189,16 @@ function auCimetiereAvecSecondeVie(player: PlayerState, instanceId: string | nul
   return !!c && hasSecondeVie(c);
 }
 
-/** SÉLECTION à l'entrée en jeu — plafond de coût de l'offre, lu dans le modèle
- *  unifié (et non plus dans effect_text, qui ne porte pas le drapeau
- *  `randomX`). Le tirage se fait ICI, côté client : c'est le seul chemin que le
- *  joueur décide lui-même, et la carte choisie voyage ensuite dans l'action —
- *  l'adversaire n'a rien à recalculer. */
-function plafondSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): number {
-  const a = selectionAmplitudeOnPlay(card, id);
-  return plafondSelection(a.x, a.randomX);
+/** SÉLECTION à l'entrée en jeu — amplitude de l'offre, lue dans le modèle
+ *  unifié (et non dans effect_text, qui ne porte pas le drapeau `randomX`).
+ *
+ *  Plus aucun tirage ICI : depuis que le coût est EXACT, le « ? » ne fixe plus
+ *  un plafond pour toute l'offre mais un coût PAR CARTE, tiré dans le vivier
+ *  par le moteur avec son pseudo-hasard semé sur l'état. Le client passe donc
+ *  X et le drapeau tels quels, et voit exactement la même offre que le moteur —
+ *  ce qui n'était pas garanti quand il tirait son plafond au `Math.random`. */
+function amplitudeSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): { x: number; randomX: boolean } {
+  return selectionAmplitudeOnPlay(card, id);
 }
 
 /** ÉVEIL — l'entrée correspondante, si la carte attend dans la zone d'éveil.
@@ -227,17 +231,28 @@ export function indexReelDuPicker(
 function pendingTriggerOverlay(
   gs: GameState | null,
   localPlayerId: string | null,
-): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; pendingTriggerNeeded: number; pendingTriggerPicked: string[]; selectionCards?: Card[] } {
-  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [] };
+): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; pendingTriggerNeeded: number; pendingTriggerPicked: string[]; selectionCards?: Card[]; alternativeOptions: AlternativeOption[] } {
+  const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], alternativeOptions: [] };
   const t = gs?.pendingTriggers?.[0];
   if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
+  // « OU » : la question ne porte pas sur une cible mais sur l'EFFET. Aucune
+  // unité à surligner (`validTargets` vide) ; c'est la modale qui parle. Le mode
+  // reste "pending_trigger" pour que le chrono de choix et le repli du plateau
+  // s'appliquent comme à tout autre déclencheur en attente.
+  if (t.alternativeOptions?.length) {
+    return {
+      targetingMode: "pending_trigger" as const, validTargets: [], pendingTriggerId: t.id,
+      pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [],
+      alternativeOptions: t.alternativeOptions,
+    };
+  }
   // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
   // cartes offertes sont portées par le trigger sous forme d'ids).
   if (t.selectionType) {
     const byId = new Map([...(gs!.factionCardPool ?? []), ...(gs!.allSpellsPool ?? [])].map(c => [c.id, c] as const));
     const ordered = (t.selectionOptionIds ?? []).map(id => byId.get(id)).filter((c): c is Card => !!c);
     if (ordered.length === 0) return none;
-    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], selectionCards: ordered };
+    return { targetingMode: "selection" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], selectionCards: ordered, alternativeOptions: [] };
   }
   // Variante « fin de tour » (effet composé) vs mot-clé curé différé
   // (Remontée, Impact, et tous les curés ciblés du chantier multi-déclencheurs).
@@ -266,7 +281,7 @@ function pendingTriggerOverlay(
     remontee: "🔼 Remontée — choisissez l'unité à renvoyer en main",
     affaiblissement: `🔻 Affaiblissement — choisissez la créature ennemie à affaiblir${t.x != null ? ` (-${t.x}/-${t.y ?? 0})` : ""}`,
     benediction: "✝️ Bénédiction — choisissez l'unité alliée à soigner entièrement",
-    tactique: "📋 Tactique — choisissez l'allié qui reçoit la capacité",
+    tactique: `📋 Tactique — choisissez l'allié qui reçoit ${t.x ?? 1} capacité(s) permanente(s) au hasard`,
     sacrifice: "💔 Sacrifice — choisissez l'allié à sacrifier",
     permutation: "🔀 Permutation — choisissez la créature ennemie dont échanger les PV",
     malediction: "💀 Malédiction — choisissez la créature ennemie à maudire",
@@ -302,7 +317,7 @@ function pendingTriggerOverlay(
     else if (typeof count === "number") needed = Math.max(1, count);
   }
   needed = Math.min(needed, targets.length);
-  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id, pendingTriggerPrompt: prompt, pendingTriggerNeeded: needed, pendingTriggerPicked: [] };
+  return { targetingMode: "pending_trigger", validTargets: targets, pendingTriggerId: t.id, pendingTriggerPrompt: prompt, pendingTriggerNeeded: needed, pendingTriggerPicked: [], alternativeOptions: [] };
 }
 
 export interface SpellCastEvent {
@@ -528,10 +543,12 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "tactique_keywords" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
   // Id du déclencheur interactif en attente que le contrôleur résout (Remontée
   // mort/retour à son tour). null hors de ce mode.
   pendingTriggerId: string | null;
+  /** « OU » en attente : les branches entre lesquelles trancher. Vide sinon. */
+  alternativeOptions: AlternativeOption[];
   // Message du sélecteur du déclencheur en attente, dérivé de l'effet réel
   // (ex. buff de fin de tour → « choisissez une créature à renforcer »). null
   // hors du mode pending_trigger.
@@ -618,8 +635,6 @@ interface GameStore {
    *  créature) : c'est sous lui que la réponse sera rangée. */
   selectionPickerKeyword: SelectionKwCreature | null;
   selectionCards: Card[];
-  tactiqueAvailableKeywords: string[];
-  tactiqueMaxSelections: number;
   pendingTargetInstanceId: string | null;
   // Multi-target spell state
   spellTargetSlots: SpellTargetSlot[];
@@ -1468,17 +1483,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     const player = gs.players[gs.currentPlayerIndex];
     const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell" || !cardInst.card.spell_keywords) return false;
-    const tryOpen = (kwId: string, getter: (x: number) => Card[]): boolean => {
+    const tryOpen = (kwId: string, getter: (x: number, randomX: boolean) => Card[]): boolean => {
       const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
       if (!found) return false;
-      // Plafond de coût de l'offre = X + bonus d'amplification (Chant, tempo),
-      // comme à la résolution.
-      // Sélection au hasard : le plafond est tiré AVANT les bonus, qui
-      // s'ajoutent au résultat (« 1 à X, puis +Chant »).
-      const x = plafondSelection(found.amount ?? 0, found.randomX)
+      // Coût de l'offre = X + bonus d'amplification (Chant, tempo), comme à la
+      // résolution. Le « ? » ne se résout plus ici : c'est le vivier qui tire
+      // un coût par carte, sous ce plafond.
+      const x = (found.amount ?? 0)
         + chantBonusForSpell(gs, cardInst.card)
         + tempoBonusForCard(gs, cardInst.card);
-      const choices = getter(x);
+      const choices = getter(x, found.randomX === true);
       if (choices.length === 0) return false;
       set({
         targetingMode: "selection",
@@ -1491,9 +1505,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       return true;
     };
     return (
-      tryOpen("selection", (x) => getSelectionCards(gs, x, cardInst.card)) ||
-      tryOpen("selection_magique", (x) => getMagicalSelectionCards(gs, x, cardInst.card)) ||
-      tryOpen("renfort_royal", (x) => getRenfortRoyalCards(gs, x, cardInst.card))
+      tryOpen("selection", (x, alea) => getSelectionCards(gs, x, cardInst.card, undefined, alea)) ||
+      tryOpen("selection_magique", (x, alea) => getMagicalSelectionCards(gs, x, cardInst.card, undefined, undefined, alea)) ||
+      tryOpen("renfort_royal", (x, alea) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea))
     );
   };
 
@@ -1643,11 +1657,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     const deja = get().collectedSelectionChoices;
     for (const kw of ordreSelectionsCreature(card)) {
       if (deja[kw] != null) continue;
+      const amp = amplitudeSelectionEntree(card, kw);
       const choices = kw === "selection"
-        ? getSelectionCards(gs, plafondSelectionEntree(card, "selection"), card)
+        ? getSelectionCards(gs, amp.x, card, undefined, amp.randomX)
         : kw === "renfort_royal"
-          ? getRenfortRoyalCards(gs, plafondSelectionEntree(card, "renfort_royal"), card)
-          : getMagicalSelectionCards(gs, plafondSelectionEntree(card, "selection_magique"), card);
+          ? getRenfortRoyalCards(gs, amp.x, card, undefined, undefined, amp.randomX)
+          : getMagicalSelectionCards(gs, amp.x, card, undefined, undefined, amp.randomX);
       // Rien à proposer (pool vide) : on passe à la suivante plutôt que de
       // bloquer la pose sur un sélecteur vide.
       if (choices.length === 0) continue;
@@ -1674,6 +1689,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   validTargets: [],
   targetingMode: "none",
   pendingTriggerId: null,
+  alternativeOptions: [],
   pendingTriggerPrompt: null,
   pendingCostCard: null,
   selectedDiscardIds: [],
@@ -1696,8 +1712,6 @@ export const useGameStore = create<GameStore>((set, get) => {
   collectedSelectionChoices: {},
   selectionPickerKeyword: null,
   selectionCards: [],
-  tactiqueAvailableKeywords: [],
-  tactiqueMaxSelections: 0,
   pendingTargetInstanceId: null,
   pendingTapSourceId: null,
   pendingTapInstanceIdx: null,
@@ -4456,23 +4470,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         }
       }
 
-      if (gs) {
-        const player = gs.players[gs.currentPlayerIndex];
-        const cardInst = carteJouable(player, selectedCardInstanceId);
-        if (cardInst && cardInst.card.keywords.includes("tactique" as import("@/lib/game/types").Keyword)) {
-          const grantable = cardInst.card.keywords.filter(kw => kw !== "tactique");
-          const x = Math.max(1, Math.floor(cardInst.card.mana_cost / 3));
-          set({
-            targetingMode: "tactique_keywords",
-            pendingTargetInstanceId: targetId,
-            tactiqueAvailableKeywords: grantable,
-            tactiqueMaxSelections: Math.min(x, grantable.length),
-            validTargets: [],
-          });
-          return null; // waiting for keyword selection
-        }
-      }
-
       // Chain into a creature-side selection picker if the same creature
       // also carries selection / selection_magique / renfort_royal.
       if (gs && openCreaturePickerIfNeeded(gs, selectedCardInstanceId, {
@@ -4486,16 +4483,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         type: "play_card",
         cardInstanceId: selectedCardInstanceId,
         targetInstanceId: targetId,
-        boardPosition: pendingBoardPosition ?? undefined,
-      });
-    } else if (targetingMode === "tactique_keywords" && selectedCardInstanceId) {
-      const { pendingBoardPosition, pendingTargetInstanceId } = get();
-      const keywords = JSON.parse(targetId) as import("@/lib/game/types").Keyword[];
-      return get().dispatchAction({
-        type: "play_card",
-        cardInstanceId: selectedCardInstanceId,
-        targetInstanceId: pendingTargetInstanceId ?? undefined,
-        tactiqueKeywords: keywords,
         boardPosition: pendingBoardPosition ?? undefined,
       });
     } else if (targetingMode === "graveyard" && pendingComposedGraveyard) {
@@ -4883,6 +4870,17 @@ export const useGameStore = create<GameStore>((set, get) => {
         instanceIdx: pendingTapInstanceIdx,
         targetInstanceId: targetId,
       });
+    } else if (targetingMode === "pending_trigger" && get().alternativeOptions.length > 0) {
+      // « OU » : `targetId` porte l'uid de la branche choisie, pas une cible.
+      // Le moteur retire les perdantes et résout la gagnante ; ses éventuelles
+      // cibles se demanderont ensuite, par le chemin ordinaire.
+      const { pendingTriggerId } = get();
+      if (!pendingTriggerId) return null;
+      return get().dispatchAction({
+        type: "resolve_pending_trigger",
+        triggerId: pendingTriggerId,
+        alternativeCapUid: targetId,
+      });
     } else if (targetingMode === "pending_trigger") {
       const { pendingTriggerId, pendingTriggerNeeded, pendingTriggerPicked, validTargets: vt } = get();
       if (!pendingTriggerId) return null;
@@ -4942,8 +4940,6 @@ export const useGameStore = create<GameStore>((set, get) => {
       collectedDeckChoices: {},
       collectedSelectionChoices: {},
       selectionPickerKeyword: null,
-      tactiqueAvailableKeywords: [],
-      tactiqueMaxSelections: 0,
       pendingTargetInstanceId: null,
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
@@ -5277,10 +5273,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (me.hand.length >= MAX_HAND_SIZE) return null;
 
     // Alignement dérivé de la faction du héros, comme pour un pouvoir de héros
-    // à sélection. `exactCost` : on ne révèle QUE des cartes valant exactement
-    // ce qui a été mis de côté.
+    // à sélection. Le coût EXACT est désormais le régime par défaut des offres
+    // (cf. offreSelection) : on ne révèle que des cartes valant précisément ce
+    // qui a été mis de côté, sans rien avoir à demander.
     const heroSource = { faction: me.hero.heroDefinition?.faction ?? null };
-    const choices = getSelectionCards(gameState, level, heroSource, undefined, true);
+    const choices = getSelectionCards(gameState, level, heroSource);
     // Aucune carte à ce coût : le clic ne fait rien et l'épargne est conservée.
     // On ne dispatche pas, donc rien ne part sur le réseau.
     if (choices.length === 0) return null;

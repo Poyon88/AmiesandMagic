@@ -238,8 +238,8 @@
         "desc": "Erleidet keinen Kampfschaden."
       },
       "regeneration": {
-        "label": "Regeneration",
-        "desc": "Stellt zu Beginn deines Zuges 2 LP wieder her."
+        "label": "Regeneration X",
+        "desc": "Stellt zu Beginn deines Zuges X LP wieder her."
       },
       "corruption": {
         "label": "Korruption",
@@ -267,7 +267,7 @@
       },
       "tactique": {
         "label": "Taktik X",
-        "desc": "Verleiht einer anvisierten verbündeten Einheit dauerhaft X gewählte Fähigkeit(en)."
+        "desc": "Verleiht einer anvisierten verbündeten Einheit dauerhaft X ihrer permanenten Fähigkeiten, zufällig gezogen."
       },
       "exhumation": {
         "label": "Exhumierung X",
@@ -359,15 +359,15 @@
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; füge eine davon deiner Hand hinzu."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten ≤ X auf; füge einen davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten X auf; füge einen davon deiner Hand hinzu."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten ≤ X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
+        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
@@ -801,10 +801,17 @@
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "devoration": "verschlingt",
+        "tactique_one": "gibt zufällig eine ihrer permanenten Fähigkeiten weiter",
+        "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
         "retour_differe": "legt unter das Deck ihres Besitzers",
-        "selection": "deckt 3 Karten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand",
-        "selection_magique": "deckt 3 Zauber{filter} auf (Kosten ≤ {x}) und behält einen davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten ≤ {x}) und behält eine davon auf der Hand"
+        "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
+        "selection_magique": "deckt 3 Zauber{filter} auf (Kosten {x}) und behält einen davon auf der Hand",
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
+        "occurrences": "{n}-mal: ",
+        "alternative": "Wahlweise: ",
+        "silence": "bringt zum Schweigen",
+        "dechainement": "wirkt {x} zufällige Zauber mit Kosten {y}",
+        "dechainement_one": "wirkt einen zufälligen Zauber mit Kosten {y}"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -2325,7 +2332,27 @@
     "import_error": "Importfehler",
     "eveil_label": "ERWACHEN",
     "eveil_cost_hint": "ERWACHEN: Die Karte kann ins Erwachen versetzt werden, ANSTATT gespielt zu werden. Sie verlässt die Hand mit dieser Anzahl Punkte; der Spieler zahlt pro Zug 1 Mana pro Punkt, und beim letzten Punkt kommt sie ins Spiel, als käme sie aus der Hand. Ersetzt die Manakosten, statt sie zu ergänzen. Nicht reduzierbar.",
-    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} ins Erwachen versetzt werden, zahlbar mit 1 Mana pro Zug — anstelle der Manakosten"
+    "eveil_cost_title": "Kann für {count, plural, one {# Punkt} other {# Punkte}} ins Erwachen versetzt werden, zahlbar mit 1 Mana pro Zug — anstelle der Manakosten",
+    "label_occurrences": "WIEDERHOLUNGEN",
+    "occurrences_hint": "1 = einmal. Darüber wird der Inhalt hintereinander wiederholt (höchstens 10).",
+    "alternative_toggle": "ODER",
+    "alternative_toggle_title": "Dieser Effekt wird zu einem Zweig der Wahl der Karte: Der Spieler führt NUR EINEN der markierten Zweige aus.",
+    "alternative_warn_alone": "nur ein Zweig markiert: Der Effekt wird normal ausgeführt",
+    "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
+    "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
+    "content_appel": "Ruf aus dem Deck",
+    "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
+    "content_tuteur": "Tutor (benannte Karten → Hand)",
+    "content_epargne": "Ersparnis (Zähler)",
+    "content_foi": "Glaube (Zähler)",
+    "content_conquete": "Eroberung (Zähler)",
+    "content_incineration": "Einäscherung (Friedhof zurückführen)",
+    "content_devoration": "Verschlingen (zerstören und aufnehmen)",
+    "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",
+    "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
+    "content_silence": "Stille (nimmt dem Ziel alles)",
+    "content_dechainement": "Entfesselung X/Y (zufällige Zauber)",
+    "content_selection_magique": "Magische Auswahl (1 Zauber von 3)"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2381,9 +2408,6 @@
     "cost_hand_order_hint": "Ihre Klicks füllen zuerst den Friedhof, dann den Rückzug.",
     "topdeck_cost_caption": "{count, plural, one {Rückzug} other {Rückzug ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {# Kreatur opfern} other {# Kreaturen opfern}}",
-    "tactique_title": "📋 Taktik",
-    "tactique_subtitle": "{count, plural, one {Wähle # Fähigkeit zum Übertragen} other {Wähle # Fähigkeiten zum Übertragen}}",
-    "tactique_confirm": "Bestätigen ({selected}/{max})",
     "convocation_title": "📣 Beschwörung",
     "convocation_subtitle": "Wähle die Rasse des zu beschworenen Tokens",
     "cycle_eternel_caption": "♻ Ewiger Kreislauf",
@@ -2474,7 +2498,9 @@
     "eveil_suspend": "Erwachen lassen ({count, plural, one {# Punkt} other {# Punkte}})",
     "eveil_pay_n": "{count, plural, one {# zahlen} other {# zahlen}}",
     "eveil_max": "max {count}",
-    "eveil_max_hint": "Der letzte Punkt ist das Ins-Spiel-Kommen: Er wird separat gezahlt, zusammen mit der Zielwahl."
+    "eveil_max_hint": "Der letzte Punkt ist das Ins-Spiel-Kommen: Er wird separat gezahlt, zusammen mit der Zielwahl.",
+    "choix_ou_title": "⚖️ Wähle eines",
+    "choix_ou_subtitle": "Nur einer dieser Effekte wird ausgeführt."
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

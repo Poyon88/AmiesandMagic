@@ -38,6 +38,22 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   return null;
 }
 
+/** Ce mot-clé s'affiche-t-il en BLANC, c'est-à-dire en PERMANENT ?
+ *
+ *  Même définition que l'icône peinte sur la carte : pas de teinte de
+ *  déclencheur (`keywordModeColor` → null). Un passif, une aura ou un râle
+ *  d'agonie sans mode explicite sont blancs ; tout ce qui se déclenche à
+ *  l'entrée, à l'activation, à l'attaque, à la pioche… porte une couleur.
+ *
+ *  `mode` est celui de l'instance du mot-clé sur la carte (absent = le mode
+ *  d'affichage par défaut du registre), exactement ce que lit
+ *  `buildKeywordDisplayEntries` : le moteur et l'icône ne peuvent donc pas se
+ *  contredire, ce qui compte quand la règle du jeu est énoncée au joueur par
+ *  la couleur (« Tactique ne transmet que les capacités permanentes »). */
+export function isPermanentKeyword(kw: Keyword, mode?: KeywordMode): boolean {
+  return keywordModeColor(mode ?? defaultDisplayMode(kw)) === null;
+}
+
 /** Liseré de contraste sombre ajouté à CHAQUE icône (teintée ou blanche) pour
  *  rester lisible sur une illustration de carte quelconque : sur un fond clair
  *  ou doré, une teinte unie (jaune, argent, blanc) se noierait sans ce halo.
@@ -421,7 +437,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   prescience: "Prescience X", suprematie: "Suprématie", divination: "Divination",
   savant: "Savant",
   liaison_de_vie: "Liaison de vie", ombre: "Ombre", sacrifice: "Sacrifice", malefice: "Maléfice",
-  indestructible: "Indestructible", regeneration: "Régénération", corruption: "Corruption",
+  indestructible: "Indestructible", regeneration: "Régénération X", corruption: "Corruption",
   carnage: "Carnage X", heritage: "Héritage X", mimique: "Mimique",
   metamorphose: "Métamorphose", dedoublement: "Dédoublement", tactique: "Tactique X",
   exhumation: "Exhumation X", heritage_du_cimetiere: "Héritage du cimetière",

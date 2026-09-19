@@ -19,7 +19,7 @@ function ancrageDuBadge(opts: {
   choiceStartedAt?: number;
   turnStartedAt: number;
 }): { startedAt: number; seconds: number } | null {
-  const enChoix = ["selection", "divination", "tactique_keywords", "pending_trigger"]
+  const enChoix = ["selection", "divination", "pending_trigger"]
     .includes(opts.targetingMode);
   if (!enChoix || opts.overlayPeeked) return null;
   if (!opts.estMonTour) return null;
@@ -31,7 +31,7 @@ function ancrageDuBadge(opts: {
 const base = { estMonTour: true, pendingTriggers: 0, turnStartedAt: 1000 };
 
 describe("Quand le badge s'affiche", () => {
-  it.each(["selection", "divination", "tactique_keywords", "pending_trigger"])(
+  it.each(["selection", "divination", "pending_trigger"])(
     "s'affiche en mode « %s »",
     (targetingMode) => {
       expect(ancrageDuBadge({ ...base, targetingMode })).not.toBeNull();

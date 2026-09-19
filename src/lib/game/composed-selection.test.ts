@@ -12,7 +12,9 @@ import type { Capability, ComposedPoolFilter, CapabilityTrigger, Card, GameState
 
 function selectionCreature(
   pool: ComposedPoolFilter | undefined,
-  x = 2,
+  // Coût EXACT : le X par défaut vaut le coût par défaut de `poolCard` (1),
+  // sans quoi aucune carte du vivier ne serait offerte.
+  x = 1,
   trigger: CapabilityTrigger = "on_play",
   content: "selection" | "renfort_royal" = "selection",
 ) {
@@ -77,15 +79,17 @@ describe("Sélection composée — filtre de pool", () => {
     expect(offeredNames(next)).toEqual(["Rapide"]);
   });
 
-  it("s'ajoute aux règles de base : le coût > X reste exclu", () => {
+  it("s'ajoute aux règles de base : seul le coût EXACTEMENT X est offert", () => {
     const s = mkState();
     s.factionCardPool = [
-      poolCard("Abordable", { race: "Hommes-Bêtes", mana_cost: 2 }),
+      poolCard("Au bon prix", { race: "Hommes-Bêtes", mana_cost: 2 }),
       poolCard("Trop chère", { race: "Hommes-Bêtes", mana_cost: 5 }),
-      poolCard("Rare", { race: "Hommes-Bêtes", mana_cost: 1, rarity: "Rare" }),
+      // Moins chère : ÉCARTÉE elle aussi depuis que X désigne un coût exact.
+      poolCard("Trop bon marché", { race: "Hommes-Bêtes", mana_cost: 1 }),
+      poolCard("Rare", { race: "Hommes-Bêtes", mana_cost: 2, rarity: "Rare" }),
     ];
     const next = playHeraut(s, selectionCreature({ race: "Hommes-Bêtes" }, 2));
-    expect(offeredNames(next)).toEqual(["Abordable"]);
+    expect(offeredNames(next)).toEqual(["Au bon prix"]);
   });
 
   it("pool vide après filtrage : aucun déclencheur, aucune carte en main", () => {
@@ -117,7 +121,7 @@ describe("Sélection composée — suspension du choix", () => {
   it("déclencheur « à l'attaque » : tirage immédiat, pas de modale", () => {
     const s = mkState();
     s.factionCardPool = [poolCard("Loup"), poolCard("Chat")];
-    const attacker = selectionCreature(undefined, 2, "on_attack");
+    const attacker = selectionCreature(undefined, 1, "on_attack");
     attacker.hasSummoningSickness = false;
     s.players[0].board.push(attacker);
 
@@ -137,7 +141,7 @@ describe("Sélection Royale composée", () => {
       poolCard("Loup", { race: "Hommes-Bêtes" }),
       poolCard("Nain", { race: "Nains" }),
     ];
-    const next = playHeraut(s, selectionCreature({ race: "Hommes-Bêtes" }, 2, "on_play", "renfort_royal"));
+    const next = playHeraut(s, selectionCreature({ race: "Hommes-Bêtes" }, 1, "on_play", "renfort_royal"));
     const trig = (next.pendingTriggers ?? [])[0];
     expect(trig?.selectionType).toBe("renfort_royal");
     expect(offeredNames(next)).toEqual(["Loup"]);
@@ -161,7 +165,7 @@ describe("Sélection composée portée par un SORT", () => {
       name: "Appel des Ombres", card_type: "spell", attack: null, health: null,
       capabilities: [{
         uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
-        composed: { content: "selection", magnitude: { x: 2 } },
+        composed: { content: "selection", magnitude: { x: 1 } },
       }] as never,
     }));
     s.players[0].hand.push(spell);

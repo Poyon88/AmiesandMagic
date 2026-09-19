@@ -104,37 +104,39 @@ function stateAvecEpargne(niveau: number): GameState {
 describe("Épargne — construction de l'offre", () => {
   it("ne propose QUE des cartes au coût exact, jamais en dessous", () => {
     const s = stateAvecEpargne(3);
-    const offre = getSelectionCards(s, 3, { faction: "Nains" }, undefined, true);
+    const offre = getSelectionCards(s, 3, { faction: "Nains" });
     expect(offre.length).toBeGreaterThan(0);
     expect(offre.every((c) => c.mana_cost === 3)).toBe(true);
   });
 
   it("plafonne l'offre à 3 cartes", () => {
-    const offre = getSelectionCards(stateAvecEpargne(3), 3, { faction: "Nains" }, undefined, true);
+    const offre = getSelectionCards(stateAvecEpargne(3), 3, { faction: "Nains" });
     expect(offre).toHaveLength(3);
   });
 
   it("renvoie une offre VIDE si aucune carte n'a ce coût exact", () => {
-    const offre = getSelectionCards(stateAvecEpargne(5), 5, { faction: "Nains" }, undefined, true);
+    const offre = getSelectionCards(stateAvecEpargne(5), 5, { faction: "Nains" });
     expect(offre).toEqual([]);
   });
 
   it("ne consomme pas le flux RNG partagé (déterminisme réseau)", () => {
     const s = stateAvecEpargne(3);
     const avant = s.rngState;
-    const a = getSelectionCards(s, 3, { faction: "Nains" }, undefined, true);
-    const b = getSelectionCards(s, 3, { faction: "Nains" }, undefined, true);
+    const a = getSelectionCards(s, 3, { faction: "Nains" });
+    const b = getSelectionCards(s, 3, { faction: "Nains" });
     expect(s.rngState).toBe(avant);
     expect(a.map((c) => c.id)).toEqual(b.map((c) => c.id)); // même état ⇒ même offre
   });
 
-  it("laisse les Sélections en mode PLAFOND (non-régression)", () => {
-    // Pool ne contenant AUCUNE carte au coût 3 : le mode plafond doit tout de
-    // même proposer les cartes moins chères, là où le mode exact ne rend rien.
+  it("les Sélections ont rejoint le coût EXACT : plus de repli sur moins cher", () => {
+    // Pool sans aucune carte au coût 3 : l'offre est vide des deux côtés. C'est
+    // le changement de règle — auparavant une Sélection 3 proposait les cartes
+    // à 1 et 2, si bien que le X saisi ne se lisait plus dans l'offre.
     const s = stateAvecEpargne(3);
     s.factionCardPool = [commune(201, 1, "Clou"), commune(202, 2, "Vis")];
-    expect(getSelectionCards(s, 3, { faction: "Nains" }).length).toBe(2);
-    expect(getSelectionCards(s, 3, { faction: "Nains" }, undefined, true)).toEqual([]);
+    expect(getSelectionCards(s, 3, { faction: "Nains" })).toEqual([]);
+    // Avec « ? », le coût se tire PAR CARTE sous le plafond : là, ça propose.
+    expect(getSelectionCards(s, 3, { faction: "Nains" }, undefined, true).length).toBeGreaterThan(0);
   });
 });
 

@@ -65,6 +65,13 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   conquete: { content: "conquete", magnitude: { x: 1 } },
   incineration: { content: "incineration", magnitude: { x: 1 }, target: board({ entity: "hero", designation: "automatic" }) },
   retour_differe: { content: "retour_differe", target: board({ side: "any" }) },
+  // Silence : la forme composée reproduit la curée À L'IDENTIQUE (une unité,
+  // tout bord, au choix) — et ouvre en plus la cible, que la mécanique de sort
+  // ne savait pas déclarer (« toutes les ennemies », « une au hasard »).
+  silence: { content: "silence", target: board({ side: "any" }) },
+  // Déchainement X/Y : X sorts aléatoires de coût Y, sans cible propre. Le « ? »
+  // sur Y en fait un plafond, exactement comme le mot-clé.
+  dechainement: { content: "dechainement", magnitude: { x: 1, y: 1 } },
   selection: { content: "selection", magnitude: { x: 1 } },
   selection_magique: { content: "selection_magique", magnitude: { x: 1 } },
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },

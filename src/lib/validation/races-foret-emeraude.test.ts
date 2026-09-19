@@ -136,7 +136,7 @@ describe("tables de pouvoirs", () => {
     expect(Object.keys(prof("Farfadets").likelyKeywords ?? {})).toContain("Richesse X");
     expect(Object.keys(prof("Korrigans").likelyKeywords ?? {})).toContain("Malédiction");
     expect(Object.keys(prof("Faunes").likelyKeywords ?? {})).toContain("Inspiration X");
-    expect(Object.keys(prof("Dryades").likelyKeywords ?? {})).toContain("Régénération");
+    expect(Object.keys(prof("Dryades").likelyKeywords ?? {})).toContain("Régénération X");
   });
 
   it("aucune ne double un pouvoir du clan", () => {

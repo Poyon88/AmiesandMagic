@@ -238,8 +238,8 @@
         "desc": "不受任何战斗伤害。"
       },
       "regeneration": {
-        "label": "再生",
-        "desc": "你的回合开始时，恢复 2 点生命值。"
+        "label": "再生 X",
+        "desc": "你的回合开始时，恢复 X 点生命值。"
       },
       "corruption": {
         "label": "腐化",
@@ -267,7 +267,7 @@
       },
       "tactique": {
         "label": "战术 X",
-        "desc": "将X个所选技能永久赋予一个目标我方单位。"
+        "desc": "随机将自身的X个永久技能永久赋予一个目标我方单位。"
       },
       "exhumation": {
         "label": "掘墓 X",
@@ -359,15 +359,15 @@
       },
       "selection": {
         "label": "抉择 X",
-        "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌。"
+        "desc": "展示3张费用为X的{alignment}普通卡；选择一张加入手牌。"
       },
       "selection_magique": {
         "label": "魔法抉择 X",
-        "desc": "展示3张费用≤X的{alignment}普通法术；选择一张加入手牌。"
+        "desc": "展示3张费用为X的{alignment}普通法术；选择一张加入手牌。"
       },
       "renfort_royal": {
         "label": "皇家抉择 X",
-        "desc": "展示你牌库中3张费用≤X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。"
+        "desc": "展示你牌库中3张费用为X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。"
       },
       "lycanthropie": {
         "label": "狼人变身 X",
@@ -801,10 +801,17 @@
         "conquete": "为你的征服计数器增加{x}",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "devoration": "吞噬",
+        "tactique_one": "随机传授自身的1个永久技能",
+        "tactique_many": "随机传授自身的{x}个永久技能",
         "retour_differe": "放到其拥有者牌库底",
-        "selection": "展示3张{filter}卡牌（费用 ≤ {x}），并保留其中一张至手牌",
-        "selection_magique": "展示3张{filter}法术（费用≤{x}），并留其中一张入手",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用 ≤ {x}），并保留其中一张至手牌"
+        "selection": "展示3张{filter}卡牌（费用为 {x}），并保留其中一张至手牌",
+        "selection_magique": "展示3张{filter}法术（费用为{x}），并留其中一张入手",
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
+        "occurrences": "{n} 次：",
+        "alternative": "择一：",
+        "silence": "沉默",
+        "dechainement": "施放 {x} 个费用为 {y} 的随机法术",
+        "dechainement_one": "施放一个费用为 {y} 的随机法术"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -2325,7 +2332,27 @@
     "import_error": "导入错误",
     "eveil_label": "觉醒",
     "eveil_cost_hint": "觉醒：这张卡可以选择进入觉醒状态，而不是直接打出。它带着这个点数离开手牌；玩家每回合支付1点法力值消耗1点，在最后一点时如同从手牌打出般进入战场。此花费取代法力值费用，而非叠加。不可减免。",
-    "eveil_cost_title": "可花费{count, plural, one {# 点} other {# 点}}进入觉醒状态，每回合支付1点法力值——以代替法力值费用"
+    "eveil_cost_title": "可花费{count, plural, one {# 点} other {# 点}}进入觉醒状态，每回合支付1点法力值——以代替法力值费用",
+    "label_occurrences": "执行次数",
+    "occurrences_hint": "1 = 仅一次。大于 1 时内容将连续重复执行（最多 10 次）。",
+    "alternative_toggle": "或",
+    "alternative_toggle_title": "此效果成为本牌选择项之一：玩家只会结算已勾选分支中的一个。",
+    "alternative_warn_alone": "仅勾选了一个分支：该效果将正常结算",
+    "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
+    "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
+    "content_appel": "自牌库召唤",
+    "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
+    "content_tuteur": "导师（指定卡牌→手牌）",
+    "content_epargne": "储蓄（计数）",
+    "content_foi": "信仰（计数）",
+    "content_conquete": "征服（计数）",
+    "content_incineration": "焚化（回收墓地）",
+    "content_devoration": "吞噬（消灭并吸收）",
+    "content_tactique": "战术（分享自身永久技能）",
+    "content_retour_differe": "延迟归返（置于牌库底）",
+    "content_silence": "沉默（移除目标的一切）",
+    "content_dechainement": "解放 X/Y（随机法术）",
+    "content_selection_magique": "魔法甄选（三选一法术）"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2381,9 +2408,6 @@
     "cost_hand_order_hint": "您的点击将先填满弃牌堆，再填充回置。",
     "topdeck_cost_caption": "{count, plural, one {回置} other {回置 ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {牺牲 # 个生物} other {牺牲 # 个生物}}",
-    "tactique_title": "📋 战术",
-    "tactique_subtitle": "{count, plural, one {选择 # 个技能进行转移} other {选择 # 个技能进行转移}}",
-    "tactique_confirm": "确认 ({selected}/{max})",
     "convocation_title": "📣 召唤",
     "convocation_subtitle": "选择要召唤的token种族",
     "cycle_eternel_caption": "♻ 永恒循环",
@@ -2474,7 +2498,9 @@
     "eveil_suspend": "置入觉醒（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {支付#}}",
     "eveil_max": "最多{count}",
-    "eveil_max_hint": "最后一点就是进场本身：它单独支付，并同时选择目标。"
+    "eveil_max_hint": "最后一点就是进场本身：它单独支付，并同时选择目标。",
+    "choix_ou_title": "⚖️ 二者择一",
+    "choix_ou_subtitle": "这些效果中只有一个会结算。"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

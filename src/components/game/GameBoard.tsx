@@ -22,7 +22,7 @@ import EveilOverlay from "./EveilOverlay";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import DivinationOverlay from "./DivinationOverlay";
 import SelectionOverlay from "./SelectionOverlay";
-import TactiqueKeywordOverlay from "./TactiqueKeywordOverlay";
+import ChoixOuOverlay from "./ChoixOuOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import ActionHistoryStrip from "./ActionHistoryStrip";
@@ -108,8 +108,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     pendingTriggerPicked,
     divinationCards,
     selectionCards,
-    tactiqueAvailableKeywords,
-    tactiqueMaxSelections,
+    alternativeOptions,
     effectLog,
     actionHistory,
     dispatchAction,
@@ -288,7 +287,6 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     if (!gameState) return null;
     const enChoix = targetingMode === "selection"
       || targetingMode === "divination"
-      || targetingMode === "tactique_keywords"
       || targetingMode === "pending_trigger";
     if (!enChoix || overlayPeeked) return null;
     if (gameState.players[gameState.currentPlayerIndex].id !== localPlayerId) return null;
@@ -364,7 +362,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // Overlays plein écran (fond noir) qui masquent le plateau et supportent le
   // peek. Bandeaux (spell_multi / pending_trigger) et CostPaymentOverlay
   // (non-modal, plateau visible) exclus.
-  const PEEKABLE_MODES = ["selection", "divination", "graveyard", "tactique_keywords"] as const;
+  const PEEKABLE_MODES = ["selection", "divination", "graveyard"] as const;
   const isPeekableOverlayActive = (PEEKABLE_MODES as readonly string[]).includes(targetingMode);
 
   // Auto-clear damage events after animation
@@ -738,7 +736,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     // Modes de ciblage qui appartiennent au flux « je joue une carte ». Une
     // attaque, un pouvoir de héros ou une activation ne coûtent pas de mana de
     // main : les exclure évite de réserver à tort.
-    const PLAY_FLOW = ["spell", "spell_multi", "creature", "graveyard", "divination", "selection", "tactique_keywords", "cost_payment"];
+    const PLAY_FLOW = ["spell", "spell_multi", "creature", "graveyard", "divination", "selection", "cost_payment"];
     if (!PLAY_FLOW.includes(targetingMode)) return 0;
     const inst = myPlayer.hand.find((c) => c.instanceId === pendingId);
     return inst ? effectiveManaCost(inst, myPlayer) : 0;
@@ -1847,6 +1845,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           onCancel={clearSelection}
         />
       )}
+      {/* « OU » : la question porte sur l'EFFET, pas sur une cible — d'où une
+          modale plutôt qu'un surlignage du plateau. */}
+      {targetingMode === "pending_trigger" && alternativeOptions.length > 0 && !overlayPeeked && (
+        <ChoixOuOverlay
+          options={alternativeOptions}
+          onChoose={(capUid) => {
+            const action = selectTarget(capUid);
+            if (action) broadcast(action);
+          }}
+        />
+      )}
       {targetingMode === "selection" && selectionCards.length > 0 && !overlayPeeked && (
         <SelectionOverlay
           cards={selectionCards}
@@ -1854,17 +1863,6 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             const action = selectTarget(String(cardId));
             if (action) broadcast(action);
           }}
-        />
-      )}
-      {targetingMode === "tactique_keywords" && tactiqueAvailableKeywords.length > 0 && !overlayPeeked && (
-        <TactiqueKeywordOverlay
-          keywords={tactiqueAvailableKeywords}
-          maxSelections={tactiqueMaxSelections}
-          onConfirm={(selected) => {
-            const action = selectTarget(JSON.stringify(selected));
-            if (action) broadcast(action);
-          }}
-          onCancel={clearSelection}
         />
       )}
       <CostPaymentOverlay onConfirmedAction={broadcast} />

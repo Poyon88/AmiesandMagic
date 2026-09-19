@@ -238,8 +238,8 @@
         "desc": "戦闘ダメージを一切受けない。"
       },
       "regeneration": {
-        "label": "再生",
-        "desc": "自分のターン開始時にHPを2回復する。"
+        "label": "再生 X",
+        "desc": "自分のターン開始時にHPをX回復する。"
       },
       "corruption": {
         "label": "腐敗",
@@ -267,7 +267,7 @@
       },
       "tactique": {
         "label": "戦術 X",
-        "desc": "選択したX個の能力を対象の味方ユニットに永続的に付与する。"
+        "desc": "自身の永続能力のうちランダムなX個を、対象の味方ユニットに永続的に付与する。"
       },
       "exhumation": {
         "label": "発掘 X",
@@ -359,15 +359,15 @@
       },
       "selection": {
         "label": "選択 X",
-        "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
+        "desc": "コストXの{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
       },
       "selection_magique": {
         "label": "魔法選択 X",
-        "desc": "コストX以下の{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える。"
+        "desc": "コストXの{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える。"
       },
       "renfort_royal": {
         "label": "王室選択 X",
-        "desc": "コストX以下の限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
+        "desc": "コストXの限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
       },
       "lycanthropie": {
         "label": "獣人変化 X",
@@ -801,10 +801,17 @@
         "conquete": "征服カウンターに{x}を加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
         "devoration": "捕食する",
+        "tactique_one": "自身の永続能力を1つランダムに授ける",
+        "tactique_many": "自身の永続能力を{x}つランダムに授ける",
         "retour_differe": "所有者のデッキの一番下に置く",
-        "selection": "3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える",
-        "selection_magique": "呪文{filter}を3枚公開し(コスト{x}以下)、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}以下）を公開し、その中から1枚を手札に加える"
+        "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
+        "selection_magique": "呪文{filter}を3枚公開し(コスト{x})、その中から1枚を手札に加える",
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
+        "occurrences": "{n}回: ",
+        "alternative": "選択: ",
+        "silence": "沈黙させる",
+        "dechainement": "コスト{y}のランダムな呪文を{x}回唱える",
+        "dechainement_one": "コスト{y}のランダムな呪文を1つ唱える"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -2325,7 +2332,27 @@
     "import_error": "インポートエラー",
     "eveil_label": "覚醒",
     "eveil_cost_hint": "覚醒：プレイする代わりに、覚醒状態にすることができます。カードはこのポイント数を持って手札を離れ、プレイヤーは自分の各ターンにマナ1につき1ポイントを支払い、最後のポイントで手札からと同様に場に出ます。マナコストの代わりであり、加算はされません。軽減不可。",
-    "eveil_cost_title": "{count, plural, one {#ポイント} other {#ポイント}}で覚醒状態にできる（ターンごとにマナ1で1ポイント支払い）――マナコストの代わりに"
+    "eveil_cost_title": "{count, plural, one {#ポイント} other {#ポイント}}で覚醒状態にできる（ターンごとにマナ1で1ポイント支払い）――マナコストの代わりに",
+    "label_occurrences": "実行回数",
+    "occurrences_hint": "1 = 1回のみ。2以上で内容が連続して繰り返される（最大10）。",
+    "alternative_toggle": "OR",
+    "alternative_toggle_title": "この効果はカードの選択肢の1つになる：チェックした中から1つだけが解決される。",
+    "alternative_warn_alone": "チェックが1つだけ：効果は通常どおり解決される",
+    "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
+    "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
+    "content_appel": "デッキからの招集",
+    "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
+    "content_tuteur": "チューター（指定カード→手札）",
+    "content_epargne": "貯蓄（カウンター）",
+    "content_foi": "信仰（カウンター）",
+    "content_conquete": "征服（カウンター）",
+    "content_incineration": "焼却（墓地を戻す）",
+    "content_devoration": "捕食（破壊して吸収）",
+    "content_tactique": "戦術（自身の永続能力を分け与える）",
+    "content_retour_differe": "遅延帰還（デッキの下へ）",
+    "content_silence": "沈黙（対象から全て取り除く）",
+    "content_dechainement": "解放 X/Y（ランダムな呪文）",
+    "content_selection_magique": "魔法の選抜（3枚から呪文1枚）"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2381,9 +2408,6 @@
     "cost_hand_order_hint": "クリックはまず捨て札を、その後リプレイスを埋めます。",
     "topdeck_cost_caption": "{count, plural, one {リプレイス} other {リプレイス×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {クリーチャーを # 体生贄に捧げる} other {クリーチャーを # 体生贄に捧げる}}",
-    "tactique_title": "📋 タクティクス",
-    "tactique_subtitle": "{count, plural, one {移転する能力を # つ選んでください} other {移転する能力を # つ選んでください}}",
-    "tactique_confirm": "確認 ({selected}/{max})",
     "convocation_title": "📣 召喚",
     "convocation_subtitle": "召喚するトークンの種族を選んでください",
     "cycle_eternel_caption": "♻ 永遠のサイクル",
@@ -2474,7 +2498,9 @@
     "eveil_suspend": "覚醒させる（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {#支払う}}",
     "eveil_max": "最大{count}",
-    "eveil_max_hint": "最後の1点は場に出ることそのものです。対象の選択とあわせて、別に支払います。"
+    "eveil_max_hint": "最後の1点は場に出ることそのものです。対象の選択とあわせて、別に支払います。",
+    "choix_ou_title": "⚖️ いずれかを選択",
+    "choix_ou_subtitle": "これらの効果のうち1つだけが解決される。"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

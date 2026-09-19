@@ -41,7 +41,8 @@ import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwS
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
-import { KEYWORD_LABELS, parseXValuesFromEffectText } from "./keyword-labels";
+import { KEYWORD_LABELS, isPermanentKeyword, parseXValuesFromEffectText } from "./keyword-labels";
+import { nombreDOccurrences } from "./composed-occurrences";
 import {
   HERO_MAX_HP,
   startingHandSizeFor,
@@ -86,6 +87,12 @@ let currentPlayerId = "";
 // Accumulateur de déclencheurs interactifs créés pendant l'action en cours.
 // Vidé au début d'applyAction, rattaché au state retourné à la fin.
 let pendingTriggerSink: PendingTrigger[] = [];
+// Frames produites HORS de la pile par les chemins qui résolvent leurs effets
+// composés en ligne (sort, mort, retour, attaque, pioche, pouvoir de héros) :
+// `runComposedCapsForCard` n'a pas le `GameState` sous la main, elle dépose
+// donc ici les branches d'un « OU » et `applyAction` les empile juste avant son
+// drain final. Même motif que pendingTriggerSink, et pour la même raison.
+let frameSink: StackFrame[] = [];
 // Accumulateur des points SÉQUENTIELS (dégâts/soin du scatter et de Tempête,
 // BOOSTS d'Esprit de corps) émis un à un pendant l'action en cours, dans
 // l'ordre. Vidé au début d'applyAction, rattaché à state.sequentialHits à la fin
@@ -721,7 +728,17 @@ function getCardKwX(card: Card, kw: Keyword, mode: import("./types").KeywordMode
   // L'adaptateur a déjà intégré le repli [Keyword X] de effect_text dans
   // params.x (pour le mode par défaut), donc une simple lecture suffit.
   const trigger = capTriggerForMode(mode);
-  const cap = getCapabilities(card).find(c => c.abilityId === kw && c.trigger === trigger);
+  const caps = getCapabilities(card);
+  const cap = caps.find(c => c.abilityId === kw && c.trigger === trigger)
+    // Repli AUTOMATIQUE. Les capacités passives / d'aura / réactives (cf.
+    // AUTOMATIC_ABILITY_IDS) sont classées `automatic` par l'adaptateur, jamais
+    // `on_play` : sans ce second passage, `getKwX(ci, kw, undefined, d)` ne
+    // trouvait rien et rendait le DÉFAUT en silence — une Régénération 5 saisie
+    // dans la forge soignait de 2. Le mode par défaut est le seul concerné, les
+    // déclencheurs nommés n'ayant pas de forme automatique.
+    ?? (trigger === "on_play"
+      ? caps.find(c => c.abilityId === kw && c.trigger === "automatic")
+      : undefined);
   return cap?.params?.x ?? defaultX;
 }
 
@@ -1080,6 +1097,37 @@ function designationCiblee(composed: import("./types").ComposedEffect): boolean 
   return composed.target?.designation === "choice";
 }
 
+/** SILENCE — l'unité perd tout et retombe à ses valeurs imprimées.
+ *
+ *  Corps PARTAGÉ par la mécanique de sort curée et le contenu composé
+ *  homonyme : deux copies de ce nettoyage auraient divergé au premier champ
+ *  ajouté sur l'instance, et un pouvoir oublié dans l'une des deux se serait vu
+ *  survivre au silence sans que rien ne le signale.
+ *
+ *  Ce qui est retiré, et pourquoi : `keywords` (liste legacy),
+ *  `keyword_instances` (pouvoirs à mode : activés, râles, portées de don) ET
+ *  `capabilities` — c'est ce dernier que lit `getCapabilities`, l'oublier
+ *  laissait une créature backfillée garder l'intégralité de ses pouvoirs curés
+ *  comme composés. La réserve Singulier part aussi, sinon un changement de
+ *  contrôle ultérieur ressusciterait ce qui venait d'être retiré ; et le sort
+ *  d'Apprentissage, sans quoi une créature qui réapprendrait la capacité
+ *  (Mimique, Totem) verrait ressurgir un sort censé être oublié.
+ *
+ *  Enfin les STATS : le Silence ne coupe pas que les pouvoirs, il reprend tous
+ *  les gains accumulés (dont les +X/+Y de Gloire et de Renforcement, cuits dans
+ *  `card`). */
+function appliquerSilence(target: CardInstance): void {
+  target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
+  delete target.singulierStash;
+  target.apprentissageSpell = undefined;
+  target.hasDivineShield = false;
+  target.contresortActive = false;
+  target.isParalyzed = false;
+  target.fureurActive = false;
+  target.fureurATKBonus = 0;
+  stripBoostsToBase(target);
+}
+
 function applyComposedToUnit(
   composed: import("./types").ComposedEffect,
   u: CardInstance,
@@ -1104,6 +1152,20 @@ function applyComposedToUnit(
     }
     case "retour_differe": {
       resolveRetourDiffere(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell, designationCiblee(composed));
+      return;
+    }
+    case "tactique": {
+      // Sans source UNITÉ, personne n'a de capacités à partager — même silence
+      // que Dévoration plutôt qu'un effet qui mentirait. Le cas du SORT est
+      // exclu explicitement : ses `keywords` sont les capacités qu'il CONFÈRE,
+      // pas des capacités qu'il porte, et les repartager ici doublerait
+      // `grant_keyword` avec une sémantique trouble. Et une source ne se
+      // transmet rien à elle-même.
+      if (!source || source.card.card_type === "spell") return;
+      if (u.instanceId === source.instanceId) return;
+      for (const kw of tactiqueKeywordsAHasard(source, u, x)) {
+        u.card = { ...u.card, keywords: [...u.card.keywords, kw] };
+      }
       return;
     }
     case "deal_damage": {
@@ -1149,6 +1211,7 @@ function applyComposedToUnit(
       if (!destroyOutsideBoard(u, owner, opponent)) u.currentHealth = 0;
       break;
     case "paralyze": u.isParalyzed = true; break;
+    case "silence": appliquerSilence(u); break;
     // ÉTAT empoisonné (1 PV perdu à chaque fin de tour), pas le mot-clé Poison :
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
     // que le mot-clé de sort `poison` (cf. resolveSpellKeywords).
@@ -1332,20 +1395,49 @@ function resolveComposedEffect(
     case "gain_mana": owner.mana += x; return;
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
+    // DÉCHAINEMENT X/Y composé : X sorts aléatoires de coût Y, cibles au hasard.
+    // Aucune cible propre — c'est un effet du CONTRÔLEUR, comme la pioche.
+    //
+    // `currentActionState` plutôt qu'un état reconstitué : les sorts déchainés
+    // se lancent pour de bon (castSpellWithRandomTargets), ils ont besoin de
+    // l'état VIVANT, pas d'une façade. Hors action (appel direct d'un handler
+    // en test), il n'y a rien à déchainer.
+    case "dechainement": {
+      const live = currentActionState;
+      const carte = source?.card ?? opts?.sourceCard;
+      if (!live || !carte) return;
+      resolveDechainement(live, owner, opponent, carte, x, y, composed.magnitude?.randomY === true);
+      return;
+    }
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
     // APPEL SUPRÊME composé : la carte la plus chère du deck qui satisfait le
     // filtre de pool et le plafond X (0 = sans plafond) rejoint la main.
-    case "appel_supreme":
-      appelSupreme(owner, owner.deck.filter(c =>
-        matchesPoolFilter(c.card, composed.pool) && (x <= 0 || c.card.mana_cost <= x)));
+    case "appel_supreme": {
+      // Le vivier se recalcule à CHAQUE passe : la carte partie en main a quitté
+      // le deck, donc N occurrences ramènent les N plus chères, et non N fois
+      // la même.
+      for (let i = 0; i < nombreDOccurrences(composed); i++) {
+        if (owner.hand.length >= MAX_HAND_SIZE) break;
+        const cands = owner.deck.filter(c =>
+          matchesPoolFilter(c.card, composed.pool) && (x <= 0 || c.card.mana_cost <= x));
+        if (cands.length === 0) break;
+        appelSupreme(owner, cands);
+      }
       return;
+    }
     // TUTEUR : la carte désignée rejoint la main du contrôleur.
-    case "tuteur":
-      resolveTuteur(owner, tuteurCardIds(composed), currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
+    case "tuteur": {
+      // Cartes NOMMÉES : l'occurrence rejoue la LISTE entière ([A, B] ×3 =
+      // A B A B A B). resolveTuteur s'arrête déjà à la main pleine.
+      const ids = tuteurCardIds(composed);
+      const n = nombreDOccurrences(composed);
+      const repete = n > 1 ? Array.from({ length: n }, () => ids).flat() : ids;
+      resolveTuteur(owner, repete, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
         source?.card.name ?? opts?.sourceCard?.name ?? "?");
       return;
+    }
     // APPEL — met en jeu gratuitement la 1re unité du DECK de coût ≤ X qui
     // satisfait le filtre de pool.
     //
@@ -1358,16 +1450,20 @@ function resolveComposedEffect(
     // Traque de l'appelée est respectée — sans quoi une unité mise en jeu
     // gratuitement attaquerait le tour même, ce qu'aucun appel ne permet.
     case "appel": {
-      if (owner.board.length >= MAX_BOARD_SIZE) return;
-      const idx = owner.deck.findIndex(c =>
-        c.card.card_type === "creature"
-        && c.card.mana_cost <= x
-        && matchesPoolFilter(c.card, composed.pool));
-      if (idx < 0) return;
-      const [appelee] = owner.deck.splice(idx, 1);
-      const inst = createCardInstance(appelee.card);
-      inst.hasSummoningSickness = !hasKw(inst, "charge");
-      owner.board.push(inst);
+      // N occurrences = les N PREMIÈRES unités du deck qui satisfont le filtre :
+      // chaque passe repart du deck amputé de la précédente.
+      for (let i = 0; i < nombreDOccurrences(composed); i++) {
+        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        const idx = owner.deck.findIndex(c =>
+          c.card.card_type === "creature"
+          && c.card.mana_cost <= x
+          && matchesPoolFilter(c.card, composed.pool));
+        if (idx < 0) break;
+        const [appelee] = owner.deck.splice(idx, 1);
+        const inst = createCardInstance(appelee.card);
+        inst.hasSummoningSickness = !hasKw(inst, "charge");
+        owner.board.push(inst);
+      }
       return;
     }
     // Incinération. Deux écritures possibles, et la désignation prime :
@@ -1499,8 +1595,13 @@ function resolveComposedEffect(
       // ni filtre — plusieurs et doublons permis (Invocations multiples
       // désignées) ; on s'arrête au plateau plein.
       const designees = designatedCardIds(composed);
+      const occurrences = nombreDOccurrences(composed);
       if (designees.length > 0) {
-        for (const id of designees) {
+        // L'occurrence rejoue la LISTE entière, comme Tuteur.
+        const aInvoquer = occurrences > 1
+          ? Array.from({ length: occurrences }, () => designees).flat()
+          : designees;
+        for (const id of aInvoquer) {
           if (owner.board.length >= MAX_BOARD_SIZE) break;
           resolveDesignatedSummon(owner, id, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
             source?.card.name ?? opts?.sourceCard?.name ?? "?");
@@ -1512,13 +1613,18 @@ function resolveComposedEffect(
       // filtre de pool s'il est renseigné.
       const invocCard = source?.card ?? opts?.sourceCard;
       if (!invocCard) return;
-      resolveInvocationSummon(
-        owner, invocCard, x,
-        currentCardPools.factionCardPool, currentFormatCode,
-        composed.pool,
-        // « X au hasard » ⇒ X est un plafond de coût (cf. figerAmplitudeAleatoire).
-        composed.magnitude?.randomX === true,
-      );
+      // Chaque passe tire sa propre créature (resolveInvocationSummon s'arrête
+      // de lui-même sur un plateau plein).
+      for (let i = 0; i < occurrences; i++) {
+        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        resolveInvocationSummon(
+          owner, invocCard, x,
+          currentCardPools.factionCardPool, currentFormatCode,
+          composed.pool,
+          // « X au hasard » ⇒ X est un plafond de coût (cf. figerAmplitudeAleatoire).
+          composed.magnitude?.randomX === true,
+        );
+      }
       return;
     }
     case "selection":
@@ -1549,11 +1655,11 @@ function resolveComposedEffect(
       // résolus au même instant). L'uid est une donnée de carte, donc identique
       // sur les deux clients — aucun risque de désync.
       const seedSalt = source?.instanceId ?? opts?.capUid;
-      const options = selectionCardsForKeyword(composed.content, selState, x, selCard, composed.pool, seedSalt);
-      // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
-      // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
-      // silencieusement autre chose.
-      if (options.length === 0) return;
+      // Contenu FIGÉ hors du switch : les trois Sélections partagent ce bloc, et
+      // le résolveur de passe ci-dessous en a besoin sans repasser par
+      // `composed.content`, dont TypeScript perd l'affinement une fois sorti du
+      // `case`.
+      const selContent = composed.content;
       // La modale ne peut s'ouvrir que sur le tour du contrôleur, hors flux
       // synchrone (attaque) et hors rejeu Déclenchement (noSuspend) — mêmes
       // règles que le chemin curé.
@@ -1570,26 +1676,54 @@ function resolveComposedEffect(
         && owner.id === currentPlayerId
         && opts?.trigger !== "on_attack"
         && !opts?.noSuspend;
-      if (interactive) {
-        // ⚠️ PAS de `capUid` sur ce trigger : applyOnePendingTrigger teste
-        // `if (trigger.capUid)` AVANT `else if (trigger.selectionType)`, et
-        // rappellerait donc resolveComposedEffect → nouveau trigger → boucle.
-        // L'unicité passe par `id` seul — d'où l'uid de la capacité dans la clé
-        // côté sort : deux Sélections d'une même carte doivent produire DEUX
-        // déclencheurs distincts, donc deux modales successives.
-        pendingTriggerSink.push({
-          id: opts?.emblemIndex != null
-            ? `emblem_${opts.emblemIndex}#${composed.content}`
-            : `${source?.instanceId ?? `spell_${selCard.id}`}#${opts?.capUid ?? composed.content}`,
-          controllerId: owner.id,
-          sourceInstanceId: source?.instanceId ?? null,
-          selectionType: composed.content,
-          selectionOptionIds: options.map(c => c.id),
-        });
-        return;
+
+      /** Une passe : ouvre la fenêtre de choix, ou tire à sa place. */
+      const resoudreUnePasse = (options: Card[], i: number): void => {
+        if (interactive) {
+          // ⚠️ PAS de `capUid` sur ce trigger : applyOnePendingTrigger teste
+          // `if (trigger.capUid)` AVANT `else if (trigger.selectionType)`, et
+          // rappellerait donc resolveComposedEffect → nouveau trigger → boucle.
+          // L'unicité passe par `id` seul — d'où l'uid de la capacité dans la
+          // clé côté sort : deux Sélections d'une même carte doivent produire
+          // DEUX déclencheurs distincts, donc deux modales successives.
+          const idBase = opts?.emblemIndex != null
+            ? `emblem_${opts.emblemIndex}#${selContent}`
+            : `${source?.instanceId ?? `spell_${selCard.id}`}#${opts?.capUid ?? selContent}`;
+          pendingTriggerSink.push({
+            // Suffixe d'occurrence : `resolvePendingTrigger` dépile PAR ID, deux
+            // homonymes et la seconde fenêtre ne se refermerait jamais. La passe
+            // 0 garde l'id d'avant — aucune carte existante ne bouge.
+            id: i === 0 ? idBase : `${idBase}#occ${i}`,
+            controllerId: owner.id,
+            sourceInstanceId: source?.instanceId ?? null,
+            selectionType: selContent,
+            selectionOptionIds: options.map(c => c.id),
+          });
+          return;
+        }
+        const picked = options[Math.floor(rng() * options.length)];
+        if (owner.hand.length < MAX_HAND_SIZE) owner.hand.push(createCardInstance(picked));
+      };
+
+      // OCCURRENCES : N fenêtres SUCCESSIVES de trois cartes, une gardée par
+      // fenêtre. Chaque passe est INDÉPENDANTE — elle tire son propre triplet
+      // dans la collection entière, si bien qu'une carte peut reparaître d'une
+      // passe à l'autre (choix d'auteur, cf. ComposedEffect.occurrences).
+      //
+      // Le GERME doit différer d'une passe à l'autre, sous peine de panne
+      // silencieuse : à sel égal, `selectionCardsForKeyword` rend trois fois le
+      // même triplet. La passe 0 garde le sel d'avant, donc une carte à
+      // occurrence unique tire exactement comme hier.
+      for (let i = 0; i < nombreDOccurrences(composed); i++) {
+        const selDeLaPasse = i === 0 ? seedSalt : `${seedSalt ?? ""}#occ${i}`;
+        const options = selectionCardsForKeyword(selContent, selState, x, selCard, composed.pool, selDeLaPasse,
+          composed.magnitude?.randomX === true);
+        // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
+        // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
+        // silencieusement autre chose.
+        if (options.length === 0) return;
+        resoudreUnePasse(options, i);
       }
-      const picked = options[Math.floor(rng() * options.length)];
-      if (owner.hand.length < MAX_HAND_SIZE) owner.hand.push(createCardInstance(picked));
       return;
     }
     default: break;
@@ -1757,9 +1891,25 @@ function runComposedCapsForCard(
   // la carte qui agit. Chaque événement a donc son propre point d'accroche,
   // inconditionnel.
   if (trigger === "spell_resolution" && !opts?.skipEmblems) placeEmblemsForCard(card, owner, opponent);
+  // « OU » : les branches ne se résolvent PAS en ligne — il faut d'abord
+  // demander laquelle. Elles partent sur la pile d'effets, seul endroit qui
+  // sache suspendre une résolution pour interroger le joueur. Le reste de la
+  // carte continue de se résoudre ici, dans l'ordre d'auteur ; la branche
+  // choisie se résout ensuite (nuance assumée : sur ces déclencheurs-là, elle
+  // passe APRÈS les autres effets du même moment).
+  const branches = getCapabilities(card).filter(c =>
+    composeExecutable(c) && c.trigger === trigger && c.alternative === true
+    && (!opts?.only || opts.only(c)));
+  if (branches.length >= 2) {
+    const uids = new Set(branches.map(b => b.uid));
+    frameSink.push(...buildComposedFrames(card, trigger, source, owner.id, targetMap, fallbackTargetId,
+      { only: (c) => uids.has(c.uid) }));
+  }
   for (const cap of getCapabilities(card)) {
     if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
     if (opts?.only && !opts.only(cap)) continue;
+    // Branche d'un « OU » déjà partie sur la pile : ne pas la résoudre ici.
+    if (branches.length >= 2 && cap.alternative === true) continue;
     // no-op pour les effets sur mesure (`_composed`), qui n'ont pas d'ability
     // nommée — cf. noteAbilitySfx.
     noteAbilitySfx(cap.abilityId, trigger);
@@ -3116,9 +3266,17 @@ export function startTurn(state: GameState): GameState {
       creature.hasSummoningSickness = false; // Traque
     }
 
-    // Régénération: +2 HP at start of turn
+    // Régénération X : +X PV au début de votre tour. Repli à 2 — la capacité
+    // était forfaitaire (2 PV) avant de devenir scalable, et les cartes d'alors
+    // ne portent aucun X : sans ce défaut elles se soigneraient d'un cran de
+    // moins du jour au lendemain.
     if (hasKw(creature, "regeneration")) {
-      creature.currentHealth = Math.min(creature.maxHealth, creature.currentHealth + 2);
+      // Ordre de lecture calqué sur Résistance X : le X de la carte d'abord,
+      // celui d'un DON ensuite (une passive conférée ne pose pas d'instance,
+      // son amplitude ne voyage que par `grantedKeywordX`), 2 en dernier.
+      const propre = getKwX(creature, "regeneration", undefined, 0);
+      const regenX = propre > 0 ? propre : (creature.grantedKeywordX["regeneration"] ?? 2);
+      creature.currentHealth = Math.min(creature.maxHealth, creature.currentHealth + regenX);
     }
 
     // Poison tick: -1 HP
@@ -3467,7 +3625,7 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
-        const options = selectionCardsForKeyword(inst.id, newState, plafondSelection(inst.x ?? 0, inst.randomX, rng), creature.card, undefined, creature.instanceId);
+        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId, inst.randomX === true);
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
             id: `${creature.instanceId}#${inst.id}`,
@@ -3540,6 +3698,11 @@ function advanceEndOfTurn(newState: GameState): GameState {
  *  On le teste donc côté MOTEUR, seul endroit autoritaire, et les orphelins
  *  sont purgés (cf. pruneUnresolvableTriggers). */
 function triggerIsResolvable(state: GameState, trigger: import("./types").PendingTrigger): boolean {
+  // « OU » : les branches voyagent AVEC le déclencheur, il y a donc toujours
+  // quelque chose à demander. Sans cette ligne, il tombait dans le repli « rien
+  // à demander au joueur » tout en bas et se faisait purger — la pile serait
+  // restée suspendue pour toujours, plateau inerte.
+  if (trigger.alternativeOptions?.length) return true;
   if (trigger.selectionType) {
     const ids = new Set([
       ...(state.factionCardPool ?? []).map(c => c.id),
@@ -4774,17 +4937,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // MÊME helper qu'à la création de l'instance (cf. stampKeywordXValues).
     stampKeywordXValues(cardInstance);
 
-    // Tactique X: attribue X capacités choisies à un allié (simplified: copy 1 keyword)
+    // Tactique X : attribue à un allié X capacités de la source, TIRÉES AU
+    // HASARD. Le joueur ne désigne que le bénéficiaire ; le X vient de la carte
+    // (l'ancien code en transmettait toujours une seule, X saisi ou non).
     if (hasKwOnPlay(cardInstance, "tactique") && action.targetInstanceId) {
       const tacticTarget = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
       if (tacticTarget) {
-        // Use player-chosen keywords if provided, else fallback to first grantable
-        const kwsToGrant = action.tactiqueKeywords
-          ?? cardInstance.card.keywords.filter(kw => kw !== "tactique" && !tacticTarget.card.keywords.includes(kw)).slice(0, 1);
-        for (const kw of kwsToGrant) {
-          if (!tacticTarget.card.keywords.includes(kw)) {
-            tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kw] };
-          }
+        const x = getKwX(cardInstance, "tactique", undefined, 1);
+        for (const kw of tactiqueKeywordsAHasard(cardInstance, tacticTarget, x)) {
+          tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kw] };
         }
       }
     }
@@ -5208,7 +5369,7 @@ function castSpellWithRandomTargets(
       players: [player, opponent],
       currentPlayerIndex: 0,
     } as GameState;
-    const options = selectionCardsForKeyword(selId, selState, plafondSelection(kw.amount ?? 0, kw.randomX, rng), card);
+    const options = selectionCardsForKeyword(selId, selState, kw.amount ?? 0, card, undefined, undefined, kw.randomX === true);
     if (options.length === 0) continue;
     targetMap[`${selId}_0`] = String(options[Math.floor(rng() * options.length)].id);
   }
@@ -5626,31 +5787,7 @@ function resolveSpellKeywords(
       case "silence": {
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) {
-            // Clear the legacy keywords array, keyword_instances AND the
-            // unified `capabilities` (where composed/backfilled abilities live).
-            // keyword_instances holds mode-aware powers (tap-activated, on-death
-            // rattles, conferred scopes); `capabilities`, when set, is what
-            // getCapabilities() reads — leaving it would let a backfilled
-            // creature keep every curated AND composed ability through silence.
-            target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
-            // Singulier : le silence emporte aussi ce qui était retiré, sinon un
-            // changement de contrôle ultérieur ressusciterait ces pouvoirs.
-            delete target.singulierStash;
-            // Apprentissage : la créature oublie son sort en même temps que ses
-            // pouvoirs. Sans cela, une créature qui réapprendrait la capacité
-            // (Mimique, Totem) verrait ressurgir un sort censé être oublié.
-            target.apprentissageSpell = undefined;
-            target.hasDivineShield = false;
-            target.contresortActive = false;
-            target.isParalyzed = false;
-            target.fureurActive = false;
-            target.fureurATKBonus = 0;
-            // …et retour aux ATK/PV IMPRIMÉS : le Silence ne coupe pas que les
-            // pouvoirs, il reprend TOUS les gains de stats accumulés (dont les
-            // +X/+Y de Gloire et de Renforcement, cuits dans `card`).
-            stripBoostsToBase(target);
-          }
+          if (target) appliquerSilence(target);
         }
         break;
       }
@@ -7698,7 +7835,13 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
     withComposedMode(triggerToKeywordMode(frame.trigger), () =>
       resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds, frame.trigger === "spell_resolution",
-        { trigger: frame.trigger, capUid: frame.capUid, noSuspend: frame.noSuspend }));
+        {
+          trigger: frame.trigger, capUid: frame.capUid, noSuspend: frame.noSuspend,
+          // Repli de carte source : indispensable aux contenus qui lisent la
+          // carte plutôt que l'instance (Invocation, Sélections) quand la
+          // source n'est plus en jeu — tout sort, donc.
+          ...(source ? {} : { sourceCard: frame.sourceCardRef as Card | undefined }),
+        }));
     return;
   }
   // curated / death_nature : producteurs branchés aux paliers (c)/(g).
@@ -7737,6 +7880,58 @@ function pushFrames(state: GameState, frames: StackFrame[]): void {
   }
 }
 
+/** Le contrôleur peut-il, ici et maintenant, trancher un « OU » ? Si oui, le
+ *  déclencheur interactif est déposé dans le puits et la pile se suspend.
+ *
+ *  IDEMPOTENT : `drainStack` est rappelé à la fin de CHAQUE action, y compris
+ *  pendant que la question est posée. Sans la garde d'unicité, chaque action de
+ *  l'adversaire aurait empilé une question de plus. */
+/** Rang d'écriture d'une frame dans sa carte (dernier segment du frameId). */
+function rangDansLaCarte(f: StackFrame): number {
+  const n = Number(f.frameId.slice(f.frameId.lastIndexOf("#") + 1));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function demanderLeChoixOu(
+  state: GameState,
+  top: StackFrame,
+  groupe: StackFrame[],
+): boolean {
+  if (top.noSuspend) return false;            // rejeu Déclenchement : aucune interface
+  if (top.ownerId !== currentPlayerId) return false; // hors de son tour, le jeu tranche seul
+  const id = `${top.originTag}#ou`;
+  const deja = (state.pendingTriggers ?? []).some(t => t.id === id)
+    || pendingTriggerSink.some(t => t.id === id);
+  if (!deja) {
+    pendingTriggerSink.push({
+      id,
+      controllerId: top.ownerId,
+      sourceInstanceId: top.sourceInstanceId,
+      // ORDRE D'AUTEUR, et non ordre de pile : la pile est un LIFO, elle rend
+      // les branches à l'envers. Le joueur doit les lire dans l'ordre où elles
+      // sont écrites sur la carte. Le rang vient du dernier segment du
+      // `frameId` (`…#${seq}`), incrémenté dans l'ordre des capacités.
+      alternativeOptions: [...groupe]
+        .sort((a, b) => rangDansLaCarte(a) - rangDansLaCarte(b))
+        .map(f => ({ capUid: f.capUid ?? "", composed: f.composed! })),
+    });
+  }
+  return true;
+}
+
+/** Applique la décision : la branche gagnante reste et se résout, les perdantes
+ *  quittent la pile. Le drapeau `alternativeSettled` évite que la gagnante ne
+ *  repose la question au tour de boucle suivant. */
+function trancherLeChoixOu(stack: StackFrame[], groupe: StackFrame[], gagnante: StackFrame): void {
+  for (const f of groupe) {
+    if (f === gagnante) continue;
+    const i = stack.indexOf(f);
+    if (i >= 0) stack.splice(i, 1);
+  }
+  gagnante.alternativeSettled = true;
+  delete gagnante.awaitingChoice;
+}
+
 /** Vide la pile en LIFO. Après CHAQUE frame : nettoyage des morts puis
  *  recalcul des auras (auras jamais périmées — corrige bug #2). Rend la main en
  *  laissant la frame au sommet si un choix joueur est requis : la pile suspendue
@@ -7752,6 +7947,28 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
       break;
     }
     const top = stack[stack.length - 1];
+    // « OU » — AVANT tout le reste : tant que la branche n'est pas tranchée, on
+    // ne sait même pas quel effet on résout, donc rien à cibler.
+    if (top.alternative && !top.alternativeSettled) {
+      const groupe = stack.filter(f =>
+        f.alternative && !f.alternativeSettled
+        && f.originTag === top.originTag && f.trigger === top.trigger);
+      if (groupe.length < 2) {
+        // Une seule branche marquée : il n'y a pas de choix à poser. L'effet
+        // redevient ordinaire plutôt que de bloquer sur une question à une
+        // seule réponse.
+        top.alternativeSettled = true;
+      } else if (demanderLeChoixOu(state, top, groupe)) {
+        top.awaitingChoice = true;
+        return;
+      } else {
+        // Personne ne peut répondre (tour adverse, rejeu sans interface,
+        // expiration) : on tire la branche au sort, comme le repli des autres
+        // choix. Résoudre les DEUX serait offrir la carte deux fois.
+        trancherLeChoixOu(stack, groupe, groupe[Math.floor(rng() * groupe.length)]);
+        continue;
+      }
+    }
     if (frameNeedsChoice(state, top)) {
       // Option B : à la fin du tour du propriétaire, un « au choix » resté sans
       // désignation (chrono expiré) NE fuite PAS au tour adverse — il fizzle.
@@ -7805,6 +8022,12 @@ function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): im
   // hasard porte sur la créature. Le drapeau est donc CONSERVÉ pour que le
   // résolveur le lise — toujours idempotent, rien n'est tiré ici.
   if (composed.content === "invocation") return composed;
+  // SÉLECTIONS : même arbitrage, pour la même raison, depuis que leur coût est
+  // EXACT. Le « ? » n'y désigne plus un X tiré une fois pour toute l'offre mais
+  // un coût tiré POUR CHAQUE carte, entre 1 et X — tirer X ici ramènerait les
+  // trois cartes au même coût et ferait mentir la case.
+  if (composed.content === "selection" || composed.content === "selection_magique"
+    || composed.content === "renfort_royal") return composed;
   const tirer = (plafond: number | undefined): number | undefined => {
     if (plafond == null || plafond < 1) return plafond;
     return 1 + Math.floor(rng() * plafond);
@@ -7857,6 +8080,11 @@ function buildComposedFrames(
       // ce snapshot, la résolution aussi — un seul nombre pour les deux.
       composed: figerAmplitudeAleatoire(cap.composed!),
       capUid: cap.uid,
+      sourceCardRef: { id: card.id, name: card.name, faction: card.faction ?? null, card_alignment: card.card_alignment ?? null },
+      // « OU » : branche du choix de la carte. Les frames d'un même appel
+      // partagent `originTag` + `trigger`, ce qui SUFFIT à identifier le
+      // groupe — pas besoin d'un identifiant de groupe en base.
+      ...(cap.alternative === true ? { alternative: true as const } : {}),
       chosenTargetIds: chosen,
       valueMode: opts?.valueMode,
       noSuspend: opts?.noSuspend,
@@ -8450,6 +8678,34 @@ function applyPreincanter(owner: PlayerState, x: number): void {
   // `applied` et non `x` : le badge affiche la réduction RÉELLEMENT accordée,
   // écrêtée au plancher de 1 mana. Annoncer −3 pour une remise de −1 mentirait.
   noteDeckEffect(owner.id, "preincanter", applied);
+}
+
+/** TACTIQUE X — les X capacités que la source transmet à un allié.
+ *
+ *  TIRÉES AU HASARD, et non choisies : la capacité offre un partage d'aptitudes
+ *  subi, pas un outil de composition. Le tirage passe par `shuffleArray`, donc
+ *  par le RNG de `GameState` : les deux clients tirent la MÊME chose, sans quoi
+ *  la partie désynchroniserait au premier partage.
+ *
+ *  Le vivier est celui des capacités PROPRES de la source (Tactique exclue) que
+ *  la cible n'a pas déjà — inutile de « donner » ce qu'elle possède, et le
+ *  filtre évite un tirage qui n'offrirait rien.
+ *
+ *  Un vivier de 0 ou 1 élément ne consomme aucun cran de RNG (la boucle de
+ *  mélange ne tourne pas), donc aucune partie existante ne dérive. */
+function tactiqueKeywordsAHasard(source: CardInstance, target: CardInstance, x: number): Keyword[] {
+  const vivier = source.card.keywords.filter(
+    (kw) =>
+      kw !== "tactique"
+      && !target.card.keywords.includes(kw)
+      // PERMANENTES seulement — les capacités à icône BLANCHE. Deux raisons qui
+      // n'en font qu'une : c'est la règle énoncée au joueur (la couleur de
+      // l'icône la lui dit sans texte), et un effet à déclencheur transmis nu
+      // serait de toute façon inerte chez sa nouvelle porteuse — une capacité
+      // « à l'entrée » donnée à une unité DÉJÀ en jeu ne partira jamais.
+      && isPermanentKeyword(kw, source.card.keyword_instances?.find((k) => k.id === kw)?.mode),
+  );
+  return shuffleArray(vivier).slice(0, Math.max(1, x));
 }
 
 function resolveCuratedKeywordEffect(
@@ -9071,7 +9327,7 @@ function resolveCuratedKeywordEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(kw, selState, plafondSelection(inst?.x ?? 0, inst?.randomX, rng), source.card, undefined, source.instanceId);
+      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId, inst?.randomX === true);
       if (options.length === 0) return;
       // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
   // premier est au milieu du flux de combat, le second au milieu de startTurn
@@ -9114,13 +9370,13 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "tactique": {
-      // Attribue la 1re capacité transmissible de la source à un allié (même
-      // repli que l'invocation sans choix explicite de capacités).
+      // Attribue X capacités transmissibles de la source à un allié, tirées au
+      // hasard — même règle qu'à l'entrée en jeu (ce chemin n'en transmettait
+      // qu'une, quel que soit le X saisi).
       const resolveTac = (tid: string) => {
         const t = owner.board.find(c => c.instanceId === tid && c.instanceId !== source.instanceId);
         if (!t) return;
-        const kwsToGrant = source.card.keywords.filter(k => k !== "tactique" && !t.card.keywords.includes(k)).slice(0, 1);
-        for (const k of kwsToGrant) {
+        for (const k of tactiqueKeywordsAHasard(source, t, x)) {
           t.card = { ...t.card, keywords: [...t.card.keywords, k] };
         }
       };
@@ -9409,8 +9665,9 @@ export function spendEpargne(state: GameState, action: SpendEpargneAction): Game
   const card = pool.find(c => c.id === action.selectionCardId);
   if (!card) return state;
 
-  // Mêmes règles de pool que l'offre construite côté client (getSelectionCards
-  // avec exactCost) : rareté, alignement, et coût EXACTEMENT égal au compteur.
+  // Mêmes règles de pool que l'offre construite côté client
+  // (getSelectionCards, dont le coût EXACT est le régime par défaut) : rareté,
+  // alignement, et coût exactement égal au compteur.
   if (card.rarity !== "Commune") return state;
   if (card.mana_cost !== level) return state;
   const heroSource = { faction: player.hero.heroDefinition?.faction ?? null };
@@ -9683,6 +9940,7 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
     targetInstanceId: action.targetInstanceId,
     targetInstanceIds: action.targetInstanceIds,
     selectionCardId: action.selectionCardId,
+    alternativeCapUid: action.alternativeCapUid,
   });
 
   // BALAYAGE DES MORTS. Un choix tranché peut TUER — un Impact de fin de tour
@@ -9745,10 +10003,29 @@ function pendingChoiceIds(
 function applyOnePendingTrigger(
   newState: GameState,
   trigger: import("./types").PendingTrigger,
-  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number },
+  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number; alternativeCapUid?: string },
 ): void {
   const controller = newState.players.find(p => p.id === trigger.controllerId);
   const other = newState.players.find(p => p.id !== trigger.controllerId);
+
+  // « OU » : la réponse ne résout rien par elle-même — elle DÉSIGNE la branche
+  // qui reste sur la pile. La résolution suit, par le drainStack de fin
+  // d'action, exactement comme si l'auteur n'avait déclaré qu'un seul effet.
+  // C'est ce qui préserve l'ordre d'auteur : la branche garde sa place au
+  // milieu des autres effets de la carte, elle n'est pas rejouée à la fin.
+  if (trigger.alternativeOptions?.length) {
+    const stack = newState.effectStack ?? [];
+    const groupe = stack.filter(f => f.alternative && !f.alternativeSettled && `${f.originTag}#ou` === trigger.id);
+    if (groupe.length === 0) return; // pile déjà vidée (resync, double réponse) → rien à faire
+    const gagnante = groupe.find(f => f.capUid === choice.alternativeCapUid)
+      // Réponse absente ou inconnue (client d'une autre version, rejeu d'un
+      // journal) : on tranche au hasard plutôt que d'abandonner la pile
+      // suspendue — un blocage total serait pire qu'une branche imprévue.
+      ?? groupe[Math.floor(rng() * groupe.length)];
+    trancherLeChoixOu(stack, groupe, gagnante);
+    drainStack(newState);
+    return;
+  }
 
   // EMBLÈME composé « au choix » : même résolution qu'une capacité de créature,
   // mais l'effet se lit sur l'emblème et la source est nulle — il n'y en a plus.
@@ -9863,8 +10140,11 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
     const queue = st.pendingTriggers ?? [];
     st.pendingTriggers = [];
     for (const trigger of queue) {
-      let choice: { targetInstanceId?: string; selectionCardId?: number } = {};
-      if (trigger.selectionType) {
+      let choice: { targetInstanceId?: string; selectionCardId?: number; alternativeCapUid?: string } = {};
+      if (trigger.alternativeOptions?.length) {
+        const opts = trigger.alternativeOptions;
+        choice = { alternativeCapUid: opts[Math.floor(rng() * opts.length)].capUid };
+      } else if (trigger.selectionType) {
         const opts = trigger.selectionOptionIds ?? [];
         if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
       } else if (trigger.capUid || trigger.emblemIndex != null) {
@@ -10357,6 +10637,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
+  frameSink = [];
   sequentialHitsSink = [];
   damageLedgerSink = [];
   drawTriggerSink = [];
@@ -10407,6 +10688,14 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // vie, fatigue… quel que soit le handler). Les frames poussées sont résolues
   // par le drainStack juste en dessous.
   if (result !== state) checkLowHpTriggers(result);
+
+  // Branches d'un « OU » émises par les chemins EN LIGNE : elles rejoignent la
+  // pile juste avant le drain, pour que la question se pose comme pour un effet
+  // d'entrée en jeu.
+  if (frameSink.length > 0 && result !== state) {
+    pushFrames(result, frameSink);
+    frameSink = [];
+  }
 
   // Vide la pile d'effets LIFO produite pendant l'action (interruption +
   // résolution des morts via settleDeaths). No-op tant qu'aucun producteur n'a
@@ -11667,6 +11956,70 @@ function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
  *  sur la liste des communes (mêmes règles que Sélection X). Les deux
  *  clients doivent générer la même proposition, d'où le seed déterministe
  *  basé sur l'état de jeu visible. */
+/** OFFRE d'une Sélection selon son RÉGIME DE COÛT.
+ *
+ *  COÛT EXACT (défaut) : les trois cartes valent précisément X. C'était
+ *  auparavant un PLAFOND (« coût ≤ X ») — une Sélection 6 offrait surtout des
+ *  cartes à 1 ou 2, les seules nombreuses, et le X ne se lisait plus dans
+ *  l'offre. Le coût exact rend le nombre saisi par l'auteur lisible sur la
+ *  table. Épargne, qui désignait déjà un coût exact, rejoint la règle commune.
+ *
+ *  « ? » (randomX) : chaque carte tire SON PROPRE coût, entre 1 et X — trois
+ *  tirages indépendants, donc une offre panachée. C'est le seul régime où X
+ *  redevient un plafond, et il est désormais explicite.
+ *
+ *  Le tirage porte sur les coûts RÉELLEMENT présents dans le vivier : tirer un
+ *  coût auquel aucune carte ne répond n'aurait fait que retirer une carte de
+ *  l'offre, en silence, et une Sélection « ? » aurait pu n'offrir qu'une carte
+ *  sans que rien ne l'explique.
+ *
+ *  Le QUOTA D'ALIGNEMENT tient dans les deux régimes : au plus une neutre sur
+ *  trois. En régime aléatoire les cartes se choisissent une à une, le quota est
+ *  donc décompté à la main — sans quoi trois tirages indépendants pouvaient
+ *  rendre trois neutres, et la règle 2:1 sautait dès qu'on cochait « ? ».
+ *
+ *  `melanger` et `tirage` viennent du pseudo-RNG SEMÉ SUR L'ÉTAT de l'appelant :
+ *  les deux clients voient la même offre sans consommer la RNG partagée. */
+function offreSelection(
+  vivier: Card[],
+  x: number,
+  randomX: boolean | undefined,
+  buckets: { propre: Set<string>; neutre: Set<string> },
+  melanger: (arr: Card[]) => Card[],
+  tirage: () => number,
+): Card[] {
+  if (!randomX) {
+    // X ≤ 0 : aucun filtre de coût (comportement historique des cartes qui ne
+    // renseignent pas d'amplitude).
+    const exact = x > 0 ? vivier.filter(c => c.mana_cost === x) : vivier;
+    return offrePonderee(exact, buckets, Math.min(SELECTION_OFFER_COUNT, exact.length), melanger);
+  }
+  const plafond = Math.max(1, x);
+  const coutsDisponibles = [...new Set(
+    vivier.filter(c => c.mana_cost >= 1 && c.mana_cost <= plafond).map(c => c.mana_cost),
+  )].sort((a, b) => a - b);
+  if (coutsDisponibles.length === 0) return [];
+
+  const retenus: Card[] = [];
+  const dejaPris = new Set<number>();
+  let neutresRestants = quotaNeutre(SELECTION_OFFER_COUNT);
+  for (let i = 0; i < SELECTION_OFFER_COUNT; i++) {
+    const cout = coutsDisponibles[Math.floor(tirage() * coutsDisponibles.length)];
+    const candidats = vivier.filter(c => c.mana_cost === cout && !dejaPris.has(c.id));
+    if (candidats.length === 0) continue;
+    const { propre, neutre } = partitionParAlignement(candidats, buckets);
+    // Quota épuisé : on n'ouvre le neutre que si l'alignement propre n'a rien à
+    // ce coût — mieux vaut une neutre de plus qu'une carte de moins.
+    const source = neutresRestants > 0 ? candidats : (propre.length > 0 ? propre : neutre);
+    const [choisie] = melanger(source);
+    if (!choisie) continue;
+    if (neutre.includes(choisie)) neutresRestants--;
+    retenus.push(choisie);
+    dejaPris.add(choisie.id);
+  }
+  return retenus;
+}
+
 export function getRenfortRoyalCards(
   state: GameState,
   maxManaCost: number,
@@ -11675,6 +12028,8 @@ export function getRenfortRoyalCards(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
+  // « ? » : un coût tiré par carte, entre 1 et X (cf. offreSelection).
+  randomX = false,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -11688,12 +12043,9 @@ export function getRenfortRoyalCards(
   // Seuil évalué AVANT le filtre de pool : c'est une condition de collection
   // (« possède au moins N limitées »), pas une condition sur les candidats.
   if (ownedLimited.length < RENFORT_ROYAL_OWNERSHIP_THRESHOLD) {
-    return getSelectionCards(state, maxManaCost, source, filter);
+    return getSelectionCards(state, maxManaCost, source, filter, randomX);
   }
-  const filtered = (maxManaCost > 0
-    ? ownedLimited.filter(c => c.mana_cost <= maxManaCost)
-    : ownedLimited
-  ).filter(c => matchesPoolFilter(c, filter));
+  const filtered = ownedLimited.filter(c => matchesPoolFilter(c, filter));
   if (filtered.length === 0) return [];
   // Same deterministic shuffle pattern as getSelectionCards so both
   // clients agree without burning the seeded RNG.
@@ -11704,12 +12056,19 @@ export function getRenfortRoyalCards(
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
   };
-  const shuffled = [...filtered];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(pseudoRng() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, Math.min(SELECTION_OFFER_COUNT, shuffled.length));
+  const melanger = (arr: Card[]): Card[] => {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(pseudoRng() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  // Paniers VIDES : la Sélection Royale puise dans la collection limitée du
+  // joueur, où la règle d'alignement 2:1 n'a pas cours. `offreSelection` s'y
+  // réduit alors au mélange + découpe d'avant — seul le régime de coût change.
+  return offreSelection(filtered, maxManaCost, randomX,
+    { propre: new Set<string>(), neutre: new Set<string>() }, melanger, pseudoRng);
 }
 
 /** Sélection : propose jusqu'à 3 cartes communes partageant l'alignement de
@@ -11726,10 +12085,10 @@ export function getSelectionCards(
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
-  // Épargne : le compteur désigne un coût EXACT, pas un plafond — on n'y gagne
-  // que des cartes valant précisément ce qu'on a mis de côté. Les Sélections
-  // gardent le comportement « plafond » par défaut.
-  exactCost = false,
+  // « ? » : chaque carte tire son propre coût entre 1 et X (cf. offreSelection).
+  // Absent ⇒ coût EXACTEMENT X — la règle commune depuis qu'Épargne et les
+  // Sélections partagent le même régime.
+  randomX = false,
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
@@ -11744,7 +12103,6 @@ export function getSelectionCards(
     c.faction
     && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
-    && (exactCost ? c.mana_cost === maxManaCost : (maxManaCost <= 0 || c.mana_cost <= maxManaCost))
     && matchesPoolFilter(c, filter),
   );
   if (filtered.length === 0) return [];
@@ -11768,7 +12126,7 @@ export function getSelectionCards(
     }
     return out;
   };
-  return offrePonderee(filtered, buckets, Math.min(SELECTION_OFFER_COUNT, filtered.length), melanger);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng);
 }
 
 /** Sélection magique : propose jusqu'à 3 sorts communs partageant
@@ -11786,6 +12144,8 @@ export function getMagicalSelectionCards(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
+  // « ? » : un coût tiré par carte, entre 1 et X (cf. offreSelection).
+  randomX = false,
 ): Card[] {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0) return [];
@@ -11798,7 +12158,6 @@ export function getMagicalSelectionCards(
     && c.faction
     && allowedFactions.has(c.faction)
     && c.rarity === "Commune"
-    && (maxManaCost <= 0 || c.mana_cost <= maxManaCost)
     && matchesPoolFilter(c, filter),
   );
   if (filtered.length === 0) return [];
@@ -11821,22 +12180,7 @@ export function getMagicalSelectionCards(
     }
     return out;
   };
-  return offrePonderee(filtered, buckets, Math.min(SELECTION_OFFER_COUNT, filtered.length), melanger);
-}
-
-/** SÉLECTION AU HASARD — fige le plafond de coût d'une offre.
- *
- *  Sans drapeau, ou sous un plafond < 2 (« entre 1 et 1 » est une constante),
- *  le X est rendu tel quel. Sinon, tirage entier entre 1 et X inclus.
- *
- *  `tirage` est injecté : le moteur passe `rng` (la graine de l'état de
- *  partie, identique chez les deux joueurs — un `Math.random` ici
- *  désynchroniserait les tours adverses et les relances de sorts) ; le client
- *  prend `Math.random` pour le SEUL chemin qu'il décide lui-même, l'entrée en
- *  jeu, dont la carte choisie voyage ensuite dans l'action. */
-export function plafondSelection(x: number, randomX: boolean | undefined, tirage: () => number = Math.random): number {
-  if (!randomX || x < 2) return x;
-  return 1 + Math.floor(tirage() * x);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng);
 }
 
 /** Amplitude d'une Sélection curée à l'ENTRÉE EN JEU, lue dans le modèle
@@ -11860,10 +12204,14 @@ function selectionCardsForKeyword(
   source?: { faction?: string | null; card_alignment?: string | null } | null,
   filter?: ComposedPoolFilter,
   seedSalt?: string,
+  // « ? » : un coût tiré PAR CARTE, entre 1 et X. Le drapeau descend jusqu'aux
+  // viviers au lieu d'être converti en plafond par l'appelant — c'est là, et
+  // là seulement, qu'on sait quels coûts existent réellement.
+  randomX = false,
 ): Card[] {
-  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt);
-  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt);
-  return getSelectionCards(state, maxManaCost, source, filter, false, seedSalt);
+  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt, randomX);
+  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt, randomX);
+  return getSelectionCards(state, maxManaCost, source, filter, randomX, seedSalt);
 }
 
 /** Ce créneau de cible est-il celui d'une Incinération ?
