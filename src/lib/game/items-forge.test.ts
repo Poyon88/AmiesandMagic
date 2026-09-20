@@ -104,3 +104,45 @@ describe("Faille refermée : la remise à zéro entre deux cartes", () => {
       "resetManualForm ET resetCardForm").toBe(2);
   });
 });
+
+describe("Effets composés sur un objet (lot 5, phase 2)", () => {
+  it("un seul déclencheur est retiré : celui qui ne partirait jamais", async () => {
+    // `buildEndOfTurnQueue` écarte explicitement tout ce qui n'est pas une
+    // créature de sa boucle sur la MAIN. Un objet n'a pas de porteur en main :
+    // proposer « à la fin du tour, en main » serait promettre un effet muet.
+    const { isItemFiringTrigger } = await import("./capability-adapter");
+    expect(isItemFiringTrigger("on_end_of_turn_in_hand")).toBe(false);
+  });
+
+  it("les deux vies de l'objet partent bien", async () => {
+    const { isItemFiringTrigger } = await import("./capability-adapter");
+    // Sa vie PROPRE : sa pose et sa pioche, résolues depuis l'objet.
+    for (const t of ["on_play", "on_draw"] as const) {
+      expect(isItemFiringTrigger(t), t).toBe(true);
+    }
+    // Les événements de son PORTEUR, atteints par la greffe.
+    for (const t of ["on_death", "on_return", "on_activation", "on_attack",
+                     "on_end_of_turn", "on_low_hp"] as const) {
+      expect(isItemFiringTrigger(t), t).toBe(true);
+    }
+  });
+
+  it("l'éditeur annonce à l'auteur quels déclencheurs parlent du PORTEUR", () => {
+    // Sur un objet, « à la mort » ne parle pas de l'objet mais de la créature
+    // qui le porte. Sans cette mention à l'écran, la lecture naturelle est
+    // fausse — et l'auteur ne s'en apercevrait qu'en jouant.
+    const src = SRC("src/components/card-forge/ComposedEffectsEditor.tsx");
+    expect(src).toContain("DECLENCHEUR_DU_PORTEUR");
+    expect(src).toContain("item_trigger_bearer");
+    // `on_play` et `on_draw` en sont ABSENTS : ce sont les moments de l'objet.
+    const bloc = src.slice(src.indexOf("const DECLENCHEUR_DU_PORTEUR"),
+      src.indexOf("]);", src.indexOf("const DECLENCHEUR_DU_PORTEUR")));
+    expect(bloc).not.toContain("on_play");
+    expect(bloc).not.toContain("on_draw");
+  });
+
+  it("la forge transmet bien le mode objet à l'éditeur", () => {
+    expect(SRC("src/components/card-forge/CardForge.tsx"))
+      .toContain('pourObjet={type === "Objet"}');
+  });
+});

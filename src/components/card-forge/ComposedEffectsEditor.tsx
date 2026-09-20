@@ -17,7 +17,7 @@ import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
-import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
+import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
@@ -158,9 +158,18 @@ const labelStyle = { fontSize: 8, color: "#999", letterSpacing: 1, fontWeight: 7
 
 const SPELL_CATALOG = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
 
+/** Sur un OBJET, ces déclencheurs parlent du PORTEUR, pas de l'objet : la
+ *  capacité lui est greffée à l'équipement et suit SES événements. Les deux
+ *  absents — `on_play` et `on_draw` — sont la vie propre de l'objet (sa pose,
+ *  sa pioche) et se résolvent depuis lui. Sans cette distinction à l'écran,
+ *  « à la mort » sur un objet se lit naturellement comme la mort de l'objet. */
+const DECLENCHEUR_DU_PORTEUR = new Set<CapabilityTrigger>([
+  "on_death", "on_return", "on_activation", "on_attack", "on_end_of_turn", "on_low_hp",
+]);
+
 export default function ComposedEffectsEditor({
   value, onChange, isUnit, tokenTemplates, singleEffect = false,
-  pourToken = false, curated, onCuratedChange,
+  pourToken = false, pourObjet = false, curated, onCuratedChange,
 }: {
   value: Capability[];
   onChange: (v: Capability[]) => void;
@@ -174,6 +183,9 @@ export default function ComposedEffectsEditor({
   // muette, exactement comme les mots-clés curés que `tokenRequiresMode` force
   // déjà à choisir un mode.
   pourToken?: boolean;
+  // OBJET : retire les déclencheurs qui n'y partiraient jamais, et annote ceux
+  // qui parlent du PORTEUR plutôt que de l'objet.
+  pourObjet?: boolean;
   // SORT : mécaniques curées (spell_keywords) éditées dans la MÊME liste que les
   // effets composés. Absent ⇒ éditeur composé seul (créature, pouvoir de héros).
   curated?: SpellKeywordInstance[];
@@ -187,7 +199,15 @@ export default function ComposedEffectsEditor({
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui
     // disent la même chose finissent toujours par diverger.
-    ? (pourToken ? triggersUnite.filter((t) => isTokenFiringTrigger(t.v)) : triggersUnite)
+    // OBJET : un seul déclencheur est retiré (`on_end_of_turn_in_hand`, que la
+    // boucle de main écarte), et les autres sont ANNOTÉS — sur un objet, « à la
+    // mort » ne parle pas de l'objet mais de son PORTEUR, et rien à l'écran ne
+    // le disait. Filtré par le même prédicat que le moteur plutôt que par une
+    // liste tenue ici : deux listes qui disent la même chose divergent toujours.
+    ? (pourObjet
+        ? triggersUnite.filter((t) => isItemFiringTrigger(t.v))
+          .map((t) => ({ ...t, l: DECLENCHEUR_DU_PORTEUR.has(t.v) ? `${t.l} ${tr('item_trigger_bearer')}` : t.l }))
+        : pourToken ? triggersUnite.filter((t) => isTokenFiringTrigger(t.v)) : triggersUnite)
     // Un SORT n'a que deux moments possibles : sa résolution (quand on le lance)
     // et sa PIOCHE. Le mode « draw » des mots-clés ne lui est pas ouvert — sur un
     // sort, `keyword_instances` décrit les capacités CONFÉRÉES à une cible, un

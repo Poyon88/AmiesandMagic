@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Número de cartas que o jogador recoloca da mão no topo do seu deck. Elas não vão para o cemitério: ele voltará a comprá-las. Custo de tempo, não redutível.",
     "equip_label": "Equip.",
     "equip_cost_hint": "OBJETOS — custo em mana para equipar o objeto numa criatura aliada. Pago em CADA equipamento, incluindo deslocações. 0 = grátis.",
+    "item_trigger_bearer": "(do portador)",
     "sacrifice_label": "SACRIFÍCIO",
     "exile_label": "EXÍLIO",
     "topdeck_label": "RECOLOCAÇÃO",

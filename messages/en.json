@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Number of cards the player places from their hand back on top of their deck. They don't go to the graveyard: the player will draw them again. Tempo cost, not reducible.",
     "equip_label": "Equip",
     "equip_cost_hint": "ITEMS — mana cost to attach the item to a friendly creature. Paid on EVERY equip, including moves. 0 = free.",
+    "item_trigger_bearer": "(bearer's)",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
     "topdeck_label": "TOPDECK",

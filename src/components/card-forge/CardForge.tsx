@@ -4735,7 +4735,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       const connus = new Set(composedCaps.map(c => c.uid));
                       setComposedCaps(next.map(c => (!connus.has(c.uid) && c.position == null ? { ...c, position: positionAfterExisting(isUnit ? manualKeywords.length : spellKeywords.length) } : c)));
                     }}
-                    isUnit={isUnit} tokenTemplates={tokenTemplates}
+                    isUnit={isUnit} pourObjet={type === "Objet"} tokenTemplates={tokenTemplates}
                     {...(isUnit ? {} : { curated: spellKeywords, onCuratedChange: setSpellKeywords })}
                   />
                 </div>

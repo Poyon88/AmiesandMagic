@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "プレイヤーが手札からデッキの一番上に戻すカードの枚数。墓地には行かず、後で引き直すことになる。テンポコスト、軽減不可。",
     "equip_label": "装備",
     "equip_cost_hint": "オブジェクト — 味方クリーチャーに装備させるマナ・コスト。移動を含め装備するたびに支払う。0は無料。",
+    "item_trigger_bearer": "（装備者）",
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
     "topdeck_label": "リプレイス",

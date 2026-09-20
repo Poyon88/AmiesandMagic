@@ -106,6 +106,24 @@ export function isTokenFiringTrigger(trigger: CapabilityTrigger): boolean {
   return mode != null && TOKEN_FIRING_MODES.has(mode);
 }
 
+/** Un effet composé porté par un OBJET partira-t-il sur ce déclencheur ?
+ *
+ *  Un objet vit deux vies, et ses déclencheurs se répartissent entre les deux :
+ *   - les siennes propres — `on_play` (sa pose) et `on_draw` (sa pioche) — se
+ *     résolvent depuis l'objet lui-même ;
+ *   - toutes les autres sont GREFFÉES sur son porteur et parlent aux événements
+ *     de celui-ci : sa mort, son attaque, son retour, son activation, sa fin de
+ *     tour, ses bas PV.
+ *
+ *  Une seule ne partira JAMAIS : `on_end_of_turn_in_hand`. La boucle de fin de
+ *  tour qui balaie la main écarte explicitement tout ce qui n'est pas une
+ *  créature (`buildEndOfTurnQueue`), et un objet n'a pas de porteur en main.
+ *  La proposer à l'auteur serait lui promettre un effet muet — le même défaut
+ *  que `tokenRequiresMode` évite côté jetons. */
+export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
+  return trigger !== "on_end_of_turn_in_hand";
+}
+
 /** Cadences auxquelles un EMBLÈME peut réagir.
  *
  *  Un emblème est posé à l'arrivée de sa carte ; son `trigger` ne dit donc pas

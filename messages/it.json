@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Numero di carte che il giocatore rimette dalla mano in cima al proprio deck. Non finiscono nel cimitero: verranno ripescate. Costo di tempo, non riducibile.",
     "equip_label": "Equip.",
     "equip_cost_hint": "OGGETTI — costo in mana per equipaggiare l'oggetto su una creatura alleata. Pagato a OGNI equipaggiamento, spostamenti inclusi. 0 = gratis.",
+    "item_trigger_bearer": "(del portatore)",
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "ESILIO",
     "topdeck_label": "RIPIEGO",

@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Número de cartas que el jugador coloca de vuelta desde su mano encima de su mazo. No van al cementerio: las robará de nuevo. Coste de tempo, no reducible.",
     "equip_label": "Equip.",
     "equip_cost_hint": "OBJETOS — coste en maná para equipar el objeto en una criatura aliada. Se paga en CADA equipamiento, traslados incluidos. 0 = gratis.",
+    "item_trigger_bearer": "(del portador)",
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "EXILIO",
     "topdeck_label": "REPLIEGUE",

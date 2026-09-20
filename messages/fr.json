@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Nombre de cartes que le joueur replace de sa main sur le dessus de son deck. Elles ne vont pas au cimetière : il les repiochera. Coût de tempo, non réductible.",
     "equip_label": "Équip.",
     "equip_cost_hint": "OBJETS — coût en mana pour équiper l'objet sur une créature alliée. Payé à CHAQUE équipement, déplacement compris. 0 = gratuit.",
+    "item_trigger_bearer": "(du porteur)",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXIL",
     "topdeck_label": "REPLI",

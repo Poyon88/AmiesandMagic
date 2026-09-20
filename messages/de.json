@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand oben auf sein Deck zurücklegt. Sie wandern nicht auf den Friedhof: Er wird sie zurückziehen. Tempokosten, nicht reduzierbar.",
     "equip_label": "Ausrüst.",
     "equip_cost_hint": "OBJEKTE — Manakosten, um das Objekt einer verbündeten Kreatur anzulegen. Bei JEDEM Anlegen fällig, auch beim Umlegen. 0 = gratis.",
+    "item_trigger_bearer": "(des Trägers)",
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
     "topdeck_label": "RÜCKZUG",

@@ -2061,6 +2061,7 @@
     "topdeck_cost_hint": "玩家从手牌放回牌库顶部的卡牌数量。这些卡不会进入墓地：玩家之后会重新抽到它们。节奏消耗，不可减免。",
     "equip_label": "装备",
     "equip_cost_hint": "物件 — 将物件装备到友方生物上的法力费用。每次装备（含转移）都要支付。0 为免费。",
+    "item_trigger_bearer": "（装备者）",
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
