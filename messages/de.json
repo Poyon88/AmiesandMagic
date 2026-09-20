@@ -123,7 +123,7 @@
       },
       "commandement": {
         "label": "Kommando X",
-        "desc": "+X/+X für eure Verbündeten {faction_de}."
+        "desc": "+X/+X für Ihre Verbündeten {faction_de}."
       },
       "fureur": {
         "label": "Raserei",
@@ -363,7 +363,7 @@
       },
       "faveur": {
         "label": "Gunst X",
-        "desc": "Legt eine zufällige gewöhnliche Karte {alignment} mit Kosten X auf deine Hand."
+        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
@@ -426,8 +426,8 @@
         "desc": "Ziehe X Karten."
       },
       "afflux": {
-        "label": "Zufluss X",
-        "desc": "Erhalte X Mana in diesem Zug."
+        "label": "Zustrom X",
+        "desc": "Erhaltet X Mana in diesem Zug."
       },
       "epargne": {
         "label": "Sparen X",
@@ -509,13 +509,13 @@
         "label": "Opferschwelle +X/+Y",
         "desc": "Solange dein Deck 25 Karten oder weniger enthält, erhält diese Einheit +X ATK und +Y LP."
       },
-      "tuteur": {
-        "label": "Tutor",
-        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
       "compagnons": {
         "label": "Begleiter",
         "desc": "Mischt seine Begleiter (verknüpfte Karten, die bei der Erstellung gewählt wurden) in dein Deck und mischt das Deck danach neu. Nur einmal."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       }
     },
     "spell_keywords": {
@@ -535,6 +535,10 @@
         "label": "Plünderung X",
         "desc": "Der Gegner legt X zufällige Karten aus seiner Hand ab."
       },
+      "contresort": {
+        "label": "Gegenzauber",
+        "desc": "Annulliert den nächsten gegnerischen Zauber."
+      },
       "convocation_simple": {
         "label": "Beschwörung",
         "desc": "Erschafft {token}."
@@ -547,18 +551,6 @@
         "label": "Gesang X",
         "desc": "Wenn du eine Kreatur mit Gesang kontrollierst, werden alle Werte dieses Zauberspruchs um X erhöht."
       },
-      "divination": {
-        "label": "Divination",
-        "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten in gewählter Reihenfolge zurück."
-      },
-      "contresort": {
-        "label": "Gegenzauber",
-        "desc": "Neutralisiert den nächsten gegnerischen Zauber."
-      },
-      "seconde_vie": {
-        "label": "Zweites Leben X",
-        "desc": "Kann für X Mana aus deinem Friedhof gewirkt werden. Er verliert danach Zweites Leben."
-      },
       "lune": {
         "label": "Mond X",
         "desc": "Ab der zweiten in diesem Zug gespielten Karte werden alle Werte dieser Karte um X erhöht."
@@ -566,6 +558,10 @@
       "soleil": {
         "label": "Sonne X",
         "desc": "Wenn dies die erste in diesem Zug gespielte Karte ist, werden alle Werte dieser Karte um X erhöht."
+      },
+      "divination": {
+        "label": "Weissagung",
+        "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten ab, in gewählter Reihenfolge."
       },
       "corruption": {
         "label": "Korruption",
@@ -589,7 +585,7 @@
       },
       "rappel": {
         "label": "Rückruf",
-        "desc": "Bringt eine Karte aus deinem Friedhof auf deine Hand zurück"
+        "desc": "Bringt eine Karte aus eurem Friedhof zurück auf die Hand"
       },
       "exhumation": {
         "label": "Exhumierung X",
@@ -597,19 +593,19 @@
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; fügt eine davon zur Hand hinzu"
       },
       "faveur": {
         "label": "Gunst X",
-        "desc": "Legt eine zufällige gewöhnliche Karte {alignment} mit Kosten X auf deine Hand."
+        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu"
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten ≤ X auf; füge einen davon deiner Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten X auf; fügt einen davon zur Hand hinzu"
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten ≤ X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon"
+        "desc": "Deckt 3 eurer limitierten Editionen mit Kosten X auf (≥30 erforderlich; sonst 3 gewöhnliche Karten {alignment}); behaltet eine davon"
       },
       "relancer": {
         "label": "Wiederholen X",
@@ -666,6 +662,10 @@
       "guerison": {
         "label": "Heilung X",
         "desc": "Stellt einer Zieleinheit X LP wieder her."
+      },
+      "seconde_vie": {
+        "label": "Zweites Leben X",
+        "desc": "Kann für X Mana aus eurem Friedhof gewirkt werden. Verliert dabei Zweites Leben."
       },
       "incineration": {
         "label": "Einäscherung X",
@@ -747,13 +747,13 @@
         "label": "Zufluss X",
         "desc": "Erhalte X Mana in diesem Zug."
       },
-      "tuteur": {
-        "label": "Tutor",
-        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
       "compagnons": {
         "label": "Begleiter",
         "desc": "Mischt seine Begleiter (verknüpfte Karten, die bei der Erstellung gewählt wurden) in dein Deck und mischt das Deck danach neu. Nur einmal."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       }
     },
     "composed": {
@@ -764,8 +764,11 @@
         "on_activation": "Bei Aktivierung",
         "on_attack": "Beim Angriff",
         "on_end_of_turn": "Am Rundenende",
+        "on_end_of_turn_in_hand": "Am Ende des Zuges, solange sie sich auf der Hand befindet",
+        "in_hand_suffix": "auf der Hand",
         "on_draw": "Beim Ziehen",
-        "on_low_hp": "Unter 15 LP"
+        "on_low_hp": "Unter 15 LP",
+        "on_wound": "Verwundung"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -778,6 +781,8 @@
         "paralyze": "lähmt",
         "poison": "vergiftet",
         "grant_keyword": "verleiht {ability}",
+        "random_range": "1 bis {max}",
+        "appel": "bringt die 1. Einheit deines Decks mit Kosten ≤ {x} ins Spiel",
         "ability_generic": "eine Fähigkeit",
         "draw_cards_one": "zieht {x} Karte",
         "draw_cards_many": "zieht {x} Karten",
@@ -804,23 +809,64 @@
         "rappel_upto_creature": "bis zu {n} Einheiten",
         "rappel_upto_spell": "bis zu {n} Zauber",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
+        "invocation_card": "beschwört die bestimmte Karte",
+        "invocation_cards": "beschwört die {n} bestimmten Karten",
+        "invocation_copies": "beschwört {n} Exemplare der bestimmten Karte",
+        "tuteur": "füge die bestimmte Karte deiner Hand hinzu",
+        "tuteur_copies": "füge {n} Exemplare der bestimmten Karte deiner Hand hinzu",
+        "appel_supreme": "füge deiner Hand die Karte mit den höchsten Kosten aus deinem Deck{filter}{cost} hinzu",
+        "appel_supreme_cost": " (Kosten ≤ {max})",
+        "tuteur_many": "fügt die {n} bestimmten Karten eurer Hand hinzu",
         "epargne": "fügt {x} zu deinem Sparzähler hinzu",
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
+        "occurrences": "{n}-mal: ",
+        "alternative": "Wahlweise: ",
         "devoration": "verschlingt",
+        "silence": "bringt zum Schweigen",
+        "dechainement": "wirkt {x} zufällige Zauber mit Kosten {y}",
+        "dechainement_one": "wirkt einen zufälligen Zauber mit Kosten {y}",
         "tactique_one": "gibt zufällig eine ihrer permanenten Fähigkeiten weiter",
         "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
         "retour_differe": "legt unter das Deck ihres Besitzers",
         "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
-        "faveur": "legt eine zufällige Karte{filter} (Kosten {x}) auf deine Hand",
+        "faveur": "fügt eurer Hand eine zufällige Karte{filter} (Kosten {x}) hinzu",
         "selection_magique": "deckt 3 Zauber{filter} auf (Kosten {x}) und behält einen davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
-        "occurrences": "{n}-mal: ",
-        "alternative": "Wahlweise: ",
-        "silence": "bringt zum Schweigen",
-        "dechainement": "wirkt {x} zufällige Zauber mit Kosten {y}",
-        "dechainement_one": "wirkt einen zufälligen Zauber mit Kosten {y}"
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand"
+      },
+      "emblem": {
+        "badge": "Emblem",
+        "self": "Emblem",
+        "opponent": "Emblem beim Gegner platziert",
+        "permanent": " (dauerhaft)",
+        "turns_one": " ({n} Runde)",
+        "turns_many": " ({n} Runden)",
+        "owner_self": "eurer",
+        "owner_opponent": "seiner",
+        "hero_self": "euer Held",
+        "hero_opponent": "sein Held",
+        "turn_self": "eurer",
+        "turn_opponent": "seiner",
+        "when": {
+          "on_play": "jedes Mal wenn eine {owner} Kreaturen ins Spiel kommt",
+          "on_death": "jedes Mal wenn eine {owner} Kreaturen stirbt",
+          "on_attack": "jedes Mal wenn eine {owner} Kreaturen angreift",
+          "on_return": "jedes Mal wenn eine {owner} Kreaturen auf die Hand zurückkehrt",
+          "on_activation": "jedes Mal wenn eine {owner} Kreaturen aktiviert wird",
+          "on_low_hp": "jedes Mal wenn {hero} unter {n} LP fällt",
+          "on_end_of_turn": "am Ende {turn} Runde"
+        }
+      },
+      "grant_when": {
+        "on_death": ", das bei ihrem Tod ausgelöst wird",
+        "on_activation": ", das bei ihrer Aktivierung ausgelöst wird",
+        "on_return": ", das bei ihrer Rückkehr auf die Hand ausgelöst wird",
+        "on_end_of_turn": ", das am Ende der Runde ausgelöst wird",
+        "on_attack": ", das ausgelöst wird, wenn sie angreift",
+        "on_draw": ", das ausgelöst wird, wenn sie gezogen wird",
+        "on_low_hp": ", das unter 15 LP ausgelöst wird",
+        "on_wound": ", das ausgelöst wird, wenn sie verwundet wird, ohne zu sterben"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -848,10 +894,12 @@
         "hero_ally": "euer Held",
         "hero_enemy": "der gegnerische Held",
         "both_all": "alle Einheiten und der Held {side}",
-        "both_one": "ein Ziel (Einheit oder Held){side}"
+        "both_one": "ein Ziel (Einheit oder Held){side}",
+        "damage_source": "das, was sie verwundet hat"
       },
       "target": {
         "self": "sich selbst",
+        "damage_source": "dem, was sie verwundet hat",
         "hero_ally": "eurem Helden",
         "hero_enemy": "dem gegnerischen Helden",
         "both_all": "allen Einheiten und dem {side} Helden",
@@ -894,7 +942,7 @@
         "poison": "Wählt eine Kreatur zum Vergiften",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
-        "rappel": "wähle eine Karte, die auf die Hand zurückkehrt",
+        "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
         "default": "wähle ein Ziel"
       }
     },
@@ -909,7 +957,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "Das Mittlere Kaiserreich",
-        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystik, Heimlichkeit und die Naga-Wächter der Tempel."
+        "description": "Strategie und Kontrolle: Disziplin, Formationen, Mystik, Heimlichkeit, die Naga-Wächter der Tempel, die Yōkai – Tengu und Oni – der Berge und der Qilin, Omen gerechter Herrschaft."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Die Sonnenreiche",
@@ -917,7 +965,7 @@
       },
       "Humains": {
         "displayName": "Die Freien Königreiche",
-        "description": "Der alte Kontinent: Ehre, Stahl, heroische Helden und ihre stolzen geflügelten Verbündeten, Greifen und Falken."
+        "description": "Der alte Kontinent: Ehre, Stahl, heroische Champions und ihre stolzen geflügelten Verbündeten — Greifen, Falken sowie die Pegasusse und Sphinxe der Windkriegerinnen."
       },
       "Hommes-Bêtes": {
         "displayName": "Das Rudel",
@@ -989,13 +1037,13 @@
     "races": {
       "Elfes": "Elfen",
       "Fées": "Feen",
+      "Aigles Géants": "Riesenadler",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Baummenschen",
       "Farfadets": "Kobolde",
       "Korrigans": "Korriganen",
       "Faunes": "Faune",
       "Dryades": "Dryaden",
-      "Aigles Géants": "Riesenadler",
-      "Hobbits": "Hobbits",
-      "Hommes-Arbres": "Baummenschen",
       "Nains": "Zwerge",
       "Golems": "Golems",
       "Gnomes": "Gnome",
@@ -1005,9 +1053,13 @@
       "Mammouths": "Mammuts",
       "Humains": "Menschen",
       "Nagas": "Nagas",
+      "Tengu": "Tengu",
+      "Oni": "Oni",
       "Esprits": "Geister",
       "Griffons": "Greifen",
       "Faucons": "Falken",
+      "Pégases": "Pegasusse",
+      "Sphinx": "Sphinxe",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
       "Hommes-Félins": "Katzenmenschen",
@@ -1016,11 +1068,20 @@
       "Hommes-Chiens": "Hundsmenschen",
       "Hommes-Renards": "Fuchsmenschen",
       "Hommes-Cerfs": "Hirschmenschen",
-      "Insectes": "Insekten",
       "Hommes-Singes": "Affenmenschen",
       "Hommes-Poissons": "Fischmenschen",
       "Hommes-Oiseaux": "Vogelmenschen",
+      "Insectes": "Insekten",
       "Élémentaire": "Elementare",
+      "Ondins": "Undinen",
+      "Sirènes": "Sirenen",
+      "Léviathans": "Leviathane",
+      "Cristallins": "Kristalline",
+      "Troglodytes": "Troglodyten",
+      "Bêtes Chtoniennes": "Chthonische Bestien",
+      "Salamandres": "Salamander",
+      "Sylphes": "Sylphen",
+      "Néphélides": "Nepheliden",
       "Ogres": "Oger",
       "Dragons": "Drachen",
       "Chiens": "Hunde",
@@ -1047,15 +1108,6 @@
       "Poltergeists": "Poltergeister",
       "Dullahans": "Dullahans",
       "Sluaghs": "Sluaghs",
-      "Ondins": "Undinen",
-      "Sirènes": "Sirenen",
-      "Léviathans": "Leviathane",
-      "Cristallins": "Kristalline",
-      "Troglodytes": "Troglodyten",
-      "Bêtes Chtoniennes": "Chthonische Bestien",
-      "Salamandres": "Salamander",
-      "Sylphes": "Sylphen",
-      "Néphélides": "Nepheliden",
       "Elfes Corrompus": "Verderbte Elfen",
       "Araignées Géantes": "Riesenspinnen",
       "Démons": "Dämonen",
@@ -1063,7 +1115,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer"
+      "Guerriers du Chaos": "Chaoskämpfer",
+      "Qilins": "Qilins"
     },
     "alignments": {
       "bon": "Gut",
@@ -1157,6 +1210,16 @@
         "bare": "Naga",
         "de": "des Naga"
       },
+      "Tengu": {
+        "def": "der Tengu",
+        "bare": "Tengu",
+        "de": "des Tengu"
+      },
+      "Oni": {
+        "def": "der Oni",
+        "bare": "Oni",
+        "de": "des Oni"
+      },
       "Griffons": {
         "def": "der Greif",
         "bare": "Greif",
@@ -1166,6 +1229,16 @@
         "def": "der Falke",
         "bare": "Falke",
         "de": "des Falken"
+      },
+      "Pégases": {
+        "def": "der Pegasus",
+        "bare": "Pegasus",
+        "de": "des Pegasus"
+      },
+      "Sphinx": {
+        "def": "die Sphinx",
+        "bare": "Sphinx",
+        "de": "der Sphinx"
       },
       "Hommes-Loups": {
         "def": "der Werwolf",
@@ -1318,31 +1391,6 @@
         "bare": "Lich",
         "de": "des Lichs"
       },
-      "Banshees": {
-        "def": "die Banshee",
-        "bare": "Banshee",
-        "de": "der Banshee"
-      },
-      "Homuncules de Sang": {
-        "def": "der Bluthomunkulus",
-        "bare": "Bluthomunkulus",
-        "de": "des Bluthomunkulus"
-      },
-      "Gargouilles": {
-        "def": "der Gargoyle",
-        "bare": "Gargoyle",
-        "de": "des Gargoyles"
-      },
-      "Dhampirs": {
-        "def": "der Dhampir",
-        "bare": "Dhampir",
-        "de": "des Dhampirs"
-      },
-      "Chiroptères": {
-        "def": "der Chiroptere",
-        "bare": "Chiroptere",
-        "de": "des Chiropteren"
-      },
       "Momies": {
         "def": "die Mumie",
         "bare": "Mumie",
@@ -1418,6 +1466,31 @@
         "bare": "Nephelide",
         "de": "der Nephelide"
       },
+      "Banshees": {
+        "def": "die Banshee",
+        "bare": "Banshee",
+        "de": "der Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "der Bluthomunkulus",
+        "bare": "Bluthomunkulus",
+        "de": "des Bluthomunkulus"
+      },
+      "Gargouilles": {
+        "def": "der Gargoyle",
+        "bare": "Gargoyle",
+        "de": "des Gargoyles"
+      },
+      "Dhampirs": {
+        "def": "der Dhampir",
+        "bare": "Dhampir",
+        "de": "des Dhampirs"
+      },
+      "Chiroptères": {
+        "def": "der Chiroptere",
+        "bare": "Chiroptere",
+        "de": "des Chiropteren"
+      },
       "Elfes Corrompus": {
         "def": "der Verdorbene Elf",
         "bare": "Verdorbener Elf",
@@ -1457,6 +1530,11 @@
         "def": "der Chaoskrieger",
         "bare": "Chaoskrieger",
         "de": "des Chaoskriegers"
+      },
+      "Qilins": {
+        "def": "der Qilin",
+        "bare": "Qilin",
+        "de": "des Qilins"
       }
     },
     "clans_forms": {
@@ -1564,7 +1642,8 @@
         "end_of_turn": "am Rundenende",
         "draw": "beim Ziehen",
         "low_hp": "unter {n} LP",
-        "spell": "bei der Auflösung des Zaubers"
+        "spell": "bei der Auflösung des Zaubers",
+        "wound": "wenn sie verwundet wird, ohne zu sterben"
       }
     },
     "triggers": {
@@ -1576,7 +1655,8 @@
       "tap": "Aktivierbar",
       "end_of_turn": "Rundenende",
       "draw": "Ziehen",
-      "low_hp": "Unter {n} LP"
+      "low_hp": "Unter {n} LP",
+      "wound": "Verwundung"
     }
   },
   "home": {
@@ -1887,6 +1967,7 @@
     "trigger_on_end_of_turn_in_hand": "Am Zugende, solange sie auf der Hand ist",
     "trigger_on_draw": "Wenn diese Karte gezogen wird",
     "trigger_on_low_hp": "Unter 15 LP",
+    "trigger_on_wound": "Verwundung (erlittener Schaden ohne Tod)",
     "trigger_spell_resolution": "Bei der Auflösung",
     "composed_effects_heading": "Zusammengesetzte Effekte (erweitert)",
     "composed_effects_subtitle": "Inhalt + Stärke + Ziele",
@@ -1932,7 +2013,7 @@
     "label_card_kind": "ZIELKARTEN",
     "card_kind_all": "Alle",
     "card_kind_creature": "Nur Einheiten",
-    "card_kind_spell": "Nur Zauber",
+    "card_kind_spell": "Nur Zaubersprüche",
     "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
     "convert_to_composed": "Konvertieren",
     "effects_heading": "Karteneffekte",
@@ -1942,9 +2023,9 @@
     "group_curated": "Besondere Mechaniken",
     "content_invocation": "Beschwörung (zufällige Kreatur)",
     "pool_hint_invocation": "Kumulative Filter. Ohne sie folgt der Pool der Ausrichtung der Karte; die beschworenen Kosten betragen EXAKT X.",
-    "label_designated_card": "BESTIMMTE KARTE",
-    "designated_card_hint": "Wähle eine oder mehrere Kreaturen: sie werden unverändert in dieser Reihenfolge beschworen (dieselbe Karte kann mehrfach gewählt werden). Ohne Auswahl: Zufallszug zu Kosten X nach den Filtern.",
-    "tuteur_card_hint": "Wähle eine oder mehrere Karten, Kreaturen oder Zauber: sie kommen in dieser Reihenfolge auf deine Hand. Dieselbe Karte kann mehrfach gewählt werden (so viele Exemplare). Ohne Auswahl bewirkt der Effekt nichts.",
+    "label_designated_card": "FESTGELEGTE KARTE",
+    "designated_card_hint": "Legt eine oder mehrere Kreaturen fest: Sie werden genau so beschworen, in dieser Reihenfolge (dieselbe Karte kann mehrfach festgelegt werden). Ohne Festlegung erfolgt ein Zufallszug zu den Kosten X gemäß den Filtern.",
+    "tuteur_card_hint": "Legt eine oder mehrere Karten fest, Kreaturen oder Zaubersprüche: Sie kommen in dieser Reihenfolge in eure Hand. Dieselbe Karte kann mehrfach festgelegt werden (entsprechend viele Exemplare). Ohne Festlegung bewirkt der Effekt nichts.",
     "content_selection": "Auswahl (1 von 3)",
     "content_faveur": "Gunst (1 zufällige Karte → Hand)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
@@ -1967,6 +2048,7 @@
     "entity_hero": "Held",
     "entity_both": "Beide (Held + Einheiten)",
     "entity_self": "Sich selbst (die Kreatur)",
+    "entity_damage_source": "Die Quelle des Schadens",
     "label_side": "SEITE",
     "side_ally": "Verbündet",
     "side_enemy": "Feind",
@@ -2059,8 +2141,8 @@
     "sacrifice_cost_hint": "Anzahl der verbündeten Kreaturen, die der Spieler opfern muss, um diese Karte zu spielen.",
     "exile_cost_hint": "Anzahl der Karten, die oben vom Deck des Spielers entfernt werden. Verbannt: Sie landen nicht auf dem Friedhof und sind unwiederbringlich.",
     "topdeck_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand oben auf sein Deck zurücklegt. Sie wandern nicht auf den Friedhof: Er wird sie zurückziehen. Tempokosten, nicht reduzierbar.",
-    "equip_label": "Ausrüst.",
-    "equip_cost_hint": "OBJEKTE — Manakosten, um das Objekt einer verbündeten Kreatur anzulegen. Bei JEDEM Anlegen fällig, auch beim Umlegen. 0 = gratis.",
+    "equip_label": "Ausr.",
+    "equip_cost_hint": "OBJEKTE — Manakosten, um das Objekt an einer verbündeten Kreatur auszurüsten. Wird bei JEDER Ausrüstung fällig, auch bei Umrüstung. 0 = kostenlos.",
     "item_trigger_bearer": "(des Trägers)",
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
@@ -2089,6 +2171,7 @@
     "mode_title_end_of_turn": "Am Rundenende",
     "mode_title_draw": "Wenn diese Karte gezogen wird",
     "mode_title_low_hp": "Wenn Ihr Held unter 15 LP fällt (nur einmal)",
+    "mode_title_wound": "Verwundung: wenn sie Schaden erleidet, ohne zu sterben (einmal pro Quelle und Runde)",
     "grant_scope_target": "Dem Zielgeschöpf verliehen",
     "grant_scope_all_allies": "Allen verbündeten Einheiten verliehen",
     "required_caps": "Erforderlich",
@@ -2353,7 +2436,7 @@
     "alternative_warn_alone": "nur ein Zweig markiert: Der Effekt wird normal ausgeführt",
     "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
-    "random_hint_faveur": "Die gewährte Karte würfelt ihre Kosten zwischen 1 und {max}. Ohne das Kästchen kostet sie genau {max}.",
+    "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
     "content_tuteur": "Tutor (benannte Karten → Hand)",
@@ -2411,7 +2494,7 @@
     "graveyard_select_prompt": "Wähle eine Karte aus dem Friedhof",
     "graveyard_hint_touch": "Karte antippen zum Zoomen · erneut tippen für die Beschreibung",
     "graveyard_hint_hover": "Karte überfahren zum Zoomen · Rechtsklick für Bild / Beschreibung",
-    "seconde_vie_hint": "Zweites Leben: Doppelklicken Sie eine berechtigte Karte.",
+    "seconde_vie_hint": "Zweites Leben: Doppelklickt eine berechtigte Karte.",
     "seconde_vie_blocked_turn": "Sie sind nicht am Zug.",
     "graveyard_empty": "Keine Karten im Friedhof",
     "cost_default_card_name": "Karte",
@@ -2463,8 +2546,8 @@
     "spell_countered": "🛡️ Gegenzauber!",
     "draw_trigger_self": "🃏 Effekt bei deinem Kartenziehen ausgelöst",
     "draw_trigger_opponent": "🃏 Effekt beim gegnerischen Kartenziehen ausgelöst",
-    "faveur_self": "🎁 Gunst — Karte auf deine Hand gelegt",
-    "faveur_opponent": "🎁 Gunst — Karte auf die gegnerische Hand gelegt",
+    "faveur_self": "🎁 Gunst — Karte zu eurer Hand hinzugefügt",
+    "faveur_opponent": "🎁 Gunst — Karte zur gegnerischen Hand hinzugefügt",
     "spell_grant_all_allies": " · an alle Verbündeten",
     "spell_grant_target": " · an die Zielkreatur",
     "fire_breath_label": "Feueratem",
@@ -2498,7 +2581,7 @@
     "zone_eveil": "Erwachen",
     "zone_eveil_yours": "Ihr Erwachen",
     "zone_eveil_opponent": "Gegnerisches Erwachen",
-    "hand_show": "Hand einblenden",
+    "hand_show": "Hand anzeigen",
     "eveil_hint": "Zahlen Sie 1 Mana pro Klick. Beim letzten Punkt kommt die Karte ins Spiel, als käme sie gerade aus Ihrer Hand.",
     "eveil_remaining": "{count, plural, one {# Punkt verbleibend} other {# Punkte verbleibend}}",
     "eveil_next_point": "Der nächste Punkt kostet 1 Mana.",
@@ -2539,6 +2622,8 @@
     "combat_see_full_list": "Die vollständige Fähigkeitenliste befindet sich am Seitenende.",
     "hero_title": "Der Held und seine Fähigkeit",
     "alt_costs_title": "Zusätzliche Kosten und das Erwachen",
+    "counters_title": "Die Zähler: Ersparnis, Glaube und Eroberung",
+    "singulier_title": "Singulär: Der Bonus für Decks ohne Duplikate",
     "deck_title": "Ein Deck bauen",
     "tcg_numbers_title": "Die wichtigsten Zahlen",
     "stat_hero_hp": "LP des Helden",
@@ -2555,9 +2640,7 @@
     "search_placeholder": "Fähigkeit suchen…",
     "creature_abilities_group": "Kreaturfähigkeiten ({count})",
     "spell_abilities_group": "Zauberfähigkeiten ({count})",
-    "no_ability_match": "Keine Fähigkeit entspricht „{query}\".",
-    "counters_title": "Die Zähler: Ersparnis, Glaube und Eroberung",
-    "singulier_title": "Singulär: Der Bonus für Decks ohne Duplikate"
+    "no_ability_match": "Keine Fähigkeit entspricht „{query}\"."
   },
   "deck": {
     "alignment_incompatible": "Gutes und böses Alignment nicht kompatibel",

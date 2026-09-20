@@ -309,6 +309,58 @@ function withLethalSpell<T>(active: boolean, fn: () => T): T {
   try { return fn(); } finally { lethalSpellActive = prev; }
 }
 
+// ── BLESSURE (on_wound) ─────────────────────────────────────────────────────
+//
+// ORIGINE des dégâts en cours. Nécessaire parce que `source`, dans
+// `dealDamageToCreature`, ne dit pas QUI blesse au sens du déclencheur : un
+// sort y passe le HÉROS lanceur (pour Riposte), si bien que deux sorts et le
+// pouvoir héroïque seraient une seule et même « source ». Les chemins sans
+// créature coupable (sort, emblème, contre-riposte, Poison) posent donc leur
+// identité ici le temps de leur résolution.
+//
+// Une créature en `source` PRIME toujours sur ce contexte : un râle d'agonie
+// qui blesse PENDANT la résolution d'un sort est l'œuvre de la mourante, pas
+// du sort — or `settleSpellDeaths` tourne à l'intérieur du contexte du sort.
+type WoundOrigin = { key: string; instanceId?: string; heroOwnerId?: string };
+let damageOriginCtx: WoundOrigin | null = null;
+function withDamageOrigin<T>(origin: WoundOrigin | null, fn: () => T): T {
+  const prev = damageOriginCtx;
+  damageOriginCtx = origin;
+  try { return fn(); } finally { damageOriginCtx = prev; }
+}
+// Blessures de l'action EN ATTENTE de règlement : posées au fil des dégâts,
+// consommées par `checkWoundTriggers` à la frontière d'effet. Vidé en tête
+// d'applyAction ; ne survit jamais à l'action (le balayage de fin d'action
+// précède le drain, et le drain rebalaye après chaque frame).
+let woundSink: Array<{ targetInstanceId: string; origin: WoundOrigin }> = [];
+
+/** Qui blesse ? Créature en `source` d'abord (un objet ÉQUIPÉ compte pour son
+ *  porteur), sinon le contexte posé par le chemin appelant, sinon le héros. */
+function woundOriginOf(source: CardInstance | import("./types").HeroState | null | undefined): WoundOrigin {
+  if (source && "instanceId" in source) {
+    const id = source.equippedToInstanceId ?? source.instanceId;
+    return { key: `c:${id}`, instanceId: id };
+  }
+  if (damageOriginCtx) return damageOriginCtx;
+  if (source) {
+    const owner = currentBoardPlayers.find(p => p.hero === source);
+    if (owner) return { key: `h:${owner.id}`, heroOwnerId: owner.id };
+  }
+  return { key: "?" };
+}
+
+/** Enregistre une blessure RÉELLE (PV effectivement perdus). La mémoire
+ *  `woundSourcesThisTurn` dédoublonne ICI et non au balayage : les N points
+ *  d'un même sort ne posent qu'une entrée, et une source déjà encaissée ce
+ *  tour-ci n'en pose aucune. Tenue pour toute créature, porteuse ou non du
+ *  pouvoir (cf. le champ). La survie, elle, se juge au balayage. */
+function noteWound(creature: CardInstance, origin: WoundOrigin): void {
+  const seen = (creature.woundSourcesThisTurn ??= []);
+  if (seen.includes(origin.key)) return;
+  seen.push(origin.key);
+  woundSink.push({ targetInstanceId: creature.instanceId, origin });
+}
+
 // Seuil de colère porté par un SORT : bonus de dégâts GLOBAL, posé pour toute la
 // résolution comme `lethalSpellActive`. Un COMPTEUR et non un booléen, parce que
 // le bonus ne s'applique qu'UNE fois — au premier paquet de dégâts du sort, pas
@@ -468,7 +520,7 @@ function isLethalTouch(source: CardInstance | import("./types").HeroState | null
 function recordPowerStrike(source: CardInstance | null, targetId: string, content: import("./types").ComposedEffectContent, x: number): void {
   if (content !== "deal_damage" || x <= 0 || !source) return;
   const mode = composedStrikeMode;
-  if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn") return;
+  if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn" && mode !== "wound") return;
   powerStrikeSink.push({ sourceId: source.instanceId, targetId, mode });
 }
 
@@ -504,6 +556,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
+  if (mode === "wound") return "on_wound";
   return "on_play";
 }
 
@@ -1379,8 +1432,21 @@ function resolveComposedEffect(
      *  dont on dispose quand la carte d'origine est au cimetière depuis
      *  longtemps. */
     emblemIndex?: number;
+    /** BLESSURE : ce qui a blessé la source — lu par la cible `damage_source`. */
+    woundOrigin?: { instanceId?: string; heroOwnerId?: string };
   },
 ): void {
+  // Blessure : un EMBLÈME est une source de dégâts à part entière (une par
+  // emblème). Posé ici plutôt qu'à chaque site appelant — il y en a trois (fin
+  // de tour, choix différé, événement) et un oubli serait muet. La garde sur la
+  // clé évite de se rappeler soi-même sans fin.
+  if (opts?.emblemIndex != null) {
+    const key = `e:${owner.id}:${opts.emblemIndex}`;
+    if (damageOriginCtx?.key !== key) {
+      return withDamageOrigin({ key, heroOwnerId: owner.id }, () =>
+        resolveComposedEffect(composed, source, owner, opponent, chosenTargetIds, fromSpell, opts));
+    }
+  }
   // Chant : le bonus ne vaut QUE pour les effets du sort lui-même. La garde sur
   // le déclencheur est load-bearing — `settleSpellDeaths` tourne à l'intérieur
   // du `withChant`, si bien qu'un râle d'agonie déclenché par les dégâts du
@@ -1763,6 +1829,31 @@ function resolveComposedEffect(
     return;
   }
 
+  // "damage_source" : ce qui a blessé la source (déclencheur Blessure) —
+  // déterministe comme "self". La créature coupable si elle est encore en jeu
+  // et en vie ; sinon le héros de son camp, pour les seuls contenus qui savent
+  // toucher un héros ; sinon rien (Poison, ou tout autre déclencheur).
+  if (target.entity === "damage_source") {
+    const o = opts?.woundOrigin;
+    if (!o) return;
+    const coupable = o.instanceId
+      ? [...owner.board, ...opponent.board].find(c => c.instanceId === o.instanceId && c.currentHealth > 0)
+      : undefined;
+    if (coupable) {
+      recordPowerStrike(source, coupable.instanceId, composed.content, x);
+      applyComposedToUnit(composed, coupable, x, y, source, owner, opponent, fromSpell);
+      return;
+    }
+    const camp = o.heroOwnerId
+      ?? (o.instanceId ? [owner, opponent].find(p => p.graveyard.some(c => c.instanceId === o.instanceId))?.id : undefined);
+    const joueur = [owner, opponent].find(p => p.id === camp);
+    if (joueur && (composed.content === "deal_damage" || composed.content === "heal")) {
+      recordPowerStrike(source, heroStrikeSentinel(joueur.hero, owner, opponent), composed.content, x);
+      applyComposedToHero(composed.content, joueur.hero, x, source);
+    }
+    return;
+  }
+
   // "scatter" : répartition au hasard, passe par passe, avec REMISE. Deux
   // passes peuvent retomber sur la même cible : le nombre de cibles DISTINCTES
   // varie donc de 1 au nombre de passes — c'est exactement l'intérêt de la
@@ -1852,6 +1943,7 @@ function keywordModeToTrigger(mode: import("./types").KeywordMode | undefined): 
     case "end_of_turn": return "on_end_of_turn";
     case "draw": return "on_draw";
     case "low_hp": return "on_low_hp";
+    case "wound": return "on_wound";
     case "entry": return "on_play";
     case "spell": return "spell_resolution";
     default: return "on_activation";
@@ -1870,6 +1962,7 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_end_of_turn": return "end_of_turn";
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même teinte que la fin de tour
     case "on_low_hp": return "low_hp";
+    case "on_wound": return "wound";
     case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
     case "spell_resolution": return "spell"; // sort → jaune (cohérence flèche/icône)
     default: return undefined;
@@ -2874,15 +2967,19 @@ function fireEmblemsForEvent(
   autre: PlayerState,
 ): void {
   if (evenement === "on_end_of_turn") return;
-  for (const emblem of porteur.emblems ?? []) {
-    if (!emblem.composed) continue;
-    if ((emblem.trigger ?? "on_end_of_turn") !== evenement) continue;
+  (porteur.emblems ?? []).forEach((emblem, index) => {
+    if (!emblem.composed) return;
+    if ((emblem.trigger ?? "on_end_of_turn") !== evenement) return;
     for (let n = 0; n < emblem.stacks; n++) {
-      withComposedMode(triggerToKeywordMode(evenement), () =>
-        resolveComposedEffect(emblem.composed!, null, porteur, autre, undefined, false,
-          { trigger: evenement, noSuspend: true }));
+      // Contexte d'origine posé ICI et non via `opts.emblemIndex` : ce dernier
+      // ouvre aussi la modale des Sélections, ce que ce chemin (noSuspend) ne
+      // veut pas.
+      withDamageOrigin({ key: `e:${porteur.id}:${index}`, heroOwnerId: porteur.id }, () =>
+        withComposedMode(triggerToKeywordMode(evenement), () =>
+          resolveComposedEffect(emblem.composed!, null, porteur, autre, undefined, false,
+            { trigger: evenement, noSuspend: true })));
     }
-  }
+  });
 }
 
 export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
@@ -3358,6 +3455,13 @@ export function startTurn(state: GameState): GameState {
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
   newState.turnNumber++;
+  // Blessure : la mémoire « déjà blessée par cette source » vaut pour UN tour,
+  // de l'un ou l'autre joueur. Vidée ici, à la bascule, AVANT le tick de Poison
+  // plus bas (qui appartient au tour qui s'ouvre). Les blessures de la fin du
+  // tour sortant sont déjà dans `woundSink` : elles partiront quand même.
+  for (const p of newState.players) {
+    for (const c of p.board) if (c.woundSourcesThisTurn?.length) c.woundSourcesThisTurn = [];
+  }
   // Wall-clock anchor for the per-turn countdown timer. Both clients read
   // this from game state so their local TurnTimer renders the same value
   // (within their own clock skew, typically <100 ms with NTP) instead of
@@ -3495,6 +3599,9 @@ export function startTurn(state: GameState): GameState {
     // Poison tick: -1 HP
     if (creature.isPoisoned) {
       creature.currentHealth -= 1;
+      // Hors canal de dégâts, mais une blessure au sens de Blessure. Le Poison
+      // est SA propre source, distincte de la créature qui a empoisonné.
+      noteWound(creature, { key: "poison" });
     }
   }
 
@@ -4803,6 +4910,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (vampTarget) {
         const stolen = Math.min(x, vampTarget.currentHealth);
         vampTarget.currentHealth -= stolen;
+        // Vol de PV : hors canal de dégâts, mais une blessure au sens de Blessure.
+        if (stolen > 0) noteWound(vampTarget, woundOriginOf(cardInstance));
         cardInstance.currentHealth += stolen;
         cardInstance.maxHealth += stolen;
         cardInstance.persecutionX = x; // reuse field for X tracking
@@ -5745,6 +5854,11 @@ function resolveSpellCard(
   // resolveSpellCard, pose SON propre bonus et restaure celui-ci en sortant. Un
   // sort relancé sans Chant n'hérite donc de rien.
   const chant = boardHasChanter(caster) ? cardChantAmount(card) : 0;
+  // Blessure : chaque LANCEMENT est une source de dégâts à part — second
+  // exemplaire, relance (Déchainement, Seconde vie, Apprentissage) compris,
+  // puisque tous repassent ici. Ré-entrant comme les contextes ci-dessous.
+  state.spellCastSeq = (state.spellCastSeq ?? 0) + 1;
+  withDamageOrigin({ key: `s:${state.spellCastSeq}`, heroOwnerId: caster.id }, () =>
   withChant(chant, () =>
   // Tempo (Lune, Soleil) : même instantané, posé pour les mêmes raisons — et
   // ré-entrant de la même façon, si bien qu'un sort imbriqué n'hérite jamais du
@@ -5818,7 +5932,7 @@ function resolveSpellCard(
     }
 
     recalculateAuras(caster, opponent);
-  }))));
+  })))));
   return ctx;
 }
 
@@ -6892,7 +7006,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
  *  in-game. Retourne undefined si non ciblable en v1 (zone ≠ plateau pour les
  *  unités). */
 function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
-  if (t.entity === "self") return undefined; // déterministe (la source) → aucun picker
+  if (t.entity === "self" || t.entity === "damage_source") return undefined; // déterministe → aucun picker
   if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
   // "both" : héros OU unité. Side-aware — un effet OFFENSIF (side "enemy") ne
   // doit proposer QUE le camp ennemi (unité + héros ennemi), jamais ses propres
@@ -7889,6 +8003,8 @@ function dealDamageToCreature(
   if (damage <= 0) return;
   creature.currentHealth -= damage;
   damageLedgerSink.push({ targetInstanceId: creature.instanceId, amount: damage });
+  // Blessure : PV réellement perdus, toutes immunités et réductions passées.
+  noteWound(creature, woundOriginOf(source));
 
   // Touché mortel : la blessure est mortelle quels que soient les PV restants.
   // Placé APRÈS toutes les immunités et réductions — un Bouclier qui absorbe
@@ -7930,7 +8046,11 @@ function dealDamageToCreature(
   // riposte↔riposte. On ne se riposte jamais soi-même.
   if (source && source !== creature && hasKw(creature, "riposte") && creature.riposteX > 0) {
     if ("instanceId" in source) {
-      dealDamageToCreature(source, creature.riposteX);
+      // Contre-riposte infligée SANS source (pas de boucle riposte↔riposte) —
+      // mais pour Blessure le coupable est bien cette créature-ci, la même
+      // source que son attaque : on le dit par le contexte.
+      withDamageOrigin({ key: `c:${creature.instanceId}`, instanceId: creature.instanceId }, () =>
+        dealDamageToCreature(source, creature.riposteX));
     } else {
       dealDamageToHero(source, creature.riposteX, creature);
     }
@@ -8241,12 +8361,19 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
   if (!owner || !opponent) return;
   const source = frame.sourceInstanceId ? findInstanceById(state, frame.sourceInstanceId) : null;
 
+  // Blessure : « sans mourir » vaut jusqu'à la résolution. Une porteuse tuée
+  // (ou renvoyée) entre le balayage et son tour de pile ne dit plus rien —
+  // `findInstanceById` la retrouverait au cimetière, d'où le test sur le plateau.
+  if (frame.trigger === "on_wound"
+    && !(source && source.currentHealth > 0 && owner.board.includes(source))) return;
+
   if (frame.kind === "composed" && frame.composed) {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
     withComposedMode(triggerToKeywordMode(frame.trigger), () =>
       resolveComposedEffect(frame.composed!, source, owner, opponent, frame.chosenTargetIds, frame.trigger === "spell_resolution",
         {
           trigger: frame.trigger, capUid: frame.capUid, noSuspend: frame.noSuspend,
+          woundOrigin: frame.woundOrigin,
           // Repli de carte source : indispensable aux contenus qui lisent la
           // carte plutôt que l'instance (Invocation, Sélections) quand la
           // source n'est plus en jeu — tout sort, donc.
@@ -8395,6 +8522,8 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
     // « Sous 15 PV » : une frame vient peut-être de faire franchir le seuil à
     // un héros — interruption LIFO avec profondeur héritée (garde unifiée).
     checkLowHpTriggers(state, top.depth + 1);
+    // Blessure : même ancrage — la frame vient peut-être de blesser quelqu'un.
+    checkWoundTriggers(state, top.depth + 1);
   }
   if (stack.length === 0) delete state.effectStack;
 }
@@ -8583,6 +8712,74 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
     }
     pushFrames(state, frames);
   }
+}
+
+/** Déclencheur « BLESSURE » (on_wound / mode "wound") : règle les blessures
+ *  en attente (`woundSink`), à la FRONTIÈRE D'EFFET.
+ *
+ *  Deux ancrages, les mêmes que « Sous 15 PV » : fin d'applyAction (tout ce que
+ *  l'action a fait en ligne — combat, sort, fin de tour) et après chaque frame
+ *  de drainStack. C'est ce qui réalise « sans mourir » : un sort qui sert trois
+ *  points un par un a fini de frapper quand on arrive ici, et ses morts sont
+ *  déjà réglées — la créature est sur le plateau, en vie, ou elle ne dit rien.
+ *  Touché mortel, mort puis Résurrection : rien non plus.
+ *
+ *  Le dédoublonnage « une fois par source et par tour » est déjà fait, à
+ *  l'enregistrement (`noteWound`) ; ici chaque entrée vaut un déclenchement.
+ *
+ *  Ordre déterministe entre clients, arbitré par l'auteur : joueur ACTIF
+ *  d'abord, plateau de gauche à droite, puis l'adversaire. Pour une même
+ *  créature, les sources dans l'ordre où elles ont frappé. Ciblage : la règle
+ *  commune (tour du contrôleur → choix différé, tour adverse → hasard semé). */
+function checkWoundTriggers(state: GameState, depth = 0): void {
+  if (woundSink.length === 0) return;
+  const wounds = woundSink;
+  woundSink = [];
+  if (state.phase === "finished" || state.winner) return;
+  const actif = state.players[state.currentPlayerIndex];
+  const autre = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const frames: StackFrame[] = [];
+  for (const p of [actif, autre]) {
+    for (const ci of p.board) {
+      if (ci.currentHealth <= 0) continue;
+      const insts = (ci.card.keyword_instances ?? []).filter(k => k.mode === "wound");
+      const hasComposed = getCapabilities(ci.card).some(c => composeExecutable(c) && c.trigger === "on_wound");
+      if (insts.length === 0 && !hasComposed) continue;
+      for (const w of wounds) {
+        if (w.targetInstanceId !== ci.instanceId) continue;
+        // L'origine entre dans le tag ET dans l'id : deux sources dans la même
+        // action donnent deux lots de frames, qui ne doivent ni partager un id
+        // de sélecteur de cible, ni se confondre en un seul groupe « OU ».
+        const tag = `${ci.instanceId}#on_wound#${w.origin.key}`;
+        const woundOrigin = { instanceId: w.origin.instanceId, heroOwnerId: w.origin.heroOwnerId };
+        const composees = buildComposedFrames(ci.card, "on_wound", ci, p.id, undefined, undefined, { depth, originTag: tag });
+        composees.forEach((f, i) => { f.frameId = `${tag}#${i}`; f.woundOrigin = woundOrigin; });
+        frames.push(...composees);
+        let seq = 0;
+        for (const inst of insts) {
+          frames.push({
+            frameId: `${tag}#kw${seq++}`,
+            kind: "curated",
+            ownerId: p.id,
+            sourceInstanceId: ci.instanceId,
+            trigger: "on_wound",
+            curatedKw: inst.id,
+            curatedX: inst.x ?? 1,
+            curatedInst: inst,
+            woundOrigin,
+            depth,
+            originTag: tag,
+          });
+        }
+      }
+    }
+  }
+  // Frontière pour l'ÉCRAN : ce qui précède (le coup, son popup de dégâts, les
+  // morts) se joue AVANT la réponse de la blessée. Sans elle, dégâts reçus et
+  // riposte du pouvoir partiraient dans la même salve, et l'on ne lirait plus
+  // qui répond à quoi. Posée seulement s'il y a quelque chose à annoncer.
+  if (frames.length > 0) markAnimationCheckpoint("effet");
+  pushFrames(state, frames);
 }
 
 /** Lit le sous-ensemble de déclencheurs rejoués par Déclenchement (capabilities
@@ -9436,6 +9633,7 @@ function resolveCuratedKeywordEffect(
         if (target) {
           const stolen = Math.min(x, target.currentHealth);
           target.currentHealth -= stolen;
+          if (stolen > 0) noteWound(target, woundOriginOf(source));
           source.currentHealth += stolen;
           source.maxHealth += stolen;
           break;
@@ -9449,6 +9647,7 @@ function resolveCuratedKeywordEffect(
           const targetV = poolV[Math.floor(rng() * poolV.length)];
           const stolenV = Math.min(x, targetV.currentHealth);
           targetV.currentHealth -= stolenV;
+          if (stolenV > 0) noteWound(targetV, woundOriginOf(source));
           source.currentHealth += stolenV;
           source.maxHealth += stolenV;
           break;
@@ -11079,6 +11278,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   deckEffectSink = [];
   compagnonsSink = [];
   lethalSpellActive = false;
+  woundSink = [];
+  damageOriginCtx = null;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
   // Indice cosmétique (hors hash) : on efface la provenance de buff sur toutes
@@ -11119,6 +11320,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // vie, fatigue… quel que soit le handler). Les frames poussées sont résolues
   // par le drainStack juste en dessous.
   if (result !== state) checkLowHpTriggers(result);
+  // Blessure : règle les blessures posées par les chemins EN LIGNE de l'action
+  // (combat, sort, fin de tour, tick de Poison).
+  if (result !== state) checkWoundTriggers(result);
 
   // Branches d'un « OU » émises par les chemins EN LIGNE : elles rejoignent la
   // pile juste avant le drain, pour que la question se pose comme pour un effet

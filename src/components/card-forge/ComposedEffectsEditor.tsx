@@ -194,7 +194,7 @@ export default function ComposedEffectsEditor({
   const tr = useTranslations("forge");
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
-  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }];
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui
@@ -518,7 +518,15 @@ export default function ComposedEffectsEditor({
                 // C'était le défaut : sur un sort, la liste se réduisait au seul
                 // `spell_resolution`, auquel aucun emblème ne répond jamais.
                 cap.effectKind === "emblem" ? triggersUnite.filter((t) => isEmblemCadence(t.v)) : triggers,
-                (v) => patchCap(idx, { trigger: v }),
+                (v) => {
+                  // « La source des dégâts » n'existe que sous Blessure : quitter
+                  // ce déclencheur en la gardant laisserait un effet inerte, sans
+                  // que rien à l'écran ne le dise.
+                  const perdSaCible = v !== "on_wound" && cap.composed?.target?.entity === "damage_source";
+                  patchCap(idx, perdSaCible
+                    ? { trigger: v, composed: { ...cap.composed!, target: { ...cap.composed!.target!, entity: "unit", designation: "choice" } } }
+                    : { trigger: v });
+                },
               )}
 
               {/* SINGULIER — condition ajoutée au déclencheur choisi ci-dessus. */}
@@ -737,7 +745,10 @@ export default function ComposedEffectsEditor({
                         <span style={labelStyle}>{tr('label_grant_trigger')}</span>
                         {sel(
                           eff.grantTrigger ?? optionsDecl[0],
-                          optionsDecl.map((t) => ({ v: t, l: triggers.find((x) => x.v === t)?.l ?? t })),
+                          // Libellés pris dans la liste des UNITÉS : sur un sort, `triggers` ne
+                          // contient que ses deux moments à lui, et le déclencheur du don
+                          // — un événement de créature — s'affichait par son id brut.
+                          optionsDecl.map((t) => ({ v: t, l: triggersUnite.find((x) => x.v === t)?.l ?? t })),
                           (v) => patchEffect(idx, { grantTrigger: v as CapabilityTrigger }),
                         )}
                       </>
@@ -783,9 +794,13 @@ export default function ComposedEffectsEditor({
                   <span style={labelStyle}>{tr('label_type')}</span>
                   {sel(
                     t.entity,
-                    meta.target === "unit_or_hero"
-                      ? [{ v: "unit", l: tr('entity_unit') }, { v: "hero", l: tr('entity_hero') }, { v: "both", l: tr('entity_both') }, { v: "self", l: tr('entity_self') }]
-                      : [{ v: "unit", l: tr('entity_unit') }, { v: "self", l: tr('entity_self') }],
+                    [
+                      ...(meta.target === "unit_or_hero"
+                        ? [{ v: "unit", l: tr('entity_unit') }, { v: "hero", l: tr('entity_hero') }, { v: "both", l: tr('entity_both') }, { v: "self", l: tr('entity_self') }]
+                        : [{ v: "unit", l: tr('entity_unit') }, { v: "self", l: tr('entity_self') }]),
+                      // Propre au déclencheur Blessure : ce qui vient de blesser la porteuse.
+                      ...(cap.trigger === "on_wound" ? [{ v: "damage_source", l: tr('entity_damage_source') }] : []),
+                    ],
                     (v) => {
                       const entity = v as TargetSpec["entity"];
                       // "self" vise la source : il doit se résoudre
@@ -793,14 +808,14 @@ export default function ComposedEffectsEditor({
                       // (et count:1), sinon le "choice" par défaut resterait
                       // stocké et casserait la résolution (le déclencheur
                       // serait perdu — cf. Ours Maudit fin de tour).
-                      patchTarget(idx, entity === "self"
+                      patchTarget(idx, entity === "self" || entity === "damage_source"
                         ? { entity, designation: "automatic", count: 1 }
                         : { entity });
                     },
                   )}
 
                   {/* "self" = la source : ni bord, ni nombre, ni choix. */}
-                  {t.entity !== "self" && (<>
+                  {t.entity !== "self" && t.entity !== "damage_source" && (<>
                   <span style={labelStyle}>{tr('label_side')}</span>
                   {sel(t.side, [{ v: "ally", l: tr('side_ally') }, { v: "enemy", l: tr('side_enemy') }, { v: "any", l: tr('side_any') }], (v) => patchTarget(idx, { side: v as TargetSpec["side"] }))}
 

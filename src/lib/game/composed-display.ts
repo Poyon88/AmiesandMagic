@@ -29,6 +29,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.in_hand_suffix": "en main",
   "trigger.on_draw": "Quand cette carte est piochée",
   "trigger.on_low_hp": "Sous 15 PV",
+  "trigger.on_wound": "Blessure",
 
   "content.deal_damage_one": "inflige {x} dégât",
   "content.deal_damage_many": "inflige {x} dégâts",
@@ -83,6 +84,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_attack": ", qui se déclenchera quand elle attaque",
   "grant_when.on_draw": ", qui se déclenchera à sa pioche",
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
+  "grant_when.on_wound": ", qui se déclenchera quand elle sera blessée sans mourir",
   "content.random_range": "1 à {max}",
   // « met en jeu la 1re unité de votre deck de coût ≤ 2 » (+ filtre de pool
   // accolé par describePoolFilter : « de race Elfes », « portant Traque »…).
@@ -182,6 +184,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "targetd.both_one": "une cible (unité ou héros){side}",
 
   "target.self": "à elle-même",
+  "target.damage_source": "à ce qui l'a blessée",
+  "targetd.damage_source": "ce qui l'a blessée",
   "target.hero_ally": "à votre héros",
   "target.hero_enemy": "au héros adverse",
   "target.both_all": "à toutes les unités et au héros {side}",
@@ -373,6 +377,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même couleur, badge suffixé « en main »
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
+    case "on_wound": return "wound";
     case "spell_resolution": return "spell"; // sort (résolution immédiate) → gris
     default: return undefined; // automatic (passif/permanent) → blanc
   }
@@ -665,6 +670,7 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   // `p` sélectionne le jeu de fragments : avec ou sans préposition.
   const p = direct ? "targetd" : "target";
   if (t.entity === "self") return frag(tr, "target.self");
+  if (t.entity === "damage_source") return frag(tr, `${p}.damage_source`);
   if (t.entity === "hero") return t.side === "ally" ? frag(tr, `${p}.hero_ally`) : frag(tr, `${p}.hero_enemy`);
   if (t.entity === "both") {
     const sideTxt = t.side === "ally" ? frag(tr, "target.both_side_ally") : t.side === "enemy" ? frag(tr, "target.both_side_enemy") : "";

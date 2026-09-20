@@ -87,15 +87,15 @@ Chaque faction a un **nom de code interne** (utilisé en base et dans le moteur,
 - **Pouvoirs interdits** : Vol, Invisible, Esquive, Ombre, Traque, Pillage X.
 
 ### 3.3 ⚔️ Royaumes Libres — code interne `Humains` — *Neutre*
-- **Races** : Humains · **Griffons** · **Faucons** *(nouvelles races ailées — profils en §4)*
-- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2. Les clans étant transversaux (`appliesTo: "all"`), Griffons et Faucons sont jouables dans les quatre.
+- **Races** : Humains · **Griffons** · **Faucons** *(races ailées)* · **Pégases** · **Sphinx** *(bestiaire du mythe grec, 2026-09-20 — profils en §4)*
+- **Clans** : **Le Royaume du Nord** (ex-Nordiques), **L'Ordre de l'Aube** (ex-Templiers), **Les Guerrières du Vent** (ex-Amazones), **La Sublime Porte** (Empire ottoman — élite à poudre) — profils distincts en §5.2. Humains, Griffons et Faucons sont jouables dans les quatre ; les **Pégases** et les **Sphinx** n'ouvrent que **Les Guerrières du Vent**. Le groupe transversal (`appliesTo: "all"`) a été **scindé** à leur arrivée — une entrée par race — sans quoi les deux nouvelles races se seraient ouvertes aux quatre clans en silence. Conséquence : sans race choisie, le sélecteur de clan de cette faction reste vide.
 - **Philosophie** : Le vieux continent. Honneur, acier et champions héroïques, épaulés par leurs alliés ailés : le griffon héraldique, monture noble des chevaliers, et le faucon de chasse, éclaireur des armées libres. Équilibrés et polyvalents, synergies de groupe. Poids stats faction (ombrelle) : équilibré (1.00 / 1.00).
 - **Pouvoirs privilégiés (ombrelle)** : Loyauté (0.55), Commandement (0.55), Bravoure (0.50), Bénédiction (0.45), Bouclier (0.45), Première Frappe (0.45), Tactique X (0.35), Héritage X (0.30), Provocation (0.30), Convocation X (0.30).
 - **Pouvoirs interdits** : Poison, Corruption, Maléfice, Pacte de sang, Nécrophagie.
 
 ### 3.4 🏯 Empire du Milieu — code interne `EmpireDuMilieu` — *Neutre* *(nouvelle)*
-- **Races** : Humains · **Nagas** *(nouvelle race — profil en §4)*
-- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2. Les quatre clans restent ouverts aux **Humains** ; les **Nagas** n'ouvrent que **Les Défenseurs d'Ivoire**, qui devient le second clan du jeu à héberger deux races. La faction n'a donc plus de clan transversal (`appliesTo: "all"`) : sans race choisie, le sélecteur de clan reste vide.
+- **Races** : Humains · **Nagas** · **Tengu** · **Oni** · **Qilins** *(nouvelles races — profils en §4)*
+- **Clans** : **Les Hordes des Steppes** (Mongols), **L'Empire de Jade** (Chine antique), **Les Lames de l'Ombre** (Japon féodal — samouraïs & ninjas), **Les Défenseurs d'Ivoire** (Khmer/Angkor — éléphants de guerre) — profils distincts en §5.2. Les quatre clans restent ouverts aux **Humains** ; les **Nagas** n'ouvrent que **Les Défenseurs d'Ivoire**, qui devient le second clan du jeu à héberger deux races ; les **Tengu** et les **Oni** (yōkai du Japon féodal) n'ouvrent que **Les Lames de l'Ombre**, qui passe à trois races ; les **Qilins** (la licorne céleste de la Chine antique) n'ouvrent que **L'Empire de Jade**. La faction n'a donc plus de clan transversal (`appliesTo: "all"`) : sans race choisie, le sélecteur de clan reste vide.
 
 > **Le Socle du Monde** (2026-08-28) : trois races de terre — **Cristallins**, **Troglodytes**, **Bêtes Chtoniennes** — sur exactement le même arbitrage que l'Eau, et pour la même raison : le clan héberge « Élémentaire », donc il ne peut pas céder ses `statWeights`. Les trois partagent son corps **0.85/1.50** — le plus défensif du jeu — et se séparent aux pouvoirs. Le **Troglodyte** est la seule race du jeu à jouer **Creuser X**, qui lit le *dessous* du deck. Le groupe transversal ayant déjà été scindé pour l'Eau, ce lot n'a eu qu'à ajouter trois rattachements.
 
@@ -169,6 +169,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Elfes | **Hommes-Arbres** | 0.90 / 1.50 | Provocation (0.60), Ancré (0.55), Régénération (0.40), Riposte X (0.35) |
 | Nains | **Golems** | 0.90 / 1.60 | Ancré (0.80), Armure (0.75), Provocation (0.60), Riposte X (0.45), Indestructible (0.30) |
 | Royaumes Libres | **Griffons** | 1.25 / 1.00 | Vol (0.90 — garanti par le générateur), Première Frappe (0.50), Bravoure (0.45), Loyauté (0.40), Célérité (0.35) |
+| Royaumes Libres | **Pégases** *(Guerrières du Vent)* | *corps du clan (1.15 / 0.85)* | **Vol garanti**, Loyauté (0.60), Raid (0.55), Bénédiction (0.50), Inspiration X (0.40), Piétinement (0.35) |
+| Royaumes Libres | **Sphinx** *(Guerrières du Vent)* | *corps du clan (1.15 / 0.85)* | Présage (0.55), Divination (0.50), Malédiction (0.50), Contresort (0.45), Provocation (0.40), Terreur (0.40), Ancré (0.35) |
 | Royaumes Libres | **Faucons** | 1.15 / 0.65 | Vol (0.90 — garanti par le générateur), Célérité (0.60), Traque (0.55), Esquive (0.50), Précision (0.45), Augure (0.35) |
 | Mercenaires | **Géants** | 1.15 / 1.30 | Provocation (0.65), Résistance X (0.60), Armure (0.55), Indestructible (0.45), Terreur (0.40), Carnage X (0.30) |
 | Mercenaires | **Ogres** | 1.25 / 1.10 | Gloire +X/+Y (0.55), Fureur (0.50), Provocation (0.40), Résistance X (0.35), Pillage X (0.30) |
@@ -182,6 +184,9 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Légions du Chaos | **Démons** | 1.35 / 0.80 | Fureur (0.65), Sacrifice (0.55), Terreur (0.50), Persécution X (0.45), Ombre (0.45), Carnage X (0.40), Vol (0.30) |
 | Légions du Chaos | **Araignées Géantes** | 1.10 / 0.90 | Poison (0.75), Esquive (0.50), Invisible (0.45) |
 | Empire du Milieu | **Nagas** | *corps du clan (1.15 / 1.15)* | Contresort (0.55), Régénération (0.55), Esquive (0.50), Divination (0.50), Canalisation (0.45), Augure (0.40), Liaison de vie (0.35), Prescience X (0.30) |
+| Empire du Milieu | **Qilins** *(Empire de Jade)* | *corps du clan (0.90 / 1.20)* | Bénédiction (0.60), Pureté +X/+Y (0.55), Bouclier (0.50), Présage (0.45), Transcendance (0.40), Souffle de feu X (0.35), Afflux X (0.30) |
+| Empire du Milieu | **Tengu** *(Lames de l'Ombre)* | *corps du clan (1.20 / 0.80)* | **Vol garanti**, Tactique X (0.55), Riposte X (0.45), Tempête X (0.40), Permutation (0.40), Mimique (0.35) |
+| Empire du Milieu | **Oni** *(Lames de l'Ombre)* | *corps du clan (1.20 / 0.80)* | Terreur (0.60), Fureur (0.55), Piétinement (0.50), Gloire +X/+Y (0.45), Persécution X (0.40), Régénération X (0.35), Carnage X (0.30) |
 | Nécropole | **Ghoules** *(Rangs Silencieux)* | *corps du clan (1.00 / 0.90)* | Célérité (0.55), Paralysie (0.50), Dévoration (0.45), Fureur (0.45), Traque (0.40), Persécution X (0.35), Carnage X (0.30) |
 | Nécropole | **Vampires** *(Cour Écarlate)* | 1.25 / 0.90 | Célérité (0.45), Régénération (0.45), Terreur (0.35), Vol (0.30) |
 | Nécropole | **Homuncules de Sang** *(Cour Écarlate)* | 1.10 / 0.80 | Sacrifice (0.55), Douleur X (0.50), Catalyse (0.45), Liaison de vie (0.45), Solidarité X (0.40), Corruption (0.35) |
@@ -216,6 +221,12 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 > **Le Voile Hurlant** (2026-08-27) : trois races de plus — **Poltergeists**, **Dullahans**, **Sluaghs** — et le **quatrième** clan à céder ses `statWeights`. Le **Dullahan** est à lui seul la raison : cavalier décapiteur, c'est le seul corps **solide** d'un clan d'intangibles, et 1.05/0.75 en aurait fait un feu follet. Spectres et Banshees reçoivent chacun une copie exacte du gabarit cédé. Le dégraissage de la table est ici **partiel**, et c'est le point intéressant : seul le paquet **incorporel** (Ombre, Invisible, Esquive) redescend sur les races, parce qu'un cavalier sans tête n'est ni invisible ni insaisissable ; **Terreur, Maléfice, Malédiction et Paralysie restent au clan**, car ce sont les quatre traits du *présage de mort* que le Dullahan porte autant que la Banshee. Garder Paralysie au niveau du clan évite en prime de la faire apparaître dans un profil de **race**, où un test la réserve à la Ghoule.
 
 > **Nagas** : seule race du tableau sans gabarit propre. La cascade du générateur choisit un OBJET ENTIER (`statWeights` du clan, sinon ceux de la race, sinon ceux de la faction) : leur clan déclarant les siens, un gabarit posé sur la race serait resté sans effet. Le partage du corps 1.15/1.15 est donc assumé, et c'est la table de pouvoirs — qui, elle, se comble pouvoir par pouvoir — qui porte la différence. Le Clan des Premiers Géants avait tranché l'inverse en cédant ses stats à ses deux races ; ici les céder aurait renvoyé les Humains d'Ivoire à l'ombrelle de faction.
+>
+> **Tengu & Oni** (2026-09-20) : même arbitrage que les Nagas, pour une raison plus nette encore — « Humains » est partagée par les QUATRE clans de la faction, et une race partagée interdit à son clan de céder ses `statWeights`. Les deux yōkai prennent donc le corps **1.20/0.80** des Lames de l'Ombre et se séparent aux pouvoirs, chacun hors du registre furtif du clan : le **Tengu** vole, enseigne (Tactique X) et lève le vent ; l'**Oni** terrifie, s'enrage et enfonce. Le **Vol du Tengu est garanti** par la liste en dur du générateur : les poids étant relatifs entre ~130 mots-clés, « Vol 0.85 » seul ne faisait voler qu'un tengu sur quatre-vingts.
+>
+> **Pégases & Sphinx** (2026-09-20) : troisième application du même arbitrage — le clan garde son corps **1.15/0.85**, les deux races n'en déclarent aucun. Le **Pégase** vole (garanti par le générateur), fond sur sa proie (Raid) et vit en harde (Loyauté) ; la **Sphinx** pose l'énigme — **Présage** est littéralement « devinez la carte du sommet » —, lit l'avenir et condamne qui échoue (Malédiction). Elle ne vole pas : ailée dans le mythe, mais assise sur son rocher.
+>
+> **Qilins** (2026-09-20) : même arbitrage — le clan garde son corps **0.90/1.20**, le plus défensif de la faction, qui sied à une créature qui ne foule ni l'herbe ni l'insecte. Le clan commande et calcule ; le qilin **bénit** : registre entièrement neuf dans la faction (aucun recoupement avec le clan, l'ombrelle ni les autres races). **Pureté +X/+Y** — « tant que votre cimetière est vide » — est la règle du jeu qui *dit* le qilin.
 
 > Les races non listées (Elfes « de base », Nains « de base », Gnomes, Hobbits, **Humains** — commun aux 3 factions humaines, les 8 races Hommes-Bêtes, Squelettes/Zombies (et les **Ghoules**, cf. la note du §4), Orcs/Gobelins/Trolls/Wargs, Elfes Corrompus, Guerriers du Chaos) **héritent du profil de leur clan** (§5) ou, à défaut, de leur faction (§3).
 
@@ -244,7 +255,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 |---|---|---|---|---|
 | ❄️ **Le Royaume du Nord** | Nordiques/vikings | 1.15/0.90 | Bélier agressif, raids | Gloire +X/+Y (0.55), Bravoure (0.50), Raid (0.50), Première Frappe (0.45), Célérité (0.40), Pillage X (0.35), Combustion (0.30), Commandement (0.30) |
 | ✝️ **L'Ordre de l'Aube** | Templiers | 0.90/1.20 | Pilier défensif, foi | Bouclier (0.60), Bénédiction (0.55), Provocation (0.50), Résistance X (0.50), Première Frappe (0.40), Commandement (0.40), Bravoure (0.35) |
-| 🌬️ **Les Guerrières du Vent** | Amazones | 1.15/0.85 | Aile mobile, précision | Précision (0.55), Esquive (0.55), Traque (0.50), Première Frappe (0.45), Célérité (0.45), Bravoure (0.40) |
+| 🌬️ **Les Guerrières du Vent** | Amazones (+ pégases, sphinx) | 1.15/0.85 | Aile mobile, précision | Précision (0.55), Esquive (0.55), Traque (0.50), Première Frappe (0.45), Célérité (0.45), Bravoure (0.40) |
 | 🕌 **La Sublime Porte** | Empire ottoman | 1.10/1.05 | Élite à poudre, ordre | Commandement (0.60), Première Frappe (0.50), Combustion (0.50), Précision (0.45), Bravoure (0.45), Tactique X (0.40), Bouclier (0.35) |
 
 **🏯 Empire du Milieu**
@@ -252,8 +263,8 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 | Clan | Inspiration | Style | Identité | Pouvoirs signature |
 |---|---|---|---|---|
 | 🐎 **Les Hordes des Steppes** | Mongols | 1.15/0.90 | Harcèlement mobile | Célérité (0.55), Traque (0.55), Raid (0.50), Première Frappe (0.45), Persécution X (0.40), Pillage X (0.35) |
-| 🐉 **L'Empire de Jade** | Chine antique | 0.90/1.20 | Contrôle et stratégie | Tactique X (0.55), Divination (0.50), Contresort (0.45), Provocation (0.45), Commandement (0.40), Convocation X (0.40), Augure (0.35) |
-| 🥷 **Les Lames de l'Ombre** | Japon (samouraïs/ninjas) | 1.20/0.80 | Tempo furtif, remontée | Ombre (0.60), Invisible (0.55), Traque (0.55), Esquive (0.50), Célérité (0.45), Première Frappe (0.45), Précision (0.40), Remontée (0.35) |
+| 🐉 **L'Empire de Jade** | Chine antique (+ qilins) | 0.90/1.20 | Contrôle et stratégie | Tactique X (0.55), Divination (0.50), Contresort (0.45), Provocation (0.45), Commandement (0.40), Convocation X (0.40), Augure (0.35) |
+| 🥷 **Les Lames de l'Ombre** | Japon (samouraïs/ninjas, tengu, oni) | 1.20/0.80 | Tempo furtif, remontée | Ombre (0.60), Invisible (0.55), Traque (0.55), Esquive (0.50), Célérité (0.45), Première Frappe (0.45), Précision (0.40), Remontée (0.35) |
 | 🐘 **Les Défenseurs d'Ivoire** *(Humains + Nagas)* | Khmer / Angkor | 1.15/1.15 | Colosses tank-trample | Piétinement (0.60), Provocation (0.55), Armure (0.50), Résistance X (0.50), Bravoure (0.40), Riposte X (0.40), Commandement (0.35), Indestructible (0.25) |
 
 **☀️ Royaumes du Soleil**

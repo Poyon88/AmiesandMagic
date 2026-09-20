@@ -361,7 +361,7 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
-  it("les ids curés exposent les 8 déclencheurs unité (5 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
+  it("les ids curés exposent les 9 déclencheurs unité (6 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
@@ -375,6 +375,8 @@ describe("registre — métadonnées de taxonomie", () => {
             "on_end_of_turn",
             "on_attack",
             "on_low_hp",
+            // Blessure : la porteuse est en jeu ET en vie, par définition.
+            "on_wound",
           ]);
           continue;
         }
@@ -389,6 +391,7 @@ describe("registre — métadonnées de taxonomie", () => {
           // restreints au plateau — même règle que on_return.
           "on_draw",
           "on_low_hp",
+          "on_wound",
         ]);
       }
     }

@@ -229,12 +229,17 @@ describe("race Nagas — rattachement aux seuls Défenseurs d'Ivoire", () => {
     ]);
   });
 
-  it("le clan accueille les deux races, les trois autres restent humains", () => {
+  it("le clan accueille les deux races, aucun autre ne s'ouvre aux Nagas", () => {
     expect(getRacesForClan("Les Défenseurs d'Ivoire").sort()).toEqual(["Humains", "Nagas"]);
     // La contrepartie du rattachement : ouvrir la race ne l'ouvre pas partout.
     expect(getRacesForClan("Les Hordes des Steppes")).toEqual(["Humains"]);
-    expect(getRacesForClan("L'Empire de Jade")).toEqual(["Humains"]);
-    expect(getRacesForClan("Les Lames de l'Ombre")).toEqual(["Humains"]);
+    // L'Empire de Jade a reçu depuis ses Qilins (2026-09-20) — même remarque
+    // que pour les Lames de l'Ombre juste en dessous.
+    expect(getRacesForClan("L'Empire de Jade")).toEqual(["Humains", "Qilins"]);
+    // Les Lames de l'Ombre ont reçu depuis leurs deux yōkai (2026-09-20) — ce
+    // que ce test protège, c'est qu'aucun Naga ne s'y glisse.
+    expect(getRacesForClan("Les Lames de l'Ombre")).toEqual(["Humains", "Tengu", "Oni"]);
+    expect(getRacesForClan("Les Lames de l'Ombre")).not.toContain("Nagas");
   });
 
   it("la faction ne déclare plus AUCUN groupe transversal", () => {

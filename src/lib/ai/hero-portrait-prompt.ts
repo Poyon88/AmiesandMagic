@@ -86,6 +86,10 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid anthropomorphic griffin warrior — clearly bipedal humanoid silhouette, eagle-shaped feathered head with fierce golden eyes and hooked beak, leonine tawny fur on the shoulders and chest, folded wings visible behind, talon-tipped hands, regal heraldic bearing.',
   'Faucons':
     'A humanoid anthropomorphic falcon warrior — clearly bipedal humanoid silhouette, sleek falcon head with sharp piercing eyes and hooked beak, streamlined grey-and-white feathers, compact agile build, folded pointed wings behind the shoulders, talon-tipped hands.',
+  'Pégases':
+    'A humanoid anthropomorphic pegasus champion — clearly bipedal humanoid silhouette, noble white horse head with a long flowing mane, vast white feathered wings folded behind the shoulders, lean athletic build, light Greek bronze cuirass and greaves, proud untamed bearing.',
+  'Sphinx':
+    'A humanoid sphinx oracle — clearly bipedal humanoid silhouette, the stern beautiful face and bust of a woman framed by a striped Greek headcloth, tawny leonine fur on the arms and shoulders, clawed hands, great eagle wings folded behind, inscrutable knowing gaze, seated composure of one who asks the question.',
   // Hommes-Bêtes faction
   'Hommes-Loups':
     'A humanoid werewolf warrior — bipedal humanoid silhouette, lupine head with snout, fangs, pointed ears, thick fur over the shoulders, intelligent amber eyes.',
@@ -164,6 +168,12 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A towering chaos warrior — hulking silhouette in blackened spiked plate armor, corrupted glowing runes, grim helm with burning eyes, aura of dread.',
   'Nagas':
     'A humanoid naga temple guardian — human torso and arms rising from a long coiling serpent body, fanned cobra hood behind the head, jewelled iridescent scales, calm ophidian eyes, Khmer temple gold ornaments.',
+  'Tengu':
+    'A humanoid tengu — a crow-spirit swordmaster of the Japanese mountains, human build with large black feathered wings, a crimson face with a very long nose (or a corvid beak), fierce golden eyes, yamabushi mountain-ascetic robes with a small black tokin cap, a feather fan or a katana at the belt, proud and severe.',
+  'Oni':
+    'A humanoid oni — a hulking Japanese ogre-demon, red or deep blue skin, two short horns, wild black mane, tusked jaw and heavy brow, massive muscular shoulders, tiger-skin loincloth and iron bracelets, a studded iron kanabo club, brutal and menacing.',
+  'Qilins':
+    'A humanoid anthropomorphic qilin sage — clearly bipedal humanoid silhouette, noble dragon-like head with a single branching antler and a flowing golden mane, shimmering jade-green and gold scales on the neck and arms, cloven-hoofed legs, Han dynasty court robes of jade silk, soft flame and mist about the feet, serene benevolent gaze.',
   'Ghoules':
     'A humanoid ghoul — bipedal but hunched and predatory, grey mottled skin stretched over a gaunt frame, elongated clawed fingers, a jaw that opens too wide, sunken luminous eyes, ravenous rather than mindless.',
   'Homuncules de Sang':

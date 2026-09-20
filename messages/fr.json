@@ -509,13 +509,13 @@
         "label": "Seuil Sacrificiel +X/+Y",
         "desc": "Tant que votre deck compte 25 cartes ou moins, gagne +X ATK et +Y PV."
       },
-      "tuteur": {
-        "label": "Tuteur",
-        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
-      },
       "compagnons": {
         "label": "Compagnons",
         "desc": "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois."
+      },
+      "tuteur": {
+        "label": "Tuteur",
+        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
       }
     },
     "spell_keywords": {
@@ -535,6 +535,10 @@
         "label": "Pillage X",
         "desc": "L'adversaire défausse X cartes aléatoires de sa main."
       },
+      "contresort": {
+        "label": "Contresort",
+        "desc": "Annule le prochain sort adverse."
+      },
       "convocation_simple": {
         "label": "Convocation",
         "desc": "Crée {token}."
@@ -547,18 +551,6 @@
         "label": "Chant X",
         "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X."
       },
-      "divination": {
-        "label": "Divination",
-        "desc": "Révèle les 3 premières cartes du deck ; replacez-en 1 dessus et 2 dessous, dans l'ordre choisi."
-      },
-      "contresort": {
-        "label": "Contresort",
-        "desc": "Annule le prochain sort adverse."
-      },
-      "seconde_vie": {
-        "label": "Seconde vie X",
-        "desc": "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie."
-      },
       "lune": {
         "label": "Lune X",
         "desc": "À partir de la deuxième carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X."
@@ -566,6 +558,10 @@
       "soleil": {
         "label": "Soleil X",
         "desc": "Si c'est la première carte jouée dans le tour, toutes les valeurs de cette carte sont augmentées de X."
+      },
+      "divination": {
+        "label": "Divination",
+        "desc": "Révèle les 3 premières cartes du deck ; replacez-en 1 dessus et 2 dessous, dans l'ordre choisi."
       },
       "corruption": {
         "label": "Corruption",
@@ -597,19 +593,19 @@
       },
       "selection": {
         "label": "Sélection X",
-        "desc": "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main"
+        "desc": "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main"
       },
       "faveur": {
         "label": "Faveur X",
-        "desc": "Ajoute en main une commune {alignment} de coût X, au hasard."
+        "desc": "Ajoute en main une commune {alignment} de coût X, au hasard"
       },
       "selection_magique": {
         "label": "Sélection magique X",
-        "desc": "Révèle 3 sorts communs {alignment} de coût ≤ X ; ajoutez-en un en main"
+        "desc": "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main"
       },
       "renfort_royal": {
         "label": "Sélection Royale X",
-        "desc": "Révèle 3 de vos éditions limitées de coût ≤ X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une"
+        "desc": "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une"
       },
       "relancer": {
         "label": "Relancer X",
@@ -666,6 +662,10 @@
       "guerison": {
         "label": "Guérison X",
         "desc": "Restaure X PV à une cible"
+      },
+      "seconde_vie": {
+        "label": "Seconde vie X",
+        "desc": "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie."
       },
       "incineration": {
         "label": "Incinération X",
@@ -747,13 +747,13 @@
         "label": "Afflux X",
         "desc": "Gagnez X mana ce tour"
       },
-      "tuteur": {
-        "label": "Tuteur",
-        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
-      },
       "compagnons": {
         "label": "Compagnons",
         "desc": "Mélange ses compagnons (cartes liées, choisies à la création) dans votre deck, puis remélange le deck. Une seule fois."
+      },
+      "tuteur": {
+        "label": "Tuteur",
+        "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
       }
     },
     "composed": {
@@ -764,8 +764,11 @@
         "on_activation": "À l'activation",
         "on_attack": "À l'attaque",
         "on_end_of_turn": "À la fin du tour",
+        "on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
+        "in_hand_suffix": "en main",
         "on_draw": "Quand cette carte est piochée",
-        "on_low_hp": "Sous 15 PV"
+        "on_low_hp": "Sous 15 PV",
+        "on_wound": "Blessure"
       },
       "content": {
         "deal_damage_one": "inflige {x} dégât",
@@ -778,6 +781,8 @@
         "paralyze": "paralyse",
         "poison": "empoisonne",
         "grant_keyword": "confère {ability}",
+        "random_range": "1 à {max}",
+        "appel": "met en jeu la 1re unité de votre deck de coût ≤ {x}",
         "ability_generic": "une capacité",
         "draw_cards_one": "piochez {x} carte",
         "draw_cards_many": "piochez {x} cartes",
@@ -804,23 +809,64 @@
         "rappel_upto_creature": "jusqu'à {n} unités",
         "rappel_upto_spell": "jusqu'à {n} sorts",
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
+        "invocation_card": "invoque la carte désignée",
+        "invocation_cards": "invoque les {n} cartes désignées",
+        "invocation_copies": "invoque {n} exemplaires de la carte désignée",
+        "tuteur": "ajoutez la carte désignée à votre main",
+        "tuteur_copies": "ajoutez {n} exemplaires de la carte désignée à votre main",
+        "appel_supreme": "ajoutez à votre main la carte au coût le plus élevé de votre deck{filter}{cost}",
+        "appel_supreme_cost": " (coût ≤ {max})",
+        "tuteur_many": "ajoutez les {n} cartes désignées à votre main",
         "epargne": "ajoute {x} à votre compteur d'Épargne",
         "foi": "ajoute {x} à votre compteur de Foi",
         "conquete": "ajoute {x} à votre compteur de Conquête",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
+        "occurrences": "{n} fois : ",
+        "alternative": "Au choix : ",
         "devoration": "dévore",
+        "silence": "réduit au silence",
+        "dechainement": "lance {x} sorts aléatoires de coût {y}",
+        "dechainement_one": "lance un sort aléatoire de coût {y}",
         "tactique_one": "transmet au hasard une de ses capacités permanentes",
         "tactique_many": "transmet au hasard {x} de ses capacités permanentes",
         "retour_differe": "place sous le deck de son propriétaire",
         "selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
         "faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
         "selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
-        "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
-        "occurrences": "{n} fois : ",
-        "alternative": "Au choix : ",
-        "silence": "réduit au silence",
-        "dechainement": "lance {x} sorts aléatoires de coût {y}",
-        "dechainement_one": "lance un sort aléatoire de coût {y}"
+        "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main"
+      },
+      "emblem": {
+        "badge": "Emblème",
+        "self": "Emblème",
+        "opponent": "Emblème posé chez l'adversaire",
+        "permanent": " (permanent)",
+        "turns_one": " ({n} tour)",
+        "turns_many": " ({n} tours)",
+        "owner_self": "vos",
+        "owner_opponent": "ses",
+        "hero_self": "votre héros",
+        "hero_opponent": "son héros",
+        "turn_self": "votre",
+        "turn_opponent": "son",
+        "when": {
+          "on_play": "chaque fois qu'une de {owner} créatures entre en jeu",
+          "on_death": "chaque fois qu'une de {owner} créatures meurt",
+          "on_attack": "chaque fois qu'une de {owner} créatures attaque",
+          "on_return": "chaque fois qu'une de {owner} créatures revient en main",
+          "on_activation": "chaque fois qu'une de {owner} créatures s'active",
+          "on_low_hp": "chaque fois que {hero} passe sous {n} PV",
+          "on_end_of_turn": "à la fin de {turn} tour"
+        }
+      },
+      "grant_when": {
+        "on_death": ", qui se déclenchera à sa mort",
+        "on_activation": ", qui se déclenchera à son activation",
+        "on_return": ", qui se déclenchera à son retour en main",
+        "on_end_of_turn": ", qui se déclenchera à la fin du tour",
+        "on_attack": ", qui se déclenchera quand elle attaque",
+        "on_draw": ", qui se déclenchera à sa pioche",
+        "on_low_hp": ", qui se déclenchera sous 15 PV",
+        "on_wound": ", qui se déclenchera quand elle sera blessée sans mourir"
       },
       "pool": {
         "race": " de race {v}",
@@ -848,10 +894,12 @@
         "hero_ally": "votre héros",
         "hero_enemy": "le héros adverse",
         "both_all": "toutes les unités et le héros {side}",
-        "both_one": "une cible (unité ou héros){side}"
+        "both_one": "une cible (unité ou héros){side}",
+        "damage_source": "ce qui l'a blessée"
       },
       "target": {
         "self": "à elle-même",
+        "damage_source": "à ce qui l'a blessée",
         "hero_ally": "à votre héros",
         "hero_enemy": "au héros adverse",
         "both_all": "à toutes les unités et au héros {side}",
@@ -909,7 +957,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "L'Empire du Milieu",
-        "description": "Stratégie et contrôle : discipline, formations, mysticisme, furtivité et les gardiens naga des temples."
+        "description": "Stratégie et contrôle : discipline, formations, mysticisme, furtivité, les gardiens naga des temples, les yōkai — tengu et oni — des montagnes et le qilin, présage des règnes justes."
       },
       "RoyaumesDuSoleil": {
         "displayName": "Les Royaumes du Soleil",
@@ -917,7 +965,7 @@
       },
       "Humains": {
         "displayName": "Les Royaumes Libres",
-        "description": "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés, griffons et faucons."
+        "description": "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés — griffons, faucons, et les pégases et sphinx des Guerrières du Vent."
       },
       "Hommes-Bêtes": {
         "displayName": "La Meute",
@@ -989,13 +1037,13 @@
     "races": {
       "Elfes": "Elfes",
       "Fées": "Fées",
+      "Aigles Géants": "Aigles Géants",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Hommes-Arbres",
       "Farfadets": "Farfadets",
       "Korrigans": "Korrigans",
       "Faunes": "Faunes",
       "Dryades": "Dryades",
-      "Aigles Géants": "Aigles Géants",
-      "Hobbits": "Hobbits",
-      "Hommes-Arbres": "Hommes-Arbres",
       "Nains": "Nains",
       "Golems": "Golems",
       "Gnomes": "Gnomes",
@@ -1005,9 +1053,14 @@
       "Mammouths": "Mammouths",
       "Humains": "Humains",
       "Nagas": "Nagas",
+      "Tengu": "Tengu",
+      "Oni": "Oni",
+      "Qilins": "Qilins",
       "Esprits": "Esprits",
       "Griffons": "Griffons",
       "Faucons": "Faucons",
+      "Pégases": "Pégases",
+      "Sphinx": "Sphinx",
       "Hommes-Loups": "Hommes-Loups",
       "Hommes-Ours": "Hommes-Ours",
       "Hommes-Félins": "Hommes-Félins",
@@ -1016,11 +1069,20 @@
       "Hommes-Chiens": "Hommes-Chiens",
       "Hommes-Renards": "Hommes-Renards",
       "Hommes-Cerfs": "Hommes-Cerfs",
-      "Insectes": "Insectes",
       "Hommes-Singes": "Hommes-Singes",
       "Hommes-Poissons": "Hommes-Poissons",
       "Hommes-Oiseaux": "Hommes-Oiseaux",
+      "Insectes": "Insectes",
       "Élémentaire": "Élémentaire",
+      "Ondins": "Ondins",
+      "Sirènes": "Sirènes",
+      "Léviathans": "Léviathans",
+      "Cristallins": "Cristallins",
+      "Troglodytes": "Troglodytes",
+      "Bêtes Chtoniennes": "Bêtes Chtoniennes",
+      "Salamandres": "Salamandres",
+      "Sylphes": "Sylphes",
+      "Néphélides": "Néphélides",
       "Ogres": "Ogres",
       "Dragons": "Dragons",
       "Chiens": "Chiens",
@@ -1047,15 +1109,6 @@
       "Poltergeists": "Poltergeists",
       "Dullahans": "Dullahans",
       "Sluaghs": "Sluaghs",
-      "Ondins": "Ondins",
-      "Sirènes": "Sirènes",
-      "Léviathans": "Léviathans",
-      "Cristallins": "Cristallins",
-      "Troglodytes": "Troglodytes",
-      "Bêtes Chtoniennes": "Bêtes Chtoniennes",
-      "Salamandres": "Salamandres",
-      "Sylphes": "Sylphes",
-      "Néphélides": "Néphélides",
       "Elfes Corrompus": "Elfes Corrompus",
       "Araignées Géantes": "Araignées Géantes",
       "Démons": "Démons",
@@ -1157,6 +1210,21 @@
         "bare": "Naga",
         "de": "du Naga"
       },
+      "Tengu": {
+        "def": "le Tengu",
+        "bare": "Tengu",
+        "de": "du Tengu"
+      },
+      "Oni": {
+        "def": "l'Oni",
+        "bare": "Oni",
+        "de": "de l'Oni"
+      },
+      "Qilins": {
+        "def": "le Qilin",
+        "bare": "Qilin",
+        "de": "du Qilin"
+      },
       "Griffons": {
         "def": "le Griffon",
         "bare": "Griffon",
@@ -1166,6 +1234,16 @@
         "def": "le Faucon",
         "bare": "Faucon",
         "de": "du Faucon"
+      },
+      "Pégases": {
+        "def": "le Pégase",
+        "bare": "Pégase",
+        "de": "du Pégase"
+      },
+      "Sphinx": {
+        "def": "le Sphinx",
+        "bare": "Sphinx",
+        "de": "du Sphinx"
       },
       "Hommes-Loups": {
         "def": "l'Homme-Loup",
@@ -1318,31 +1396,6 @@
         "bare": "Liche",
         "de": "de la Liche"
       },
-      "Banshees": {
-        "def": "la Banshee",
-        "bare": "Banshee",
-        "de": "de la Banshee"
-      },
-      "Homuncules de Sang": {
-        "def": "l'Homuncule de Sang",
-        "bare": "Homuncule de Sang",
-        "de": "de l'Homuncule de Sang"
-      },
-      "Gargouilles": {
-        "def": "la Gargouille",
-        "bare": "Gargouille",
-        "de": "de la Gargouille"
-      },
-      "Dhampirs": {
-        "def": "le Dhampir",
-        "bare": "Dhampir",
-        "de": "du Dhampir"
-      },
-      "Chiroptères": {
-        "def": "le Chiroptère",
-        "bare": "Chiroptère",
-        "de": "du Chiroptère"
-      },
       "Momies": {
         "def": "la Momie",
         "bare": "Momie",
@@ -1417,6 +1470,31 @@
         "def": "la Néphélide",
         "bare": "Néphélide",
         "de": "de la Néphélide"
+      },
+      "Banshees": {
+        "def": "la Banshee",
+        "bare": "Banshee",
+        "de": "de la Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "l'Homuncule de Sang",
+        "bare": "Homuncule de Sang",
+        "de": "de l'Homuncule de Sang"
+      },
+      "Gargouilles": {
+        "def": "la Gargouille",
+        "bare": "Gargouille",
+        "de": "de la Gargouille"
+      },
+      "Dhampirs": {
+        "def": "le Dhampir",
+        "bare": "Dhampir",
+        "de": "du Dhampir"
+      },
+      "Chiroptères": {
+        "def": "le Chiroptère",
+        "bare": "Chiroptère",
+        "de": "du Chiroptère"
       },
       "Elfes Corrompus": {
         "def": "l'Elfe Corrompu",
@@ -1564,7 +1642,8 @@
         "end_of_turn": "à la fin du tour",
         "draw": "à la pioche",
         "low_hp": "sous {n} PV",
-        "spell": "à la résolution du sort"
+        "spell": "à la résolution du sort",
+        "wound": "quand elle est blessée sans mourir"
       }
     },
     "triggers": {
@@ -1576,7 +1655,8 @@
       "tap": "Activable",
       "end_of_turn": "Fin de tour",
       "draw": "Pioche",
-      "low_hp": "Sous {n} PV"
+      "low_hp": "Sous {n} PV",
+      "wound": "Blessure"
     }
   },
   "home": {
@@ -1887,6 +1967,7 @@
     "trigger_on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
     "trigger_on_draw": "Quand cette carte est piochée",
     "trigger_on_low_hp": "Sous 15 PV",
+    "trigger_on_wound": "Blessure (dégâts subis sans mourir)",
     "trigger_spell_resolution": "À la résolution",
     "composed_effects_heading": "Effets composés (avancé)",
     "composed_effects_subtitle": "contenu + amplitude + cibles",
@@ -1967,6 +2048,7 @@
     "entity_hero": "Héros",
     "entity_both": "Les deux (héros + unités)",
     "entity_self": "Soi-même (la créature)",
+    "entity_damage_source": "La source des dégâts",
     "label_side": "BORD",
     "side_ally": "Allié",
     "side_enemy": "Ennemi",
@@ -2089,6 +2171,7 @@
     "mode_title_end_of_turn": "À la fin du tour",
     "mode_title_draw": "Quand cette carte est piochée",
     "mode_title_low_hp": "Quand votre héros passe sous 15 PV (une seule fois)",
+    "mode_title_wound": "Blessure : quand elle subit des dégâts sans mourir (une fois par source et par tour)",
     "grant_scope_target": "Conférée à la créature ciblée",
     "grant_scope_all_allies": "Conférée à toutes les unités alliées",
     "required_caps": "Requis",

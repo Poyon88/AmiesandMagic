@@ -35,6 +35,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
   if (mode === "draw") return "#17b6c4"; // cyan (à la pioche)
   if (mode === "low_hp") return "#8B5CF6"; // violet (« Sous 15 PV »)
+  if (mode === "wound") return "#B6E62E"; // vert citron (Blessure : blessée sans mourir)
   return null;
 }
 
@@ -125,6 +126,13 @@ function keywordModeTint(mode: KeywordMode | undefined): string | null {
     // même leçon que "attack" : une saturation extrême rend violet sur Blink
     // mais dérive sur WebKit/iOS. Garder en phase avec keywordModeColor.
     return "brightness(0) saturate(100%) invert(53%) sepia(75%) saturate(588%) hue-rotate(212deg) brightness(78%) contrast(165%)";
+  }
+  if (mode === "wound") {
+    // → #B6E62E vert citron (Blessure). Chaîne résolue par simulation de la
+    // pipeline filter (rendu #b4e42e, Δ≈4), saturate MODÉRÉ (507%) pour les
+    // mêmes raisons que "attack" et "low_hp". Garder en phase avec
+    // keywordModeColor("wound").
+    return "brightness(0) saturate(100%) invert(57%) sepia(62%) saturate(507%) hue-rotate(35deg) brightness(132%) contrast(86%)";
   }
   return null;
 }

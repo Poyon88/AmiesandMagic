@@ -122,7 +122,7 @@
         "desc": "所受战斗伤害减半（向上取整）；法术伤害不受此效果影响。"
       },
       "commandement": {
-        "label": "统率 X",
+        "label": "号令X",
         "desc": "你的{faction_de}盟友获得+X/+X。"
       },
       "fureur": {
@@ -362,8 +362,8 @@
         "desc": "展示3张费用为X的{alignment}普通卡；选择一张加入手牌。"
       },
       "faveur": {
-        "label": "恩惠 X",
-        "desc": "随机将一张费用为X的{alignment}普通牌加入你的手牌。"
+        "label": "恩宠X",
+        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌。"
       },
       "selection_magique": {
         "label": "魔法抉择 X",
@@ -426,8 +426,8 @@
         "desc": "抽X张卡。"
       },
       "afflux": {
-        "label": "涌流 X",
-        "desc": "本回合获得 X 点法力。"
+        "label": "涌流X",
+        "desc": "本回合获得X点法力。"
       },
       "epargne": {
         "label": "储蓄 X",
@@ -509,13 +509,13 @@
         "label": "牺牲阈值 +X/+Y",
         "desc": "只要你的牌库中有25张或更少的牌，便获得+X攻击力和+Y生命值。"
       },
-      "tuteur": {
-        "label": "导师",
-        "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
       "compagnons": {
         "label": "伙伴",
         "desc": "将其伙伴（创建时选定的关联卡牌）洗入你的牌库，然后重新洗牌。仅限一次。"
+      },
+      "tuteur": {
+        "label": "导师",
+        "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
       }
     },
     "spell_keywords": {
@@ -535,6 +535,10 @@
         "label": "掠夺 X",
         "desc": "对手随机弃掉手中X张牌。"
       },
+      "contresort": {
+        "label": "反制法术",
+        "desc": "抵消对手的下一个法术。"
+      },
       "convocation_simple": {
         "label": "召唤",
         "desc": "创建{token}。"
@@ -547,18 +551,6 @@
         "label": "咏唱 X",
         "desc": "如果你控制一个拥有\"吟唱\"的随从，此法术的所有数值提升X点。"
       },
-      "divination": {
-        "label": "占卜",
-        "desc": "展示牌库顶3张卡；按你选择的顺序将1张放回顶部，2张放到底部。"
-      },
-      "contresort": {
-        "label": "反制法术",
-        "desc": "抵消对手的下一个法术。"
-      },
-      "seconde_vie": {
-        "label": "二次生命 X",
-        "desc": "可从你的墓地中支付X点法力值施放。此后失去二次生命。"
-      },
       "lune": {
         "label": "月 X",
         "desc": "从本回合打出的第二张牌起，此牌的所有数值提升X点。"
@@ -566,6 +558,10 @@
       "soleil": {
         "label": "日 X",
         "desc": "若这是本回合打出的第一张牌，此牌的所有数值提升X点。"
+      },
+      "divination": {
+        "label": "预言",
+        "desc": "展示牌库顶的3张牌；按所选顺序将1张放回牌库顶，2张放到牌库底。"
       },
       "corruption": {
         "label": "腐化",
@@ -589,7 +585,7 @@
       },
       "rappel": {
         "label": "召回",
-        "desc": "将一张牌从你的墓地返回手牌"
+        "desc": "将你墓地中的一张牌返回手牌"
       },
       "exhumation": {
         "label": "掘墓 X",
@@ -597,19 +593,19 @@
       },
       "selection": {
         "label": "甄选 X",
-        "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌"
+        "desc": "展示3张费用为X的{alignment}普通卡；将其中一张加入手牌"
       },
       "faveur": {
-        "label": "恩惠 X",
-        "desc": "随机将一张费用为X的{alignment}普通牌加入你的手牌。"
+        "label": "恩宠X",
+        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌"
       },
       "selection_magique": {
         "label": "魔法甄选 X",
-        "desc": "展示3张费用≤X的{alignment}普通法术；选择一张加入手牌"
+        "desc": "展示3张费用为X的{alignment}普通法术；将其中一张加入手牌"
       },
       "renfort_royal": {
         "label": "皇家甄选 X",
-        "desc": "展示你牌库中3张费用≤X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张"
+        "desc": "展示你3张费用为X的限定版卡牌（需持有≥30张；否则展示3张{alignment}普通卡）；保留其中一张"
       },
       "relancer": {
         "label": "重施 X",
@@ -666,6 +662,10 @@
       "guerison": {
         "label": "治愈 X",
         "desc": "为目标恢复 X PV"
+      },
+      "seconde_vie": {
+        "label": "重生X",
+        "desc": "可从你的墓地以X点法力施放，之后失去重生。"
       },
       "incineration": {
         "label": "焚烧 X",
@@ -747,13 +747,13 @@
         "label": "涌流 X",
         "desc": "本回合获得 X 点法力"
       },
-      "tuteur": {
-        "label": "导师",
-        "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
       "compagnons": {
         "label": "伙伴",
         "desc": "将其伙伴（创建时选定的关联卡牌）洗入你的牌库，然后重新洗牌。仅限一次。"
+      },
+      "tuteur": {
+        "label": "导师",
+        "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
       }
     },
     "composed": {
@@ -764,8 +764,11 @@
         "on_activation": "激活时",
         "on_attack": "攻击时",
         "on_end_of_turn": "回合结束时",
+        "on_end_of_turn_in_hand": "回合结束时，只要它仍在手牌中",
+        "in_hand_suffix": "在手牌中",
         "on_draw": "被抽到时",
-        "on_low_hp": "生命值低于15"
+        "on_low_hp": "生命值低于15",
+        "on_wound": "受伤"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -778,6 +781,8 @@
         "paralyze": "麻痹",
         "poison": "中毒",
         "grant_keyword": "赋予 {ability}",
+        "random_range": "1至{max}",
+        "appel": "将你牌库中费用≤{x}的第一张单位牌置入战场",
         "ability_generic": "一个能力",
         "draw_cards_one": "抽 {x} 张牌",
         "draw_cards_many": "抽 {x} 张牌",
@@ -795,32 +800,73 @@
         "rappel": "将{who}从你的墓地返回手牌{cost}",
         "rappel_cost": "（费用≤{max}）",
         "rappel_one_any": "一张牌",
-        "rappel_one_creature": "一个单位",
-        "rappel_one_spell": "一张法术",
+        "rappel_one_creature": "一张单位牌",
+        "rappel_one_spell": "一张法术牌",
         "rappel_all_any": "所有牌",
-        "rappel_all_creature": "所有单位",
-        "rappel_all_spell": "所有法术",
+        "rappel_all_creature": "所有单位牌",
+        "rappel_all_spell": "所有法术牌",
         "rappel_upto_any": "至多{n}张牌",
-        "rappel_upto_creature": "至多{n}个单位",
-        "rappel_upto_spell": "至多{n}张法术",
+        "rappel_upto_creature": "至多{n}张单位牌",
+        "rappel_upto_spell": "至多{n}张法术牌",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
+        "invocation_card": "召唤指定卡牌",
+        "invocation_cards": "召唤指定的{n}张卡牌",
+        "invocation_copies": "召唤{n}张指定卡牌的复制品",
+        "tuteur": "将指定卡牌加入你的手牌",
+        "tuteur_copies": "将{n}张指定卡牌的复制品加入你的手牌",
+        "appel_supreme": "将你牌库中{filter}费用最高的卡牌加入手牌{cost}",
+        "appel_supreme_cost": " (费用 ≤ {max})",
+        "tuteur_many": "将指定的{n}张卡牌加入你的手牌",
         "epargne": "为你的储蓄计数器增加{x}点",
         "foi": "为你的信仰计数器增加{x}点",
         "conquete": "为你的征服计数器增加{x}",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
+        "occurrences": "{n} 次：",
+        "alternative": "择一：",
         "devoration": "吞噬",
+        "silence": "沉默",
+        "dechainement": "施放 {x} 个费用为 {y} 的随机法术",
+        "dechainement_one": "施放一个费用为 {y} 的随机法术",
         "tactique_one": "随机传授自身的1个永久技能",
         "tactique_many": "随机传授自身的{x}个永久技能",
         "retour_differe": "放到其拥有者牌库底",
         "selection": "展示3张{filter}卡牌（费用为 {x}），并保留其中一张至手牌",
-        "faveur": "随机将一张费用为{x}的牌{filter}加入你的手牌",
+        "faveur": "随机将一张{filter}卡牌（费用{x}）加入手牌",
         "selection_magique": "展示3张{filter}法术（费用为{x}），并留其中一张入手",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
-        "occurrences": "{n} 次：",
-        "alternative": "择一：",
-        "silence": "沉默",
-        "dechainement": "施放 {x} 个费用为 {y} 的随机法术",
-        "dechainement_one": "施放一个费用为 {y} 的随机法术"
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌"
+      },
+      "emblem": {
+        "badge": "纹章",
+        "self": "纹章",
+        "opponent": "对手场上的纹章",
+        "permanent": " (永久)",
+        "turns_one": " ({n}回合)",
+        "turns_many": " ({n}回合)",
+        "owner_self": "你的",
+        "owner_opponent": "对方的",
+        "hero_self": "你的英雄",
+        "hero_opponent": "对方的英雄",
+        "turn_self": "你的",
+        "turn_opponent": "对方的",
+        "when": {
+          "on_play": "每当{owner}一个随从进场时",
+          "on_death": "每当{owner}一个随从死亡时",
+          "on_attack": "每当{owner}一个随从攻击时",
+          "on_return": "每当{owner}一个随从返回手牌时",
+          "on_activation": "每当{owner}一个随从被激活时",
+          "on_low_hp": "每当{hero}生命值降至{n}点以下时",
+          "on_end_of_turn": "在{turn}回合结束时"
+        }
+      },
+      "grant_when": {
+        "on_death": "，将在其死亡时触发",
+        "on_activation": "，将在其激活时触发",
+        "on_return": "，将在其返回手牌时触发",
+        "on_end_of_turn": "，将在回合结束时触发",
+        "on_attack": "，将在其攻击时触发",
+        "on_draw": "，将在其被抽到时触发",
+        "on_low_hp": "，将在生命值低于15点时触发",
+        "on_wound": "，将在其受伤但未死亡时触发"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -848,10 +894,12 @@
         "hero_ally": "你的英雄",
         "hero_enemy": "敌方英雄",
         "both_all": "所有单位和{side}英雄",
-        "both_one": "一个目标(单位或英雄){side}"
+        "both_one": "一个目标(单位或英雄){side}",
+        "damage_source": "伤害它的目标"
       },
       "target": {
         "self": "对自身",
+        "damage_source": "对伤害它的目标",
         "hero_ally": "对你的英雄",
         "hero_enemy": "对对方英雄",
         "both_all": "对所有单位及 {side} 英雄",
@@ -894,7 +942,7 @@
         "poison": "选择一个要使其中毒的生物",
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
-        "rappel": "选择一张牌返回手牌",
+        "rappel": "选择一张卡牌收回手牌",
         "default": "选择一个目标"
       }
     },
@@ -909,7 +957,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
-        "description": "策略与掌控：纪律、阵形、玄术、隐匿，以及守护神庙的纳迦守卫。"
+        "description": "策略与控制：纪律、阵型、玄术、隐匿，守护寺庙的那伽守卫，山中的妖怪——天狗与鬼——以及预示明君之治的麒麟。"
       },
       "RoyaumesDuSoleil": {
         "displayName": "太阳王国",
@@ -917,7 +965,7 @@
       },
       "Humains": {
         "displayName": "自由王国",
-        "description": "古老大陆：荣耀、钢铁、英雄斗士，以及他们骄傲的飞翼盟友——狮鹫与猎鹰。"
+        "description": "旧大陆：荣耀、钢铁、英勇的冠军战士，以及他们高傲的有翼盟友——狮鹫、猎鹰,还有风之战士的飞马与斯芬克斯。"
       },
       "Hommes-Bêtes": {
         "displayName": "兽群",
@@ -989,13 +1037,13 @@
     "races": {
       "Elfes": "精灵",
       "Fées": "仙灵",
+      "Aigles Géants": "巨鹰",
+      "Hobbits": "霍比特人",
+      "Hommes-Arbres": "树人",
       "Farfadets": "小妖精",
       "Korrigans": "科里根",
       "Faunes": "法翁",
       "Dryades": "树精",
-      "Aigles Géants": "巨鹰",
-      "Hobbits": "霍比特人",
-      "Hommes-Arbres": "树人",
       "Nains": "矮人",
       "Golems": "魔像",
       "Gnomes": "侏儒",
@@ -1005,9 +1053,13 @@
       "Mammouths": "猛犸象",
       "Humains": "人类",
       "Nagas": "纳迦",
+      "Tengu": "天狗",
+      "Oni": "鬼",
       "Esprits": "灵体",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
+      "Pégases": "飞马",
+      "Sphinx": "斯芬克斯",
       "Hommes-Loups": "狼人",
       "Hommes-Ours": "熊人",
       "Hommes-Félins": "猫人",
@@ -1016,11 +1068,20 @@
       "Hommes-Chiens": "犬人",
       "Hommes-Renards": "狐人",
       "Hommes-Cerfs": "鹿人",
-      "Insectes": "昆虫",
       "Hommes-Singes": "猿人",
       "Hommes-Poissons": "鱼人",
       "Hommes-Oiseaux": "鸟人",
+      "Insectes": "昆虫",
       "Élémentaire": "元素生物",
+      "Ondins": "水精灵",
+      "Sirènes": "塞壬",
+      "Léviathans": "利维坦",
+      "Cristallins": "晶化体",
+      "Troglodytes": "穴居者",
+      "Bêtes Chtoniennes": "地渊巨兽",
+      "Salamandres": "火蜥蜴",
+      "Sylphes": "气精",
+      "Néphélides": "云女",
       "Ogres": "食人魔",
       "Dragons": "龙",
       "Chiens": "犬",
@@ -1047,15 +1108,6 @@
       "Poltergeists": "喧噪鬼",
       "Dullahans": "无头骑士",
       "Sluaghs": "亡魂群",
-      "Ondins": "水精灵",
-      "Sirènes": "塞壬",
-      "Léviathans": "利维坦",
-      "Cristallins": "晶化体",
-      "Troglodytes": "穴居者",
-      "Bêtes Chtoniennes": "地渊巨兽",
-      "Salamandres": "火蜥蜴",
-      "Sylphes": "气精",
-      "Néphélides": "云女",
       "Elfes Corrompus": "堕落精灵",
       "Araignées Géantes": "巨型蜘蛛",
       "Démons": "恶魔",
@@ -1063,7 +1115,8 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士"
+      "Guerriers du Chaos": "混沌战士",
+      "Qilins": "麒麟"
     },
     "alignments": {
       "bon": "善良",
@@ -1157,6 +1210,16 @@
         "bare": "纳迦",
         "de": "纳迦的"
       },
+      "Tengu": {
+        "def": "天狗",
+        "bare": "天狗",
+        "de": "天狗"
+      },
+      "Oni": {
+        "def": "鬼",
+        "bare": "鬼",
+        "de": "鬼"
+      },
       "Griffons": {
         "def": "狮鹫",
         "bare": "狮鹫",
@@ -1166,6 +1229,16 @@
         "def": "猎鹰",
         "bare": "猎鹰",
         "de": "猎鹰的"
+      },
+      "Pégases": {
+        "def": "飞马",
+        "bare": "飞马",
+        "de": "飞马"
+      },
+      "Sphinx": {
+        "def": "斯芬克斯",
+        "bare": "斯芬克斯",
+        "de": "斯芬克斯"
       },
       "Hommes-Loups": {
         "def": "狼人",
@@ -1318,31 +1391,6 @@
         "bare": "巫妖",
         "de": "巫妖"
       },
-      "Banshees": {
-        "def": "女妖",
-        "bare": "女妖",
-        "de": "女妖"
-      },
-      "Homuncules de Sang": {
-        "def": "血之人造人",
-        "bare": "血之人造人",
-        "de": "血之人造人"
-      },
-      "Gargouilles": {
-        "def": "石像鬼",
-        "bare": "石像鬼",
-        "de": "石像鬼"
-      },
-      "Dhampirs": {
-        "def": "半吸血鬼",
-        "bare": "半吸血鬼",
-        "de": "半吸血鬼"
-      },
-      "Chiroptères": {
-        "def": "翼手族",
-        "bare": "翼手族",
-        "de": "翼手族的"
-      },
       "Momies": {
         "def": "木乃伊",
         "bare": "木乃伊",
@@ -1418,6 +1466,31 @@
         "bare": "云女",
         "de": "云女"
       },
+      "Banshees": {
+        "def": "女妖",
+        "bare": "女妖",
+        "de": "女妖"
+      },
+      "Homuncules de Sang": {
+        "def": "血之人造人",
+        "bare": "血之人造人",
+        "de": "血之人造人"
+      },
+      "Gargouilles": {
+        "def": "石像鬼",
+        "bare": "石像鬼",
+        "de": "石像鬼"
+      },
+      "Dhampirs": {
+        "def": "半吸血鬼",
+        "bare": "半吸血鬼",
+        "de": "半吸血鬼"
+      },
+      "Chiroptères": {
+        "def": "翼手族",
+        "bare": "翼手族",
+        "de": "翼手族的"
+      },
       "Elfes Corrompus": {
         "def": "堕落精灵",
         "bare": "堕落精灵",
@@ -1457,6 +1530,11 @@
         "def": "混沌战士",
         "bare": "混沌战士",
         "de": "混沌战士"
+      },
+      "Qilins": {
+        "def": "麒麟",
+        "bare": "麒麟",
+        "de": "麒麟"
       }
     },
     "clans_forms": {
@@ -1564,7 +1642,8 @@
         "end_of_turn": "回合结束时",
         "draw": "抽牌时",
         "low_hp": "生命值低于{n}点时",
-        "spell": "法术结算时"
+        "spell": "法术结算时",
+        "wound": "当它受伤但未死亡时"
       }
     },
     "triggers": {
@@ -1576,7 +1655,8 @@
       "tap": "可激活",
       "end_of_turn": "回合结束",
       "draw": "抽牌",
-      "low_hp": "生命值低于{n}点"
+      "low_hp": "生命值低于{n}点",
+      "wound": "受伤"
     }
   },
   "home": {
@@ -1887,6 +1967,7 @@
     "trigger_on_end_of_turn_in_hand": "回合结束时，只要仍在手牌中",
     "trigger_on_draw": "当此牌被抽到时",
     "trigger_on_low_hp": "生命值低于15",
+    "trigger_on_wound": "受伤（受到伤害但未死亡）",
     "trigger_spell_resolution": "结算时",
     "composed_effects_heading": "复合效果（高级）",
     "composed_effects_subtitle": "内容 + 幅度 + 目标",
@@ -1928,11 +2009,11 @@
     "content_summon_token": "召唤衍生物",
     "content_gain_mana": "获得法力",
     "content_exhumation": "复活（墓地）",
-    "content_rappel": "召回（墓地→手牌）",
+    "content_rappel": "召回（墓地 → 手牌）",
     "label_card_kind": "目标卡牌",
     "card_kind_all": "全部",
-    "card_kind_creature": "仅单位",
-    "card_kind_spell": "仅法术",
+    "card_kind_creature": "仅随从",
+    "card_kind_spell": "仅限法术",
     "legacy_grants_heading": "遗留赠予效果(旧格式)——请转换以便可以指向对手",
     "convert_to_composed": "转换",
     "effects_heading": "卡牌效果",
@@ -1943,10 +2024,10 @@
     "content_invocation": "召唤（随机生物）",
     "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
     "label_designated_card": "指定卡牌",
-    "designated_card_hint": "指定一个或多个生物：它们按此顺序原样被召唤（同一张牌可指定多次）。未指定时，按筛选条件以费用 X 随机抽取。",
-    "tuteur_card_hint": "指定一张或多张牌（生物或法术）：它们按此顺序加入你的手牌。同一张牌可指定多次（获得相应数量的副本）。未指定时，此效果无作用。",
+    "designated_card_hint": "指定一个或多个随从：它们将按此顺序原样召唤（同一张卡可被多次指定）。若未指定，则依据筛选条件随机抽取一张费用为X的卡。",
+    "tuteur_card_hint": "指定一张或多张卡牌，随从或法术：它们将按此顺序加入你的手牌。同一张卡可被多次指定（对应多张副本）。若未指定，则该效果不产生任何作用。",
     "content_selection": "选择（三选一）",
-    "content_faveur": "恩惠（随机1张牌 → 手牌）",
+    "content_faveur": "恩惠（1张随机卡 → 手牌）",
     "content_renfort_royal": "皇家甄选（三选一）",
     "label_pool_membership": "卡池 — 归属",
     "label_pool_faction": "卡池 — 阵营",
@@ -1967,6 +2048,7 @@
     "entity_hero": "英雄",
     "entity_both": "两者（英雄 + 单位）",
     "entity_self": "自身（生物）",
+    "entity_damage_source": "伤害来源",
     "label_side": "阵营",
     "side_ally": "友方",
     "side_enemy": "敌方",
@@ -2060,8 +2142,8 @@
     "exile_cost_hint": "从玩家牌库顶部移除的牌数。被放逐的牌不会进入墓地，且无法回收。",
     "topdeck_cost_hint": "玩家从手牌放回牌库顶部的卡牌数量。这些卡不会进入墓地：玩家之后会重新抽到它们。节奏消耗，不可减免。",
     "equip_label": "装备",
-    "equip_cost_hint": "物件 — 将物件装备到友方生物上的法力费用。每次装备（含转移）都要支付。0 为免费。",
-    "item_trigger_bearer": "（装备者）",
+    "equip_cost_hint": "物品——将该物品装备到友方随从身上所需的法力费用。每次装备时都需支付，包括转移装备。0 = 免费。",
+    "item_trigger_bearer": "（持有者）",
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
@@ -2089,6 +2171,7 @@
     "mode_title_end_of_turn": "回合结束时",
     "mode_title_draw": "当此牌被抽到时",
     "mode_title_low_hp": "当你的英雄生命值低于15时（仅一次）",
+    "mode_title_wound": "受伤：当它受到伤害但未死亡时（每回合每个来源仅一次）",
     "grant_scope_target": "赋予目标生物",
     "grant_scope_all_allies": "赋予所有我方单位",
     "required_caps": "必填",
@@ -2353,7 +2436,7 @@
     "alternative_warn_alone": "仅勾选了一个分支：该效果将正常结算",
     "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
-    "random_hint_faveur": "获得的牌在1到{max}之间随机决定费用。不勾选则恰好为{max}。",
+    "random_hint_faveur": "所赠卡牌的费用在1到{max}之间随机。若未勾选该选项，则费用恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
     "content_tuteur": "导师（指定卡牌→手牌）",
@@ -2463,8 +2546,8 @@
     "spell_countered": "🛡️ 反制！",
     "draw_trigger_self": "🃏 效果在你抽牌时触发",
     "draw_trigger_opponent": "🃏 效果在对手抽牌时触发",
-    "faveur_self": "🎁 恩惠 — 一张牌加入你的手牌",
-    "faveur_opponent": "🎁 恩惠 — 一张牌加入对手的手牌",
+    "faveur_self": "🎁 恩惠——一张卡牌已加入你的手牌",
+    "faveur_opponent": "🎁 恩惠——一张卡牌已加入对手的手牌",
     "spell_grant_all_allies": " · 对所有友方单位",
     "spell_grant_target": " · 对目标生物",
     "fire_breath_label": "烈焰吐息",
@@ -2539,6 +2622,8 @@
     "combat_see_full_list": "完整技能列表见页面底部。",
     "hero_title": "英雄与英雄技能",
     "alt_costs_title": "附加费用与觉醒",
+    "counters_title": "计数器：储蓄、信仰与征服",
+    "singulier_title": "唯一：无重复卡组的加成",
     "deck_title": "构建牌组",
     "tcg_numbers_title": "关键数据",
     "stat_hero_hp": "英雄生命值",
@@ -2555,9 +2640,7 @@
     "search_placeholder": "搜索技能…",
     "creature_abilities_group": "随从技能（{count}）",
     "spell_abilities_group": "法术技能（{count}）",
-    "no_ability_match": "没有与「{query}」匹配的技能。",
-    "counters_title": "计数器：储蓄、信仰与征服",
-    "singulier_title": "唯一：无重复卡组的加成"
+    "no_ability_match": "没有与「{query}」匹配的技能。"
   },
   "deck": {
     "alignment_incompatible": "善良与邪恶阵营不可兼容",

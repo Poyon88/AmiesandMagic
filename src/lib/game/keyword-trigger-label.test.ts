@@ -107,7 +107,7 @@ describe("Le mot ET sa couleur vont ensemble", () => {
   });
 
   it("chaque mot a une couleur, aucune n'est vide", () => {
-    for (const mode of ["entry", "attack", "death", "return", "tap", "end_of_turn", "draw", "low_hp"] as const) {
+    for (const mode of ["entry", "attack", "death", "return", "tap", "end_of_turn", "draw", "low_hp", "wound"] as const) {
       const b = triggerBadge(mode)!;
       expect(b, mode).toBeTruthy();
       expect(b.color, mode).toMatch(/^#[0-9a-fA-F]{3,8}$/);
@@ -121,12 +121,12 @@ describe("Le mot ET sa couleur vont ensemble", () => {
 
 describe("Traductions", () => {
   const LOCALES = ["fr", "en", "es", "de", "it", "pt", "ja", "zh"];
-  const CLES = ["permanent", "entry", "attack", "death", "return", "tap", "end_of_turn", "draw", "low_hp"];
+  const CLES = ["permanent", "entry", "attack", "death", "return", "tap", "end_of_turn", "draw", "low_hp", "wound"];
 
   const catalogue = (loc: string) =>
     JSON.parse(fs.readFileSync(path.join(process.cwd(), `messages/${loc}.json`), "utf8"));
 
-  it.each(LOCALES)("%s fournit les neuf mots", (loc) => {
+  it.each(LOCALES)("%s fournit les dix mots", (loc) => {
     const tr = catalogue(loc).vocab.triggers;
     expect(Object.keys(tr).sort()).toEqual([...CLES].sort());
     for (const k of CLES) expect(tr[k]?.trim(), `${loc} / ${k}`).toBeTruthy();

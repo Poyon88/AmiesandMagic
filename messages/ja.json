@@ -122,8 +122,8 @@
         "desc": "戦闘ダメージを半減する（端数切り上げ）。呪文によるダメージは軽減されない。"
       },
       "commandement": {
-        "label": "指揮 X",
-        "desc": "{faction_de}の味方に+X/+X。"
+        "label": "統率X",
+        "desc": "自分の{faction_de}の味方に+X/+X。"
       },
       "fureur": {
         "label": "激怒",
@@ -362,8 +362,8 @@
         "desc": "コストXの{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
       },
       "faveur": {
-        "label": "恩恵 X",
-        "desc": "コストXの{alignment}コモンをランダムに1枚手札に加える。"
+        "label": "寵愛X",
+        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える。"
       },
       "selection_magique": {
         "label": "魔法選択 X",
@@ -426,7 +426,7 @@
         "desc": "カードをX枚引く。"
       },
       "afflux": {
-        "label": "魔力流入 X",
+        "label": "流入X",
         "desc": "このターン、マナをX獲得する。"
       },
       "epargne": {
@@ -509,13 +509,13 @@
         "label": "犠牲の閾値 +X/+Y",
         "desc": "自分のデッキが25枚以下である限り、+X ATKと+Y PVを得る。"
       },
-      "tuteur": {
-        "label": "チューター",
-        "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
       "compagnons": {
         "label": "仲間",
         "desc": "仲間(このカード作成時に選ばれた紐付けカード)をデッキに混ぜ込み、デッキをシャッフルする。1回限り。"
+      },
+      "tuteur": {
+        "label": "チューター",
+        "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
       }
     },
     "spell_keywords": {
@@ -535,6 +535,10 @@
         "label": "略奪 X",
         "desc": "相手の手札からランダムにX枚捨てさせる。"
       },
+      "contresort": {
+        "label": "対抗呪文",
+        "desc": "相手の次の呪文を打ち消す。"
+      },
       "convocation_simple": {
         "label": "召喚",
         "desc": "{token}を生成する。"
@@ -547,18 +551,6 @@
         "label": "詠唱 X",
         "desc": "詠唱を持つクリーチャーをコントロールしている場合、このスペルのすべての値がXだけ増加する。"
       },
-      "divination": {
-        "label": "占術",
-        "desc": "デッキの上から3枚を公開する。任意の順序で1枚を一番上に、2枚を一番下に戻す。"
-      },
-      "contresort": {
-        "label": "呪文封じ",
-        "desc": "相手の次の呪文を無効化する。"
-      },
-      "seconde_vie": {
-        "label": "セカンドライフX",
-        "desc": "墓地からX魔力で唱えられる。使用後、セカンドライフを失う。"
-      },
       "lune": {
         "label": "月X",
         "desc": "このターン中に2枚目以降に出したカードなら、このカードのすべての数値がXだけ上昇する。"
@@ -566,6 +558,10 @@
       "soleil": {
         "label": "太陽X",
         "desc": "このターン最初に出したカードなら、このカードのすべての数値がXだけ上昇する。"
+      },
+      "divination": {
+        "label": "占術",
+        "desc": "デッキの上から3枚を公開し、好きな順番でそのうち1枚を上に、2枚を下に置く。"
       },
       "corruption": {
         "label": "堕落",
@@ -589,7 +585,7 @@
       },
       "rappel": {
         "label": "帰還",
-        "desc": "墓地からカードを1枚手札に戻す"
+        "desc": "自分の墓地からカードを1枚手札に戻す"
       },
       "exhumation": {
         "label": "発掘 X",
@@ -597,19 +593,19 @@
       },
       "selection": {
         "label": "選択 X",
-        "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える"
+        "desc": "コストXの{alignment}のコモンを3枚公開し、そのうち1枚を手札に加える"
       },
       "faveur": {
-        "label": "恩恵 X",
-        "desc": "コストXの{alignment}コモンをランダムに1枚手札に加える。"
+        "label": "寵愛X",
+        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える"
       },
       "selection_magique": {
         "label": "魔法の選択 X",
-        "desc": "コストX以下の{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える"
+        "desc": "コストXの{alignment}のコモン呪文を3枚公開し、そのうち1枚を手札に加える"
       },
       "renfort_royal": {
         "label": "王家の選択 X",
-        "desc": "コストX以下の限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す"
+        "desc": "コストXの自分のリミテッド版カードを3枚公開する(30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。そのうち1枚を残す"
       },
       "relancer": {
         "label": "再詠唱 X",
@@ -666,6 +662,10 @@
       "guerison": {
         "label": "回復 X",
         "desc": "対象のPVをX回復する"
+      },
+      "seconde_vie": {
+        "label": "第二の生X",
+        "desc": "自分の墓地からマナXで唱えられる。その場合、第二の生を失う。"
       },
       "incineration": {
         "label": "焼却X",
@@ -747,13 +747,13 @@
         "label": "魔力流入 X",
         "desc": "このターン、マナをX獲得する"
       },
-      "tuteur": {
-        "label": "チューター",
-        "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
       "compagnons": {
         "label": "仲間",
         "desc": "仲間(このカード作成時に選ばれた紐付けカード)をデッキに混ぜ込み、デッキをシャッフルする。1回限り。"
+      },
+      "tuteur": {
+        "label": "チューター",
+        "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
       }
     },
     "composed": {
@@ -764,8 +764,11 @@
         "on_activation": "起動時",
         "on_attack": "攻撃時",
         "on_end_of_turn": "ターン終了時",
+        "on_end_of_turn_in_hand": "ターン終了時、手札にある限り",
+        "in_hand_suffix": "手札にある",
         "on_draw": "引かれたとき",
-        "on_low_hp": "HP15未満"
+        "on_low_hp": "HP15未満",
+        "on_wound": "負傷"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -778,6 +781,8 @@
         "paralyze": "麻痺させる",
         "poison": "毒を与える",
         "grant_keyword": "{ability}を付与する",
+        "random_range": "1から{max}",
+        "appel": "自分のデッキからコスト{x}以下の最初のユニットを場に出す",
         "ability_generic": "能力",
         "draw_cards_one": "カードを{x}枚引く",
         "draw_cards_many": "カードを{x}枚引く",
@@ -792,8 +797,8 @@
         "exhum_one": "クリーチャー1体",
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
-        "rappel": "墓地から{who}を手札に戻す{cost}",
-        "rappel_cost": "（コスト{max}以下）",
+        "rappel": "自分の墓地から{who}を手札に戻す{cost}",
+        "rappel_cost": "(コスト{max}以下)",
         "rappel_one_any": "カード1枚",
         "rappel_one_creature": "ユニット1体",
         "rappel_one_spell": "呪文1枚",
@@ -804,23 +809,64 @@
         "rappel_upto_creature": "最大{n}体のユニット",
         "rappel_upto_spell": "最大{n}枚の呪文",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
+        "invocation_card": "指定されたカードを召喚する",
+        "invocation_cards": "指定された{n}枚のカードを召喚する",
+        "invocation_copies": "指定されたカードを{n}枚召喚する",
+        "tuteur": "指定されたカードを自分の手札に加える",
+        "tuteur_copies": "指定されたカードを{n}枚、自分の手札に加える",
+        "appel_supreme": "自分のデッキ{filter}{cost}の中で最もコストの高いカードを手札に加える",
+        "appel_supreme_cost": " (コスト ≤ {max})",
+        "tuteur_many": "指定した{n}枚のカードを手札に加える",
         "epargne": "貯蓄カウンターに{x}を追加",
         "foi": "信仰カウンターに{x}を追加",
         "conquete": "征服カウンターに{x}を加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
+        "occurrences": "{n}回: ",
+        "alternative": "選択: ",
         "devoration": "捕食する",
+        "silence": "沈黙させる",
+        "dechainement": "コスト{y}のランダムな呪文を{x}回唱える",
+        "dechainement_one": "コスト{y}のランダムな呪文を1つ唱える",
         "tactique_one": "自身の永続能力を1つランダムに授ける",
         "tactique_many": "自身の永続能力を{x}つランダムに授ける",
         "retour_differe": "所有者のデッキの一番下に置く",
         "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
-        "faveur": "コスト{x}のカード{filter}をランダムに1枚手札に加える",
+        "faveur": "{filter}カードをランダムに1枚手札に加える（コスト{x}）",
         "selection_magique": "呪文{filter}を3枚公開し(コスト{x})、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
-        "occurrences": "{n}回: ",
-        "alternative": "選択: ",
-        "silence": "沈黙させる",
-        "dechainement": "コスト{y}のランダムな呪文を{x}回唱える",
-        "dechainement_one": "コスト{y}のランダムな呪文を1つ唱える"
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える"
+      },
+      "emblem": {
+        "badge": "紋章",
+        "self": "紋章",
+        "opponent": "相手側に設置された紋章",
+        "permanent": " (永続)",
+        "turns_one": " ({n}ターン)",
+        "turns_many": " ({n}ターン)",
+        "owner_self": "あなたの",
+        "owner_opponent": "相手の",
+        "hero_self": "あなたのヒーロー",
+        "hero_opponent": "相手のヒーロー",
+        "turn_self": "あなたの",
+        "turn_opponent": "相手の",
+        "when": {
+          "on_play": "{owner}クリーチャーが場に出るたびに",
+          "on_death": "{owner}クリーチャーが死亡するたびに",
+          "on_attack": "{owner}クリーチャーが攻撃するたびに",
+          "on_return": "{owner}クリーチャーが手札に戻るたびに",
+          "on_activation": "{owner}クリーチャーが起動するたびに",
+          "on_low_hp": "{hero}のHPが{n}を下回るたびに",
+          "on_end_of_turn": "{turn}ターン終了時に"
+        }
+      },
+      "grant_when": {
+        "on_death": "、死亡時に発動する",
+        "on_activation": "、起動時に発動する",
+        "on_return": "、手札に戻る時に発動する",
+        "on_end_of_turn": "、ターン終了時に発動する",
+        "on_attack": "、攻撃時に発動する",
+        "on_draw": "、ドロー時に発動する",
+        "on_low_hp": "、HPが15を下回ると発動する",
+        "on_wound": "、致命傷を受けずに負傷した時に発動する"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -848,10 +894,12 @@
         "hero_ally": "あなたのヒーロー",
         "hero_enemy": "敵ヒーロー",
         "both_all": "すべてのユニットと{side}ヒーロー",
-        "both_one": "対象1つ(ユニットまたはヒーロー){side}"
+        "both_one": "対象1つ(ユニットまたはヒーロー){side}",
+        "damage_source": "自分を負傷させた相手"
       },
       "target": {
         "self": "自身に",
+        "damage_source": "自分を負傷させた相手に",
         "hero_ally": "自分のヒーローに",
         "hero_enemy": "相手のヒーローに",
         "both_all": "すべてのユニットと{side}ヒーローに",
@@ -894,7 +942,7 @@
         "poison": "毒を与えるクリーチャーを選択してください",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
-        "rappel": "手札に戻すカードを選んでください",
+        "rappel": "手札に戻すカードを1枚選ぶ",
         "default": "対象を選んでください"
       }
     },
@@ -909,7 +957,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "中央帝国",
-        "description": "戦略と支配:規律、陣形、神秘主義、隠密、そして寺院を守るナーガの守護者たち。"
+        "description": "戦略と支配:規律、陣形、神秘主義、隠密、寺院を守るナーガ、山に棲む妖怪――天狗と鬼――、そして正しき治世の予兆たる麒麟。"
       },
       "RoyaumesDuSoleil": {
         "displayName": "太陽の王国群",
@@ -917,7 +965,7 @@
       },
       "Humains": {
         "displayName": "自由王国連合",
-        "description": "旧大陸：名誉、鋼鉄、英雄的な勇者たち、そして誇り高き翼の盟友グリフォンと隼。"
+        "description": "旧大陸：名誉、鋼鉄、英雄的な戦士たち、そして誇り高き翼ある同盟者たち——グリフォン、鷹、そして〈風の女戦士〉たちのペガサスとスフィンクス。"
       },
       "Hommes-Bêtes": {
         "displayName": "群れ",
@@ -989,13 +1037,13 @@
     "races": {
       "Elfes": "エルフ",
       "Fées": "妖精",
+      "Aigles Géants": "大鷲",
+      "Hobbits": "ホビット",
+      "Hommes-Arbres": "樹人",
       "Farfadets": "ファルファデ",
       "Korrigans": "コリガン",
       "Faunes": "ファウヌス",
       "Dryades": "ドリュアス",
-      "Aigles Géants": "大鷲",
-      "Hobbits": "ホビット",
-      "Hommes-Arbres": "樹人",
       "Nains": "ドワーフ",
       "Golems": "ゴーレム",
       "Gnomes": "ノーム",
@@ -1005,9 +1053,13 @@
       "Mammouths": "マンモス",
       "Humains": "人間",
       "Nagas": "ナーガ",
+      "Tengu": "天狗",
+      "Oni": "鬼",
       "Esprits": "精霊",
       "Griffons": "グリフォン",
       "Faucons": "隼",
+      "Pégases": "ペガサス",
+      "Sphinx": "スフィンクス",
       "Hommes-Loups": "狼人間",
       "Hommes-Ours": "熊人間",
       "Hommes-Félins": "猫人間",
@@ -1016,11 +1068,20 @@
       "Hommes-Chiens": "犬人間",
       "Hommes-Renards": "狐人間",
       "Hommes-Cerfs": "シカ人",
-      "Insectes": "昆虫",
       "Hommes-Singes": "猿人",
       "Hommes-Poissons": "魚人",
       "Hommes-Oiseaux": "鳥人",
+      "Insectes": "昆虫",
       "Élémentaire": "エレメンタル",
+      "Ondins": "ウンディーネ",
+      "Sirènes": "セイレーン",
+      "Léviathans": "リヴァイアサン",
+      "Cristallins": "クリスタリン",
+      "Troglodytes": "トログロダイト",
+      "Bêtes Chtoniennes": "地底の獣",
+      "Salamandres": "サラマンダー",
+      "Sylphes": "シルフ",
+      "Néphélides": "ネフェリス",
       "Ogres": "オーガ",
       "Dragons": "ドラゴン",
       "Chiens": "犬",
@@ -1047,15 +1108,6 @@
       "Poltergeists": "ポルターガイスト",
       "Dullahans": "デュラハン",
       "Sluaghs": "スルーア",
-      "Ondins": "ウンディーネ",
-      "Sirènes": "セイレーン",
-      "Léviathans": "リヴァイアサン",
-      "Cristallins": "クリスタリン",
-      "Troglodytes": "トログロダイト",
-      "Bêtes Chtoniennes": "地底の獣",
-      "Salamandres": "サラマンダー",
-      "Sylphes": "シルフ",
-      "Néphélides": "ネフェリス",
       "Elfes Corrompus": "堕落したエルフ",
       "Araignées Géantes": "巨大蜘蛛",
       "Démons": "デーモン",
@@ -1063,7 +1115,8 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士"
+      "Guerriers du Chaos": "カオスの戦士",
+      "Qilins": "麒麟"
     },
     "alignments": {
       "bon": "善",
@@ -1157,6 +1210,16 @@
         "bare": "ナーガ",
         "de": "ナーガの"
       },
+      "Tengu": {
+        "def": "天狗",
+        "bare": "天狗",
+        "de": "天狗"
+      },
+      "Oni": {
+        "def": "鬼",
+        "bare": "鬼",
+        "de": "鬼"
+      },
       "Griffons": {
         "def": "グリフォン",
         "bare": "グリフォン",
@@ -1166,6 +1229,16 @@
         "def": "隼",
         "bare": "隼",
         "de": "隼"
+      },
+      "Pégases": {
+        "def": "ペガサス",
+        "bare": "ペガサス",
+        "de": "ペガサスの"
+      },
+      "Sphinx": {
+        "def": "スフィンクス",
+        "bare": "スフィンクス",
+        "de": "スフィンクスの"
       },
       "Hommes-Loups": {
         "def": "狼男",
@@ -1318,31 +1391,6 @@
         "bare": "リッチ",
         "de": "リッチの"
       },
-      "Banshees": {
-        "def": "バンシー",
-        "bare": "バンシー",
-        "de": "バンシーの"
-      },
-      "Homuncules de Sang": {
-        "def": "血のホムンクルス",
-        "bare": "血のホムンクルス",
-        "de": "血のホムンクルスの"
-      },
-      "Gargouilles": {
-        "def": "ガーゴイル",
-        "bare": "ガーゴイル",
-        "de": "ガーゴイルの"
-      },
-      "Dhampirs": {
-        "def": "ダンピール",
-        "bare": "ダンピール",
-        "de": "ダンピールの"
-      },
-      "Chiroptères": {
-        "def": "翼手族",
-        "bare": "翼手族",
-        "de": "翼手族の"
-      },
       "Momies": {
         "def": "ミイラ",
         "bare": "ミイラ",
@@ -1418,6 +1466,31 @@
         "bare": "ネフェリス",
         "de": "ネフェリスの"
       },
+      "Banshees": {
+        "def": "バンシー",
+        "bare": "バンシー",
+        "de": "バンシーの"
+      },
+      "Homuncules de Sang": {
+        "def": "血のホムンクルス",
+        "bare": "血のホムンクルス",
+        "de": "血のホムンクルスの"
+      },
+      "Gargouilles": {
+        "def": "ガーゴイル",
+        "bare": "ガーゴイル",
+        "de": "ガーゴイルの"
+      },
+      "Dhampirs": {
+        "def": "ダンピール",
+        "bare": "ダンピール",
+        "de": "ダンピールの"
+      },
+      "Chiroptères": {
+        "def": "翼手族",
+        "bare": "翼手族",
+        "de": "翼手族の"
+      },
       "Elfes Corrompus": {
         "def": "堕落したエルフ",
         "bare": "堕落したエルフ",
@@ -1457,6 +1530,11 @@
         "def": "カオス戦士",
         "bare": "カオス戦士",
         "de": "カオス戦士の"
+      },
+      "Qilins": {
+        "def": "麒麟",
+        "bare": "麒麟",
+        "de": "麒麟の"
       }
     },
     "clans_forms": {
@@ -1564,7 +1642,8 @@
         "end_of_turn": "ターン終了時",
         "draw": "ドロー時",
         "low_hp": "HPが{n}以下のとき",
-        "spell": "呪文解決時"
+        "spell": "呪文解決時",
+        "wound": "致命傷を受けずに負傷した時"
       }
     },
     "triggers": {
@@ -1576,7 +1655,8 @@
       "tap": "起動可能",
       "end_of_turn": "ターン終了時",
       "draw": "ドロー時",
-      "low_hp": "HP{n}以下"
+      "low_hp": "HP{n}以下",
+      "wound": "負傷"
     }
   },
   "home": {
@@ -1887,6 +1967,7 @@
     "trigger_on_end_of_turn_in_hand": "ターン終了時、手札にある間",
     "trigger_on_draw": "このカードが引かれたとき",
     "trigger_on_low_hp": "HP15未満",
+    "trigger_on_wound": "負傷（致死量に至らないダメージ）",
     "trigger_spell_resolution": "解決時",
     "composed_effects_heading": "複合エフェクト（上級）",
     "composed_effects_subtitle": "内容＋強度＋対象",
@@ -1928,11 +2009,11 @@
     "content_summon_token": "トークンを召喚する",
     "content_gain_mana": "マナを得る",
     "content_exhumation": "蘇生する（墓地）",
-    "content_rappel": "回収（墓地→手札）",
+    "content_rappel": "リコール（墓地→手札）",
     "label_card_kind": "対象カード",
     "card_kind_all": "すべて",
     "card_kind_creature": "ユニットのみ",
-    "card_kind_spell": "呪文のみ",
+    "card_kind_spell": "スペルのみ",
     "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
     "convert_to_composed": "変換",
     "effects_heading": "カード効果",
@@ -1943,8 +2024,8 @@
     "content_invocation": "召喚(ランダムなクリーチャー)",
     "pool_hint_invocation": "フィルターは累積します。フィルターがない場合、プールはカードの属性に従い、召喚されるコストは正確にXになります。",
     "label_designated_card": "指定カード",
-    "designated_card_hint": "1体以上のクリーチャーを指定します。その順番でそのまま召喚されます（同じカードを複数回指定できます）。指定がなければ、フィルターに従いコストXでランダムに引きます。",
-    "tuteur_card_hint": "1枚以上のカード（クリーチャーまたは呪文）を指定します。その順番で手札に加わります。同じカードを複数回指定でき、その枚数分加わります。指定がなければ効果はありません。",
+    "designated_card_hint": "クリーチャーを1体以上指定してください：指定した順序でそのまま召喚されます（同じカードを複数回指定できます）。指定がない場合、フィルターに従いコストXでランダムに抽選されます。",
+    "tuteur_card_hint": "カードを1枚以上指定してください（クリーチャーまたはスペル）：指定した順序で手札に加わります。同じカードを複数回指定することもできます（その分の枚数）。指定がない場合、効果は発生しません。",
     "content_selection": "選択（3枚中1枚）",
     "content_faveur": "恩恵（ランダムな1枚 → 手札）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
@@ -1955,8 +2036,8 @@
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
     "random_hint": "1から{max}の間でランダムに選ばれ、解決時に一度だけ適用される。",
-    "move_earlier": "先に解決する",
-    "move_later": "後に解決する",
+    "move_earlier": "先に解決",
+    "move_later": "後で解決",
     "random_needs_ceiling": "ランダム抽選には上限2以上が必要です。",
     "label_granted_ability": "付与する能力",
     "label_grant_trigger": "付与するトリガー",
@@ -1967,6 +2048,7 @@
     "entity_hero": "ヒーロー",
     "entity_both": "両方（ヒーロー＋ユニット）",
     "entity_self": "自身（クリーチャー）",
+    "entity_damage_source": "ダメージ源",
     "label_side": "サイド",
     "side_ally": "味方",
     "side_enemy": "敵",
@@ -2060,8 +2142,8 @@
     "exile_cost_hint": "プレイヤーのデッキの上から取り除かれるカードの枚数。追放されたカードは墓地に置かれず、回収できません。",
     "topdeck_cost_hint": "プレイヤーが手札からデッキの一番上に戻すカードの枚数。墓地には行かず、後で引き直すことになる。テンポコスト、軽減不可。",
     "equip_label": "装備",
-    "equip_cost_hint": "オブジェクト — 味方クリーチャーに装備させるマナ・コスト。移動を含め装備するたびに支払う。0は無料。",
-    "item_trigger_bearer": "（装備者）",
+    "equip_cost_hint": "アイテム — 味方クリーチャーにアイテムを装備するためのマナコスト。装備するたび（付け替え含む）に支払います。0＝無料。",
+    "item_trigger_bearer": "（装備者の）",
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
     "topdeck_label": "リプレイス",
@@ -2089,6 +2171,7 @@
     "mode_title_end_of_turn": "ターン終了時",
     "mode_title_draw": "このカードが引かれたとき",
     "mode_title_low_hp": "自分のヒーローのHPが15未満になったとき（1回のみ）",
+    "mode_title_wound": "負傷：ダメージを受けても死亡しなかった時（1ターンにつき1つのダメージ源から1回）",
     "grant_scope_target": "対象クリーチャーに付与",
     "grant_scope_all_allies": "全味方ユニットに付与",
     "required_caps": "必須",
@@ -2353,7 +2436,7 @@
     "alternative_warn_alone": "チェックが1つだけ：効果は通常どおり解決される",
     "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
-    "random_hint_faveur": "与えられるカードのコストは1から{max}の間で決まります。チェックしない場合はちょうど{max}です。",
+    "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
     "content_tuteur": "チューター（指定カード→手札）",
@@ -2411,7 +2494,7 @@
     "graveyard_select_prompt": "墓地からカードを選んでください",
     "graveyard_hint_touch": "カードをタップして拡大・もう一度タップで説明表示",
     "graveyard_hint_hover": "カードにカーソルを合わせて拡大・右クリックでイラスト／説明を切替",
-    "seconde_vie_hint": "セカンドライフ：対象となるカードをダブルクリック。",
+    "seconde_vie_hint": "復生：対象となるカードをダブルクリックしてください。",
     "seconde_vie_blocked_turn": "あなたのターンではありません。",
     "graveyard_empty": "墓地にカードはありません",
     "cost_default_card_name": "カード",
@@ -2463,8 +2546,8 @@
     "spell_countered": "🛡️ 呪文無効！",
     "draw_trigger_self": "🃏 あなたのドロー時に発動する効果",
     "draw_trigger_opponent": "🃏 相手のドロー時に発動する効果",
-    "faveur_self": "🎁 恩恵 — カードが自分の手札に加わった",
-    "faveur_opponent": "🎁 恩恵 — カードが相手の手札に加わった",
+    "faveur_self": "🎁 恩恵 — カードが手札に追加されました",
+    "faveur_opponent": "🎁 恩恵 — カードが相手の手札に追加されました",
     "spell_grant_all_allies": " · 全味方クリーチャーに",
     "spell_grant_target": " · 対象クリーチャーに",
     "fire_breath_label": "炎のブレス",
@@ -2539,6 +2622,8 @@
     "combat_see_full_list": "能力の完全なリストはページ下部にあります。",
     "hero_title": "ヒーローとその能力",
     "alt_costs_title": "追加コストと覚醒",
+    "counters_title": "カウンター：節約、信仰、征服",
+    "singulier_title": "シングルトン：重複なしデッキの特典",
     "deck_title": "デッキを構築する",
     "tcg_numbers_title": "主要な数値",
     "stat_hero_hp": "ヒーローのHP",
@@ -2555,9 +2640,7 @@
     "search_placeholder": "能力を検索…",
     "creature_abilities_group": "クリーチャー能力（{count}）",
     "spell_abilities_group": "スペル能力（{count}）",
-    "no_ability_match": "「{query}」に一致する能力はありません。",
-    "counters_title": "カウンター：節約、信仰、征服",
-    "singulier_title": "シングルトン：重複なしデッキの特典"
+    "no_ability_match": "「{query}」に一致する能力はありません。"
   },
   "deck": {
     "alignment_incompatible": "善と悪のアライメントは共存できません",

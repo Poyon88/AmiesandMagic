@@ -428,8 +428,8 @@ const CLAN_BLURBS: Record<string, string> = {
   "Clan des Premiers Géants": "Le mur des cimes : provocation, armure et résistance — presque rien ne passe.",
   // L'Empire du Milieu
   "Les Hordes des Steppes": "Cavalerie rapide : célérité, traque et raids qui frappent avant l'installation.",
-  "L'Empire de Jade": "Discipline et contrôle : tactique, divination, contresorts et commandement.",
-  "Les Lames de l'Ombre": "Assassins : ombre et invisibilité jusqu'au premier coup, mortel.",
+  "L'Empire de Jade": "Discipline et contrôle : tactique, divination, contresorts et commandement — sous le présage du qilin.",
+  "Les Lames de l'Ombre": "Assassins — ninjas, tengu et oni : ombre et invisibilité jusqu'au premier coup, mortel.",
   "Les Défenseurs d'Ivoire": "Éléphants de guerre : piétinement, armure et provocation, l'avance inarrêtable.",
   // Les Royaumes du Soleil
   "Les Enfants du Soleil": "Le brasier rituel : sacrifice, martyr et héritage — mourir sert le camp.",
@@ -439,7 +439,7 @@ const CLAN_BLURBS: Record<string, string> = {
   // Les Royaumes Libres
   "Le Royaume du Nord": "Champions héroïques : gloire cumulative, bravoure et raids.",
   "L'Ordre de l'Aube": "La lumière protectrice : boucliers, bénédictions et provocation.",
-  "Les Guerrières du Vent": "Griffons et faucons : précision, esquive et frappe initiale.",
+  "Les Guerrières du Vent": "Archères montées, pégases et sphinx : précision, esquive et frappe initiale.",
   "La Sublime Porte": "L'armée d'apparat : commandement, première frappe et discipline de rang.",
   // La Meute
   "Les Seigneurs Fauves": "Les félins : persécution et célérité, la pression permanente.",

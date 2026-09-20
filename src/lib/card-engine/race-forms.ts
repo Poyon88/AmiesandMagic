@@ -48,8 +48,16 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Humains": { def: "l'Humain", bare: "Humain", de: "de l'Humain" },
   "Esprits": { def: "l'Esprit", bare: "Esprit", de: "de l'Esprit" },
   "Nagas": { def: "le Naga", bare: "Naga", de: "du Naga" },
+  // Mots japonais, invariables : la clé de race ne prend pas de « s ».
+  "Tengu": { def: "le Tengu", bare: "Tengu", de: "du Tengu" },
+  "Oni": { def: "l'Oni", bare: "Oni", de: "de l'Oni" },
+  "Qilins": { def: "le Qilin", bare: "Qilin", de: "du Qilin" },
   "Griffons": { def: "le Griffon", bare: "Griffon", de: "du Griffon" },
   "Faucons": { def: "le Faucon", bare: "Faucon", de: "du Faucon" },
+  // « Sphinx » est invariable ; masculin en français, quoique la gardienne du
+  // mythe grec soit une figure féminine.
+  "Pégases": { def: "le Pégase", bare: "Pégase", de: "du Pégase" },
+  "Sphinx": { def: "le Sphinx", bare: "Sphinx", de: "du Sphinx" },
   "Hommes-Loups": { def: "l'Homme-Loup", bare: "Homme-Loup", de: "de l'Homme-Loup" },
   "Hommes-Ours": { def: "l'Homme-Ours", bare: "Homme-Ours", de: "de l'Homme-Ours" },
   "Hommes-Félins": { def: "l'Homme-Félin", bare: "Homme-Félin", de: "de l'Homme-Félin" },

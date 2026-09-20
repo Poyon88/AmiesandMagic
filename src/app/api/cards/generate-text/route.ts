@@ -57,6 +57,9 @@ export async function POST(request: Request) {
     "Humains": "human warrior/mage in medieval armor or robes, realistic proportions, heraldic symbols",
     "Griffons": "majestic griffin with eagle head and front talons, powerful lion hindquarters, broad feathered wings, regal bearing, heraldic harness",
     "Faucons": "swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings folded in a dive or spread mid-flight",
+    // Royaumes Libres (Guerrières du Vent)
+    "Pégases": "majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, powerful legs mid-gallop across the clouds, noble and untamed",
+    "Sphinx": "Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, seated upright on a rocky outcrop above a mountain road, inscrutable knowing gaze",
     // Hommes-Bêtes
     "Hommes-Loups": "werewolf-like humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
     "Hommes-Ours": "werebear-like humanoid, massive bear-headed figure, thick fur, enormous claws, towering and powerful",
@@ -99,6 +102,11 @@ export async function POST(request: Request) {
     "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
     // Empire du Milieu (Défenseurs d'Ivoire)
     "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
+    // Empire du Milieu (Lames de l'Ombre)
+    "Tengu": "crow-spirit swordmaster of the Japanese mountains, large black feathered wings, crimson long-nosed face or corvid beak, yamabushi ascetic robes and small black tokin cap, feather fan and katana, perched among misty cedar peaks",
+    "Oni": "hulking Japanese ogre-demon, red or deep blue skin, two short horns, wild black mane, tusked jaw, tiger-skin loincloth, iron bracelets, huge studded iron kanabo club, brutal and menacing",
+    // Empire du Milieu (Empire de Jade)
+    "Qilins": "Chinese qilin, auspicious celestial chimera with a dragon-like head and a single branching antler, deer body covered in shimmering jade-green and gold scales, ox tail, cloven hooves wreathed in soft flame and mist, stepping without bending the grass, serene and benevolent",
     // Nécropole (Rangs Silencieux)
     "Ghoules": "hunched flesh-eating ghoul, grey mottled skin stretched over a gaunt frame, long clawed fingers, jaw distended too wide, sunken eyes, crouched low over gnawed bones",
     // Nécropole (Cour Écarlate)
@@ -245,6 +253,8 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Humains": ["human", "humain"],
           "Griffons": ["griffin", "gryphon", "griffon"],
           "Faucons": ["falcon", "hawk", "faucon"],
+          "Pégases": ["pegasus", "pégase", "winged horse"],
+          "Sphinx": ["sphinx", "sphinge", "riddle guardian"],
           "Hommes-Loups": ["werewolf", "wolf-man", "homme-loup"],
           "Hommes-Ours": ["werebear", "bear-man", "homme-ours"],
           "Hommes-Félins": ["werecat", "cat-man", "homme-félin"],
@@ -278,6 +288,9 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Gnomes": ["gnome", "tinker", "tinkerer"],
           "Guerriers du Chaos": ["chaos warrior", "chaos knight", "guerrier du chaos"],
           "Nagas": ["naga", "serpent guardian", "snake-bodied"],
+          "Tengu": ["tengu", "crow-spirit", "karasu"],
+          "Oni": ["oni", "ogre-demon", "kanabo"],
+          "Qilins": ["qilin", "kirin", "chinese unicorn"],
           "Ghoules": ["ghoul", "goule", "ghoule"],
           "Homuncules de Sang": ["homunculus", "homoncule", "homuncule"],
           "Gargouilles": ["gargoyle", "gargouille", "stone sentinel"],

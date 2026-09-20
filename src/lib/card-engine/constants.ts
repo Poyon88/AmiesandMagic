@@ -41,7 +41,7 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw" | "low_hp";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw" | "low_hp" | "wound";
 // Chantier « tous déclencheurs » : tous les effets d'invocation sont
 // authorables sur les 5 modes supplémentaires. Règles transverses :
 //   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
@@ -54,8 +54,10 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw
 // MAIN, pas en jeu — même restriction que "return" et "death".
 // "low_hp" (« Sous 15 PV ») rejoint LES DEUX : la source est en jeu au moment
 // du déclenchement (le sweep ne balaye que le plateau).
-const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"]);
-const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack", "low_hp"]);
+// "wound" (Blessure) rejoint LES DEUX, comme "low_hp" : la porteuse est en jeu
+// et EN VIE au moment du déclenchement — c'est la définition même du pouvoir.
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp", "wound"]);
+const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack", "low_hp", "wound"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": ALL_MODES,
   "Convocations multiples": ALL_MODES,
@@ -364,7 +366,7 @@ export const FACTIONS: Record<string, {
   EmpireDuMilieu: {
     displayName: "L'Empire du Milieu",
     color: "#a83232", accent: "#e8b923", emoji: "🏯", bg: "#1a0d0a", alignment: "neutre",
-    races: ["Humains", "Nagas"],
+    races: ["Humains", "Nagas", "Tengu", "Oni", "Qilins"],
     // Deux groupes plutôt qu'un seul « all » : les quatre clans restent ouverts
     // aux Humains, tandis que les Nagas n'ouvrent que les Défenseurs d'Ivoire —
     // les trois autres clans leur restent fermés. Même patron que les Esprits
@@ -378,12 +380,19 @@ export const FACTIONS: Record<string, {
     clans: [
       { names: ["Les Hordes des Steppes", "L'Empire de Jade", "Les Lames de l'Ombre", "Les Défenseurs d'Ivoire"], appliesTo: "Humains" },
       { names: ["Les Défenseurs d'Ivoire"], appliesTo: "Nagas" },
+      // Yōkai du Japon féodal : chacun n'ouvre que Les Lames de l'Ombre. Un
+      // groupe PAR race, comme pour les Nagas — c'est ce qui tient fermés les
+      // trois autres clans.
+      { names: ["Les Lames de l'Ombre"], appliesTo: "Tengu" },
+      { names: ["Les Lames de l'Ombre"], appliesTo: "Oni" },
+      // La licorne céleste de la Chine antique : n'ouvre que L'Empire de Jade.
+      { names: ["L'Empire de Jade"], appliesTo: "Qilins" },
     ],
     statWeights: { atk: 0.95, def: 1.10 },
     guaranteedKeywords: [],
     likelyKeywords: { "Tactique X": 0.50, "Divination": 0.45, "Contresort": 0.40, "Provocation": 0.40, "Première Frappe": 0.40, "Augure": 0.35, "Convocation X": 0.35, "Célérité": 0.30, "Traque": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
-    description: "Stratégie et contrôle : discipline, formations, mysticisme, furtivité et les gardiens naga des temples.",
+    description: "Stratégie et contrôle : discipline, formations, mysticisme, furtivité, les gardiens naga des temples, les yōkai — tengu et oni — des montagnes et le qilin, présage des règnes justes.",
     raceProfiles: {
       // Nagas : les serpents gardiens des temples khmers, seconde race des
       // Défenseurs d'Ivoire — deuxième clan du jeu à en héberger deux, après le
@@ -409,11 +418,63 @@ export const FACTIONS: Record<string, {
       // lieu. Les poids dépassent ceux de l'ombrelle de faction là où ils la
       // recoupent (Divination 0.50 contre 0.45, Contresort 0.55 contre 0.40),
       // sans quoi la ligne serait inerte.
+      // Tengu et Oni : les yōkai des Lames de l'Ombre, qui passe de une à trois
+      // races. MÊME arbitrage que les Nagas, et pour la même raison, ici plus
+      // nette encore : « Humains » est partagée par les QUATRE clans de la
+      // faction, et une race partagée interdit à son clan de céder ses
+      // `statWeights` (règle des Primordiaux) — les ninjas humains retomberaient
+      // sur l'ombrelle 0.95/1.10 et cesseraient d'être des lames. Les deux yōkai
+      // prennent donc le corps du clan (1.20/0.80) sans en déclarer aucun, et
+      // les poids ne faisant QUE le partage atk/déf, c'est assumé jusque pour
+      // l'Oni : dans ce clan il n'est pas un rempart mais la massue qu'on lâche.
+      //
+      // Ils se séparent aux pouvoirs, chacun dans un registre que ni le clan ni
+      // l'autre ne joue. Le clan se cache et frappe le premier (Ombre,
+      // Invisible, Esquive, Première Frappe) : aucun de ses huit mots-clés ne
+      // reparaît ici, sinon le clan gagnerait et la ligne serait morte.
+      //
+      //  • TENGU — le corbeau maître d'armes des cimes : il VOLE (GARANTI par la
+      //    liste en dur du générateur, comme les Chiroptères — le poids 0.85
+      //    ci-dessous, relatif entre ~130 mots-clés, n'y suffirait pas ; il ne
+      //    sert plus qu'à documenter l'intention), il ENSEIGNE
+      //    (Tactique X, transmettre ses capacités, est littéralement la légende
+      //    du tengu instruisant Yoshitsune), il rend coup pour coup (Riposte X),
+      //    lève le vent de son éventail de plumes (Tempête X) et égare les
+      //    voyageurs (Permutation, Mimique). Tactique X recoupe l'ombrelle de
+      //    faction (0.50) et la dépasse donc (0.55).
+      //  • ONI — l'ogre au kanabō : il TERRIFIE, s'enrage (Fureur), enfonce
+      //    (Piétinement), grandit de chaque combat auquel il survit (Gloire),
+      //    s'acharne (Persécution X), se referme (Régénération X) et ravage en
+      //    tombant (Carnage X). Rien de furtif : c'est le contrepoint du clan.
+      // QILINS — la bête de bon augure de L'Empire de Jade, qui passe de une à
+      // deux races. Même arbitrage, même raison : le clan GARDE son corps
+      // (0.90/1.20, le plus défensif de la faction — il sied à une créature qui
+      // ne foule ni l'herbe ni l'insecte) et la race n'en déclare aucun.
+      //
+      // Le clan COMMANDE et CALCULE (Tactique, Divination, Contresort,
+      // Commandement) ; le qilin, lui, BÉNIT. Aucun des sept mots-clés du clan ne
+      // reparaît ici, aucun de ceux de l'ombrelle non plus — le registre est
+      // entièrement neuf dans la faction, y compris face aux Nagas, l'autre
+      // race mystique (eux veillent et contre-lancent ; lui soigne et protège).
+      //
+      // Il guérit (Bénédiction), porte une protection sacrée (Bouclier), reste
+      // hors d'atteinte des sortilèges (Transcendance) ; sa force tient à ce
+      // qu'aucun sang n'ait coulé — Pureté +X/+Y, « tant que votre cimetière est
+      // vide », est la règle du jeu qui DIT le qilin. Il annonce (Présage : il
+      // n'apparaît qu'à la naissance d'un sage), crache le feu sur les seuls
+      // méchants (Souffle de feu X) et apporte la prospérité (Afflux X).
+      "Qilins": { likelyKeywords: { "Bénédiction": 0.60, "Pureté +X/+Y": 0.55, "Bouclier": 0.50, "Présage": 0.45, "Transcendance": 0.40, "Souffle de feu X": 0.35, "Afflux X": 0.30 } },
+      "Tengu": { likelyKeywords: { "Vol": 0.85, "Tactique X": 0.55, "Riposte X": 0.45, "Tempête X": 0.40, "Permutation": 0.40, "Mimique": 0.35 } },
+      "Oni": { likelyKeywords: { "Terreur": 0.60, "Fureur": 0.55, "Piétinement": 0.50, "Gloire +X/+Y": 0.45, "Persécution X": 0.40, "Régénération X": 0.35, "Carnage X": 0.30 } },
       "Nagas": { likelyKeywords: { "Contresort": 0.55, "Régénération X": 0.55, "Esquive": 0.50, "Divination": 0.50, "Canalisation": 0.45, "Augure": 0.40, "Liaison de vie": 0.35, "Prescience X": 0.30 } },
     },
     clanProfiles: {
       "Les Hordes des Steppes": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Célérité": 0.55, "Traque": 0.55, "Raid": 0.50, "Première Frappe": 0.45, "Persécution X": 0.40, "Pillage X": 0.35 } },
+      // GARDE ses statWeights alors qu'il héberge deux races (Humains, Qilins)
+      // — voir le profil des Qilins plus haut.
       "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort": 0.45, "Provocation": 0.45, "Commandement X": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
+      // GARDE ses statWeights alors qu'il héberge trois races (Humains, Tengu,
+      // Oni) — voir le profil des deux yōkai plus haut.
       "Les Lames de l'Ombre": { statWeights: { atk: 1.20, def: 0.80 }, likelyKeywords: { "Ombre": 0.60, "Invisible": 0.55, "Traque": 0.55, "Esquive": 0.50, "Célérité": 0.45, "Première Frappe": 0.45, "Précision": 0.40, "Remontée": 0.35 } },
       // GARDE ses statWeights, à l'inverse du Clan des Premiers Géants : ce clan
       // héberge lui aussi deux races (Humains, Nagas), mais les céder ici aurait
@@ -468,19 +529,63 @@ export const FACTIONS: Record<string, {
   Humains: {
     displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
-    races: ["Humains", "Griffons", "Faucons"],
-    clans: [{ names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "all" }],
+    races: ["Humains", "Griffons", "Faucons", "Pégases", "Sphinx"],
+    // Groupe transversal SCINDÉ le 2026-09-20, à l'arrivée des Pégases et des
+    // Sphinx : tant qu'il portait `appliesTo: "all"` — qui se résout sur
+    // `faction.races` — déclarer ces deux races les aurait ouvertes aux QUATRE
+    // clans d'un coup, en silence (le piège des Nagas). `appliesTo` ne prend
+    // qu'une race, d'où une entrée par race : Humains, Griffons et Faucons
+    // gardent exactement les quatre clans qu'ils avaient ; les deux créatures du
+    // mythe grec n'ouvrent que Les Guerrières du Vent (ex-Amazones).
+    //
+    // Conséquence, la même que dans l'Empire du Milieu et les Royaumes du
+    // Soleil : sans race choisie, le sélecteur de clan de cette faction reste
+    // vide jusqu'à ce qu'on en désigne une.
+    clans: [
+      { names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "Humains" },
+      { names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "Griffons" },
+      { names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "Faucons" },
+      { names: ["Les Guerrières du Vent"], appliesTo: "Pégases" },
+      { names: ["Les Guerrières du Vent"], appliesTo: "Sphinx" },
+    ],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Loyauté": 0.55, "Commandement X": 0.55, "Bravoure": 0.50, "Bénédiction": 0.45, "Bouclier": 0.45, "Première Frappe": 0.45, "Tactique X": 0.35, "Héritage X": 0.30, "Provocation": 0.30, "Convocation X": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
-    description: "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés, griffons et faucons.",
+    description: "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés — griffons, faucons, et les pégases et sphinx des Guerrières du Vent.",
     // Bestiaire ailé des Royaumes Libres : le griffon, monture noble et
     // frappeur loyal ; le faucon, éclaireur véloce mais fragile. Vol garanti
     // côté générateur (cf. generator.ts, même règle que les Aigles Géants).
     raceProfiles: {
       "Griffons": { statWeights: { atk: 1.25, def: 1.00 }, likelyKeywords: { "Vol": 0.90, "Première Frappe": 0.50, "Bravoure": 0.45, "Loyauté": 0.40, "Célérité": 0.35 } },
       "Faucons": { statWeights: { atk: 1.15, def: 0.65 }, likelyKeywords: { "Vol": 0.90, "Célérité": 0.60, "Traque": 0.55, "Esquive": 0.50, "Précision": 0.45, "Augure": 0.35 } },
+      // Pégases et Sphinx : le bestiaire du mythe grec, rattaché aux SEULES
+      // Guerrières du Vent. SANS statWeights, et c'est délibéré — arbitrage des
+      // Nagas et des Tengu/Oni : « Humains » est partagée par les quatre clans,
+      // donc le clan ne peut pas céder son corps (1.15/0.85), et la cascade
+      // `clanStatW ?? raceStatW` choisissant un objet ENTIER, un gabarit posé ici
+      // serait mort-né. (Griffons et Faucons en déclarent un parce qu'ils
+      // précèdent les clans ; il ne vit plus que sur leurs cartes SANS clan.)
+      //
+      // Le clan est une cavalerie légère d'archères — il vise, esquive, frappe le
+      // premier. Aucun de ses six mots-clés ne reparaît ici (le clan gagnerait,
+      // la ligne serait morte), et tout poids qui recoupe l'ombrelle de faction
+      // la DÉPASSE (Loyauté 0.60 > 0.55, Bénédiction 0.50 > 0.45, Provocation
+      // 0.40 > 0.30).
+      //
+      //  • PÉGASES — le coursier ailé : il VOLE (garanti par la liste en dur du
+      //    générateur — un poids, relatif entre ~130 mots-clés, n'y suffit pas),
+      //    fond du ciel sur une créature dès son arrivée (Raid), vit en harde
+      //    (Loyauté), guérit (Bénédiction), et son sabot a fait jaillir
+      //    l'Hippocrène, la source des Muses (Inspiration X).
+      //  • SPHINX — la gardienne à énigmes : elle pose la question (Présage,
+      //    littéralement « devinez la carte du sommet »), lit l'avenir
+      //    (Divination), condamne qui échoue (Malédiction), défait les sortilèges
+      //    (Contresort), barre le passage (Provocation, Ancré) et glace
+      //    (Terreur). Pas de Vol : ailée dans le mythe, mais assise sur son
+      //    rocher — le contrepoint immobile du pégase.
+      "Pégases": { likelyKeywords: { "Vol": 0.90, "Loyauté": 0.60, "Raid": 0.55, "Bénédiction": 0.50, "Inspiration X": 0.40, "Piétinement": 0.35 } },
+      "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort": 0.45, "Provocation": 0.40, "Terreur": 0.40, "Ancré": 0.35 } },
     },
     clanProfiles: {
       // Conquête X en tête : signature du clan (compteur dépensé en découvertes
@@ -489,6 +594,8 @@ export const FACTIONS: Record<string, {
       // Foi X en tête : c'est la signature du clan (compteur dépensé en
       // découvertes dans le deck).
       "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Foi X": 0.65, "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement X": 0.40, "Bravoure": 0.35 } },
+      // GARDE ses statWeights alors qu'il héberge cinq races (Humains, Griffons,
+      // Faucons, Pégases, Sphinx) — voir le profil des deux dernières plus haut.
       "Les Guerrières du Vent": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Précision": 0.55, "Esquive": 0.55, "Traque": 0.50, "Première Frappe": 0.45, "Célérité": 0.45, "Bravoure": 0.40 } },
       "La Sublime Porte": { statWeights: { atk: 1.10, def: 1.05 }, likelyKeywords: { "Commandement X": 0.60, "Première Frappe": 0.50, "Combustion": 0.50, "Précision": 0.45, "Bravoure": 0.45, "Tactique X": 0.40, "Bouclier": 0.35 } },
     },

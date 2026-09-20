@@ -58,6 +58,7 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
+  if (mode === "wound") return "on_wound";
   // mode === undefined
   if (CURATED_MULTIMODE_IDS.has(id)) return "on_play";
   if (DEATH_NATURE_IDS.has(id)) return "on_death";
@@ -87,6 +88,7 @@ export function modeForCreatureTrigger(trigger: CapabilityTrigger): KeywordMode 
     case "on_attack": return "attack";
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
+    case "on_wound": return "wound";
     default: return undefined;
   }
 }
@@ -121,7 +123,10 @@ export function isTokenFiringTrigger(trigger: CapabilityTrigger): boolean {
  *  La proposer à l'auteur serait lui promettre un effet muet — le même défaut
  *  que `tokenRequiresMode` évite côté jetons. */
 export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
-  return trigger !== "on_end_of_turn_in_hand";
+  // `on_wound` (Blessure) : écarté par DÉCISION D'AUTEUR, pas par impossibilité
+  // — greffé sur le porteur, il partirait. Les objets ne l'offrent pas dans ce
+  // premier lot ; le rouvrir tient à cette seule ligne.
+  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_wound";
 }
 
 /** Cadences auxquelles un EMBLÈME peut réagir.

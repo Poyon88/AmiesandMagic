@@ -362,8 +362,8 @@
         "desc": "Reveal 3 {alignment} commons with cost X; add one to your hand."
       },
       "faveur": {
-        "label": "Favour X",
-        "desc": "Adds a random common {alignment} card of cost X to your hand."
+        "label": "Favor X",
+        "desc": "Adds a random {alignment} common of cost X to your hand."
       },
       "selection_magique": {
         "label": "Arcane Selection X",
@@ -509,13 +509,13 @@
         "label": "Sacrificial Threshold +X/+Y",
         "desc": "While your deck holds 25 cards or fewer, gains +X ATK and +Y HP."
       },
-      "tuteur": {
-        "label": "Tutor",
-        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       }
     },
     "spell_keywords": {
@@ -535,6 +535,10 @@
         "label": "Pillage X",
         "desc": "The opponent discards X random cards from their hand."
       },
+      "contresort": {
+        "label": "Counterspell",
+        "desc": "Cancels the next enemy spell."
+      },
       "convocation_simple": {
         "label": "Summon",
         "desc": "Creates {token}."
@@ -547,18 +551,6 @@
         "label": "Chant X",
         "desc": "If you control a creature with Chant, all values of this spell are increased by X."
       },
-      "divination": {
-        "label": "Divination",
-        "desc": "Reveals the top 3 cards of your deck; place 1 back on top and 2 on the bottom, in the chosen order."
-      },
-      "contresort": {
-        "label": "Counterspell",
-        "desc": "Cancels the next enemy spell."
-      },
-      "seconde_vie": {
-        "label": "Second Life X",
-        "desc": "Can be cast from your graveyard for X mana. It then loses Second Life."
-      },
       "lune": {
         "label": "Moon X",
         "desc": "Starting from the second card played this turn, all of this card's values are increased by X."
@@ -566,6 +558,10 @@
       "soleil": {
         "label": "Sun X",
         "desc": "If this is the first card played this turn, all of this card's values are increased by X."
+      },
+      "divination": {
+        "label": "Divination",
+        "desc": "Reveals the top 3 cards of your deck; place 1 on top and 2 on the bottom, in the order chosen."
       },
       "corruption": {
         "label": "Corruption",
@@ -597,19 +593,19 @@
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand"
+        "desc": "Reveals 3 {alignment} commons of cost X; add one to your hand"
       },
       "faveur": {
-        "label": "Favour X",
-        "desc": "Adds a random common {alignment} card of cost X to your hand."
+        "label": "Favor X",
+        "desc": "Adds a random {alignment} common of cost X to your hand"
       },
       "selection_magique": {
         "label": "Magic Selection X",
-        "desc": "Reveal 3 {alignment} common spells with cost ≤ X; add one to your hand"
+        "desc": "Reveals 3 {alignment} common spells of cost X; add one to your hand"
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Reveal 3 of your limited editions with cost ≤ X (≥30 required; otherwise 3 {alignment} commons); keep one"
+        "desc": "Reveals 3 of your limited editions of cost X (≥30 required; otherwise 3 {alignment} commons); keep one"
       },
       "relancer": {
         "label": "Recast X",
@@ -666,6 +662,10 @@
       "guerison": {
         "label": "Healing X",
         "desc": "Restores X HP to a target."
+      },
+      "seconde_vie": {
+        "label": "Second Life X",
+        "desc": "Can be cast from your graveyard for X mana. It then loses Second Life."
       },
       "incineration": {
         "label": "Incineration X",
@@ -747,13 +747,13 @@
         "label": "Surge X",
         "desc": "Gain X mana this turn."
       },
-      "tuteur": {
-        "label": "Tutor",
-        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
       "compagnons": {
         "label": "Companions",
         "desc": "Shuffles its companions (linked cards, chosen at creation) into your deck, then reshuffles the deck. Once only."
+      },
+      "tuteur": {
+        "label": "Tutor",
+        "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       }
     },
     "composed": {
@@ -764,8 +764,11 @@
         "on_activation": "On Activation",
         "on_attack": "On Attack",
         "on_end_of_turn": "At End of Turn",
+        "on_end_of_turn_in_hand": "At the end of the turn, while it is in your hand",
+        "in_hand_suffix": "in hand",
         "on_draw": "When Drawn",
-        "on_low_hp": "Below 15 HP"
+        "on_low_hp": "Below 15 HP",
+        "on_wound": "Wound"
       },
       "content": {
         "deal_damage_one": "deals {x} damage",
@@ -778,6 +781,8 @@
         "paralyze": "paralyzes",
         "poison": "poisons",
         "grant_keyword": "grants {ability}",
+        "random_range": "1 to {max}",
+        "appel": "puts into play the 1st unit in your deck with cost ≤ {x}",
         "ability_generic": "an ability",
         "draw_cards_one": "draw {x} card",
         "draw_cards_many": "draw {x} cards",
@@ -797,30 +802,71 @@
         "rappel_one_any": "a card",
         "rappel_one_creature": "a unit",
         "rappel_one_spell": "a spell",
-        "rappel_all_any": "every card",
-        "rappel_all_creature": "every unit",
-        "rappel_all_spell": "every spell",
+        "rappel_all_any": "all cards",
+        "rappel_all_creature": "all units",
+        "rappel_all_spell": "all spells",
         "rappel_upto_any": "up to {n} cards",
         "rappel_upto_creature": "up to {n} units",
         "rappel_upto_spell": "up to {n} spells",
         "invocation": "summons a random creature with cost {x}{filter}",
+        "invocation_card": "summons the designated card",
+        "invocation_cards": "summons the {n} designated cards",
+        "invocation_copies": "summons {n} copies of the designated card",
+        "tuteur": "add the designated card to your hand",
+        "tuteur_copies": "add {n} copies of the designated card to your hand",
+        "appel_supreme": "add to your hand the highest-cost card in your deck{filter}{cost}",
+        "appel_supreme_cost": " (cost ≤ {max})",
+        "tuteur_many": "add the {n} designated cards to your hand",
         "epargne": "adds {x} to your Thrift counter",
         "foi": "adds {x} to your Faith counter",
         "conquete": "adds {x} to your Conquest counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
+        "occurrences": "{n} times: ",
+        "alternative": "One of: ",
         "devoration": "devours",
+        "silence": "silences",
+        "dechainement": "casts {x} random spells of cost {y}",
+        "dechainement_one": "casts a random spell of cost {y}",
         "tactique_one": "passes on one of its permanent abilities at random",
         "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
         "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
-        "faveur": "adds a random card{filter} (cost {x}) to your hand",
+        "faveur": "adds a random{filter} card (cost {x}) to hand",
         "selection_magique": "reveals 3 spells{filter} (cost {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
-        "occurrences": "{n} times: ",
-        "alternative": "One of: ",
-        "silence": "silences",
-        "dechainement": "casts {x} random spells of cost {y}",
-        "dechainement_one": "casts a random spell of cost {y}"
+        "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand"
+      },
+      "emblem": {
+        "badge": "Emblem",
+        "self": "Emblem",
+        "opponent": "Emblem placed on the opponent",
+        "permanent": " (permanent)",
+        "turns_one": " ({n} turn)",
+        "turns_many": " ({n} turns)",
+        "owner_self": "your",
+        "owner_opponent": "their",
+        "hero_self": "your hero",
+        "hero_opponent": "their hero",
+        "turn_self": "your",
+        "turn_opponent": "their",
+        "when": {
+          "on_play": "whenever one of {owner} creatures enters play",
+          "on_death": "whenever one of {owner} creatures dies",
+          "on_attack": "whenever one of {owner} creatures attacks",
+          "on_return": "whenever one of {owner} creatures returns to hand",
+          "on_activation": "whenever one of {owner} creatures activates",
+          "on_low_hp": "whenever {hero} drops below {n} HP",
+          "on_end_of_turn": "at the end of {turn} turn"
+        }
+      },
+      "grant_when": {
+        "on_death": ", which will trigger upon its death",
+        "on_activation": ", which will trigger upon its activation",
+        "on_return": ", which will trigger when it returns to hand",
+        "on_end_of_turn": ", which will trigger at the end of the turn",
+        "on_attack": ", which will trigger when it attacks",
+        "on_draw": ", which will trigger when it is drawn",
+        "on_low_hp": ", which will trigger below 15 HP",
+        "on_wound": ", which will trigger when it is wounded without dying"
       },
       "pool": {
         "race": " of race {v}",
@@ -848,10 +894,12 @@
         "hero_ally": "your hero",
         "hero_enemy": "the enemy hero",
         "both_all": "all units and the {side} hero",
-        "both_one": "a target (unit or hero){side}"
+        "both_one": "a target (unit or hero){side}",
+        "damage_source": "whatever wounded it"
       },
       "target": {
         "self": "to itself",
+        "damage_source": "to whatever wounded it",
         "hero_ally": "to your hero",
         "hero_enemy": "to the enemy hero",
         "both_all": "to all units and the {side} hero",
@@ -894,7 +942,7 @@
         "poison": "choose a creature to poison",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
-        "rappel": "choose a card to return to your hand",
+        "rappel": "choose a card to return to hand",
         "default": "choose a target"
       }
     },
@@ -909,7 +957,7 @@
       },
       "EmpireDuMilieu": {
         "displayName": "The Middle Empire",
-        "description": "Strategy and control: discipline, formations, mysticism, stealth, and the temples' naga guardians."
+        "description": "Strategy and control: discipline, formations, mysticism, stealth, the naga guardians of temples, the yōkai — tengu and oni — of the mountains, and the qilin, omen of just reigns."
       },
       "RoyaumesDuSoleil": {
         "displayName": "The Sun Kingdoms",
@@ -917,7 +965,7 @@
       },
       "Humains": {
         "displayName": "The Free Kingdoms",
-        "description": "The old continent: honor, steel, heroic champions and their proud winged allies, griffins and falcons."
+        "description": "The old continent: honor, steel, heroic champions and their proud winged allies — griffins, falcons, and the pegasi and sphinxes of the Wind Warriors."
       },
       "Hommes-Bêtes": {
         "displayName": "The Pack",
@@ -989,13 +1037,13 @@
     "races": {
       "Elfes": "Elves",
       "Fées": "Faeries",
+      "Aigles Géants": "Giant Eagles",
+      "Hobbits": "Hobbits",
+      "Hommes-Arbres": "Treefolk",
       "Farfadets": "Leprechauns",
       "Korrigans": "Korrigans",
       "Faunes": "Fauns",
       "Dryades": "Dryads",
-      "Aigles Géants": "Giant Eagles",
-      "Hobbits": "Hobbits",
-      "Hommes-Arbres": "Treefolk",
       "Nains": "Dwarves",
       "Golems": "Golems",
       "Gnomes": "Gnomes",
@@ -1005,9 +1053,13 @@
       "Mammouths": "Mammoths",
       "Humains": "Humans",
       "Nagas": "Nagas",
+      "Tengu": "Tengu",
+      "Oni": "Oni",
       "Esprits": "Spirits",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
+      "Pégases": "Pegasi",
+      "Sphinx": "Sphinxes",
       "Hommes-Loups": "Werewolves",
       "Hommes-Ours": "Werebears",
       "Hommes-Félins": "Werecats",
@@ -1016,11 +1068,20 @@
       "Hommes-Chiens": "Weredogs",
       "Hommes-Renards": "Werefoxes",
       "Hommes-Cerfs": "Weredeer",
-      "Insectes": "Insects",
       "Hommes-Singes": "Ape-Men",
       "Hommes-Poissons": "Fish-Men",
       "Hommes-Oiseaux": "Bird-Men",
+      "Insectes": "Insects",
       "Élémentaire": "Elemental",
+      "Ondins": "Undines",
+      "Sirènes": "Sirens",
+      "Léviathans": "Leviathans",
+      "Cristallins": "Crystallines",
+      "Troglodytes": "Troglodytes",
+      "Bêtes Chtoniennes": "Chthonic Beasts",
+      "Salamandres": "Salamanders",
+      "Sylphes": "Sylphs",
+      "Néphélides": "Nephelids",
       "Ogres": "Ogres",
       "Dragons": "Dragons",
       "Chiens": "Dogs",
@@ -1047,15 +1108,6 @@
       "Poltergeists": "Poltergeists",
       "Dullahans": "Dullahans",
       "Sluaghs": "Sluaghs",
-      "Ondins": "Undines",
-      "Sirènes": "Sirens",
-      "Léviathans": "Leviathans",
-      "Cristallins": "Crystallines",
-      "Troglodytes": "Troglodytes",
-      "Bêtes Chtoniennes": "Chthonic Beasts",
-      "Salamandres": "Salamanders",
-      "Sylphes": "Sylphs",
-      "Néphélides": "Nephelids",
       "Elfes Corrompus": "Corrupted Elves",
       "Araignées Géantes": "Giant Spiders",
       "Démons": "Demons",
@@ -1063,7 +1115,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors"
+      "Guerriers du Chaos": "Chaos Warriors",
+      "Qilins": "Qilins"
     },
     "alignments": {
       "bon": "Good",
@@ -1157,6 +1210,16 @@
         "bare": "Naga",
         "de": "of the Naga"
       },
+      "Tengu": {
+        "def": "the Tengu",
+        "bare": "Tengu",
+        "de": "of the Tengu"
+      },
+      "Oni": {
+        "def": "the Oni",
+        "bare": "Oni",
+        "de": "of the Oni"
+      },
       "Griffons": {
         "def": "the Griffin",
         "bare": "Griffin",
@@ -1166,6 +1229,16 @@
         "def": "the Falcon",
         "bare": "Falcon",
         "de": "of the Falcon"
+      },
+      "Pégases": {
+        "def": "the Pegasus",
+        "bare": "Pegasus",
+        "de": "of the Pegasus"
+      },
+      "Sphinx": {
+        "def": "the Sphinx",
+        "bare": "Sphinx",
+        "de": "of the Sphinx"
       },
       "Hommes-Loups": {
         "def": "the Werewolf",
@@ -1318,31 +1391,6 @@
         "bare": "Lich",
         "de": "of the Lich"
       },
-      "Banshees": {
-        "def": "the Banshee",
-        "bare": "Banshee",
-        "de": "of the Banshee"
-      },
-      "Homuncules de Sang": {
-        "def": "the Blood Homunculus",
-        "bare": "Blood Homunculus",
-        "de": "of the Blood Homunculus"
-      },
-      "Gargouilles": {
-        "def": "the Gargoyle",
-        "bare": "Gargoyle",
-        "de": "of the Gargoyle"
-      },
-      "Dhampirs": {
-        "def": "the Dhampir",
-        "bare": "Dhampir",
-        "de": "of the Dhampir"
-      },
-      "Chiroptères": {
-        "def": "the Chiropteran",
-        "bare": "Chiropteran",
-        "de": "of the Chiropteran"
-      },
       "Momies": {
         "def": "the Mummy",
         "bare": "Mummy",
@@ -1418,6 +1466,31 @@
         "bare": "Nephelid",
         "de": "of the Nephelid"
       },
+      "Banshees": {
+        "def": "the Banshee",
+        "bare": "Banshee",
+        "de": "of the Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "the Blood Homunculus",
+        "bare": "Blood Homunculus",
+        "de": "of the Blood Homunculus"
+      },
+      "Gargouilles": {
+        "def": "the Gargoyle",
+        "bare": "Gargoyle",
+        "de": "of the Gargoyle"
+      },
+      "Dhampirs": {
+        "def": "the Dhampir",
+        "bare": "Dhampir",
+        "de": "of the Dhampir"
+      },
+      "Chiroptères": {
+        "def": "the Chiropteran",
+        "bare": "Chiropteran",
+        "de": "of the Chiropteran"
+      },
       "Elfes Corrompus": {
         "def": "the Corrupted Elf",
         "bare": "Corrupted Elf",
@@ -1457,6 +1530,11 @@
         "def": "the Chaos Warrior",
         "bare": "Chaos Warrior",
         "de": "of the Chaos Warrior"
+      },
+      "Qilins": {
+        "def": "the Qilin",
+        "bare": "Qilin",
+        "de": "of the Qilin"
       }
     },
     "clans_forms": {
@@ -1564,7 +1642,8 @@
         "end_of_turn": "at end of turn",
         "draw": "on draw",
         "low_hp": "below {n} HP",
-        "spell": "on spell resolution"
+        "spell": "on spell resolution",
+        "wound": "when it is wounded without dying"
       }
     },
     "triggers": {
@@ -1576,7 +1655,8 @@
       "tap": "Tap",
       "end_of_turn": "End of turn",
       "draw": "Draw",
-      "low_hp": "Below {n} HP"
+      "low_hp": "Below {n} HP",
+      "wound": "Wound"
     }
   },
   "home": {
@@ -1887,6 +1967,7 @@
     "trigger_on_end_of_turn_in_hand": "At end of turn, while in hand",
     "trigger_on_draw": "When this card is drawn",
     "trigger_on_low_hp": "Below 15 HP",
+    "trigger_on_wound": "Wound (damage taken without dying)",
     "trigger_spell_resolution": "On Resolution",
     "composed_effects_heading": "Composed Effects (Advanced)",
     "composed_effects_subtitle": "content + magnitude + targets",
@@ -1929,7 +2010,7 @@
     "content_gain_mana": "Gain mana",
     "content_exhumation": "Reanimate (graveyard)",
     "content_rappel": "Recall (graveyard → hand)",
-    "label_card_kind": "CARDS TARGETED",
+    "label_card_kind": "TARGETED CARDS",
     "card_kind_all": "All",
     "card_kind_creature": "Units only",
     "card_kind_spell": "Spells only",
@@ -1943,10 +2024,10 @@
     "content_invocation": "Summon (random creature)",
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "label_designated_card": "DESIGNATED CARD",
-    "designated_card_hint": "Pick one or more creatures: they are summoned as is, in that order (the same card can be picked several times). Without a pick, a random draw at cost X according to the filters.",
-    "tuteur_card_hint": "Pick one or more cards, creatures or spells: they are added to your hand in that order. The same card can be picked several times (that many copies). Without a pick, the effect does nothing.",
+    "designated_card_hint": "Designate one or more creatures: they are summoned as-is, in this order (the same card can be designated multiple times). Without designation, a random card is drawn at cost X according to the filters.",
+    "tuteur_card_hint": "Designate one or more cards, creatures or spells: they join your hand in this order. The same card can be designated multiple times (that many copies). Without designation, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
-    "content_faveur": "Favour (1 random card → hand)",
+    "content_faveur": "Favor (1 random card → hand)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",
     "label_pool_faction": "POOL — FACTION",
@@ -1967,6 +2048,7 @@
     "entity_hero": "Hero",
     "entity_both": "Both (hero + units)",
     "entity_self": "Self (the creature)",
+    "entity_damage_source": "The source of the damage",
     "label_side": "SIDE",
     "side_ally": "Ally",
     "side_enemy": "Enemy",
@@ -2059,9 +2141,9 @@
     "sacrifice_cost_hint": "Number of allied creatures the player must sacrifice to play this card.",
     "exile_cost_hint": "Number of cards removed from the top of the player's deck. Exiled: they never reach the graveyard and cannot be recovered.",
     "topdeck_cost_hint": "Number of cards the player places from their hand back on top of their deck. They don't go to the graveyard: the player will draw them again. Tempo cost, not reducible.",
-    "equip_label": "Equip",
-    "equip_cost_hint": "ITEMS — mana cost to attach the item to a friendly creature. Paid on EVERY equip, including moves. 0 = free.",
-    "item_trigger_bearer": "(bearer's)",
+    "equip_label": "Equip.",
+    "equip_cost_hint": "ITEMS — mana cost to equip the item on an allied creature. Paid EVERY time it is equipped, including moves. 0 = free.",
+    "item_trigger_bearer": "(of the bearer)",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
     "topdeck_label": "TOPDECK",
@@ -2089,6 +2171,7 @@
     "mode_title_end_of_turn": "At end of turn",
     "mode_title_draw": "When this card is drawn",
     "mode_title_low_hp": "When your hero drops below 15 HP (once only)",
+    "mode_title_wound": "Wound: when it takes damage without dying (once per source per turn)",
     "grant_scope_target": "Granted to the targeted creature",
     "grant_scope_all_allies": "Granted to all allied units",
     "required_caps": "Required",
@@ -2353,7 +2436,7 @@
     "alternative_warn_alone": "only one branch checked: the effect resolves normally",
     "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
-    "random_hint_faveur": "The granted card rolls its cost between 1 and {max}. Without the box, it costs exactly {max}.",
+    "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
     "content_tuteur": "Tutor (named cards → hand)",
@@ -2463,8 +2546,8 @@
     "spell_countered": "🛡️ Counterspell!",
     "draw_trigger_self": "🃏 Effect triggered on your draw",
     "draw_trigger_opponent": "🃏 Effect triggered on opponent's draw",
-    "faveur_self": "🎁 Favour — card added to your hand",
-    "faveur_opponent": "🎁 Favour — card added to the opponent's hand",
+    "faveur_self": "🎁 Favor — card added to your hand",
+    "faveur_opponent": "🎁 Favor — card added to opponent's hand",
     "spell_grant_all_allies": " · to all allies",
     "spell_grant_target": " · to the targeted creature",
     "fire_breath_label": "Fire Breath",
@@ -2539,6 +2622,8 @@
     "combat_see_full_list": "The full ability list is at the bottom of the page.",
     "hero_title": "Hero & Hero Power",
     "alt_costs_title": "Additional Costs and Awakening",
+    "counters_title": "Counters: Savings, Faith and Conquest",
+    "singulier_title": "Singular: the Bonus for Decks Without Duplicates",
     "deck_title": "Building a Deck",
     "tcg_numbers_title": "Key Numbers",
     "stat_hero_hp": "Hero HP",
@@ -2555,9 +2640,7 @@
     "search_placeholder": "Search for an ability…",
     "creature_abilities_group": "Creature Abilities ({count})",
     "spell_abilities_group": "Spell Abilities ({count})",
-    "no_ability_match": "No ability matches \"{query}\".",
-    "counters_title": "Counters: Savings, Faith and Conquest",
-    "singulier_title": "Singular: the Bonus for Decks Without Duplicates"
+    "no_ability_match": "No ability matches \"{query}\"."
   },
   "deck": {
     "alignment_incompatible": "Good and Evil alignments are incompatible",

@@ -63,8 +63,18 @@ describe("Portrait de clan", () => {
   });
 
   it("donne toute la faction à un clan transversal", () => {
+    // Le Pacte des Griffes est le dernier groupe `appliesTo: "all"` du jeu : les
+    // Royaumes Libres ont scindé le leur le 2026-09-20, à l'arrivée des Pégases
+    // et des Sphinx (cf. races-guerrieres-du-vent.test.ts).
+    const pacte = clansOfFaction("Hommes-Bêtes").find((c) => c.nom === "Le Pacte des Griffes")!;
+    expect(pacte.races).toEqual(FACTIONS["Hommes-Bêtes"].races);
+  });
+
+  it("un clan des Royaumes Libres ne rend que les races qui s'y rattachent", () => {
     const nord = clansOfFaction("Humains").find((c) => c.nom === "Le Royaume du Nord")!;
-    expect(nord.races).toEqual(FACTIONS["Humains"].races);
+    expect(nord.races).toEqual(["Humains", "Griffons", "Faucons"]);
+    const vent = clansOfFaction("Humains").find((c) => c.nom === "Les Guerrières du Vent")!;
+    expect(vent.races).toEqual(["Humains", "Griffons", "Faucons", "Pégases", "Sphinx"]);
   });
 
   it("ne rend QUE le rattachement — plus aucun jugement de jeu", () => {

@@ -280,7 +280,7 @@ export type SpellKeywordId =
  *  ability, tinted orange so it stays distinct from an on-play effect that may
  *  sit on the same creature. "death" = on-death rattle. Only a curated subset
  *  of keywords accept non-play modes — see plan. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw" | "low_hp";
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw" | "low_hp" | "wound";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -448,6 +448,15 @@ export type CapabilityTrigger =
    *  réarmé par un soin. Une carte posée alors que son contrôleur est déjà
    *  sous le seuil se déclenche immédiatement. */
   | "on_low_hp"
+  /** BLESSURE : quand CETTE créature subit des dégâts et y SURVIT. Une fois par
+   *  SOURCE de dégâts différente et par tour (`CardInstance.woundSourcesThisTurn`,
+   *  vidé à chaque fin de tour) : un sort qui frappe trois fois ne déclenche
+   *  qu'une fois, deux sorts distincts déclenchent deux fois. Blessure RÉELLE
+   *  seulement (après Bouclier / immunités / réductions) ; comptent aussi le
+   *  tick de Poison et le vol de PV de Vampirisme. Se règle à la frontière
+   *  d'effet (balayage `checkWoundTriggers`), jamais au milieu d'un sort : une
+   *  créature morte entre-temps ne déclenche rien. La source est EN JEU. */
+  | "on_wound"
   | "automatic"
   | "spell_resolution";
 
@@ -640,8 +649,12 @@ export type ComposedEffectContent =
 export interface TargetSpec {
   /** Type de cible. "hero" = le héros du bord visé ; "both" = héros + unités ;
    *  "self" = la créature source elle-même (déterministe : ni bord, ni nombre,
-   *  ni choix — les autres champs sont ignorés). */
-  entity: "unit" | "hero" | "both" | "self";
+   *  ni choix — les autres champs sont ignorés) ; "damage_source" = CE QUI A
+   *  BLESSÉ la source, déterministe lui aussi et propre au déclencheur
+   *  `on_wound` : la créature coupable si elle est encore en jeu, sinon le
+   *  héros de son camp quand le contenu sait toucher un héros (dégâts, soin),
+   *  sinon rien. Sous tout autre déclencheur, l'effet ne fait rien. */
+  entity: "unit" | "hero" | "both" | "self" | "damage_source";
   /** Nombre d'unités impactées : un entier, ou "all" pour tout le pool filtré. */
   count: number | "all";
   /** Bord visé. */
@@ -1081,6 +1094,14 @@ export interface CardInstance {
    *  optionnel : undefined ⇒ pas encore déclenché (snapshots antérieurs).
    *  Vérité de jeu durable — hashée, mutée uniquement sous applyAction. */
   lowHpTriggerFired?: boolean;
+  /** Déclencheur BLESSURE (on_wound) : clés des sources de dégâts qui ont DÉJÀ
+   *  compté ce tour-ci pour cette instance (cf. `wound-origin` dans le moteur :
+   *  `c:<instanceId>` créature, `s:<n>` lancement de sort, `h:<joueur>` héros,
+   *  `e:<joueur>:<i>` emblème, `poison`). Vidé à CHAQUE fin de tour, des deux
+   *  camps. Tenu pour TOUTE créature blessée, porteuse ou non du déclencheur :
+   *  un pouvoir conféré en cours de tour ne doit pas repartir sur une source
+   *  déjà encaissée. Vérité de jeu — hashée. */
+  woundSourcesThisTurn?: string[];
   // Tap state — true while the creature is "engaged" (MTG-style 45°
   // rotation). Set when the creature attacks OR when it tap-activates a
   // keyword; reset in startTurn for the outgoing player. Untapped state
@@ -1610,6 +1631,13 @@ export type GamePhase = "mulligan" | "playing" | "finished";
 
 export interface GameState {
   players: [PlayerState, PlayerState];
+  /** Compteur de LANCEMENTS de sort de la partie — sert d'identité à chaque
+   *  lancement pour le déclencheur Blessure (`s:<n>`), un sort relancé ou un
+   *  second exemplaire étant une source de dégâts DISTINCTE. Dans l'état (et
+   *  donc hashé) plutôt qu'en variable de module : un client resynchronisé
+   *  depuis un instantané doit reprendre la numérotation au même point.
+   *  Optionnel : undefined ⇒ 0 (instantanés antérieurs). */
+  spellCastSeq?: number;
   currentPlayerIndex: 0 | 1;
   turnNumber: number;
   /** Wall-clock ms (`Date.now()`) at which the current turn began. Set by
@@ -2249,6 +2277,11 @@ export interface StackFrame {
   /** Mode valeur (Déclenchement mort/retour) : rejoue le payoff sortant mais
    *  saute l'auto-suppression (self-bounce/destroy/deal_damage/debuff). */
   valueMode?: boolean;
+  /** trigger === "on_wound" : ce qui a blessé la source de la frame — lu par la
+   *  cible `damage_source`. `instanceId` = créature coupable ; `heroOwnerId` =
+   *  joueur dont le héros sert de repli (lanceur du sort, porteur de
+   *  l'emblème, héros lui-même). Les deux absents (Poison) ⇒ aucune cible. */
+  woundOrigin?: { instanceId?: string; heroOwnerId?: string };
   /** Garde unifiée : profondeur depuis le déclencheur racine + id de la cause
    *  racine (détection de boucle par origine). */
   depth: number;

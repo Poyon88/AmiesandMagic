@@ -150,6 +150,7 @@ const REPLI_FR: Record<string, string> = {
   end_of_turn: "Fin de tour",
   draw: "Pioche",
   low_hp: "Sous {n} PV",
+  wound: "Blessure",
 };
 
 export function keywordScopeNote(

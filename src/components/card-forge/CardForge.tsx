@@ -2102,6 +2102,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Humains": "a human warrior in medieval armor, realistic proportions, heraldic symbols on shield",
       "Griffons": "a majestic griffin with eagle head and front talons, lion hindquarters, broad feathered wings, heraldic harness",
       "Faucons": "a swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings spread mid-flight",
+      "Pégases": "a majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, mid-gallop across the clouds",
+      "Sphinx": "a Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, seated upright on a rocky outcrop, inscrutable knowing gaze",
       "Hommes-Loups": "a werewolf humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
       "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",
       "Hommes-Félins": "a feline humanoid with panther features, lithe and agile body, slit pupils, sleek fur",
@@ -2139,6 +2141,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Gnomes": "a small tinker gnome with goggles, a bushy beard, leather apron, mechanical gadgets and clockwork contraptions",
       "Guerriers du Chaos": "a towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
       "Nagas": "a serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments",
+      "Tengu": "a crow-spirit swordmaster of the Japanese mountains, large black feathered wings, crimson long-nosed face or corvid beak, yamabushi ascetic robes and small black tokin cap, feather fan and katana",
+      "Oni": "a hulking Japanese ogre-demon, red or deep blue skin, two short horns, wild black mane, tusked jaw, tiger-skin loincloth, iron bracelets, huge studded iron kanabo club",
+      "Qilins": "a Chinese qilin, auspicious celestial chimera with a dragon-like head and a single branching antler, deer body covered in shimmering jade-green and gold scales, ox tail, cloven hooves wreathed in soft flame and mist, serene and benevolent",
       "Ghoules": "a hunched flesh-eating ghoul, grey mottled skin over a gaunt frame, long clawed fingers, distended jaw, sunken eyes, crouched low",
       "Homuncules de Sang": "a small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and dripping",
       "Gargouilles": "a winged stone gargoyle, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
@@ -3908,14 +3913,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp", "wound"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
                                   // attack = #E735F6 : la couleur RÉELLE de l'icône en jeu
                                   // (keywordModeColor) — l'ancien #9b59b6 violet prêtait à
                                   // confusion avec le nouveau mode low_hp (#8B5CF6).
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : "#2faa3f";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : "⌛";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : "#2faa3f";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -3928,7 +3933,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : mode === "low_hp" ? tf('mode_title_low_hp') : tf('mode_title_end_of_turn')}
+                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : mode === "low_hp" ? tf('mode_title_low_hp') : mode === "wound" ? tf('mode_title_wound') : tf('mode_title_end_of_turn')}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -4417,6 +4422,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             return: tf('trigger_on_return'), on_return: tf('trigger_on_return'),
             end_of_turn: tf('trigger_on_end_of_turn'), on_end_of_turn: tf('trigger_on_end_of_turn'),
             attack: tf('trigger_on_attack'), on_attack: tf('trigger_on_attack'),
+            // Absents jusqu'ici : la liste affichait alors l'id brut (« low_hp »).
+            draw: tf('trigger_on_draw'), on_draw: tf('trigger_on_draw'),
+            low_hp: tf('trigger_on_low_hp'), on_low_hp: tf('trigger_on_low_hp'),
+            wound: tf('trigger_on_wound'), on_wound: tf('trigger_on_wound'),
             automatic: tf('trigger_automatic'),
             spell_resolution: tf('trigger_spell_resolution_full'),
           };
@@ -4993,12 +5002,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             leur source en jeu). */}
                         {active && besoinMode && (
                           <span style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                            {(["death", "tap", "return", "end_of_turn", "attack", "low_hp"] as const).map(mode => {
+                            {(["death", "tap", "return", "end_of_turn", "attack", "low_hp", "wound"] as const).map(mode => {
                               const autorise = (CURATED_KEYWORD_MODES[kwName]?.has(mode) ?? false) && TOKEN_FIRING_MODES.has(mode);
                               const actif = tokenModes[kwName] === mode;
-                              const couleur = mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "low_hp" ? "#8B5CF6" : "#2faa3f";
-                              const sym = mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "low_hp" ? "🩸" : "⌛";
-                              const titre = mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "low_hp" ? tf('mode_title_low_hp') : tf('mode_title_end_of_turn');
+                              const couleur = mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : "#2faa3f";
+                              const sym = mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : "⌛";
+                              const titre = mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "low_hp" ? tf('mode_title_low_hp') : mode === "wound" ? tf('mode_title_wound') : tf('mode_title_end_of_turn');
                               return (
                                 <button key={mode} disabled={!autorise} title={titre}
                                   onClick={() => setTokenModes(prev => ({ ...prev, [kwName]: mode }))}

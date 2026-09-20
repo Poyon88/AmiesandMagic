@@ -115,11 +115,14 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
-    // Dragons, Aigles Géants, Griffons, Faucons et Chiroptères : Vol toujours
-    // garanti. Le clan Air (anciennement la race "Air/Tempête") conserve ce Vol
+    // Dragons, Aigles Géants, Griffons, Faucons, Chiroptères, Tengu et Pégases : Vol
+    // toujours garanti. Le poids de Vol dans le profil de race ne suffit PAS à
+    // faire voler : les poids sont RELATIFS entre ~130 mots-clés, si bien que
+    // « Vol: 0.85 » ne sort qu'une fois sur quatre-vingts (mesuré sur le Tengu).
+    // Une race AILÉE par définition passe donc par cette liste. Le clan Air (anciennement la race "Air/Tempête") conserve ce Vol
     // garanti. Les Gargouilles, elles, en restent au tirage (0.40) : une
     // gargouille perchée reste une gargouille.
-    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || effectiveRace === "Griffons" || effectiveRace === "Faucons" || effectiveRace === "Chiroptères" || clanId === "Le Souffle des Cimes") {
+    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || effectiveRace === "Griffons" || effectiveRace === "Faucons" || effectiveRace === "Chiroptères" || effectiveRace === "Tengu" || effectiveRace === "Pégases" || clanId === "Le Souffle des Cimes") {
       keywords.push("Vol");
     }
 
