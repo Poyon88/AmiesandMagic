@@ -78,8 +78,8 @@ function validateCard(card: ParsedCard): string[] {
   if (!card.name) errors.push("Name is required");
   if (card.mana_cost < 0 || card.mana_cost > 10 || isNaN(card.mana_cost))
     errors.push("Mana cost must be 0-10");
-  if (card.card_type !== "creature" && card.card_type !== "spell")
-    errors.push("Type must be creature or spell");
+  if (card.card_type !== "creature" && card.card_type !== "spell" && card.card_type !== "item")
+    errors.push("Type must be creature, spell or item");
   if (card.card_type === "creature") {
     if (card.attack === null || card.attack < 0) errors.push("Creatures need valid attack");
     if (card.health === null || card.health < 1) errors.push("Creatures need valid health");

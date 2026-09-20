@@ -32,9 +32,27 @@ describe("Palette manuelle", () => {
 
   it("ne filtre rien — ni palier, ni interdits de faction", () => {
     const d = declarationPalette();
-    expect(d).not.toContain(".filter(");
     expect(d).not.toContain("minTier");
     expect(d).not.toContain("forbiddenKeywords");
+  });
+
+  it("le SEUL filtre toléré est l'authorabilité sur un OBJET", () => {
+    // Nuance, et elle est de fond. Ce fichier interdit les filtres de GOÛT —
+    // palier, faction — parce qu'un auteur n'a pas à être protégé de son propre
+    // choix. Le filtre des objets est d'une autre nature : il retire les
+    // capacités qui ne peuvent PAS PARTIR sur un objet (déclencheur naturel =
+    // l'invocation, or le porteur est déjà en jeu). Les proposer serait les
+    // promettre puis les taire — exactement ce que l'onglet Tokens évite déjà
+    // avec `isTokenAuthorable`.
+    //
+    // Il reste borné : il ne s'applique qu'au type « Objet », et laisse passer
+    // ce qui est déjà posé sur la carte pour qu'on puisse toujours le retirer.
+    const d = declarationPalette();
+    const filtres = d.split(".filter(").length - 1;
+    if (filtres === 0) return;
+    expect(filtres, "un seul filtre, et un seul").toBe(1);
+    expect(d).toContain("isItemAuthorable");
+    expect(d, "le filtre ne doit pas mordre hors des objets").toContain('type !== "Objet"');
   });
 
   it("n'introduit pas de filtre par race ou par clan", () => {

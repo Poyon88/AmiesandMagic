@@ -1,7 +1,7 @@
 import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from "./types";
 import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS } from "./abilities";
+import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X } from "./abilities";
 import { SINGULIER_COLOR } from "./singulier";
 
 /** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
@@ -385,6 +385,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
   "selection",
+  "faveur",
   "selection_magique",
   "renfort_royal",
   "relancer",
@@ -427,7 +428,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   pillage: "Pillage X", riposte: "Riposte X", chant: "Chant", lune: "Lune X", soleil: "Soleil X",
   rappel: "Rappel", combustion: "Combustion",
   terreur: "Terreur", pauvrete: "Pauvreté X", armure: "Armure",
-  commandement: "Commandement", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
+  commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
   canalisation: "Canalisation", contresort: "Contresort", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",
   malediction: "Malédiction", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
@@ -452,6 +453,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   invocations_multiples: "Invocations multiples",
   touche_mortel: "Touché mortel",
   selection: "Sélection X",
+  faveur: "Faveur X",
   selection_magique: "Sélection magique X",
   renfort_royal: "Sélection Royale X",
   lycanthropie: "Lycanthropie X",
@@ -585,7 +587,13 @@ export function applyKeywordValueToLabel(
       ? label.replace(/[+-]X\/[+-]Y/, value)
       : `${label} ${value}`;
   }
-  return x != null ? label.replace(/ X$/, ` ${xNumeral(x)}`) : label;
+  // X ABSENT sur une capacité devenue scalable après coup : on peint son X
+  // implicite (KEYWORD_DEFAULT_X) plutôt que le libellé brut. Sans ce repli, une
+  // carte d'avant la conversion affichait littéralement « Commandement X », la
+  // lettre comprise — et ce sont les 50 cartes déjà en base qui étaient dans ce
+  // cas, pas une exception.
+  const valeur = x ?? KEYWORD_DEFAULT_X[kw];
+  return valeur != null ? label.replace(/ X$/, ` ${xNumeral(valeur)}`) : label;
 }
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -621,6 +629,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   invocations_multiples: "📣✨",
   touche_mortel: "💀⚔️",
   selection: "🎴",
+  faveur: "🎁",
   selection_magique: "🪄",
   renfort_royal: "👑",
   lycanthropie: "🐺",

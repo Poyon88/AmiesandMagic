@@ -413,14 +413,14 @@ export const FACTIONS: Record<string, {
     },
     clanProfiles: {
       "Les Hordes des Steppes": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Célérité": 0.55, "Traque": 0.55, "Raid": 0.50, "Première Frappe": 0.45, "Persécution X": 0.40, "Pillage X": 0.35 } },
-      "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort": 0.45, "Provocation": 0.45, "Commandement": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
+      "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort": 0.45, "Provocation": 0.45, "Commandement X": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
       "Les Lames de l'Ombre": { statWeights: { atk: 1.20, def: 0.80 }, likelyKeywords: { "Ombre": 0.60, "Invisible": 0.55, "Traque": 0.55, "Esquive": 0.50, "Célérité": 0.45, "Première Frappe": 0.45, "Précision": 0.40, "Remontée": 0.35 } },
       // GARDE ses statWeights, à l'inverse du Clan des Premiers Géants : ce clan
       // héberge lui aussi deux races (Humains, Nagas), mais les céder ici aurait
       // fait retomber les Humains sur l'ombrelle de faction — voir le profil des
       // Nagas ci-dessus, où l'arbitrage est détaillé. Les deux races partagent
       // donc ce corps, et se séparent par les mots-clés.
-      "Les Défenseurs d'Ivoire": { statWeights: { atk: 1.15, def: 1.15 }, likelyKeywords: { "Piétinement": 0.60, "Provocation": 0.55, "Armure": 0.50, "Résistance X": 0.50, "Bravoure": 0.40, "Riposte X": 0.40, "Commandement": 0.35, "Indestructible": 0.25 } },
+      "Les Défenseurs d'Ivoire": { statWeights: { atk: 1.15, def: 1.15 }, likelyKeywords: { "Piétinement": 0.60, "Provocation": 0.55, "Armure": 0.50, "Résistance X": 0.50, "Bravoure": 0.40, "Riposte X": 0.40, "Commandement X": 0.35, "Indestructible": 0.25 } },
     },
   },
   RoyaumesDuSoleil: {
@@ -472,7 +472,7 @@ export const FACTIONS: Record<string, {
     clans: [{ names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "all" }],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Loyauté": 0.55, "Commandement": 0.55, "Bravoure": 0.50, "Bénédiction": 0.45, "Bouclier": 0.45, "Première Frappe": 0.45, "Tactique X": 0.35, "Héritage X": 0.30, "Provocation": 0.30, "Convocation X": 0.30 },
+    likelyKeywords: { "Loyauté": 0.55, "Commandement X": 0.55, "Bravoure": 0.50, "Bénédiction": 0.45, "Bouclier": 0.45, "Première Frappe": 0.45, "Tactique X": 0.35, "Héritage X": 0.30, "Provocation": 0.30, "Convocation X": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
     description: "Le vieux continent : honneur, acier, champions héroïques et leurs fiers alliés ailés, griffons et faucons.",
     // Bestiaire ailé des Royaumes Libres : le griffon, monture noble et
@@ -485,12 +485,12 @@ export const FACTIONS: Record<string, {
     clanProfiles: {
       // Conquête X en tête : signature du clan (compteur dépensé en découvertes
       // dans le deck ADVERSE).
-      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Conquête X": 0.65, "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement": 0.30 } },
+      "Le Royaume du Nord": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Conquête X": 0.65, "Gloire +X/+Y": 0.55, "Bravoure": 0.50, "Raid": 0.50, "Première Frappe": 0.45, "Célérité": 0.40, "Pillage X": 0.35, "Combustion": 0.30, "Commandement X": 0.30 } },
       // Foi X en tête : c'est la signature du clan (compteur dépensé en
       // découvertes dans le deck).
-      "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Foi X": 0.65, "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement": 0.40, "Bravoure": 0.35 } },
+      "L'Ordre de l'Aube": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Foi X": 0.65, "Bouclier": 0.60, "Bénédiction": 0.55, "Provocation": 0.50, "Résistance X": 0.50, "Première Frappe": 0.40, "Commandement X": 0.40, "Bravoure": 0.35 } },
       "Les Guerrières du Vent": { statWeights: { atk: 1.15, def: 0.85 }, likelyKeywords: { "Précision": 0.55, "Esquive": 0.55, "Traque": 0.50, "Première Frappe": 0.45, "Célérité": 0.45, "Bravoure": 0.40 } },
-      "La Sublime Porte": { statWeights: { atk: 1.10, def: 1.05 }, likelyKeywords: { "Commandement": 0.60, "Première Frappe": 0.50, "Combustion": 0.50, "Précision": 0.45, "Bravoure": 0.45, "Tactique X": 0.40, "Bouclier": 0.35 } },
+      "La Sublime Porte": { statWeights: { atk: 1.10, def: 1.05 }, likelyKeywords: { "Commandement X": 0.60, "Première Frappe": 0.50, "Combustion": 0.50, "Précision": 0.45, "Bravoure": 0.45, "Tactique X": 0.40, "Bouclier": 0.35 } },
     },
   },
   "Hommes-Bêtes": {
@@ -514,7 +514,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Gloire +X/+Y": 0.55, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération X": 0.40, "Bravoure": 0.40, "Combustion": 0.35, "Esquive": 0.35, "Persécution X": 0.30, "Augure": 0.30, "Vol": 0.20 },
-    forbiddenKeywords: ["Armure", "Commandement", "Invisible", "Ancré", "Canalisation", "Contresort"],
+    forbiddenKeywords: ["Armure", "Commandement X", "Invisible", "Ancré", "Canalisation", "Contresort"],
     description: "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage.",
     // Première (et seule) race de la Meute à porter un profil : la faction et
     // ses clans suffisaient jusqu'ici aux hommes-bêtes, qui partagent un corps.
@@ -562,7 +562,7 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.40, "Résistance X": 0.40, "Régénération X": 0.35, "Esquive": 0.35,
       "Canalisation": 0.45, "Permutation": 0.30, "Métamorphose": 0.35, "Mimique": 0.30, "Carnage X": 0.30 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Pillage X"],
+    forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Pillage X"],
     description: "Forces primordiales de la nature. Chaque élément a son propre style de combat.",
     // The four elements are now clans of the single race "Élémentaire";
     // their distinct playstyles live in clanProfiles (consumed by the
@@ -642,14 +642,14 @@ export const FACTIONS: Record<string, {
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.40, "Première Frappe": 0.40, "Précision": 0.35, "Esquive": 0.30, "Gloire +X/+Y": 0.30, "Bouclier": 0.25, "Fureur": 0.25, "Vol": 0.15,
       "Mimique": 0.40, "Métamorphose": 0.40, "Bravoure": 0.30, "Combustion": 0.25 },
-    forbiddenKeywords: ["Commandement", "Loyauté", "Domination", "Corruption"],
+    forbiddenKeywords: ["Commandement X", "Loyauté", "Domination", "Corruption"],
     description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
     raceProfiles: {
       "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
       "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
       "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Première Frappe": 0.30 } },
       "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération X": 0.50, "Bouclier": 0.40, "Gloire +X/+Y": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
-      "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance X": 0.30 } },
+      "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement X": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance X": 0.30 } },
       "Ours": { statWeights: { atk: 1.20, def: 1.25 }, likelyKeywords: { "Provocation": 0.55, "Gloire +X/+Y": 0.50, "Résistance X": 0.45, "Fureur": 0.40, "Régénération X": 0.35, "Lycanthropie X": 0.45 } },
       "Loups": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Traque": 0.60, "Raid": 0.55, "Instinct de meute X": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Lycanthropie X": 0.45 } },
       "Fauves": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Traque": 0.65, "Esquive": 0.55, "Première Frappe": 0.50, "Précision": 0.45, "Bravoure": 0.40, "Gloire +X/+Y": 0.35, "Raid": 0.30, "Invisible": 0.25 } },
@@ -681,7 +681,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
     likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur": 0.55, "Rappel": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération X": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Bénédiction", "Bravoure"],
+    forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Insatiables et corrompus : résurrection, drain de vie et magie du cimetière.",
     // La Cour Écarlate héberge CINQ races (le clan le plus peuplé du jeu) : elle
     // a donc cédé ses `statWeights` (cf. le Clan des Premiers Géants), et sa
@@ -797,7 +797,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.15, def: 0.90 },
     guaranteedKeywords: [],
     likelyKeywords: { "Fureur": 0.50, "Traque": 0.50, "Gloire +X/+Y": 0.45, "Poison": 0.45, "Sacrifice": 0.45, "Terreur": 0.45, "Invisible": 0.40, "Ombre": 0.40, "Malédiction": 0.40, "Pillage X": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Maléfice": 0.35, "Pacte de sang": 0.35, "Drain de vie": 0.35, "Corruption": 0.30, "Convocation X": 0.30, "Domination": 0.30, "Vol": 0.20 },
-    forbiddenKeywords: ["Loyauté", "Commandement", "Bouclier", "Bénédiction", "Bravoure"],
+    forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Toutes les forces du Chaos unies : horde organisée, cour démoniaque, corrompus du poison et élite déchue.",
     raceProfiles: {
       "Démons": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Ombre": 0.45, "Vol": 0.30, "Carnage X": 0.40, "Persécution X": 0.45 } },
@@ -1022,7 +1022,23 @@ export function getAlignmentLabel(
   );
 }
 
-export const TYPES = ["Unité", "Sort", "Artefact", "Magie"];
+// « Artefact » RETIRÉ du sélecteur le 2026-09-20. Il produisait un SORT (pure
+// étiquette de saveur : le type n'est ni stocké ni affiché, « Sort », « Artefact »
+// et « Magie » donnaient exactement la même carte). Posé à côté d'« Objet », il
+// devenait un piège — l'auteur a cliqué dessus en croyant fabriquer un objet, et
+// s'est retrouvé devant un panneau « Effets du sort » sans champ d'équipement.
+//
+// La cohabitation avait été justifiée par des brouillons en localStorage : cette
+// justification était FAUSSE, la forge n'en enregistre aucun (`type` est un
+// simple useState). Le libellé reste mappé vers `spell` dans
+// `FORGE_TO_GAME_TYPE` — filet pour une sortie du générateur IA, rien de plus.
+export const TYPES = ["Unité", "Sort", "Objet", "Magie"];
+
+/** Types que le générateur ALÉATOIRE (masse) peut tirer. « Objet » en est
+ *  exclu : le générateur ne sait pas doter un objet d'un coût d'équipement, ni
+ *  choisir des capacités qui aient un sens une fois transférées à un porteur.
+ *  Il produirait des objets gratuits à équiper et à moitié inertes. */
+export const TYPES_ALEATOIRES = TYPES.filter((t) => t !== "Objet");
 
 export const ALIGNMENTS: { id: Alignment; label: string; emoji: string; color: string }[] = [
   { id: "bon", label: "Bon", emoji: "✨", color: "#4caf50" },
@@ -1088,13 +1104,24 @@ export const STAT_COST = { atk: 5, def: 4 };
  *  (`mana × MANA_BUDGET_BASE × multiplicateur`). Il déplace donc la formule
  *  entière ; lui donner une valeur négative le compterait deux fois. */
 export const ADDITIONAL_COST_POINTS: {
-  life: number; discard: number; sacrifice: number; exile: number; topdeck: number;
+  life: number; discard: number; sacrifice: number; exile: number; topdeck: number; equip: number;
 } = {
   life: -3,
   discard: -5,
   sacrifice: -12,
   exile: -2,
   topdeck: -3,
+  // OBJETS. Le coût d'équipement n'est pas un coût additionnel comme les
+  // autres : c'est un SECOND coût en mana, sans lequel la carte ne fait
+  // strictement rien. Un objet à 2 mana avec un équipement à 3 en demande donc
+  // 5 pour servir, et son budget doit s'en ressentir.
+  //
+  // −4 par point, entre le repli (−3) et la défausse (−5) : plus cher que le
+  // tempo pur parce qu'il se repaie à chaque déplacement, moins qu'une carte
+  // perdue parce que le mana est la monnaie la moins rare. Volontairement
+  // CONSERVATEUR — un objet reste moins doté que la créature de mana équivalent,
+  // ce qui est juste : il lui faut encore un porteur. À revoir après essai.
+  equip: -4,
 };
 
 /** Total des points rendus par les coûts additionnels d'une carte. Toujours ≤ 0.
@@ -1106,12 +1133,14 @@ export function additionalCostPoints(c: {
   sacrificeCost?: number | null;
   exileCost?: number | null;
   topdeckCost?: number | null;
+  equipCost?: number | null;
 }): number {
   const total = (c.lifeCost ?? 0) * ADDITIONAL_COST_POINTS.life
     + (c.discardCost ?? 0) * ADDITIONAL_COST_POINTS.discard
     + (c.sacrificeCost ?? 0) * ADDITIONAL_COST_POINTS.sacrifice
     + (c.exileCost ?? 0) * ADDITIONAL_COST_POINTS.exile
-    + (c.topdeckCost ?? 0) * ADDITIONAL_COST_POINTS.topdeck;
+    + (c.topdeckCost ?? 0) * ADDITIONAL_COST_POINTS.topdeck
+    + (c.equipCost ?? 0) * ADDITIONAL_COST_POINTS.equip;
   // `0 * -3` vaut −0 en JavaScript, et une carte SANS coût additionnel aurait
   // affiché « −0 » dans la jauge. `|| 0` le ramène à zéro positif.
   return total || 0;

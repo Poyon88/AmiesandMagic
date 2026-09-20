@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } fro
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
+import { getEquipCost, objetsDe, occupeUnePlace, placesOccupees } from "@/lib/game/items";
 import { canPlayFromGraveyard, hasSecondeVie } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
@@ -16,6 +17,7 @@ import useCoarsePointer from "@/hooks/useCoarsePointer";
 import HeroPowerDescriptionOverlay from "./HeroPowerDescriptionOverlay";
 import ManaBar from "./ManaBar";
 import BoardCreature from "./BoardCreature";
+import BoardItem from "./BoardItem";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
 import EveilOverlay from "./EveilOverlay";
@@ -117,6 +119,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     suspendToEveil,
     selectAttacker,
     selectTarget,
+    startEquipItem,
+    sacrificeItem,
     clearSelection,
     damageEvents,
     clearDamageEvents,
@@ -417,6 +421,32 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
+  const pendingEquipItemId = useGameStore((s) => s.pendingEquipItemId);
+  // `myPlayer` peut être null avant le retour anticipé plus bas, et un hook ne
+  // peut pas attendre celui-ci (règle des hooks) : les deux dérivés ci-dessous
+  // tiennent donc le cas nul eux-mêmes.
+  // `useMemo` et non un simple ternaire : `objetsDe` rend un TABLEAU NEUF à
+  // chaque appel quand `items` est absent (repli `?? []`), ce qui ferait changer
+  // la dépendance de `peutEquiper` à chaque rendu — et invaliderait son
+  // `useCallback` pour rien.
+  const mesObjets = useMemo(() => (myPlayer ? objetsDe(myPlayer) : []), [myPlayer]);
+  /** L'équipement est-il possible MAINTENANT pour cet objet ?
+   *
+   *  Trois conditions, et la vignette reste inerte si l'une manque. Le moteur
+   *  refuserait de toute façon, mais un refus silencieux serait illisible : le
+   *  joueur cliquerait sans rien voir se produire.
+   *
+   *  « Au moins une créature LIBRE » plutôt que « au moins une créature » :
+   *  la règle est un objet par créature, et proposer un ciblage sans cible
+   *  possible serait une impasse. Un objet déjà porté peut se déplacer, mais
+   *  seulement s'il existe une autre créature libre pour l'accueillir. */
+  const peutEquiper = useCallback((o: CardInstance) => {
+    if (!myTurn || !myPlayer) return false;
+    if (myPlayer.mana < getEquipCost(o.card)) return false;
+    return myPlayer.board.some(c =>
+      c.instanceId !== o.equippedToInstanceId
+      && !mesObjets.some(autre => autre.equippedToInstanceId === c.instanceId));
+  }, [myTurn, myPlayer, mesObjets]);
 
   // Hand spacing keyed off card COUNT against the fixed DESIGN_W canvas (not the
   // window width — under scale-to-fit the window no longer reflects on-canvas
@@ -820,7 +850,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     if (!myTurn) return t("seconde_vie_blocked_turn");
     // Le plateau plein n'explique le blocage que si toutes les candidates y
     // auraient besoin d'une place — un sort, lui, n'en réclame pas.
-    if (myPlayer.board.length >= MAX_BOARD_SIZE
+    if (placesOccupees(myPlayer) >= MAX_BOARD_SIZE
       && candidates.every((c) => c.card.card_type === "creature")) return t("eveil_blocked_board_plein");
     return t("eveil_blocked_mana");
   })();
@@ -1294,6 +1324,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   key={creature.instanceId}
                   creature={creature}
                   isOwn={false}
+                  equippedItem={objetsDe(opponent).find(o => o.equippedToInstanceId === creature.instanceId) ?? null}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
                   boostKind={getBoost(creature.instanceId)}
@@ -1318,6 +1349,13 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               ))}
             </AnimatePresence>
           )}
+          {/* OBJETS ADVERSES — au bout de sa ligne, après ses créatures. Ils
+              occupent une de ses places, il faut donc les VOIR : sans eux, un
+              plateau adverse « à trois créatures » paraîtrait avoir cinq places
+              libres alors qu'il n'en a qu'une. Aucun geste possible dessus. */}
+          {objetsDe(opponent).map((o) => (
+            <BoardItem key={o.instanceId} item={o} isOwn={false} />
+          ))}
         </div>
 
         {/* ============= PLAYER BOARD (creatures + drop zone) ============= */}
@@ -1367,6 +1405,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                       key={creature.instanceId}
                       creature={creature}
                       isOwn={true}
+                      equippedItem={mesObjets.find(o => o.equippedToInstanceId === creature.instanceId) ?? null}
                       canAttack={canAtt}
                       isSelected={
                         selectedAttackerInstanceId === creature.instanceId
@@ -1409,6 +1448,25 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               )}
             </>
           )}
+          {/* MES OBJETS — après mes créatures, dans la même ligne : ils
+              partagent le même plafond de places, et les montrer ailleurs
+              donnerait à croire le contraire.
+              Clic = équiper ou déplacer, clic droit = sacrifier. */}
+          {mesObjets.map((o) => (
+            <BoardItem
+              key={o.instanceId}
+              item={o}
+              isOwn
+              isEquipping={pendingEquipItemId === o.instanceId}
+              bearerName={o.equippedToInstanceId
+                ? myPlayer.board.find(c => c.instanceId === o.equippedToInstanceId)?.card.name ?? null
+                : null}
+              canEquip={peutEquiper(o)}
+              canSacrifice={myTurn}
+              onEquip={() => startEquipItem(o.instanceId)}
+              onSacrifice={() => { const a = sacrificeItem(o.instanceId); if (a) broadcast(a); }}
+            />
+          ))}
           </div>
         </div>
 
@@ -1668,7 +1726,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     // reste son geste propre — inutile de re-tester `coarse`
                     // ici, deux endroits qui énoncent la même règle finissent
                     // toujours par diverger.
-                    if (cardInstance.card.card_type === "creature") {
+                    // `occupeUnePlace` et non « est une créature » : un OBJET
+                    // se pose lui aussi directement sur la table. L'envoyer dans
+                    // le chemin des sorts lui aurait cherché une cible qu'il n'a
+                    // pas — et le clic n'aurait rien fait, sans rien dire.
+                    if (occupeUnePlace(cardInstance.card)) {
                       broadcast(playCardDirect(cardInstance.instanceId));
                       return;
                     }

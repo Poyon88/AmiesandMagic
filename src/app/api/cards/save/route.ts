@@ -79,7 +79,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   const supabaseAdmin = getAdminClient();
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, discoverable';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
@@ -128,6 +128,7 @@ export async function POST(request: Request) {
         // Coût ALTERNATIF d'éveil — même exigence : hors de cette liste, la
         // valeur saisie serait jetée en silence à l'édition.
         'eveil_cost',
+        'equip_cost',
         // Carte écartée des tirages (Sélection, Invocation…) sans cesser d'être
         // collectionnable ni jouable. Absente de cette liste blanche, la case
         // serait silencieusement ignorée à l'édition.
@@ -268,6 +269,7 @@ export async function POST(request: Request) {
       exile_cost: card.exile_cost ?? null,
       topdeck_cost: card.topdeck_cost ?? null,
       eveil_cost: card.eveil_cost ?? null,
+      equip_cost: card.equip_cost ?? null,
     };
     // Dual-write du modèle unifié : dérivé de la carte sauvegardée (l'adaptateur
     // reproduit fidèlement la sémantique legacy). Source de vérité côté moteur

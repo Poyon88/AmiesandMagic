@@ -12,7 +12,7 @@ import type { Capability, ComposedEffect } from "@/lib/game/types";
 const CONTENTS = new Set([
   "deal_damage", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
   "gain_mana", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation",
-  "selection", "selection_magique", "renfort_royal", "poison", "invocation", "epargne", "foi", "conquete", "incineration", "devoration", "retour_differe",
+  "selection", "faveur", "selection_magique", "renfort_royal", "poison", "invocation", "epargne", "foi", "conquete", "incineration", "devoration", "retour_differe",
   "appel", "rappel", "tuteur", "appel_supreme", "silence", "dechainement",
 ]);
 

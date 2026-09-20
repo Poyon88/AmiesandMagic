@@ -122,8 +122,8 @@
         "desc": "戦闘ダメージを半減する（端数切り上げ）。呪文によるダメージは軽減されない。"
       },
       "commandement": {
-        "label": "指揮",
-        "desc": "{faction_de}の味方に+1/+1。"
+        "label": "指揮 X",
+        "desc": "{faction_de}の味方に+X/+X。"
       },
       "fureur": {
         "label": "激怒",
@@ -361,6 +361,10 @@
         "label": "選択 X",
         "desc": "コストXの{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
       },
+      "faveur": {
+        "label": "恩恵 X",
+        "desc": "コストXの{alignment}コモンをランダムに1枚手札に加える。"
+      },
       "selection_magique": {
         "label": "魔法選択 X",
         "desc": "コストXの{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える。"
@@ -595,6 +599,10 @@
         "label": "選択 X",
         "desc": "コストX以下の{alignment}のコモンを3枚公開し、その中から1枚を手札に加える"
       },
+      "faveur": {
+        "label": "恩恵 X",
+        "desc": "コストXの{alignment}コモンをランダムに1枚手札に加える。"
+      },
       "selection_magique": {
         "label": "魔法の選択 X",
         "desc": "コストX以下の{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える"
@@ -805,6 +813,7 @@
         "tactique_many": "自身の永続能力を{x}つランダムに授ける",
         "retour_differe": "所有者のデッキの一番下に置く",
         "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
+        "faveur": "コスト{x}のカード{filter}をランダムに1枚手札に加える",
         "selection_magique": "呪文{filter}を3枚公開し(コスト{x})、その中から1枚を手札に加える",
         "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
         "occurrences": "{n}回: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "1体以上のクリーチャーを指定します。その順番でそのまま召喚されます（同じカードを複数回指定できます）。指定がなければ、フィルターに従いコストXでランダムに引きます。",
     "tuteur_card_hint": "1枚以上のカード（クリーチャーまたは呪文）を指定します。その順番で手札に加わります。同じカードを複数回指定でき、その枚数分加わります。指定がなければ効果はありません。",
     "content_selection": "選択（3枚中1枚）",
+    "content_faveur": "恩恵（ランダムな1枚 → 手札）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
     "label_pool_membership": "プール — 所属",
     "label_pool_faction": "プール — 陣営",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "このカードをプレイするために生け贄に捧げる味方クリーチャーの数。",
     "exile_cost_hint": "プレイヤーのデッキの上から取り除かれるカードの枚数。追放されたカードは墓地に置かれず、回収できません。",
     "topdeck_cost_hint": "プレイヤーが手札からデッキの一番上に戻すカードの枚数。墓地には行かず、後で引き直すことになる。テンポコスト、軽減不可。",
+    "equip_label": "装備",
+    "equip_cost_hint": "オブジェクト — 味方クリーチャーに装備させるマナ・コスト。移動を含め装備するたびに支払う。0は無料。",
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
     "topdeck_label": "リプレイス",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "チェックが1つだけ：効果は通常どおり解決される",
     "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
+    "random_hint_faveur": "与えられるカードのコストは1から{max}の間で決まります。チェックしない場合はちょうど{max}です。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
     "content_tuteur": "チューター（指定カード→手札）",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ 呪文無効！",
     "draw_trigger_self": "🃏 あなたのドロー時に発動する効果",
     "draw_trigger_opponent": "🃏 相手のドロー時に発動する効果",
+    "faveur_self": "🎁 恩恵 — カードが自分の手札に加わった",
+    "faveur_opponent": "🎁 恩恵 — カードが相手の手札に加わった",
     "spell_grant_all_allies": " · 全味方クリーチャーに",
     "spell_grant_target": " · 対象クリーチャーに",
     "fire_breath_label": "炎のブレス",

@@ -57,6 +57,13 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   // `play_card` (avec `fromEveil`), déjà classée « létal » plus haut.
   suspend_eveil: "sans dégâts",
   pay_eveil: "sans dégâts",
+  // OBJETS. Équiper ne fait qu'AJOUTER des PV au porteur. Sacrifier lui en
+  // retire, mais la comptabilité par différentiel des PV d'objet porte le même
+  // plancher que celle des auras : les PV courants ne descendent jamais sous 1
+  // quand le bonus s'en va. Retirer un objet ne peut donc pas tuer — c'est un
+  // invariant, pas une coïncidence, et `items-equipement.test.ts` le vérifie.
+  equip_item: "sans dégâts",
+  sacrifice_item: "sans dégâts",
 };
 
 // ─── Outillage ──────────────────────────────────────────────────────────────

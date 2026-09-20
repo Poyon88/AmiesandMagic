@@ -165,6 +165,9 @@ function HandCard({
     : null;
   const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
   const isCreature = card.card_type === "creature";
+  // Un OBJET affiche sa paire de chiffres comme une créature — c'est le bonus
+  // qu'il conférera. Sans quoi la carte en main ne dirait pas ce qu'elle fait.
+  const porteDesStats = isCreature || card.card_type === "item";
   // Stats EFFECTIVES affichées : base + bonus conservés (loyauté, summon,
   // nécrophagie…). Pertinent pour une créature renvoyée en main (rebond) qui
   // garde son bonus de Loyauté — aligne la main sur le cimetière. Pour une
@@ -762,7 +765,7 @@ function HandCard({
           onAwaken={onSuspendEveil && !isCostPaymentMode ? onSuspendEveil : undefined}
           awakenTitle={t('eveil_suspend', { count: card.eveil_cost ?? 0 })}
         />
-        {isCreature && (
+        {porteDesStats && (
           <StatShields
             atk={displayAttack} hp={displayHealth}
             atkTone={toneFor(displayAttack, card.attack ?? 0)}
@@ -867,7 +870,7 @@ function HandCard({
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
           // À droite : la place des écus ATK / PV (absolus), pour que les icônes
           // s'arrêtent avant au lieu de passer dessous.
-          padding: isCreature ? `5px ${statShieldsReserve(displayAttack, displayHealth)}cqw 4px 6px` : "5px 6px 4px",
+          padding: porteDesStats ? `5px ${statShieldsReserve(displayAttack, displayHealth)}cqw 4px 6px` : "5px 6px 4px",
           background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
           display: "flex", flexDirection: "column", gap: 3,
         }}>

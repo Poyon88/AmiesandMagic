@@ -1,5 +1,9 @@
 // Card types matching database schema
-export type CardType = "creature" | "spell";
+// « item » = OBJET : une carte d'équipement. Elle se pose sur la table, occupe
+// une des places du plateau, et reste INERTE tant qu'elle n'équipe personne —
+// ni attaquable, ni détruite par les effets d'unité, jamais comptée comme allié
+// par une aura. Voir `src/lib/game/items.ts` pour les prédicats partagés.
+export type CardType = "creature" | "spell" | "item";
 
 export type Keyword =
   // Legacy (backward compat with existing DB)
@@ -36,6 +40,8 @@ export type Keyword =
   | "vampirisme"
   // Tier 2 — Collection
   | "selection"
+  // Tier 1 — Collection, SANS choix : une commune de coût X rejoint la main.
+  | "faveur"
   // Tier 2 — Collection (spells of every faction)
   | "selection_magique"
   // Tier 3 — Collection (limited prints, ≥30 owned)
@@ -224,6 +230,7 @@ export type SpellKeywordId =
   | "rappel"
   | "exhumation"
   | "selection"
+  | "faveur"
   | "renfort_royal"
   | "relancer"
   | "tempete"
@@ -620,6 +627,11 @@ export type ComposedEffectContent =
   // / clan / mot-clé) ne sait pas exprimer un type de carte : c'est donc un
   // contenu distinct, comme `renfort_royal` l'est de `selection`.
   | "selection_magique"
+  // FAVEUR : même vivier que `selection`, mais UNE carte tirée au hasard qui
+  // rejoint la main sans passer par une fenêtre de choix. Contenu distinct et
+  // non une option de `selection` : c'est le choix, pas le nombre de cartes,
+  // qui fait la différence de puissance — et donc de barème.
+  | "faveur"
   | "renfort_royal";
 
 /** Spécification de cibles d'un effet composé. Le filtre de COÛT est en place
@@ -952,6 +964,17 @@ export interface Card {
    *
    *  Null/0 = pas d'éveil, la carte ne se joue que normalement. */
   eveil_cost?: number | null;
+  /** OBJETS — coût d'ÉQUIPEMENT, en mana, distinct du coût de lancement
+   *  (`mana_cost`) qui n'a servi qu'à poser l'objet sur la table.
+   *
+   *  Se paie à CHAQUE équipement, y compris pour déplacer l'objet d'une
+   *  créature à une autre : c'est le levier tactique de la mécanique, pas un
+   *  second paiement d'entrée. Un objet déséquipé (son porteur est mort) se
+   *  rééquipe donc au même prix.
+   *
+   *  Null/0 = équipement GRATUIT, ce qui est un choix d'auteur légitime.
+   *  N'a aucun sens hors d'une carte `item` ; le moteur l'ignore ailleurs. */
+  equip_cost?: number | null;
 }
 
 /** Frontière temporelle À L'INTÉRIEUR d'une action, pour l'animation seule.
@@ -1112,6 +1135,24 @@ export interface CardInstance {
   loyautePVBonus: number;
   // Generic permanent on-summon ATK bonus (profanation, sacrifice, suprématie, ombre_du_passe, vampirisme)
   summonBonusATK: number;
+  /** OBJET ÉQUIPÉ — porté par l'OBJET, et pointant vers sa créature.
+   *
+   *  Source de vérité UNIQUE du lien porteur↔objet. Le sens inverse (« que
+   *  porte cette créature ? ») se dérive en balayant les objets du joueur, ce
+   *  qui coûte au plus huit comparaisons. Deux pointeurs croisés auraient été
+   *  plus rapides à lire et se seraient désynchronisés au premier chemin de
+   *  retrait oublié — et il y en a beaucoup (mort, Remontée, métamorphose,
+   *  Conquête, Domination…).
+   *
+   *  Le lien est d'ailleurs AUTO-RÉPARANT : `recalculateAuras` le coupe dès que
+   *  le porteur n'est plus sur le plateau de son camp, quelle que soit la
+   *  raison de son départ. Aucun chemin de retrait n'a donc à le savoir. */
+  equippedToInstanceId?: string | null;
+  /** PV apportés par l'objet équipé, côté PORTEUR. Comptabilité par
+   *  DIFFÉRENTIEL, exactement comme `auraHealthBonus` : le champ mémorise ce
+   *  qui est déjà intégré aux PV max, et seul l'écart est appliqué. Sans quoi
+   *  poser puis retirer un objet soignerait la créature à chaque recalcul. */
+  equipHealthBonus?: number;
   // Aura health bonus (commandement) — tracked to adjust HP when aura changes
   auraHealthBonus: number;
   // Aura health bonus (sang mêlé) — dynamic PV bonus, tracked separately from
@@ -1233,6 +1274,29 @@ export interface CardInstance {
    *  d'où cette trace — on ne purge que ce qu'on a soi-même posé, sans toucher
    *  aux mots-clés natifs de la carte ni aux dons ponctuels d'un sort. */
   emblemGrantedKeywords?: string[];
+  /** Mots-clés que l'OBJET ÉQUIPÉ a ajoutés à cette créature au dernier passage
+   *  de `recalculateAuras`. Suivi SÉPARÉ de celui des emblèmes : les deux
+   *  sources donnent au même endroit et doivent pouvoir se retirer sans
+   *  s'entre-purger. */
+  itemGrantedKeywords?: string[];
+  /** Instances de sidecar posées par l'objet équipé, identifiées par (id, mode).
+   *
+   *  Deux traces plutôt qu'une, parce que `applyGrantedKeyword` écrit à DEUX
+   *  endroits : `card.keywords` et `card.keyword_instances`. Et parce que la
+   *  seconde est celle qui compte vraiment — `buildEndOfTurnQueue` balaie les
+   *  instances SANS consulter `keywords`. Ne purger que `keywords` laisserait
+   *  une Tempête d'objet se déclencher à chaque fin de tour, indéfiniment, sur
+   *  une créature qui ne porte plus rien. */
+  itemGrantedInstances?: { id: string; mode?: KeywordMode }[];
+  /** uid des capacités COMPOSÉES que l'objet équipé a greffées sur cette
+   *  créature. Troisième trace, parce qu'un composé ne vit ni dans `keywords`
+   *  ni dans `keyword_instances` : il n'existe que dans `capabilities`.
+   *
+   *  L'uid est DÉTERMINISTE (`obj_<instanceId de l'objet>_<uid d'origine>`) et
+   *  non tiré au hasard : la greffe se rejoue à chaque recalcul, et un uid
+   *  instable aurait empilé un doublon par passe — tout en cassant les
+   *  déclencheurs en attente, qui référencent la capacité PAR son uid. */
+  itemGrantedCapUids?: string[];
   // Second paramètre (Y = PV) des mots-clés accordés qui portent un couple
   // X/Y — Gloire +X/+Y aujourd'hui. Optionnel : les mots-clés à simple X
   // n'en produisent jamais, et les instances sérialisées antérieures restent
@@ -1394,6 +1458,22 @@ export interface PlayerState {
   maxMana: number;
   hand: CardInstance[];
   board: CardInstance[];
+  /** OBJETS en jeu. Zone SÉPARÉE de `board`, et c'est délibéré.
+   *
+   *  Les objets partagent le plafond du plateau (`placesOccupees`) : côté
+   *  RÈGLES, un objet occupe bien une des places. Mais les mettre dans `board`
+   *  aurait exigé un garde `card_type` sur les ~135 balayages non filtrés de
+   *  `engine.ts` — auras, comptages, ciblages, combat, nettoyage des morts — et
+   *  un seul oubli suffisait à faire attaquer un objet, ou à le faire compter
+   *  par Loyauté, EN SILENCE.
+   *
+   *  Ici, le pire qu'un oubli produise est une place mal comptée : visible et
+   *  bénin. L'inertie des objets n'est plus une liste de gardes à maintenir,
+   *  c'est une propriété de la structure.
+   *
+   *  OPTIONNEL à dessein : les parties en cours, les instantanés `match_state`
+   *  déjà enregistrés et les constructeurs existants n'ont rien à changer. */
+  items?: CardInstance[];
   deck: CardInstance[];
   graveyard: CardInstance[];
   spellHistory: { card: Card; targetMap: Record<string, string> }[];
@@ -1613,6 +1693,17 @@ export interface GameState {
   // carte). Le store la révèle avec l'overlay de lancement de sort.
   // Vidé par le store après planification ; exclu du hash d'état.
   drawTriggerEvents?: Array<{
+    card: Card;
+    ownerId: string;
+  }>;
+  // Transient : cartes tirées de la COLLECTION et offertes à une main par une
+  // Faveur. Canal distinct de `drawTriggerEvents` — celui-ci ne décrit que les
+  // cartes dont le déclencheur « à la pioche » a résolu, ce que Faveur ne fait
+  // pas : la carte ne vient pas du deck et ne déclenche rien. Sans cet indice
+  // la main grandit d'une carte que personne n'a vue arriver, y compris son
+  // propriétaire (l'offre est tirée au hasard, il n'a rien choisi).
+  // Vidé par le store après planification ; exclu du hash d'état.
+  faveurEvents?: Array<{
     card: Card;
     ownerId: string;
   }>;
@@ -2020,7 +2111,32 @@ export interface PayEveilAction {
   amount?: number;
 }
 
-export type GameAction = PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SuspendEveilAction | PayEveilAction;
+/** ÉQUIPER un objet en jeu sur une créature alliée, contre son `equip_cost`.
+ *
+ *  Sert AUSSI au déplacement : équiper un objet déjà porté sur une autre
+ *  créature le détache de la première. Il n'existe donc pas d'action
+ *  « déséquiper » — elle ne rendrait service à personne, et l'objet libre se
+ *  sacrifie (voir ci-dessous) plutôt qu'il ne se range. */
+export interface EquipItemAction {
+  type: "equip_item";
+  itemInstanceId: string;
+  targetInstanceId: string;
+}
+
+/** SACRIFIER un objet en jeu : il part au cimetière, GRATUITEMENT.
+ *
+ *  Cette action existe pour une raison précise. Un objet occupe une des huit
+ *  places et n'est détruit par RIEN — ni attaque, ni effet d'unité, ni
+ *  balayage. Sans elle, trois objets posés condamnaient leur propriétaire à
+ *  jouer définitivement à cinq créatures, sans aucun recours, contre lui-même.
+ *  Gratuite, parce qu'un joueur ne devrait pas avoir à payer pour réparer un
+ *  encombrement qu'il s'est infligé. */
+export interface SacrificeItemAction {
+  type: "sacrifice_item";
+  itemInstanceId: string;
+}
+
+export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et

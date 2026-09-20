@@ -37,11 +37,12 @@ import type {
 } from "./types";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, XY_ABILITY_IDS } from "./abilities";
+import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
+import { bonusDObjet, estUnObjet, getEquipCost, objetPorteParUnite, objetsDe, occupeUnePlace, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
-import { KEYWORD_LABELS, isPermanentKeyword, parseXValuesFromEffectText } from "./keyword-labels";
+import { KEYWORD_LABELS, isPermanentKeyword, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { nombreDOccurrences } from "./composed-occurrences";
 import {
   HERO_MAX_HP,
@@ -121,6 +122,13 @@ let damageLedgerSink: Array<{ targetInstanceId: string; amount: number }> = [];
 // dégâts surgir de nulle part. Le store la révèle comme un sort lancé.
 // Vidé au début d'applyAction, rattaché à state.drawTriggerEvents ; hors hash.
 let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
+// Cartes offertes par une FAVEUR. Puits distinct du précédent : celui-ci ne
+// décrit que les déclencheurs « à la pioche », et une Faveur n'en est pas un —
+// la carte sort de la COLLECTION, pas du deck, et ne déclenche rien du tout.
+// Sans cet indice la main grandit d'une carte que personne n'a vue arriver, pas
+// même son propriétaire : le tirage est aléatoire, il n'a rien choisi.
+// Vidé au début d'applyAction, rattaché à state.faveurEvents ; hors hash.
+let faveurSink: Array<{ card: Card; ownerId: string }> = [];
 // Capacités NOMMÉES qui ont réellement résolu pendant l'action, avec leur
 // déclencheur. Le store en tire un bruitage par capacité (table `keyword_sfx`),
 // et le `trigger` décide de la PHASE d'animation où le son s'enchaîne — après
@@ -1453,7 +1461,7 @@ function resolveComposedEffect(
       // N occurrences = les N PREMIÈRES unités du deck qui satisfont le filtre :
       // chaque passe repart du deck amputé de la précédente.
       for (let i = 0; i < nombreDOccurrences(composed); i++) {
-        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
         const idx = owner.deck.findIndex(c =>
           c.card.card_type === "creature"
           && c.card.mana_cost <= x
@@ -1495,7 +1503,7 @@ function resolveComposedEffect(
       return;
     case "summon_token": {
       const count = x > 0 ? x : 1;
-      for (let i = 0; i < count && owner.board.length < MAX_BOARD_SIZE; i++) {
+      for (let i = 0; i < count && placesOccupees(owner) < MAX_BOARD_SIZE; i++) {
         const tmpl = findTokenTemplate(composed.tokenId);
         let base: Card = {
           id: -1, name: tmpl?.name ?? "Token", mana_cost: 0, card_type: "creature",
@@ -1559,7 +1567,7 @@ function resolveComposedEffect(
       const cnt = composed.target?.count;
       const desired = typeof cnt === "number" ? cnt : Infinity;
       const resurrect = (inst: CardInstance | undefined): boolean => {
-        if (!inst || owner.board.length >= MAX_BOARD_SIZE) return false;
+        if (!inst || placesOccupees(owner) >= MAX_BOARD_SIZE) return false;
         if (inst.card.card_type !== "creature" || inst.card.mana_cost > maxCost) return false;
         owner.graveyard = owner.graveyard.filter((c) => c !== inst);
         returnInstanceToPlay(inst);
@@ -1580,7 +1588,7 @@ function resolveComposedEffect(
         }
       } else {
         // Non-interactif : repli déterministe, plus hauts coûts d'abord.
-        while (done < desired && owner.board.length < MAX_BOARD_SIZE) {
+        while (done < desired && placesOccupees(owner) < MAX_BOARD_SIZE) {
           const eligible = owner.graveyard.filter((c) => c.card.card_type === "creature" && c.card.mana_cost <= maxCost);
           if (eligible.length === 0) break;
           const best = eligible.reduce((b, c) => (c.card.mana_cost > b.card.mana_cost ? c : b), eligible[0]);
@@ -1602,7 +1610,7 @@ function resolveComposedEffect(
           ? Array.from({ length: occurrences }, () => designees).flat()
           : designees;
         for (const id of aInvoquer) {
-          if (owner.board.length >= MAX_BOARD_SIZE) break;
+          if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
           resolveDesignatedSummon(owner, id, currentCardPools.factionCardPool, currentCardPools.allSpellsPool,
             source?.card.name ?? opts?.sourceCard?.name ?? "?");
         }
@@ -1616,7 +1624,7 @@ function resolveComposedEffect(
       // Chaque passe tire sa propre créature (resolveInvocationSummon s'arrête
       // de lui-même sur un plateau plein).
       for (let i = 0; i < occurrences; i++) {
-        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
         resolveInvocationSummon(
           owner, invocCard, x,
           currentCardPools.factionCardPool, currentFormatCode,
@@ -1624,6 +1632,22 @@ function resolveComposedEffect(
           // « X au hasard » ⇒ X est un plafond de coût (cf. figerAmplitudeAleatoire).
           composed.magnitude?.randomX === true,
         );
+      }
+      return;
+    }
+    // FAVEUR composée : une commune du vivier d'alignement rejoint la main, sans
+    // fenêtre de choix. N occurrences ⇒ N cartes ; le sel de germe varie à
+    // chaque passe, sinon les N tirages rendraient N fois la MÊME carte (le
+    // pseudo-RNG est semé sur un état que la passe ne modifie pas assez —
+    // la main grandit d'une carte, mais l'entropie n'en tient pas compte
+    // avant le prochain appel).
+    case "faveur": {
+      const faveurCard = source?.card ?? opts?.sourceCard;
+      const selFaveur = source?.instanceId ?? opts?.capUid;
+      for (let i = 0; i < nombreDOccurrences(composed); i++) {
+        if (owner.hand.length >= MAX_HAND_SIZE) break;
+        resolveFaveur(owner, x, composed.magnitude?.randomX === true, faveurCard,
+          composed.pool, i === 0 ? selFaveur : `${selFaveur ?? ""}#occ${i}`);
       }
       return;
     }
@@ -1946,7 +1970,7 @@ function resolveCreatureKeywordAsHeroPower(
       const target = targetInstanceId
         ? opponent.board.find(c => c.instanceId === targetInstanceId)
         : (opponent.board.length > 0 ? opponent.board[Math.floor(rng() * opponent.board.length)] : null);
-      if (!target || player.board.length >= MAX_BOARD_SIZE) break;
+      if (!target || placesOccupees(player) >= MAX_BOARD_SIZE) break;
       opponent.board = opponent.board.filter(c => c !== target);
       target.originalOwnerId = opponent.id;
       target.trueOwnerId = opponent.id;
@@ -1963,7 +1987,7 @@ function resolveCreatureKeywordAsHeroPower(
     }
     case "domination": {
       // Take permanent control of a random enemy creature.
-      if (opponent.board.length === 0 || player.board.length >= MAX_BOARD_SIZE) break;
+      if (opponent.board.length === 0 || placesOccupees(player) >= MAX_BOARD_SIZE) break;
       const idx = Math.floor(rng() * opponent.board.length);
       const stolen = opponent.board.splice(idx, 1)[0];
       stolen.hasSummoningSickness = true;
@@ -2390,6 +2414,12 @@ function stripBoostsToBase(inst: CardInstance): void {
   inst.currentAttack = baseAtk;
   inst.maxHealth = baseHp
     + inst.auraHealthBonus
+    // L'objet reste ÉQUIPÉ après un Silence : celui-ci efface les boosts propres
+    // de la créature, pas ce qu'une autre carte lui prête. Le bonus appartient
+    // donc à la même comptabilité par différentiel que les auras, et doit être
+    // réintégré ici — l'omettre décalerait le différentiel et soignerait la
+    // créature au recalcul suivant.
+    + (inst.equipHealthBonus ?? 0)
     + inst.sangMeleHealthBonus
     + (inst.forceAncetresHealthBonus ?? 0)
     + (inst.pureteHealthBonus ?? 0)
@@ -2411,6 +2441,11 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.maxHealth = health;
   inst.currentHealth = inst.maxHealth;
   inst.auraHealthBonus = 0;
+  // La créature a quitté le plateau : la validation de `recalculateAuras` a
+  // détaché son objet. Le compteur doit repartir de zéro comme celui des auras,
+  // sinon l'écart calculé au retour serait nul et le bonus ne serait JAMAIS
+  // réintégré — la créature reviendrait amputée, en silence.
+  inst.equipHealthBonus = 0;
   inst.sangMeleHealthBonus = 0;
   // Bonus de PV CONDITIONNELS (Force des ancêtres, Pureté, Seuil Sacrificiel).
   // Ils tiennent une comptabilité par DIFFÉRENTIEL dans recalculateAuras : le
@@ -2857,6 +2892,163 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // la synchro de fin d'action arriverait trop tard pour cette lecture-ci.
   syncSingulierPlayer(player);
   syncSingulierPlayer(opponent);
+
+  // ── OBJETS : le lien porteur↔objet SE RÉPARE ICI ─────────────────────────
+  //
+  // Un objet pointe vers sa créature. Celle-ci peut quitter le plateau par une
+  // douzaine de chemins — mort, Remontée en main, métamorphose, Conquête,
+  // Domination, Retour différé, exil… Plutôt que d'apprendre le lien à chacun
+  // (et d'en oublier un, silencieusement, le jour où un treizième apparaît), on
+  // le VALIDE à chaque recalcul : si le porteur n'est plus sur le plateau de
+  // son camp, l'objet se détache.
+  //
+  // C'est ce qui réalise la règle « l'objet survit à son porteur, déséquipé »
+  // sans une seule ligne dans les chemins de mort.
+  for (const p of [player, opponent]) {
+    for (const o of objetsDe(p)) {
+      if (o.equippedToInstanceId
+        && !p.board.some(c => c.instanceId === o.equippedToInstanceId)) {
+        o.equippedToInstanceId = null;
+      }
+    }
+  }
+  // ── PURGE des dons du passage PRÉCÉDENT (emblèmes, puis objets) ──────────
+  //
+  // `applyGrantedKeyword` AJOUTE et ne retire jamais : c'est ici, et nulle part
+  // ailleurs, que les dons continus redeviennent réversibles. Une source qui a
+  // disparu (emblème expiré, objet déséquipé) cesse simplement d'être reposée
+  // plus bas, et son don s'en va avec elle.
+  //
+  // Hissé EN TÊTE — le bloc des emblèmes se trouvait après le calcul des auras.
+  // Une purge est un retrait pur, sans effet de bord, donc déplaçable ; et il
+  // FAUT qu'elle précède le don des objets, sinon `avaitDeja` verrait le don de
+  // l'emblème du tour d'avant, conclurait que le mot-clé ne lui appartient pas,
+  // et l'objet ne tracerait rien : son don deviendrait indéracinable.
+  for (const p of [player, opponent]) {
+    for (const c of p.board) {
+      if (c.emblemGrantedKeywords?.length) {
+        const aRetirer = new Set(c.emblemGrantedKeywords);
+        c.card = {
+          ...c.card,
+          keywords: (c.card.keywords as unknown as string[]).filter(k => !aRetirer.has(k)) as unknown as Keyword[],
+        };
+        c.emblemGrantedKeywords = [];
+      }
+      if (c.itemGrantedKeywords?.length) {
+        const aRetirer = new Set(c.itemGrantedKeywords);
+        c.card = {
+          ...c.card,
+          keywords: (c.card.keywords as unknown as string[]).filter(k => !aRetirer.has(k)) as unknown as Keyword[],
+        };
+        c.itemGrantedKeywords = [];
+      }
+      // Le SIDECAR, et c'est le retrait qui compte vraiment : plusieurs
+      // résolveurs (buildEndOfTurnQueue en tête) balaient `keyword_instances`
+      // sans jamais consulter `keywords`. Ne purger que la seconde laisserait
+      // une Tempête d'objet partir à chaque fin de tour, pour toujours, sur une
+      // créature désormais nue.
+      if (c.itemGrantedInstances?.length) {
+        const poses = c.itemGrantedInstances;
+        c.card = {
+          ...c.card,
+          keyword_instances: (c.card.keyword_instances ?? []).filter(inst =>
+            !poses.some(g => g.id === (inst.id as unknown as string) && g.mode === inst.mode)),
+        };
+        c.itemGrantedInstances = [];
+      }
+      // Les capacités COMPOSÉES greffées. Troisième canal, parce qu'un composé
+      // ne vit ni dans `keywords` ni dans le sidecar : il n'existe que dans
+      // `capabilities`.
+      if (c.itemGrantedCapUids?.length) {
+        const aRetirer = new Set(c.itemGrantedCapUids);
+        c.card = {
+          ...c.card,
+          capabilities: (c.card.capabilities ?? []).filter(cap => !aRetirer.has(cap.uid)),
+        };
+        c.itemGrantedCapUids = [];
+      }
+    }
+  }
+
+  // ── DON des capacités de l'objet ÉQUIPÉ à son porteur ────────────────────
+  //
+  // « Les capacités d'un objet ne valent que porté » est réalisé ici, et d'une
+  // seule façon : on les TRANSFÈRE à la créature. Le porteur les porte alors
+  // comme les siennes, et toute la plomberie existante — déclencheurs, auras,
+  // râles, combat — fonctionne sans en rien savoir. C'est aussi ce qui donne
+  // son sens à « `on_play` devient l'équipement » : le don EST l'entrée en jeu
+  // de la capacité.
+  //
+  // Placé AVANT le calcul des auras, contrairement au don des emblèmes : un
+  // objet qui confère Commandement doit buffer les alliés dans la passe où il
+  // est équipé, pas à la suivante. L'emblème garde son retard historique.
+  for (const p of [player, opponent]) {
+    for (const o of objetsDe(p)) {
+      if (!o.equippedToInstanceId) continue;
+      const porteur = p.board.find(c => c.instanceId === o.equippedToInstanceId);
+      if (!porteur) continue;
+      for (const slot of orderedKeywordSlots(o.card)) {
+        const idPose = idMoteurDuDon(slot.id);
+        const params = grantParamsFor(slot.id, slot.instance?.x, slot.instance?.y);
+        // On ne trace QUE ce qu'on ajoute réellement : un mot-clé que le porteur
+        // possédait déjà (natif, ou donné par un sort) ne nous appartient pas et
+        // ne doit pas partir avec l'objet.
+        const avaitDeja = (porteur.card.keywords as unknown as string[]).includes(idPose);
+        const instancesAvant = porteur.card.keyword_instances ?? [];
+
+        // PAS de réarmement (dernier argument à faux) : cette boucle repasse à
+        // chaque recalcul. Réarmer une Ombre y renverrait la créature dans
+        // l'ombre juste après son attaque, indéfiniment — le défaut déjà
+        // rencontré sur les auras d'emblème.
+        applyGrantedKeyword(porteur, slot.id, params, false,
+          slot.instance?.mode ? capTriggerForMode(slot.instance.mode) : undefined);
+
+        if (!avaitDeja) (porteur.itemGrantedKeywords ??= []).push(idPose);
+        // `applyGrantedKeyword` reconstruit le tableau en conservant l'identité
+        // des anciennes entrées : ce qui n'y était pas vient d'être posé.
+        for (const inst of porteur.card.keyword_instances ?? []) {
+          if (instancesAvant.includes(inst)) continue;
+          (porteur.itemGrantedInstances ??= []).push({
+            id: inst.id as unknown as string, mode: inst.mode,
+          });
+        }
+      }
+
+      // EFFETS COMPOSÉS de l'objet — greffés sur la carte du porteur, d'où tous
+      // les déclencheurs du moteur les trouveront sans en rien savoir : le râle
+      // d'agonie, l'attaque, le retour, la fin de tour et l'activation lisent
+      // tous `getCapabilities(creature.card)`.
+      //
+      // `on_play` est EXCLU, et c'est le point délicat : le porteur est déjà en
+      // jeu, rien ne rejouera son entrée. Un composé « à l'entrée » greffé ici
+      // serait donc inerte à jamais, sans rien signaler. Il se résout à
+      // l'ÉQUIPEMENT (cf. `equipItem`) — c'est le sens qu'on lui a donné :
+      // l'équipement EST l'entrée en jeu de la capacité.
+      const composesDeLObjet = (o.card.capabilities ?? []).filter(
+        cap => cap.composed && cap.trigger !== "on_play");
+      if (composesDeLObjet.length > 0) {
+        const dejaLa = new Set((porteur.card.capabilities ?? []).map(c => c.uid));
+        const ajouts = composesDeLObjet
+          .map(cap => ({ ...cap, uid: uidCapaciteObjet(o, cap.uid) }))
+          .filter(cap => !dejaLa.has(cap.uid));
+        if (ajouts.length > 0) {
+          porteur.card = {
+            ...porteur.card,
+            capabilities: [...(porteur.card.capabilities ?? []), ...ajouts],
+          };
+          (porteur.itemGrantedCapUids ??= []).push(...ajouts.map(c => c.uid));
+        }
+      }
+    }
+  }
+
+  /** Bonus d'objet d'une créature, par camp. Recalculé à chaque passe : c'est
+   *  un bonus CONDITIONNÉ à un lien vivant, pas un acquis permanent. */
+  const bonusObjetDe = (p: PlayerState, c: CardInstance): { atk: number; pv: number } => {
+    const o = objetPorteParUnite(p, c.instanceId);
+    return o ? bonusDObjet(o) : { atk: 0, pv: 0 };
+  };
+
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
     let atk = c.card.attack ?? 0;
@@ -2867,6 +3059,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     atk += c.devorationATKBonus;
+    atk += bonusObjetDe(player, c).atk;
     c.currentAttack = atk;
   }
   for (const c of opponent.board) {
@@ -2878,7 +3071,28 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     atk += c.devorationATKBonus;
+    atk += bonusObjetDe(opponent, c).atk;
     c.currentAttack = atk;
+  }
+
+  // PV d'objet — comptabilité par DIFFÉRENTIEL, calquée sur `auraHealthBonus`.
+  // Les PV sont un état (les dégâts subis doivent persister), on ne peut donc
+  // pas les reconstruire comme l'ATK : on n'applique que l'ÉCART.
+  //
+  // Le plancher à 1 PV est le même que celui des auras, et pour la même raison :
+  // RETIRER un bonus ne doit jamais tuer. Sacrifier son objet n'est pas un acte
+  // létal, c'est un désencombrement.
+  for (const p of [player, opponent]) {
+    for (const c of p.board) {
+      const nouveau = bonusObjetDe(p, c).pv;
+      const ancien = c.equipHealthBonus ?? 0;
+      if (nouveau === ancien) continue;
+      const ecart = nouveau - ancien;
+      c.maxHealth += ecart;
+      c.currentHealth += ecart;
+      if (c.currentHealth < 1 && ecart < 0) c.currentHealth = 1;
+      c.equipHealthBonus = nouveau;
+    }
   }
 
   // Loyauté: permanent on-summon bonus — NOT recalculated here (handled in playCard)
@@ -2918,8 +3132,21 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     if (hasKw(c, "pauvrete")) c.currentAttack = Math.max(0, c.currentAttack - playerHandSize);
   }
 
-  // Commandement: alliés de même faction gagnent +1/+1 (per board commandement
-  // unit + per hero aura stack of same faction).
+  // COMMANDEMENT X : les alliés de même faction gagnent +X/+X par unité
+  // Commandement en jeu, plus les piles d'emblème du héros.
+  //
+  // X se lit sur CHAQUE porteur, pas une fois pour le plateau : deux capitaines
+  // de la même faction, l'un Commandement 1 et l'autre Commandement 3, donnent
+  // +4/+4 — la somme, comme deux Commandements forfaitaires donnaient +2/+2.
+  //
+  // Ordre de lecture calqué sur Régénération X : le X de la carte d'abord, celui
+  // d'un DON ensuite (une passive conférée ne pose aucune instance de mot-clé,
+  // son amplitude ne voyage que par `grantedKeywordX`), le X implicite en
+  // dernier — 1, l'ancien forfait, pour les 50 cartes qui n'en déclarent aucun.
+  const commandementX = (c: CardInstance): number => {
+    const propre = getKwX(c, "commandement", undefined, 0);
+    return propre > 0 ? propre : (c.grantedKeywordX["commandement"] ?? KEYWORD_DEFAULT_X.commandement);
+  };
   const playerHeroFaction = player.hero.heroDefinition?.faction ?? null;
   const opponentHeroFaction = opponent.hero.heroDefinition?.faction ?? null;
   for (const board of [player.board, opponent.board]) {
@@ -2930,8 +3157,9 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
       let newAuraHP = 0;
       for (const c of board) {
         if (c !== ally && hasKw(c, "commandement") && c.card.faction && ally.card.faction === c.card.faction) {
-          ally.currentAttack += 1;
-          newAuraHP += 1;
+          const bonus = commandementX(c);
+          ally.currentAttack += bonus;
+          newAuraHP += bonus;
         }
       }
       // Hero aura "commandement" — stacks add +stacks/+stacks to allies of
@@ -2956,21 +3184,6 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // Charge, …) to every friendly creature of the hero's owner. Numeric auras
   // already handled above (commandement, terreur). Keywords with no aura
   // semantics (Impact, Inspiration, …) are silently ignored.
-  // Purge des dons d'EMBLÈME du passage PRÉCÉDENT, avant de les reposer depuis
-  // les emblèmes actuels. C'est ce qui rend le don réversible : un emblème
-  // expiré cesse d'être réappliqué ici, et son mot-clé s'en va avec lui.
-  for (const p of [player, opponent]) {
-    for (const c of p.board) {
-      if (!c.emblemGrantedKeywords?.length) continue;
-      const aRetirer = new Set(c.emblemGrantedKeywords);
-      c.card = {
-        ...c.card,
-        keywords: (c.card.keywords as unknown as string[]).filter(k => !aRetirer.has(k)) as unknown as Keyword[],
-      };
-      c.emblemGrantedKeywords = [];
-    }
-  }
-
   for (const p of [player, opponent]) {
     for (const aura of p.emblems ?? []) {
       // Les emblèmes COMPOSÉS ne sont pas des états passifs : ils se résolvent
@@ -3184,7 +3397,7 @@ export function startTurn(state: GameState): GameState {
     if (creature.originalOwnerId === player.id) {
       opponent.board = opponent.board.filter(c => c !== creature);
       creature.hasSummoningSickness = true;
-      if (player.board.length < MAX_BOARD_SIZE) {
+      if (placesOccupees(player) < MAX_BOARD_SIZE) {
         player.board.push(creature);
       } else {
         player.graveyard.push(creature);
@@ -3275,7 +3488,7 @@ export function startTurn(state: GameState): GameState {
       // celui d'un DON ensuite (une passive conférée ne pose pas d'instance,
       // son amplitude ne voyage que par `grantedKeywordX`), 2 en dernier.
       const propre = getKwX(creature, "regeneration", undefined, 0);
-      const regenX = propre > 0 ? propre : (creature.grantedKeywordX["regeneration"] ?? 2);
+      const regenX = propre > 0 ? propre : (creature.grantedKeywordX["regeneration"] ?? KEYWORD_DEFAULT_X.regeneration);
       creature.currentHealth = Math.min(creature.maxHealth, creature.currentHealth + regenX);
     }
 
@@ -3311,7 +3524,7 @@ function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
   }
   const card = player.deck.shift()!;
   // Cycle éternel: auto-play if flagged
-  if (card.cycleEternelAutoPlay && card.card.card_type === "creature" && player.board.length < MAX_BOARD_SIZE) {
+  if (card.cycleEternelAutoPlay && card.card.card_type === "creature" && placesOccupees(player) < MAX_BOARD_SIZE) {
     card.cycleEternelAutoPlay = false;
     card.hasSummoningSickness = true;
     player.board.push(card);
@@ -4062,7 +4275,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   }
 
   if (card.card_type === "creature") {
-    if (player.board.length >= MAX_BOARD_SIZE) return state;
+    if (placesOccupees(player) >= MAX_BOARD_SIZE) return state;
 
     // SECONDE VIE — l'instance arrive du CIMETIÈRE, donc dans l'état où elle y
     // est tombée : `currentHealth <= 0` et `diedOnTurn` gravé par
@@ -4299,7 +4512,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const stealTarget = targetId
         ? opponent.board.find(c => c.instanceId === targetId)
         : opponent.board[Math.floor(rng() * opponent.board.length)];
-      if (stealTarget && player.board.length < MAX_BOARD_SIZE) {
+      if (stealTarget && placesOccupees(player) < MAX_BOARD_SIZE) {
         opponent.board = opponent.board.filter(c => c !== stealTarget);
         stealTarget.originalOwnerId = opponent.id;
         stealTarget.trueOwnerId = opponent.id;
@@ -4313,7 +4526,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Domination: take control of random enemy (permanent)
     if (hasKwOnPlay(cardInstance, "domination") && opponent.board.length > 0) {
-      if (player.board.length < MAX_BOARD_SIZE) {
+      if (placesOccupees(player) < MAX_BOARD_SIZE) {
         const idx = Math.floor(rng() * opponent.board.length);
         const stolen = opponent.board.splice(idx, 1)[0];
         stolen.hasSummoningSickness = true;
@@ -4396,7 +4609,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Convocation X: crée un token X/X depuis le template choisi.
     // Si X est absent du texte, on tombe sur les stats par défaut du token.
-    if (hasKwOnPlay(cardInstance, "convocation") && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "convocation") && placesOccupees(player) < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
       if (!tmpl) {
         // Surface the silent-no-spawn case so the admin can fix the data.
@@ -4482,7 +4695,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // token configuré (`convocation_token_id`) avec ses stats par défaut, sans
     // formule X/X. Polymorphe : même mot-clé disponible côté sort dans
     // resolveSpellKeywords.
-    if (hasKwOnPlay(cardInstance, "convocation_simple") && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "convocation_simple") && placesOccupees(player) < MAX_BOARD_SIZE) {
       const tmpl = findTokenTemplate(cardInstance.card.convocation_token_id);
       if (!tmpl) {
         console.warn(
@@ -4517,7 +4730,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         );
       }
       for (const tokenDef of card.convocation_tokens ?? []) {
-        if (player.board.length >= MAX_BOARD_SIZE) break;
+        if (placesOccupees(player) >= MAX_BOARD_SIZE) break;
         const tmpl = findTokenTemplate(tokenDef.token_id);
         if (!tmpl) {
           console.warn(
@@ -4625,7 +4838,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // créature. Les autres déclencheurs (mort, tap, retour, fin de tour,
     // attaque) passent par resolveCuratedKeywordEffect ; le gate hasKwOnPlay
     // garantit qu'une instance en mode non-invocation ne se dédouble pas ici.
-    if (hasKwOnPlay(cardInstance, "dedoublement") && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "dedoublement") && placesOccupees(player) < MAX_BOARD_SIZE) {
       player.board.push(makeDedoublementClone(cardInstance));
     }
 
@@ -4705,7 +4918,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       // sur une créature à 6 mana ranimait en réalité jusqu'à 5.
       const x = getKwX(cardInstance, "exhumation", undefined, Math.max(1, cardInstance.card.mana_cost - 1));
       const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
-      if (resurrectable.length > 0 && player.board.length < MAX_BOARD_SIZE) {
+      if (resurrectable.length > 0 && placesOccupees(player) < MAX_BOARD_SIZE) {
         const target = (action.graveyardTargetInstanceId
           ? resurrectable.find(c => c.instanceId === action.graveyardTargetInstanceId)
           : resurrectable[resurrectable.length - 1]) ?? resurrectable[resurrectable.length - 1];
@@ -4836,7 +5049,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Appel du clan X: met en jeu la première unité de même clan (coût ≤ X) depuis le deck.
     // Gated sur hasKwOnPlay pour qu'une instance en mode mort/attaque/retour/fin-de-tour/
     // tap ne se déclenche PAS à l'invocation ; elle passe alors par resolveCuratedKeywordEffect.
-    if (hasKwOnPlay(cardInstance, "appel_du_clan") && cardInstance.card.clan && player.board.length < MAX_BOARD_SIZE) {
+    if (hasKwOnPlay(cardInstance, "appel_du_clan") && cardInstance.card.clan && placesOccupees(player) < MAX_BOARD_SIZE) {
       const adcXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = adcXVals["appel_du_clan"] || Math.max(1, cardInstance.card.mana_cost - 1);
       const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
@@ -4856,6 +5069,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Appel Suprême : la carte la plus chère du deck rejoint la main (plus de
     // race depuis le 2026-09-13 — une éventuelle race héritée est ignorée).
     if (hasKwOnPlay(cardInstance, "appel_supreme")) appelSupreme(player);
+
+    // Faveur X : une commune du vivier d'alignement rejoint la main, au hasard.
+    // Aucune modale, donc rien à attendre du client — contrairement aux
+    // Sélections juste au-dessus, qui lisent un choix dans `action`.
+    if (hasKwOnPlay(cardInstance, "faveur")) {
+      const { x: xF, randomX: aleaF } = selectionAmplitudeOnPlay(cardInstance.card, "faveur");
+      resolveFaveur(player, xF, aleaF, cardInstance.card, undefined, cardInstance.instanceId);
+    }
 
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
     if (hasKwOnPlay(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
@@ -5100,6 +5321,18 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (!apprenante && spellHasBoomerang(card)) resolveBoomerang(player, cardInstance);
     else if (!apprenante) player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
+  } else if (estUnObjet(card)) {
+    // OBJET — LOT 1 : il se pose, il occupe une place, et c'est tout.
+    //
+    // Sans cette branche, un objet tombait entre les deux précédentes : le mana
+    // était débité, la carte quittait la main, et RIEN n'arrivait sur la table.
+    //
+    // Volontairement inerte à ce stade : aucun déclencheur, aucune aura, aucun
+    // recalcul. Les capacités d'un objet ne valent que porté (lot 3), et le
+    // porteur n'existe pas encore (lot 2). Ne rien faire ici est donc le
+    // comportement JUSTE, pas un trou à combler.
+    if (placesOccupees(player) >= MAX_BOARD_SIZE) return state;
+    player.items = [...objetsDe(player), cardInstance];
   }
 
   newState.lastAction = action;
@@ -5214,7 +5447,7 @@ function resolveSpellEffect(
         creature.attacksRemaining = maxAttacksFor(creature);
         creature.instanceId = generateInstanceId();
         if (effect.target === "friendly_graveyard_to_board") {
-          if (caster.board.length < MAX_BOARD_SIZE) caster.board.push(creature);
+          if (placesOccupees(caster) < MAX_BOARD_SIZE) caster.board.push(creature);
         } else {
           if (caster.hand.length < MAX_HAND_SIZE) {
             caster.hand.push(creature);
@@ -5501,12 +5734,25 @@ function resolveSpellCard(
   withWrathThreshold(wrath, () =>
   withLethalSpell(cardHasLethalTouch(card), () => {
     // ORDRE D'AUTEUR (composed-position.ts) : un effet composé positionné
-    // devant la mécanique `p` se résout juste avant elle ; sans position, ou
-    // positionné après la dernière, il se résout en phase 4 comme avant. Le
-    // créneau est borné par le nombre de mécaniques : `min(position, n)`.
+    // devant l'élément `p` de la liste d'auteur se résout juste avant lui ;
+    // sans position, ou positionné après le dernier, il se résout en phase 4
+    // comme avant.
+    //
+    // LA LISTE D'AUTEUR D'UN SORT EST `[…mécaniques, …dons]`, et non les seules
+    // mécaniques. C'est ce que dit l'affichage depuis toujours
+    // (`grantedKeywordDisplayOrder` range un don après les mécaniques), et le
+    // moteur ne comptait que les mécaniques : sur « Nuit de la Chasse féerique »
+    // (Invocation ×2 puis Raid à tous les alliés), un sort SANS mécanique
+    // donnait le créneau 0 au composé positionné 0 — mais ce créneau valait
+    // aussi « en queue », et la queue passe après les dons. Le Raid partait donc
+    // avant l'Invocation, et les créatures invoquées n'en recevaient rien.
+    // La carte affichait un ordre et en jouait un autre.
     const instances = spellResolutionInstances(card);
+    const dons = getCapabilities(card).filter(
+      (c) => c.trigger === "spell_resolution" && c.effectKind === "grant");
+    const nbCreneaux = instances.length + dons.length;
     const creneauCompose = (cap: import("./types").Capability): number =>
-      Math.min(cap.position ?? Number.POSITIVE_INFINITY, instances.length);
+      Math.min(cap.position ?? Number.POSITIVE_INFINITY, nbCreneaux);
     const resoudreComposesDu = (creneau: number) => {
       runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
         { only: (cap) => creneauCompose(cap) === creneau, skipEmblems: true });
@@ -5529,17 +5775,21 @@ function resolveSpellCard(
     // Phase 3 — dons conférés par le sort (effectKind "grant"), lus depuis le
     // modèle unifié. L'adaptateur a déjà appliqué l'exclusion polymorphe
     // (isCreatureKwShadowedBySpell) et le grantScope.
-    for (const cap of getCapabilities(card)) {
-      if (cap.trigger === "spell_resolution" && cap.effectKind === "grant") {
-        applyGrantCapability(cap, caster, targetMap);
-      }
-    }
+    //
+    // Les composés s'y intercalent comme en phase 1 : un don occupe un créneau
+    // d'ordre au même titre qu'une mécanique. `dons` vient de `getCapabilities`,
+    // déjà trié dans l'ordre d'auteur — le même que celui de l'affichage.
+    dons.forEach((cap, j) => {
+      resoudreComposesDu(instances.length + j);
+      applyGrantCapability(cap, caster, targetMap);
+    });
 
     // Phase 4 — effets composés à la résolution du sort (modèle hybride) : ceux
-    // qui restent, c'est-à-dire sans position ou placés après la dernière
-    // mécanique. C'est aussi l'appel qui pose les emblèmes, une seule fois.
+    // qui restent, c'est-à-dire sans position ou placés après le DERNIER élément
+    // de la liste d'auteur, dons compris. C'est aussi l'appel qui pose les
+    // emblèmes, une seule fois — d'où `skipEmblems` sur tous les intercalés.
     runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
-      { only: (cap) => creneauCompose(cap) === instances.length });
+      { only: (cap) => creneauCompose(cap) === nbCreneaux });
     settleSpellDeaths(ctx);
 
     // Repli legacy (cartes sans mots-clés ni effets composables).
@@ -5570,6 +5820,41 @@ function appelSupreme(player: PlayerState, cands: CardInstance[] = player.deck):
   const chosen = tied[Math.floor(rng() * tied.length)];
   player.deck = player.deck.filter(c => c !== chosen);
   player.hand.push(chosen);
+}
+
+/** FAVEUR X — POINT DE RÉSOLUTION UNIQUE des quatre chemins (entrée en jeu,
+ *  déclencheur curé, sort, composé). Une seule fonction parce que Faveur n'a
+ *  aucune variante par chemin : pas de modale à ouvrir, donc pas de « repli
+ *  aléatoire quand la fenêtre ne peut pas s'ouvrir » à écrire quatre fois —
+ *  c'est précisément le genre de duplication qui a fait diverger les résolveurs
+ *  de Sélection.
+ *
+ *  `sourceCard` porte l'alignement ; absente, `getFaveurCard` retombe sur les
+ *  factions du deck (même repli que les Sélections). */
+function resolveFaveur(
+  owner: PlayerState,
+  x: number,
+  randomX: boolean,
+  sourceCard: Card | null | undefined,
+  filter?: ComposedPoolFilter,
+  seedSalt?: string,
+): void {
+  if (owner.hand.length >= MAX_HAND_SIZE) return;
+  const faveurState = {
+    factionCardPool: currentCardPools.factionCardPool,
+    allSpellsPool: currentCardPools.allSpellsPool,
+    players: [owner],
+    currentPlayerIndex: 0,
+    // `turnNumber` EST load-bearing, exactement comme pour la Sélection
+    // composée : absent, `state.turnNumber * 1000` vaut NaN, `NaN & 0xfffffff`
+    // vaut 0, et le pseudo-RNG rend 0 à chaque appel — la même carte offerte
+    // éternellement, sans la moindre erreur pour le signaler.
+    turnNumber: currentTurnNumber,
+  } as unknown as GameState;
+  const picked = getFaveurCard(faveurState, x, sourceCard ?? null, filter, randomX, seedSalt);
+  if (!picked) return;
+  owner.hand.push(createCardInstance(picked));
+  faveurSink.push({ card: picked, ownerId: owner.id });
 }
 
 /** Affaiblissement -X/-Y : baisse PERMANENTE d'ATK/PV d'une créature (miroir de
@@ -5720,7 +6005,7 @@ function resolveSpellKeywords(
         // son tour (cf. startTurn) — seule différence avec Domination, qui ne
         // pose que `trueOwnerId` et garde l'unité définitivement.
         // Sans cible explicite (sort relancé), tirage — comme le chemin créature.
-        if (ctx.caster.board.length >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
+        if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
         const corrupted = targetId
           ? ctx.opponent.board.find(c => c.instanceId === targetId)
           : ctx.opponent.board[Math.floor(rng() * ctx.opponent.board.length)];
@@ -5740,7 +6025,7 @@ function resolveSpellKeywords(
         // créature tire au hasard à son invocation, faute d'interlocuteur).
         // Sans cible explicite — sort relancé, cibles tirées au sort — on
         // retombe sur un tirage, comme le reste du chemin « Relancer ».
-        if (ctx.caster.board.length >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
+        if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
         const domIdx = targetId
           ? ctx.opponent.board.findIndex(c => c.instanceId === targetId)
           : Math.floor(rng() * ctx.opponent.board.length);
@@ -5902,7 +6187,7 @@ function resolveSpellKeywords(
       case "convocation_simple": {
         // Sort variante de Convocation X mais sans X : crée le token
         // configuré (`card.convocation_token_id`) avec ses stats par défaut.
-        if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+        if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE) break;
         const tmpl = findTokenTemplate(ctx.card.convocation_token_id);
         if (!tmpl) {
           console.warn(
@@ -5934,7 +6219,7 @@ function resolveSpellKeywords(
           );
         }
         for (const tokenDef of tokenDefs) {
-          if (ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+          if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE) break;
           const tmpl = findTokenTemplate(tokenDef.token_id);
           if (!tmpl) {
             console.warn(
@@ -6090,7 +6375,7 @@ function resolveSpellKeywords(
             const target = ctx.caster.graveyard[gravIdx];
             if (target.card.card_type === "creature"
                 && target.card.mana_cost <= maxCost
-                && ctx.caster.board.length < MAX_BOARD_SIZE) {
+                && placesOccupees(ctx.caster) < MAX_BOARD_SIZE) {
               ctx.caster.graveyard.splice(gravIdx, 1);
               // Conserve les bonus accumulés (nouvelle identité d'instance).
               returnInstanceToPlay(target);
@@ -6115,7 +6400,7 @@ function resolveSpellKeywords(
         // spell has no clan or the board is full (same fail-safe as creatures).
         const x = kw.amount ?? 1;
         const clan = ctx.card.clan;
-        if (!clan || ctx.caster.board.length >= MAX_BOARD_SIZE) break;
+        if (!clan || placesOccupees(ctx.caster) >= MAX_BOARD_SIZE) break;
         const idx = ctx.caster.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
         if (idx >= 0) {
           const [called] = ctx.caster.deck.splice(idx, 1);
@@ -6130,6 +6415,15 @@ function resolveSpellKeywords(
         // La carte au coût le plus élevé du deck du lanceur rejoint sa main
         // (au hasard si égalité) — la race éventuelle de l'instance est ignorée.
         appelSupreme(ctx.caster);
+        break;
+      }
+      case "faveur": {
+        // Un sort n'a pas d'instance sur le plateau : le sel de germe retombe
+        // sur l'id de la carte, comme pour la Sélection en forme sort. Sans lui,
+        // deux Faveurs lancées dans le même tour partageraient tout leur germe
+        // et offriraient deux fois la même carte.
+        resolveFaveur(ctx.caster, kw.amount ?? 0, kw.randomX === true, ctx.card,
+          undefined, `spell_${ctx.card.id}`);
         break;
       }
       case "rassemblement": {
@@ -6385,7 +6679,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
       break;
     }
     case "summon_token": {
-      if (ctx.caster.board.length < MAX_BOARD_SIZE) {
+      if (placesOccupees(ctx.caster) < MAX_BOARD_SIZE) {
         // Prefer id-based lookup; race lookup is legacy fallback.
         const tmpl = findTokenTemplate(effect.tokenId) ?? findTokenTemplateByRace(effect.race);
         const resolvedRace = tmpl?.race ?? effect.race;
@@ -6419,7 +6713,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
         // sa Traque et peut donc attaquer dès son retour.
         creature.hasSummoningSickness = !hasKw(creature, "charge");
         creature.instanceId = generateInstanceId();
-        if (ctx.caster.board.length < MAX_BOARD_SIZE) ctx.caster.board.push(creature);
+        if (placesOccupees(ctx.caster) < MAX_BOARD_SIZE) ctx.caster.board.push(creature);
       }
       break;
     }
@@ -6444,7 +6738,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
     case "steal": {
       if (targetId) {
         const target = findCreatureOnBoard(ctx.opponent, targetId);
-        if (target && ctx.caster.board.length < MAX_BOARD_SIZE) {
+        if (target && placesOccupees(ctx.caster) < MAX_BOARD_SIZE) {
           const idx = ctx.opponent.board.indexOf(target);
           if (idx !== -1) {
             ctx.opponent.board.splice(idx, 1);
@@ -6966,8 +7260,125 @@ function runFureurChain(
  *  d'origine), mais publie en plus le plateau cloné dans `currentBoardPlayers`.
  *  C'est le seul point où cette référence est posée — elle pointe donc toujours
  *  sur les objets RÉELLEMENT mutés par l'action en cours. */
+/** ÉQUIPER un objet en jeu sur une créature alliée, contre son `equip_cost`.
+ *
+ *  Sert aussi au DÉPLACEMENT : équiper un objet déjà porté le détache de sa
+ *  créature actuelle. Un seul point de code pour les deux gestes, parce que
+ *  c'est un seul geste — poser le lien ailleurs.
+ *
+ *  Refusé, et pourquoi :
+ *   - hors de son tour, ou objet/cible introuvables → le geste n'existe pas ;
+ *   - cible qui porte DÉJÀ un autre objet → la règle est « un par créature », et
+ *     remplacer en silence ferait disparaître une carte payée ;
+ *   - cible qui porte DÉJÀ cet objet-ci → le mana serait débité pour rien ;
+ *   - mana insuffisant.
+ *
+ *  Chaque refus rend l'état d'ORIGINE : rien n'est débité, rien ne bouge. */
+function equipItem(state: GameState, action: import("./types").EquipItemAction): GameState {
+  const newState = cloneStateForAction(state);
+  const player = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+
+  const item = objetsDe(player).find(o => o.instanceId === action.itemInstanceId);
+  if (!item) return state;
+  const cible = player.board.find(c => c.instanceId === action.targetInstanceId);
+  if (!cible) return state;
+
+  // « Un objet par créature » — sauf s'il s'agit de CET objet, auquel cas le
+  // geste est un simple gaspillage de mana, refusé lui aussi.
+  const dejaPorte = objetPorteParUnite(player, cible.instanceId);
+  if (dejaPorte) return state;
+
+  const cout = getEquipCost(item.card);
+  if (player.mana < cout) return state;
+
+  player.mana -= cout;
+  item.equippedToInstanceId = cible.instanceId;
+  // Greffe les capacités et applique le bonus de stats. AVANT les effets « à
+  // l'équipement » ci-dessous : ceux-ci peuvent lire le porteur, qui doit déjà
+  // être dans son état équipé.
+  recalculateAuras(player, opponent);
+
+  // EFFETS « À L'ÉQUIPEMENT ». Les composés `on_play` de l'objet se résolvent
+  // ICI, une fois, avec le PORTEUR pour source — c'est lui qui est sur le
+  // plateau, donc lui que le ciblage et les flèches savent désigner.
+  //
+  // Pourquoi ici et pas dans la greffe : le porteur est déjà en jeu, rien ne
+  // rejouera jamais son entrée. Un `on_play` greffé sur sa carte resterait
+  // inerte à jamais, sans rien signaler. L'équipement EST l'entrée en jeu de la
+  // capacité — c'est la règle qu'on s'est donnée, et voici son seul point
+  // d'application.
+  //
+  // Les EMBLÈMES de l'objet se posent au même moment, pour la même raison :
+  // `placeEmblemsForCard` n'est appelé qu'à la pose d'une carte et à la
+  // résolution d'un sort, deux moments qu'un objet équipé ne connaît pas.
+  const aDesEffetsDEquipement = (item.card.capabilities ?? []).some(
+    c => c.composed && c.trigger === "on_play");
+  if (aDesEffetsDEquipement || (item.card.capabilities ?? []).some(c => c.effectKind === "emblem")) {
+    placeEmblemsForCard(item.card, player, opponent);
+    runComposedCapsForCard(item.card, "on_play", cible, player, opponent, undefined, undefined,
+      { skipEmblems: true });
+    // Un effet d'équipement peut tuer (dégâts de zone) : on règle les morts et
+    // on recalcule, comme après tout composé résolu hors résolution de sort.
+    const mortsP = cleanDeadCreatures(player);
+    const mortsO = cleanDeadCreatures(opponent);
+    processDeathTriggers(mortsP, player, opponent);
+    processDeathTriggers(mortsO, opponent, player);
+    recalculateAuras(player, opponent);
+  }
+
+  newState.lastAction = action;
+  return newState;
+}
+
+/** SACRIFIER un objet en jeu : il part au cimetière, gratuitement.
+ *
+ *  Le seul moyen, dans tout le jeu, de faire partir un objet du plateau — rien
+ *  ne peut ni l'attaquer ni le détruire. Sans cette action, un joueur qui pose
+ *  trois objets s'ampute définitivement de trois places, contre lui-même et
+ *  sans recours.
+ *
+ *  Le porteur perd son bonus au recalcul qui suit, et le plancher à 1 PV du
+ *  différentiel garantit que ce retrait ne le tue pas. */
+function sacrificeItem(state: GameState, action: import("./types").SacrificeItemAction): GameState {
+  const newState = cloneStateForAction(state);
+  const player = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+
+  const restants = objetsDe(player);
+  const item = restants.find(o => o.instanceId === action.itemInstanceId);
+  if (!item) return state;
+
+  player.items = restants.filter(o => o.instanceId !== item.instanceId);
+  // Le lien est effacé AVANT le départ : l'instance s'en va au cimetière, d'où
+  // elle peut revenir (Rappel, Exhumation…), et elle n'a rien à y emporter d'un
+  // porteur qu'elle ne sert plus.
+  item.equippedToInstanceId = null;
+  player.graveyard.push(item);
+  recalculateAuras(player, opponent);
+
+  newState.lastAction = action;
+  return newState;
+}
+
 function cloneStateForAction(state: GameState): GameState {
   const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  // Les VIVIERS sont écartés du clonage — ils pèsent des milliers de cartes et
+  // ne changent jamais — puis RÉ-ATTACHÉS ICI, par référence.
+  //
+  // Ce ré-attachement était à la charge de chaque appelant, et c'était un piège
+  // à retardement : `equip_item` et `sacrifice_item`, écrits sans lui, rendaient
+  // un état SANS vivier. La perte était définitive (chaque action relit l'état
+  // précédent) et parfaitement SILENCIEUSE — Sélection, Invocation, Faveur et
+  // Déchainement cessaient tous de produire quoi que ce soit, sans une erreur.
+  // Signalé en partie : « sélection magique ne fonctionne plus », puis « les
+  // invocations non plus ».
+  //
+  // Le faire ici plutôt que chez l'appelant rend l'oubli IMPOSSIBLE. Les
+  // ré-attachements explicites qui subsistent chez les appelants historiques
+  // sont désormais redondants, et inoffensifs.
+  next.factionCardPool = state.factionCardPool;
+  next.allSpellsPool = state.allSpellsPool;
   currentBoardPlayers = next.players;
   currentActionState = next;
   return next;
@@ -8026,8 +8437,17 @@ function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): im
   // EXACT. Le « ? » n'y désigne plus un X tiré une fois pour toute l'offre mais
   // un coût tiré POUR CHAQUE carte, entre 1 et X — tirer X ici ramènerait les
   // trois cartes au même coût et ferait mentir la case.
+  //
+  // FAVEUR rejoint l'exception, pour une raison VOISINE mais pas identique.
+  // Elle n'offre qu'une carte : « tirer X ici, puis chercher au coût exact X »
+  // et « tirer le coût de l'unique carte entre 1 et X » donnent bien la même
+  // loi uniforme. Ce qui diffère est le silence — `tirer` ne regarde pas le
+  // vivier, donc il peut rendre un coût auquel AUCUNE commune ne répond, et la
+  // Faveur fizzle sans rien dire. `getFaveurCard` tire au contraire parmi les
+  // coûts réellement peuplés (même règle que `offreSelection`), ce qui exige
+  // que le drapeau lui parvienne intact.
   if (composed.content === "selection" || composed.content === "selection_magique"
-    || composed.content === "renfort_royal") return composed;
+    || composed.content === "renfort_royal" || composed.content === "faveur") return composed;
   const tirer = (plafond: number | undefined): number | undefined => {
     if (plafond == null || plafond < 1) return plafond;
     return 1 + Math.floor(rng() * plafond);
@@ -8255,7 +8675,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // cimetière (visuellement et pour les comptages type "X morts ce
     // tour").
     if (hasKw(c, "resurrection") && !c.hasUsedResurrection) {
-      if (owner.board.length < MAX_BOARD_SIZE) {
+      if (placesOccupees(owner) < MAX_BOARD_SIZE) {
         const newKeywords = c.card.keywords.filter(kw => kw !== "resurrection");
         // Réutilise l'instance pour CONSERVER ses bonus ; elle perd Résurrection
         // (gravée dans son card). returnInstanceToPlay recompose maxHealth avec
@@ -8287,7 +8707,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Pacte de sang: invoque deux tokens 1/1 de sa race
     if (hasKw(c, "pacte_de_sang")) {
-      for (let i = 0; i < 2 && owner.board.length < MAX_BOARD_SIZE; i++) {
+      for (let i = 0; i < 2 && placesOccupees(owner) < MAX_BOARD_SIZE; i++) {
         let tokenCard: Card = {
           id: -1, name: `Token ${c.card.race || ""}`.trim(),
           mana_cost: 0, card_type: "creature",
@@ -8828,7 +9248,7 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "convocation": {
-      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const tmpl = findTokenTemplate(source.card.convocation_token_id);
       if (!tmpl) return;
       const atk = x > 0 ? x : tmpl.attack;
@@ -8853,7 +9273,7 @@ function resolveCuratedKeywordEffect(
       // Mort / tap / retour / fin de tour / attaque : crée une copie exacte de
       // la source (même logique que l'effet on-play). Le clone entre frais ;
       // pas de récursion (il n'est pas repassé par un flux de déclenchement).
-      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       owner.board.push(makeDedoublementClone(source));
       break;
     }
@@ -8883,7 +9303,7 @@ function resolveCuratedKeywordEffect(
       // Crée tous les tokens configurés (mêmes que l'effet on-play) lors d'un
       // déclenchement mort / tap / retour en main.
       for (const tokenDef of source.card.convocation_tokens ?? []) {
-        if (owner.board.length >= MAX_BOARD_SIZE) break;
+        if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
         const tmpl = findTokenTemplate(tokenDef.token_id);
         if (!tmpl) continue;
         const atk = tokenDef.attack ?? tmpl.attack;
@@ -9089,7 +9509,7 @@ function resolveCuratedKeywordEffect(
       // que le chemin on-play (engine.ts:playCard). En mode curé, le X vient
       // de l'instance (inst.x) ; à défaut on retombe sur max(1, coût − 1).
       const clan = source.card.clan;
-      if (!clan || owner.board.length >= MAX_BOARD_SIZE) break;
+      if (!clan || placesOccupees(owner) >= MAX_BOARD_SIZE) break;
       const cost = inst?.x ?? Math.max(1, source.card.mana_cost - 1);
       const idx = owner.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= cost);
       if (idx >= 0) {
@@ -9171,6 +9591,15 @@ function resolveCuratedKeywordEffect(
       appelSupreme(owner);
       return;
     }
+    case "faveur": {
+      // Même résolution sur TOUS les déclencheurs, y compris "attack" et "draw"
+      // — les deux flux synchrones qui forcent les Sélections au tirage
+      // aveugle. Faveur tire déjà au hasard par nature : il n'y a rien à
+      // dégrader, donc aucune branche à écrire.
+      resolveFaveur(owner, inst?.x ?? 0, inst?.randomX === true, source.card,
+        undefined, source.instanceId);
+      return;
+    }
     case "rassemblement": {
       if (!source.card.race || owner.deck.length === 0) return;
       const xR = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["rassemblement"] || Math.max(1, Math.floor(source.card.mana_cost / 2)));
@@ -9200,7 +9629,7 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "convocation_simple": {
-      if (owner.board.length >= MAX_BOARD_SIZE) return;
+      if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const tmplS = findTokenTemplate(source.card.convocation_token_id);
       if (!tmplS) return;
       let tokenCardS: Card = {
@@ -9222,7 +9651,7 @@ function resolveCuratedKeywordEffect(
     case "domination": {
       // Prend le contrôle PERMANENT d'une unité ennemie au hasard (comme
       // l'effet d'invocation — déjà aléatoire, aucun picker à différer).
-      if (opponent.board.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const idxD = Math.floor(rng() * opponent.board.length);
       const stolen = opponent.board.splice(idxD, 1)[0];
       stolen.hasSummoningSickness = true;
@@ -9233,7 +9662,7 @@ function resolveCuratedKeywordEffect(
     case "corruption": {
       // Vole une unité ennemie AU HASARD (le fallback aléatoire existe déjà à
       // l'invocation) ; elle gagne Traque et l'agressivité immédiate.
-      if (opponent.board.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const stealTarget = opponent.board[Math.floor(rng() * opponent.board.length)];
       opponent.board = opponent.board.filter(c => c !== stealTarget);
       stealTarget.originalOwnerId = opponent.id;
@@ -9254,7 +9683,7 @@ function resolveCuratedKeywordEffect(
       // sinon sur la dérivation `coût - 1`, même défaut que le chemin d'entrée.
       const xE = inst?.x ?? getCardKwX(source.card, "exhumation", inst?.mode, Math.max(1, source.card.mana_cost - 1));
       const resurrectable = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature" && c.card.mana_cost <= xE);
-      if (resurrectable.length === 0 || owner.board.length >= MAX_BOARD_SIZE) return;
+      if (resurrectable.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const targetE = resurrectable[Math.floor(rng() * resurrectable.length)];
       owner.graveyard = owner.graveyard.filter(c => c !== targetE);
       returnInstanceToPlay(targetE);
@@ -10368,7 +10797,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           console.warn(
             `[engine] Hero power ${effect.keywordId}: tokenId manquant sur le pouvoir de "${heroDef.name}".`,
           );
-        } else if (player.board.length < MAX_BOARD_SIZE) {
+        } else if (placesOccupees(player) < MAX_BOARD_SIZE) {
           const tmpl = findTokenTemplate(effect.tokenId);
           if (!tmpl) {
             console.warn(
@@ -10641,6 +11070,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   sequentialHitsSink = [];
   damageLedgerSink = [];
   drawTriggerSink = [];
+  faveurSink = [];
   abilitySfxSink = [];
   exileCostSink = [];
   topdeckCostSink = [];
@@ -10673,6 +11103,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "end_turn": result = endTurn(state); break;
     case "hero_power": result = useHeroPower(state, action); break;
     case "tap_activate": result = tapActivate(state, action); break;
+    case "equip_item": result = equipItem(state, action); break;
+    case "sacrifice_item": result = sacrificeItem(state, action); break;
     case "concede": result = concede(state, action); break;
     case "resolve_pending_trigger": result = resolvePendingTrigger(state, action); break;
     case "spend_epargne": result = spendEpargne(state, action); break;
@@ -10727,6 +11159,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // pioche, pour que le store les révèle comme des sorts lancés.
   if (drawTriggerSink.length > 0 && result !== state) {
     result.drawTriggerEvents = [...(result.drawTriggerEvents ?? []), ...drawTriggerSink];
+  }
+  // Rattache les cartes offertes par une Faveur, dans l'ordre où elles ont été
+  // tirées, pour que le store les révèle aux DEUX joueurs.
+  if (faveurSink.length > 0 && result !== state) {
+    result.faveurEvents = [...(result.faveurEvents ?? []), ...faveurSink];
   }
   // SINGULIER : dernier alignement de l'action. Couvre les changements de
   // contrôle (Conquête, Corruption, Domination) et toute carte créée depuis le
@@ -10865,8 +11302,8 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   // Même règle que dans playCard : sans assez de cartes à exiler, injouable.
   if (getExileCost(card.card) > player.deck.length) return false;
   // Sacrifices free up board slots, so the test compares the final board size.
-  if (card.card.card_type === "creature" &&
-      player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+  if (occupeUnePlace(card.card) &&
+      placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
   // Un SORT qui réclame une cible et n'en trouve AUCUNE ne partirait que dans le
   // vide : il se consumerait sans effet, et le joueur perdrait carte et mana
   // sans rien obtenir. Vu en partie avec « Marque de Faiblesse » (Affaiblissement
@@ -10980,8 +11417,8 @@ export function eveilArrivalBlocker(state: GameState, cardInstanceId: string): E
   const sacrificeCost = getSacrificeCost(card);
   if (player.board.length < sacrificeCost) return "plateau";
   if (getExileCost(card) > player.deck.length) return "deck";
-  if (card.card_type === "creature"
-    && player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return "board_plein";
+  if (occupeUnePlace(card)
+    && placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return "board_plein";
   if (card.card_type === "spell") {
     const slots = getSpellTargetSlots(card);
     if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
@@ -11382,8 +11819,8 @@ export function canPlayFromGraveyard(state: GameState, cardInstanceId: string): 
   const sacrificeCost = getSacrificeCost(card);
   if (player.board.length < sacrificeCost) return false;
   if (getExileCost(card) > player.deck.length) return false;
-  if (card.card_type === "creature"
-    && player.board.length - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+  if (occupeUnePlace(card)
+    && placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
   // Même garde que depuis la main : un sort sans AUCUNE cible se consumerait
   // dans le vide, et ici la carte n'aurait même plus de Seconde vie à retenter.
   if (card.card_type === "spell") {
@@ -11738,7 +12175,7 @@ function resolveMultipleInvocations(
     return;
   }
   for (const cost of costs) {
-    if (owner.board.length >= MAX_BOARD_SIZE) break;
+    if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
     resolveInvocationSummon(owner, sourceCard, cost, pool, formatCode, { race, faction });
   }
 }
@@ -11758,7 +12195,7 @@ function resolveInvocationSummon(
   // au lieu d'un coût exact, et le hasard porte sur la créature tirée.
   plafond = false,
 ): void {
-  if (owner.board.length >= MAX_BOARD_SIZE) return;
+  if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
   const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
   const buckets = selectionFactionBuckets(sourceCard, owner);
@@ -11823,7 +12260,7 @@ function resolveDesignatedSummon(
   spellsPool: Card[] | undefined,
   sourceName: string,
 ): void {
-  if (owner.board.length >= MAX_BOARD_SIZE) return;
+  if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
   const def = [...(factionPool ?? []), ...(spellsPool ?? [])].find((c) => c.id === cardId);
   if (!def) {
     console.warn(`[engine] Invocation désignée : carte id=${cardId} introuvable dans les pools du match pour « ${sourceName} » — no-op.`);
@@ -12129,6 +12566,81 @@ export function getSelectionCards(
   return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng);
 }
 
+/** FAVEUR X : UNE carte commune, tirée au hasard, de l'alignement de la source
+ *  (ou neutre). Même vivier exactement que Sélection X — `selectionFactionBuckets`
+ *  puis rareté Commune et `matchesPoolFilter` — et le même régime de coût :
+ *  X EXACT par défaut, « 1 à X » quand `randomX` est levé.
+ *
+ *  Ce qui diffère de `getSelectionCards`, et pourquoi c'est une fonction à part
+ *  plutôt qu'un `.slice(0, 1)` de celle-ci :
+ *
+ *  1. Le QUOTA D'ALIGNEMENT 2:1 n'a aucun sens sur une carte unique — il dit
+ *     « au plus une neutre sur trois ». Sur un tirage isolé, l'appliquer
+ *     reviendrait à interdire purement et simplement le neutre. Faveur tire
+ *     donc UNIFORMÉMENT sur l'union des deux paniers : une commune neutre est
+ *     exactement aussi probable qu'une commune de l'alignement propre, à
+ *     effectif de vivier égal.
+ *  2. En régime « 1 à X », `offreSelection` tire un coût PAR CARTE ; ici il n'y
+ *     a qu'une carte, donc un seul tirage de coût, et il doit porter sur les
+ *     coûts RÉELLEMENT peuplés (tirer un coût vide rendrait `null` en silence,
+ *     et la Faveur fizzlerait sans que rien ne l'explique).
+ *
+ *  Le germe reste semé sur l'état visible (+2999, distinct des autres tirages)
+ *  pour que les deux clients désignent la MÊME carte sans consommer la RNG
+ *  partagée. Rend `null` quand aucune carte ne répond. */
+export function getFaveurCard(
+  state: GameState,
+  x: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
+  // « ? » : le coût est tiré entre 1 et X au lieu de valoir exactement X.
+  randomX = false,
+  // Identifiant de la source : distingue deux exemplaires de la MÊME carte
+  // résolus au même instant (cf. saltDeSource).
+  seedSalt?: string,
+): Card | null {
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return null;
+
+  const player = state.players[state.currentPlayerIndex];
+  const buckets = selectionFactionBuckets(source ?? null, player);
+  const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
+  const vivier = pool.filter(c =>
+    c.faction
+    && allowedFactions.has(c.faction)
+    && c.rarity === "Commune"
+    && matchesPoolFilter(c, filter),
+  );
+  if (vivier.length === 0) return null;
+
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 2999 + saltDeSource(seedSalt);
+  let hash = seed;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+
+  // Régime de coût. X ≤ 0 : aucun filtre (une carte sans amplitude saisie tire
+  // dans tout le vivier) — même repli historique que les Sélections.
+  let candidats: Card[];
+  if (x <= 0) {
+    candidats = vivier;
+  } else if (!randomX) {
+    candidats = vivier.filter(c => c.mana_cost === x);
+  } else {
+    // Tirage du coût parmi ceux RÉELLEMENT peuplés entre 1 et X.
+    const coutsDisponibles = [...new Set(
+      vivier.filter(c => c.mana_cost >= 1 && c.mana_cost <= Math.max(1, x)).map(c => c.mana_cost),
+    )].sort((a, b) => a - b);
+    if (coutsDisponibles.length === 0) return null;
+    const cout = coutsDisponibles[Math.floor(pseudoRng() * coutsDisponibles.length)];
+    candidats = vivier.filter(c => c.mana_cost === cout);
+  }
+  if (candidats.length === 0) return null;
+  return candidats[Math.floor(pseudoRng() * candidats.length)];
+}
+
 /** Sélection magique : propose jusqu'à 3 sorts communs partageant
  *  l'alignement de la carte source (bon/neutre/maléfique). Le pool est lu
  *  dans state.allSpellsPool (chargé une fois au démarrage du match). Si la
@@ -12190,7 +12702,7 @@ export function getMagicalSelectionCards(
  *  qui ne vit que sur l'instance. */
 export function selectionAmplitudeOnPlay(
   card: Card,
-  id: "selection" | "selection_magique" | "renfort_royal",
+  id: "selection" | "selection_magique" | "renfort_royal" | "faveur",
 ): { x: number; randomX: boolean } {
   const cap = getCapabilities(card).find(c => c.abilityId === id && c.trigger === "on_play" && c.effectKind !== "emblem");
   return { x: cap?.params?.x ?? 0, randomX: cap?.params?.randomX === true };

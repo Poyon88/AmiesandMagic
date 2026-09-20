@@ -73,6 +73,9 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   // sur Y en fait un plafond, exactement comme le mot-clé.
   dechainement: { content: "dechainement", magnitude: { x: 1, y: 1 } },
   selection: { content: "selection", magnitude: { x: 1 } },
+  // Faveur X : même vivier que Sélection, une carte, sans choix. Le « ? » y
+  // tire le coût de l'unique carte entre 1 et X (cf. getFaveurCard).
+  faveur: { content: "faveur", magnitude: { x: 1 } },
   selection_magique: { content: "selection_magique", magnitude: { x: 1 } },
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },
   // Le X/Y et la race/clan sont saisis ensuite dans la ligne (appartenance).

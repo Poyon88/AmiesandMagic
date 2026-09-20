@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { getInstanceCenter, curvedPath } from "@/lib/fx/overlayMotion";
+import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 
 // Touch devices have no continuous cursor position to anchor the arrow tail.
 // Players already see valid targets via per-component pulsing highlights
@@ -13,7 +14,7 @@ const isTouchDevice =
   ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 interface TargetingArrowProps {
-  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "hero_power" | "cost_payment" | "tap" | "pending_trigger" | "equip";
   sourceInstanceId: string | null;
   hoveredTargetId: string | null;
 }
@@ -116,6 +117,9 @@ export default function TargetingArrow({
         : m === "creature" ? "#2ecc71"
         : m === "hero_power" ? "#F68D09"
         : m === "tap" ? "#F68D09"
+        // Bronze de l'équipement : la même teinte que l'objet et sa pastille de
+        // coût, pour que la flèche dise d'elle-même ce qu'elle va faire.
+        : m === "equip" ? OBJET_TEINTE
         : "#a855f7";
       pathRef.current.setAttribute("stroke", color);
       glowPathRef.current.setAttribute("stroke", color);

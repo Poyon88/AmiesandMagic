@@ -122,8 +122,8 @@
         "desc": "Halbiert erlittenen Kampfschaden (aufgerundet); Zaubrerschaden wird nicht reduziert."
       },
       "commandement": {
-        "label": "Kommando",
-        "desc": "+1/+1 für eure Verbündeten {faction_de}."
+        "label": "Kommando X",
+        "desc": "+X/+X für eure Verbündeten {faction_de}."
       },
       "fureur": {
         "label": "Raserei",
@@ -361,6 +361,10 @@
         "label": "Auswahl X",
         "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; füge eine davon deiner Hand hinzu."
       },
+      "faveur": {
+        "label": "Gunst X",
+        "desc": "Legt eine zufällige gewöhnliche Karte {alignment} mit Kosten X auf deine Hand."
+      },
       "selection_magique": {
         "label": "Magische Auswahl X",
         "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten X auf; füge einen davon deiner Hand hinzu."
@@ -595,6 +599,10 @@
         "label": "Auswahl X",
         "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten ≤ X auf; füge eine davon deiner Hand hinzu"
       },
+      "faveur": {
+        "label": "Gunst X",
+        "desc": "Legt eine zufällige gewöhnliche Karte {alignment} mit Kosten X auf deine Hand."
+      },
       "selection_magique": {
         "label": "Magische Auswahl X",
         "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten ≤ X auf; füge einen davon deiner Hand hinzu"
@@ -805,6 +813,7 @@
         "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
         "retour_differe": "legt unter das Deck ihres Besitzers",
         "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
+        "faveur": "legt eine zufällige Karte{filter} (Kosten {x}) auf deine Hand",
         "selection_magique": "deckt 3 Zauber{filter} auf (Kosten {x}) und behält einen davon auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
         "occurrences": "{n}-mal: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Wähle eine oder mehrere Kreaturen: sie werden unverändert in dieser Reihenfolge beschworen (dieselbe Karte kann mehrfach gewählt werden). Ohne Auswahl: Zufallszug zu Kosten X nach den Filtern.",
     "tuteur_card_hint": "Wähle eine oder mehrere Karten, Kreaturen oder Zauber: sie kommen in dieser Reihenfolge auf deine Hand. Dieselbe Karte kann mehrfach gewählt werden (so viele Exemplare). Ohne Auswahl bewirkt der Effekt nichts.",
     "content_selection": "Auswahl (1 von 3)",
+    "content_faveur": "Gunst (1 zufällige Karte → Hand)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
     "label_pool_faction": "POOL — FRAKTION",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Anzahl der verbündeten Kreaturen, die der Spieler opfern muss, um diese Karte zu spielen.",
     "exile_cost_hint": "Anzahl der Karten, die oben vom Deck des Spielers entfernt werden. Verbannt: Sie landen nicht auf dem Friedhof und sind unwiederbringlich.",
     "topdeck_cost_hint": "Anzahl der Karten, die der Spieler aus seiner Hand oben auf sein Deck zurücklegt. Sie wandern nicht auf den Friedhof: Er wird sie zurückziehen. Tempokosten, nicht reduzierbar.",
+    "equip_label": "Ausrüst.",
+    "equip_cost_hint": "OBJEKTE — Manakosten, um das Objekt einer verbündeten Kreatur anzulegen. Bei JEDEM Anlegen fällig, auch beim Umlegen. 0 = gratis.",
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
     "topdeck_label": "RÜCKZUG",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "nur ein Zweig markiert: Der Effekt wird normal ausgeführt",
     "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
+    "random_hint_faveur": "Die gewährte Karte würfelt ihre Kosten zwischen 1 und {max}. Ohne das Kästchen kostet sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
     "content_tuteur": "Tutor (benannte Karten → Hand)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ Gegenzauber!",
     "draw_trigger_self": "🃏 Effekt bei deinem Kartenziehen ausgelöst",
     "draw_trigger_opponent": "🃏 Effekt beim gegnerischen Kartenziehen ausgelöst",
+    "faveur_self": "🎁 Gunst — Karte auf deine Hand gelegt",
+    "faveur_opponent": "🎁 Gunst — Karte auf die gegnerische Hand gelegt",
     "spell_grant_all_allies": " · an alle Verbündeten",
     "spell_grant_target": " · an die Zielkreatur",
     "fire_breath_label": "Feueratem",

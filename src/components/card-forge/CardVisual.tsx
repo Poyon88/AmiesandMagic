@@ -74,7 +74,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Terreur":          "👁️",
   "Pauvreté X":       "📉",
   "Armure":           "/icons/armure.png",
-  "Commandement":     "👑",
+  "Commandement X":   "👑",
   "Fureur":           "💢",
   "Double Attaque":   "⚔️",
   "Invisible":        "👻",
@@ -186,6 +186,8 @@ interface CardData {
   exileCost?: number;
   topdeckCost?: number;
   eveilCost?: number;
+  /** OBJETS : coût d'équipement, second coût en mana. */
+  equipCost?: number;
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
@@ -366,7 +368,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
           exile_cost: card!.exileCost ?? 0, topdeck_cost: card!.topdeckCost ?? 0,
         }, card!.name)}
       />
-      {card!.type === "Unité" && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} />}
+      {/* Les stats d'un OBJET sont le BONUS qu'il conférera : même paire de
+          boucliers, même lecture — ce que la carte ajoute au combat. */}
+      {(card!.type === "Unité" || card!.type === "Objet") && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} />}
 
       {/* ── Top bar: name + additional costs ── */}
       <div style={{
@@ -413,7 +417,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const badgeColor = grantScope === "target" ? "#cfd8dc" : fac.color;
               const scopeNote = isAllAllies ? ` · ${t('detail_note_all_allies')}` : "";
               return (
-                <div key={kw} title={`${displayName}${scopeNote}: ${displayDesc}`} style={{ order: (card!.type === "Unité" ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)),
+                <div key={kw} title={`${displayName}${scopeNote}: ${displayDesc}`} style={{ order: ((card!.type === "Unité" || card!.type === "Objet") ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)),
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
                   padding: `0 ${badgeText != null ? 5 * s : 0}px`,
                   background: `${badgeColor}33`, border: `1px solid ${badgeColor}88`,
@@ -602,7 +606,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 : null;
               const detailNote = detailScope === "all_allies" ? t('detail_note_all_allies') : detailScope === "target" ? t('detail_note_target') : "";
               return (
-                <div key={kw} style={{ order: (card!.type === "Unité" ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
+                <div key={kw} style={{ order: ((card!.type === "Unité" || card!.type === "Objet") ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={forgeKeywordId(kw)} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>

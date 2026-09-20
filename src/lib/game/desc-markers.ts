@@ -4,6 +4,7 @@ import type { SafeT } from "@/i18n/config";
 import { getAlignmentLabel, getClanName, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import { getClanForm, getFactionForm, getRaceForm } from "@/lib/card-engine/race-forms";
 import { getKeywordDisplayLabel } from "./keyword-labels";
+import { KEYWORD_DEFAULT_X } from "./abilities";
 
 // Marqueurs de description partagés par les DEUX registres : mots-clés créature
 // (keyword-display.ts) et mots-clés de sort (spell-keywords.ts). Une capacité
@@ -249,9 +250,16 @@ export function resolveMarkers(
     const resolver = extra?.[key] ?? BASE_RESOLVERS[key];
     return resolver?.(kw, ctx, t) ?? marker(key, t) ?? literal;
   });
-  if (ctx.x != null) {
-    const alea = (ctx.randomX ?? ctx.instance?.randomX) === true && ctx.x > 1;
-    s = s.replace(/X/g, alea ? plageAleatoire(ctx.x, t) : String(ctx.x));
+  // X ABSENT : on retombe sur le X implicite de la capacité (KEYWORD_DEFAULT_X)
+  // avant de renoncer. Sans ce repli, une capacité devenue scalable après coup
+  // décrivait « +X/+X à vos alliés » sur toutes les cartes d'avant la
+  // conversion — la lettre à l'écran, au lieu du chiffre qu'elles appliquent
+  // réellement. Même repli, même table et même raison que du côté du LIBELLÉ
+  // (applyKeywordValueToLabel).
+  const x = ctx.x ?? KEYWORD_DEFAULT_X[kw];
+  if (x != null) {
+    const alea = (ctx.randomX ?? ctx.instance?.randomX) === true && x > 1;
+    s = s.replace(/X/g, alea ? plageAleatoire(x, t) : String(x));
   }
   const y = ctx.y ?? ctx.instance?.y;
   if (y != null) {

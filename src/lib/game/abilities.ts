@@ -304,11 +304,23 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
+  // COMMANDEMENT X — aura de faction, désormais scalable. `cost` reste à 13 :
+  // la formule de la forge est `cost + costPerX * (X - 1)`, donc X = 1 vaut
+  // exactement l'ancien forfait et les 50 cartes déjà en base gardent leur prix
+  // au point près.
+  //
+  // `costPerX: 11` est LE nombre à revoir après essai. La maison escompte
+  // d'ordinaire la montée (Résistance 5/3, Régénération 13/7, Sélection 9/4 :
+  // 45 à 60 % du coût de base), parce que la plupart des capacités rendent de
+  // moins en moins par point. Une aura de plateau, elle, est franchement
+  // LINÉAIRE : Commandement 2 vaut le double de Commandement 1, multiplié par
+  // le nombre d'alliés. D'où un escompte volontairement faible (85 %) plutôt
+  // que l'habituel.
   commandement: {
-    id: "commandement", label: "Commandement", symbol: "👑",
-    desc: "+1/+1 à vos alliés {faction_de}.",
+    id: "commandement", label: "Commandement X", symbol: "👑",
+    desc: "+X/+X à vos alliés {faction_de}.",
     applicable_to: ["creature"],
-    creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
+    creature: { cost: 13, costPerX: 11, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
   },
   fureur: {
     id: "fureur", label: "Fureur", symbol: "💢",
@@ -861,6 +873,32 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: {
       desc: "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main",
+      params: ["amount"], needsTarget: false,
+    },
+  },
+  // FAVEUR X — la petite sœur SANS CHOIX des Sélections. Même vivier exactement
+  // (communes de l'alignement propre ou neutre, cf. selectionFactionBuckets),
+  // même régime de coût (X exact, ou « 1 à X » avec le drapeau randomX), mais
+  // UNE carte, tirée au hasard, qui rejoint la main directement.
+  //
+  // Conséquence de conception, et c'est tout l'intérêt : aucune modale, donc
+  // aucun déclencheur différé, donc aucun repli « tour adverse / mode attaque »
+  // à écrire. Faveur se résout entièrement sur place, à l'identique sur les
+  // quatre chemins (entrée en jeu, déclencheur curé, sort, composé).
+  //
+  // Calibrage : Sélection X (1 parmi 3) vaut 9 / +4 par point / se 2.5, tier 2.
+  // Faveur rend la même carte en retirant le choix — strictement plus faible,
+  // d'où 7 / +4 / se 2.0, tier 1. À réajuster après essai en partie.
+  faveur: {
+    id: "faveur", label: "Faveur X", symbol: "🎁",
+    desc: "Ajoute en main une commune {alignment} de coût X, au hasard.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 7, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Mixte",
+      desc: "Ajoute en main une commune {alignment} de coût X, au hasard.",
+    },
+    spell: {
+      desc: "Ajoute en main une commune {alignment} de coût X, au hasard",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -1521,10 +1559,35 @@ export interface DerivedSpellKeywordDef {
 }
 
 /** Capacités dont le X peut être « tiré au hasard entre 1 et X » à chaque
- *  déclenchement (drapeau `randomX` sur l'instance). Réservé aux SÉLECTIONS :
- *  leur X est un plafond de coût, donc une borne naturelle de tirage. Une
- *  seule liste pour la forge, l'éditeur et le moteur. */
-export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal"]);
+ *  déclenchement (drapeau `randomX` sur l'instance). Réservé aux capacités dont
+ *  le X EST un coût de carte — les trois Sélections et Faveur : la borne de
+ *  tirage y est naturelle (« une carte de coût 1 à X »), là où le X d'un
+ *  Renforcement ou d'un Cataclysme ne désigne aucun coût.
+ *  Une seule liste pour la forge, l'éditeur et le moteur. */
+/** X IMPLICITE d'une capacité scalable dont la carte ne déclare aucune valeur.
+ *
+ *  Ces entrées existent parce qu'une capacité FORFAITAIRE est devenue scalable
+ *  après coup : les cartes d'avant ne portent aucun X, et sans valeur implicite
+ *  elles changeraient de puissance du jour au lendemain. Le défaut est donc
+ *  exactement l'ancien forfait.
+ *
+ *  Une SEULE table, lue par le moteur ET par le rendu du libellé, pour une
+ *  raison vécue : le moteur se contentait d'un littéral dans son résolveur,
+ *  mais `applyKeywordValueToLabel` n'avait rien à substituer et peignait le
+ *  libellé BRUT — une carte sans X affichait « Régénération X », la lettre
+ *  comprise. Les deux doivent lire le même nombre, sinon la carte ment sur ce
+ *  qu'elle fait.
+ *
+ *  Conséquence voulue : aucune migration de données n'est nécessaire pour
+ *  rendre une capacité scalable. Renseigner l'ancien forfait ici suffit. */
+export const KEYWORD_DEFAULT_X: Readonly<Record<string, number>> = {
+  // Aura de faction, forfaitaire à +1/+1 jusqu'au 2026-09-19.
+  commandement: 1,
+  // PV rendus au début du tour, forfaitaires à 2 jusqu'au 2026-09-19.
+  regeneration: 2,
+};
+
+export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal", "faveur"]);
 
 export const SPELL_KEYWORDS: Record<SpellKeywordId, DerivedSpellKeywordDef> = (() => {
   const out: Partial<Record<SpellKeywordId, DerivedSpellKeywordDef>> = {};
@@ -1677,7 +1740,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
-  "rappel", "divination", "traque_du_destin", "selection", "selection_magique", "renfort_royal",
+  "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal",
   "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
@@ -1776,6 +1839,45 @@ export function isTokenAuthorable(engineId: string): boolean {
     || CURATED_MULTIMODE_IDS.has(engineId);
 }
 
+/** La capacité a-t-elle un sens sur un OBJET ?
+ *
+ *  Un objet ne fait rien par lui-même : ses capacités sont TRANSFÉRÉES à son
+ *  porteur au moment de l'équipement (cf. le bloc de don de `recalculateAuras`).
+ *  La question n'est donc pas « un objet peut-il faire ceci ? » mais « une
+ *  capacité qui arrive sur une créature DÉJÀ EN JEU peut-elle encore partir ? ».
+ *
+ *  Trois familles répondent oui, et ce sont les mêmes que pour les tokens —
+ *  mais pour une raison différente, d'où une fonction à part plutôt qu'un alias :
+ *   - les PASSIVES / auras / réactives de combat s'appliquent à la simple
+ *     présence du mot-clé, donc dès le don ;
+ *   - les RÂLES d'agonie attendent la mort du porteur, qui est à venir ;
+ *   - les CURÉES MULTI-MODE partent sur le déclencheur explicite qu'on leur
+ *     donne (mort, activation, retour, fin de tour, attaque, bas PV).
+ *
+ *  Tout le reste a l'INVOCATION pour déclencheur naturel — et le porteur est
+ *  déjà entré en jeu quand l'objet le rejoint. Ces capacités seraient
+ *  authorables en apparence et mortes en partie : exactement le défaut que
+ *  `tokenRequiresMode` documente côté jetons.
+ *
+ *  Contrairement aux tokens, AUCUNE donnée annexe n'est hors de portée : un
+ *  objet est une carte de plein droit, avec ses colonnes `convocation_token_id`,
+ *  `entraide_race` et ses `keyword_instances`. `TOKEN_UNSUPPORTED_IDS` ne
+ *  s'applique donc pas ici. */
+export function isItemAuthorable(engineId: string): boolean {
+  return AUTOMATIC_ABILITY_IDS.has(engineId)
+    || DEATH_NATURE_IDS.has(engineId)
+    || CURATED_MULTIMODE_IDS.has(engineId);
+}
+
+/** La capacité réclame-t-elle un mode EXPLICITE pour vivre sur un objet ?
+ *  Même règle que sur un token, et même conséquence si on l'ignore : la
+ *  capacité serait proposée à l'auteur puis resterait muette en partie. */
+export function itemRequiresMode(engineId: string): boolean {
+  return CURATED_MULTIMODE_IDS.has(engineId)
+    && !AUTOMATIC_ABILITY_IDS.has(engineId)
+    && !DEATH_NATURE_IDS.has(engineId);
+}
+
 /** Effets intrinsèques « à la mort » câblés dans processDeathTriggers via
  *  `hasKw` (any-trigger). Stockés mode-undefined en legacy mais conceptuellement
  *  on_death ; le label de déclencheur est cosmétique (le moteur les trouve par
@@ -1811,6 +1913,15 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
   "augure", "fureur", "gloire", "riposte", "persecution", "souffle_de_feu", "pietinement",
   "liaison_de_vie", "paralysie", "poison", "necrophagie", "richesse",
+  // Touché mortel : réactif de COMBAT pur, lu par simple présence
+  // (`isLethalTouch` → `hasKw`), exactement comme Précision, Poison ou
+  // Piétinement ci-dessus. Son absence d'ici était une omission, pas un
+  // arbitrage : elle le rendait inauthorable sur un JETON (le garde-fou de
+  // `token-capabilities.test.ts` ne couvre que les paliers ≤ 1, et il est
+  // palier 3) et l'aurait écarté des OBJETS — alors que c'est l'archétype même
+  // de la capacité d'équipement. Sans effet en combat : les deux lecteurs de la
+  // capacité sont insensibles au déclencheur.
+  "touche_mortel",
   // Début de tour / calcul de coût
   "regeneration", "canalisation", "entraide",
 ]);
@@ -1872,3 +1983,18 @@ export function getCapabilityTriggers(cardType: CardType, abilityId: string): Ca
     ? a.triggers.spellTriggers ?? ["spell_resolution"]
     : a.triggers.creatureTriggers ?? ["on_play"];
 }
+
+/** Capacités proposables sur un OBJET, triées par libellé créature.
+ *  Dérivée de la taxonomie, jamais tenue à la main : une capacité ajoutée au
+ *  registre y entre ou non selon ce qu'elle EST, pas selon qu'on a pensé à
+ *  l'inscrire.
+ *
+ *  EN FIN DE FICHIER, et c'est obligatoire : le filtre lit les trois jeux d'ids
+ *  de la taxonomie, déclarés bien plus bas que les autres sélecteurs dérivés.
+ *  Évaluée à leur hauteur, cette constante tombait dans leur zone morte
+ *  temporelle — `ReferenceError` au premier import, que `tsc` ne signale pas.
+ *  `isItemAuthorable` et `itemRequiresMode`, eux, sont des fonctions : elles
+ *  peuvent rester près de leur documentation. */
+export const ITEM_ABILITIES: AbilityDef[] = Object.values(ABILITIES)
+  .filter((a) => a.applicable_to.includes("creature") && isItemAuthorable(creatureEngineId(a)))
+  .sort((a, b) => (a.creature?.label ?? a.label).localeCompare(b.creature?.label ?? b.label, "fr"));

@@ -122,8 +122,8 @@
         "desc": "Reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de hechizos no se reduce."
       },
       "commandement": {
-        "label": "Mando",
-        "desc": "+1/+1 a tus aliados {faction_de}."
+        "label": "Mando X",
+        "desc": "+X/+X a tus aliados {faction_de}."
       },
       "fureur": {
         "label": "Furia",
@@ -361,6 +361,10 @@
         "label": "Selección X",
         "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano."
       },
+      "faveur": {
+        "label": "Favor X",
+        "desc": "Añade a tu mano una común {alignment} de coste X, al azar."
+      },
       "selection_magique": {
         "label": "Selección mágica X",
         "desc": "Revela 3 hechizos comunes {alignment} de coste X; añade uno a la mano."
@@ -595,6 +599,10 @@
         "label": "Selección X",
         "desc": "Revela 3 comunes {alignment} de coste ≤ X; añade una a la mano"
       },
+      "faveur": {
+        "label": "Favor X",
+        "desc": "Añade a tu mano una común {alignment} de coste X, al azar."
+      },
       "selection_magique": {
         "label": "Selección mágica X",
         "desc": "Revela 3 hechizos comunes {alignment} de coste ≤ X; añade uno a la mano"
@@ -805,6 +813,7 @@
         "tactique_many": "transmite al azar {x} de sus habilidades permanentes",
         "retour_differe": "coloca bajo el mazo de su propietario",
         "selection": "revela 3 cartas{filter} (coste {x}) y se queda una en mano",
+        "faveur": "añade a tu mano una carta{filter} (coste {x}) al azar",
         "selection_magique": "revela 3 hechizos{filter} (coste {x}) y conserva uno en mano",
         "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano",
         "occurrences": "{n} veces: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Designa una o varias criaturas: se invocan tal cual, en ese orden (la misma carta puede designarse varias veces). Sin designación, tirada aleatoria al coste X según los filtros.",
     "tuteur_card_hint": "Designa una o varias cartas, criaturas o hechizos: se añaden a tu mano en ese orden. La misma carta puede designarse varias veces (tantas copias). Sin designación, el efecto no hace nada.",
     "content_selection": "Selección (1 de 3)",
+    "content_faveur": "Favor (1 carta al azar → mano)",
     "content_renfort_royal": "Selección Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENENCIA",
     "label_pool_faction": "POOL — FACCIÓN",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Número de criaturas aliadas que el jugador debe sacrificar para jugar esta carta.",
     "exile_cost_hint": "Número de cartas retiradas de la parte superior del mazo del jugador. Exiliadas: no van al cementerio y no se pueden recuperar.",
     "topdeck_cost_hint": "Número de cartas que el jugador coloca de vuelta desde su mano encima de su mazo. No van al cementerio: las robará de nuevo. Coste de tempo, no reducible.",
+    "equip_label": "Equip.",
+    "equip_cost_hint": "OBJETOS — coste en maná para equipar el objeto en una criatura aliada. Se paga en CADA equipamiento, traslados incluidos. 0 = gratis.",
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "EXILIO",
     "topdeck_label": "REPLIEGUE",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "solo una rama marcada: el efecto se resuelve normalmente",
     "alternative_warn_triggers": "ramas en disparadores distintos: no se excluyen entre sí",
     "random_hint_selection": "Cada carta revelada saca SU PROPIO coste, entre 1 y {max}. Sin marcar, las tres cuestan exactamente {max}.",
+    "random_hint_faveur": "La carta concedida saca su coste entre 1 y {max}. Sin la casilla, vale exactamente {max}.",
     "content_appel": "Llamada desde el mazo",
     "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",
     "content_tuteur": "Tutor (cartas designadas → mano)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ ¡Contrahechizo!",
     "draw_trigger_self": "🃏 Efecto activado con tu robo",
     "draw_trigger_opponent": "🃏 Efecto activado con el robo del rival",
+    "faveur_self": "🎁 Favor — carta añadida a tu mano",
+    "faveur_opponent": "🎁 Favor — carta añadida a la mano rival",
     "spell_grant_all_allies": " · a todos los aliados",
     "spell_grant_target": " · a la criatura objetivo",
     "fire_breath_label": "Aliento de Fuego",

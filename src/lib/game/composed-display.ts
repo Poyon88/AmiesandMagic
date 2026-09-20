@@ -142,6 +142,9 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.tactique_many": "transmet au hasard {x} de ses capacités permanentes",
   "content.retour_differe": "place sous le deck de son propriétaire",
   "content.selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
+  // Faveur : « au hasard » est la moitié de l'effet, il doit être dit — sans lui
+  // la phrase se lirait comme un Tuteur, où le joueur désigne la carte.
+  "content.faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
   "content.selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
   "pool.race": " de race {v}",
@@ -323,6 +326,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "tactique": return { symbol: KEYWORD_SYMBOLS.tactique, keyword: "tactique" };
     case "retour_differe": return { symbol: KEYWORD_SYMBOLS.retour_differe, keyword: "retour_differe" };
     case "selection": return { symbol: KEYWORD_SYMBOLS.selection, keyword: "selection" };
+    case "faveur": return { symbol: KEYWORD_SYMBOLS.faveur, keyword: "faveur" };
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
     // L'APPEL emprunte l'icône et le nom d'« Appel du clan », le mot-clé le plus
@@ -594,6 +598,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "selection":
     case "selection_magique":
     case "renfort_royal":
+    case "faveur":
       return frag(t, `content.${eff.content}`, { x: xAff, filter: describePoolFilter(eff, t) });
     default: return String(eff.content);
   }

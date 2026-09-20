@@ -110,7 +110,7 @@ describe("interdits assouplis", () => {
     expect(FACTIONS["Elfes Noirs"].forbiddenKeywords).not.toContain("Régénération X");
     // Interdits finaux inchangés.
     expect(FACTIONS["Elfes Noirs"].forbiddenKeywords).toEqual(
-      expect.arrayContaining(["Loyauté", "Commandement", "Bouclier", "Bénédiction", "Bravoure"]),
+      expect.arrayContaining(["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"]),
     );
   });
 });

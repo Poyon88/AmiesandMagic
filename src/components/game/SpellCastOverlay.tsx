@@ -295,6 +295,24 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               </div>
             )}
 
+            {/* Bannière « Faveur » : même besoin que ci-dessus — la carte n'est
+                pas jouée — mais un message distinct, car elle ne sort pas du
+                deck et n'a déclenché aucun effet. Doré, la couleur du cadeau,
+                pour ne pas se confondre avec le cyan de la pioche. */}
+            {event.handGift && (
+              <div style={{
+                fontSize: "0.72rem",
+                color: "#d4a800",
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: "0.04em",
+                textShadow: "0 1px 3px rgba(0,0,0,0.95)",
+                marginTop: -2,
+              }}>
+                {event.handGift === "self" ? t('faveur_self') : t('faveur_opponent')}
+              </div>
+            )}
+
             {card && (
               <>
                 {/* Mana + Faction */}

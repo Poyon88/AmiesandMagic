@@ -122,8 +122,8 @@
         "desc": "Dimezza i danni da combattimento subiti (arrotondati per eccesso); i danni da magie non vengono ridotti."
       },
       "commandement": {
-        "label": "Comando",
-        "desc": "+1/+1 ai tuoi alleati {faction_de}."
+        "label": "Comando X",
+        "desc": "+X/+X ai tuoi alleati {faction_de}."
       },
       "fureur": {
         "label": "Furia",
@@ -361,6 +361,10 @@
         "label": "Selezione X",
         "desc": "Rivela 3 comuni {alignment} di costo X; aggiungine una in mano."
       },
+      "faveur": {
+        "label": "Favore X",
+        "desc": "Aggiunge alla vostra mano una comune {alignment} di costo X, a caso."
+      },
       "selection_magique": {
         "label": "Selezione Magica X",
         "desc": "Rivela 3 incantesimi comuni {alignment} di costo X; aggiungine uno in mano."
@@ -595,6 +599,10 @@
         "label": "Selezione X",
         "desc": "Rivela 3 comuni {alignment} di costo ≤ X; aggiungine una in mano"
       },
+      "faveur": {
+        "label": "Favore X",
+        "desc": "Aggiunge alla vostra mano una comune {alignment} di costo X, a caso."
+      },
       "selection_magique": {
         "label": "Selezione Magica X",
         "desc": "Rivela 3 incantesimi comuni {alignment} di costo ≤ X; aggiungine uno in mano"
@@ -805,6 +813,7 @@
         "tactique_many": "trasmette a caso {x} delle sue capacità permanenti",
         "retour_differe": "mette sotto il deck del proprietario",
         "selection": "rivela 3 carte{filter} (costo {x}) e ne tiene una in mano",
+        "faveur": "aggiunge alla vostra mano una carta{filter} (costo {x}) a caso",
         "selection_magique": "rivela 3 incantesimi{filter} (costo {x}) e ne tiene uno in mano",
         "renfort_royal": "rivela 3 carte da collezione{filter} (costo {x}) e ne tiene una in mano",
         "occurrences": "{n} volte: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Designa una o più creature: vengono evocate così come sono, in quest'ordine (la stessa carta può essere designata più volte). Senza designazione, pesca casuale al costo X secondo i filtri.",
     "tuteur_card_hint": "Designa una o più carte, creature o magie: vengono aggiunte alla tua mano in quest'ordine. La stessa carta può essere designata più volte (altrettante copie). Senza designazione, l'effetto non fa nulla.",
     "content_selection": "Selezione (1 su 3)",
+    "content_faveur": "Favore (1 carta a caso → mano)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
     "label_pool_membership": "POOL — APPARTENENZA",
     "label_pool_faction": "POOL — FAZIONE",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Numero di creature alleate che il giocatore deve sacrificare per giocare questa carta.",
     "exile_cost_hint": "Numero di carte rimosse dalla cima del mazzo del giocatore. Esiliate: non finiscono nel cimitero e non sono recuperabili.",
     "topdeck_cost_hint": "Numero di carte che il giocatore rimette dalla mano in cima al proprio deck. Non finiscono nel cimitero: verranno ripescate. Costo di tempo, non riducibile.",
+    "equip_label": "Equip.",
+    "equip_cost_hint": "OGGETTI — costo in mana per equipaggiare l'oggetto su una creatura alleata. Pagato a OGNI equipaggiamento, spostamenti inclusi. 0 = gratis.",
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "ESILIO",
     "topdeck_label": "RIPIEGO",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "un solo ramo selezionato: l'effetto si risolve normalmente",
     "alternative_warn_triggers": "rami su inneschi diversi: non si escludono a vicenda",
     "random_hint_selection": "Ogni carta rivelata estrae IL PROPRIO costo, fra 1 e {max}. Senza la casella, tutte e tre costano esattamente {max}.",
+    "random_hint_faveur": "La carta concessa estrae il suo costo tra 1 e {max}. Senza la casella, vale esattamente {max}.",
     "content_appel": "Richiamo dal mazzo",
     "content_appel_supreme": "Richiamo Supremo (mazzo → mano, la più costosa)",
     "content_tuteur": "Tutore (carte designate → mano)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ Contromagia!",
     "draw_trigger_self": "🃏 Effetto attivato alla vostra pesca",
     "draw_trigger_opponent": "🃏 Effetto attivato alla pesca avversaria",
+    "faveur_self": "🎁 Favore — carta aggiunta alla vostra mano",
+    "faveur_opponent": "🎁 Favore — carta aggiunta alla mano avversaria",
     "spell_grant_all_allies": " · a tutti gli alleati",
     "spell_grant_target": " · alla creatura bersaglio",
     "fire_breath_label": "Soffio di Fuoco",

@@ -122,8 +122,8 @@
         "desc": "Reduces combat damage taken by half (rounded up); spell damage is not reduced."
       },
       "commandement": {
-        "label": "Command",
-        "desc": "+1/+1 to your {faction_de} allies."
+        "label": "Command X",
+        "desc": "+X/+X to your {faction_de} allies."
       },
       "fureur": {
         "label": "Fury",
@@ -361,6 +361,10 @@
         "label": "Selection X",
         "desc": "Reveal 3 {alignment} commons with cost X; add one to your hand."
       },
+      "faveur": {
+        "label": "Favour X",
+        "desc": "Adds a random common {alignment} card of cost X to your hand."
+      },
       "selection_magique": {
         "label": "Arcane Selection X",
         "desc": "Reveal 3 {alignment} common spells with cost X; add one to your hand."
@@ -595,6 +599,10 @@
         "label": "Selection X",
         "desc": "Reveal 3 {alignment} commons with cost ≤ X; add one to your hand"
       },
+      "faveur": {
+        "label": "Favour X",
+        "desc": "Adds a random common {alignment} card of cost X to your hand."
+      },
       "selection_magique": {
         "label": "Magic Selection X",
         "desc": "Reveal 3 {alignment} common spells with cost ≤ X; add one to your hand"
@@ -805,6 +813,7 @@
         "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
         "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
+        "faveur": "adds a random card{filter} (cost {x}) to your hand",
         "selection_magique": "reveals 3 spells{filter} (cost {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
         "occurrences": "{n} times: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Pick one or more creatures: they are summoned as is, in that order (the same card can be picked several times). Without a pick, a random draw at cost X according to the filters.",
     "tuteur_card_hint": "Pick one or more cards, creatures or spells: they are added to your hand in that order. The same card can be picked several times (that many copies). Without a pick, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
+    "content_faveur": "Favour (1 random card → hand)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",
     "label_pool_faction": "POOL — FACTION",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Number of allied creatures the player must sacrifice to play this card.",
     "exile_cost_hint": "Number of cards removed from the top of the player's deck. Exiled: they never reach the graveyard and cannot be recovered.",
     "topdeck_cost_hint": "Number of cards the player places from their hand back on top of their deck. They don't go to the graveyard: the player will draw them again. Tempo cost, not reducible.",
+    "equip_label": "Equip",
+    "equip_cost_hint": "ITEMS — mana cost to attach the item to a friendly creature. Paid on EVERY equip, including moves. 0 = free.",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
     "topdeck_label": "TOPDECK",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "only one branch checked: the effect resolves normally",
     "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
+    "random_hint_faveur": "The granted card rolls its cost between 1 and {max}. Without the box, it costs exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
     "content_tuteur": "Tutor (named cards → hand)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ Counterspell!",
     "draw_trigger_self": "🃏 Effect triggered on your draw",
     "draw_trigger_opponent": "🃏 Effect triggered on opponent's draw",
+    "faveur_self": "🎁 Favour — card added to your hand",
+    "faveur_opponent": "🎁 Favour — card added to the opponent's hand",
     "spell_grant_all_allies": " · to all allies",
     "spell_grant_target": " · to the targeted creature",
     "fire_breath_label": "Fire Breath",

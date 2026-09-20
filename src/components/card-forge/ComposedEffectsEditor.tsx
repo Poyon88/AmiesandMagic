@@ -72,6 +72,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // Aucune cible : les sorts déchainés tirent les leurs au hasard.
   { v: "dechainement", l: "Déchainement X/Y (sorts aléatoires)", target: "none", xy: true },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
+  { v: "faveur", l: "Faveur (1 carte au hasard → main)", target: "none" },
   { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
 ];
@@ -79,7 +80,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur"]);
 
 /** Contenus incompatibles avec la répartition au hasard, malgré un bloc de
  *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
@@ -211,8 +212,14 @@ export default function ComposedEffectsEditor({
         // Les SÉLECTIONS ne tirent pas leur amplitude une fois pour toutes :
         // chaque carte révélée tire son propre coût. L'infobulle doit le dire,
         // sinon la case promet la mauvaise chose.
+        //
+        // FAVEUR partage le régime mais pas la phrase : elle n'offre qu'UNE
+        // carte, et lui promettre que « les trois » valent X serait un
+        // contresens pur et simple.
         title={inerte ? tr('random_needs_ceiling')
-          : tr(RANDOM_X_ABILITY_IDS.has(eff.content) ? 'random_hint_selection' : 'random_hint', { max: plafond })}
+          : tr(eff.content === "faveur" ? 'random_hint_faveur'
+            : RANDOM_X_ABILITY_IDS.has(eff.content) ? 'random_hint_selection'
+            : 'random_hint', { max: plafond })}
         style={{
           display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9,
           color: inerte ? "#ccc" : eff.magnitude?.[champ] ? "#b3541e" : "#666",

@@ -122,8 +122,8 @@
         "desc": "所受战斗伤害减半（向上取整）；法术伤害不受此效果影响。"
       },
       "commandement": {
-        "label": "统率",
-        "desc": "你的{faction_de}盟友获得+1/+1。"
+        "label": "统率 X",
+        "desc": "你的{faction_de}盟友获得+X/+X。"
       },
       "fureur": {
         "label": "狂怒",
@@ -361,6 +361,10 @@
         "label": "抉择 X",
         "desc": "展示3张费用为X的{alignment}普通卡；选择一张加入手牌。"
       },
+      "faveur": {
+        "label": "恩惠 X",
+        "desc": "随机将一张费用为X的{alignment}普通牌加入你的手牌。"
+      },
       "selection_magique": {
         "label": "魔法抉择 X",
         "desc": "展示3张费用为X的{alignment}普通法术；选择一张加入手牌。"
@@ -595,6 +599,10 @@
         "label": "甄选 X",
         "desc": "展示3张费用≤X的{alignment}普通卡；选择一张加入手牌"
       },
+      "faveur": {
+        "label": "恩惠 X",
+        "desc": "随机将一张费用为X的{alignment}普通牌加入你的手牌。"
+      },
       "selection_magique": {
         "label": "魔法甄选 X",
         "desc": "展示3张费用≤X的{alignment}普通法术；选择一张加入手牌"
@@ -805,6 +813,7 @@
         "tactique_many": "随机传授自身的{x}个永久技能",
         "retour_differe": "放到其拥有者牌库底",
         "selection": "展示3张{filter}卡牌（费用为 {x}），并保留其中一张至手牌",
+        "faveur": "随机将一张费用为{x}的牌{filter}加入你的手牌",
         "selection_magique": "展示3张{filter}法术（费用为{x}），并留其中一张入手",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
         "occurrences": "{n} 次：",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "指定一个或多个生物：它们按此顺序原样被召唤（同一张牌可指定多次）。未指定时，按筛选条件以费用 X 随机抽取。",
     "tuteur_card_hint": "指定一张或多张牌（生物或法术）：它们按此顺序加入你的手牌。同一张牌可指定多次（获得相应数量的副本）。未指定时，此效果无作用。",
     "content_selection": "选择（三选一）",
+    "content_faveur": "恩惠（随机1张牌 → 手牌）",
     "content_renfort_royal": "皇家甄选（三选一）",
     "label_pool_membership": "卡池 — 归属",
     "label_pool_faction": "卡池 — 阵营",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "出此牌时玩家须牺牲的我方生物数量。",
     "exile_cost_hint": "从玩家牌库顶部移除的牌数。被放逐的牌不会进入墓地，且无法回收。",
     "topdeck_cost_hint": "玩家从手牌放回牌库顶部的卡牌数量。这些卡不会进入墓地：玩家之后会重新抽到它们。节奏消耗，不可减免。",
+    "equip_label": "装备",
+    "equip_cost_hint": "物件 — 将物件装备到友方生物上的法力费用。每次装备（含转移）都要支付。0 为免费。",
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "仅勾选了一个分支：该效果将正常结算",
     "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
+    "random_hint_faveur": "获得的牌在1到{max}之间随机决定费用。不勾选则恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
     "content_tuteur": "导师（指定卡牌→手牌）",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ 反制！",
     "draw_trigger_self": "🃏 效果在你抽牌时触发",
     "draw_trigger_opponent": "🃏 效果在对手抽牌时触发",
+    "faveur_self": "🎁 恩惠 — 一张牌加入你的手牌",
+    "faveur_opponent": "🎁 恩惠 — 一张牌加入对手的手牌",
     "spell_grant_all_allies": " · 对所有友方单位",
     "spell_grant_target": " · 对目标生物",
     "fire_breath_label": "烈焰吐息",

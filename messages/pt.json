@@ -122,8 +122,8 @@
         "desc": "Reduz à metade o dano de combate recebido (arredondado para cima); dano de magias não é reduzido."
       },
       "commandement": {
-        "label": "Comando",
-        "desc": "+1/+1 aos seus aliados {faction_de}."
+        "label": "Comando X",
+        "desc": "+X/+X aos seus aliados {faction_de}."
       },
       "fureur": {
         "label": "Fúria",
@@ -361,6 +361,10 @@
         "label": "Seleção X",
         "desc": "Revela 3 comuns {alignment} de custo X; adicione uma à mão."
       },
+      "faveur": {
+        "label": "Favor X",
+        "desc": "Adiciona à sua mão uma comum {alignment} de custo X, ao acaso."
+      },
       "selection_magique": {
         "label": "Seleção Mágica X",
         "desc": "Revela 3 feitiços comuns {alignment} de custo X; adicione um à mão."
@@ -595,6 +599,10 @@
         "label": "Seleção X",
         "desc": "Revela 3 comuns {alignment} de custo ≤ X; adicione uma à mão"
       },
+      "faveur": {
+        "label": "Favor X",
+        "desc": "Adiciona à sua mão uma comum {alignment} de custo X, ao acaso."
+      },
       "selection_magique": {
         "label": "Seleção Mágica X",
         "desc": "Revela 3 feitiços comuns {alignment} de custo ≤ X; adicione um à mão"
@@ -805,6 +813,7 @@
         "tactique_many": "transmite ao acaso {x} das suas habilidades permanentes",
         "retour_differe": "coloca debaixo do deck de seu dono",
         "selection": "revela 3 cartas{filter} (custo {x}) e mantém uma na mão",
+        "faveur": "adiciona à sua mão uma carta{filter} (custo {x}) ao acaso",
         "selection_magique": "revela 3 feitiços{filter} (custo {x}) e mantém um na mão",
         "renfort_royal": "revela 3 cartas de coleção{filter} (custo {x}) e mantém uma na mão",
         "occurrences": "{n} vezes: ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Designe uma ou várias criaturas: são invocadas tal como estão, nessa ordem (a mesma carta pode ser designada várias vezes). Sem designação, sorteio aleatório ao custo X segundo os filtros.",
     "tuteur_card_hint": "Designe uma ou várias cartas, criaturas ou feitiços: são adicionadas à sua mão nessa ordem. A mesma carta pode ser designada várias vezes (outras tantas cópias). Sem designação, o efeito não faz nada.",
     "content_selection": "Seleção (1 de 3)",
+    "content_faveur": "Favor (1 carta ao acaso → mão)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
     "label_pool_membership": "POOL — PERTENÇA",
     "label_pool_faction": "POOL — FACÇÃO",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Número de criaturas aliadas que o jogador deve sacrificar para jogar esta carta.",
     "exile_cost_hint": "Número de cartas removidas do topo do baralho do jogador. Exiladas: não vão para o cemitério e não podem ser recuperadas.",
     "topdeck_cost_hint": "Número de cartas que o jogador recoloca da mão no topo do seu deck. Elas não vão para o cemitério: ele voltará a comprá-las. Custo de tempo, não redutível.",
+    "equip_label": "Equip.",
+    "equip_cost_hint": "OBJETOS — custo em mana para equipar o objeto numa criatura aliada. Pago em CADA equipamento, incluindo deslocações. 0 = grátis.",
     "sacrifice_label": "SACRIFÍCIO",
     "exile_label": "EXÍLIO",
     "topdeck_label": "RECOLOCAÇÃO",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "só um ramo marcado: o efeito resolve-se normalmente",
     "alternative_warn_triggers": "ramos em gatilhos diferentes: não se excluem",
     "random_hint_selection": "Cada carta revelada tira O SEU PRÓPRIO custo, entre 1 e {max}. Sem a caixa, as três custam exatamente {max}.",
+    "random_hint_faveur": "A carta concedida sorteia o seu custo entre 1 e {max}. Sem a caixa, vale exatamente {max}.",
     "content_appel": "Chamado do baralho",
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",
     "content_tuteur": "Tutor (cartas designadas → mão)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ Contramagia!",
     "draw_trigger_self": "🃏 Efeito ativado quando você compra uma carta",
     "draw_trigger_opponent": "🃏 Efeito ativado quando o adversário compra",
+    "faveur_self": "🎁 Favor — carta adicionada à sua mão",
+    "faveur_opponent": "🎁 Favor — carta adicionada à mão adversária",
     "spell_grant_all_allies": " · a todos os aliados",
     "spell_grant_target": " · à criatura alvo",
     "fire_breath_label": "Sopro de Fogo",

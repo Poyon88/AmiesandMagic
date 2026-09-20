@@ -4,12 +4,13 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
+import { OBJET_TEINTE, OBJET_GLYPHE } from "@/lib/game/objet-theme";
 import { SELECTABLE_IMAGE_MODELS } from "@/lib/ai/image-models";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { additionalCostPoints, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { additionalCostPoints, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -22,7 +23,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
 import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
@@ -181,6 +182,8 @@ interface ForgeCard {
   exileCost?: number;
   topdeckCost?: number;
   eveilCost?: number;
+  /** OBJETS : coût d'équipement, second coût en mana payé à chaque équipement. */
+  equipCost?: number;
   // Effets composés (modèle hybride) — pour l'aperçu CardVisual.
   capabilities?: Capability[] | null;
 }
@@ -1731,6 +1734,18 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [manualSacrificeCost, setManualSacrificeCost] = useState(0);
   const [manualExileCost, setManualExileCost] = useState(0);
   const [manualTopdeckCost, setManualTopdeckCost] = useState(0);
+  // OBJETS : second coût en mana, payé à chaque équipement.
+  const [manualEquipCost, setManualEquipCost] = useState(0);
+  /** La carte se saisit-elle comme une UNITÉ ? Vrai pour les unités et les
+   *  OBJETS : les deux portent une paire de stats (pour l'objet, c'est le bonus
+   *  qu'il confère) et des capacités de créature, et aucun des deux ne porte de
+   *  mot-clé de sort. Ce prédicat remplace les `type === "Unité"` qui voulaient
+   *  dire cela — et non « c'est une créature ». */
+  const porteStats = type === "Unité" || type === "Objet";
+  // Son inverse, `!porteStats`, veut dire « c'est un SORT » — et sept sites le
+  // disaient par `type !== "Unité"`. Sur un objet, ils affichaient le panneau
+  // « Effets du sort » et proposaient des mots-clés de sort que la sauvegarde
+  // jetait ensuite en silence (`buildSpellData` rend null hors sort).
   const [manualEveilCost, setManualEveilCost] = useState(0);
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
@@ -1833,7 +1848,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
 
 
   function buildSpellData(): { spell_keywords: SpellKeywordInstance[] | null; spell_effects: SpellComposableEffects | null } {
-    if (type === "Unité") return { spell_keywords: null, spell_effects: null };
+    if (porteStats) return { spell_keywords: null, spell_effects: null };
     return {
       spell_keywords: spellKeywords.length > 0 ? spellKeywords : null,
       spell_effects: spellEffectsData,
@@ -1852,12 +1867,21 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // et la liste des interdits de la faction reste sur le panneau de faction.
   //
   // Ni la race ni le clan n'ont jamais filtré cette liste.
+  // Capacités proposées à l'auteur. Sur un OBJET, la liste se restreint à celles
+  // qui ont un sens une fois TRANSFÉRÉES à un porteur déjà en jeu : les autres
+  // ont l'invocation pour déclencheur naturel et resteraient muettes en partie
+  // (cf. `isItemAuthorable`). Même précaution que l'onglet Tokens — on garde
+  // visible ce qui est DÉJÀ posé, sinon une capacité héritée resterait en base,
+  // invisible et impossible à retirer depuis le formulaire.
   const availableManualKeywords = Object.entries(KEYWORDS)
+    .filter(([kwName]) => type !== "Objet"
+      || isItemAuthorable(FORGE_TO_GAME_KEYWORD[kwName] ?? kwName)
+      || manualKeywords.includes(kwName))
     .sort(([a], [b]) => a.localeCompare(b, 'fr'));
 
   const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
   const manualBudgetUsed = Math.round(
-    (type === "Unité" ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
+    (porteStats ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
     // COÛTS ADDITIONNELS : ils RENDENT des points (somme négative). Un coût payé
     // en plus du mana dessert son porteur et finance donc le reste de la carte,
     // comme le font déjà Douleur X et Pauvreté X. L'éveil en est exclu : coût
@@ -1869,6 +1893,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       sacrificeCost: manualSacrificeCost,
       exileCost: manualExileCost,
       topdeckCost: manualTopdeckCost,
+      equipCost: manualEquipCost,
     })
     + manualKeywords.reduce((sum, kw) => {
       const kwDef = KEYWORDS[kw];
@@ -1886,7 +1911,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // jauge reculerait sans qu'on sache pourquoi.
   const manualCostCredit = additionalCostPoints({
     lifeCost: manualLifeCost, discardCost: manualDiscardCost, sacrificeCost: manualSacrificeCost,
-    exileCost: manualExileCost, topdeckCost: manualTopdeckCost,
+    exileCost: manualExileCost, topdeckCost: manualTopdeckCost, equipCost: manualEquipCost,
   });
   const budgetRatio = manualBudgetTotal > 0 ? manualBudgetUsed / manualBudgetTotal : 0;
   const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
@@ -1897,9 +1922,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     name: manualName || "Sans nom",
     faction, race, clan, cardAlignment, type, rarity,
     mana: manualMana,
-    attack: type === "Unité" ? manualAttack : null,
-    defense: type === "Unité" ? manualDefense : null,
-    power: type !== "Unité" ? manualPower : null,
+    attack: porteStats ? manualAttack : null,
+    defense: porteStats ? manualDefense : null,
+    power: !porteStats ? manualPower : null,
     keywords: manualKeywords,
     keywordXValues,
     keywordRandomX,
@@ -1916,7 +1941,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Déchainement X/Y": dcY,
       "Force des ancêtres +X/+Y": fdaY,
     },
-    keywordGrantScope: type !== "Unité" ? keywordGrantScope : undefined,
+    keywordGrantScope: !porteStats ? keywordGrantScope : undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
@@ -1933,13 +1958,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setIcon: cardSetId ? sets.find(s => s.id === cardSetId)?.icon : undefined,
     cardYear: cardYear || undefined,
     cardMonth: cardMonth || undefined,
-    spellKeywords: type !== "Unité" && spellKeywords.length > 0 ? spellKeywords : undefined,
+    spellKeywords: !porteStats && spellKeywords.length > 0 ? spellKeywords : undefined,
     lifeCost: manualLifeCost || undefined,
     discardCost: manualDiscardCost || undefined,
     sacrificeCost: manualSacrificeCost || undefined,
     exileCost: manualExileCost || undefined,
     topdeckCost: manualTopdeckCost || undefined,
     eveilCost: manualEveilCost || undefined,
+    equipCost: manualEquipCost || undefined,
   };
 
   // All races from all factions
@@ -2281,7 +2307,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0);
+    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2292,9 +2318,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       name: manualName || "Sans nom",
       faction, race, clan, cardAlignment, type, rarity,
       mana: manualMana,
-      attack: type === "Unité" ? manualAttack : null,
-      defense: type === "Unité" ? manualDefense : null,
-      power: type !== "Unité" ? manualPower : null,
+      attack: porteStats ? manualAttack : null,
+      defense: porteStats ? manualDefense : null,
+      power: !porteStats ? manualPower : null,
       keywords: manualKeywords,
       ability: manualAbility,
       flavorText: manualFlavorText,
@@ -2380,7 +2406,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       if (abortRef.current) break;
       // Use selected values if set, otherwise randomize
       const f = faction || pick(Object.keys(FACTIONS));
-      const t = type || pick(TYPES);
+      const t = type || pick(TYPES_ALEATOIRES);
       const r = rarity || pickRarity();
       const facData = FACTIONS[f];
       const bulkRace = race || (facData?.races ? pick(facData.races) : "");
@@ -2418,7 +2444,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // ─── SAVE TO GAME DB ─────────────────────────────────────────────────────
 
   const FORGE_TO_GAME_TYPE: Record<string, CardType> = {
-    "Unité": "creature", "Sort": "spell", "Artefact": "spell", "Magie": "spell",
+    // « Artefact » reste un SORT : c'était une étiquette de saveur bien avant
+    // que les objets n'existent, et des brouillons enregistrés s'y fient.
+    // Seul « Objet » fabrique un `item`.
+    "Unité": "creature", "Sort": "spell", "Objet": "item", "Artefact": "spell", "Magie": "spell",
   };
 
   const [saving, setSaving] = useState(false);
@@ -2461,6 +2490,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualSacrificeCost(0);
     setManualExileCost(0);
     setManualTopdeckCost(0);
+    setManualEquipCost(0);
     setManualEveilCost(0);
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
@@ -2682,6 +2712,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             exile_cost: forgeCard.exileCost ?? 0,
             topdeck_cost: forgeCard.topdeckCost ?? 0,
             eveil_cost: forgeCard.eveilCost ?? 0,
+            // Null hors objet : la colonne n'a aucun sens ailleurs, et un 0
+            // franc laisserait croire à un équipement gratuit sur un sort.
+            equip_cost: FORGE_TO_GAME_TYPE[forgeCard.type] === "item" ? (forgeCard.equipCost ?? 0) : null,
           },
           imageBase64,
           imageMimeType,
@@ -3383,7 +3416,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: "1px solid #4a90d944", background: "#fff", color: "#4a90d9", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
-                    {type === "Unité" ? (
+                    {porteStats ? (
                       <>
                         <div>
                           <label style={{ fontSize: 8, color: "#e74c3c", letterSpacing: 1 }}>ATK</label>
@@ -3445,6 +3478,19 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${REPLI_TEINTE}44`, background: "#fff", color: "#2b7f99", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
+                    {/* ÉQUIPEMENT — réservé aux OBJETS, d'où la garde : sur une
+                        unité ou un sort, le champ n'aurait aucun sens et la
+                        sauvegarde écrit `null`. Plafonné à 10 comme le mana et
+                        l'éveil, et non à 5 comme les coûts de main : c'est un
+                        coût de MANA, pas une ponction de zone. */}
+                    {type === "Objet" && (
+                      <div>
+                        <label style={{ fontSize: 8, color: OBJET_TEINTE, letterSpacing: 1 }} title={tf('equip_cost_hint')}>{OBJET_GLYPHE} {tf('equip_label')}</label>
+                        <input type="number" min={0} max={10} value={manualEquipCost} onChange={e => setManualEquipCost(Math.max(0, Math.min(10, parseInt(e.target.value) || 0)))}
+                          style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${OBJET_TEINTE}44`, background: "#fff", color: OBJET_TEINTE, fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                        />
+                      </div>
+                    )}
                     <div>
                       {/* ÉVEIL — le seul de la grille qui ne s'AJOUTE pas au
                           mana : il le REMPLACE. Plafonné à 10 comme le mana,
@@ -3458,7 +3504,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                   </div>
 
                   {/* Spell Keywords + Composable Effects Builder */}
-                  {type !== "Unité" && (
+                  {!porteStats && (
                     <div style={{ border: "1px solid #9b59b633", borderRadius: 8, padding: 8, background: "#f9f0ff" }}>
                       <label style={{ fontSize: 9, color: "#9b59b6", letterSpacing: 1, fontWeight: 700 }}>{tf('spell_effects_label')}</label>
 
@@ -3763,7 +3809,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         const isScalable = kw.scalable;
                         // On a spell, a selected conferred keyword is tinted green
                         // when it grants to all allies, faction-colored otherwise.
-                        const grantAll = type !== "Unité" && selected && keywordGrantScope[id] === "all_allies";
+                        const grantAll = !porteStats && selected && keywordGrantScope[id] === "all_allies";
                         const selColor = grantAll ? "#27ae60" : fac.color;
                         // Le X vit sur la puce, sauf quand un panneau dédié ou
                         // générique le porte déjà : la puce reste alors ronde.
@@ -3900,7 +3946,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             {/* Grant-scope picker — spells only. ◯ = créature
                                 ciblée (blanc), ⦿ = toutes les unités alliées
                                 (vert). Drives the green/white icon on the card. */}
-                            {selected && type !== "Unité" && (
+                            {selected && !porteStats && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
                                 {([["target", "◯", "#888", tf('grant_scope_target')], ["all_allies", "⦿", "#27ae60", tf('grant_scope_all_allies')]] as const).map(([val, sym, color, title]) => {
                                   const activeScope = (keywordGrantScope[id] === "all_allies" ? "all_allies" : "target") === val;
@@ -4360,7 +4406,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
 
         {/* ── CAPACITÉS (éditeur guidé par capacité) ── */}
         {tab === "capacites" && (() => {
-          const isUnit = type === "Unité";
+          // Un OBJET s'édite avec l'outillage « unité » : ce sont bien des
+          // capacités de créature qu'il porte, et c'est son PORTEUR qui les
+          // exercera. La liste proposée est en revanche restreinte plus bas.
+          const isUnit = porteStats;
           const TRIGGER_FR: Record<string, string> = {
             play: tf('trigger_on_play'), on_play: tf('trigger_on_play'),
             death: tf('trigger_on_death'), on_death: tf('trigger_on_death'),
@@ -6455,7 +6504,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   id: "am_1711234567_ab12",
   name: "Forgeron de l'Abîme",
   faction: "Nains|Elfes|Humains|Morts-vivants|Démons|Dragons",
-  type: "Unité|Sort|Artefact|Magie",
+  type: "Unité|Sort|Objet|Artefact|Magie",
   rarity: "Commune|Peu Commune|Rare|Épique|Légendaire",
   mana: "1–10",
   attack: "int (Unité) | null",

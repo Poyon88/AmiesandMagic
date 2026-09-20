@@ -11,6 +11,7 @@ import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, 
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
+import { OBJET_TEINTE, OBJET_RGB, OBJET_GLYPHE } from "@/lib/game/objet-theme";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { StatShields, statShieldsReserve } from "@/components/card/CardCounters";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
@@ -46,6 +47,10 @@ interface BoardCreatureProps {
    *  entry (gentle fade + slight rise). Distinct from `summoning` (portal FX).
    *  Piloté par la logique de jeu (store), donc jamais rejoué sur un remount. */
   entering?: boolean;
+  /** OBJET porté par cette créature, s'il y en a un. Passé par le plateau
+   *  plutôt que dérivé ici : le lien vit côté objet, et `BoardCreature` n'a pas
+   *  accès à la liste des objets du joueur. */
+  equippedItem?: CardInstance | null;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -122,6 +127,7 @@ function BoardCreature({
   onMouseEnter,
   onMouseLeave,
   onAction,
+  equippedItem,
 }: BoardCreatureProps) {
   // Vue d'AFFICHAGE (cf. HandCard) : capacités Singulier toujours visibles.
   const card = displayCardOf(creature);
@@ -676,6 +682,27 @@ function BoardCreature({
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (
         <StatusPip keyword={"poison" as Keyword} color="#22c55e" top={14} side="left" title="Empoisonné" />
+      )}
+
+      {/* OBJET ÉQUIPÉ — pastille bronze. Elle existe parce que le lien
+          porteur↔objet est autrement INVISIBLE sur le plateau : l'objet montre
+          bien qu'il sert, mais rien ne disait QUI il servait, et une créature
+          soudain à +2/+2 restait inexpliquée. Le survol donne le nom et le
+          bonus. */}
+      {equippedItem && (
+        <div
+          title={`${equippedItem.card.name} — +${equippedItem.card.attack ?? 0}/+${equippedItem.card.health ?? 0}`}
+          style={{
+            position: "absolute", top: 4, left: 4, zIndex: 3,
+            width: 18, height: 18, borderRadius: "50%",
+            background: `rgba(${OBJET_RGB},0.25)`,
+            border: `1px solid ${OBJET_TEINTE}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: OBJET_TEINTE, fontSize: 10, lineHeight: 1,
+          }}
+        >
+          {OBJET_GLYPHE}
+        </div>
       )}
 
       {/* Divine Shield indicator */}

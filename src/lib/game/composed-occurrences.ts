@@ -18,13 +18,15 @@ import type { ComposedEffect } from "./types";
  *  n'aurait semé que le doute sur celui qui compte. */
 export const OCCURRENCE_CONTENTS: ReadonlySet<string> = new Set([
   "appel", "appel_supreme", "invocation", "tuteur",
-  "selection", "selection_magique", "renfort_royal",
+  "selection", "selection_magique", "renfort_royal", "faveur",
 ]);
 
 /** Plafond dur des répétitions. Les garde-fous naturels (plateau plein, main
  *  pleine, deck épuisé) arrêtent déjà la plupart des contenus, mais PAS les
  *  Sélections : elles empilent une fenêtre de choix par passe, et une saisie
- *  aberrante laisserait le joueur derrière cinquante modales. */
+ *  aberrante laisserait le joueur derrière cinquante modales. Faveur, elle,
+ *  n'ouvre aucune fenêtre et s'arrête à la main pleine — le plafond ne la
+ *  protège de rien, il la borne simplement comme les autres. */
 export const MAX_OCCURRENCES = 10;
 
 /** Nombre de passes à exécuter. Absent, non numérique ou ≤ 1 ⇒ 1, c'est-à-dire

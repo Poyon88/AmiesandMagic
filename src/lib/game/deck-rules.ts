@@ -7,12 +7,21 @@ import { ABILITIES } from "./abilities";
 import { getCapabilities } from "./capability-adapter";
 import { CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "./constants";
 
-/** Ids de capacités NOMMÉES portées par une carte créature, dédupliqués. Une
- *  capacité est « nommée » si son `abilityId` existe dans le registre ABILITIES,
- *  ce qui exclut de fait les effets composés sur-mesure (placeholder `_composed`,
- *  absent du registre). Retourne un tableau vide hors créatures. */
+/** Ids de capacités NOMMÉES portées par une carte, dédupliqués. Une capacité est
+ *  « nommée » si son `abilityId` existe dans le registre ABILITIES, ce qui
+ *  exclut de fait les effets composés sur-mesure (placeholder `_composed`,
+ *  absent du registre).
+ *
+ *  Les OBJETS comptent, au même titre que les créatures. La limite par capacité
+ *  borne combien de fois une même capacité peut apparaître dans un deck ; or un
+ *  objet la délivre exactement comme une créature — il la TRANSFÈRE à son
+ *  porteur. Les en exempter aurait ouvert la porte de derrière : dix objets
+ *  conférant Vol pour contourner un plafond que dix créatures n'auraient pas eu
+ *  le droit de franchir.
+ *
+ *  Retourne un tableau vide pour les sorts, qui n'en portent pas. */
 export function namedCreatureCapabilityIds(card: Card): string[] {
-  if (card.card_type !== "creature") return [];
+  if (card.card_type !== "creature" && card.card_type !== "item") return [];
   const ids = new Set<string>();
   for (const cap of getCapabilities(card)) {
     if (ABILITIES[cap.abilityId]) ids.add(cap.abilityId);

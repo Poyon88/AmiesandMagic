@@ -122,8 +122,8 @@
         "desc": "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits."
       },
       "commandement": {
-        "label": "Commandement",
-        "desc": "+1/+1 à vos alliés {faction_de}."
+        "label": "Commandement X",
+        "desc": "+X/+X à vos alliés {faction_de}."
       },
       "fureur": {
         "label": "Fureur",
@@ -361,6 +361,10 @@
         "label": "Sélection X",
         "desc": "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main."
       },
+      "faveur": {
+        "label": "Faveur X",
+        "desc": "Ajoute en main une commune {alignment} de coût X, au hasard."
+      },
       "selection_magique": {
         "label": "Sélection magique X",
         "desc": "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main."
@@ -595,6 +599,10 @@
         "label": "Sélection X",
         "desc": "Révèle 3 communes {alignment} de coût ≤ X ; ajoutez-en une en main"
       },
+      "faveur": {
+        "label": "Faveur X",
+        "desc": "Ajoute en main une commune {alignment} de coût X, au hasard."
+      },
       "selection_magique": {
         "label": "Sélection magique X",
         "desc": "Révèle 3 sorts communs {alignment} de coût ≤ X ; ajoutez-en un en main"
@@ -805,6 +813,7 @@
         "tactique_many": "transmet au hasard {x} de ses capacités permanentes",
         "retour_differe": "place sous le deck de son propriétaire",
         "selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
+        "faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
         "selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
         "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
         "occurrences": "{n} fois : ",
@@ -1937,6 +1946,7 @@
     "designated_card_hint": "Désignez une ou plusieurs créatures : elles sont invoquées telles quelles, dans cet ordre (la même carte peut être désignée plusieurs fois). Sans désignation, tirage aléatoire au coût X selon les filtres.",
     "tuteur_card_hint": "Désignez une ou plusieurs cartes, créatures ou sorts : elles rejoignent votre main dans cet ordre. La même carte peut être désignée plusieurs fois (autant d'exemplaires). Sans désignation, l'effet ne fait rien.",
     "content_selection": "Sélection (1 parmi 3)",
+    "content_faveur": "Faveur (1 carte au hasard → main)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
     "label_pool_membership": "POOL — APPARTENANCE",
     "label_pool_faction": "POOL — FACTION",
@@ -2049,6 +2059,8 @@
     "sacrifice_cost_hint": "Nombre de créatures alliées que le joueur doit sacrifier pour jouer cette carte.",
     "exile_cost_hint": "Nombre de cartes retirées du dessus du deck du joueur. Exilées : elles ne rejoignent pas le cimetière et sont irrécupérables.",
     "topdeck_cost_hint": "Nombre de cartes que le joueur replace de sa main sur le dessus de son deck. Elles ne vont pas au cimetière : il les repiochera. Coût de tempo, non réductible.",
+    "equip_label": "Équip.",
+    "equip_cost_hint": "OBJETS — coût en mana pour équiper l'objet sur une créature alliée. Payé à CHAQUE équipement, déplacement compris. 0 = gratuit.",
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXIL",
     "topdeck_label": "REPLI",
@@ -2340,6 +2352,7 @@
     "alternative_warn_alone": "une seule branche cochée : l'effet se résout normalement",
     "alternative_warn_triggers": "branches sur des déclencheurs différents : elles ne s'excluent pas",
     "random_hint_selection": "Chaque carte révélée tire SON PROPRE coût, entre 1 et {max}. Sans la case, les trois valent exactement {max}.",
+    "random_hint_faveur": "La carte offerte tire son coût entre 1 et {max}. Sans la case, elle vaut exactement {max}.",
     "content_appel": "Appel depuis le deck",
     "content_appel_supreme": "Appel Suprême (deck → main, la plus chère)",
     "content_tuteur": "Tuteur (cartes désignées → main)",
@@ -2449,6 +2462,8 @@
     "spell_countered": "🛡️ Contresort !",
     "draw_trigger_self": "🃏 Effet déclenché à votre pioche",
     "draw_trigger_opponent": "🃏 Effet déclenché à la pioche adverse",
+    "faveur_self": "🎁 Faveur — carte ajoutée à votre main",
+    "faveur_opponent": "🎁 Faveur — carte ajoutée à la main adverse",
     "spell_grant_all_allies": " · à tous les alliés",
     "spell_grant_target": " · à la créature ciblée",
     "fire_breath_label": "Souffle de Feu",

@@ -35,6 +35,7 @@ const COUTS_ADD: { k: keyof typeof ADDITIONAL_COST_POINTS; nom: string; unite: s
   { k: "topdeck", nom: "Repli", unite: "par carte", note: "La carte revient : seul le tempo est payé" },
   { k: "exile", nom: "Exil", unite: "par carte", note: "Perte aveugle, cartes du deck" },
   { k: "sacrifice", nom: "Sacrifice", unite: "par allié", note: "Une unité déjà en jeu" },
+  { k: "equip", nom: "Équipement", unite: "par mana", note: "Objets : second coût, repayé à chaque déplacement" },
 ];
 
 const ETIQ: React.CSSProperties = { fontSize: 9, color: "#999", letterSpacing: 1.2 };

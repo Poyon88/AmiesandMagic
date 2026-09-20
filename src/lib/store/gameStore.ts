@@ -332,6 +332,12 @@ export interface SpellCastEvent {
   // local pour que la bannière dise qui a pioché — c'est tout l'intérêt côté
   // adversaire, qui ne voit pas la carte entrer dans la main d'en face.
   drawTrigger?: "self" | "opponent";
+  // Révélation d'une carte OFFERTE par une Faveur. Champ distinct de
+  // `drawTrigger` parce que la bannière ne dit pas la même chose : la carte ne
+  // vient pas du deck et n'a déclenché aucun effet, elle est simplement
+  // apparue en main. Porte le point de vue du client local, pour la même
+  // raison que ci-dessus.
+  handGift?: "self" | "opponent";
 }
 
 // Flèche source→cible tracée depuis la CRÉATURE qui active un pouvoir (tap)
@@ -543,7 +549,11 @@ interface GameStore {
   selectedCardInstanceId: string | null;
   selectedAttackerInstanceId: string | null;
   validTargets: string[];
-  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "hero_power" | "cost_payment" | "tap" | "pending_trigger";
+  targetingMode: "none" | "attack" | "attack_power" | "spell" | "spell_multi" | "creature" | "graveyard" | "divination" | "selection" | "hero_power" | "cost_payment" | "tap" | "pending_trigger" | "equip";
+  /** OBJET en cours d'équipement : l'objet cliqué attend sa créature.
+   *  Même schéma que `pendingTapSourceId` — une source retenue le temps que le
+   *  joueur désigne sa cible. */
+  pendingEquipItemId: string | null;
   // Id du déclencheur interactif en attente que le contrôleur résout (Remontée
   // mort/retour à son tour). null hors de ce mode.
   pendingTriggerId: string | null;
@@ -773,6 +783,13 @@ interface GameStore {
    *  pickers compris, et `amount` y est sans objet. */
   payEveilPoint: (instanceId: string, amount?: number) => GameAction | null;
   selectAttacker: (instanceId: string) => void;
+  /** OBJETS — arme le ciblage d'équipement : l'objet est retenu, et les
+   *  créatures alliées ENCORE LIBRES deviennent des cibles valides. Ne dispatche
+   *  rien ; c'est `selectTarget` qui conclut au clic suivant. */
+  startEquipItem: (itemInstanceId: string) => void;
+  /** OBJETS — sacrifie un objet en jeu. Gratuit, immédiat, sans ciblage : c'est
+   *  le seul moyen de libérer la place qu'il occupe. */
+  sacrificeItem: (itemInstanceId: string) => GameAction | null;
   selectTarget: (targetId: string) => GameAction | null;
   clearSelection: () => void;
   clearDamageEvents: () => void;
@@ -1716,6 +1733,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingTapSourceId: null,
   pendingTapInstanceIdx: null,
   pendingTapComposedUid: null,
+  pendingEquipItemId: null,
   spellTargetSlots: [],
   currentTargetSlotIndex: 0,
   collectedTargetMap: {},
@@ -2187,6 +2205,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       timestamp: Date.now() + 1 + recastSpells.length + i,
       card: dt.card,
       drawTrigger: dt.ownerId === localPlayerId ? "self" : "opponent",
+    }));
+
+    // Faveurs : le moteur a noté chaque carte tirée de la collection et glissée
+    // dans une main. Personne ne l'a vue arriver — pas même son propriétaire,
+    // qui n'a rien choisi — donc on la révèle aux DEUX joueurs avec l'overlay
+    // de sort. La numérotation des clés de montage se prolonge encore, pour la
+    // même raison que les relances : deux overlays nés dans le même tick qui
+    // partageraient une clé, et le second ne serait jamais remonté.
+    const rawFaveurs = newState.faveurEvents ?? [];
+    if (newState.faveurEvents) newState.faveurEvents = undefined;
+    const faveurSpells: SpellCastEvent[] = rawFaveurs.map((fv, i) => ({
+      spellName: fv.card.name,
+      effectText: fv.card.effect_text,
+      timestamp: Date.now() + 1 + recastSpells.length + rawDrawTriggers.length + i,
+      card: fv.card,
+      handGift: fv.ownerId === localPlayerId ? "self" : "opponent",
     }));
 
     // Detect if a spell was countered (contresort)
@@ -3014,7 +3048,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3161,6 +3195,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapSourceId: null,
         pendingTapInstanceIdx: null,
         pendingTapComposedUid: null,
+        pendingEquipItemId: null,
         pendingCreatureChain: null,
         collectedSelectionChoices: {},
         selectionPickerKeyword: null,
@@ -3195,6 +3230,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
+      pendingEquipItemId: null,
       // Posé avant les phases : la créature jouée monte en phase d'impact avec
       // `entering` vrai → entrée douce. Réécrit à chaque action donc auto-reset.
       entryEvents: playedCreatureId ? [playedCreatureId] : [],
@@ -3727,7 +3763,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     // qui leur sont antérieurs — le défaut signalé en partie.
     // Seules les relances ANTÉRIEURES à la première frontière passent ici : les
     // suivantes se révèlent chacune dans sa vague (programmerVague).
-    const revelationsAvantImpacts = drawWave ? relancesAvantFrontieres : [...relancesAvantFrontieres, ...drawTriggerSpells];
+    const revelationsAvantImpacts = [
+      ...(drawWave ? relancesAvantFrontieres : [...relancesAvantFrontieres, ...drawTriggerSpells]),
+      // Les Faveurs ne sont PAS conditionnées par `drawWave` : elles ne suivent
+      // aucune pioche, donc aucune frontière ne les repousse.
+      ...faveurSpells,
+    ];
     for (const reveal of revelationsAvantImpacts) {
       setTimeout(() => set({ spellCastEvent: reveal }), cursor);
       cursor += RECAST_GAP_MS;
@@ -4318,6 +4359,31 @@ export const useGameStore = create<GameStore>((set, get) => {
     });
   },
 
+  startEquipItem: (itemInstanceId) => {
+    const gs = get().gameState;
+    if (!gs) return;
+    const moi = gs.players[gs.currentPlayerIndex];
+    const objet = (moi.items ?? []).find(o => o.instanceId === itemInstanceId);
+    if (!objet) return;
+    // Cibles = les alliées SANS objet. La règle « un objet par créature » est
+    // déjà tenue par le moteur, qui refuse l'action ; la refléter ici évite au
+    // joueur de viser une créature qui ne peut pas l'accueillir — un refus
+    // silencieux du moteur serait illisible.
+    const libres = moi.board
+      .filter(c => !(moi.items ?? []).some(o => o.equippedToInstanceId === c.instanceId))
+      .map(c => c.instanceId);
+    set({
+      targetingMode: "equip",
+      pendingEquipItemId: itemInstanceId,
+      validTargets: libres,
+      selectedAttackerInstanceId: null,
+      selectedCardInstanceId: null,
+    });
+  },
+
+  sacrificeItem: (itemInstanceId) =>
+    get().dispatchAction({ type: "sacrifice_item", itemInstanceId }),
+
   selectTarget: (targetId) => {
     const {
       targetingMode,
@@ -4325,6 +4391,18 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedCardInstanceId,
       pendingComposedGraveyard,
     } = get();
+
+    // ÉQUIPEMENT. Placé en premier : le mode est exclusif, et la branche
+    // d'attaque juste en dessous teste `selectedAttackerInstanceId`, que
+    // `startEquipItem` a justement remis à null.
+    if (targetingMode === "equip") {
+      const itemId = get().pendingEquipItemId;
+      set({ targetingMode: "none", pendingEquipItemId: null, validTargets: [] });
+      if (!itemId) return null;
+      return get().dispatchAction({
+        type: "equip_item", itemInstanceId: itemId, targetInstanceId: targetId,
+      });
+    }
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
       // Defender chosen. If the attacker carries an "à l'attaque" composed
@@ -4944,6 +5022,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTapSourceId: null,
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
+      // L'équipement s'annule LIBREMENT (clic fond, Échap, clic droit) :
+      // contrairement à une Sélection, rien n'a encore été révélé et le joueur
+      // ne gagne aucune information en renonçant.
+      pendingEquipItemId: null,
       spellTargetSlots: [],
       currentTargetSlotIndex: 0,
       collectedTargetMap: {},

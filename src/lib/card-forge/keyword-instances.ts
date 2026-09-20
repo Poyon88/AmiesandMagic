@@ -88,6 +88,10 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
  *  doivent gagner (« Vol » → `ranged`) restent gérés par l'ordre d'insertion. */
 const LIBELLE_RETOUR_FORCE: Record<string, string> = {
   regeneration: "Régénération X",
+  // Même duel, même issue : l'alias legacy « Commandement » (brouillons et JSON
+  // d'avant le passage au X) est inséré APRÈS la base dérivée et l'emporterait,
+  // décochant la case à la réédition d'un token — capacité perdue en silence.
+  commandement: "Commandement X",
 };
 
 /** Réciproque id moteur → libellé forge. Un id visé par plusieurs libellés
