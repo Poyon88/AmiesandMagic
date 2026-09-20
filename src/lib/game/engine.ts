@@ -3019,11 +3019,11 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
       // d'agonie, l'attaque, le retour, la fin de tour et l'activation lisent
       // tous `getCapabilities(creature.card)`.
       //
-      // `on_play` est EXCLU, et c'est le point délicat : le porteur est déjà en
-      // jeu, rien ne rejouera son entrée. Un composé « à l'entrée » greffé ici
-      // serait donc inerte à jamais, sans rien signaler. Il se résout à
-      // l'ÉQUIPEMENT (cf. `equipItem`) — c'est le sens qu'on lui a donné :
-      // l'équipement EST l'entrée en jeu de la capacité.
+      // `on_play` est EXCLU, pour deux raisons qui vont dans le même sens. Il a
+      // DÉJÀ été résolu, à la pose de l'objet (cf. la branche objet de
+      // `playCard`) : le greffer le rendrait rejouable. Et il serait de toute
+      // façon inerte — le porteur est en jeu depuis longtemps, rien ne rejouera
+      // jamais son entrée.
       const composesDeLObjet = (o.card.capabilities ?? []).filter(
         cap => cap.composed && cap.trigger !== "on_play");
       if (composesDeLObjet.length > 0) {
@@ -5322,17 +5322,36 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     else if (!apprenante) player.graveyard.push(cardInstance);
     recalculateAuras(player, opponent);
   } else if (estUnObjet(card)) {
-    // OBJET — LOT 1 : il se pose, il occupe une place, et c'est tout.
+    // OBJET — il se pose sur la table et occupe une place.
     //
     // Sans cette branche, un objet tombait entre les deux précédentes : le mana
     // était débité, la carte quittait la main, et RIEN n'arrivait sur la table.
-    //
-    // Volontairement inerte à ce stade : aucun déclencheur, aucune aura, aucun
-    // recalcul. Les capacités d'un objet ne valent que porté (lot 3), et le
-    // porteur n'existe pas encore (lot 2). Ne rien faire ici est donc le
-    // comportement JUSTE, pas un trou à combler.
     if (placesOccupees(player) >= MAX_BOARD_SIZE) return state;
     player.items = [...objetsDe(player), cardInstance];
+
+    // EFFETS « À L'ARRIVÉE EN JEU ». Ils partent ICI, à la pose, comme pour
+    // n'importe quelle carte — l'arrivée en jeu d'un objet est son arrivée en
+    // jeu, et n'a RIEN à voir avec la mécanique d'équipement.
+    //
+    // Ils étaient résolus à l'équipement, sur une règle que je m'étais donnée
+    // (« l'équipement EST l'entrée en jeu de la capacité »). C'était une
+    // invention, et elle ouvrait un exploit : déplacer l'objet d'une créature à
+    // l'autre rejouait l'effet, et à coût d'équipement nul la boucle était
+    // gratuite — dix allers-retours suffisaient à vider le héros adverse.
+    // Ancré sur l'arrivée, l'effet ne part qu'UNE fois, et le déplacement ne
+    // redéclenche plus rien.
+    //
+    // La SOURCE est l'objet lui-même : il est sur la table, il porte un
+    // instanceId, et c'est lui que le joueur voit agir. Il n'a pas besoin d'un
+    // porteur — il n'en a pas encore.
+    placeEmblemsForCard(cardInstance.card, player, opponent);
+    runComposedCapsForCard(cardInstance.card, "on_play", cardInstance, player, opponent,
+      action.targetMap, undefined, { skipEmblems: true });
+    const mortsObjP = cleanDeadCreatures(player);
+    const mortsObjO = cleanDeadCreatures(opponent);
+    processDeathTriggers(mortsObjP, player, opponent);
+    processDeathTriggers(mortsObjO, opponent, player);
+    recalculateAuras(player, opponent);
   }
 
   newState.lastAction = action;
@@ -7299,33 +7318,13 @@ function equipItem(state: GameState, action: import("./types").EquipItemAction):
   // être dans son état équipé.
   recalculateAuras(player, opponent);
 
-  // EFFETS « À L'ÉQUIPEMENT ». Les composés `on_play` de l'objet se résolvent
-  // ICI, une fois, avec le PORTEUR pour source — c'est lui qui est sur le
-  // plateau, donc lui que le ciblage et les flèches savent désigner.
+  // L'équipement ne DÉCLENCHE rien. Les effets « à l'arrivée en jeu » d'un
+  // objet partent à sa POSE (cf. la branche objet de `playCard`), pas ici :
+  // arriver en jeu et s'équiper sont deux moments distincts, et les confondre
+  // rendait l'effet rejouable à chaque déplacement.
   //
-  // Pourquoi ici et pas dans la greffe : le porteur est déjà en jeu, rien ne
-  // rejouera jamais son entrée. Un `on_play` greffé sur sa carte resterait
-  // inerte à jamais, sans rien signaler. L'équipement EST l'entrée en jeu de la
-  // capacité — c'est la règle qu'on s'est donnée, et voici son seul point
-  // d'application.
-  //
-  // Les EMBLÈMES de l'objet se posent au même moment, pour la même raison :
-  // `placeEmblemsForCard` n'est appelé qu'à la pose d'une carte et à la
-  // résolution d'un sort, deux moments qu'un objet équipé ne connaît pas.
-  const aDesEffetsDEquipement = (item.card.capabilities ?? []).some(
-    c => c.composed && c.trigger === "on_play");
-  if (aDesEffetsDEquipement || (item.card.capabilities ?? []).some(c => c.effectKind === "emblem")) {
-    placeEmblemsForCard(item.card, player, opponent);
-    runComposedCapsForCard(item.card, "on_play", cible, player, opponent, undefined, undefined,
-      { skipEmblems: true });
-    // Un effet d'équipement peut tuer (dégâts de zone) : on règle les morts et
-    // on recalcule, comme après tout composé résolu hors résolution de sort.
-    const mortsP = cleanDeadCreatures(player);
-    const mortsO = cleanDeadCreatures(opponent);
-    processDeathTriggers(mortsP, player, opponent);
-    processDeathTriggers(mortsO, opponent, player);
-    recalculateAuras(player, opponent);
-  }
+  // Ce que l'équipement fait, il le fait par le recalcul ci-dessus : le bonus de
+  // stats et les capacités transférées suivent le lien, sans se redéclencher.
 
   newState.lastAction = action;
   return newState;

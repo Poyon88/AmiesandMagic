@@ -6,10 +6,16 @@
 // `capabilities`, c'est un TROISIÈME canal — donc une troisième trace de purge.
 //
 // Le point délicat, et c'est lui que la moitié de ces tests protège :
-// `on_play`. Le porteur est déjà en jeu quand l'objet le rejoint ; rien ne
-// rejouera jamais son entrée. Un composé « à l'entrée » simplement greffé
-// resterait donc inerte À JAMAIS, sans rien signaler. Il se résout à
-// l'ÉQUIPEMENT — l'équipement EST l'entrée en jeu de la capacité.
+// `on_play`. Un effet « à l'arrivée en jeu » part à la POSE de l'objet, et n'a
+// RIEN à voir avec l'équipement — ce sont deux moments distincts.
+//
+// Ils avaient d'abord été résolus à l'équipement, et cette confusion ouvrait un
+// exploit : déplacer l'objet d'une créature à l'autre rejouait l'effet, et à
+// coût d'équipement nul la boucle était gratuite (dix allers-retours vidaient
+// le héros adverse). Ancrés sur l'arrivée, ils ne partent qu'une fois.
+//
+// Le composé `on_play` est donc EXCLU de la greffe : déjà résolu à la pose, et
+// de toute façon inerte sur un porteur entré en jeu depuis longtemps.
 import { describe, expect, it } from "vitest";
 import { applyAction } from "./engine";
 import { objetsDe, uidCapaciteObjet } from "./items";
@@ -64,27 +70,55 @@ const sacrifier = (s: GameState, item: CardInstance) =>
 const pvAdverse = (s: GameState) => s.players[1].hero.hp;
 const unite = (s: GameState, nom: string) => s.players[0].board.find(c => c.card.name === nom)!;
 
-describe("Effets « à l'équipement »", () => {
-  it("un composé `on_play` de l'objet se résout à l'équipement", () => {
+describe("Effets « à l'arrivée en jeu »", () => {
+  /** Pose l'objet depuis la MAIN — c'est l'arrivée en jeu, le seul moment où
+   *  un effet `on_play` doit partir. */
+  const poser = (s: GameState, item: CardInstance) => {
+    s.players[0].hand.push(item);
+    return applyAction(s, { type: "play_card", cardInstanceId: item.instanceId } as GameAction);
+  };
+
+  it("un composé `on_play` part à la POSE de l'objet", () => {
+    const s = mkState();
+    for (const p of s.players) {
+      p.deck = Array.from({ length: 30 }, (_, i) =>
+        mkInstance(mkCard({ name: `Réserve${i}`, mana_cost: 1, attack: 1, health: 1 })));
+    }
+    const avant = pvAdverse(s);
+
+    expect(pvAdverse(poser(s, objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]))))
+      .toBe(avant - 3);
+  });
+
+  it("l'ÉQUIPER ensuite ne le rejoue pas", () => {
     const { s, item, unite: soldat } = table(
       objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]));
+    // L'objet est posé d'office sur la table ici : son effet d'arrivée est donc
+    // déjà passé, hors du champ de ce test. On mesure à partir de maintenant.
     const avant = pvAdverse(s);
 
-    expect(pvAdverse(equiper(s, item, soldat))).toBe(avant - 3);
+    expect(pvAdverse(equiper(s, item, soldat))).toBe(avant);
   });
 
-  it("il ne part PAS tant que l'objet n'est que posé", () => {
-    // « Les capacités ne valent que porté » : l'objet est là, inerte.
-    const { s } = table(objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]));
+  it("le DÉPLACER ne le rejoue pas non plus — c'était l'exploit", () => {
+    // LE test de la correction. Avec l'ancienne règle, chaque déplacement
+    // relançait l'effet ; à coût d'équipement nul, la boucle A→B→A→B était
+    // gratuite et illimitée.
+    const { s, item, unite: soldat } = table(
+      objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]));
+    s.players[0].board.push(creature("Garde"));
     const avant = pvAdverse(s);
 
-    expect(pvAdverse(applyAction(s, { type: "end_turn" } as GameAction))).toBe(avant);
+    let etat = equiper(s, item, soldat);
+    for (let i = 0; i < 4; i++) {
+      const cible = i % 2 === 0 ? "Garde" : "Soldat";
+      etat = equiper(etat, objetsDe(etat.players[0])[0], unite(etat, cible));
+    }
+
+    expect(pvAdverse(etat), "aucun dégât : l'arrivée est passée depuis longtemps").toBe(avant);
   });
 
-  it("il ne se rejoue PAS à chaque recalcul", () => {
-    // Le piège du modèle : la greffe repasse à chaque `recalculateAuras`. Si
-    // `on_play` y était greffé au lieu d'être résolu une fois à l'équipement,
-    // le héros adverse perdrait 3 PV à chaque action du jeu.
+  it("il ne se rejoue pas davantage à chaque recalcul", () => {
     const { s, item, unite: soldat } = table(
       objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]));
     const avant = pvAdverse(s);
@@ -92,19 +126,7 @@ describe("Effets « à l'équipement »", () => {
     let etat = equiper(s, item, soldat);
     for (let i = 0; i < 6; i++) etat = applyAction(etat, { type: "end_turn" } as GameAction);
 
-    expect(pvAdverse(etat)).toBe(avant - 3);
-  });
-
-  it("le déplacer sur une autre créature le rejoue — c'est un nouvel équipement", () => {
-    const { s, item, unite: soldat } = table(
-      objet("Brasier", [{ trigger: "on_play", composed: degatsAuHeros(3) }]));
-    s.players[0].board.push(creature("Garde"));
-    const avant = pvAdverse(s);
-
-    const apres1 = equiper(s, item, soldat);
-    const apres2 = equiper(apres1, objetsDe(apres1.players[0])[0], unite(apres1, "Garde"));
-
-    expect(pvAdverse(apres2)).toBe(avant - 6);
+    expect(pvAdverse(etat)).toBe(avant);
   });
 });
 
