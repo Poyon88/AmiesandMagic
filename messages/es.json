@@ -441,6 +441,10 @@
         "label": "Conquista X",
         "desc": "Añade X a tu Conquista (umbral 3). En el umbral: descubre 1 carta entre 3 del mazo rival y tómala en la mano; el contador vuelve a 0."
       },
+      "exploration": {
+        "label": "Exploración X",
+        "desc": "Añade X a tu Exploración. Cada vez que llega a 3: roba una carta y resta 3 (el resto se conserva)."
+      },
       "seconde_vie": {
         "label": "Segunda vida X",
         "desc": "Puede jugarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
@@ -695,6 +699,10 @@
         "label": "Conquista X",
         "desc": "Añade X a tu Conquista (umbral 3). En el umbral: descubre 1 carta entre 3 del mazo rival y tómala en la mano; el contador vuelve a 0"
       },
+      "exploration": {
+        "label": "Exploración X",
+        "desc": "Añade X a tu Exploración. Cada vez que llega a 3: roba una carta y resta 3 (el resto se conserva)"
+      },
       "inspiration": {
         "label": "Inspiración X",
         "desc": "Roba X cartas"
@@ -820,6 +828,7 @@
         "epargne": "añade {x} a tu contador de Ahorro",
         "foi": "añade {x} a tu contador de Fe",
         "conquete": "añade {x} a tu contador de Conquista",
+        "exploration": "añade {x} a tu contador de Exploración",
         "incineration": "devuelve {x} cartas del cementerio objetivo bajo su mazo",
         "occurrences": "{n} veces: ",
         "alternative": "A elegir: ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Ahorro (contador)",
     "content_foi": "Fe (contador)",
     "content_conquete": "Conquista (contador)",
+    "content_exploration": "Exploración (contador, roba a 3)",
     "content_incineration": "Incineración (reciclar un cementerio)",
     "content_devoration": "Devoración (destruir y absorber)",
     "content_tactique": "Táctica (comparte sus habilidades permanentes)",

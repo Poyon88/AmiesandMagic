@@ -12,7 +12,7 @@ interface Props {
   onComplete: () => void;
   /** Quel compteur a bougé : pilote l'ancre DOM (`data-<kind>-badge`) et
    *  l'icône du « +N ». Le mouvement est le même pour les deux. */
-  kind?: "epargne" | "foi" | "conquete";
+  kind?: "epargne" | "foi" | "conquete" | "exploration";
 }
 
 const DURATION_MS = 1500;
@@ -22,12 +22,20 @@ const DURATION_MS = 1500;
  *  premier qui a une surface réelle, sinon le popup atterrirait dans le coin
  *  haut-gauche. `overlayRect` (et non getBoundingClientRect) car le plateau est
  *  sous un `zoom` CSS que Safari ne répercute pas sur les coordonnées. */
-function epargneBadgeAnchor(kind: "epargne" | "foi" | "conquete", side: "mine" | "theirs"): { x: number; y: number } | null {
+function epargneBadgeAnchor(kind: "epargne" | "foi" | "conquete" | "exploration", side: "mine" | "theirs"): { x: number; y: number } | null {
   if (typeof document === "undefined") return null;
   const els = document.querySelectorAll(`[data-${kind}-badge="${side}"]`);
   for (const el of Array.from(els)) {
     const r = overlayRect(el);
     if (r.width > 0 && r.height > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+  // Repli sur le bout de la barre de mana. Ne sert qu'à l'Exploration : un gain
+  // qui tombe pile sur le palier remet le compteur à 0, donc le losange est
+  // DÉJÀ démonté quand le popup cherche son ancre — et c'est justement le gain
+  // qui fait piocher, le plus important à montrer.
+  for (const el of Array.from(document.querySelectorAll(`[data-mana-bar="${side}"]`))) {
+    const r = overlayRect(el);
+    if (r.width > 0 && r.height > 0) return { x: r.left + r.width + 14, y: r.top + r.height / 2 };
   }
   return null;
 }
@@ -101,7 +109,7 @@ export default function EpargneGainOverlay({ event, onComplete, kind = "epargne"
                   whiteSpace: "nowrap",
                 }}
               >
-                +{p.amount} {kind === "foi" ? "✨" : kind === "conquete" ? "🚩" : <GoldCoin size={16} />}
+                +{p.amount} {kind === "foi" ? "✨" : kind === "conquete" ? "🚩" : kind === "exploration" ? "🧭" : <GoldCoin size={16} />}
               </span>
             </motion.div>
           </div>

@@ -63,6 +63,7 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   epargne: { content: "epargne", magnitude: { x: 1 } },
   foi: { content: "foi", magnitude: { x: 1 } },
   conquete: { content: "conquete", magnitude: { x: 1 } },
+  exploration: { content: "exploration", magnitude: { x: 1 } },
   incineration: { content: "incineration", magnitude: { x: 1 }, target: board({ entity: "hero", designation: "automatic" }) },
   retour_differe: { content: "retour_differe", target: board({ side: "any" }) },
   // Silence : la forme composée reproduit la curée À L'IDENTIQUE (une unité,

@@ -441,6 +441,10 @@
         "label": "Conquête X",
         "desc": "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0."
       },
+      "exploration": {
+        "label": "Exploration X",
+        "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)."
+      },
       "seconde_vie": {
         "label": "Seconde vie X",
         "desc": "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie."
@@ -695,6 +699,10 @@
         "label": "Conquête X",
         "desc": "Ajoute X à votre Conquête (palier 3). Au palier : prenez en main 1 carte parmi 3 du deck adverse, compteur remis à 0"
       },
+      "exploration": {
+        "label": "Exploration X",
+        "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Piochez X cartes"
@@ -820,6 +828,7 @@
         "epargne": "ajoute {x} à votre compteur d'Épargne",
         "foi": "ajoute {x} à votre compteur de Foi",
         "conquete": "ajoute {x} à votre compteur de Conquête",
+        "exploration": "ajoute {x} à votre compteur d'Exploration",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
         "occurrences": "{n} fois : ",
         "alternative": "Au choix : ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Épargne (compteur)",
     "content_foi": "Foi (compteur)",
     "content_conquete": "Conquête (compteur)",
+    "content_exploration": "Exploration (compteur, pioche à 3)",
     "content_incineration": "Incinération (recycler un cimetière)",
     "content_devoration": "Dévoration (détruire et absorber)",
     "content_tactique": "Tactique (partage ses capacités permanentes)",

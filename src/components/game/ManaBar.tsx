@@ -1,5 +1,7 @@
 "use client";
 
+import { EXPLORATION_PALIER } from "@/lib/game/constants";
+
 interface ManaBarProps {
   current: number;
   max: number;
@@ -35,6 +37,10 @@ interface ManaBarProps {
    *  main, deck adverse non vide). */
   canSpendConquete?: boolean;
   onSpendConquete?: () => void;
+  /** Compteur d'Exploration. Masqué à 0 et à null, comme la Conquête. Purement
+   *  INFORMATIF : le palier se règle tout seul dans le moteur (pioche
+   *  automatique), il n'y a donc rien à cliquer. */
+  exploration?: number | null;
   /** SINGULIER : deck de départ sans doublon. `true`/`false` pour SON propre
    *  camp (toujours connu), `true` pour l'adversaire une fois RÉVÉLÉ, `null`
    *  tant qu'il ne l'est pas (rien n'est affiché). */
@@ -49,6 +55,7 @@ export default function ManaBar({
   current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
   foi = null, canSpendFoi = false, onSpendFoi,
   conquete = null, canSpendConquete = false, onSpendConquete,
+  exploration = null,
   singleton = null,
   contresort = null,
 }: ManaBarProps) {
@@ -56,7 +63,7 @@ export default function ManaBar({
   const available = current - held;
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3" data-mana-bar={side}>
       <div className="flex gap-1">
         {Array.from({ length: max }, (_, i) => {
           // Trois états : disponible, engagé (le cristal se vide mais reste
@@ -169,6 +176,21 @@ export default function ManaBar({
             {conquete}
           </span>
         </button>
+      )}
+      {(exploration ?? 0) >= 1 && (
+        // Losange vert tendre : le seul compteur qui ne se CLIQUE pas. Au
+        // palier le moteur fait piocher et retranche le palier dans la même
+        // action — on n'y lit donc jamais que 1 ou 2.
+        <span
+          data-exploration-badge={side}
+          aria-label={`Exploration : ${exploration} sur ${EXPLORATION_PALIER}`}
+          title={`Exploration ${exploration}/${EXPLORATION_PALIER} — à ${EXPLORATION_PALIER}, pioche une carte`}
+          className="relative w-7 h-7 rotate-45 rounded-[6px] border-2 cursor-default border-lime-300/70 bg-lime-600/25"
+        >
+          <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[11px] font-bold text-lime-50 leading-none">
+            {exploration}/{EXPLORATION_PALIER}
+          </span>
+        </span>
       )}
       {singleton !== null && (
         // Losange turquoise (couleur réservée à Singulier) : plein si les

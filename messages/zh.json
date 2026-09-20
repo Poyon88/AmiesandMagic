@@ -441,6 +441,10 @@
         "label": "征服 X",
         "desc": "为你的征服计数器增加X（上限3）。达到上限时：从对手牌库的3张牌中发现1张加入手牌，计数器归零."
       },
+      "exploration": {
+        "label": "探索 X",
+        "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）。"
+      },
       "seconde_vie": {
         "label": "二次生命 X",
         "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
@@ -695,6 +699,10 @@
         "label": "征服 X",
         "desc": "为你的征服计数器增加X（上限3）。达到上限时：从对手牌库的3张牌中发现1张加入手牌，计数器归零"
       },
+      "exploration": {
+        "label": "探索 X",
+        "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）"
+      },
       "inspiration": {
         "label": "启示 X",
         "desc": "抽 X 张牌"
@@ -820,6 +828,7 @@
         "epargne": "为你的储蓄计数器增加{x}点",
         "foi": "为你的信仰计数器增加{x}点",
         "conquete": "为你的征服计数器增加{x}",
+        "exploration": "为你的探索计数器增加{x}",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "occurrences": "{n} 次：",
         "alternative": "择一：",
@@ -2443,6 +2452,7 @@
     "content_epargne": "储蓄（计数）",
     "content_foi": "信仰（计数）",
     "content_conquete": "征服（计数）",
+    "content_exploration": "探索（计数，满3抽卡）",
     "content_incineration": "焚化（回收墓地）",
     "content_devoration": "吞噬（消灭并吸收）",
     "content_tactique": "战术（分享自身永久技能）",

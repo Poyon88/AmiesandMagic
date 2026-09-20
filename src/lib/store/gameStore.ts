@@ -472,6 +472,11 @@ export interface FoiGainEvent {
 /** Gain de compteur de Conquête à animer : même contrat, troisième compteur. */
 export type ConqueteGainEvent = FoiGainEvent;
 
+/** Gain de compteur d'Exploration à animer : même contrat, quatrième compteur.
+ *  Seul des quatre à venir d'un registre MOTEUR (`explorationEvents`) plutôt
+ *  que d'un diff d'état — cf. le calcul dans `dispatchAction`. */
+export type ExplorationGainEvent = FoiGainEvent;
+
 export interface HeroPowerCastEvent {
   // Purely an FX payload (not part of hashed GameState). heroId lets the
   // overlay localise name / power via useHeroText at render time.
@@ -709,6 +714,7 @@ interface GameStore {
   epargneGainEvent: EpargneGainEvent | null;
   foiGainEvent: FoiGainEvent | null;
   conqueteGainEvent: ConqueteGainEvent | null;
+  explorationGainEvent: ExplorationGainEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -805,6 +811,7 @@ interface GameStore {
   clearEpargneGainEvent: () => void;
   clearFoiGainEvent: () => void;
   clearConqueteGainEvent: () => void;
+  clearExplorationGainEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -1764,6 +1771,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   epargneGainEvent: null,
   foiGainEvent: null,
   conqueteGainEvent: null,
+  explorationGainEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -1849,6 +1857,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         epargneGainEvent: null,
   foiGainEvent: null,
   conqueteGainEvent: null,
+  explorationGainEvent: null,
       });
       return action;
     }
@@ -2754,6 +2763,26 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Exploration : PAS un diff d'état, contrairement aux trois autres. Le
+    // palier fait piocher et retranche 3 dans la même action : 2 + 2 laisse le
+    // compteur à 1, un diff y lirait −1 et n'animerait rien. Le moteur publie
+    // donc chaque gain (`explorationEvents`), qu'on somme par camp. La pioche
+    // du palier, elle, s'anime toute seule — le diff de main la voit.
+    let explorationGainEvent: ExplorationGainEvent | null = null;
+    {
+      const rawExplorations = newState.explorationEvents ?? [];
+      if (newState.explorationEvents) newState.explorationEvents = undefined;
+      const bySide: Partial<Record<"mine" | "theirs", number>> = {};
+      for (const ev of rawExplorations) {
+        const side = ev.ownerId === localPlayerId ? "mine" : "theirs";
+        bySide[side] = (bySide[side] ?? 0) + ev.amount;
+      }
+      if (Object.keys(bySide).length > 0) {
+        explorationGainEvent = { bySide, timestamp: Date.now() };
+        if (!sfxEvents.some(e => e.type === "buff")) sfxEvents.push({ type: "buff" });
+      }
+    }
+
     // Historique latéral : construit ICI, une fois toutes les dérivations faites
     // (sort + relances, pouvoir de héros, combat, pouvoirs déclenchés, morts) et
     // AVANT que les champs d'overlay ne soient planifiés puis vidés.
@@ -3048,7 +3077,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!explorationGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3577,6 +3606,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(epargneGainEvent ? { epargneGainEvent } : {}),
         ...(foiGainEvent ? { foiGainEvent } : {}),
         ...(conqueteGainEvent ? { conqueteGainEvent } : {}),
+        ...(explorationGainEvent ? { explorationGainEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -5104,6 +5134,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearConqueteGainEvent: () => {
     set({ conqueteGainEvent: null });
+  },
+
+  clearExplorationGainEvent: () => {
+    set({ explorationGainEvent: null });
   },
 
   clearDeathEvents: () => {

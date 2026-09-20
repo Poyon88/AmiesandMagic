@@ -441,6 +441,10 @@
         "label": "Conquista X",
         "desc": "Aggiunge X alla tua Conquista (soglia 3). Alla soglia: scopri 1 carta fra 3 del mazzo avversario e prendila in mano; il contatore torna a 0."
       },
+      "exploration": {
+        "label": "Esplorazione X",
+        "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)."
+      },
       "seconde_vie": {
         "label": "Seconda vita X",
         "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
@@ -695,6 +699,10 @@
         "label": "Conquista X",
         "desc": "Aggiunge X alla tua Conquista (soglia 3). Alla soglia: scopri 1 carta fra 3 del mazzo avversario e prendila in mano; il contatore torna a 0"
       },
+      "exploration": {
+        "label": "Esplorazione X",
+        "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)"
+      },
       "inspiration": {
         "label": "Ispirazione X",
         "desc": "Pesca X carte"
@@ -820,6 +828,7 @@
         "epargne": "aggiunge {x} al tuo contatore Risparmio",
         "foi": "aggiunge {x} al tuo contatore di Fede",
         "conquete": "aggiunge {x} al tuo contatore di Conquista",
+        "exploration": "aggiunge {x} al tuo contatore di Esplorazione",
         "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
         "occurrences": "{n} volte: ",
         "alternative": "A scelta: ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Risparmio (contatore)",
     "content_foi": "Fede (contatore)",
     "content_conquete": "Conquista (contatore)",
+    "content_exploration": "Esplorazione (contatore, pesca a 3)",
     "content_incineration": "Incenerimento (riciclare un cimitero)",
     "content_devoration": "Divorare (distruggere e assorbire)",
     "content_tactique": "Tattica (condivide le sue capacità permanenti)",

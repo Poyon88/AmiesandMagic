@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CostShield, StatShields } from "@/components/card/CardCounters";
+import { CostShield, EquipToken, StatShields } from "@/components/card/CardCounters";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 import { useTranslations } from 'next-intl';
 import { FACTIONS, RARITY_MAP } from '@/lib/card-engine/constants';
@@ -370,7 +370,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       />
       {/* Les stats d'un OBJET sont le BONUS qu'il conférera : même paire de
           boucliers, même lecture — ce que la carte ajoute au combat. */}
-      {(card!.type === "Unité" || card!.type === "Objet") && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} />}
+      {(card!.type === "Unité" || card!.type === "Objet") && <StatShields atk={card!.attack ?? 0} hp={card!.defense ?? 0} bonus={card!.type === "Objet"} />}
+      {card!.type === "Objet" && <EquipToken value={card!.equipCost ?? 0} sousLeCout={card!.mana > 0} />}
 
       {/* ── Top bar: name + additional costs ── */}
       <div style={{

@@ -441,6 +441,10 @@
         "label": "Conquista X",
         "desc": "Adiciona X à sua Conquista (patamar 3). No patamar: descubra 1 carta entre 3 do baralho adversário e tome-a na mão; o contador volta a 0."
       },
+      "exploration": {
+        "label": "Exploração X",
+        "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)."
+      },
       "seconde_vie": {
         "label": "Segunda Vida X",
         "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
@@ -695,6 +699,10 @@
         "label": "Conquista X",
         "desc": "Adiciona X à sua Conquista (patamar 3). No patamar: descubra 1 carta entre 3 do baralho adversário e tome-a na mão; o contador volta a 0"
       },
+      "exploration": {
+        "label": "Exploração X",
+        "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)"
+      },
       "inspiration": {
         "label": "Inspiração X",
         "desc": "Compre X cartas"
@@ -820,6 +828,7 @@
         "epargne": "adiciona {x} ao seu contador de Poupança",
         "foi": "adiciona {x} ao seu contador de Fé",
         "conquete": "adiciona {x} ao seu contador de Conquista",
+        "exploration": "adiciona {x} ao seu contador de Exploração",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "occurrences": "{n} vezes: ",
         "alternative": "À escolha: ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Poupança (contador)",
     "content_foi": "Fé (contador)",
     "content_conquete": "Conquista (contador)",
+    "content_exploration": "Exploração (contador, compra a 3)",
     "content_incineration": "Incineração (reciclar um cemitério)",
     "content_devoration": "Devoração (destruir e absorver)",
     "content_tactique": "Tática (partilha as suas habilidades permanentes)",

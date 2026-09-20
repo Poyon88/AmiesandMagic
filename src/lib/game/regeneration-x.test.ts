@@ -77,7 +77,7 @@ describe("Régénération X", () => {
     expect(pv(unTour(inst))).toBe(6); // 2 + 4
   });
 
-  it("le X de la carte l'emporte sur celui d'un don", () => {
+  it("le X de la carte l'emporte sur un don INFÉRIEUR (cf. grant-highest-x.test.ts pour le don supérieur)", () => {
     const inst = blesse(3);
     inst.grantedKeywordX = { regeneration: 1 };
     expect(pv(unTour(inst))).toBe(5); // 2 + 3

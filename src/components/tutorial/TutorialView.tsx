@@ -29,6 +29,7 @@ import {
   MAX_EPARGNE,
   MAX_FOI,
   MAX_CONQUETE,
+  EXPLORATION_PALIER,
   MAX_EVEIL,
 } from "@/lib/game/constants";
 
@@ -294,14 +295,15 @@ function BeginnerGuide() {
 
       <Section title={tt('counters_title')}>
         <P>
-          Trois capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
-          dépensent pas en mana : chacun ouvre, d'un clic sur le compteur, une <Hi>découverte</Hi> — vous voyez trois
-          cartes et en prenez une en main.
+          Quatre capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
+          dépensent pas en mana : les trois premiers ouvrent, d'un clic sur le compteur, une <Hi>découverte</Hi> — vous
+          voyez trois cartes et en prenez une en main. Le quatrième, l'Exploration, se règle tout seul.
         </P>
         <Bullets items={[
           <><Hi>Épargne</Hi> (maximum {MAX_EPARGNE}) : dépensez tout le compteur pour choisir 1 carte parmi 3 tirées au hasard dans le jeu, de coût inférieur ou égal à votre Épargne. Le compteur repart à 0.</>,
           <><Hi>Foi</Hi> (maximum {MAX_FOI}) : choisissez 1 carte parmi 3 tirées de <Hi>votre propre deck</Hi>, de coût inférieur ou égal à votre Foi. Seul le coût de la carte prise est retiré, le reste est conservé pour une prochaine découverte.</>,
           <><Hi>Conquête</Hi> (palier {MAX_CONQUETE}) : quand le compteur atteint {MAX_CONQUETE}, choisissez 1 carte parmi 3 tirées du <Hi>deck adverse</Hi>. Elle est à vous pour le reste de la partie, jouable sans contrainte de faction, et l'adversaire ne la piochera jamais. Le compteur repart à 0 et disparaît tant qu'il est vide.</>,
+          <><Hi>Exploration</Hi> (palier {EXPLORATION_PALIER}) : le seul compteur qui ne se clique pas. Chaque fois qu'il atteint {EXPLORATION_PALIER}, vous <Hi>piochez une carte</Hi> aussitôt et {EXPLORATION_PALIER} points sont retirés — le reste est conservé, si bien qu'un gros gain peut faire piocher deux cartes. Il disparaît tant qu'il est vide.</>,
         ]} />
       </Section>
 

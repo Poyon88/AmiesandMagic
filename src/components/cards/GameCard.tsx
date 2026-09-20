@@ -3,7 +3,9 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
-import { CostShield, StatShields, cardAriaLabel, statShieldsReserve } from "@/components/card/CardCounters";
+import { CostShield, EquipToken, StatShields, cardAriaLabel, statShieldsReserve } from "@/components/card/CardCounters";
+import { getEquipCost } from "@/lib/game/items";
+import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { RightSlots, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
 import { useCardText } from "@/components/game/CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
@@ -191,6 +193,16 @@ export default function GameCard({
   // always-visible card body keeps using `s` so its layout is unchanged.
   const so = s * (useCoarsePointer() ? 1.3 : 1);
   const isCreature = card.card_type === "creature";
+  // OBJET : il porte une paire de chiffres (son bonus) et un coût d'équipement.
+  // `cadreDroit` = le cadre RECTANGULAIRE, celui d'une unité : la pointe du
+  // pentagone des sorts passe sous les écus du bas, et la main comme la forge
+  // dessinent déjà l'objet ainsi. Tout ce qui tient à la SILHOUETTE lit
+  // `cadreDroit` ; ce qui tient à la nature de la carte (couleurs de sort,
+  // portée des dons) continue de lire `isCreature`.
+  const isItem = card.card_type === "item";
+  const cadreDroit = isCreature || isItem;
+  const bonusAtk = card.attack ?? 0;
+  const bonusPv = card.health ?? 0;
 
   // `sizes` hint for the art slot (kept for the underlying <img> even though
   // the card art is served unoptimized — see the Image below). Values track the
@@ -205,7 +217,7 @@ export default function GameCard({
   const spellPointDepth = (1 - spellClipPct / 100) * h;
   const spellClipPath = `polygon(0 0, 100% 0, 100% ${spellClipPct}%, 50% 100%, 0 ${spellClipPct}%)`;
 
-  const borderColor = selected ? "#c8a84e" : isCreature ? "#3d3d5c" : "#6c3483";
+  const borderColor = selected ? "#c8a84e" : isCreature ? "#3d3d5c" : isItem ? OBJET_TEINTE : "#6c3483";
   const bgGradient = isCreature
     ? "linear-gradient(160deg, #1a1a2e, #0d0d1a)"
     : "linear-gradient(160deg, #1a0a2a, #0d0d1a)";
@@ -243,7 +255,7 @@ export default function GameCard({
           inset + card_borderRadius = 4 + 10*s. */}
       <RarityFrame
         rarity={card.rarity}
-        visible={isCreature && (isZoomed || forceRarityFrame)}
+        visible={cadreDroit && (isZoomed || forceRarityFrame)}
         inset={4}
         borderRadius={4 + 10 * s}
       />
@@ -273,22 +285,22 @@ export default function GameCard({
         setInternalShowDetails(prev => !prev);
         if (detailTimer.current) clearTimeout(detailTimer.current);
       }}
-      aria-label={cardAriaLabel(localizeName(card), displayedManaCost, isCreature ? { atk: card.attack ?? 0, hp: card.health ?? 0 } : null, rightSlotsAriaParts(card, awakenAffiche))}
+      aria-label={cardAriaLabel(localizeName(card), displayedManaCost, cadreDroit ? { atk: bonusAtk, hp: bonusPv } : null, rightSlotsAriaParts(card, awakenAffiche), isItem ? { equip: getEquipCost(card) } : null)}
       style={{
         ...LONG_PRESS_RESET_STYLE,
         width: w, height: h,
-        borderRadius: isCreature ? 10 * s : 0,
+        borderRadius: cadreDroit ? 10 * s : 0,
         position: "relative",
         // Conteneur de taille : les écus héraldiques (CardCounters) sont
         // dimensionnés en cqw, 1cqw = 1 % de la largeur de la carte.
         containerType: "inline-size",
         background: bgGradient,
-        border: isCreature ? `2px solid ${borderColor}` : "none",
-        clipPath: isCreature ? undefined : spellClipPath,
+        border: cadreDroit ? `2px solid ${borderColor}` : "none",
+        clipPath: cadreDroit ? undefined : spellClipPath,
         // box-shadow is clipped by clip-path, so spells use drop-shadow
         // (which follows the polygon outline) for the selected glow.
-        boxShadow: isCreature && selected ? "0 0 12px #c8a84e44" : "none",
-        filter: !isCreature && selected ? "drop-shadow(0 0 10px rgba(200,168,78,0.7))" : undefined,
+        boxShadow: cadreDroit && selected ? "0 0 12px #c8a84e44" : "none",
+        filter: !cadreDroit && selected ? "drop-shadow(0 0 10px rgba(200,168,78,0.7))" : undefined,
         overflow: "hidden",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled || dimmed ? 0.5 : 1,
@@ -352,7 +364,10 @@ export default function GameCard({
       />
       {/* ── ATK / PV : écus héraldiques en bas à droite (créatures seulement).
              Carte « catalogue » : valeurs de la définition, ton neutre. ── */}
-      {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
+      {cadreDroit && <StatShields atk={bonusAtk} hp={bonusPv} bonus={isItem} />}
+      {/* ── ÉQUIPEMENT (objets) : sous l'écu de mana — les deux se paient en
+             mana. Affiché à 0 aussi : « gratuit » est une information. ── */}
+      {isItem && <EquipToken value={getEquipCost(card)} sousLeCout={displayedManaCost > 0} />}
 
       {/* ── Card name — top bar (ocre, 2 lignes, ombre). Padding horizontal
              pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}
@@ -381,7 +396,7 @@ export default function GameCard({
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         // À droite : la place des écus ATK / PV (en absolu, bas droite) pour
         // que les icônes s'arrêtent avant, au lieu de passer dessous.
-        padding: `${6 * s}px ${isCreature ? `${statShieldsReserve(card.attack ?? 0, card.health ?? 0)}cqw` : `${8 * s}px`} ${isCreature ? 6 * s : spellPointDepth + 4}px ${8 * s}px`,
+        padding: `${6 * s}px ${cadreDroit ? `${statShieldsReserve(bonusAtk, bonusPv, isItem)}cqw` : `${8 * s}px`} ${cadreDroit ? 6 * s : spellPointDepth + 4}px ${8 * s}px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4 * s,
       }}>
@@ -525,7 +540,7 @@ export default function GameCard({
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: `${16 * s}px ${14 * s}px ${isCreature ? 16 * s : 16 * s + 2 * spellPointDepth}px`,
+        padding: `${16 * s}px ${14 * s}px ${cadreDroit ? 16 * s : 16 * s + 2 * spellPointDepth}px`,
         gap: 8 * s,
         overflowY: "auto",
       }}>
@@ -683,6 +698,7 @@ export default function GameCard({
           })()}
           <span style={{ color: "#74b9ff" }}>💧{displayedManaCost}</span>
           {isCreature && <><span style={{ color: "#e74c3c" }}>⚔{card.attack}</span><span style={{ color: "#f1c40f" }}>❤{card.health}</span></>}
+          {isItem && <><span style={{ color: "#e74c3c" }}>⚔+{bonusAtk}</span><span style={{ color: "#f1c40f" }}>❤+{bonusPv}</span><span style={{ color: OBJET_TEINTE }}>⚒{getEquipCost(card)}</span></>}
         </div>
 
         {/* Bas-droite : nom du set, ou mois/année si pas de set, ou rien.
@@ -693,7 +709,7 @@ export default function GameCard({
             return (
               <div style={{
                 position: "absolute",
-                bottom: isCreature ? 4 * s : spellPointDepth + 4 * s,
+                bottom: cadreDroit ? 4 * s : spellPointDepth + 4 * s,
                 right: 6 * s,
                 fontSize: 9 * s, color: "#aaa",
                 fontFamily: "'Cinzel',serif", letterSpacing: 0.5,
@@ -719,7 +735,7 @@ export default function GameCard({
             return (
               <div style={{
                 position: "absolute",
-                bottom: isCreature ? 4 * s : spellPointDepth + 4 * s,
+                bottom: cadreDroit ? 4 * s : spellPointDepth + 4 * s,
                 right: 6 * s,
                 fontSize: 9 * s, color: "#888",
                 fontFamily: "'Crimson Text',serif",
@@ -736,7 +752,7 @@ export default function GameCard({
       {/* Pentagonal frame outline for spell cards. Drawn after the overlay
           (zIndex 5) so the contour stays visible even when the description
           is open — the shape is the primary signal that this card is a spell. */}
-      {!isCreature && (
+      {!cadreDroit && (
         <svg
           width={w} height={h}
           viewBox={`0 0 ${w} ${h}`}

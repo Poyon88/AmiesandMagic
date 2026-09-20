@@ -58,6 +58,7 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
+  { v: "exploration", l: "Exploration (compteur, pioche à 3)", target: "none" },
   { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
   { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
   // Tactique : la SOURCE partage X de ses capacités permanentes, tirées au

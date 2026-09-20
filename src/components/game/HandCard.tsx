@@ -20,7 +20,8 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
-import { CostShield, StatShields, cardAriaLabel, statShieldsReserve, toneFor } from "@/components/card/CardCounters";
+import { CostShield, EquipToken, StatShields, cardAriaLabel, statShieldsReserve, toneFor } from "@/components/card/CardCounters";
+import { getEquipCost } from "@/lib/game/items";
 import { RightSlots, RIGHT_SLOT, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -167,7 +168,8 @@ function HandCard({
   const isCreature = card.card_type === "creature";
   // Un OBJET affiche sa paire de chiffres comme une créature — c'est le bonus
   // qu'il conférera. Sans quoi la carte en main ne dirait pas ce qu'elle fait.
-  const porteDesStats = isCreature || card.card_type === "item";
+  const isItem = card.card_type === "item";
+  const porteDesStats = isCreature || isItem;
   // Stats EFFECTIVES affichées : base + bonus conservés (loyauté, summon,
   // nécrophagie…). Pertinent pour une créature renvoyée en main (rebond) qui
   // garde son bonus de Loyauté — aligne la main sur le cimetière. Pour une
@@ -644,7 +646,7 @@ function HandCard({
           if (!canPlay) return;
           onClick?.();
         }}
-        aria-label={cardAriaLabel(localizeName(card), effectiveManaCost ?? card.mana_cost, isCreature ? { atk: displayAttack, hp: displayHealth } : null, rightSlotsAriaParts(card, awakenEnMain))}
+        aria-label={cardAriaLabel(localizeName(card), effectiveManaCost ?? card.mana_cost, porteDesStats ? { atk: displayAttack, hp: displayHealth } : null, rightSlotsAriaParts(card, awakenEnMain), isItem ? { equip: getEquipCost(card) } : null)}
         style={{
           ...LONG_PRESS_RESET_STYLE,
           touchAction: "none",
@@ -770,8 +772,11 @@ function HandCard({
             atk={displayAttack} hp={displayHealth}
             atkTone={toneFor(displayAttack, card.attack ?? 0)}
             hpTone={toneFor(displayHealth, card.health ?? 0)}
+            bonus={isItem}
           />
         )}
+        {/* ÉQUIPEMENT : sous l'écu de mana, zéro compris (cf. EquipToken). */}
+        {isItem && <EquipToken value={getEquipCost(card)} sousLeCout={(effectiveManaCost ?? card.mana_cost) > 0} />}
 
         {/* Name — top bar (nom en haut, taille réduite de 30% : 10 → 7). Centré
             avec padding horizontal pour dégager le badge de coût (coin) et les
@@ -870,7 +875,7 @@ function HandCard({
           position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
           // À droite : la place des écus ATK / PV (absolus), pour que les icônes
           // s'arrêtent avant au lieu de passer dessous.
-          padding: porteDesStats ? `5px ${statShieldsReserve(displayAttack, displayHealth)}cqw 4px 6px` : "5px 6px 4px",
+          padding: porteDesStats ? `5px ${statShieldsReserve(displayAttack, displayHealth, isItem)}cqw 4px 6px` : "5px 6px 4px",
           background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
           display: "flex", flexDirection: "column", gap: 3,
         }}>

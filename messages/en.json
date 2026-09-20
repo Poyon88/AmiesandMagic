@@ -441,6 +441,10 @@
         "label": "Conquest X",
         "desc": "Adds X to your Conquest (threshold 3). At the threshold: discover 1 of 3 cards from the opponent's deck and take it in hand; the counter resets to 0."
       },
+      "exploration": {
+        "label": "Exploration X",
+        "desc": "Adds X to your Exploration. Each time it reaches 3: draw a card and remove 3 (the remainder is kept)."
+      },
       "seconde_vie": {
         "label": "Second Life X",
         "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
@@ -695,6 +699,10 @@
         "label": "Conquest X",
         "desc": "Adds X to your Conquest (threshold 3). At the threshold: discover 1 of 3 cards from the opponent's deck and take it in hand; the counter resets to 0"
       },
+      "exploration": {
+        "label": "Exploration X",
+        "desc": "Adds X to your Exploration. Each time it reaches 3: draw a card and remove 3 (the remainder is kept)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Draw X cards."
@@ -820,6 +828,7 @@
         "epargne": "adds {x} to your Thrift counter",
         "foi": "adds {x} to your Faith counter",
         "conquete": "adds {x} to your Conquest counter",
+        "exploration": "adds {x} to your Exploration counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
         "occurrences": "{n} times: ",
         "alternative": "One of: ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Savings (counter)",
     "content_foi": "Faith (counter)",
     "content_conquete": "Conquest (counter)",
+    "content_exploration": "Exploration (counter, draw at 3)",
     "content_incineration": "Incineration (recycle a graveyard)",
     "content_devoration": "Devour (destroy and absorb)",
     "content_tactique": "Tactics (shares its permanent abilities)",

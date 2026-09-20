@@ -137,7 +137,22 @@ function BoardItem({
 
       {/* Bonus conféré. Masqué s'il est nul : un objet de pures capacités ne
           doit pas afficher un « 0/0 » qui ne veut rien dire. */}
-      {(atk > 0 || pv > 0) && (
+      {/* Coût d'ÉQUIPEMENT — sur la vignette, pas seulement dans l'infobulle :
+          un écran tactile n'a pas de survol, et c'est le prix du clic. */}
+      <div
+        className="absolute top-0 left-0 font-bold"
+        style={{
+          padding: "0 3px", background: "rgba(0,0,0,0.78)",
+          color: OBJET_TEINTE, fontSize: 9, borderBottomRightRadius: 5,
+          fontFamily: "'Cinzel',serif",
+        }}
+      >
+        ⚒{cout}
+      </div>
+
+      {/* Bonus TOUJOURS affiché, zéros compris : « +0/+1 » dit ce que l'objet
+          donne, là où une vignette nue laisserait croire qu'il ne donne rien. */}
+      {(
         <div
           className="absolute bottom-0 right-0 font-bold"
           style={{
@@ -153,7 +168,7 @@ function BoardItem({
       <div
         className="absolute left-0 right-0 text-center px-0.5"
         style={{
-          bottom: atk > 0 || pv > 0 ? 11 : 1,
+          bottom: 11,
           fontSize: 7 * titleFontScale(card.name, { charsPerLine: 9, maxLines: 2 }),
           lineHeight: 1.05,
           color: "#e8dcc8",

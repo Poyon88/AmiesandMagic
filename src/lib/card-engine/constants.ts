@@ -119,6 +119,9 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Foi X": ALL_MODES,
   // Conquête : même contrat (compteur du contrôleur, sans cible).
   "Conquête X": ALL_MODES,
+  // Exploration : même contrat. C'est le déclencheur d'ATTAQUE qui lui donne
+  // son sens — un point par assaut, une carte tous les trois.
+  "Exploration X": ALL_MODES,
   "Incinération X": ALL_MODES,
   "Creuser X": ALL_MODES,
   "Retour différé": ALL_MODES,

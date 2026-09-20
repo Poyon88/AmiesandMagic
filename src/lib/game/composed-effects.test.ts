@@ -41,7 +41,7 @@ function mkHero(): HeroState {
   return { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0 };
 }
 function mkPlayer(id: string): PlayerState {
-  return { id, hero: mkHero(), emblems: [], mana: 10, maxMana: 10, hand: [], board: [], deck: [], graveyard: [], spellHistory: [], fatigueDamage: 0, ownedLimitedCardIds: [], epargne: null, foi: null, conquete: null, singleton: false };
+  return { id, hero: mkHero(), emblems: [], mana: 10, maxMana: 10, hand: [], board: [], deck: [], graveyard: [], spellHistory: [], fatigueDamage: 0, ownedLimitedCardIds: [], epargne: null, foi: null, conquete: null, exploration: null, singleton: false };
 }
 function mkState(): GameState {
   return {

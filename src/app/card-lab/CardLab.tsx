@@ -32,6 +32,11 @@ const CAS: { titre: string; card: Card; eveil?: { total: number; paid: number };
   { titre: "Éveil 4 / 7 (3 restants)", card: carte({ name: "Titan endormi", eveil_cost: 7, mana_cost: 9 }), eveil: { total: 7, paid: 4 } },
   { titre: "Éveil + défausse empilés", card: carte({ name: "Serment double", eveil_cost: 5, discard_cost: 1 }), eveil: { total: 5, paid: 1 } },
   { titre: "Badge ×3 sous un jeton", card: carte({ name: "Exemplaires", life_cost: 2 }), count: 3 },
+  // OBJETS : bonus écrit « +N » (zéros compris), équipement sous le mana.
+  { titre: "Objet +2/+1, équip. 2", card: carte({ name: "Dague du Dernier Serment", card_type: "item", mana_cost: 1, attack: 2, health: 1, equip_cost: 2, keywords: ["precision"] as never }) },
+  { titre: "Objet +0/+1, équip. gratuit", card: carte({ name: "Bourse du Voyageur", card_type: "item", mana_cost: 2, attack: 0, health: 1, equip_cost: 0, keywords: [] as never }) },
+  { titre: "Objet +12/+10, équip. 10", card: carte({ name: "Relique des Anciens Rois", card_type: "item", mana_cost: 10, attack: 12, health: 10, equip_cost: 10 }) },
+  { titre: "Objet gratuit à poser + exil", card: carte({ name: "Anneau exilé", card_type: "item", mana_cost: 0, attack: 1, health: 0, equip_cost: 1, exile_cost: 2, keywords: [] as never }), count: 2 },
 ];
 
 export default function CardLab() {

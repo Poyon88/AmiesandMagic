@@ -1273,6 +1273,23 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // Quatrième compteur, le seul SANS dépense : le palier se règle tout seul.
+  // Barème calé sur Inspiration 1 (14 points = une carte tout de suite) :
+  // Exploration 3 vaut exactement une pioche garantie, donc 2 + 4 × 3 = 14 ;
+  // en dessous, on paie une fraction de carte (6 puis 10).
+  exploration: {
+    id: "exploration", label: "Exploration X", symbol: "🧭",
+    desc: "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 2, costPerX: 4, se: 1.5, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé).",
+    },
+    spell: {
+      desc: "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
     desc: "Piochez X cartes.",
@@ -1741,7 +1758,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal",
-  "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete",
+  "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.

@@ -441,6 +441,10 @@
         "label": "Eroberung X",
         "desc": "Erhöht deine Eroberung um X (Schwelle 3). An der Schwelle: entdecke 1 von 3 Karten aus dem gegnerischen Deck und nimm sie auf die Hand; der Zähler fällt auf 0 zurück."
       },
+      "exploration": {
+        "label": "Erkundung X",
+        "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)."
+      },
       "seconde_vie": {
         "label": "Zweites Leben X",
         "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
@@ -695,6 +699,10 @@
         "label": "Eroberung X",
         "desc": "Erhöht deine Eroberung um X (Schwelle 3). An der Schwelle: entdecke 1 von 3 Karten aus dem gegnerischen Deck und nimm sie auf die Hand; der Zähler fällt auf 0 zurück"
       },
+      "exploration": {
+        "label": "Erkundung X",
+        "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
@@ -820,6 +828,7 @@
         "epargne": "fügt {x} zu deinem Sparzähler hinzu",
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
         "conquete": "erhöht deinen Eroberungszähler um {x}",
+        "exploration": "erhöht deinen Erkundungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "occurrences": "{n}-mal: ",
         "alternative": "Wahlweise: ",
@@ -2443,6 +2452,7 @@
     "content_epargne": "Ersparnis (Zähler)",
     "content_foi": "Glaube (Zähler)",
     "content_conquete": "Eroberung (Zähler)",
+    "content_exploration": "Erkundung (Zähler, Ziehen bei 3)",
     "content_incineration": "Einäscherung (Friedhof zurückführen)",
     "content_devoration": "Verschlingen (zerstören und aufnehmen)",
     "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",

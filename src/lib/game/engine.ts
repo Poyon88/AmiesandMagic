@@ -53,6 +53,7 @@ import {
   MAX_EPARGNE,
   MAX_FOI,
   MAX_CONQUETE,
+  EXPLORATION_PALIER,
   MAX_EVEIL,
   SEUIL_DECK_THRESHOLD,
   LOW_HP_TRIGGER_THRESHOLD,
@@ -129,6 +130,11 @@ let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
 // même son propriétaire : le tirage est aléatoire, il n'a rien choisi.
 // Vidé au début d'applyAction, rattaché à state.faveurEvents ; hors hash.
 let faveurSink: Array<{ card: Card; ownerId: string }> = [];
+// Gains d'Exploration de l'action, avec les pioches qu'ils ont déclenchées. Le
+// store anime les autres compteurs par un diff d'état ; ici le palier fait
+// REDESCENDRE le compteur dans la même action, le diff serait muet ou négatif.
+// Vidé au début d'applyAction, rattaché à state.explorationEvents ; hors hash.
+let explorationSink: Array<{ ownerId: string; amount: number; draws: number }> = [];
 // Capacités NOMMÉES qui ont réellement résolu pendant l'action, avec leur
 // déclencheur. Le store en tire un bruitage par capacité (table `keyword_sfx`),
 // et le `trigger` décide de la PHASE d'animation où le son s'enchaîne — après
@@ -907,6 +913,131 @@ function idMoteurDuDon(kwId: string): string {
   return kwId === "vol" ? "ranged" : kwId;
 }
 
+// ── DON D'UNE CAPACITÉ DÉJÀ PORTÉE : le plus élevé des deux X ──────────────
+//
+// Règle d'auteur (2026-09-20) : conférer Régénération 3 à une créature
+// Régénération 2 lui donne Régénération 3. Jamais de cumul, jamais de baisse ;
+// pour un couple +X/+Y, le maximum de CHAQUE composante ; et seulement à
+// déclencheur IDENTIQUE — « à l'attaque : Épargne 2 » et « à la mort :
+// Épargne 3 » restent deux capacités.
+//
+// La valeur retenue est GRAVÉE dans la carte de l'instance, comme le fait le
+// tempo (cf. stampTempoBonus) et pour la même raison : le X d'une créature se
+// lit par trois canaux sans point de passage commun — `capabilities`, le
+// sidecar `keyword_instances`, le bloc `[Résistance 2]` d'`effect_text` — et
+// une quinzaine de résolveurs y puisent chacun à sa façon, carte D'ABORD, don
+// ensuite. Intercepter les lectures aurait demandé de tous les retrouver, puis
+// de n'en oublier aucun à l'avenir ; écrire la carte les sert tous d'un coup,
+// affichage compris.
+
+type KwMode = import("./types").KeywordMode | undefined;
+
+const cleDuDon = (kwId: string, mode: KwMode): string => `${kwId}|${mode ?? ""}`;
+
+/** Le libellé de forge d'une capacité à X, tel qu'il figure dans le bloc de
+ *  fin d'`effect_text` (« Régénération » pour « Régénération X »). */
+function libelleTexteDe(kwId: string): string | null {
+  const label = (KEYWORD_LABELS as Record<string, string>)[kwId];
+  return label?.endsWith(" X") ? label.slice(0, -2) : null;
+}
+
+/** La capacité `kwId` de la carte, à CE déclencheur. Le mode par défaut couvre
+ *  `on_play` et `automatic` : l'adaptateur range les passives sous le second
+ *  (même repli que getCardKwX). Les dons et les composés ne sont pas des
+ *  capacités portées. */
+function estLaCapacite(c: import("./types").Capability, kwId: string, mode: KwMode): boolean {
+  if (c.abilityId !== kwId || c.effectKind === "grant") return false;
+  const attendu = capTriggerForMode(mode);
+  return c.trigger === attendu || (mode === undefined && c.trigger === "automatic");
+}
+
+/** X et Y que la carte PORTE pour une capacité, tous canaux confondus. Ils sont
+ *  censés s'accorder ; s'ils divergent, le plus élevé fait foi — c'est celui
+ *  qu'un don devra dépasser. `undefined` = aucun canal ne porte de valeur. */
+function lireXYPropre(card: Card, kwId: string, mode: KwMode): { x?: number; y?: number } {
+  const xs: number[] = [];
+  const ys: number[] = [];
+  const note = (x: number | null | undefined, y: number | null | undefined) => {
+    if (typeof x === "number") xs.push(x);
+    if (typeof y === "number") ys.push(y);
+  };
+  for (const c of card.capabilities ?? []) if (estLaCapacite(c, kwId, mode)) note(c.params?.x, c.params?.y);
+  for (const k of card.keyword_instances ?? []) {
+    if ((k.id as unknown as string) === kwId && k.mode === mode) note(k.x, k.y);
+  }
+  if (mode === undefined) note((parseXValuesFromEffectText(card.effect_text) as Record<string, number>)[kwId], undefined);
+  return {
+    ...(xs.length ? { x: Math.max(...xs) } : {}),
+    ...(ys.length ? { y: Math.max(...ys) } : {}),
+  };
+}
+
+/** Écrit X et/ou Y dans TOUS les canaux où la carte porte déjà la capacité à ce
+ *  déclencheur. N'en crée aucun : une capacité sans valeur écrite (repli
+ *  historique) garde son X dans `grantedKeywordX`, que ses résolveurs lisent en
+ *  second. Sert à relever une valeur comme à la RESTAURER (fin d'un don
+ *  temporaire) — d'où une écriture exacte, et non un maximum. */
+function graverXY(inst: CardInstance, kwId: string, mode: KwMode, x: number | undefined, y: number | undefined): void {
+  if (x == null && y == null) return;
+  const carte = inst.card;
+  const libelle = mode === undefined && x != null ? libelleTexteDe(kwId) : null;
+  inst.card = {
+    ...carte,
+    capabilities: carte.capabilities?.map((c) =>
+      estLaCapacite(c, kwId, mode) && c.params
+        ? {
+          ...c,
+          params: {
+            ...c.params,
+            ...(x != null && c.params.x != null ? { x } : {}),
+            ...(y != null && c.params.y != null ? { y } : {}),
+          },
+        }
+        : c,
+    ),
+    keyword_instances: carte.keyword_instances?.map((k) =>
+      (k.id as unknown as string) === kwId && k.mode === mode
+        ? { ...k, ...(x != null && k.x != null ? { x } : {}), ...(y != null && k.y != null ? { y } : {}) }
+        : k,
+    ),
+    effect_text: libelle && carte.effect_text
+      ? carte.effect_text.replace(/\[([^\]]+)\]/, (bloc, interieur: string) =>
+        `[${interieur.split(",").map((part) => {
+          const t = part.trim();
+          const coupe = t.lastIndexOf(" ");
+          return coupe > 0 && t.slice(0, coupe) === libelle && !isNaN(parseInt(t.slice(coupe + 1)))
+            ? `${libelle} ${x}`
+            : t;
+        }).join(", ")}]`)
+      : carte.effect_text,
+  };
+  // Les X figés à la naissance relisent la carte fraîchement gravée.
+  if (X_FIGE_SUR_INSTANCE.has(kwId)) stampKeywordXValues(inst);
+}
+
+/** Rend à chaque créature du plateau ce que ses capacités valaient avant les
+ *  dons TEMPORAIRES du passage précédent. Appelé en tête de `recalculateAuras`,
+ *  avec les autres purges : les sources encore là se reposent juste après, les
+ *  autres ont simplement cessé d'exister. */
+function restaurerDonsTemporaires(inst: CardInstance): void {
+  const memo = inst.donsTemporaires;
+  if (!memo) return;
+  for (const [cle, v] of Object.entries(memo.propres)) {
+    const coupe = cle.indexOf("|");
+    const mode = (cle.slice(coupe + 1) || undefined) as KwMode;
+    graverXY(inst, cle.slice(0, coupe), mode, v.x, v.y);
+  }
+  for (const [kwId, v] of Object.entries(memo.conferes)) {
+    const gx = { ...inst.grantedKeywordX };
+    if (v.x == null) delete gx[kwId]; else gx[kwId] = v.x;
+    inst.grantedKeywordX = gx;
+    const gy = { ...(inst.grantedKeywordY ?? {}) };
+    if (v.y == null) delete gy[kwId]; else gy[kwId] = v.y;
+    inst.grantedKeywordY = gy;
+  }
+  inst.donsTemporaires = undefined;
+}
+
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
@@ -918,9 +1049,20 @@ function applyGrantedKeyword(
   // Déclencheur que la capacité prendra SUR SA NOUVELLE PORTEUSE. Absent ⇒
   // comportement historique : le mot-clé seul, donc son mode par défaut.
   trigger?: import("./types").CapabilityTrigger,
+  // Don d'une source CONTINUE (emblème, objet), reposé à chaque
+  // `recalculateAuras` : la valeur qu'il relève doit pouvoir retomber quand la
+  // source disparaît (cf. `donsTemporaires`). Un don ponctuel est définitif.
+  temporaire = false,
 ) {
   kwId = idMoteurDuDon(kwId);
   const list = creature.card.keywords as string[];
+  // Ce que la créature valait AVANT ce don, lu avant toute écriture : c'est le
+  // terme de comparaison du « plus élevé des deux », et l'instantané d'un don
+  // temporaire. Un râle d'agonie porte son X sur une instance SANS mode (cf.
+  // plus bas), d'où la même clé que le mode par défaut.
+  const modeDuDon: KwMode = trigger && !DEATH_NATURE_IDS.has(kwId) ? modeForCreatureTrigger(trigger) : undefined;
+  const portaitDeja = list.includes(kwId);
+  const propreAvant = lireXYPropre(creature.card, kwId, modeDuDon);
   if (!list.includes(kwId)) {
     // Cast through unknown — `keywords` is typed as Keyword[] but at runtime
     // we accept any ABILITIES id (hero powers can grant keywords by id).
@@ -984,24 +1126,69 @@ function applyGrantedKeyword(
   // Restreint aux cinq concernées : `applyGrantedKeyword` est aussi le chemin des
   // AURAS, rejouées à chaque `recalculateAuras`, et le helper reparse
   // `effect_text` à chaque appel. Un don de Vol n'a rien à y graver.
-  if (X_FIGE_SUR_INSTANCE.has(kwId)) stampKeywordXValues(creature);
-  // Mémoriser le X du keyword accordé (Résistance 2, Persécution 3, …) pour
-  // que les résolveurs et le badge UI le retrouvent — le `card.effect_text`
-  // n'est pas réécrit avec la notation [Keyword X] côté hero power.
-  if (typeof params?.amount === "number") {
-    creature.grantedKeywordX = {
-      ...creature.grantedKeywordX,
-      [kwId]: params.amount,
-    };
+  // ── LE PLUS ÉLEVÉ DES DEUX X (et des deux Y) ─────────────────────────────
+  //
+  // Deux porteurs à tenir d'accord. La CARTE, quand elle écrit déjà une valeur
+  // pour cette capacité à ce déclencheur : on la relève si le don la dépasse.
+  // Et `grantedKeywordX/Y`, seul porteur d'une capacité venue d'un don (« le
+  // `card.effect_text` n'est pas réécrit côté pouvoir de héros ») : il retient
+  // désormais le plus élevé des dons reçus, au lieu du dernier.
+  const a = typeof params?.amount === "number" ? params.amount : undefined;
+  const aY = typeof params?.amountY === "number" ? params.amountY : undefined;
+  if (a == null && aY == null) {
+    if (X_FIGE_SUR_INSTANCE.has(kwId)) stampKeywordXValues(creature);
+    return;
   }
-  // Idem pour le Y des mots-clés à couple X/Y (Gloire +X/+Y) : sans ce canal,
-  // une Gloire conférée retombait sur le +Y=1 par défaut quelle que soit la
-  // valeur saisie dans le forge.
-  if (typeof params?.amountY === "number") {
-    creature.grantedKeywordY = {
-      ...creature.grantedKeywordY,
-      [kwId]: params.amountY,
-    };
+  const plusHaut = (v: number | undefined, don: number | undefined): number | undefined =>
+    don == null ? v : v == null ? don : Math.max(v, don);
+  // Capacité PROPRE sans valeur écrite nulle part : elle vit sur le X implicite
+  // du registre (Régénération = 2). Un don inférieur ne doit pas la faire
+  // baisser en s'installant dans `grantedKeywordX`, que son résolveur lirait
+  // faute de mieux.
+  const implicite = portaitDeja && propreAvant.x == null && creature.grantedKeywordX[kwId] == null
+    ? KEYWORD_DEFAULT_X[kwId] : undefined;
+  const confereAvant = { x: creature.grantedKeywordX[kwId] ?? implicite, y: creature.grantedKeywordY?.[kwId] };
+
+  const cle = cleDuDon(kwId, modeDuDon);
+  if (temporaire) {
+    // Premier don temporaire du passage sur cette capacité : on retient l'état
+    // d'avant. Les suivants (deux emblèmes, un emblème et un objet) ne doivent
+    // surtout pas l'écraser par une valeur déjà relevée.
+    const memo = (creature.donsTemporaires ??= { propres: {}, conferes: {} });
+    if (!(cle in memo.propres)) memo.propres = { ...memo.propres, [cle]: { ...propreAvant } };
+    if (!(kwId in memo.conferes)) {
+      memo.conferes = { ...memo.conferes, [kwId]: { x: creature.grantedKeywordX[kwId], y: creature.grantedKeywordY?.[kwId] } };
+    }
+  } else if (creature.donsTemporaires) {
+    // Don PONCTUEL reçu sous un don temporaire : il est définitif, donc il entre
+    // AUSSI dans l'état que la purge restaurera. Sans cela, « 2, aura à 5, sort
+    // à 3 » retombait à 2 à la fin de l'aura au lieu de 3.
+    const memo = creature.donsTemporaires;
+    const p = memo.propres[cle];
+    if (p) {
+      memo.propres = { ...memo.propres, [cle]: {
+        ...(p.x != null ? { x: plusHaut(p.x, a) } : {}),
+        ...(p.y != null ? { y: plusHaut(p.y, aY) } : {}),
+      } };
+    }
+    const g = memo.conferes[kwId];
+    if (g) memo.conferes = { ...memo.conferes, [kwId]: { x: plusHaut(g.x, a), y: plusHaut(g.y, aY) } };
+  }
+
+  // La carte : seulement là où elle portait déjà une valeur, et seulement vers
+  // le haut. (Une instance posée à l'instant par ce don porte déjà son X.)
+  const xGrave = propreAvant.x != null && a != null && a > propreAvant.x ? a : undefined;
+  const yGrave = propreAvant.y != null && aY != null && aY > propreAvant.y ? aY : undefined;
+  graverXY(creature, kwId, modeDuDon, xGrave, yGrave);
+  if (xGrave == null && yGrave == null && X_FIGE_SUR_INSTANCE.has(kwId)) stampKeywordXValues(creature);
+
+  const gx = plusHaut(confereAvant.x, a);
+  if (gx != null && gx !== creature.grantedKeywordX[kwId] && !(implicite != null && gx === implicite)) {
+    creature.grantedKeywordX = { ...creature.grantedKeywordX, [kwId]: gx };
+  }
+  const gy = plusHaut(confereAvant.y, aY);
+  if (gy != null && gy !== creature.grantedKeywordY?.[kwId]) {
+    creature.grantedKeywordY = { ...creature.grantedKeywordY, [kwId]: gy };
   }
 }
 
@@ -1486,6 +1673,7 @@ function resolveComposedEffect(
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
+    case "exploration": addExploration(owner, x); return;
     // APPEL SUPRÊME composé : la carte la plus chère du deck qui satisfait le
     // filtre de pool et le plafond X (0 = sans plafond) rejoint la main.
     case "appel_supreme": {
@@ -2233,11 +2421,14 @@ function stampKeywordXValues(inst: CardInstance): void {
     // résolveurs ne lisent que `inst.<kw>X`, sans repli sur `grantedKeywordX`
     // (contrairement à Sacrifice démoniaque, seul à l'avoir en ligne).
     //
-    // APRÈS le sidecar, jamais avant : la valeur écrite par l'auteur sur la
-    // carte reste souveraine, et aucune carte existante ne change de
-    // comportement. Le don ne tranche que là où rien n'était posé.
+    // APRÈS le sidecar, jamais avant. Un don SUPÉRIEUR à la valeur de la carte
+    // n'a pas besoin de passer devant : `applyGrantedKeyword` l'a déjà gravé
+    // dans le sidecar lui-même (« le plus élevé des deux X »).
+    //
+    // Reste la carte qui ne porte son X que dans `effect_text` : le don ne doit
+    // pas la faire BAISSER — d'où le maximum, et non le don seul.
     const fromGrant = inst.grantedKeywordX[id];
-    if (fromGrant != null) return fromGrant;
+    if (fromGrant != null) return Math.max(fromGrant, parsed[id] || 0);
     return parsed[id] || fallback + primeTempo;
   };
   if (hasKw(inst, "persecution")) inst.persecutionX = xOf("persecution", Math.max(1, Math.floor(mana / 3)));
@@ -2527,6 +2718,11 @@ function returnInstanceToPlay(inst: CardInstance): void {
   // recenser chaque chemin de retour.
   inst.apprentissageSpell = undefined;
 
+  // Une valeur relevée par un emblème ou un objet ne suit pas la créature hors
+  // du plateau : la purge de `recalculateAuras` ne balaie que le plateau, elle
+  // l'aurait donc gardée en main ou au cimetière jusqu'à son retour.
+  restaurerDonsTemporaires(inst);
+
   const { attack, health } = persistentStats(inst);
 
   // PV : base + bonus de PV permanents conservés, soin complet. L'aura de PV
@@ -2704,6 +2900,7 @@ export function initializeGame(
     epargne: null,
     foi: null,
     conquete: null,
+    exploration: null,
     // SINGULIER : figé ci-dessous, d'après le deck de DÉPART tel que soumis
     // (avant mulligan, avant toute carte générée). Jamais recalculé ensuite.
     singleton: false,
@@ -3023,6 +3220,9 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // et l'objet ne tracerait rien : son don deviendrait indéracinable.
   for (const p of [player, opponent]) {
     for (const c of p.board) {
+      // Les VALEURS relevées par un don temporaire retombent d'abord, tant que
+      // la carte porte encore les capacités où les réécrire.
+      restaurerDonsTemporaires(c);
       if (c.emblemGrantedKeywords?.length) {
         const aRetirer = new Set(c.emblemGrantedKeywords);
         c.card = {
@@ -3098,7 +3298,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         // l'ombre juste après son attaque, indéfiniment — le défaut déjà
         // rencontré sur les auras d'emblème.
         applyGrantedKeyword(porteur, slot.id, params, false,
-          slot.instance?.mode ? capTriggerForMode(slot.instance.mode) : undefined);
+          slot.instance?.mode ? capTriggerForMode(slot.instance.mode) : undefined, true);
 
         if (!avaitDeja) (porteur.itemGrantedKeywords ??= []).push(idPose);
         // `applyGrantedKeyword` reconstruit le tableau en conservant l'identité
@@ -3303,7 +3503,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         // ne trouve rien, et le don d'un emblème expiré reste à jamais.
         const idPose = idMoteurDuDon(aura.abilityId);
         const deja = (ally.card.keywords as unknown as string[]).includes(idPose);
-        applyGrantedKeyword(ally, aura.abilityId, params);
+        applyGrantedKeyword(ally, aura.abilityId, params, false, undefined, true);
         if (!deja) (ally.emblemGrantedKeywords ??= []).push(idPose);
       }
     }
@@ -4577,6 +4777,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Conquête X : troisième compteur, indépendant des deux autres.
     if (hasKwOnPlay(cardInstance, "conquete")) {
       addConquete(player, getKwX(cardInstance, "conquete", undefined, 1));
+    }
+
+    // Exploration X : quatrième compteur. Le palier se règle DANS
+    // addExploration — la pioche part donc ici même, avant la suite de la pose.
+    if (hasKwOnPlay(cardInstance, "exploration")) {
+      addExploration(player, getKwX(cardInstance, "exploration", undefined, 1));
     }
 
     // Concentration X: remplace chaque sort en main par un sort aléatoire
@@ -6395,6 +6601,10 @@ function resolveSpellKeywords(
         addConquete(ctx.caster, kw.amount ?? 1);
         break;
       }
+      case "exploration": {
+        addExploration(ctx.caster, kw.amount ?? 1);
+        break;
+      }
       case "incineration": {
         resolveIncineration(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
         break;
@@ -7857,6 +8067,30 @@ function addFoi(player: PlayerState, x: number): void {
 function addConquete(player: PlayerState, x: number): void {
   if (x <= 0) return;
   player.conquete = Math.min(MAX_CONQUETE, (player.conquete ?? 0) + x);
+}
+
+/** Alimente le compteur d'Exploration et RÈGLE ses paliers sur-le-champ.
+ *
+ *  Seul des quatre compteurs à n'avoir ni plafond ni dépense : chaque palier
+ *  EXPLORATION_PALIER franchi fait piocher une carte et est retranché, le reste
+ *  étant conservé (2 + 2 ⇒ une pioche, compteur à 1 ; 0 + 7 ⇒ deux pioches,
+ *  compteur à 1). C'est une VRAIE pioche — `drawCard` : fatigue sur deck vide,
+ *  défausse sur main pleine, déclencheur « à la pioche » de la carte tirée.
+ *
+ *  Le compteur est écrit AVANT la première pioche, et non après la boucle : une
+ *  carte tirée peut porter « à la pioche : Exploration X » et rappeler cette
+ *  fonction, qui doit alors lire un compteur à jour. La chaîne est bornée par
+ *  la garde de ré-entrance de `triggerOnDraw`.
+ *
+ *  Point d'entrée UNIQUE des trois chemins (mot-clé de créature, mot-clé de
+ *  sort, effet composé), comme `addEpargne`. */
+function addExploration(player: PlayerState, x: number): void {
+  if (x <= 0) return;
+  const total = (player.exploration ?? 0) + x;
+  const draws = Math.floor(total / EXPLORATION_PALIER);
+  player.exploration = total % EXPLORATION_PALIER;
+  explorationSink.push({ ownerId: player.id, amount: x, draws });
+  for (let i = 0; i < draws; i++) drawCard(player);
 }
 
 /** Retrouve le contrôleur d'une instance dans l'état en cours de mutation.
@@ -9612,6 +9846,10 @@ function resolveCuratedKeywordEffect(
       addConquete(owner, x);
       break;
     }
+    case "exploration": {
+      addExploration(owner, x);
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -11269,6 +11507,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   damageLedgerSink = [];
   drawTriggerSink = [];
   faveurSink = [];
+  explorationSink = [];
   abilitySfxSink = [];
   exileCostSink = [];
   topdeckCostSink = [];
@@ -11367,6 +11606,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // tirées, pour que le store les révèle aux DEUX joueurs.
   if (faveurSink.length > 0 && result !== state) {
     result.faveurEvents = [...(result.faveurEvents ?? []), ...faveurSink];
+  }
+  // Rattache les gains d'Exploration, dans l'ordre : le store ne peut pas les
+  // déduire d'un diff, le palier ayant déjà fait redescendre le compteur.
+  if (explorationSink.length > 0 && result !== state) {
+    result.explorationEvents = [...(result.explorationEvents ?? []), ...explorationSink];
   }
   // SINGULIER : dernier alignement de l'action. Couvre les changements de
   // contrôle (Conquête, Corruption, Domination) et toute carte créée depuis le

@@ -40,7 +40,11 @@ export const HERALDRY_FONT = "var(--font-cinzel), 'Cinzel', Georgia, serif";
  *  puissent RÉSERVER la place des écus de stats (ils sont en absolu). */
 export const SHIELD_GEOMETRY = {
   cost: { left: 2.6, top: 2.6, size: 17.4 },
-  stat: { right: 2.4, bottom: 8.4, gap: 1.6, height: 14.6, width1: 12.8, width2: 17.4 },
+  // `width3` : « +12 », le seul texte à trois signes — un BONUS d'objet à deux
+  // chiffres. Une stat d'unité n'en a jamais plus de deux (cf. shownValue).
+  stat: { right: 2.4, bottom: 8.4, gap: 1.6, height: 14.6, width1: 12.8, width2: 17.4, width3: 21.6 },
+  // Jeton d'ÉQUIPEMENT : rangé sous l'écu de coût, même colonne, même largeur.
+  equip: { gap: 1.2, height: 11.6 },
 } as const;
 
 export type Tone = "neutral" | "buff" | "debuff";
@@ -55,20 +59,30 @@ const inkFor = (tone: Tone, cheap = false) =>
  *  Une valeur > 99 est un bug d'équilibrage, pas un cas d'affichage. */
 export const shownValue = (value: number): number => Math.min(99, Math.max(0, Math.round(value)));
 
+/** Texte d'un écu de stat. `bonus` : la valeur d'un OBJET, qui n'est pas la
+ *  stat d'une unité mais ce qu'il AJOUTE à son porteur — d'où le « + », zéro
+ *  compris (« +0 » dit que l'objet ne donne rien de ce côté, là où un écu
+ *  absent laisserait croire à un oubli). */
+export const statShieldText = (value: number, bonus = false): string =>
+  `${bonus ? "+" : ""}${shownValue(value)}`;
+
 /** Largeur d'un écu de stat pour une valeur : la largeur varie, pas le corps. */
-export const statShieldWidth = (value: number): number =>
-  String(shownValue(value)).length > 1 ? SHIELD_GEOMETRY.stat.width2 : SHIELD_GEOMETRY.stat.width1;
+export const statShieldWidth = (value: number, bonus = false): number => {
+  const signes = statShieldText(value, bonus).length;
+  const g = SHIELD_GEOMETRY.stat;
+  return signes > 2 ? g.width3 : signes > 1 ? g.width2 : g.width1;
+};
 
 /** Place (en cqw) que le bloc ATK / PV occupe depuis le bord droit — pour que
  *  la barre d'icônes du bas s'arrête avant, au lieu de passer dessous. */
-export const statShieldsReserve = (atk: number, hp: number): number =>
-  statShieldWidth(atk) + statShieldWidth(hp) + SHIELD_GEOMETRY.stat.gap + SHIELD_GEOMETRY.stat.right + 1.2;
+export const statShieldsReserve = (atk: number, hp: number, bonus = false): number =>
+  statShieldWidth(atk, bonus) + statShieldWidth(hp, bonus) + SHIELD_GEOMETRY.stat.gap + SHIELD_GEOMETRY.stat.right + 1.2;
 
 /** Écu générique : div or + div émail, même découpe. */
 function Shield({
   value, clip, gold, enamel, width, height, fontSize, ink, border, title,
 }: {
-  value: number; clip: string; gold: string; enamel: string;
+  value: number | string; clip: string; gold: string; enamel: string;
   width: number; height: number; fontSize: number; ink: string; border: number;
   title?: string;
 }) {
@@ -147,11 +161,18 @@ export function CostShield({ value, discounted = false, title }: { value: number
 
 /** Écus ATK / PV (bas droite). Les tons ne changent que le CHIFFRE, jamais l'or. */
 export function StatShields({
-  atk, hp, atkTone = "neutral", hpTone = "neutral",
-}: { atk: number; hp: number; atkTone?: Tone; hpTone?: Tone }) {
-  const a = shownValue(atk);
-  const h = shownValue(hp);
+  atk, hp, atkTone = "neutral", hpTone = "neutral", bonus = false,
+}: {
+  atk: number; hp: number; atkTone?: Tone; hpTone?: Tone;
+  /** OBJET : les valeurs sont des bonus, écrits « +N » (cf. statShieldText). */
+  bonus?: boolean;
+}) {
+  const a = statShieldText(atk, bonus);
+  const h = statShieldText(hp, bonus);
   const g = SHIELD_GEOMETRY.stat;
+  // Le « + » prend la place d'un chiffre : le corps cède un peu pour que
+  // « +12 » tienne sans élargir l'écu au-delà de width3.
+  const corps = bonus ? 7.4 : 8.2;
   return (
     <div
       style={{
@@ -166,9 +187,58 @@ export function StatShields({
       }}
     >
       <Shield value={a} clip={CLIP_STAT} gold={HERALDRY.goldStat} enamel={HERALDRY.enamelAtk}
-        width={statShieldWidth(a)} height={g.height} fontSize={8.2} ink={inkFor(atkTone)} border={9} />
+        width={statShieldWidth(atk, bonus)} height={g.height} fontSize={corps} ink={inkFor(atkTone)} border={9} />
       <Shield value={h} clip={CLIP_STAT} gold={HERALDRY.goldStat} enamel={HERALDRY.enamelHp}
-        width={statShieldWidth(h)} height={g.height} fontSize={8.2} ink={inkFor(hpTone)} border={9} />
+        width={statShieldWidth(hp, bonus)} height={g.height} fontSize={corps} ink={inkFor(hpTone)} border={9} />
+    </div>
+  );
+}
+
+/** Jeton d'ÉQUIPEMENT d'un objet — sous l'écu de coût, en haut à gauche.
+ *
+ *  Les deux sont du MANA : la colonne se lit « 1 pour la poser, 2 pour
+ *  l'équiper ». La colonne de DROITE reste celle des coûts qui n'en sont pas
+ *  (vie, défausse, exil…) et de l'Éveil, avec sa limite de deux jetons.
+ *
+ *  Affiché à ZÉRO aussi, contrairement à l'écu de coût : « équiper est gratuit »
+ *  est une information, et un jeton absent ne la distinguerait pas d'un oubli.
+ *  `sousLeCout` : faux quand l'écu de coût est masqué (objet gratuit à poser) —
+ *  le jeton remonte alors à sa place plutôt que de flotter sous un vide. */
+export function EquipToken({ value, sousLeCout = true }: { value: number; sousLeCout?: boolean }) {
+  const shown = shownValue(value);
+  const c = SHIELD_GEOMETRY.cost;
+  const e = SHIELD_GEOMETRY.equip;
+  return (
+    <div
+      title={shown > 0 ? `Équiper : ${shown} mana, à chaque équipement` : "Équiper : gratuit"}
+      style={{
+        position: "absolute", left: `${c.left}cqw`,
+        top: `${sousLeCout ? c.top + c.size + e.gap : c.top}cqw`,
+        width: `${c.size}cqw`, height: `${e.height}cqw`,
+        zIndex: 3, display: "grid", placeItems: "center",
+        filter: "drop-shadow(0 0.6cqw 1cqw rgba(0,0,0,.45))",
+      }}
+    >
+      {/* Cartouche à pans coupés : ni l'écu du mana, ni les jetons de droite —
+          une troisième silhouette pour une troisième nature de coût. */}
+      <svg viewBox="0 0 100 66" aria-hidden="true"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible" }}>
+        <defs>
+          <linearGradient id="am-equip" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#c8873c" /><stop offset="1" stopColor="#4a2a0c" />
+          </linearGradient>
+        </defs>
+        <path d="M14 3 H86 L97 14 V52 L86 63 H14 L3 52 V14 Z"
+          fill="url(#am-equip)" stroke="#C9A227" strokeWidth="5" strokeLinejoin="round" />
+      </svg>
+      <span style={{
+        position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "0.8cqw",
+        fontFamily: HERALDRY_FONT, fontWeight: 700, lineHeight: 1, color: "#FFE9CF",
+        fontVariantNumeric: "tabular-nums", textShadow: "0 .3cqw .7cqw rgba(0,0,0,.8)",
+      }}>
+        <span aria-hidden="true" style={{ fontSize: "5.4cqw" }}>⚒</span>
+        <span style={{ fontSize: "7.4cqw" }}>{shown}</span>
+      </span>
     </div>
   );
 }
@@ -182,8 +252,15 @@ export function cardAriaLabel(
   name: string, cost: number, stats?: { atk: number; hp: number } | null,
   // Tout ce que la carte AFFICHE en plus (jetons, Éveil) — cf. rightSlotsAriaParts.
   extras: string[] = [],
+  // OBJET : ses chiffres sont des bonus, et il porte un coût d'équipement.
+  objet?: { equip: number } | null,
 ): string {
   const parts = [name, `coût ${cost}`, ...extras];
-  if (stats) parts.push(`attaque ${stats.atk}`, `points de vie ${stats.hp}`);
+  if (objet) parts.push(`équipement ${objet.equip}`);
+  if (stats) {
+    parts.push(objet
+      ? `bonus d'attaque ${stats.atk}, bonus de points de vie ${stats.hp}`
+      : `attaque ${stats.atk}, points de vie ${stats.hp}`);
+  }
   return parts.join(", ");
 }

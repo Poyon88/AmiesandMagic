@@ -98,6 +98,9 @@ export type Keyword =
   // Alimente le compteur de Conquête (palier MAX_CONQUETE) ; au palier, le
   // joueur découvre 1 carte parmi 3 du deck ADVERSE et la prend en main.
   | "conquete"
+  // Alimente le compteur d'Exploration ; à chaque palier EXPLORATION_PALIER
+  // franchi, le contrôleur PIOCHE une carte et le reste est conservé.
+  | "exploration"
   // Jouable depuis le cimetière pour un coût alternatif
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
@@ -220,6 +223,7 @@ export type SpellKeywordId =
   | "epargne"
   | "foi"
   | "conquete"
+  | "exploration"
   | "incineration"
   | "creuser"
   | "presage"
@@ -607,6 +611,9 @@ export type ComposedEffectContent =
   // Alimente le compteur de Conquête du contrôleur (palier MAX_CONQUETE).
   // Même contrat : aucune cible, `magnitude.x` porte le montant.
   | "conquete"
+  // Alimente le compteur d'Exploration du contrôleur (palier
+  // EXPLORATION_PALIER, pioche automatique). Même contrat.
+  | "exploration"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
   | "incineration"
@@ -1323,6 +1330,23 @@ export interface CardInstance {
   // n'en produisent jamais, et les instances sérialisées antérieures restent
   // valides (repli sur 1 côté résolveur).
   grantedKeywordY?: Record<string, number>;
+  /** DONS TEMPORAIRES (emblème, objet) : ce que valait la capacité AVANT que
+   *  la source continue ne la relève. Un don retient le plus élevé des deux X ;
+   *  quand il vient d'une source qui peut disparaître, la créature doit
+   *  retrouver sa valeur — d'où cet instantané, restauré puis vidé en tête de
+   *  chaque `recalculateAuras`, juste avant que les sources encore présentes ne
+   *  se reposent.
+   *
+   *  `propres` est indexé par capacité ET déclencheur (`regeneration|`,
+   *  `epargne|attack`) : ce sont les valeurs gravées dans la carte. `conferes`
+   *  l'est par capacité seule, comme `grantedKeywordX/Y` dont il est le reflet.
+   *  Un don PONCTUEL reçu entre-temps met l'instantané à jour (cf.
+   *  `applyGrantedKeyword`) : il est définitif, il doit survivre à la purge.
+   *  Hashé : état durable, identique sur les deux clients. */
+  donsTemporaires?: {
+    propres: Record<string, { x?: number; y?: number }>;
+    conferes: Record<string, { x?: number; y?: number }>;
+  };
   // Concentration: persistent mana_cost reduction stamped on the card when
   // it materialises in hand as the result of a Concentration X transform.
   // Cumulable with Canalisation / Entraide (those reduce on top of this
@@ -1537,6 +1561,12 @@ export interface PlayerState {
    *  Dépense : au palier seulement, le joueur découvre 1 carte parmi 3 du deck
    *  ADVERSE, la prend en main (définitivement), et le compteur repart à 0. */
   conquete: number | null;
+  /** Compteur d'Exploration. `null` = jamais alimenté ; masqué à 0 comme la
+   *  Conquête. Seul compteur SANS dépense : le palier EXPLORATION_PALIER se
+   *  règle tout seul, à l'intérieur de `addExploration` — le contrôleur pioche
+   *  et le palier est retranché (le reste est conservé). Il ne vaut donc jamais
+   *  EXPLORATION_PALIER ou plus dans un état observable. */
+  exploration: number | null;
   /** SINGULIER : le deck de DÉPART de ce joueur ne contenait aucune carte en
    *  double. Calculé UNE FOIS à l'initialisation, jamais modifié ensuite (cartes
    *  volées, jetons, copies n'y changent rien). Conditionne les capacités
@@ -1734,6 +1764,16 @@ export interface GameState {
   faveurEvents?: Array<{
     card: Card;
     ownerId: string;
+  }>;
+  // Transient : chaque gain d'Exploration de l'action, avec le nombre de
+  // pioches qu'il a déclenchées. Les trois autres compteurs s'animent par un
+  // DIFF d'état ; celui-ci ne le peut pas, parce que le palier le fait
+  // REDESCENDRE dans la même action (2 + 2 ⇒ 1 : le diff verrait −1).
+  // Vidé par le store après planification ; exclu du hash d'état.
+  explorationEvents?: Array<{
+    ownerId: string;
+    amount: number;
+    draws: number;
   }>;
   // Transient : capacités NOMMÉES ayant résolu pendant l'action, avec leur
   // déclencheur. Le store en tire un bruitage par capacité (table

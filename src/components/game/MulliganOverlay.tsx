@@ -22,7 +22,9 @@ import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
-import { CostShield, StatShields, statShieldsReserve } from "@/components/card/CardCounters";
+import { CostShield, EquipToken, StatShields, statShieldsReserve } from "@/components/card/CardCounters";
+import { getEquipCost } from "@/lib/game/items";
+import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 
 function playStandardSfx(eventType: string) {
@@ -65,6 +67,10 @@ function MulliganCard({
   const { localizeName, localizeFlavor } = useCardText();
   const vocab = useVocab();
   const isCreature = card.card_type === "creature";
+  // OBJET : mêmes écus qu'une unité (son bonus, écrit « +N ») et son coût
+  // d'équipement — c'est ICI qu'on décide quoi garder, l'écran doit tout dire.
+  const isItem = card.card_type === "item";
+  const porteDesStats = isCreature || isItem;
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
   const [isHovered, setIsHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -213,12 +219,13 @@ function MulliganCard({
           pastilles. L'ordre du DOM tranche, les deux étant au même z-index. */}
       <CostShield value={card.mana_cost} />
       <RightSlots awaken={awakenOf(card, 0)} cost={additionalCostOf(card, card.name)} />
-      {isCreature && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} />}
+      {porteDesStats && <StatShields atk={card.attack ?? 0} hp={card.health ?? 0} bonus={isItem} />}
+      {isItem && <EquipToken value={getEquipCost(card)} sousLeCout={card.mana_cost > 0} />}
 
       {/* Bottom bar */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
-        padding: isCreature ? `8px ${statShieldsReserve(card.attack ?? 0, card.health ?? 0)}cqw 6px 8px` : "8px 8px 6px",
+        padding: porteDesStats ? `8px ${statShieldsReserve(card.attack ?? 0, card.health ?? 0, isItem)}cqw 6px 8px` : "8px 8px 6px",
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 4,
       }}>
@@ -455,6 +462,7 @@ function MulliganCard({
           {/* Les coûts additionnels et l'Éveil ne sont plus répétés ici : le
               recto les porte en jetons (une seule représentation par coût). */}
           {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}
+          {isItem && <><span style={{ color: "#e74c3c" }}>{"⚔"} +{card.attack ?? 0}</span><span style={{ color: "#f1c40f" }}>{"❤"} +{card.health ?? 0}</span><span style={{ color: OBJET_TEINTE }}>{"⚒"} {getEquipCost(card)}</span></>}
         </div>
       </div>
 

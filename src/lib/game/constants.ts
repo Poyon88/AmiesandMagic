@@ -60,6 +60,10 @@ export const MAX_FOI = 10;
  *  Le compteur s'écrête au palier ; la découverte n'est possible QU'au palier,
  *  et le remet à 0. */
 export const MAX_CONQUETE = 3;
+/** Palier du compteur d'Exploration : chaque fois qu'il est atteint, le
+ *  contrôleur pioche une carte et le palier est RETRANCHÉ (le reste est
+ *  conservé). Ce n'est pas un plafond — rien n'est jamais écrêté. */
+export const EXPLORATION_PALIER = 3;
 /** Nombre maximal de cartes qu'un joueur peut tenir en ÉVEIL simultanément.
  *
  *  Sans plafond, un joueur pourrait vider sa main dans la zone d'éveil et s'en

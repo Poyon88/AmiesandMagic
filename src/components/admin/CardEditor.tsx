@@ -22,6 +22,12 @@ import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCard
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
 import { describeComposedCap } from "@/lib/game/composed-display";
+import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
+
+/** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
+ *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
+ *  sorts — c'est ainsi que les objets sont restés invisibles ici. */
+const LIBELLE_TYPE: Record<string, string> = { creature: "Unité", spell: "Sort", item: "Objet" };
 
 // Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
 // n'ont pas de clan. Même clé que TokenCascadePicker.
@@ -73,6 +79,7 @@ interface DbCard {
   sfx_play_url?: string | null;
   topdeck_cost: number | null;
   eveil_cost: number | null;
+  equip_cost?: number | null;
   capabilities: Capability[] | null;
 }
 
@@ -151,7 +158,7 @@ export default function CardEditor() {
   // Filters
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
-  const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
+  const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | "item" | null>(null);
   // `string` et non `Keyword` : le filtre accepte aussi les mécaniques
   // réservées aux sorts (cf. FILTER_KEYWORDS), qui ne sont pas des `Keyword`.
   const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
@@ -170,6 +177,14 @@ export default function CardEditor() {
   // Edit
   const [selectedCard, setSelectedCard] = useState<DbCard | null>(null);
   const [editFields, setEditFields] = useState<Record<string, unknown>>({});
+  // Une carte qui PORTE DES STATS et des mots-clés de créature : l'unité, et
+  // l'OBJET (son ATK/DEF est le bonus qu'il donne à son porteur, ses mots-clés
+  // ceux qu'il lui transfère). Même prédicat que la forge (`porteStats`).
+  //
+  // L'éditeur ne connaissait que « creature » : un objet y perdait ses champs
+  // ATK/DEF, et — bien pire — la sauvegarde les écrivait à `null`, parce que
+  // tout ce qui n'était pas une unité était traité comme un sort.
+  const porteStats = editFields.card_type === "creature" || editFields.card_type === "item";
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -430,6 +445,7 @@ export default function CardEditor() {
       exile_cost: card.exile_cost ?? 0,
       topdeck_cost: card.topdeck_cost ?? 0,
       eveil_cost: card.eveil_cost ?? 0,
+      equip_cost: card.equip_cost ?? 0,
     });
     setNewImageFile(null);
     setNewImagePreview(null);
@@ -540,12 +556,12 @@ export default function CardEditor() {
       }
       // Compagnons : sans carte liée le moteur n'aurait rien à mélanger
       // (no-op silencieux) — même famille de guards que les tokens requis.
-      if (activeKeywords.includes("compagnons") && editFields.card_type === "creature" && compagnonsCardIds.length === 0) {
+      if (activeKeywords.includes("compagnons") && porteStats && compagnonsCardIds.length === 0) {
         setSaveResult({ ok: false, msg: "Compagnons : choisissez au moins une carte liée avant de sauvegarder." });
         setSaving(false);
         return;
       }
-      if (activeKeywords.includes("tuteur") && editFields.card_type === "creature" && tuteurCardIds.length === 0) {
+      if (activeKeywords.includes("tuteur") && porteStats && tuteurCardIds.length === 0) {
         setSaveResult({ ok: false, msg: "Tuteur : choisissez au moins une carte à ajouter en main avant de sauvegarder." });
         setSaving(false);
         return;
@@ -677,8 +693,8 @@ export default function CardEditor() {
         name: editFields.name,
         mana_cost: editFields.mana_cost,
         card_type: editFields.card_type,
-        attack: editFields.card_type === "creature" ? editFields.attack : null,
-        health: editFields.card_type === "creature" ? editFields.health : null,
+        attack: porteStats ? editFields.attack : null,
+        health: porteStats ? editFields.health : null,
         effect_text: effectTextFull || null,
         flavor_text: editFields.flavor_text || null,
         illustration_prompt: editFields.illustration_prompt || null,
@@ -705,6 +721,8 @@ export default function CardEditor() {
         exile_cost: (editFields.exile_cost as number) || 0,
         topdeck_cost: (editFields.topdeck_cost as number) || 0,
         eveil_cost: (editFields.eveil_cost as number) || 0,
+        // Réservé aux objets : `null` ailleurs, comme l'écrit la forge.
+        equip_cost: editFields.card_type === "item" ? ((editFields.equip_cost as number) || 0) : null,
       };
 
       const body: Record<string, unknown> = { card: cardData, updateId: selectedCard.id, composed_capabilities: composedCaps };
@@ -755,7 +773,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -894,8 +912,8 @@ export default function CardEditor() {
       const type = (editFields.card_type as string) || "creature";
       const kwIds = (editFields.keywords as string[]) ?? [];
       const stats = {
-        attack: type === "creature" ? (editFields.attack ?? null) : null,
-        defense: type === "creature" ? (editFields.health ?? null) : null,
+        attack: type !== "spell" ? (editFields.attack ?? null) : null,
+        defense: type !== "spell" ? (editFields.health ?? null) : null,
         power: null,
         mana: editFields.mana_cost ?? 0,
         keywords: kwIds.map((k) => KEYWORD_LABELS[k as Keyword] ?? k),
@@ -983,9 +1001,9 @@ export default function CardEditor() {
 
         {/* Type */}
         <div style={{ display: "flex", gap: 3 }}>
-          {(["creature", "spell"] as const).map(t => (
+          {(["creature", "spell", "item"] as const).map(t => (
             <button key={t} onClick={() => setTypeFilter(typeFilter === t ? null : t)} style={S.filterBtn(typeFilter === t)}>
-              {t === "creature" ? "Unité" : "Sort"}
+              {LIBELLE_TYPE[t]}
             </button>
           ))}
         </div>
@@ -1113,8 +1131,8 @@ export default function CardEditor() {
                   >
                     <td style={{ padding: "6px 8px", fontWeight: 600 }}>{card.name}</td>
                     <td style={{ padding: "6px 8px", color: "#4a90d9" }}>{card.mana_cost}</td>
-                    <td style={{ padding: "6px 8px" }}>{card.card_type === "creature" ? "Unité" : "Sort"}</td>
-                    <td style={{ padding: "6px 8px" }}>{card.card_type === "creature" ? `${card.attack}/${card.health}` : "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{LIBELLE_TYPE[card.card_type] ?? card.card_type}</td>
+                    <td style={{ padding: "6px 8px" }}>{card.card_type === "spell" ? "—" : card.card_type === "item" ? `+${card.attack ?? 0}/+${card.health ?? 0}` : `${card.attack}/${card.health}`}</td>
                     <td style={{ padding: "6px 8px" }}>{card.faction ? getFactionDisplayName(card.faction) : "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.race || "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.rarity || "—"}</td>
@@ -1216,9 +1234,9 @@ export default function CardEditor() {
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Type</div>
               <div style={{ display: "flex", gap: 4 }}>
-                {(["creature", "spell"] as const).map(t => (
+                {(["creature", "spell", "item"] as const).map(t => (
                   <button key={t} onClick={() => updateField("card_type", t)} style={S.filterBtn(editFields.card_type === t)}>
-                    {t === "creature" ? "Unité" : "Sort"}
+                    {LIBELLE_TYPE[t]}
                   </button>
                 ))}
               </div>
@@ -1230,17 +1248,25 @@ export default function CardEditor() {
                 <div style={S.label}>Mana</div>
                 <input type="number" min={0} max={10} value={(editFields.mana_cost as number) ?? 0} onChange={e => updateField("mana_cost", parseInt(e.target.value) || 0)} style={S.input} />
               </div>
-              {editFields.card_type === "creature" && (
+              {porteStats && (
                 <>
                   <div style={{ flex: 1 }}>
-                    <div style={S.label}>ATK</div>
+                    <div style={S.label}>{editFields.card_type === "item" ? "Bonus ATK" : "ATK"}</div>
                     <input type="number" min={0} value={(editFields.attack as number) ?? 0} onChange={e => updateField("attack", parseInt(e.target.value) || 0)} style={S.input} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={S.label}>DEF</div>
+                    <div style={S.label}>{editFields.card_type === "item" ? "Bonus DEF" : "DEF"}</div>
                     <input type="number" min={0} value={(editFields.health as number) ?? 0} onChange={e => updateField("health", parseInt(e.target.value) || 0)} style={S.input} />
                   </div>
                 </>
+              )}
+              {/* ÉQUIPEMENT — objets seulement, plafonné à 10 comme le mana
+                  (c'est un coût de MANA, payé à chaque équipement). */}
+              {editFields.card_type === "item" && (
+                <div style={{ flex: 1 }}>
+                  <div style={{ ...S.label, color: OBJET_TEINTE }} title="Coût en mana pour équiper l'objet sur une créature alliée. Payé à CHAQUE équipement, déplacement compris. 0 = gratuit.">{OBJET_GLYPHE} Équip.</div>
+                  <input type="number" min={0} max={10} value={(editFields.equip_cost as number) ?? 0} onChange={e => updateField("equip_cost", Math.max(0, Math.min(10, parseInt(e.target.value) || 0)))} style={S.input} />
+                </div>
               )}
             </div>
 
@@ -1671,7 +1697,7 @@ export default function CardEditor() {
                 // Ces mots-clés portent un +X/+Y (ou -X/-Y) : leur X vit dans un
                 // bloc dédié à deux champs plus bas, pas dans ce panneau à un
                 // seul champ — qui laisserait croire qu'ils n'ont qu'une valeur.
-                if ((kw === "renforcement" || kw === "discipline" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && editFields.card_type === "creature") return false;
+                if ((kw === "renforcement" || kw === "discipline" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && porteStats) return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -1763,7 +1789,7 @@ export default function CardEditor() {
                 ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap) / ↩ retour en main.
                 Only keywords in CURATED_KEYWORD_MODES accept non-play modes;
                 the engine routes the effect to the matching pipeline. */}
-            {editFields.card_type === "creature" && (() => {
+            {porteStats && (() => {
               const activeCurated = ((editFields.keywords as string[]) || []).filter(kw => {
                 const label = KEYWORD_LABELS[kw as Keyword];
                 return label && CURATED_KEYWORD_MODES[label];
@@ -1950,7 +1976,7 @@ export default function CardEditor() {
               </div>
             )}
 
-            {((editFields.keywords as string[]) || []).includes("renforcement_multiple") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("renforcement_multiple") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#eef5ff", border: "1px solid #cfe0f5" }}>
                 <div style={{ ...S.label, color: "#2c5d99", marginBottom: 6 }}>⏫ Renforcement multiple — +PV (Y) & cible</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -1968,7 +1994,7 @@ export default function CardEditor() {
 
             {/* Renforcement (créature, self-buff) — bloc unifié +ATK (X) / +PV (Y),
                 identique à la Forge de création. */}
-            {((editFields.keywords as string[]) || []).includes("renforcement") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("renforcement") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #cfe8d4", background: "#f0fff4" }}>
                 <div style={{ ...S.label, color: "#1e7d3b", marginBottom: 6 }}>⬆️ RENFORCEMENT (SUR SOI)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1990,7 +2016,7 @@ export default function CardEditor() {
 
             {/* Discipline +X/+Y — Renforcement sur soi, mais seulement si tous
                 les coûts du plateau ont la même parité que le sien. */}
-            {((editFields.keywords as string[]) || []).includes("discipline") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("discipline") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #c8d4e6", background: "#eff5ff" }}>
                 <div style={{ ...S.label, color: "#2c4f7c", marginBottom: 6 }}>🎖️ DISCIPLINE (SUR SOI, PARITÉ DU PLATEAU)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2012,7 +2038,7 @@ export default function CardEditor() {
 
             {/* Fortifier +X/+Y — +X ATK / +Y PV permanent à la 1re créature du
                 deck. Même panneau X/Y dédié que Renforcement. */}
-            {((editFields.keywords as string[]) || []).includes("fortifier") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("fortifier") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #d4d9e8", background: "#f2f5ff" }}>
                 <div style={{ ...S.label, color: "#3b5a7d", marginBottom: 6 }}>🛠️ FORTIFIER (1RE CRÉATURE DU DECK)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2034,13 +2060,13 @@ export default function CardEditor() {
 
             {/* Compagnons — cartes liées mélangées dans le deck (créature). Côté
                 sort, la même donnée s'édite dans la liste unique d'effets. */}
-            {((editFields.keywords as string[]) || []).includes("compagnons") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("compagnons") && porteStats && (
               <div style={{ marginBottom: 8 }}>
                 <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
               </div>
             )}
             {/* Tuteur (créature) : cartes ajoutées en main. */}
-            {((editFields.keywords as string[]) || []).includes("tuteur") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("tuteur") && porteStats && (
               <div style={{ marginBottom: 8 }}>
                 <LinkedCardsPicker title="🎓 Tuteur — cartes ajoutées en main" value={tuteurCardIds} onChange={setTuteurCardIds} accent="#8a6d3b" />
               </div>
@@ -2048,7 +2074,7 @@ export default function CardEditor() {
 
             {/* Invocations multiples — un coût par invocation (créature). Côté
                 sort, la même donnée s'édite dans la liste unique d'effets. */}
-            {((editFields.keywords as string[]) || []).includes("invocations_multiples") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("invocations_multiples") && porteStats && (
               <div style={{ marginBottom: 8 }}>
                 <CostListEditor
                   value={invocCosts} onChange={setInvocCosts} accent="#8a6d3b"
@@ -2083,7 +2109,7 @@ export default function CardEditor() {
 
             {/* Affaiblissement (créature) — bloc unifié -ATK (X) / -PV (Y),
                 identique à la Forge de création. */}
-            {((editFields.keywords as string[]) || []).includes("affaiblissement") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("affaiblissement") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #f5cfcf", background: "#fff0f0" }}>
                 <div style={{ ...S.label, color: "#992c2c", marginBottom: 6 }}>🔻 AFFAIBLISSEMENT</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2179,7 +2205,7 @@ export default function CardEditor() {
 
             {/* Déchainement (créature) — bloc unifié X (nombre de sorts) / Y (coût),
                 identique à la Forge de création. */}
-            {((editFields.keywords as string[]) || []).includes("dechainement") && editFields.card_type === "creature" && (
+            {((editFields.keywords as string[]) || []).includes("dechainement") && porteStats && (
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #e8cfc0", background: "#fff6f0" }}>
                 <div style={{ ...S.label, color: "#b3541e", marginBottom: 6 }}>🌋 DÉCHAINEMENT</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -2209,7 +2235,7 @@ export default function CardEditor() {
               <ComposedEffectsEditor
                 value={composedCaps}
                 onChange={(next) => setComposedCaps(positionnerNouveaux(next))}
-                isUnit={editFields.card_type === "creature"}
+                isUnit={porteStats} pourObjet={editFields.card_type === "item"}
                 tokenTemplates={tokenTemplates}
                 {...(editFields.card_type === "spell" ? {
                   curated: (editFields.spell_keywords as SpellKeywordInstance[]) || [],
