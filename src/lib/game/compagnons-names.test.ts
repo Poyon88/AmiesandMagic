@@ -56,7 +56,10 @@ describe("Câblage des noms de compagnons", () => {
       fs.readdirSync(path.join(process.cwd(), dir))
         .filter((f) => f.endsWith(".tsx"))
         .map((f) => `${dir}/${f}`)
-        .filter((f) => lire(f).includes("buildKeywordDisplayEntries")),
+        // Un bloc de DESCRIPTION, pas une simple rangée d'icônes : CardThumb
+        // (vignette de la grille de la forge) ordonne ses icônes avec
+        // buildKeywordDisplayEntries mais ne décrit rien — il n'a pas de verso.
+        .filter((f) => lire(f).includes("buildKeywordDisplayEntries") && lire(f).includes("keywordDesc")),
     );
     expect([...trouves].sort()).toEqual([...RENDERERS].sort());
   });

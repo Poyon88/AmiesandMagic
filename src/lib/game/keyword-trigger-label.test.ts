@@ -168,7 +168,10 @@ describe("Câblage", () => {
       fs.readdirSync(path.join(process.cwd(), dir))
         .filter((f) => f.endsWith(".tsx"))
         .map((f) => `${dir}/${f}`)
-        .filter((f) => lire(f).includes("buildKeywordDisplayEntries")),
+        // Un bloc de DESCRIPTION, pas une simple rangée d'icônes : CardThumb
+        // (vignette de la grille de la forge) ordonne ses icônes avec
+        // buildKeywordDisplayEntries mais ne décrit rien — il n'a pas de verso.
+        .filter((f) => lire(f).includes("buildKeywordDisplayEntries") && lire(f).includes("keywordDesc")),
     );
     expect([...trouves].sort()).toEqual([...RENDERERS].sort());
   });
@@ -177,7 +180,7 @@ describe("Câblage", () => {
     // CardVisual peint des pastilles sans description : une parenthèse y
     // doublerait la largeur pour rien. (CardPreview, qui figurait ici, était un
     // composant mort — supprimé avec les compteurs héraldiques.)
-    for (const f of ["src/components/card-forge/CardVisual.tsx"]) {
+    for (const f of ["src/components/card-forge/CardVisual.tsx", "src/components/cards/CardThumb.tsx"]) {
       expect(lire(f)).not.toContain("keywordTrigger");
       expect(lire(f)).not.toContain("vocab.triggerBadge(");
       expect(lire(f)).not.toContain("vocab.composedBadge(");
