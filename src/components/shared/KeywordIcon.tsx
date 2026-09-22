@@ -27,6 +27,12 @@ import type { KeywordMode } from "@/lib/game/types";
  * gauche turquoise réservée, moitié droite couleur du déclencheur, blanc pour
  * un passif), avec un fin liseré sombre quand la moitié droite est claire.
  * Calculé par `keywordIconPaint` (pur, testé) ; ici on ne fait que peindre.
+ *
+ * `light` : SANS halo (`filter: drop-shadow`). Pour les grilles qui affichent
+ * des centaines de vignettes (éditeur de la forge) : le halo est un filtre
+ * rastérisé par icône, et c'est lui qui pesait sur le thread principal d'un
+ * iPad — pas le masque. La teinte de mode est conservée (masque + fond) ; seul
+ * le chemin emoji garde son filtre, qui est la teinte elle-même.
  */
 export default function KeywordIcon({
   symbol,
@@ -35,6 +41,7 @@ export default function KeywordIcon({
   fill = false,
   mode,
   singulier,
+  light = false,
 }: {
   symbol: string;
   size?: number;
@@ -42,6 +49,7 @@ export default function KeywordIcon({
   fill?: boolean;
   mode?: KeywordMode;
   singulier?: boolean;
+  light?: boolean;
 }) {
   const { overrides, scales, loaded, fetchOverrides } = useKeywordIconStore();
 
@@ -81,7 +89,7 @@ export default function KeywordIcon({
         <span
           style={{
             display: "inline-flex",
-            filter: halo,
+            filter: light ? undefined : halo,
             lineHeight: 0,
             verticalAlign: "middle",
             // En mode `fill`, l'enfant masqué est dimensionné en %. Le wrapper
@@ -118,14 +126,14 @@ export default function KeywordIcon({
     // couleurs d'un éventuel override multicolore.
     if (fill) {
       return (
-        <span style={{ display: "inline-flex", filter: ICON_CONTRAST_HALO, lineHeight: 0, width: "100%", height: "100%" }}>
+        <span style={{ display: "inline-flex", filter: light ? undefined : ICON_CONTRAST_HALO, lineHeight: 0, width: "100%", height: "100%" }}>
           <img src={effectiveSymbol} alt="" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transform }} />
         </span>
       );
     }
     const imgSize = Math.round(size * 1.8);
     return (
-      <span style={{ display: "inline-flex", filter: ICON_CONTRAST_HALO, lineHeight: 0, verticalAlign: "middle" }}>
+      <span style={{ display: "inline-flex", filter: light ? undefined : ICON_CONTRAST_HALO, lineHeight: 0, verticalAlign: "middle" }}>
         <img
           src={effectiveSymbol}
           alt=""

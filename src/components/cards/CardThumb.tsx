@@ -17,7 +17,13 @@ import type { Card } from "@/lib/game/types";
 import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { HERALDRY, HERALDRY_FONT } from "@/components/card/CardCounters";
 import { additionalCostsOf } from "@/components/card/CardTokens";
-import { composedCapsOf } from "@/lib/game/composed-display";
+import { composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
+import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordBadgeValue, keywordModeColor, applyKeywordValueToLabel, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, SPELL_KEYWORD_LABELS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
+import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
+import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
+import KeywordIcon from "@/components/shared/KeywordIcon";
+import ComposedMarker from "@/components/cards/ComposedMarker";
 
 const RARITY_DOT: Record<string, string> = {
   "Commune": "#9a9a9a",
@@ -53,6 +59,69 @@ export function abilityCount(card: Card): number {
   return kw + spell + composed;
 }
 
+/** Rangée d'icônes de la vignette : mots-clés de créature, mécaniques de sort,
+ *  effets composés — mêmes listes et même ordre d'auteur (`order`) que la
+ *  barre du bas de GameCard, en plus petit et sans halo. */
+function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale: number; accent: string; isCreature: boolean }) {
+  const box = 24 * s;
+  const badge: React.CSSProperties = {
+    fontSize: 10 * s, fontWeight: 900, fontFamily: HERALDRY_FONT, lineHeight: 1,
+    textShadow: "0 0 2px #000, 0 1px 1px #000", marginLeft: 1 * s,
+  };
+  const cell = (order: number): React.CSSProperties => ({
+    order, display: "inline-flex", alignItems: "center", height: box, flexShrink: 0,
+  });
+  const entries = (card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0)
+    ? buildKeywordDisplayEntries(card).filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords))
+    : [];
+  return (
+    <>
+      {entries.map((entry, idx) => {
+        const { kw, x, mode, instance } = entry;
+        const val = keywordBadgeValue(kw, x, instance);
+        const color = keywordModeColor(mode);
+        const allAllies = !isCreature && (instance?.grantScope ?? "target") === "all_allies";
+        return (
+          <span key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={applyKeywordValueToLabel(kw, KEYWORD_LABELS[kw] ?? kw, x, instance)}
+            style={cell(isCreature ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw))}>
+            <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
+              <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={box * 0.6} keyword={kw} fill mode={mode} singulier={entry.singulier} light />
+              {allAllies && <ComposedMarker mode={undefined} color="#27ae60" size={box * 0.3} />}
+            </span>
+            {val != null && <span style={{ ...badge, color: color ?? "#fff" }}>{val}</span>}
+          </span>
+        );
+      })}
+      {(card.spell_keywords ?? []).map((sk, i) => {
+        if (!SPELL_KEYWORDS[sk.id]) return null;
+        const val = getSpellKeywordBadgeValue(sk);
+        return (
+          <span key={`sk_${i}`} title={SPELL_KEYWORD_LABELS[sk.id] ?? sk.id} style={cell(spellKeywordDisplayOrder(i))}>
+            <span style={{ display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
+              <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[sk.id] || "✦"} size={box * 0.6} keyword={`spell_${sk.id}`} fill mode="spell" singulier={sk.singulier} light />
+            </span>
+            {val && <span style={{ ...badge, color: keywordModeColor("spell") ?? accent }}>{val}</span>}
+          </span>
+        );
+      })}
+      {composedCapsOf(card.capabilities).map((cap, i) => {
+        const ic = composedIcon(cap);
+        const cmode = composedTriggerMode(cap);
+        const val = composedValueText(cap);
+        return (
+          <span key={`cx-${i}`} style={cell(composedDisplayOrder(cap))}>
+            <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
+              <KeywordIcon symbol={ic.symbol} size={box * 0.6} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} light />
+              <ComposedMarker mode={cmode} size={box * 0.3} />
+            </span>
+            {val && <span style={{ ...badge, color: keywordModeColor(cmode) ?? "#fff" }}>{val}</span>}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 export default function CardThumb({ card, width = 180, selected = false, onClick }: CardThumbProps) {
   const w = width;
   const h = Math.round(w * 1.4);
@@ -64,7 +133,6 @@ export default function CardThumb({ card, width = 180, selected = false, onClick
   const accent = isCreature ? "#74b9ff" : "#ce93d8";
   const cost = additionalCostsOf(card)[0];
   const eveil = card.eveil_cost ?? 0;
-  const n = abilityCount(card);
   const rarityDot = card.rarity ? RARITY_DOT[card.rarity] : undefined;
   const atk = card.attack ?? 0;
   const hp = card.health ?? 0;
@@ -144,20 +212,20 @@ export default function CardThumb({ card, width = 180, selected = false, onClick
         </div>
       )}
 
-      {/* Bas : rareté + nombre de capacités à gauche, ATK / PV à droite */}
+      {/* Bas : rareté + icônes de capacités à gauche, ATK / PV à droite.
+          Les icônes sont celles de la carte (même ordre d'auteur que GameCard),
+          en `KeywordIcon light` : teinte de déclencheur conservée, mais SANS le
+          halo `drop-shadow` — c'est ce filtre, multiplié par une grille
+          entière, qui pesait sur l'iPad, pas l'icône elle-même. */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
         padding: `${12 * s}px ${5 * s}px ${5 * s}px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 55%, transparent 100%)",
         display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 4 * s,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 * s, minWidth: 0 }}>
-          {rarityDot && <span style={{ width: 8 * s, height: 8 * s, borderRadius: "50%", background: rarityDot, flexShrink: 0 }} />}
-          {n > 0 && (
-            <span style={{ color: accent, fontFamily: HERALDRY_FONT, fontWeight: 700, fontSize: 10 * s, textShadow: "0 1px 2px #000", whiteSpace: "nowrap" }}>
-              ✦ {n}
-            </span>
-          )}
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2 * s, minWidth: 0, flex: 1 }}>
+          {rarityDot && <span style={{ width: 8 * s, height: 8 * s, borderRadius: "50%", background: rarityDot, flexShrink: 0, order: -1, marginRight: 2 * s }} />}
+          <ThumbIcons card={card} scale={s} accent={accent} isCreature={isCreature} />
         </div>
         {cadreDroit && (
           <div style={{ display: "flex", gap: 3 * s }}>
