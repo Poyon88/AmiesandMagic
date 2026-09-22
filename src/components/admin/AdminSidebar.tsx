@@ -34,12 +34,15 @@ export default function AdminSidebar() {
         borderRight: "1px solid #3d3d5c",
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "100dvh",
         overflow: "auto",
+        WebkitOverflowScrolling: "touch",
       }}
     >
+      {/* Il n'existe pas de page /admin : le lien pointait sur une 404 (et
+          Next la préchargeait à chaque affichage de la barre). */}
       <Link
-        href="/admin"
+        href="/admin/card-forge"
         style={{
           padding: "16px 20px",
           fontSize: 18,

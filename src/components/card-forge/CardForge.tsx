@@ -1729,11 +1729,25 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [manualAttack, setManualAttack] = useState(3);
   const [manualDefense, setManualDefense] = useState(3);
   const [manualPower, setManualPower] = useState(2);
-  const [manualLifeCost, setManualLifeCost] = useState(0);
-  const [manualDiscardCost, setManualDiscardCost] = useState(0);
-  const [manualSacrificeCost, setManualSacrificeCost] = useState(0);
-  const [manualExileCost, setManualExileCost] = useState(0);
-  const [manualTopdeckCost, setManualTopdeckCost] = useState(0);
+  const [manualLifeCost, setManualLifeCostBrut] = useState(0);
+  const [manualDiscardCost, setManualDiscardCostBrut] = useState(0);
+  const [manualSacrificeCost, setManualSacrificeCostBrut] = useState(0);
+  const [manualExileCost, setManualExileCostBrut] = useState(0);
+  const [manualTopdeckCost, setManualTopdeckCostBrut] = useState(0);
+  // UN SEUL coût additionnel par carte (brief compteurs blasons §7, contrainte
+  // CHECK en base). Le formulaire l'applique à la saisie : poser un coût > 0
+  // remet les quatre autres à zéro, au lieu de laisser l'aperçu en afficher un
+  // seul en silence et l'API refuser la carte à l'enregistrement.
+  const exclusifs = [setManualLifeCostBrut, setManualDiscardCostBrut, setManualSacrificeCostBrut, setManualExileCostBrut, setManualTopdeckCostBrut] as const;
+  const poserCoutExclusif = (moi: (typeof exclusifs)[number], v: number) => {
+    if (v > 0) for (const setter of exclusifs) if (setter !== moi) setter(0);
+    moi(v);
+  };
+  const setManualLifeCost = (v: number) => poserCoutExclusif(setManualLifeCostBrut, v);
+  const setManualDiscardCost = (v: number) => poserCoutExclusif(setManualDiscardCostBrut, v);
+  const setManualSacrificeCost = (v: number) => poserCoutExclusif(setManualSacrificeCostBrut, v);
+  const setManualExileCost = (v: number) => poserCoutExclusif(setManualExileCostBrut, v);
+  const setManualTopdeckCost = (v: number) => poserCoutExclusif(setManualTopdeckCostBrut, v);
   // OBJETS : second coût en mana, payé à chaque équipement.
   const [manualEquipCost, setManualEquipCost] = useState(0);
   /** La carte se saisit-elle comme une UNITÉ ? Vrai pour les unités et les
@@ -2312,7 +2326,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCost(0); setManualDiscardCost(0); setManualSacrificeCost(0); setManualExileCost(0); setManualTopdeckCost(0); setManualEveilCost(0); setManualEquipCost(0);
+    setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2490,11 +2504,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualAttack(3);
     setManualDefense(3);
     setManualPower(2);
-    setManualLifeCost(0);
-    setManualDiscardCost(0);
-    setManualSacrificeCost(0);
-    setManualExileCost(0);
-    setManualTopdeckCost(0);
+    setManualLifeCostBrut(0);
+    setManualDiscardCostBrut(0);
+    setManualSacrificeCostBrut(0);
+    setManualExileCostBrut(0);
+    setManualTopdeckCostBrut(0);
     setManualEquipCost(0);
     setManualEveilCost(0);
     // Mots-clés et leur paramétrage
@@ -2888,7 +2902,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         .bulk-row:hover { border-color:rgba(0,0,0,0.15) !important; }
       `}</style>
 
-      <div style={{ height: "100vh", background: "#ffffff", fontFamily: "'Cinzel',serif", color: "#333", display: "flex", flexDirection: "column" }}>
+      <div style={{ height: "100dvh", background: "#ffffff", fontFamily: "'Cinzel',serif", color: "#333", display: "flex", flexDirection: "column" }}>
 
         {/* Topbar */}
         <div style={{ padding: "11px 20px", borderBottom: "1px solid #e0e0e0", background: "#fafafa", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -2949,7 +2963,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             {/* `flexShrink: 0` ici AUSSI : sans lui, une fenêtre étroite
                 rétrécirait les deux colonnes latérales à parts égales, alors que
                 c'est le centre qui a de la place à céder. */}
-            <div style={{ width: 235, flexShrink: 0, minHeight: 0, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+            <div style={{ width: 235, flexShrink: 0, minHeight: 0, padding: "16px 13px", borderRight: "1px solid #e8e8e8", background: "#fafafa", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
               <Sec title={tf('section_faction')}>
                 {Object.entries(FACTIONS).map(([f, fc]) => (
                   <button key={f} onClick={() => setFaction(f)} style={{
@@ -3172,7 +3186,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             </div>
 
             {/* Preview */}
-            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 28, background: "#f5f5f5", overflowY: "auto" }}>
+            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 28, background: "#f5f5f5", overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
               <div style={{ animation: card ? "fadeIn 0.35s ease" : "none" }}>
                 <CardVisual
                   card={(card || forgeMode === "manuel") ? manualCard : null}
@@ -3368,7 +3382,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 première quand la fenêtre se resserre, et on retombe sur le
                 problème. Le centre est en `flex: 1` : c'est donc lui qui rend la
                 place, ce qu'il avait de reste (la carte y flottait dans le vide). */}
-            <div style={{ width: 360, flexShrink: 0, minHeight: 0, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto" }}>
+            <div style={{ width: 360, flexShrink: 0, minHeight: 0, padding: "14px 10px", borderLeft: "1px solid #e8e8e8", background: "#fafafa", overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
 
               {forgeMode === "auto" && !card && (
                 <>

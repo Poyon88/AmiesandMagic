@@ -6,6 +6,8 @@ import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
+import CardThumb from "@/components/cards/CardThumb";
+import { VirtuosoGrid } from "react-virtuoso";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
@@ -1087,23 +1089,45 @@ export default function CardEditor() {
       </div>
 
       {/* ── MAIN AREA ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Card list/grid */}
-        <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
+        {/* Card list/grid.
+            GRILLE VIRTUALISÉE : le catalogue compte ~2 600 cartes, et la grille
+            les rendait TOUTES en `GameCard` complètes (écus en clip-path +
+            drop-shadow, SVG à dégradés, container queries, overlay avec
+            backdrop-filter) — un iPad mettait une minute à répondre. Désormais
+            seules les rangées visibles (+ marge) existent dans le DOM, en
+            vignettes allégées ; la carte SÉLECTIONNÉE seule reçoit le rendu
+            complet. La liste (tableau) garde son défilement natif. */}
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <style>{`
+            .am-forge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 16px; }
+            .am-forge-grid-item { display: flex; align-items: flex-start; }
+          `}</style>
           {viewMode === "grid" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-              {filteredCards.map(card => (
-                <div key={card.id} onClick={() => selectCard(card)} style={{ cursor: "pointer" }}>
-                  <GameCard
-                    card={card as unknown as Card}
-                    size="sm"
-                    selected={selectedCard?.id === card.id}
-                    tokens={tokenTemplates}
-                  />
-                </div>
-              ))}
-            </div>
+            <VirtuosoGrid
+              style={{ flex: 1, minHeight: 0, WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
+              data={filteredCards}
+              overscan={{ main: 600, reverse: 300 }}
+              computeItemKey={(_, card) => card.id}
+              listClassName="am-forge-grid"
+              itemClassName="am-forge-grid-item"
+              itemContent={(_, card) => (
+                selectedCard?.id === card.id ? (
+                  <div onClick={() => selectCard(card)} style={{ cursor: "pointer" }}>
+                    <GameCard
+                      card={card as unknown as Card}
+                      size="sm"
+                      selected
+                      tokens={tokenTemplates}
+                    />
+                  </div>
+                ) : (
+                  <CardThumb card={card as unknown as Card} onClick={() => selectCard(card)} />
+                )
+              )}
+            />
           ) : (
+          <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: 16, WebkitOverflowScrolling: "touch" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "'Crimson Text',serif" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid #e0e0e0", textAlign: "left" }}>
@@ -1140,8 +1164,14 @@ export default function CardEditor() {
                 ))}
               </tbody>
             </table>
+            {filteredCards.length === 0 && (
+              <div style={{ textAlign: "center", color: "#aaa", padding: 40, fontFamily: "'Cinzel',serif", fontSize: 12 }}>
+                Aucune carte trouvée
+              </div>
+            )}
+          </div>
           )}
-          {filteredCards.length === 0 && (
+          {viewMode === "grid" && filteredCards.length === 0 && (
             <div style={{ textAlign: "center", color: "#aaa", padding: 40, fontFamily: "'Cinzel',serif", fontSize: 12 }}>
               Aucune carte trouvée
             </div>
@@ -1150,7 +1180,7 @@ export default function CardEditor() {
 
         {/* ── EDIT PANEL ── */}
         {selectedCard && (
-          <div style={{ width: 320, borderLeft: "1px solid #e0e0e0", background: "#fff", overflow: "auto", padding: "16px 14px", flexShrink: 0 }}>
+          <div style={{ width: 320, borderLeft: "1px solid #e0e0e0", background: "#fff", overflow: "auto", WebkitOverflowScrolling: "touch", padding: "16px 14px", flexShrink: 0 }}>
             {/* Image preview. A freshly-picked upload (newImagePreview) is a
                 local blob/data URL → render it raw (next/image can't optimise
                 those). The saved illustration is a remote Supabase URL → run it
