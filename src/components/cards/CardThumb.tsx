@@ -25,14 +25,6 @@ import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, 
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 
-const RARITY_DOT: Record<string, string> = {
-  "Commune": "#9a9a9a",
-  "Peu Commune": "#4caf50",
-  "Rare": "#4fc3f7",
-  "Épique": "#ce93d8",
-  "Légendaire": "#ffd54f",
-};
-
 /** Glyphe texte d'un coût additionnel — la vignette n'a pas la place d'une
  *  silhouette ; le glyphe + la couleur suffisent à repérer la carte. */
 const COST_GLYPH: Record<string, { glyph: string; color: string }> = {
@@ -133,7 +125,6 @@ export default function CardThumb({ card, width = 180, selected = false, onClick
   const accent = isCreature ? "#74b9ff" : "#ce93d8";
   const cost = additionalCostsOf(card)[0];
   const eveil = card.eveil_cost ?? 0;
-  const rarityDot = card.rarity ? RARITY_DOT[card.rarity] : undefined;
   const atk = card.attack ?? 0;
   const hp = card.health ?? 0;
 
@@ -212,7 +203,7 @@ export default function CardThumb({ card, width = 180, selected = false, onClick
         </div>
       )}
 
-      {/* Bas : rareté + icônes de capacités à gauche, ATK / PV à droite.
+      {/* Bas : icônes de capacités à gauche, ATK / PV à droite.
           Les icônes sont celles de la carte (même ordre d'auteur que GameCard),
           en `KeywordIcon light` : teinte de déclencheur conservée, mais SANS le
           halo `drop-shadow` — c'est ce filtre, multiplié par une grille
@@ -224,7 +215,6 @@ export default function CardThumb({ card, width = 180, selected = false, onClick
         display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 4 * s,
       }}>
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2 * s, minWidth: 0, flex: 1 }}>
-          {rarityDot && <span style={{ width: 8 * s, height: 8 * s, borderRadius: "50%", background: rarityDot, flexShrink: 0, order: -1, marginRight: 2 * s }} />}
           <ThumbIcons card={card} scale={s} accent={accent} isCreature={isCreature} />
         </div>
         {cadreDroit && (
