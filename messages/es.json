@@ -773,6 +773,8 @@
         "on_attack": "Al atacar",
         "on_end_of_turn": "Al final del turno",
         "on_end_of_turn_in_hand": "Al final del turno, mientras esté en la mano",
+        "on_start_of_turn": "Al inicio del turno",
+        "on_start_of_turn_in_hand": "Al inicio del turno, mientras esté en la mano",
         "in_hand_suffix": "en la mano",
         "on_draw": "Al robarse",
         "on_low_hp": "Menos de 15 PV",
@@ -864,7 +866,8 @@
           "on_return": "cada vez que una de {owner} criaturas vuelve a la mano",
           "on_activation": "cada vez que una de {owner} criaturas se activa",
           "on_low_hp": "cada vez que {hero} baja de {n} PV",
-          "on_end_of_turn": "al final de {turn} turno"
+          "on_end_of_turn": "al final de {turn} turno",
+          "on_start_of_turn": "al inicio de {turn} turno"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": ", que se activará al activarse",
         "on_return": ", que se activará al volver a la mano",
         "on_end_of_turn": ", que se activará al final del turno",
+        "on_start_of_turn": ", que se activará al inicio del turno",
         "on_attack": ", que se activará cuando ataque",
         "on_draw": ", que se activará al robarla",
         "on_low_hp": ", que se activará por debajo de 15 PV",
@@ -1064,6 +1068,7 @@
       "Nagas": "Nagas",
       "Tengu": "Tengu",
       "Oni": "Oni",
+      "Qilins": "Qilines",
       "Esprits": "Espíritus",
       "Griffons": "Grifos",
       "Faucons": "Halcones",
@@ -1124,8 +1129,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trols",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Guerreros del Caos",
-      "Qilins": "Qilines"
+      "Guerriers du Chaos": "Guerreros del Caos"
     },
     "alignments": {
       "bon": "Bueno",
@@ -1228,6 +1232,11 @@
         "def": "el Oni",
         "bare": "Oni",
         "de": "del Oni"
+      },
+      "Qilins": {
+        "def": "el Qilin",
+        "bare": "Qilin",
+        "de": "del Qilin"
       },
       "Griffons": {
         "def": "el Grifo",
@@ -1539,11 +1548,6 @@
         "def": "el Guerrero del Caos",
         "bare": "Guerrero del Caos",
         "de": "del Guerrero del Caos"
-      },
-      "Qilins": {
-        "def": "el Qilin",
-        "bare": "Qilin",
-        "de": "del Qilin"
       }
     },
     "clans_forms": {
@@ -1649,6 +1653,7 @@
         "return": "al volver a la mano",
         "attack": "al atacar",
         "end_of_turn": "al final del turno",
+        "start_of_turn": "al inicio del turno",
         "draw": "al robar",
         "low_hp": "con menos de {n} PV",
         "spell": "a la resolución del hechizo",
@@ -1663,6 +1668,7 @@
       "return": "Retorno",
       "tap": "Activable",
       "end_of_turn": "Fin de turno",
+      "start_of_turn": "Inicio de turno",
       "draw": "Robo",
       "low_hp": "Con menos de {n} PV",
       "wound": "Herida"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "Al atacar",
     "trigger_on_end_of_turn": "Al final del turno",
     "trigger_on_end_of_turn_in_hand": "Al final del turno, mientras esté en la mano",
+    "trigger_on_start_of_turn": "Al inicio del turno",
+    "trigger_on_start_of_turn_in_hand": "Al inicio del turno, mientras esté en la mano",
     "trigger_on_draw": "Cuando se roba esta carta",
     "trigger_on_low_hp": "Menos de 15 PV",
     "trigger_on_wound": "Herida (daño sufrido sin morir)",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "Al volver a la mano",
     "mode_title_attack": "Al atacar",
     "mode_title_end_of_turn": "Al final del turno",
+    "mode_title_start_of_turn": "Al inicio del turno (tras robar)",
     "mode_title_draw": "Cuando se roba esta carta",
     "mode_title_low_hp": "Cuando tu héroe cae por debajo de 15 PV (solo una vez)",
     "mode_title_wound": "Herida: cuando sufre daño sin morir (una vez por fuente y por turno)",

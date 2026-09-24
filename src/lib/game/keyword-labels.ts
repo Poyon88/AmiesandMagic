@@ -33,6 +33,11 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
   if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
+  // Argent BLEUTÉ, pas argent pur : le blanc est réservé aux passifs (c'est
+  // une règle de jeu lisible, cf. isPermanentKeyword) et un #C0C0C0 s'y
+  // confondait sur une illustration claire. La pointe de bleu acier l'en
+  // écarte sans le rapprocher du bleu franc du retour en main.
+  if (mode === "start_of_turn") return "#A9B8CC"; // argent bleuté (début du tour)
   if (mode === "draw") return "#17b6c4"; // cyan (à la pioche)
   if (mode === "low_hp") return "#8B5CF6"; // violet (« Sous 15 PV »)
   if (mode === "wound") return "#B6E62E"; // vert citron (Blessure : blessée sans mourir)
@@ -119,6 +124,14 @@ function keywordModeTint(mode: KeywordMode | undefined): string | null {
   if (mode === "end_of_turn") {
     // → #2faa3f green (fin du tour)
     return "brightness(0) saturate(100%) invert(48%) sepia(92%) saturate(389%) hue-rotate(73deg) brightness(94%) contrast(90%)";
+  }
+  if (mode === "start_of_turn") {
+    // → #A9B8CC argent bleuté (début du tour). Chaîne résolue par simulation
+    // de la pipeline filter (rendu #aab9ce, Δ≈2), saturate FAIBLE (166%) —
+    // une teinte presque grise n'a pas besoin de plus, et une saturation
+    // extrême dérive sur WebKit/iOS (leçon de "attack"). Garder en phase avec
+    // keywordModeColor("start_of_turn").
+    return "brightness(0) saturate(100%) invert(52%) sepia(40%) saturate(166%) hue-rotate(175deg) brightness(149%) contrast(64%)";
   }
   if (mode === "low_hp") {
     // → #8B5CF6 violet (« Sous 15 PV »). Chaîne résolue par simulation de la

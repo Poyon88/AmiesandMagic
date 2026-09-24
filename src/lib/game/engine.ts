@@ -526,7 +526,7 @@ function isLethalTouch(source: CardInstance | import("./types").HeroState | null
 function recordPowerStrike(source: CardInstance | null, targetId: string, content: import("./types").ComposedEffectContent, x: number): void {
   if (content !== "deal_damage" || x <= 0 || !source) return;
   const mode = composedStrikeMode;
-  if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn" && mode !== "wound") return;
+  if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn" && mode !== "start_of_turn" && mode !== "wound") return;
   powerStrikeSink.push({ sourceId: source.instanceId, targetId, mode });
 }
 
@@ -559,6 +559,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "tap") return "on_activation";
   if (mode === "return") return "on_return";
   if (mode === "end_of_turn") return "on_end_of_turn";
+  if (mode === "start_of_turn") return "on_start_of_turn";
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
@@ -2129,6 +2130,7 @@ function keywordModeToTrigger(mode: import("./types").KeywordMode | undefined): 
     case "return": return "on_return";
     case "attack": return "on_attack";
     case "end_of_turn": return "on_end_of_turn";
+    case "start_of_turn": return "on_start_of_turn";
     case "draw": return "on_draw";
     case "low_hp": return "on_low_hp";
     case "wound": return "on_wound";
@@ -2149,6 +2151,8 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même teinte que la fin de tour
+    case "on_start_of_turn": return "start_of_turn";
+    case "on_start_of_turn_in_hand": return "start_of_turn"; // même teinte que le début de tour
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
     case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
@@ -3065,7 +3069,7 @@ function placeEmblem(target: PlayerState, emblem: import("./types").Emblem): voi
   }
   // TOUJOURS en fin de tableau : l'ordre de `emblems` EST la chronologie de
   // pose, et c'est lui qui ordonne les emblèmes dans la file de fin de tour
-  // (cf. buildEndOfTurnQueue, règle 2). Une insertion en tête ou un tri
+  // (cf. buildTurnPhaseQueue, règle 2). Une insertion en tête ou un tri
   // inverserait des effets sans qu'aucun autre site ne s'en aperçoive.
   //
   // À noter : un ré-empilement (branche `existant` ci-dessus) hérite de la
@@ -3151,10 +3155,11 @@ function placeEmblemsForCard(
  *  chez l'adversaire réagit donc à SES créatures, ce qui est précisément ce qui
  *  en fait une malédiction. Même règle que le camp implicite.
  *
- *  La fin de tour n'entre PAS ici : elle passe par `endOfTurnQueue`, seul chemin
- *  capable de mettre le tour en pause sur un choix de cible. Les autres
- *  cadences se résolvent sans suspendre — on ne peut pas interrompre une
- *  attaque ou une mort pour ouvrir une modale.
+ *  La fin et le début de tour n'entrent PAS ici : ils passent par
+ *  `endOfTurnQueue` / `startOfTurnQueue`, seuls chemins capables de mettre le
+ *  tour en pause sur un choix de cible. Les autres cadences se résolvent sans
+ *  suspendre — on ne peut pas interrompre une attaque ou une mort pour ouvrir
+ *  une modale.
  *
  *  Sans effet sur les emblèmes de REGISTRE : ceux-là sont des auras permanentes
  *  appliquées par `recalculateAuras`, ils n'ont rien à déclencher. */
@@ -3163,7 +3168,7 @@ function fireEmblemsForEvent(
   porteur: PlayerState,
   autre: PlayerState,
 ): void {
-  if (evenement === "on_end_of_turn") return;
+  if (evenement === "on_end_of_turn" || evenement === "on_start_of_turn") return;
   (porteur.emblems ?? []).forEach((emblem, index) => {
     if (!emblem.composed) return;
     if ((emblem.trigger ?? "on_end_of_turn") !== evenement) return;
@@ -3240,7 +3245,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
         c.itemGrantedKeywords = [];
       }
       // Le SIDECAR, et c'est le retrait qui compte vraiment : plusieurs
-      // résolveurs (buildEndOfTurnQueue en tête) balaient `keyword_instances`
+      // résolveurs (buildTurnPhaseQueue en tête) balaient `keyword_instances`
       // sans jamais consulter `keywords`. Ne purger que la seconde laisserait
       // une Tempête d'objet partir à chaque fin de tour, pour toujours, sur une
       // créature désormais nue.
@@ -3484,7 +3489,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const p of [player, opponent]) {
     for (const aura of p.emblems ?? []) {
       // Les emblèmes COMPOSÉS ne sont pas des états passifs : ils se résolvent
-      // en fin de tour (buildEndOfTurnQueue), pas ici.
+      // en fin ou en début de tour (buildTurnPhaseQueue), pas ici.
       if (!aura.abilityId) continue;
       if (aura.abilityId === "commandement" || aura.abilityId === "terreur") continue;
       // Même règle d'amplitude que les autres dons : sans elle, une aura de
@@ -3819,8 +3824,19 @@ export function startTurn(state: GameState): GameState {
   // checkWinCondition. Other actions (playCard / attack / hero_power)
   // already run it at their tail; startTurn was missing.
   checkWinCondition(newState);
+  if (newState.phase === "finished") return newState;
 
-  return newState;
+  // DÉCLENCHEURS « DÉBUT DE TOUR » du joueur ENTRANT — en dernier, une fois la
+  // pioche faite, le plateau réveillé, Régénération et Poison réglés : la
+  // créature qui parle est vivante, détapée et prête (arbitrage d'auteur). Même
+  // file ordonnée que la fin de tour ; une cible « au choix » y ouvre le
+  // sélecteur au joueur entrant, dont c'est le tour (cf. advanceTurnPhase).
+  newState.startOfTurnQueue = buildTurnPhaseQueue(player, "start_of_turn");
+  // Frontière pour l'ÉCRAN : la fin du tour adverse, la bascule et la pioche se
+  // jouent AVANT les effets de début de tour. Sans elle, un dégât de fin de
+  // tour et un dégât de début de tour partaient dans la même salve.
+  if (newState.startOfTurnQueue.length > 0) markAnimationCheckpoint("effet");
+  return advanceStartOfTurn(newState);
 }
 
 function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
@@ -3969,6 +3985,13 @@ export function endTurn(state: GameState): GameState {
     console.warn("[end-turn] end_turn ignoré : une fin de tour est déjà en pause sur un choix");
     return state;
   }
+  // Même garde pour un DÉBUT de tour en pause : le joueur entrant doit trancher
+  // son choix avant de pouvoir rendre la main (la garde du store le retient
+  // déjà, mais le rejeu d'actions entre directement ici).
+  if (state.startOfTurnQueue !== undefined) {
+    console.warn("[start-turn] end_turn ignoré : un début de tour est encore en pause sur un choix");
+    return state;
+  }
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
   const newState = cloneStateForAction(state);
@@ -3993,21 +4016,37 @@ export function endTurn(state: GameState): GameState {
   // INTERACTIF est atteint la séquence se met en pause (endOfTurnQueue persistée)
   // et reprend — automatiques suivants compris — après la résolution du joueur.
   // Cf. advanceEndOfTurn / resolvePendingTrigger.
-  newState.endOfTurnQueue = buildEndOfTurnQueue(newState.players[newState.currentPlayerIndex]);
+  newState.endOfTurnQueue = buildTurnPhaseQueue(newState.players[newState.currentPlayerIndex], "end_of_turn");
   // Les emblèmes de cadence « fin de tour » sont déjà dans la file ci-dessus
-  // (buildEndOfTurnQueue) : c'est le seul chemin capable de mettre le tour en
+  // (buildTurnPhaseQueue) : c'est le seul chemin capable de mettre le tour en
   // PAUSE sur un choix de cible, d'où son traitement à part.
   return advanceEndOfTurn(newState);
 }
 
-/** Construit la file ORDONNÉE des effets « fin de tour » du joueur sortant.
+/** Les deux PHASES de tour qui font parler le plateau par une file ordonnée :
+ *  la fin du tour (joueur sortant) et le début du tour (joueur entrant). Même
+ *  mécanique, même contrat d'ordre, deux vocabulaires. */
+type TurnPhase = "end_of_turn" | "start_of_turn";
+const TURN_PHASES: Record<TurnPhase, {
+  trigger: import("./types").CapabilityTrigger;
+  inHand: import("./types").CapabilityTrigger;
+  /** Suffixe de l'id des déclencheurs d'EMBLÈME en attente (seule identité
+   *  stable sans source en jeu). */
+  emblemIdSuffix: string;
+}> = {
+  end_of_turn: { trigger: "on_end_of_turn", inHand: "on_end_of_turn_in_hand", emblemIdSuffix: "#eot" },
+  start_of_turn: { trigger: "on_start_of_turn", inHand: "on_start_of_turn_in_hand", emblemIdSuffix: "#sot" },
+};
+
+/** Construit la file ORDONNÉE des effets d'une phase de tour pour un joueur —
+ *  le SORTANT en fin de tour, l'ENTRANT en début de tour.
  *
  *  L'ordre est un CONTRAT, verrouillé par end-of-turn-creature-emblem-order.test.ts :
  *
  *   1. toutes les CRÉATURES d'abord, dans l'ordre strict du plateau
- *      (gauche→droite) ; pour chacune, ses mots-clés curés en mode end_of_turn
- *      (ordre du tableau) puis ses capacités composées on_end_of_turn (ordre de
- *      getCapabilities) ;
+ *      (gauche→droite) ; pour chacune, ses mots-clés curés dans le mode de la
+ *      phase (ordre du tableau) puis ses capacités composées au déclencheur de
+ *      la phase (ordre de getCapabilities) ;
  *   2. les EMBLÈMES ensuite, dans l'ordre de `player.emblems` — c'est-à-dire
  *      l'ordre CHRONOLOGIQUE de première pose, que `placeEmblem` garantit en
  *      n'ajoutant qu'en fin de tableau. Une pile de N résout l'effet N fois
@@ -4015,37 +4054,38 @@ export function endTurn(state: GameState): GameState {
  *
  *  Les deux règles ne tiennent qu'à l'ordre des boucles ci-dessous et à celui du
  *  tableau `emblems` : ni tri, ni insertion en tête ici ou dans placeEmblem. */
-function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurnStep[] {
+function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./types").EndOfTurnStep[] {
+  const spec = TURN_PHASES[phase];
   const steps: import("./types").EndOfTurnStep[] = [];
-  for (const creature of outgoing.board) {
+  for (const creature of joueur.board) {
     for (const inst of creature.card.keyword_instances ?? []) {
-      if (inst.mode === "end_of_turn") steps.push({ sourceInstanceId: creature.instanceId, curated: inst });
+      if (inst.mode === phase) steps.push({ sourceInstanceId: creature.instanceId, curated: inst });
     }
     for (const cap of getCapabilities(creature.card)) {
-      if (composeExecutable(cap) && cap.trigger === "on_end_of_turn") {
+      if (composeExecutable(cap) && cap.trigger === spec.trigger) {
         steps.push({ sourceInstanceId: creature.instanceId, capUid: cap.uid });
       }
     }
   }
-  // Cartes EN MAIN (créatures) portant un effet « fin de tour, en main » :
-  // après le plateau, avant les emblèmes, dans l'ordre de la main. Source =
-  // l'instance en main ; l'effet s'y résout (buff self accumulé tour après tour).
-  for (const carte of outgoing.hand) {
+  // Cartes EN MAIN (créatures) portant un effet « …, en main » : après le
+  // plateau, avant les emblèmes, dans l'ordre de la main. Source = l'instance
+  // en main ; l'effet s'y résout (buff self accumulé tour après tour).
+  for (const carte of joueur.hand) {
     if (carte.card.card_type !== "creature") continue;
     for (const cap of getCapabilities(carte.card)) {
-      if (composeExecutable(cap) && cap.trigger === "on_end_of_turn_in_hand") {
+      if (composeExecutable(cap) && cap.trigger === spec.inHand) {
         steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inHand: true });
       }
     }
   }
   // EMBLÈMES composés, APRÈS toutes les créatures : le plateau parle d'abord,
   // les effets permanents ensuite. Une pile de N résout l'effet N fois.
-  (outgoing.emblems ?? []).forEach((emblem, i) => {
+  (joueur.emblems ?? []).forEach((emblem, i) => {
     if (!emblem.composed) return;
-    // SEULS les emblèmes de cadence « fin de tour » entrent dans la file. Sans
+    // SEULS les emblèmes de la cadence de CETTE phase entrent dans la file. Sans
     // ce filtre, un emblème qui guette l'entrée en jeu parlait AUSSI à chaque
     // fin de tour — deux fois plutôt qu'une, et sur le mauvais événement.
-    if ((emblem.trigger ?? "on_end_of_turn") !== "on_end_of_turn") return;
+    if ((emblem.trigger ?? "on_end_of_turn") !== spec.trigger) return;
     for (let n = 0; n < emblem.stacks; n++) {
       steps.push({ sourceInstanceId: "", emblemIndex: i });
     }
@@ -4053,18 +4093,33 @@ function buildEndOfTurnQueue(outgoing: PlayerState): import("./types").EndOfTurn
   return steps;
 }
 
-/** Traite la file `endOfTurnQueue` DANS L'ORDRE : résout les effets automatiques
- *  en ligne et, au premier effet interactif (Sélection* ou composé « au choix »
- *  non-self avec cible éligible), met UN pendingTrigger et rend la main (pause,
- *  endTurnPending). Reprend à la même position au prochain appel. File épuisée →
- *  finalisation (finalizeEndOfTurn). C'est ce qui garantit l'ordre strict
- *  gauche→droite tous régimes confondus : un automatique situé après un
- *  interactif ne se résout qu'une fois cet interactif tranché. */
-function advanceEndOfTurn(newState: GameState): GameState {
-  const outgoing = newState.players[newState.currentPlayerIndex];
+/** Met la séquence de phase EN PAUSE sur le déclencheur interactif qui vient
+ *  d'être empilé. En fin de tour, c'est la bascule qui est différée
+ *  (`endTurnPending`) ; en début de tour, elle est déjà faite — la file
+ *  persistante suffit, et la garde du store (aucune action tant que
+ *  `pendingTriggers` n'est pas vide) retient le joueur entrant. */
+function pauseTurnPhase(newState: GameState, phase: TurnPhase): GameState {
+  if (phase === "end_of_turn") newState.endTurnPending = true;
+  return newState;
+}
+
+/** Traite la file de la phase DANS L'ORDRE : résout les effets automatiques en
+ *  ligne et, au premier effet interactif (Sélection* ou composé « au choix »
+ *  non-self avec cible éligible), met UN pendingTrigger et rend la main (pause).
+ *  Reprend à la même position au prochain appel. File épuisée → finalisation
+ *  de la phase. C'est ce qui garantit l'ordre strict gauche→droite tous régimes
+ *  confondus : un automatique situé après un interactif ne se résout qu'une
+ *  fois cet interactif tranché.
+ *
+ *  Le joueur dont on lit la file est TOUJOURS le joueur actif : le sortant en
+ *  fin de tour (la bascule attend), l'entrant en début de tour (elle est faite). */
+function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
+  const spec = TURN_PHASES[phase];
+  const actif = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
-  const queue = newState.endOfTurnQueue;
-  if (!queue) return finalizeEndOfTurn(newState);
+  const queue = phase === "end_of_turn" ? newState.endOfTurnQueue : newState.startOfTurnQueue;
+  const finalize = phase === "end_of_turn" ? finalizeEndOfTurn : finalizeStartOfTurn;
+  if (!queue) return finalize(newState);
 
   while (queue.length > 0) {
     const step = queue[0];
@@ -4075,22 +4130,21 @@ function advanceEndOfTurn(newState: GameState): GameState {
     // cette garde le ferait écarter à tous les coups, en silence.
     if (step.emblemIndex != null) {
       queue.shift();
-      const emblem = (outgoing.emblems ?? [])[step.emblemIndex];
+      const emblem = (actif.emblems ?? [])[step.emblemIndex];
       if (!emblem?.composed) continue;
       // Cible « au choix » non-self : même pause que pour une créature. L'id du
       // déclencheur porte l'indice de l'emblème, seule identité stable dont on
       // dispose sans source en jeu.
       if (emblem.composed.target?.designation === "choice" && emblem.composed.target?.entity !== "self") {
         const trig: import("./types").PendingTrigger = {
-          id: `emblem_${step.emblemIndex}#eot`,
-          controllerId: outgoing.id,
+          id: `emblem_${step.emblemIndex}${spec.emblemIdSuffix}`,
+          controllerId: actif.id,
           sourceInstanceId: null,
           emblemIndex: step.emblemIndex,
         };
         if (endOfTurnTriggerTargets(newState, trig).length > 0) {
           (newState.pendingTriggers ??= []).push(trig);
-          newState.endTurnPending = true;
-          return newState; // PAUSE
+          return pauseTurnPhase(newState, phase); // PAUSE
         }
         continue; // aucune cible éligible → no-op
       }
@@ -4100,10 +4154,10 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // reconnue comme provenance interactive. Même défaut, et même correctif,
       // que pour les sorts — troisième provenance sans instance source.
       const avant = pendingTriggerSink.length;
-      withComposedMode("end_of_turn", () =>
-        resolveComposedEffect(emblem.composed!, null, outgoing, opponent, undefined, false,
+      withComposedMode(phase, () =>
+        resolveComposedEffect(emblem.composed!, null, actif, opponent, undefined, false,
           {
-            trigger: "on_end_of_turn",
+            trigger: spec.trigger,
             emblemIndex: step.emblemIndex!,
             sourceCard: {
               faction: emblem.sourceFaction ?? null,
@@ -4117,23 +4171,20 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // Les cibles « au choix » plus haut, elles, mettent la pause elles-mêmes —
       // d'où ce second point de suspension, pour les contenus qui puisent dans
       // la COLLECTION et n'ont donc pas de TargetSpec.
-      if (pendingTriggerSink.length > avant) {
-        newState.endTurnPending = true;
-        return newState; // PAUSE
-      }
+      if (pendingTriggerSink.length > avant) return pauseTurnPhase(newState, phase); // PAUSE
       continue;
     }
 
     const creature = step.inHand
-      ? outgoing.hand.find(c => c.instanceId === step.sourceInstanceId)
-      : outgoing.board.find(c => c.instanceId === step.sourceInstanceId);
+      ? actif.hand.find(c => c.instanceId === step.sourceInstanceId)
+      : actif.board.find(c => c.instanceId === step.sourceInstanceId);
     // Source partie du plateau (ou de la main) entre pause et reprise → on saute ses effets.
     if (!creature) { queue.shift(); continue; }
     // Source ABATTUE par un effet situé à sa GAUCHE : elle ne parle plus. Les
-    // morts n'étant balayées qu'à la fin de la séquence (finalizeEndOfTurn),
-    // elle est encore physiquement sur le plateau — d'où ce test explicite sur
-    // les PV. Sans lui, une créature tuée par son voisin résolvait quand même
-    // son propre effet avant de rejoindre le cimetière.
+    // morts n'étant balayées qu'à la fin de la séquence (finalisation), elle
+    // est encore physiquement sur le plateau — d'où ce test explicite sur les
+    // PV. Sans lui, une créature tuée par son voisin résolvait quand même son
+    // propre effet avant de rejoindre le cimetière.
     // Même doctrine que le ciblage, qui écarte déjà les unités à 0 PV du
     // plateau comme des « cadavres en sursis », et que la résolution des sorts,
     // qui règle ses morts après chaque effet.
@@ -4149,22 +4200,21 @@ function advanceEndOfTurn(newState: GameState): GameState {
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
             id: `${creature.instanceId}#${inst.id}`,
-            controllerId: outgoing.id,
+            controllerId: actif.id,
             sourceInstanceId: creature.instanceId,
             selectionType: inst.id,
             selectionOptionIds: options.map(c => c.id),
           });
-          newState.endTurnPending = true;
-          return newState; // PAUSE
+          return pauseTurnPhase(newState, phase); // PAUSE
         }
         continue; // aucune carte offerte → no-op
       }
       // Autres mots-clés curés : résolution immédiate (non interactive).
-      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, outgoing, opponent, undefined, inst);
+      resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, actif, opponent, undefined, inst);
       continue;
     }
 
-    // Effet composé on_end_of_turn (ou « en main »).
+    // Effet composé au déclencheur de la phase (ou « en main »).
     const cap = getCapabilities(creature.card).find(c => c.uid === step.capUid && c.composed);
     queue.shift();
     if (!cap || !cap.composed) continue;
@@ -4172,36 +4222,66 @@ function advanceEndOfTurn(newState: GameState): GameState {
       // Depuis la main : jamais de pause (aucun sélecteur ne peut s'ancrer sur
       // une source hors plateau) — un « au choix » retombe sur le repli
       // déterministe de selectComposedTargets.
-      withComposedMode("end_of_turn", () =>
-        resolveComposedEffect(cap.composed!, creature, outgoing, opponent, undefined, false,
-          { trigger: "on_end_of_turn_in_hand", capUid: cap.uid }));
+      withComposedMode(phase, () =>
+        resolveComposedEffect(cap.composed!, creature, actif, opponent, undefined, false,
+          { trigger: spec.inHand, capUid: cap.uid }));
       continue;
     }
     // `entity: "self"` vise toujours la source → jamais mis en file de choix
     // (déterministe, cf. régression Ours Maudit). Un « au choix » non-self avec
-    // au moins une cible éligible met le tour en pause.
+    // au moins une cible éligible met la séquence en pause.
     if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
       const trig: import("./types").PendingTrigger = {
         id: `${creature.instanceId}#${cap.uid}`,
-        controllerId: outgoing.id,
+        controllerId: actif.id,
         sourceInstanceId: creature.instanceId,
         capUid: cap.uid,
       };
       if (endOfTurnTriggerTargets(newState, trig).length > 0) {
         (newState.pendingTriggers ??= []).push(trig);
-        newState.endTurnPending = true;
-        return newState; // PAUSE
+        return pauseTurnPhase(newState, phase); // PAUSE
       }
       continue; // aucune cible éligible → no-op (pas de soft-lock)
     }
-    withComposedMode("end_of_turn", () =>
-      resolveComposedEffect(cap.composed!, creature, outgoing, opponent, undefined, false,
-        { trigger: "on_end_of_turn", capUid: cap.uid }));
+    withComposedMode(phase, () =>
+      resolveComposedEffect(cap.composed!, creature, actif, opponent, undefined, false,
+        { trigger: spec.trigger, capUid: cap.uid }));
   }
 
-  // File épuisée : plus aucun effet fin-de-tour → finalisation.
-  newState.endOfTurnQueue = undefined;
-  return finalizeEndOfTurn(newState);
+  // File épuisée : plus aucun effet de la phase → finalisation.
+  if (phase === "end_of_turn") newState.endOfTurnQueue = undefined;
+  else newState.startOfTurnQueue = undefined;
+  return finalize(newState);
+}
+
+/** Fin de tour : la file `endOfTurnQueue`, puis `finalizeEndOfTurn`. */
+function advanceEndOfTurn(newState: GameState): GameState {
+  return advanceTurnPhase(newState, "end_of_turn");
+}
+
+/** Début de tour : la file `startOfTurnQueue`, puis `finalizeStartOfTurn`. */
+function advanceStartOfTurn(newState: GameState): GameState {
+  return advanceTurnPhase(newState, "start_of_turn");
+}
+
+/** Finalise le début de tour une fois TOUS ses effets traités : nettoyage des
+ *  morts + râles d'agonie (deux camps), auras, victoire. Rien à basculer — le
+ *  tour est déjà celui du joueur entrant ; s'il reste des choix (râles
+ *  interactifs), ils se résolvent par `resolvePendingTrigger` comme n'importe
+ *  quel choix en cours de tour. */
+function finalizeStartOfTurn(newState: GameState): GameState {
+  const entrant = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  const deadIn = cleanDeadCreatures(entrant);
+  const deadOpp = cleanDeadCreatures(opponent);
+  processDeathTriggers(deadIn, entrant, opponent);
+  processDeathTriggers(deadOpp, opponent, entrant);
+  recalculateAuras(entrant, opponent);
+  checkWinCondition(newState);
+  // Un choix devenu insoluble (sa cible est morte dans la même fournée)
+  // bloquerait le joueur entrant devant un plateau inerte : on purge d'abord.
+  pruneUnresolvableTriggers(newState);
+  return newState;
 }
 
 /** Un déclencheur en attente offre-t-il ENCORE un choix au joueur ?
@@ -10848,6 +10928,12 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   if (newState.endTurnPending && (newState.pendingTriggers?.length ?? 0) === 0) {
     return finishEndTurn(newState);
   }
+  // Reprise de la séquence de DÉBUT de tour, même logique : la file persiste
+  // tant qu'un choix la suspend, et se vide (automatiques compris) jusqu'au
+  // prochain interactif ou à la finalisation.
+  if (newState.startOfTurnQueue !== undefined) {
+    return advanceStartOfTurn(newState);
+  }
   return newState;
 }
 
@@ -10898,10 +10984,13 @@ function applyOnePendingTrigger(
     if (controller && other) {
       const emblem = (controller.emblems ?? [])[trigger.emblemIndex];
       if (emblem?.composed) {
-        withComposedMode("end_of_turn", () =>
+        // Cadence de l'emblème lui-même (fin OU début de tour) : couleur de la
+        // flèche et déclencheur transmis à l'effet.
+        const cadence = emblem.trigger ?? "on_end_of_turn";
+        withComposedMode(triggerToKeywordMode(cadence), () =>
           resolveComposedEffect(emblem.composed!, null, controller, other,
             pendingChoiceIds(choice), false,
-            { trigger: "on_end_of_turn", noSuspend: true }));
+            { trigger: cadence, noSuspend: true }));
         const deadC = cleanDeadCreatures(controller);
         const deadO = cleanDeadCreatures(other);
         processDeathTriggers(deadC, controller, other);
@@ -11051,6 +11140,10 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
     st = st.endTurnPending && st.endOfTurnQueue !== undefined
       ? advanceEndOfTurn(st)
       : st;
+    // Même reprise pour un DÉBUT de tour en pause — y compris celui que la
+    // bascule ci-dessus vient d'ouvrir (finishEndTurn → startTurn peut lui-même
+    // suspendre sur un choix du joueur entrant, que la boucle tranchera).
+    if (st.startOfTurnQueue !== undefined) st = advanceStartOfTurn(st);
   }
 
   // Sécurité : plus aucun choix en attente mais la bascule n'est pas faite. Deux
@@ -11063,6 +11156,11 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
     return st.endOfTurnQueue !== undefined
       ? advanceEndOfTurn(st)
       : finishEndTurn(st);
+  }
+  // File de DÉBUT de tour encore définie sans choix en attente (vidée par purge
+  // plutôt que par résolution) : on la reprend, même raison qu'au-dessus.
+  if (st.startOfTurnQueue !== undefined && (st.pendingTriggers?.length ?? 0) === 0) {
+    return advanceStartOfTurn(st);
   }
   return st;
 }

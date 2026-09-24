@@ -55,6 +55,7 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (mode === "tap") return "on_activation";
   if (mode === "return") return "on_return";
   if (mode === "end_of_turn") return "on_end_of_turn";
+  if (mode === "start_of_turn") return "on_start_of_turn";
   if (mode === "attack") return "on_attack";
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
@@ -85,6 +86,7 @@ export function modeForCreatureTrigger(trigger: CapabilityTrigger): KeywordMode 
     case "on_activation": return "tap";
     case "on_return": return "return";
     case "on_end_of_turn": return "end_of_turn";
+    case "on_start_of_turn": return "start_of_turn";
     case "on_attack": return "attack";
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
@@ -117,31 +119,32 @@ export function isTokenFiringTrigger(trigger: CapabilityTrigger): boolean {
  *     de celui-ci : sa mort, son attaque, son retour, son activation, sa fin de
  *     tour, ses bas PV.
  *
- *  Une seule ne partira JAMAIS : `on_end_of_turn_in_hand`. La boucle de fin de
- *  tour qui balaie la main écarte explicitement tout ce qui n'est pas une
- *  créature (`buildEndOfTurnQueue`), et un objet n'a pas de porteur en main.
- *  La proposer à l'auteur serait lui promettre un effet muet — le même défaut
- *  que `tokenRequiresMode` évite côté jetons. */
+ *  Deux ne partiront JAMAIS : `on_end_of_turn_in_hand` et sa jumelle de début
+ *  de tour. Les boucles qui balaient la main écartent explicitement tout ce
+ *  qui n'est pas une créature (`buildTurnPhaseQueue`), et un objet n'a pas de
+ *  porteur en main. Les proposer à l'auteur serait lui promettre un effet muet
+ *  — le même défaut que `tokenRequiresMode` évite côté jetons. */
 export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
   // `on_wound` (Blessure) : écarté par DÉCISION D'AUTEUR, pas par impossibilité
   // — greffé sur le porteur, il partirait. Les objets ne l'offrent pas dans ce
   // premier lot ; le rouvrir tient à cette seule ligne.
-  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_wound";
+  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound";
 }
 
 /** Cadences auxquelles un EMBLÈME peut réagir.
  *
  *  Un emblème est posé à l'arrivée de sa carte ; son `trigger` ne dit donc pas
  *  QUAND poser, mais à quoi il réagira ensuite, chez son porteur. Ce sont les
- *  événements que `fireEmblemsForEvent` fait parler — plus la fin de tour, qui
- *  passe par `endOfTurnQueue` (seul chemin capable de suspendre sur un choix).
+ *  événements que `fireEmblemsForEvent` fait parler — plus la fin et le début
+ *  de tour, qui passent par `endOfTurnQueue` / `startOfTurnQueue` (seuls
+ *  chemins capables de suspendre sur un choix).
  *
  *  `spell_resolution` n'en fait PAS partie, et c'est le cœur du défaut réparé :
  *  l'éditeur ne proposait que lui sur un sort, si bien qu'un emblème de sort
  *  était stocké avec une cadence à laquelle rien ne répond jamais. La pioche non
  *  plus : elle n'a pas de sens comme cadence permanente. */
 const EMBLEM_CADENCES: ReadonlySet<CapabilityTrigger> = new Set<CapabilityTrigger>([
-  "on_play", "on_death", "on_attack", "on_return", "on_activation", "on_low_hp", "on_end_of_turn",
+  "on_play", "on_death", "on_attack", "on_return", "on_activation", "on_low_hp", "on_end_of_turn", "on_start_of_turn",
 ]);
 
 export function isEmblemCadence(trigger: CapabilityTrigger | undefined): boolean {

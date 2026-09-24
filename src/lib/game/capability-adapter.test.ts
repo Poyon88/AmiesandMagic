@@ -361,7 +361,7 @@ describe("registre — métadonnées de taxonomie", () => {
     }
   });
 
-  it("les ids curés exposent les 9 déclencheurs unité (6 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
+  it("les ids curés exposent les 10 déclencheurs unité (7 « sur plateau » pour les restreints) et le flag curatedMultiMode", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
@@ -373,6 +373,8 @@ describe("registre — métadonnées de taxonomie", () => {
             "on_play",
             "on_activation",
             "on_end_of_turn",
+            // Début de tour : la porteuse est en jeu, réveillée et vivante.
+            "on_start_of_turn",
             "on_attack",
             "on_low_hp",
             // Blessure : la porteuse est en jeu ET en vie, par définition.
@@ -386,6 +388,7 @@ describe("registre — métadonnées de taxonomie", () => {
           "on_activation",
           "on_return",
           "on_end_of_turn",
+          "on_start_of_turn",
           "on_attack",
           // « à la pioche » : la source est en MAIN, donc réservé aux curés NON
           // restreints au plateau — même règle que on_return.

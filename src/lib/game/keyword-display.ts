@@ -148,6 +148,7 @@ const REPLI_FR: Record<string, string> = {
   return: "Remontée",
   tap: "Activable",
   end_of_turn: "Fin de tour",
+  start_of_turn: "Début de tour",
   draw: "Pioche",
   low_hp: "Sous {n} PV",
   wound: "Blessure",

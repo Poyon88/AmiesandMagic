@@ -26,6 +26,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.on_attack": "À l'attaque",
   "trigger.on_end_of_turn": "À la fin du tour",
   "trigger.on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
+  "trigger.on_start_of_turn": "Au début du tour",
+  "trigger.on_start_of_turn_in_hand": "Au début du tour, tant qu'elle est en main",
   "trigger.in_hand_suffix": "en main",
   "trigger.on_draw": "Quand cette carte est piochée",
   "trigger.on_low_hp": "Sous 15 PV",
@@ -73,6 +75,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "emblem.when.on_activation": "chaque fois qu'une de {owner} créatures s'active",
   "emblem.when.on_low_hp": "chaque fois que {hero} passe sous {n} PV",
   "emblem.when.on_end_of_turn": "à la fin de {turn} tour",
+  "emblem.when.on_start_of_turn": "au début de {turn} tour",
   // QUAND la capacité conférée se déclenchera chez sa nouvelle porteuse. Sans
   // ce fragment, « confère Tempête 3 » ne disait pas si elle part à la mort, à
   // l'attaque ou en fin de tour — le texte de carte taisait le seul réglage qui
@@ -81,6 +84,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_activation": ", qui se déclenchera à son activation",
   "grant_when.on_return": ", qui se déclenchera à son retour en main",
   "grant_when.on_end_of_turn": ", qui se déclenchera à la fin du tour",
+  "grant_when.on_start_of_turn": ", qui se déclenchera au début du tour",
   "grant_when.on_attack": ", qui se déclenchera quand elle attaque",
   "grant_when.on_draw": ", qui se déclenchera à sa pioche",
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
@@ -377,6 +381,8 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même couleur, badge suffixé « en main »
+    case "on_start_of_turn": return "start_of_turn";
+    case "on_start_of_turn_in_hand": return "start_of_turn"; // idem, badge suffixé « en main »
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
@@ -411,7 +417,7 @@ function composedBadgeBase(cap: Capability, t?: SafeT): TriggerBadge | null {
     const badge = triggerBadge(mode, t);
     // « Fin de tour · en main » : même couleur que la fin de tour, mais le joueur
     // doit savoir que l'effet ne part QUE tant que la carte attend en main.
-    if (badge && cap.trigger === "on_end_of_turn_in_hand") {
+    if (badge && (cap.trigger === "on_end_of_turn_in_hand" || cap.trigger === "on_start_of_turn_in_hand")) {
       return { ...badge, label: `${badge.label} · ${frag(t, "trigger.in_hand_suffix")}` };
     }
     return badge;

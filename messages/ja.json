@@ -773,6 +773,8 @@
         "on_attack": "攻撃時",
         "on_end_of_turn": "ターン終了時",
         "on_end_of_turn_in_hand": "ターン終了時、手札にある限り",
+        "on_start_of_turn": "ターン開始時",
+        "on_start_of_turn_in_hand": "ターン開始時、手札にある限り",
         "in_hand_suffix": "手札にある",
         "on_draw": "引かれたとき",
         "on_low_hp": "HP15未満",
@@ -864,7 +866,8 @@
           "on_return": "{owner}クリーチャーが手札に戻るたびに",
           "on_activation": "{owner}クリーチャーが起動するたびに",
           "on_low_hp": "{hero}のHPが{n}を下回るたびに",
-          "on_end_of_turn": "{turn}ターン終了時に"
+          "on_end_of_turn": "{turn}ターン終了時に",
+          "on_start_of_turn": "{turn}ターン開始時に"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": "、起動時に発動する",
         "on_return": "、手札に戻る時に発動する",
         "on_end_of_turn": "、ターン終了時に発動する",
+        "on_start_of_turn": "、ターン開始時に発動する",
         "on_attack": "、攻撃時に発動する",
         "on_draw": "、ドロー時に発動する",
         "on_low_hp": "、HPが15を下回ると発動する",
@@ -1064,6 +1068,7 @@
       "Nagas": "ナーガ",
       "Tengu": "天狗",
       "Oni": "鬼",
+      "Qilins": "麒麟",
       "Esprits": "精霊",
       "Griffons": "グリフォン",
       "Faucons": "隼",
@@ -1124,8 +1129,7 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士",
-      "Qilins": "麒麟"
+      "Guerriers du Chaos": "カオスの戦士"
     },
     "alignments": {
       "bon": "善",
@@ -1228,6 +1232,11 @@
         "def": "鬼",
         "bare": "鬼",
         "de": "鬼"
+      },
+      "Qilins": {
+        "def": "麒麟",
+        "bare": "麒麟",
+        "de": "麒麟の"
       },
       "Griffons": {
         "def": "グリフォン",
@@ -1539,11 +1548,6 @@
         "def": "カオス戦士",
         "bare": "カオス戦士",
         "de": "カオス戦士の"
-      },
-      "Qilins": {
-        "def": "麒麟",
-        "bare": "麒麟",
-        "de": "麒麟の"
       }
     },
     "clans_forms": {
@@ -1649,6 +1653,7 @@
         "return": "手札に戻った時",
         "attack": "攻撃時",
         "end_of_turn": "ターン終了時",
+        "start_of_turn": "ターン開始時",
         "draw": "ドロー時",
         "low_hp": "HPが{n}以下のとき",
         "spell": "呪文解決時",
@@ -1663,6 +1668,7 @@
       "return": "復帰時",
       "tap": "起動可能",
       "end_of_turn": "ターン終了時",
+      "start_of_turn": "ターン開始時",
       "draw": "ドロー時",
       "low_hp": "HP{n}以下",
       "wound": "負傷"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "攻撃時",
     "trigger_on_end_of_turn": "ターン終了時",
     "trigger_on_end_of_turn_in_hand": "ターン終了時、手札にある間",
+    "trigger_on_start_of_turn": "ターン開始時",
+    "trigger_on_start_of_turn_in_hand": "ターン開始時、手札にある間",
     "trigger_on_draw": "このカードが引かれたとき",
     "trigger_on_low_hp": "HP15未満",
     "trigger_on_wound": "負傷（致死量に至らないダメージ）",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "手札に戻ったとき",
     "mode_title_attack": "攻撃時",
     "mode_title_end_of_turn": "ターン終了時",
+    "mode_title_start_of_turn": "ターン開始時（ドロー後）",
     "mode_title_draw": "このカードが引かれたとき",
     "mode_title_low_hp": "自分のヒーローのHPが15未満になったとき（1回のみ）",
     "mode_title_wound": "負傷：ダメージを受けても死亡しなかった時（1ターンにつき1つのダメージ源から1回）",

@@ -284,7 +284,7 @@ export type SpellKeywordId =
  *  ability, tinted orange so it stays distinct from an on-play effect that may
  *  sit on the same creature. "death" = on-death rattle. Only a curated subset
  *  of keywords accept non-play modes — see plan. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "draw" | "low_hp" | "wound";
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "start_of_turn" | "draw" | "low_hp" | "wound";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -442,6 +442,16 @@ export type CapabilityTrigger =
    *  qu'elle emporte en jeu (les bonus survivent aux zones). Ne part jamais
    *  depuis le plateau, et jamais sur un jeton (jamais en main). */
   | "on_end_of_turn_in_hand"
+  /** AU DÉBUT DU TOUR de son contrôleur, une fois la pioche faite, le plateau
+   *  réveillé et le tic de Poison réglé (la porteuse est vivante et prête).
+   *  Jumeau de `on_end_of_turn` : même file ordonnée gauche→droite, même pause
+   *  sur une cible « au choix » — sauf qu'ici le joueur qui choisit est celui
+   *  dont le tour COMMENCE (cf. `GameState.startOfTurnQueue`). */
+  | "on_start_of_turn"
+  /** Au début du tour de son contrôleur, TANT QUE LA CARTE EST EN MAIN. Miroir
+   *  de `on_end_of_turn_in_hand`, y compris au tout premier tour sur la main de
+   *  départ. */
+  | "on_start_of_turn_in_hand"
   /** Au moment où la carte est PIOCHÉE — la source est alors en main, pas en
    *  jeu (même zone que `on_return`). Ne concerne que la carte tirée
    *  elle-même : ce n'est pas un réactif « chaque fois que vous piochez ». */
@@ -1919,6 +1929,14 @@ export interface GameState {
   // aucun effet fin-de-tour à traiter (phase de finalisation / mort). État
   // durable (hashé/synchronisé comme pendingTriggers), pas un indice d'animation.
   endOfTurnQueue?: EndOfTurnStep[];
+  // File ORDONNÉE des effets « début de tour » du joueur ENTRANT, mêmes pas et
+  // même contrat d'ordre que `endOfTurnQueue`. Posée par `startTurn`, vidée en
+  // ligne ; persiste tant qu'un choix de cible suspend la séquence, et reprend
+  // dans `resolvePendingTrigger`. Ici la bascule est DÉJÀ faite : la pause ne
+  // diffère rien, elle retient seulement le joueur entrant (aucune autre action
+  // tant que `pendingTriggers` n'est pas vide). `undefined` = rien à traiter.
+  // État durable (hashé/synchronisé comme pendingTriggers).
+  startOfTurnQueue?: EndOfTurnStep[];
   // Pile d'effets LIFO unifiée (cf. plan « pile d'effets »). Vide entre deux
   // actions, SAUF si la résolution est suspendue sur un choix joueur : la frame
   // au sommet porte alors `awaitingChoice` et la pile persiste dans l'état
@@ -2213,7 +2231,11 @@ export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction 
  *  `GameState.endOfTurnQueue`. Identifie sa créature source + l'effet précis à
  *  résoudre : soit un mot-clé curé (mode end_of_turn), soit une capacité
  *  composée on_end_of_turn (par uid). Données 100% sérialisables → survit au
- *  clone/hash/resync (les références vives sont re-résolues via l'instanceId). */
+ *  clone/hash/resync (les références vives sont re-résolues via l'instanceId).
+ *
+ *  Même forme pour la file « DÉBUT de tour » (`GameState.startOfTurnQueue`) :
+ *  les pas y désignent des mots-clés en mode start_of_turn et des capacités
+ *  on_start_of_turn — la phase est portée par la file, pas par le pas. */
 export interface EndOfTurnStep {
   /** Vide pour un pas d'EMBLÈME : un emblème n'a pas de source en jeu — c'est
    *  précisément ce qui le définit. */

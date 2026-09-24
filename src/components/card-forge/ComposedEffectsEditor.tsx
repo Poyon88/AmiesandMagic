@@ -165,7 +165,7 @@ const SPELL_CATALOG = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
  *  sa pioche) et se résolvent depuis lui. Sans cette distinction à l'écran,
  *  « à la mort » sur un objet se lit naturellement comme la mort de l'objet. */
 const DECLENCHEUR_DU_PORTEUR = new Set<CapabilityTrigger>([
-  "on_death", "on_return", "on_activation", "on_attack", "on_end_of_turn", "on_low_hp",
+  "on_death", "on_return", "on_activation", "on_attack", "on_end_of_turn", "on_start_of_turn", "on_low_hp",
 ]);
 
 export default function ComposedEffectsEditor({
@@ -195,7 +195,7 @@ export default function ComposedEffectsEditor({
   const tr = useTranslations("forge");
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
-  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }];
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui
@@ -621,7 +621,7 @@ export default function ComposedEffectsEditor({
                   occurrence — et un emblème composé à N piles se résout N fois.
                   C'est jouable, mais il faut l'avoir voulu. */}
               {cap.effectKind === "emblem"
-                && (cap.trigger === "on_attack" || cap.trigger === "on_end_of_turn") && (
+                && (cap.trigger === "on_attack" || cap.trigger === "on_end_of_turn" || cap.trigger === "on_start_of_turn") && (
                 <>
                   <span />
                   <span style={{ fontSize: 11, color: "#b9770e", fontStyle: "italic" }}>

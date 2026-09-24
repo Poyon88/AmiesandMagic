@@ -773,6 +773,8 @@
         "on_attack": "On Attack",
         "on_end_of_turn": "At End of Turn",
         "on_end_of_turn_in_hand": "At the end of the turn, while it is in your hand",
+        "on_start_of_turn": "At Start of Turn",
+        "on_start_of_turn_in_hand": "At the start of the turn, while it is in your hand",
         "in_hand_suffix": "in hand",
         "on_draw": "When Drawn",
         "on_low_hp": "Below 15 HP",
@@ -864,7 +866,8 @@
           "on_return": "whenever one of {owner} creatures returns to hand",
           "on_activation": "whenever one of {owner} creatures activates",
           "on_low_hp": "whenever {hero} drops below {n} HP",
-          "on_end_of_turn": "at the end of {turn} turn"
+          "on_end_of_turn": "at the end of {turn} turn",
+          "on_start_of_turn": "at the start of {turn} turn"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": ", which will trigger upon its activation",
         "on_return": ", which will trigger when it returns to hand",
         "on_end_of_turn": ", which will trigger at the end of the turn",
+        "on_start_of_turn": ", which will trigger at the start of the turn",
         "on_attack": ", which will trigger when it attacks",
         "on_draw": ", which will trigger when it is drawn",
         "on_low_hp": ", which will trigger below 15 HP",
@@ -1064,6 +1068,7 @@
       "Nagas": "Nagas",
       "Tengu": "Tengu",
       "Oni": "Oni",
+      "Qilins": "Qilins",
       "Esprits": "Spirits",
       "Griffons": "Griffins",
       "Faucons": "Falcons",
@@ -1124,8 +1129,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors",
-      "Qilins": "Qilins"
+      "Guerriers du Chaos": "Chaos Warriors"
     },
     "alignments": {
       "bon": "Good",
@@ -1228,6 +1232,11 @@
         "def": "the Oni",
         "bare": "Oni",
         "de": "of the Oni"
+      },
+      "Qilins": {
+        "def": "the Qilin",
+        "bare": "Qilin",
+        "de": "of the Qilin"
       },
       "Griffons": {
         "def": "the Griffin",
@@ -1539,11 +1548,6 @@
         "def": "the Chaos Warrior",
         "bare": "Chaos Warrior",
         "de": "of the Chaos Warrior"
-      },
-      "Qilins": {
-        "def": "the Qilin",
-        "bare": "Qilin",
-        "de": "of the Qilin"
       }
     },
     "clans_forms": {
@@ -1649,6 +1653,7 @@
         "return": "on return to hand",
         "attack": "on attack",
         "end_of_turn": "at end of turn",
+        "start_of_turn": "at start of turn",
         "draw": "on draw",
         "low_hp": "below {n} HP",
         "spell": "on spell resolution",
@@ -1663,6 +1668,7 @@
       "return": "Return",
       "tap": "Tap",
       "end_of_turn": "End of turn",
+      "start_of_turn": "Start of turn",
       "draw": "Draw",
       "low_hp": "Below {n} HP",
       "wound": "Wound"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "On Attack",
     "trigger_on_end_of_turn": "At End of Turn",
     "trigger_on_end_of_turn_in_hand": "At end of turn, while in hand",
+    "trigger_on_start_of_turn": "At Start of Turn",
+    "trigger_on_start_of_turn_in_hand": "At start of turn, while in hand",
     "trigger_on_draw": "When this card is drawn",
     "trigger_on_low_hp": "Below 15 HP",
     "trigger_on_wound": "Wound (damage taken without dying)",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "On return to hand",
     "mode_title_attack": "On attack",
     "mode_title_end_of_turn": "At end of turn",
+    "mode_title_start_of_turn": "At start of turn (after the draw)",
     "mode_title_draw": "When this card is drawn",
     "mode_title_low_hp": "When your hero drops below 15 HP (once only)",
     "mode_title_wound": "Wound: when it takes damage without dying (once per source per turn)",

@@ -773,6 +773,8 @@
         "on_attack": "À l'attaque",
         "on_end_of_turn": "À la fin du tour",
         "on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
+        "on_start_of_turn": "Au début du tour",
+        "on_start_of_turn_in_hand": "Au début du tour, tant qu'elle est en main",
         "in_hand_suffix": "en main",
         "on_draw": "Quand cette carte est piochée",
         "on_low_hp": "Sous 15 PV",
@@ -864,7 +866,8 @@
           "on_return": "chaque fois qu'une de {owner} créatures revient en main",
           "on_activation": "chaque fois qu'une de {owner} créatures s'active",
           "on_low_hp": "chaque fois que {hero} passe sous {n} PV",
-          "on_end_of_turn": "à la fin de {turn} tour"
+          "on_end_of_turn": "à la fin de {turn} tour",
+          "on_start_of_turn": "au début de {turn} tour"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": ", qui se déclenchera à son activation",
         "on_return": ", qui se déclenchera à son retour en main",
         "on_end_of_turn": ", qui se déclenchera à la fin du tour",
+        "on_start_of_turn": ", qui se déclenchera au début du tour",
         "on_attack": ", qui se déclenchera quand elle attaque",
         "on_draw": ", qui se déclenchera à sa pioche",
         "on_low_hp": ", qui se déclenchera sous 15 PV",
@@ -1649,6 +1653,7 @@
         "return": "au retour en main",
         "attack": "à l'attaque",
         "end_of_turn": "à la fin du tour",
+        "start_of_turn": "au début du tour",
         "draw": "à la pioche",
         "low_hp": "sous {n} PV",
         "spell": "à la résolution du sort",
@@ -1663,6 +1668,7 @@
       "return": "Remontée",
       "tap": "Activable",
       "end_of_turn": "Fin de tour",
+      "start_of_turn": "Début de tour",
       "draw": "Pioche",
       "low_hp": "Sous {n} PV",
       "wound": "Blessure"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "À l'attaque",
     "trigger_on_end_of_turn": "À la fin du tour",
     "trigger_on_end_of_turn_in_hand": "À la fin du tour, tant qu'elle est en main",
+    "trigger_on_start_of_turn": "Au début du tour",
+    "trigger_on_start_of_turn_in_hand": "Au début du tour, tant qu'elle est en main",
     "trigger_on_draw": "Quand cette carte est piochée",
     "trigger_on_low_hp": "Sous 15 PV",
     "trigger_on_wound": "Blessure (dégâts subis sans mourir)",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "Au retour en main",
     "mode_title_attack": "À l'attaque",
     "mode_title_end_of_turn": "À la fin du tour",
+    "mode_title_start_of_turn": "Au début du tour (après la pioche)",
     "mode_title_draw": "Quand cette carte est piochée",
     "mode_title_low_hp": "Quand votre héros passe sous 15 PV (une seule fois)",
     "mode_title_wound": "Blessure : quand elle subit des dégâts sans mourir (une fois par source et par tour)",

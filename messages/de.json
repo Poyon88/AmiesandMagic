@@ -773,6 +773,8 @@
         "on_attack": "Beim Angriff",
         "on_end_of_turn": "Am Rundenende",
         "on_end_of_turn_in_hand": "Am Ende des Zuges, solange sie sich auf der Hand befindet",
+        "on_start_of_turn": "Am Rundenanfang",
+        "on_start_of_turn_in_hand": "Am Anfang des Zuges, solange sie sich auf der Hand befindet",
         "in_hand_suffix": "auf der Hand",
         "on_draw": "Beim Ziehen",
         "on_low_hp": "Unter 15 LP",
@@ -864,7 +866,8 @@
           "on_return": "jedes Mal wenn eine {owner} Kreaturen auf die Hand zurückkehrt",
           "on_activation": "jedes Mal wenn eine {owner} Kreaturen aktiviert wird",
           "on_low_hp": "jedes Mal wenn {hero} unter {n} LP fällt",
-          "on_end_of_turn": "am Ende {turn} Runde"
+          "on_end_of_turn": "am Ende {turn} Runde",
+          "on_start_of_turn": "am Anfang {turn} Runde"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": ", das bei ihrer Aktivierung ausgelöst wird",
         "on_return": ", das bei ihrer Rückkehr auf die Hand ausgelöst wird",
         "on_end_of_turn": ", das am Ende der Runde ausgelöst wird",
+        "on_start_of_turn": ", das am Anfang der Runde ausgelöst wird",
         "on_attack": ", das ausgelöst wird, wenn sie angreift",
         "on_draw": ", das ausgelöst wird, wenn sie gezogen wird",
         "on_low_hp": ", das unter 15 LP ausgelöst wird",
@@ -1064,6 +1068,7 @@
       "Nagas": "Nagas",
       "Tengu": "Tengu",
       "Oni": "Oni",
+      "Qilins": "Qilins",
       "Esprits": "Geister",
       "Griffons": "Greifen",
       "Faucons": "Falken",
@@ -1124,8 +1129,7 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer",
-      "Qilins": "Qilins"
+      "Guerriers du Chaos": "Chaoskämpfer"
     },
     "alignments": {
       "bon": "Gut",
@@ -1228,6 +1232,11 @@
         "def": "der Oni",
         "bare": "Oni",
         "de": "des Oni"
+      },
+      "Qilins": {
+        "def": "der Qilin",
+        "bare": "Qilin",
+        "de": "des Qilins"
       },
       "Griffons": {
         "def": "der Greif",
@@ -1539,11 +1548,6 @@
         "def": "der Chaoskrieger",
         "bare": "Chaoskrieger",
         "de": "des Chaoskriegers"
-      },
-      "Qilins": {
-        "def": "der Qilin",
-        "bare": "Qilin",
-        "de": "des Qilins"
       }
     },
     "clans_forms": {
@@ -1649,6 +1653,7 @@
         "return": "bei der Rückkehr auf die Hand",
         "attack": "beim Angriff",
         "end_of_turn": "am Rundenende",
+        "start_of_turn": "am Rundenanfang",
         "draw": "beim Ziehen",
         "low_hp": "unter {n} LP",
         "spell": "bei der Auflösung des Zaubers",
@@ -1663,6 +1668,7 @@
       "return": "Rückkehr",
       "tap": "Aktivierbar",
       "end_of_turn": "Rundenende",
+      "start_of_turn": "Rundenanfang",
       "draw": "Ziehen",
       "low_hp": "Unter {n} LP",
       "wound": "Verwundung"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "Beim Angriff",
     "trigger_on_end_of_turn": "Am Zugende",
     "trigger_on_end_of_turn_in_hand": "Am Zugende, solange sie auf der Hand ist",
+    "trigger_on_start_of_turn": "Am Zuganfang",
+    "trigger_on_start_of_turn_in_hand": "Am Zuganfang, solange sie auf der Hand ist",
     "trigger_on_draw": "Wenn diese Karte gezogen wird",
     "trigger_on_low_hp": "Unter 15 LP",
     "trigger_on_wound": "Verwundung (erlittener Schaden ohne Tod)",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "Bei Rückkehr auf die Hand",
     "mode_title_attack": "Bei Angriff",
     "mode_title_end_of_turn": "Am Rundenende",
+    "mode_title_start_of_turn": "Am Rundenanfang (nach dem Ziehen)",
     "mode_title_draw": "Wenn diese Karte gezogen wird",
     "mode_title_low_hp": "Wenn Ihr Held unter 15 LP fällt (nur einmal)",
     "mode_title_wound": "Verwundung: wenn sie Schaden erleidet, ohne zu sterben (einmal pro Quelle und Runde)",

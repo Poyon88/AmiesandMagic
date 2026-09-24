@@ -295,9 +295,10 @@ function pendingTriggerOverlay(
   const capEnCours: Capability | undefined = !isEndOfTurn ? undefined
     : isEmblem
       ? (() => {
-        const composed = (controller.emblems ?? [])[t.emblemIndex!]?.composed;
+        const emblem = (controller.emblems ?? [])[t.emblemIndex!];
+        const composed = emblem?.composed;
         return composed
-          ? { uid: "", trigger: "on_end_of_turn", effectKind: "emblem", abilityId: "_composed", composed } as Capability
+          ? { uid: "", trigger: emblem.trigger ?? "on_end_of_turn", effectKind: "emblem", abilityId: "_composed", composed } as Capability
           : undefined;
       })()
       : (() => {

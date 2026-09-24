@@ -41,7 +41,7 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw" | "low_hp" | "wound";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "start_of_turn" | "attack" | "draw" | "low_hp" | "wound";
 // Chantier « tous déclencheurs » : tous les effets d'invocation sont
 // authorables sur les 5 modes supplémentaires. Règles transverses :
 //   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
@@ -56,8 +56,11 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "attack" | "draw
 // du déclenchement (le sweep ne balaye que le plateau).
 // "wound" (Blessure) rejoint LES DEUX, comme "low_hp" : la porteuse est en jeu
 // et EN VIE au moment du déclenchement — c'est la définition même du pouvoir.
-const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "attack", "draw", "low_hp", "wound"]);
-const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "attack", "low_hp", "wound"]);
+// "start_of_turn" (début du tour) rejoint LES DEUX, en miroir exact de
+// "end_of_turn" : la porteuse est en jeu, réveillée et vivante au moment où la
+// file de début de tour la lit.
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound"]);
+const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": ALL_MODES,
   "Convocations multiples": ALL_MODES,

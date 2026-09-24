@@ -111,7 +111,7 @@ export function marker(key: string, t?: SafeT): string | undefined {
 /** Repli FR du moment de déclenchement, dans la phrase d'aide Singulier. */
 const SINGULIER_TIMING_FR: Record<string, string> = {
   entry: "à l'entrée", death: "à la mort", tap: "à l'activation", return: "au retour en main",
-  attack: "à l'attaque", end_of_turn: "à la fin du tour", draw: "à la pioche",
+  attack: "à l'attaque", end_of_turn: "à la fin du tour", start_of_turn: "au début du tour", draw: "à la pioche",
   low_hp: "sous {n} PV", wound: "quand elle est blessée sans mourir", spell: "à la résolution du sort",
 };
 const SINGULIER_HELP_FR = "Se déclenche {timing} si votre deck de départ ne contenait aucune carte en double.";

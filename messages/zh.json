@@ -773,6 +773,8 @@
         "on_attack": "攻击时",
         "on_end_of_turn": "回合结束时",
         "on_end_of_turn_in_hand": "回合结束时，只要它仍在手牌中",
+        "on_start_of_turn": "回合开始时",
+        "on_start_of_turn_in_hand": "回合开始时，只要它仍在手牌中",
         "in_hand_suffix": "在手牌中",
         "on_draw": "被抽到时",
         "on_low_hp": "生命值低于15",
@@ -864,7 +866,8 @@
           "on_return": "每当{owner}一个随从返回手牌时",
           "on_activation": "每当{owner}一个随从被激活时",
           "on_low_hp": "每当{hero}生命值降至{n}点以下时",
-          "on_end_of_turn": "在{turn}回合结束时"
+          "on_end_of_turn": "在{turn}回合结束时",
+          "on_start_of_turn": "在{turn}回合开始时"
         }
       },
       "grant_when": {
@@ -872,6 +875,7 @@
         "on_activation": "，将在其激活时触发",
         "on_return": "，将在其返回手牌时触发",
         "on_end_of_turn": "，将在回合结束时触发",
+        "on_start_of_turn": "，将在回合开始时触发",
         "on_attack": "，将在其攻击时触发",
         "on_draw": "，将在其被抽到时触发",
         "on_low_hp": "，将在生命值低于15点时触发",
@@ -1064,6 +1068,7 @@
       "Nagas": "纳迦",
       "Tengu": "天狗",
       "Oni": "鬼",
+      "Qilins": "麒麟",
       "Esprits": "灵体",
       "Griffons": "狮鹫",
       "Faucons": "猎鹰",
@@ -1124,8 +1129,7 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士",
-      "Qilins": "麒麟"
+      "Guerriers du Chaos": "混沌战士"
     },
     "alignments": {
       "bon": "善良",
@@ -1228,6 +1232,11 @@
         "def": "鬼",
         "bare": "鬼",
         "de": "鬼"
+      },
+      "Qilins": {
+        "def": "麒麟",
+        "bare": "麒麟",
+        "de": "麒麟"
       },
       "Griffons": {
         "def": "狮鹫",
@@ -1539,11 +1548,6 @@
         "def": "混沌战士",
         "bare": "混沌战士",
         "de": "混沌战士"
-      },
-      "Qilins": {
-        "def": "麒麟",
-        "bare": "麒麟",
-        "de": "麒麟"
       }
     },
     "clans_forms": {
@@ -1649,6 +1653,7 @@
         "return": "返回手牌时",
         "attack": "攻击时",
         "end_of_turn": "回合结束时",
+        "start_of_turn": "回合开始时",
         "draw": "抽牌时",
         "low_hp": "生命值低于{n}点时",
         "spell": "法术结算时",
@@ -1663,6 +1668,7 @@
       "return": "回场",
       "tap": "可激活",
       "end_of_turn": "回合结束",
+      "start_of_turn": "回合开始",
       "draw": "抽牌",
       "low_hp": "生命值低于{n}点",
       "wound": "受伤"
@@ -1974,6 +1980,8 @@
     "trigger_on_attack": "攻击时",
     "trigger_on_end_of_turn": "回合结束时",
     "trigger_on_end_of_turn_in_hand": "回合结束时，只要仍在手牌中",
+    "trigger_on_start_of_turn": "回合开始时",
+    "trigger_on_start_of_turn_in_hand": "回合开始时，只要仍在手牌中",
     "trigger_on_draw": "当此牌被抽到时",
     "trigger_on_low_hp": "生命值低于15",
     "trigger_on_wound": "受伤（受到伤害但未死亡）",
@@ -2178,6 +2186,7 @@
     "mode_title_return": "返回手牌时",
     "mode_title_attack": "攻击时",
     "mode_title_end_of_turn": "回合结束时",
+    "mode_title_start_of_turn": "回合开始时（抽牌后）",
     "mode_title_draw": "当此牌被抽到时",
     "mode_title_low_hp": "当你的英雄生命值低于15时（仅一次）",
     "mode_title_wound": "受伤：当它受到伤害但未死亡时（每回合每个来源仅一次）",

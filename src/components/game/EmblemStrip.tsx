@@ -46,7 +46,7 @@ export default function EmblemStrip({
         const libelle = e.abilityId
           ? (KEYWORD_LABELS[e.abilityId as keyof typeof KEYWORD_LABELS] ?? e.abilityId)
           : describeComposedCap({
-              uid: "", trigger: "on_end_of_turn", effectKind: "immediate",
+              uid: "", trigger: e.trigger ?? "on_end_of_turn", effectKind: "immediate",
               abilityId: "_composed", composed: e.composed,
             } as Capability);
         const montant = e.params?.amount ?? e.params?.attack;
