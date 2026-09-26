@@ -96,7 +96,7 @@ describe("Singulier — badge et aide", () => {
   it("sort : label et description", () => {
     const kw = { id: "foi", amount: 2, singulier: true } as never;
     expect(getSpellKeywordLabel(kw)).toBe("Foi 2 · Singulier");
-    expect(getSpellKeywordDesc(kw)).toContain("Se déclenche à la résolution du sort si votre deck de départ");
+    expect(getSpellKeywordDesc(kw)).toContain("Se déclenche à la résolution de l'action si votre deck de départ");
     expect(getSpellKeywordLabel({ id: "foi", amount: 2 } as never)).toBe("Foi 2");
   });
 });

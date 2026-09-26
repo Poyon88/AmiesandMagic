@@ -50,7 +50,7 @@ describe("Sélection magique — description", () => {
 
   it("annonce des SORTS, et non des cartes", () => {
     const txt = describeComposedCap(cap());
-    expect(txt).toContain("sorts");
+    expect(txt).toContain("actions");
     expect(txt).toContain("3");
   });
 

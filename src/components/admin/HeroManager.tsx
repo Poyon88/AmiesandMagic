@@ -112,7 +112,7 @@ async function compressBase64Image(
 
 const POWER_MODE_LABELS: Record<"grant_keyword" | "spell_trigger" | "aura" | "composed", string> = {
   grant_keyword: "1. Donner la capacité à une créature ciblée",
-  spell_trigger: "2. Déclencher l'effet une fois (comme un sort)",
+  spell_trigger: "2. Déclencher l'effet une fois (comme une action)",
   aura: "3. Activer comme aura persistante (cumulable)",
   composed: "4. Effet composé (avancé : dégâts/soin/buff/cibles…)",
 };

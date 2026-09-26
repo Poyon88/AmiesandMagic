@@ -739,7 +739,7 @@ function BoardCreature({
           color="#3b82f6"
           top={creature.hasDivineShield ? 26 : 4}
           side="right"
-          title={`Contresort prêt${(creature.contresortCharges ?? 1) > 1 ? ` — encore ${creature.contresortCharges} sorts annulés` : ""}`}
+          title={`Contresort prêt${(creature.contresortCharges ?? 1) > 1 ? ` — encore ${creature.contresortCharges} actions annulées` : ""}`}
         />
       )}
       {/* Exclusion — même colonne, sous le bouclier et le contresort. */}

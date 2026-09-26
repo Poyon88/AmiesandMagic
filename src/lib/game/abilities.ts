@@ -185,7 +185,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // mortel — toute créature qu'il blesse meurt — il ne le confère pas. Pour
     // donner la capacité à une unité, passer par l'effet composé « Conférer ».
     spell: {
-      desc: "Toute créature blessée par ce sort meurt, quels que soient ses PV.",
+      desc: "Toute créature blessée par cette action meurt, quels que soient ses PV.",
       params: [], needsTarget: false,
     },
   },
@@ -202,7 +202,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // (ex. Tir de baliste = Impact + Précision). Conférer Précision à une unité
     // par un sort reste possible via l'effet composé « Conférer une capacité ».
     spell: {
-      desc: "Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier.",
+      desc: "Les dégâts de cette action ignorent la Résistance, l'Armure et le Bouclier.",
       params: [], needsTarget: false,
     },
   },
@@ -300,7 +300,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   armure: {
     id: "armure", label: "Armure", symbol: "/icons/armure.png",
-    desc: "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits.",
+    desc: "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts des actions ne sont pas réduits.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
@@ -336,13 +336,13 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   invisible: {
     id: "invisible", label: "Invisible", symbol: "👻",
-    desc: "Ne peut pas être ciblé par des sorts ni par des capacités d'unités adverses.",
+    desc: "Ne peut pas être ciblé par des actions ni par des capacités d'unités adverses.",
     applicable_to: ["creature"],
     creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain" },
   },
   canalisation: {
     id: "canalisation", label: "Canalisation", symbol: "🔮",
-    desc: "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1).",
+    desc: "Tant que cette unité est en jeu, vos actions coûtent 1 mana de moins (minimum 1).",
     applicable_to: ["creature"],
     creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
   },
@@ -360,7 +360,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   contresort: {
     id: "contresort", label: "Contresort X", symbol: "🚫",
-    desc: "Annule les X prochains sorts adverses.",
+    desc: "Annule les X prochaines actions adverses.",
     applicable_to: ["creature", "spell"],
     // Coût de X = 1 inchangé (13) : les cartes existantes, passées à
     // Contresort 1, gardent leur budget.
@@ -369,7 +369,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // que les sorts adverses consomment un à un. Ce n'est pas un don : pour poser
     // la garde sur une unité, passer par l'effet composé « Conférer une capacité ».
     spell: {
-      desc: "Annule les X prochains sorts adverses.",
+      desc: "Annule les X prochaines actions adverses.",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -464,7 +464,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // dégâts du sort, et non à chacun.
   seuil_colere: {
     id: "seuil_colere", label: "Seuil de colère X", symbol: "🌋",
-    desc: "Si votre deck compte 25 cartes ou moins, ce sort inflige X dégâts supplémentaires.",
+    desc: "Si votre deck compte 25 cartes ou moins, cette action inflige X dégâts supplémentaires.",
     applicable_to: ["spell"],
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -478,7 +478,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // `replace(/X/g, valeur)` GLOBAL. La rédaction « tous les X … augmentés de
     // X » rendait « tous les 2 … augmentés de 2 » — la première occurrence
     // désignait pourtant la lettre, pas la valeur.
-    desc: "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X.",
+    desc: "Si vous contrôlez une créature avec Chant, toutes les valeurs de cette action sont augmentées de X.",
     applicable_to: ["creature", "spell"],
     // Prix de l'HABILITATION : la créature n'a aucun effet propre, mais elle
     // débloque le bonus de tous les sorts Chant de la main. Valeur de départ à
@@ -490,7 +490,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
       // carte annoncerait « Chant X » puis « Chant I » via le repli de badge.
       label: "Chant",
       cost: 6, costPerX: 0, se: 1.0, minTier: 1, scalable: false, zone: "Terrain",
-      desc: "Vos sorts avec Chant sont renforcés tant que cette unité est en jeu.",
+      desc: "Vos actions avec Chant sont renforcées tant que cette unité est en jeu.",
     },
     spell: { params: ["amount"], needsTarget: false },
   },
@@ -578,7 +578,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   savant: {
     id: "savant", label: "Savant", symbol: "📚",
-    desc: "Gagne +1 ATK et +1 PV par sort dans votre cimetière.",
+    desc: "Gagne +1 ATK et +1 PV par action dans votre cimetière.",
     applicable_to: ["creature"],
     creature: { cost: 10, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Cimetière" },
   },
@@ -754,7 +754,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   transcendance: {
     id: "transcendance", label: "Transcendance", symbol: "🌟",
-    desc: "Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone.",
+    desc: "Immunité totale aux actions adverses : ne peut subir aucun dégât ni effet d'action, y compris les actions de zone.",
     applicable_to: ["creature"],
     creature: { cost: 32, costPerX: 0, se: 7.0, minTier: 4, scalable: false, zone: "Terrain" },
   },
@@ -919,14 +919,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   selection_magique: {
     id: "selection_magique", label: "Sélection magique X", symbol: "🪄",
-    desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main.",
+    desc: "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 11, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
-      desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main.",
+      desc: "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main.",
     },
     spell: {
-      desc: "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main",
+      desc: "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -963,14 +963,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   relancer: {
     id: "relancer", label: "Relancer X", symbol: "🔁",
-    desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires.",
+    desc: "Rejoue les X dernières actions jouées avec des cibles aléatoires.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 12, costPerX: 8, se: 5.0, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires.",
+      desc: "Rejoue les X dernières actions jouées avec des cibles aléatoires.",
     },
     spell: {
-      desc: "Rejoue les X derniers sorts lancés avec des cibles aléatoires",
+      desc: "Rejoue les X dernières actions jouées avec des cibles aléatoires",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -982,11 +982,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // autres sorts à deux valeurs.
   dechainement: {
     id: "dechainement", label: "Déchainement X/Y", symbol: "🌋",
-    desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+    desc: "Joue X actions aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 12, costPerX: 7, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
+      desc: "Joue X actions aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires.",
     },
     spell: { params: ["amount", "health"], needsTarget: false },
   },
@@ -1026,7 +1026,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // Force des ancêtres…).
   boomerang: {
     id: "boomerang", label: "Boomerang", symbol: "🪃",
-    desc: "Après sa résolution, ce sort est mélangé dans votre deck au lieu d'aller au cimetière.",
+    desc: "Après sa résolution, cette action est mélangée dans votre deck au lieu d'aller au cimetière.",
     applicable_to: ["spell"],
     spell: { params: [], needsTarget: false },
   },
@@ -1056,7 +1056,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   renforcement: {
     id: "renforcement", label: "Renforcement +X/+Y", symbol: "⬆️",
-    desc: "Sort : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même.",
+    desc: "Action : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 8, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
@@ -1081,7 +1081,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // puisqu'Entraide se recalcule sur le plateau courant.
   discipline: {
     id: "discipline", label: "Discipline +X/+Y", symbol: "🎖️",
-    desc: "Sort : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même. Uniquement si tous les coûts de votre plateau ont la même parité que le sien.",
+    desc: "Action : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même. Uniquement si tous les coûts de votre plateau ont la même parité que le sien.",
     applicable_to: ["creature", "spell"],
     creature: {
       // ~⅔ de Renforcement (8 / +4) : même effet, mais sous une condition que
@@ -1090,7 +1090,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
     },
     spell: {
-      desc: "Si toutes vos créatures en jeu ont un coût de même parité que celui de ce sort, +X/+Y à une créature alliée ciblée.",
+      desc: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à une créature alliée ciblée.",
       params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
     },
   },
@@ -1160,7 +1160,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // resolveSpellKeywords, qui n'a aucun `case` pour elle.
     spell: {
       params: ["amount"], needsTarget: false,
-      desc: "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie.",
+      desc: "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie.",
     },
   },
   incineration: {
@@ -1246,7 +1246,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ne pourra jamais activer.
   apprentissage: {
     id: "apprentissage", label: "Apprentissage", symbol: "📖",
-    desc: "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts.",
+    desc: "Retire une action de votre main et la mémorise : la créature peut la jouer en payant ses coûts.",
     applicable_to: ["creature"],
     creature: {
       // La plus chère du registre après Divination : rendre un sort répétable
@@ -1393,29 +1393,29 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   preincanter: {
     id: "preincanter", label: "Préincanter X", symbol: "🕯️",
-    desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (son coût ne peut pas descendre sous 1), de façon permanente.",
+    desc: "La première action de votre deck en partant du dessus coûte X mana de moins (son coût ne peut pas descendre sous 1), de façon permanente.",
     applicable_to: ["creature", "spell"],
     creature: {
       // AJUSTABLE — calé sous Épargne X (7/4/2.0) : mana différé (il faut
       // piocher le sort), one-shot, et écrêté pour que le coût reste ≥ 1.
       cost: 6, costPerX: 3, se: 2.0, minTier: 1, scalable: true, zone: "Deck",
-      desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
+      desc: "La première action de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
     },
     spell: {
-      desc: "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
+      desc: "La première action de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente.",
       params: ["amount"], needsTarget: false,
     },
   },
   concentration: {
     id: "concentration", label: "Concentration X", symbol: "🎯",
-    desc: "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions).",
+    desc: "Chaque action en main devient une action au hasard de coût +X, réduite de X (toutes factions).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 12, costPerX: 6, se: 3.5, minTier: 3, scalable: true, zone: "Main",
-      desc: "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions).",
+      desc: "Chaque action en main devient une action au hasard de coût +X, réduite de X (toutes factions).",
     },
     spell: {
-      desc: "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions).",
+      desc: "Chaque action en main devient une action au hasard de coût +X, réduite de X (toutes factions).",
       params: ["amount"], needsTarget: false,
     },
   },
@@ -1471,14 +1471,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // suicide par Douleur.
   douleur: {
     id: "douleur", label: "Douleur X", symbol: "🤕",
-    desc: "Inflige X dégâts à votre héros à l'arrivée en jeu (unité) ou au lancement (sort).",
+    desc: "Inflige X dégâts à votre héros quand l'unité arrive en jeu ou quand l'action est jouée.",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: -3, costPerX: -3, se: -1.0, minTier: 0, scalable: true, zone: "Terrain",
       desc: "Inflige X dégâts à votre héros.",
     },
     spell: {
-      desc: "Au lancement, inflige X dégâts à votre héros.",
+      desc: "Quand cette action est jouée, inflige X dégâts à votre héros.",
       params: ["amount"], needsTarget: false,
     },
   },

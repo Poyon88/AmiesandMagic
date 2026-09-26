@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "詠唱",
-        "desc": "このユニットが場に出ている限り、「詠唱」を持つあなたの呪文は強化される。"
+        "desc": "詠唱を持つあなたのアクションは、このユニットが場に出ている間強化される。"
       },
       "lune": {
         "label": "月X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "装甲",
-        "desc": "戦闘ダメージを半減する（端数切り上げ）。呪文によるダメージは軽減されない。"
+        "desc": "受ける戦闘ダメージを半分に軽減する(端数切り上げ)。アクションのダメージは軽減されない。"
       },
       "commandement": {
         "label": "統率X",
@@ -135,19 +135,19 @@
       },
       "invisible": {
         "label": "透明",
-        "desc": "相手の呪文やユニット能力の対象にならない。"
+        "desc": "敵のアクションやユニットの能力の対象にならない。"
       },
       "canalisation": {
         "label": "魔力集中",
-        "desc": "このユニットが場にある間、自分の呪文のコストが1マナ減少する（最小1）。"
+        "desc": "このユニットが場に出ている間、あなたのアクションのコストが1マナ減少する(最低1)。"
       },
       "contresort": {
         "label": "呪文封じ X",
-        "desc": "次のX回の敵の呪文を無効にする。"
+        "desc": "次のX回の敵のアクションを無効化する。"
       },
       "exclusion": {
-        "label": "排除 X",
-        "desc": "次のX回の敵ユニットの召喚を無効にする。"
+        "label": "排除X",
+        "desc": "次のX回の敵のユニット召喚を無効化する。"
       },
       "convocation": {
         "label": "召喚 X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "賢者",
-        "desc": "墓地の呪文1枚につき+1ATKと+1PVを得る。"
+        "desc": "あなたの墓地にあるアクション1枚につき+1ATKと+1HPを得る。"
       },
       "liaison_de_vie": {
         "label": "生命の絆",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "超越",
-        "desc": "相手の呪文に完全耐性を持ち、範囲呪文を含むいかなる呪文のダメージや効果も受けない。"
+        "desc": "敵のアクションに対して完全耐性を持つ:範囲アクションを含め、いかなるダメージやアクションの効果も受けない。"
       },
       "vampirisme": {
         "label": "吸血 X",
@@ -371,15 +371,15 @@
       },
       "selection_magique": {
         "label": "魔法選択 X",
-        "desc": "コストXの{alignment}のコモン呪文を3枚公開し、その中から1枚を手札に加える。"
+        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える。"
       },
       "renfort_royal": {
         "label": "王室選択 X",
         "desc": "コストXの限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
       },
       "tresor": {
-        "label": "財宝 X",
-        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、1枚を手札に加える。"
+        "label": "秘宝X",
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える。"
       },
       "lycanthropie": {
         "label": "獣人変化 X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "再詠唱 X",
-        "desc": "直近に使用したX個の呪文を、対象をランダムにして再発動する。"
+        "desc": "直近にプレイされたX枚のアクションを、ランダムな対象で再度発動する。"
       },
       "tempete": {
         "label": "嵐 X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "習得",
-        "desc": "手札から呪文を1枚取り除き記憶する。このクリーチャーはそのコストを支払うことでその呪文を唱えられる。"
+        "desc": "手札からアクションを1枚取り除いて記憶する:このクリーチャーはそのコストを支払うことでそれをプレイできる。"
       },
       "impact": {
         "label": "衝撃 X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "集中 X",
-        "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
+        "desc": "手札の各アクションが、コスト+Xのランダムなアクションに変化し、その後コストがX減少する(全陣営対象)。"
       },
       "remontee": {
         "label": "帰還",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "事前詠唱 X",
-        "desc": "自分のデッキの上から最初の呪文のコストが永続的にXマナ減る（最低1）。"
+        "desc": "あなたのデッキの一番上から最初のアクションのコストが恒久的にXマナ減少する(最低1)。"
       },
       "conferer": {
         "label": "付与",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "解放 X/Y",
-        "desc": "コレクションからコストYのランダムな呪文をX個、対象をランダムにして発動する（{alignment}）。"
+        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。"
       },
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "必殺の一撃",
-        "desc": "この呪文によって傷を負ったクリーチャーは、HPに関わらず死亡する。"
+        "desc": "このアクションでダメージを受けたクリーチャーは、残りHPに関わらず死亡する。"
       },
       "precision": {
         "label": "精密",
-        "desc": "このスペルのダメージは、抵抗力、防具、シールドを無視する。"
+        "desc": "このアクションのダメージは、耐性・アーマー・シールドを無視する。"
       },
       "poison": {
         "label": "毒",
@@ -549,11 +549,11 @@
       },
       "contresort": {
         "label": "呪文封じ X",
-        "desc": "次のX回の敵の呪文を無効にする。"
+        "desc": "次のX回の敵のアクションを無効化する。"
       },
       "exclusion": {
-        "label": "排除 X",
-        "desc": "次のX回の敵ユニットの召喚を無効にする。"
+        "label": "排除X",
+        "desc": "次のX回の敵のユニット召喚を無効化する。"
       },
       "convocation_simple": {
         "label": "召喚",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "憤怒の閾値 X",
-        "desc": "自分のデッキが25枚以下なら、この呪文はX点の追加ダメージを与える。"
+        "desc": "あなたのデッキが25枚以下の場合、このアクションはX追加ダメージを与える。"
       },
       "chant": {
         "label": "詠唱 X",
-        "desc": "詠唱を持つクリーチャーをコントロールしている場合、このスペルのすべての値がXだけ増加する。"
+        "desc": "詠唱を持つクリーチャーをコントロールしている場合、このアクションの全ての数値がX増加する。"
       },
       "lune": {
         "label": "月X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "魔法の選択 X",
-        "desc": "コストXの{alignment}のコモン呪文を3枚公開し、そのうち1枚を手札に加える"
+        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える"
+      },
+      "tresor": {
+        "label": "秘宝X",
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える"
       },
       "renfort_royal": {
         "label": "王家の選択 X",
         "desc": "コストXの自分のリミテッド版カードを3枚公開する(30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。そのうち1枚を残す"
       },
-      "tresor": {
-        "label": "財宝 X",
-        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、1枚を手札に加える"
-      },
       "relancer": {
         "label": "再詠唱 X",
-        "desc": "最後に唱えたX個の呪文をランダムな対象で再使用する。"
+        "desc": "直近にプレイされたX枚のアクションを、ランダムな対象で再度発動する"
       },
       "dechainement": {
         "label": "解放 X/Y",
-        "desc": "コレクションからコストYのランダムな呪文をX個、対象をランダムにして発動する（{alignment}）。"
+        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。"
       },
       "invocation": {
         "label": "召喚 X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "ブーメラン",
-        "desc": "解決後、この呪文は墓地に置かれる代わりにデッキに混ぜ込まれる。"
+        "desc": "解決後、このアクションは墓地に置かれる代わりにデッキに混ぜられる。"
       },
       "siphon": {
         "label": "吸命 X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "規律 +X/+Y",
-        "desc": "場にいる自分のクリーチャーがすべてこの呪文と同じ偶奇のコストを持つ場合、対象の味方クリーチャー1体に+X/+Yを与える。"
+        "desc": "場にいるあなたの全てのクリーチャーのコストが、このアクションのコストと同じ偶奇である場合、対象の味方クリーチャー1体に+X/+Yを与える。"
       },
       "affaiblissement": {
         "label": "弱体化 -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "第二の生X",
-        "desc": "自分の墓地からマナXで唱えられる。その場合、第二の生を失う。"
+        "desc": "あなたの墓地からXマナでプレイできる。プレイするとセカンドライフを失う。"
       },
       "incineration": {
         "label": "焼却X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "事前詠唱 X",
-        "desc": "自分のデッキの上から最初の呪文のコストが永続的にXマナ減る（最低1）。"
+        "desc": "あなたのデッキの一番上から最初のアクションのコストが恒久的にXマナ減少する(最低1)。"
       },
       "concentration": {
         "label": "集中 X",
-        "desc": "手札の呪文はすべて、コスト+Xのランダムな呪文(全陣営)に変化し、コストがX軽減される。"
+        "desc": "手札の各アクションが、コスト+Xのランダムなアクションに変化し、その後コストがX減少する(全陣営対象)。"
       },
       "invocations_multiples": {
         "label": "複数召喚",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "苦痛 X",
-        "desc": "発動時、自軍ヒーローにXダメージを与える。"
+        "desc": "このアクションがプレイされた時、あなたのヒーローにXダメージを与える。"
       },
       "afflux": {
         "label": "魔力流入 X",
@@ -810,7 +810,7 @@
         "random_range": "1から{max}",
         "random_range_from": "{min}から{max}",
         "appel": "自分のデッキからコスト{x}以下の最初のユニットを場に出す",
-        "appel_item": "デッキの一番上にあるコスト{x}以下のアイテムを場に出す",
+        "appel_item": "デッキの中からコスト{x}以下の最初のアイテムを場に出す",
         "ability_generic": "能力",
         "draw_cards_one": "カードを{x}枚引く",
         "draw_cards_many": "カードを{x}枚引く",
@@ -829,13 +829,13 @@
         "rappel_cost": "(コスト{max}以下)",
         "rappel_one_any": "カード1枚",
         "rappel_one_creature": "ユニット1体",
-        "rappel_one_spell": "呪文1枚",
+        "rappel_one_spell": "アクション",
         "rappel_all_any": "すべてのカード",
         "rappel_all_creature": "すべてのユニット",
-        "rappel_all_spell": "すべての呪文",
+        "rappel_all_spell": "すべてのアクション",
         "rappel_upto_any": "最大{n}枚のカード",
         "rappel_upto_creature": "最大{n}体のユニット",
-        "rappel_upto_spell": "最大{n}枚の呪文",
+        "rappel_upto_spell": "最大{n}枚のアクション",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "invocation_card": "指定されたカードを召喚する",
         "invocation_cards": "指定された{n}枚のカードを召喚する",
@@ -854,16 +854,16 @@
         "alternative": "選択: ",
         "devoration": "捕食する",
         "silence": "沈黙させる",
-        "dechainement": "コスト{y}のランダムな呪文を{x}回唱える",
-        "dechainement_one": "コスト{y}のランダムな呪文を1つ唱える",
+        "dechainement": "コスト{y}のアクションを{x}枚ランダムにプレイする",
+        "dechainement_one": "コスト{y}のアクションを1枚ランダムにプレイする",
         "tactique_one": "自身の永続能力を1つランダムに授ける",
         "tactique_many": "自身の永続能力を{x}つランダムに授ける",
         "retour_differe": "所有者のデッキの一番下に置く",
         "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
         "faveur": "{filter}カードをランダムに1枚手札に加える（コスト{x}）",
-        "selection_magique": "呪文{filter}を3枚公開し(コスト{x})、その中から1枚を手札に加える",
+        "selection_magique": "{filter}アクションを3枚公開し（コスト{x}）、1枚を手札に加える",
         "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
-        "tresor": "アイテム{filter}（コスト{x}）を3枚公開し、1枚を手札に加える"
+        "tresor": "{filter}アイテムを3枚公開し（コスト{x}）、1枚を手札に加える"
       },
       "emblem": {
         "badge": "紋章",
@@ -905,9 +905,9 @@
         "faction": "（陣営：{v}）",
         "clan": "（氏族：{v}）",
         "keyword": "（{v}を持つ）",
-        "type_creature": "（ユニット）",
-        "type_spell": "（呪文）",
-        "type_item": "（アイテム）"
+        "type_creature": "ユニットタイプの",
+        "type_spell": "アクションタイプの",
+        "type_item": "アイテムタイプの"
       },
       "self": {
         "deal_damage_one": "自身に{x}ダメージを与える",
@@ -1678,7 +1678,7 @@
         "start_of_turn": "ターン開始時",
         "draw": "ドロー時",
         "low_hp": "HPが{n}以下のとき",
-        "spell": "呪文解決時",
+        "spell": "アクションの解決時",
         "wound": "致命傷を受けずに負傷した時"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "全レアリティ",
     "all_types": "全タイプ",
     "type_creature": "クリーチャー",
-    "type_spell": "スペル",
+    "type_spell": "アクション",
     "no_auctions": "入札が見つかりません",
     "previous": "前へ",
     "next": "次へ",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "対象カード",
     "card_kind_all": "すべて",
     "card_kind_creature": "ユニットのみ",
-    "card_kind_spell": "スペルのみ",
+    "card_kind_spell": "アクションのみ",
     "legacy_grants_heading": "継承された付与効果(旧形式) — 相手を対象にできるように変換してください",
     "convert_to_composed": "変換",
     "effects_heading": "カード効果",
-    "effects_subtitle": "呪文の全ての効果を1つのリストに",
+    "effects_subtitle": "アクションのすべての効果を1つのリストにまとめる",
     "effect_kind_curated": "メカニクス",
     "group_composed": "設定可能な効果",
     "group_curated": "特殊メカニクス",
@@ -2064,17 +2064,17 @@
     "pool_hint_invocation": "フィルターは累積します。フィルターがない場合、プールはカードの属性に従い、召喚されるコストは正確にXになります。",
     "label_designated_card": "指定カード",
     "designated_card_hint": "クリーチャーを1体以上指定してください：指定した順序でそのまま召喚されます（同じカードを複数回指定できます）。指定がない場合、フィルターに従いコストXでランダムに抽選されます。",
-    "tuteur_card_hint": "カードを1枚以上指定してください（クリーチャーまたはスペル）：指定した順序で手札に加わります。同じカードを複数回指定することもできます（その分の枚数）。指定がない場合、効果は発生しません。",
+    "tuteur_card_hint": "1枚以上のカード、クリーチャー、またはアクションを指定してください：指定した順番で手札に加わります。同じカードを複数回指定することもできます（その枚数分）。指定がない場合、効果は発動しません。",
     "content_selection": "選択（3枚中1枚）",
     "content_faveur": "恩恵（ランダムな1枚 → 手札）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
-    "content_tresor": "財宝（アイテム3枚から1枚）",
+    "content_tresor": "秘宝（3枚から1つのアイテム）",
     "label_pool_membership": "プール — 所属",
     "label_pool_faction": "プール — 陣営",
     "label_pool_keyword": "プール — 保有キーワード",
-    "label_pool_card_type": "プール — カード種別",
+    "label_pool_card_type": "プール — カードタイプ",
     "pool_type_creature": "ユニット",
-    "pool_type_spell": "呪文",
+    "pool_type_spell": "アクション",
     "pool_type_item": "アイテム",
     "pool_any": "指定なし",
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
     "topdeck_label": "リプレイス",
-    "spell_effects_label": "スペル効果",
-    "spell_keywords_label": "スペルキーワード",
+    "spell_effects_label": "アクション効果",
+    "spell_keywords_label": "アクションキーワード",
     "token_to_summon": "召喚するトークン",
     "config_below_tokens": "下の「召喚するトークン」で設定",
     "targeted_race_clan": "対象種族 / クラン",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "必須",
     "atk_is_x": "（＋ATK＝X値）",
     "neg_atk_is_x": "（－ATK＝X値）",
-    "spell_cost_y": "呪文のコスト（Y）",
-    "spell_count_is_x": "（呪文の数＝X値）",
+    "spell_cost_y": "アクションコスト（Y）",
+    "spell_count_is_x": "（アクションの数 = X の値）",
     "fda_condition": "（墓地にクリーチャー7体以上の間）",
     "choose_ability": "-- 能力を選択 --",
     "scope_one_ally": "味方1体を対象",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "画像生成用の英語プロンプト…",
     "trigger_tap_activation": "起動時（タップ）",
     "trigger_automatic": "自動（常時／条件付き）",
-    "trigger_spell_resolution_full": "呪文解決時",
+    "trigger_spell_resolution_full": "アクションの解決時",
     "container_label": "コンテナ：",
     "derived_from_type": "（カードタイプから自動取得）",
     "no_ability_add_below": "能力なし。以下から追加してください。",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "全味方ユニット",
     "one_allied_unit": "味方ユニット1体",
     "add_effect": "＋ エフェクト：",
-    "spell_effect_dash": "-- 呪文エフェクト --",
+    "spell_effect_dash": "--アクションの効果--",
     "add_confer": "＋ 付与：",
     "ability_to_confer_dash": "-- 付与する能力 --",
     "save": "保存",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "アビリティアイコンを生成",
     "parameters": "パラメータ",
     "ability_label": "アビリティ",
-    "ability_polymorph": "🔀 ポリモーフアビリティ — アイコンはクリーチャーとスペルの両方に保存されます。",
+    "ability_polymorph": "🔀 変身能力 — アイコンはクリーチャーとアクションの両方に登録されます。",
     "ability_creature": "👤 クリーチャーアビリティ。",
-    "ability_spell": "🪄 スペルアビリティ。",
-    "ability_legend": "👤 クリーチャー · 🪄 スペル · 🔀 共有",
+    "ability_spell": "🪄 アクション能力。",
+    "ability_legend": "👤 クリーチャー · 🪄 アクション · 🔀 共有",
     "icon_name_label": "アイコン名",
     "icon_name_placeholder": "例：シールド v2",
     "style_label": "スタイル",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "狼男変身 X：保存前に変身トークンを選択してください。",
     "validation_entraide": "相互援助（種族）：保存前に対象種族を選択してください。",
     "validation_appel_supreme": "至高の召集：保存前に対象種族を選択してください。",
-    "validation_multi_convocation_spell": "複数召喚（呪文）：保存前にリストへトークンを1つ以上追加してください。",
-    "validation_convocation_spell": "召喚（呪文）：保存前にピッカーでトークンを選択してください。",
+    "validation_multi_convocation_spell": "複数召集（アクション）：保存する前にリストに少なくとも1つのトークンを追加してください。",
+    "validation_convocation_spell": "召集（アクション）：保存する前にピッカーでトークンを選択してください。",
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
@@ -2481,7 +2481,7 @@
     "alternative_warn_alone": "チェックが1つだけ：効果は通常どおり解決される",
     "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
-    "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間で抽選されます。",
+    "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間でランダムに決定されます。",
     "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
@@ -2495,8 +2495,8 @@
     "content_tactique": "戦術（自身の永続能力を分け与える）",
     "content_retour_differe": "遅延帰還（デッキの下へ）",
     "content_silence": "沈黙（対象から全て取り除く）",
-    "content_dechainement": "解放 X/Y（ランダムな呪文）",
-    "content_selection_magique": "魔法の選抜（3枚から呪文1枚）"
+    "content_dechainement": "解放 X/Y（ランダムなアクション）",
+    "content_selection_magique": "魔法選択（3枚から1つのアクション）"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2567,8 +2567,8 @@
     "history_title": "最近のアクション",
     "history_hero_friendly": "あなたのヒーロー",
     "history_hero_enemy": "敵のヒーロー",
-    "history_spell": "{source}を発動",
-    "history_spell_on": "{target}に{source}を発動",
+    "history_spell": "プレイされたアクション：{source}",
+    "history_spell_on": "プレイされたアクション：{source}（対象：{target}）",
     "history_spell_countered": "{source}を無効化",
     "history_attack": "{source}が{target}を攻撃",
     "history_attack_alone": "{source}が攻撃",
@@ -2620,7 +2620,7 @@
     "presage_hit": "正解――手札に加わります。",
     "presage_miss": "外れ。正しいカードは緑で表示されています。",
     "apprentissage_title": "📖 習得",
-    "apprentissage_subtitle": "クリーチャーはどの呪文を覚えるべきですか？",
+    "apprentissage_subtitle": "クリーチャーはどのアクションを記憶しますか？",
     "foi_title": "✨ 信仰",
     "foi_subtitle": "手札に加えるカードを選んでください。そのコストが信仰から引かれ、残りは保持されます。",
     "conquete_title": "🚩 制圧",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "追加コストを支払うだけの手札がありません。",
     "eveil_blocked_plateau": "生贄にできるクリーチャーが足りません。",
     "eveil_blocked_deck": "デッキから追放できるカードが足りません。",
-    "eveil_blocked_sans_cible": "この呪文の有効な対象がありません。",
+    "eveil_blocked_sans_cible": "このアクションに有効な対象がありません。",
     "eveil_suspend": "覚醒させる（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {#支払う}}",
     "eveil_max": "最大{count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "各ターンの開始時、以下の順で処理します：",
     "hand_title": "手札とドロー",
     "creatures_title": "クリーチャー",
-    "spells_title": "スペル",
+    "spells_title": "アクション",
     "combat_title": "戦闘",
     "combat_see_full_list": "能力の完全なリストはページ下部にあります。",
     "hero_title": "ヒーローとその能力",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "ゲームループ（A&M固有のルール）",
     "tcg_deckbuilding_title": "デッキ構築",
     "tcg_combat_title": "戦闘 — 解決順",
-    "tcg_hero_spells_title": "ヒーロー＆スペル",
+    "tcg_hero_spells_title": "ヒーロー＆アクション",
     "lexicon_eyebrow": "戦闘用語集",
     "lexicon_subtitle": "常にゲームと同期した完全リファレンス。「X」「Y」は各カードで設定される数値です。",
     "lexicon_title": "全能力一覧",
     "search_placeholder": "能力を検索…",
     "creature_abilities_group": "クリーチャー能力（{count}）",
-    "spell_abilities_group": "スペル能力（{count}）",
+    "spell_abilities_group": "アクション能力（{count}）",
     "no_ability_match": "「{query}」に一致する能力はありません。"
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "傭兵は最大{max}枚（現在{current}枚）",
     "max_capability_current": "「{label}」能力は最大{max}枚（現在{count}枚）",
     "card_not_owned": "未所持のカード",
-    "no_items_in_deck": "アイテムはデッキに入れられません：ゲーム中に入手します。",
-    "no_items_in_deck_current": "このデッキには{count}個のアイテムが含まれています：取り除いてください。アイテムはデッキに入れられなくなりました。",
+    "no_items_in_deck": "アイテムはデッキに入れられません：ゲーム中に入手するものです。",
+    "no_items_in_deck_current": "このデッキには{count, plural, one {#個のアイテム} other {#個のアイテム}}が含まれています：アイテムはデッキに入れられなくなったため、削除してください。",
     "deck_full": "デッキ満杯",
     "singleton_yes": "シングルトンデッキ ✓",
     "singleton_no": "シングルトンデッキ ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "まずタブ「1 · 準備」で勢力を選択してください。",
     "search_placeholder": "検索...",
     "creatures": "クリーチャー",
-    "spells": "スペル",
+    "spells": "アクション",
     "items": "アイテム",
     "all_capabilities": "能力",
     "all_races": "種族",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
     "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
     "unplayable_badge": "{count}枚のカードが不足",
-    "items_badge": "アイテム{count}個を含む — 取り除いてください",
+    "items_badge": "{count, plural, other {#個}}のアイテムを含む — 削除が必要",
     "unplayable_reason": "このデッキには、もう所持していないファクション（{factions}）のカードが含まれています。デッキ自体はそのまま保持されます — 再びプレイするにはファクションを再入手してください。",
     "unplayable_rebuy": "ショップで入手する"
   },

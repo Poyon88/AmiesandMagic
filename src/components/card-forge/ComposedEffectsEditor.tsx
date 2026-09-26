@@ -72,10 +72,10 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "silence", l: "Silence (retire tout à la cible)", target: "unit" },
   // Déchainement X/Y : X sorts aléatoires de coût Y (« ? » sur Y = plafond).
   // Aucune cible : les sorts déchainés tirent les leurs au hasard.
-  { v: "dechainement", l: "Déchainement X/Y (sorts aléatoires)", target: "none", xy: true },
+  { v: "dechainement", l: "Déchainement X/Y (actions aléatoires)", target: "none", xy: true },
   { v: "selection", l: "Sélection (1 parmi 3)", target: "none" },
   { v: "faveur", l: "Faveur (1 carte au hasard → main)", target: "none" },
-  { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
+  { v: "selection_magique", l: "Sélection magique (1 action parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
   { v: "tresor", l: "Trésor (1 objet parmi 3)", target: "none" },
 ];

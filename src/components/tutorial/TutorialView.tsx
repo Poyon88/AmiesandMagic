@@ -187,7 +187,7 @@ function BeginnerGuide() {
         <P>
           Chaque joueur incarne un <Hi>héros</Hi> qui démarre avec <Hi>{HERO_MAX_HP} points de vie</Hi>. Vous gagnez
           la partie en réduisant les points de vie du héros adverse à <Hi>0</Hi>. Pour cela, vous invoquez des
-          créatures et lancez des sorts.
+          créatures et jouez des actions.
         </P>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <Stat value={`${HERO_MAX_HP} PV`} label={tt('stat_hero_start')} />
@@ -235,15 +235,15 @@ function BeginnerGuide() {
 
       <Section title={tt('spells_title')}>
         <P>
-          Un sort produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certains sorts nécessitent une
-          <Hi> cible</Hi> (une créature, un héros…). Un sort peut aussi <Hi>conférer une capacité de
+          Une action produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certaines actions nécessitent une
+          <Hi> cible</Hi> (une créature, un héros…). Une action peut aussi <Hi>conférer une capacité de
           créature</Hi> — à une créature ciblée (icône <span className="text-am-ink">blanche</span>) ou à
           toutes vos unités alliées (icône <span className="text-am-jade">verte</span>).
         </P>
         <P>
-          Certaines cartes, sorts comme créatures, posent un <Hi>emblème</Hi> : un effet permanent attaché à un
-          <Hi> joueur</Hi> et non à une carte. Il survit à la disparition de sa source (créature morte, sort
-          résolu) et se réveille à chaque cadence choisie — entrée en jeu, attaque, mort, fin de tour… — chez le
+          Certaines cartes, actions comme créatures, posent un <Hi>emblème</Hi> : un effet permanent attaché à un
+          <Hi> joueur</Hi> et non à une carte. Il survit à la disparition de sa source (créature morte, action
+          résolue) et se réveille à chaque cadence choisie — entrée en jeu, attaque, mort, fin de tour… — chez le
           joueur qu'il affecte, jusqu'à la fin de la partie ou de sa durée.
         </P>
       </Section>
@@ -267,7 +267,7 @@ function BeginnerGuide() {
         <P>
           Au-delà de ses {HERO_MAX_HP} PV, votre héros possède un <Hi>pouvoir</Hi> utilisable <Hi>une fois par
           tour</Hi> en payant son coût en mana. Selon le héros, il peut conférer une capacité à une créature,
-          déclencher un effet de sort, ou activer une <Hi>aura</Hi> persistante (par ex. renforcer toutes vos unités).
+          déclencher un effet d'action, ou activer une <Hi>aura</Hi> persistante (par ex. renforcer toutes vos unités).
         </P>
       </Section>
 
@@ -387,7 +387,7 @@ function TcgGuide() {
       <Section title={tt('tcg_combat_title')}>
         <Bullets items={[
           <>Échange <Hi>simultané</Hi> par défaut ; <Hi>Première Frappe</Hi> frappe avant.</>,
-          <>Défense : <Hi>Bouclier</Hi> (absorbe 1 coup), <Hi>Résistance X</Hi> (−X, min 1), <Hi>Armure</Hi> (½ dégâts de combat), <Hi>Indestructible</Hi> (immunise le combat), <Hi>Transcendance</Hi> (immunise les sorts), <Hi>Esquive</Hi>.</>,
+          <>Défense : <Hi>Bouclier</Hi> (absorbe 1 coup), <Hi>Résistance X</Hi> (−X, min 1), <Hi>Armure</Hi> (½ dégâts de combat), <Hi>Indestructible</Hi> (immunise le combat), <Hi>Transcendance</Hi> (immunise les actions), <Hi>Esquive</Hi>.</>,
           <>Contournement : <Hi>Vol</Hi> ignore Provocation ; <Hi>Ombre</Hi> = furtif tant qu'il n'a pas agi.</>,
           <>Offensif : <Hi>Double Attaque</Hi> / <Hi>Célérité</Hi>, <Hi>Piétinement</Hi>, <Hi>Souffle de feu X</Hi>, <Hi>Persécution X</Hi>, <Hi>Drain de vie</Hi>, <Hi>Poison</Hi>, <Hi>Paralysie</Hi>, <Hi>Riposte X</Hi>, <Hi>Fureur</Hi>.</>,
           <><Hi>Précision</Hi> ignore <Hi>Résistance</Hi>, <Hi>Armure</Hi> et <Hi>Bouclier</Hi>.</>,
@@ -396,12 +396,12 @@ function TcgGuide() {
 
       <Section title={tt('tcg_hero_spells_title')}>
         <Bullets items={[
-          <>Pouvoir de héros : <Hi>1× / tour</Hi>, coût en mana. 3 modes : conférer un mot-clé, déclencher un effet de sort, ou activer une <Hi>aura</Hi> empilable.</>,
+          <>Pouvoir de héros : <Hi>1× / tour</Hi>, coût en mana. 3 modes : conférer un mot-clé, déclencher un effet d'action, ou activer une <Hi>aura</Hi> empilable.</>,
           <>Coûts additionnels (cumulatifs, non réductibles) : <Hi>PV</Hi>, <Hi>défausse</Hi>, <Hi>sacrifice</Hi>, <Hi>exil</Hi> (dessus du deck), <Hi>repli</Hi> (main → dessus du deck, ordre choisi). <Hi>Éveil</Hi> = coût alternatif au mana, 1 point / mana / tour, {MAX_EVEIL} cartes en éveil max.</>,
           <>Compteurs (clic = découverte 1 parmi 3) : <Hi>Épargne</Hi> (≤ {MAX_EPARGNE}, vidée, cartes du jeu de coût ≤ compteur), <Hi>Foi</Hi> (≤ {MAX_FOI}, cartes de SON deck, seul le coût pris est défalqué), <Hi>Conquête</Hi> (palier {MAX_CONQUETE}, carte du deck ADVERSE volée pour la partie).</>,
           <><Hi>Singulier</Hi> : condition sur une capacité — active seulement si le deck de départ n'a aucun doublon (figé au lancement). <Hi>Emblème</Hi> : effet permanent posé sur un joueur, survit à sa source.</>,
-          <>Réductions de coût : <Hi>Canalisation</Hi> (sorts, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
-          <>Un sort peut <Hi>conférer une capacité de créature</Hi> : à la cible (blanc) ou à tous les alliés (vert).</>,
+          <>Réductions de coût : <Hi>Canalisation</Hi> (actions, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
+          <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible (blanc) ou à tous les alliés (vert).</>,
         ]} />
       </Section>
     </>

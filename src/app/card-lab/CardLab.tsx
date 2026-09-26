@@ -23,7 +23,7 @@ function carte(over: Partial<Card>): Card {
 const CAS: { titre: string; card: Card; eveil?: { total: number; paid: number }; count?: number }[] = [
   { titre: "3 / 3 / 2", card: carte({}) },
   { titre: "10 / 12 / 11", card: carte({ name: "Phénix de l'Aube Immémoriale", mana_cost: 10, attack: 12, health: 11 }) },
-  { titre: "Sort sans stats", card: carte({ name: "Vision aux Mille Issues", card_type: "spell", attack: null, health: null, mana_cost: 4, keywords: [] as never }) },
+  { titre: "Action sans stats", card: carte({ name: "Vision aux Mille Issues", card_type: "spell", attack: null, health: null, mana_cost: 4, keywords: [] as never }) },
   { titre: "Vie 3", card: carte({ name: "Pacte de sang", life_cost: 3 }) },
   { titre: "Défausse 1", card: carte({ name: "Démon des Ombres", discard_cost: 1, mana_cost: 1, attack: 2, health: 1 }) },
   { titre: "Sacrifice 2", card: carte({ name: "Autel noir", sacrifice_cost: 2 }) },

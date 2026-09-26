@@ -29,7 +29,7 @@ function normaliserCapacites(
   // silence sur un effet ordinaire — c'est ce rabattement muet, côté cartes, qui
   // a rendu TOUS les emblèmes inopérants sans que rien ne le signale.
   if (composees.some((c) => c.effectKind === 'emblem')) {
-    return { error: "Un jeton ne peut pas poser d'emblème : il n'entre pas en jeu par une pose et n'est pas un sort, donc l'emblème ne serait jamais déposé." };
+    return { error: "Un jeton ne peut pas poser d'emblème : il n'entre pas en jeu par une pose et n'est pas une action, donc l'emblème ne serait jamais déposé." };
   }
 
   const muettes = composees.filter((c) => !isTokenFiringTrigger(c.trigger));

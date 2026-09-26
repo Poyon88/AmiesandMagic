@@ -30,7 +30,7 @@ import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
  *  sorts — c'est ainsi que les objets sont restés invisibles ici. */
-const LIBELLE_TYPE: Record<string, string> = { creature: "Unité", spell: "Sort", item: "Objet" };
+const LIBELLE_TYPE: Record<string, string> = { creature: "Unité", spell: "Action", item: "Objet" };
 
 // Sentinelle du filtre Clan : "" = tous les clans, celle-ci = les cartes qui
 // n'ont pas de clan. Même clé que TokenCascadePicker.
@@ -540,7 +540,7 @@ export default function CardEditor() {
         spellKws.some((k) => k.id === "invocation_multiple") &&
         !((editFields.convocation_tokens as unknown[]) || []).length
       ) {
-        setSaveResult({ ok: false, msg: "Convocations multiples (sort) : ajoutez au moins un token avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: "Convocations multiples (action) : ajoutez au moins un token avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -548,7 +548,7 @@ export default function CardEditor() {
         spellKws.some((k) => k.id === "convocation_simple") &&
         !editFields.convocation_token_id
       ) {
-        setSaveResult({ ok: false, msg: "Convocation (sort) : sélectionnez un token avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: "Convocation (action) : sélectionnez un token avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -578,7 +578,7 @@ export default function CardEditor() {
         spellKws.some((k) => k.id === "tuteur") &&
         !spellKws.find((k) => k.id === "tuteur")?.linkedCardIds?.length
       ) {
-        setSaveResult({ ok: false, msg: "Tuteur (sort) : choisissez au moins une carte à ajouter en main avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: "Tuteur (action) : choisissez au moins une carte à ajouter en main avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -586,7 +586,7 @@ export default function CardEditor() {
         spellKws.some((k) => k.id === "compagnons") &&
         !spellKws.find((k) => k.id === "compagnons")?.linkedCardIds?.length
       ) {
-        setSaveResult({ ok: false, msg: "Compagnons (sort) : choisissez au moins une carte liée avant de sauvegarder." });
+        setSaveResult({ ok: false, msg: "Compagnons (action) : choisissez au moins une carte liée avant de sauvegarder." });
         setSaving(false);
         return;
       }
@@ -1464,7 +1464,7 @@ export default function CardEditor() {
               const setSpellKws = (next: SpellKeywordInstance[]) => updateField("spell_keywords", next);
               return (
                 <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
-                  <div style={{ ...S.label, color: "#9b59b6" }}>Capacités de sort ({spellKws.length})</div>
+                  <div style={{ ...S.label, color: "#9b59b6" }}>Capacités d'action ({spellKws.length})</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                     {SORTED_SPELL_KEYWORDS.map(kwId => {
                       const def = SPELL_KEYWORDS[kwId];
@@ -1571,7 +1571,7 @@ export default function CardEditor() {
                               }}
                               style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #f1c40f44", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif", color: "#f1c40f" }}
                             />
-                            {kw.id === "dechainement" && <label title={`Coût tiré au hasard entre 1 et ${kw.health ?? 1} pour chaque sort lancé.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomY: e.target.checked ? true : undefined } : k))} />?</label>}
+                            {kw.id === "dechainement" && <label title={`Coût tiré au hasard entre 1 et ${kw.health ?? 1} pour chaque action jouée.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomY: e.target.checked ? true : undefined } : k))} />?</label>}
                           </div>
                         )}
                         {kw.id === "invocation_multiple" && (
@@ -2264,7 +2264,7 @@ export default function CardEditor() {
               <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #e8cfc0", background: "#fff6f0" }}>
                 <div style={{ ...S.label, color: "#b3541e", marginBottom: 6 }}>🌋 DÉCHAINEMENT</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 9, color: "#b3541e" }}>Sorts (X)</span>
+                  <span style={{ fontSize: 9, color: "#b3541e" }}>Actions (X)</span>
                   <input
                     type="number" min={1} max={10} value={keywordXValues["dechainement"] ?? 1}
                     onChange={e => setKeywordXValues(prev => ({ ...prev, ["dechainement"]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
@@ -2276,7 +2276,7 @@ export default function CardEditor() {
                     onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
                   />
-                  <label title={`Coût tiré au hasard entre 1 et ${dcY} pour chaque sort lancé.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
+                  <label title={`Coût tiré au hasard entre 1 et ${dcY} pour chaque action jouée.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                 </div>
               </div>
             )}

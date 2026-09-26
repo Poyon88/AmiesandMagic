@@ -1014,7 +1014,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         ok: true,
         msg:
           targets.length > 1
-            ? `${ok}/${total} icônes enregistrées (créature + sort).`
+            ? `${ok}/${total} icônes enregistrées (créature + action).`
             : multi
             ? `${ok} icônes enregistrées.`
             : tf('icon_saved', { name: baseName }),
@@ -2472,7 +2472,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     // « Artefact » reste un SORT : c'était une étiquette de saveur bien avant
     // que les objets n'existent, et des brouillons enregistrés s'y fient.
     // Seul « Objet » fabrique un `item`.
-    "Unité": "creature", "Sort": "spell", "Objet": "item", "Artefact": "spell", "Magie": "spell",
+    "Unité": "creature", "Action": "spell", "Objet": "item", "Artefact": "spell", "Magie": "spell",
+    // « Sort » : ancien nom du type Action (renommé le 2026-09-26) — filet pour
+    // une sortie du générateur IA qui emploierait encore l'ancien mot.
+    "Sort": "spell",
   };
 
   const [saving, setSaving] = useState(false);
@@ -4527,7 +4530,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                   <span style={{ fontFamily: "'Cinzel',serif", fontSize: 14, fontWeight: 700, color: fac.accent }}>✨ {tf('tab_capacities')}</span>
-                  <span style={{ fontSize: 10, color: "#888" }}>{tf('container_label')} <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Sort"}</b> {tf('derived_from_type')}</span>
+                  <span style={{ fontSize: 10, color: "#888" }}>{tf('container_label')} <b style={{ color: fac.color }}>{isUnit ? "Unité" : "Action"}</b> {tf('derived_from_type')}</span>
                 </div>
                 <div style={{ fontSize: 10, color: "#999", marginBottom: 12 }}>
                   {(card || (forgeMode === "manuel" && manualName))
@@ -6107,7 +6110,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     <optgroup label="Créature">
                       {creatureKeywordOptions.map(opt => <option key={`c-${opt.id}`} value={opt.id}>{opt.label}</option>)}
                     </optgroup>
-                    <optgroup label="Sort">
+                    <optgroup label="Action">
                       {spellKeywordOptions.map(opt => <option key={`s-${opt.id}`} value={`spell_${opt.id}`}>{opt.label}</option>)}
                     </optgroup>
                   </select>
@@ -6144,7 +6147,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               {a.is_active && <span style={{ color: "#27ae60" }}>★ </span>}{a.name}
                             </div>
                             <div style={{ fontSize: 9, color: "#777", marginBottom: 6 }}>
-                              {a.keyword_type === "creature" ? "Créature" : "Sort"} · {label}
+                              {a.keyword_type === "creature" ? "Créature" : "Action"} · {label}
                             </div>
                             <div style={{ display: "flex", gap: 4 }}>
                               <button type="button" onClick={() => activateKwAsset(a.id)} disabled={a.is_active}
@@ -6555,12 +6558,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   id: "am_1711234567_ab12",
   name: "Forgeron de l'Abîme",
   faction: "Nains|Elfes|Humains|Morts-vivants|Démons|Dragons",
-  type: "Unité|Sort|Objet|Artefact|Magie",
+  type: "Unité|Action|Objet|Artefact|Magie",
   rarity: "Commune|Peu Commune|Rare|Épique|Légendaire",
   mana: "1–10",
   attack: "int (Unité) | null",
   defense: "int (Unité) | null",
-  power: "int (Sort/Magie) | null",
+  power: "int (Action/Magie) | null",
   keywords: ["Armure", "Résistance X"],
   ability: "Texte de capacité (IA)",
   flavorText: "Texte narratif (IA)",

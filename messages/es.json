@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Canto",
-        "desc": "Tus hechizos con Canto se ven reforzados mientras esta unidad esté en juego."
+        "desc": "Tus acciones con Cántico se ven reforzadas mientras esta unidad esté en juego."
       },
       "lune": {
         "label": "Luna X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Armadura",
-        "desc": "Reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de hechizos no se reduce."
+        "desc": "Reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de las acciones no se reduce."
       },
       "commandement": {
         "label": "Mando X",
@@ -135,15 +135,15 @@
       },
       "invisible": {
         "label": "Invisible",
-        "desc": "No puede ser objetivo de hechizos ni de habilidades de unidades enemigas."
+        "desc": "No puede ser objetivo de acciones ni de habilidades de unidades enemigas."
       },
       "canalisation": {
         "label": "Canalización",
-        "desc": "Mientras esta unidad esté en juego, tus hechizos cuestan 1 maná menos (mínimo 1)."
+        "desc": "Mientras esta unidad esté en juego, tus acciones cuestan 1 de maná menos (mínimo 1)."
       },
       "contresort": {
         "label": "Contrahechizo X",
-        "desc": "Anula los próximos X hechizos enemigos."
+        "desc": "Anula las próximas X acciones enemigas."
       },
       "exclusion": {
         "label": "Exclusión X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Sabio",
-        "desc": "Gana +1 ATQ y +1 PV por cada hechizo en tu cementerio."
+        "desc": "Gana +1 ATQ y +1 PV por cada acción en tu cementerio."
       },
       "liaison_de_vie": {
         "label": "Vínculo vital",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Trascendencia",
-        "desc": "Inmunidad total a los hechizos rivales: no puede recibir daño ni efectos de hechizos, incluidos los de área."
+        "desc": "Inmunidad total a las acciones enemigas: no puede sufrir ningún daño ni efecto de acción, incluidas las acciones de área."
       },
       "vampirisme": {
         "label": "Vampirismo X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Revela 3 hechizos comunes {alignment} de coste X; añade uno a la mano."
+        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano."
       },
       "renfort_royal": {
         "label": "Selección Real X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Relanzar X",
-        "desc": "Vuelve a lanzar los últimos X hechizos lanzados con objetivos aleatorios."
+        "desc": "Vuelve a jugar las últimas X acciones jugadas, con objetivos aleatorios."
       },
       "tempete": {
         "label": "Tempestad X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Aprendizaje",
-        "desc": "Retira un hechizo de tu mano y lo memoriza: la criatura puede lanzarlo pagando sus costes."
+        "desc": "Retira una acción de tu mano y la memoriza: la criatura puede jugarla pagando sus costes."
       },
       "impact": {
         "label": "Impacto X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Concentración X",
-        "desc": "Cada hechizo en la mano se convierte en un hechizo al azar de coste +X, reducido en X (todas las facciones)."
+        "desc": "Cada acción en mano se convierte en una acción aleatoria de coste +X, reducida en X (todas las facciones)."
       },
       "remontee": {
         "label": "Remontada",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Preencantar X",
-        "desc": "El primer hechizo de tu mazo empezando por arriba cuesta X maná menos (mínimo 1), de forma permanente."
+        "desc": "La primera acción de tu mazo, contando desde arriba, cuesta X de maná menos (mínimo 1), de forma permanente."
       },
       "conferer": {
         "label": "Conferir",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Desencadenamiento X/Y",
-        "desc": "Lanza X hechizos aleatorios de coste Y de tu colección ({alignment}), con objetivos aleatorios."
+        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios."
       },
       "force_des_ancetres": {
         "label": "Fuerza de los ancestros +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Toque mortal",
-        "desc": "Toda criatura herida por este hechizo muere, sin importar sus PV."
+        "desc": "Toda criatura herida por esta acción muere, sin importar sus PV."
       },
       "precision": {
         "label": "Precisión",
-        "desc": "Los daños de este hechizo ignoran la Resistencia, la Armadura y el Escudo."
+        "desc": "El daño de esta acción ignora la Resistencia, la Armadura y el Escudo."
       },
       "poison": {
         "label": "Veneno",
@@ -549,7 +549,7 @@
       },
       "contresort": {
         "label": "Contrahechizo X",
-        "desc": "Anula los próximos X hechizos enemigos."
+        "desc": "Anula las próximas X acciones enemigas."
       },
       "exclusion": {
         "label": "Exclusión X",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Umbral de ira X",
-        "desc": "Si tu mazo tiene 25 cartas o menos, este hechizo inflige X daño adicional."
+        "desc": "Si tu mazo tiene 25 cartas o menos, esta acción inflige X de daño adicional."
       },
       "chant": {
         "label": "Canto X",
-        "desc": "Si controlas una criatura con Canto, todos los valores de este hechizo aumentan en X."
+        "desc": "Si controlas una criatura con Cántico, todos los valores de esta acción aumentan en X."
       },
       "lune": {
         "label": "Luna X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Revela 3 hechizos comunes {alignment} de coste X; añade uno a la mano"
-      },
-      "renfort_royal": {
-        "label": "Selección Real X",
-        "desc": "Revela 3 de tus ediciones limitadas de coste X (≥30 requeridas; si no, 3 comunes {alignment}); quédate con una"
+        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano"
       },
       "tresor": {
         "label": "Tesoro X",
         "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano"
       },
+      "renfort_royal": {
+        "label": "Selección Real X",
+        "desc": "Revela 3 de tus ediciones limitadas de coste X (≥30 requeridas; si no, 3 comunes {alignment}); quédate con una"
+      },
       "relancer": {
         "label": "Relanzar X",
-        "desc": "Vuelve a lanzar los X últimos hechizos lanzados con objetivos aleatorios."
+        "desc": "Vuelve a jugar las últimas X acciones jugadas, con objetivos aleatorios"
       },
       "dechainement": {
         "label": "Desencadenamiento X/Y",
-        "desc": "Lanza X hechizos aleatorios de coste Y de tu colección ({alignment}), con objetivos aleatorios."
+        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios."
       },
       "invocation": {
         "label": "Invocación X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Bumerán",
-        "desc": "Tras resolverse, este hechizo se mezcla en tu mazo en lugar de ir al cementerio."
+        "desc": "Tras resolverse, esta acción se mezcla en tu mazo en lugar de ir al cementerio."
       },
       "siphon": {
         "label": "Sifón X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Si todas tus criaturas en juego tienen un coste de la misma paridad que el de este hechizo, +X/+Y a una criatura aliada objetivo."
+        "desc": "Si todas tus criaturas en juego tienen un coste de la misma paridad que el de esta acción, +X/+Y a una criatura aliada objetivo."
       },
       "affaiblissement": {
         "label": "Debilitamiento -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Segunda vida X",
-        "desc": "Puede lanzarse desde tu cementerio por X maná. Entonces pierde Segunda vida."
+        "desc": "Puede jugarse desde tu cementerio por X de maná. Al hacerlo, pierde Segunda vida."
       },
       "incineration": {
         "label": "Incineración X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Preencantar X",
-        "desc": "El primer hechizo de tu mazo empezando por arriba cuesta X maná menos (mínimo 1), de forma permanente."
+        "desc": "La primera acción de tu mazo, contando desde arriba, cuesta X de maná menos (mínimo 1), de forma permanente."
       },
       "concentration": {
         "label": "Concentración X",
-        "desc": "Cada hechizo en la mano se convierte en un hechizo al azar de coste +X, reducido en X (todas las facciones)."
+        "desc": "Cada acción en mano se convierte en una acción aleatoria de coste +X, reducida en X (todas las facciones)."
       },
       "invocations_multiples": {
         "label": "Invocaciones múltiples",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Dolor X",
-        "desc": "Al lanzar, inflige X de daño a tu héroe."
+        "desc": "Cuando se juega esta acción, inflige X de daño a tu héroe."
       },
       "afflux": {
         "label": "Afluencia X",
@@ -810,7 +810,7 @@
         "random_range": "1 a {max}",
         "random_range_from": "{min} a {max}",
         "appel": "pone en juego la 1.ª unidad de tu mazo de coste ≤ {x}",
-        "appel_item": "pone en juego el primer objeto de tu mazo de coste ≤ {x}",
+        "appel_item": "pone en juego el 1.er objeto de tu mazo con coste ≤ {x}",
         "ability_generic": "una habilidad",
         "draw_cards_one": "roba {x} carta",
         "draw_cards_many": "roba {x} cartas",
@@ -829,13 +829,13 @@
         "rappel_cost": " (coste ≤ {max})",
         "rappel_one_any": "una carta",
         "rappel_one_creature": "una unidad",
-        "rappel_one_spell": "un hechizo",
+        "rappel_one_spell": "una acción",
         "rappel_all_any": "todas las cartas",
         "rappel_all_creature": "todas las unidades",
-        "rappel_all_spell": "todos los hechizos",
+        "rappel_all_spell": "todas las acciones",
         "rappel_upto_any": "hasta {n} cartas",
         "rappel_upto_creature": "hasta {n} unidades",
-        "rappel_upto_spell": "hasta {n} hechizos",
+        "rappel_upto_spell": "hasta {n} acciones",
         "invocation": "invoca una criatura aleatoria de coste {x}{filter}",
         "invocation_card": "invoca la carta designada",
         "invocation_cards": "invoca las {n} cartas designadas",
@@ -854,14 +854,14 @@
         "alternative": "A elegir: ",
         "devoration": "devora",
         "silence": "silencia",
-        "dechainement": "lanza {x} hechizos aleatorios de coste {y}",
-        "dechainement_one": "lanza un hechizo aleatorio de coste {y}",
+        "dechainement": "juega {x} acciones aleatorias de coste {y}",
+        "dechainement_one": "juega una acción aleatoria de coste {y}",
         "tactique_one": "transmite al azar una de sus habilidades permanentes",
         "tactique_many": "transmite al azar {x} de sus habilidades permanentes",
         "retour_differe": "coloca bajo el mazo de su propietario",
         "selection": "revela 3 cartas{filter} (coste {x}) y se queda una en mano",
         "faveur": "añade a la mano una carta{filter} (coste {x}) al azar",
-        "selection_magique": "revela 3 hechizos{filter} (coste {x}) y conserva uno en mano",
+        "selection_magique": "revela 3 acciones{filter} (coste {x}) y se queda una en la mano",
         "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano",
         "tresor": "revela 3 objetos{filter} (coste {x}) y se queda uno en la mano"
       },
@@ -906,7 +906,7 @@
         "clan": " del clan {v}",
         "keyword": " con {v}",
         "type_creature": " de tipo unidad",
-        "type_spell": " de tipo hechizo",
+        "type_spell": " de tipo acción",
         "type_item": " de tipo objeto"
       },
       "self": {
@@ -1678,7 +1678,7 @@
         "start_of_turn": "al inicio del turno",
         "draw": "al robar",
         "low_hp": "con menos de {n} PV",
-        "spell": "a la resolución del hechizo",
+        "spell": "al resolverse la acción",
         "wound": "cuando resulta herida sin morir"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "Todas las rarezas",
     "all_types": "Todos los tipos",
     "type_creature": "Criatura",
-    "type_spell": "Hechizo",
+    "type_spell": "Acción",
     "no_auctions": "No se encontraron subastas",
     "previous": "Anterior",
     "next": "Siguiente",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "CARTAS OBJETIVO",
     "card_kind_all": "Todas",
     "card_kind_creature": "Solo unidades",
-    "card_kind_spell": "Solo hechizos",
+    "card_kind_spell": "Solo acciones",
     "legacy_grants_heading": "Dones heredados (formato antiguo) — conviértelos para poder apuntar al oponente",
     "convert_to_composed": "Convertir",
     "effects_heading": "Efectos de la carta",
-    "effects_subtitle": "todos los efectos del hechizo, en una sola lista",
+    "effects_subtitle": "todos los efectos de la acción, en una sola lista",
     "effect_kind_curated": "MECÁNICA",
     "group_composed": "Efectos configurables",
     "group_curated": "Mecánicas particulares",
@@ -2064,17 +2064,17 @@
     "pool_hint_invocation": "Filtros acumulativos. Sin ellos, el conjunto sigue la alineación de la carta; el coste invocado es EXACTAMENTE X.",
     "label_designated_card": "CARTA DESIGNADA",
     "designated_card_hint": "Designa una o varias criaturas: se invocan tal cual, en ese orden (la misma carta puede designarse varias veces). Sin designación, robo aleatorio al coste X según los filtros.",
-    "tuteur_card_hint": "Designa una o varias cartas, criaturas o hechizos: se unen a tu mano en ese orden. La misma carta puede designarse varias veces (tantas copias como se desee). Sin designación, el efecto no hace nada.",
+    "tuteur_card_hint": "Designa una o varias cartas, criaturas o acciones: se unirán a tu mano en ese orden. La misma carta puede designarse varias veces (tantas copias como se indique). Sin designación, el efecto no hace nada.",
     "content_selection": "Selección (1 de 3)",
     "content_faveur": "Favor (1 carta al azar → mano)",
     "content_renfort_royal": "Selección Real (1 de 3)",
-    "content_tresor": "Tesoro (1 objeto de 3)",
+    "content_tresor": "Tesoro (1 objeto de entre 3)",
     "label_pool_membership": "POOL — PERTENENCIA",
     "label_pool_faction": "POOL — FACCIÓN",
     "label_pool_keyword": "POOL — PALABRA CLAVE",
     "label_pool_card_type": "POOL — TIPO DE CARTA",
     "pool_type_creature": "Unidades",
-    "pool_type_spell": "Hechizos",
+    "pool_type_spell": "Acciones",
     "pool_type_item": "Objetos",
     "pool_any": "Indiferente",
     "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "EXILIO",
     "topdeck_label": "REPLIEGUE",
-    "spell_effects_label": "EFECTOS DEL HECHIZO",
-    "spell_keywords_label": "PALABRAS CLAVE DEL HECHIZO",
+    "spell_effects_label": "EFECTOS DE LA ACCIÓN",
+    "spell_keywords_label": "PALABRAS CLAVE DE ACCIÓN",
     "token_to_summon": "TOKEN A INVOCAR",
     "config_below_tokens": "Config en «Tokens a invocar» abajo",
     "targeted_race_clan": "RAZA / CLAN OBJETIVO",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Requerida",
     "atk_is_x": "(el +ATK = el valor X)",
     "neg_atk_is_x": "(el -ATK = el valor X)",
-    "spell_cost_y": "COSTE DE LOS HECHIZOS (Y)",
-    "spell_count_is_x": "(el número de hechizos = el valor X)",
+    "spell_cost_y": "COSTE DE LAS ACCIONES (Y)",
+    "spell_count_is_x": "(el número de acciones = el valor X)",
     "fda_condition": "(mientras haya ≥7 criaturas en tu cementerio)",
     "choose_ability": "-- Elegir una capacidad --",
     "scope_one_ally": "1 aliado objetivo",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "Prompt en inglés para la generación de imagen…",
     "trigger_tap_activation": "Al activar (tap)",
     "trigger_automatic": "Automático (pasivo/condicional)",
-    "trigger_spell_resolution_full": "Al resolver el hechizo",
+    "trigger_spell_resolution_full": "Al resolverse la acción",
     "container_label": "Contenedor:",
     "derived_from_type": "(deducido del tipo de carta)",
     "no_ability_add_below": "Sin habilidades. Añade una a continuación.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "Todas las unidades aliadas",
     "one_allied_unit": "1 unidad aliada",
     "add_effect": "+ Efecto:",
-    "spell_effect_dash": "-- efecto del hechizo --",
+    "spell_effect_dash": "-- efecto de la acción --",
     "add_confer": "+ Conferir:",
     "ability_to_confer_dash": "-- habilidad a conferir --",
     "save": "Guardar",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "GENERAR UN ICONO DE HABILIDAD",
     "parameters": "PARÁMETROS",
     "ability_label": "HABILIDAD",
-    "ability_polymorph": "🔀 Habilidad polimórfica — el icono se guardará para la criatura Y el hechizo.",
+    "ability_polymorph": "🔀 Habilidad polimorfa — el icono se guardará para la criatura Y la acción.",
     "ability_creature": "👤 Habilidad de criatura.",
-    "ability_spell": "🪄 Habilidad de hechizo.",
-    "ability_legend": "👤 criatura · 🪄 hechizo · 🔀 compartida",
+    "ability_spell": "🪄 Habilidad de acción.",
+    "ability_legend": "👤 criatura · 🪄 acción · 🔀 compartida",
     "icon_name_label": "NOMBRE DEL ICONO",
     "icon_name_placeholder": "Ej: Escudo v2",
     "style_label": "ESTILO",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Licantropía X: selecciona un token de transformación antes de guardar.",
     "validation_entraide": "Apoyo mutuo (Raza): selecciona la raza objetivo antes de guardar.",
     "validation_appel_supreme": "Llamada Suprema: selecciona la raza objetivo antes de guardar.",
-    "validation_multi_convocation_spell": "Convocaciones múltiples (hechizo): añade al menos un token en la lista antes de guardar.",
-    "validation_convocation_spell": "Convocación (hechizo): selecciona un token en el selector antes de guardar.",
+    "validation_multi_convocation_spell": "Convocatorias múltiples (acción): añade al menos un token a la lista antes de guardar.",
+    "validation_convocation_spell": "Convocatoria (acción): selecciona un token en el selector antes de guardar.",
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Táctica (comparte sus habilidades permanentes)",
     "content_retour_differe": "Retorno diferido (bajo el mazo)",
     "content_silence": "Silencio (despoja al objetivo)",
-    "content_dechainement": "Desencadenamiento X/Y (hechizos aleatorios)",
-    "content_selection_magique": "Selección mágica (1 hechizo de 3)"
+    "content_dechainement": "Desenfreno X/Y (acciones aleatorias)",
+    "content_selection_magique": "Selección mágica (1 acción de entre 3)"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
@@ -2567,8 +2567,8 @@
     "history_title": "Últimas acciones",
     "history_hero_friendly": "tu héroe",
     "history_hero_enemy": "el héroe enemigo",
-    "history_spell": "{source} lanzado",
-    "history_spell_on": "{source} lanzado sobre {target}",
+    "history_spell": "Acción jugada: {source}",
+    "history_spell_on": "Acción jugada: {source} (objetivo: {target})",
     "history_spell_countered": "{source} contrarrestado",
     "history_attack": "{source} ataca a {target}",
     "history_attack_alone": "{source} ataca",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Bien visto: se une a tu mano.",
     "presage_miss": "Fallaste. La carta correcta está en verde.",
     "apprentissage_title": "📖 Aprendizaje",
-    "apprentissage_subtitle": "¿Qué hechizo debe memorizar la criatura?",
+    "apprentissage_subtitle": "¿Qué acción debe memorizar la criatura?",
     "foi_title": "✨ Fe",
     "foi_subtitle": "Elige una carta para ponerla en tu mano. Su coste se descuenta de tu Fe; el resto se conserva.",
     "conquete_title": "🚩 Conquista",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "No hay suficientes cartas en mano para sus costes adicionales.",
     "eveil_blocked_plateau": "No hay suficientes criaturas para sacrificar.",
     "eveil_blocked_deck": "No hay suficientes cartas para exiliar en tu mazo.",
-    "eveil_blocked_sans_cible": "No hay ningún objetivo válido para este hechizo.",
+    "eveil_blocked_sans_cible": "No hay objetivo válido para esta acción.",
     "eveil_suspend": "Poner en despertar ({count, plural, one {# punto} other {# puntos}})",
     "eveil_pay_n": "{count, plural, one {Pagar #} other {Pagar #}}",
     "eveil_max": "máx {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "Al inicio de cada uno de tus turnos, en orden:",
     "hand_title": "La mano y el robo",
     "creatures_title": "Las criaturas",
-    "spells_title": "Los hechizos",
+    "spells_title": "Las acciones",
     "combat_title": "El combate",
     "combat_see_full_list": "La lista completa de habilidades está al pie de página.",
     "hero_title": "El héroe y su poder",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Bucle de juego (particularidades A&M)",
     "tcg_deckbuilding_title": "Construcción de mazos",
     "tcg_combat_title": "Combate — resolución",
-    "tcg_hero_spells_title": "Héroe y hechizos",
+    "tcg_hero_spells_title": "Héroes y acciones",
     "lexicon_eyebrow": "El léxico del combate",
     "lexicon_subtitle": "Referencia completa, siempre actualizada con el juego. «X» e «Y» son valores definidos en cada carta.",
     "lexicon_title": "Todas las habilidades",
     "search_placeholder": "Buscar una habilidad…",
     "creature_abilities_group": "Habilidades de criatura ({count})",
-    "spell_abilities_group": "Habilidades de hechizo ({count})",
+    "spell_abilities_group": "Habilidades de acción ({count})",
     "no_ability_match": "Ninguna habilidad coincide con «{query}»."
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "Máx {max} Mercenarios (actualmente {current})",
     "max_capability_current": "Máx {max} capacidades « {label} » (actualmente {count})",
     "card_not_owned": "Carta no poseída",
-    "no_items_in_deck": "Los objetos no van en un mazo: se encuentran durante la partida.",
-    "no_items_in_deck_current": "Este mazo contiene {count, plural, one {# objeto} other {# objetos}}: quítalos, los objetos ya no van en un mazo.",
+    "no_items_in_deck": "Los objetos no se incluyen en un mazo: se encuentran en la partida.",
+    "no_items_in_deck_current": "Este mazo contiene {count, plural, one {# objeto} other {# objetos}}: elimínalos, los objetos ya no se incluyen en un mazo.",
     "deck_full": "Mazo lleno",
     "singleton_yes": "Mazo singular ✓",
     "singleton_no": "Deck singular ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "Primero elige una facción en la pestaña 1 · Preparación.",
     "search_placeholder": "Buscar...",
     "creatures": "Criaturas",
-    "spells": "Hechizos",
+    "spells": "Acciones",
     "items": "Objetos",
     "all_capabilities": "Capacidades",
     "all_races": "Razas",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
     "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
     "unplayable_badge": "{count} carta(s) faltante(s)",
-    "items_badge": "Contiene {count, plural, one {# objeto} other {# objetos}} — quitar",
+    "items_badge": "Contiene {count, plural, one {# objeto} other {# objetos}} — a retirar",
     "unplayable_reason": "Este deck contiene cartas de facción(es) que ya no posees: {factions}. Permanece intacto: recupera la facción para volver a jugarlo.",
     "unplayable_rebuy": "Recuperar en la tienda"
   },

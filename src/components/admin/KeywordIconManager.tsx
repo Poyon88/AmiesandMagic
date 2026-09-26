@@ -311,8 +311,8 @@ export default function KeywordIconManager() {
               const isImage = customUrl || defaultSymbol.startsWith("/");
               const displayUrl = customUrl || (defaultSymbol.startsWith("/") ? defaultSymbol : null);
               const isUploading = uploading === kw;
-              const badge = kind === "spell" ? { text: "SORT", fg: "#6a4bb5", bg: "#efe9fb", bd: "#d6c9f2" }
-                : kind === "both" ? { text: "CRÉ. + SORT", fg: "#1d7a6c", bg: "#e3f5f1", bd: "#bfe6dd" }
+              const badge = kind === "spell" ? { text: "ACTION", fg: "#6a4bb5", bg: "#efe9fb", bd: "#d6c9f2" }
+                : kind === "both" ? { text: "CRÉ. + ACTION", fg: "#1d7a6c", bg: "#e3f5f1", bd: "#bfe6dd" }
                 : null;
 
               return (

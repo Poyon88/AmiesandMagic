@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Chant",
-        "desc": "Your spells with Chant are strengthened while this unit is in play."
+        "desc": "Your actions with Chant are empowered while this unit is in play."
       },
       "lune": {
         "label": "Moon X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Armor",
-        "desc": "Reduces combat damage taken by half (rounded up); spell damage is not reduced."
+        "desc": "Halves combat damage taken (rounded up); damage from actions is not reduced."
       },
       "commandement": {
         "label": "Command X",
@@ -135,15 +135,15 @@
       },
       "invisible": {
         "label": "Invisible",
-        "desc": "Cannot be targeted by spells or enemy unit abilities."
+        "desc": "Cannot be targeted by actions or by enemy unit abilities."
       },
       "canalisation": {
         "label": "Channeling",
-        "desc": "While this unit is in play, your spells cost 1 less mana (minimum 1)."
+        "desc": "While this unit is in play, your actions cost 1 less mana (minimum 1)."
       },
       "contresort": {
         "label": "Counterspell X",
-        "desc": "Cancels the next X enemy spells."
+        "desc": "Cancels the next X enemy actions."
       },
       "exclusion": {
         "label": "Exclusion X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Savant",
-        "desc": "Gains +1 ATK and +1 HP per spell in your graveyard."
+        "desc": "Gains +1 ATK and +1 HP per action in your graveyard."
       },
       "liaison_de_vie": {
         "label": "Lifebond",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Transcendence",
-        "desc": "Fully immune to enemy spells: cannot be damaged or affected by any spell, including area-of-effect spells."
+        "desc": "Total immunity to enemy actions: cannot suffer any damage or action effect, including area actions."
       },
       "vampirisme": {
         "label": "Vampirism X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Arcane Selection X",
-        "desc": "Reveal 3 {alignment} common spells with cost X; add one to your hand."
+        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
@@ -379,7 +379,7 @@
       },
       "tresor": {
         "label": "Treasure X",
-        "desc": "Reveal 3 common {alignment} or neutral items costing X; add one to your hand."
+        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand."
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Reroll X",
-        "desc": "Replays the last X spells cast with random targets."
+        "desc": "Replays the last X actions played with random targets."
       },
       "tempete": {
         "label": "Storm X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Apprenticeship",
-        "desc": "Removes a spell from your hand and memorizes it: the creature can cast it by paying its costs."
+        "desc": "Removes an action from your hand and memorizes it: the creature can play it by paying its costs."
       },
       "impact": {
         "label": "Impact X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Focus X",
-        "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
+        "desc": "Each action in hand becomes a random action of cost +X, reduced by X (all factions)."
       },
       "remontee": {
         "label": "Comeback",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Precast X",
-        "desc": "The first spell from the top of your deck costs X less mana (minimum 1), permanently."
+        "desc": "The first action of your deck from the top costs X less mana (minimum 1), permanently."
       },
       "conferer": {
         "label": "Bestow",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Unleash X/Y",
-        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
+        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets."
       },
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Deadly Touch",
-        "desc": "Any creature damaged by this spell dies, regardless of its HP."
+        "desc": "Any creature damaged by this action dies, regardless of its HP."
       },
       "precision": {
         "label": "Precision",
-        "desc": "This spell's damage ignores Resistance, Armor, and Shield."
+        "desc": "This action's damage ignores Resistance, Armor, and Shield."
       },
       "poison": {
         "label": "Poison",
@@ -549,7 +549,7 @@
       },
       "contresort": {
         "label": "Counterspell X",
-        "desc": "Cancels the next X enemy spells."
+        "desc": "Cancels the next X enemy actions."
       },
       "exclusion": {
         "label": "Exclusion X",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Wrath Threshold X",
-        "desc": "If your deck holds 25 cards or fewer, this spell deals X extra damage."
+        "desc": "If your deck has 25 cards or fewer, this action deals X additional damage."
       },
       "chant": {
         "label": "Chant X",
-        "desc": "If you control a creature with Chant, all values of this spell are increased by X."
+        "desc": "If you control a creature with Chant, all values of this action are increased by X."
       },
       "lune": {
         "label": "Moon X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Magic Selection X",
-        "desc": "Reveals 3 {alignment} common spells of cost X; add one to your hand"
+        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand"
+      },
+      "tresor": {
+        "label": "Treasure X",
+        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand"
       },
       "renfort_royal": {
         "label": "Royal Selection X",
         "desc": "Reveals 3 of your limited editions of cost X (≥30 required; otherwise 3 {alignment} commons); keep one"
       },
-      "tresor": {
-        "label": "Treasure X",
-        "desc": "Reveal 3 common {alignment} or neutral items costing X; add one to your hand"
-      },
       "relancer": {
         "label": "Recast X",
-        "desc": "Replays the last X spells cast with random targets."
+        "desc": "Replays the last X actions played with random targets"
       },
       "dechainement": {
         "label": "Unleash X/Y",
-        "desc": "Casts X random spells of cost Y from your collection ({alignment}), with random targets."
+        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets."
       },
       "invocation": {
         "label": "Invocation X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Boomerang",
-        "desc": "After it resolves, this spell is shuffled into your deck instead of going to the graveyard."
+        "desc": "After it resolves, this action is shuffled into your deck instead of going to the graveyard."
       },
       "siphon": {
         "label": "Siphon X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "If all your creatures in play have a cost of the same parity as this spell's, +X/+Y to a targeted allied creature."
+        "desc": "If all your creatures in play have a cost of the same parity as this action's, +X/+Y to a targeted allied creature."
       },
       "affaiblissement": {
         "label": "Weakening -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Second Life X",
-        "desc": "Can be cast from your graveyard for X mana. It then loses Second Life."
+        "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
       },
       "incineration": {
         "label": "Incineration X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Precast X",
-        "desc": "The first spell from the top of your deck costs X less mana (minimum 1), permanently."
+        "desc": "The first action of your deck from the top costs X less mana (minimum 1), permanently."
       },
       "concentration": {
         "label": "Concentration X",
-        "desc": "Each spell in hand becomes a random spell with cost +X, reduced by X (all factions)."
+        "desc": "Each action in hand becomes a random action of cost +X, reduced by X (all factions)."
       },
       "invocations_multiples": {
         "label": "Multiple Summons",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Pain X",
-        "desc": "On cast, deals X damage to your hero."
+        "desc": "When this action is played, deals X damage to your hero."
       },
       "afflux": {
         "label": "Surge X",
@@ -810,7 +810,7 @@
         "random_range": "1 to {max}",
         "random_range_from": "{min} to {max}",
         "appel": "puts into play the 1st unit in your deck with cost ≤ {x}",
-        "appel_item": "puts into play the 1st item in your deck with cost ≤ {x}",
+        "appel_item": "puts into play the top item of your deck with cost ≤ {x}",
         "ability_generic": "an ability",
         "draw_cards_one": "draw {x} card",
         "draw_cards_many": "draw {x} cards",
@@ -829,13 +829,13 @@
         "rappel_cost": " (cost ≤ {max})",
         "rappel_one_any": "a card",
         "rappel_one_creature": "a unit",
-        "rappel_one_spell": "a spell",
+        "rappel_one_spell": "an action",
         "rappel_all_any": "all cards",
         "rappel_all_creature": "all units",
-        "rappel_all_spell": "all spells",
+        "rappel_all_spell": "all Actions",
         "rappel_upto_any": "up to {n} cards",
         "rappel_upto_creature": "up to {n} units",
-        "rappel_upto_spell": "up to {n} spells",
+        "rappel_upto_spell": "up to {n} Actions",
         "invocation": "summons a random creature with cost {x}{filter}",
         "invocation_card": "summons the designated card",
         "invocation_cards": "summons the {n} designated cards",
@@ -854,14 +854,14 @@
         "alternative": "One of: ",
         "devoration": "devours",
         "silence": "silences",
-        "dechainement": "casts {x} random spells of cost {y}",
-        "dechainement_one": "casts a random spell of cost {y}",
+        "dechainement": "plays {x} random Actions of cost {y}",
+        "dechainement_one": "plays a random Action of cost {y}",
         "tactique_one": "passes on one of its permanent abilities at random",
         "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
         "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
         "faveur": "adds a random{filter} card (cost {x}) to hand",
-        "selection_magique": "reveals 3 spells{filter} (cost {x}) and keeps one in hand",
+        "selection_magique": "reveals 3 Actions{filter} (cost {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
         "tresor": "reveals 3 items{filter} (cost {x}) and keeps one in hand"
       },
@@ -905,9 +905,9 @@
         "faction": " of faction {v}",
         "clan": " of clan {v}",
         "keyword": " bearing {v}",
-        "type_creature": " of type unit",
-        "type_spell": " of type spell",
-        "type_item": " of type item"
+        "type_creature": " of type Unit",
+        "type_spell": " of type Action",
+        "type_item": " of type Item"
       },
       "self": {
         "deal_damage_one": "deals {x} damage to itself",
@@ -1678,7 +1678,7 @@
         "start_of_turn": "at start of turn",
         "draw": "on draw",
         "low_hp": "below {n} HP",
-        "spell": "on spell resolution",
+        "spell": "when the Action resolves",
         "wound": "when it is wounded without dying"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "All Rarities",
     "all_types": "All Types",
     "type_creature": "Creature",
-    "type_spell": "Spell",
+    "type_spell": "Action",
     "no_auctions": "No auctions found",
     "previous": "Previous",
     "next": "Next",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "TARGETED CARDS",
     "card_kind_all": "All",
     "card_kind_creature": "Units only",
-    "card_kind_spell": "Spells only",
+    "card_kind_spell": "Actions only",
     "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
     "convert_to_composed": "Convert",
     "effects_heading": "Card effects",
-    "effects_subtitle": "all spell effects, in a single list",
+    "effects_subtitle": "all the Action's effects, in a single list",
     "effect_kind_curated": "MECHANIC",
     "group_composed": "Configurable effects",
     "group_curated": "Special mechanics",
@@ -2064,7 +2064,7 @@
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "label_designated_card": "DESIGNATED CARD",
     "designated_card_hint": "Designate one or more creatures: they are summoned as-is, in this order (the same card can be designated multiple times). Without designation, a random card is drawn at cost X according to the filters.",
-    "tuteur_card_hint": "Designate one or more cards, creatures or spells: they join your hand in this order. The same card can be designated multiple times (that many copies). Without designation, the effect does nothing.",
+    "tuteur_card_hint": "Designate one or more cards, creatures or Actions: they join your hand in that order. The same card can be designated multiple times (that many copies). Without a designation, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
     "content_faveur": "Favor (1 random card → hand)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
@@ -2074,7 +2074,7 @@
     "label_pool_keyword": "POOL — KEYWORD",
     "label_pool_card_type": "POOL — CARD TYPE",
     "pool_type_creature": "Units",
-    "pool_type_spell": "Spells",
+    "pool_type_spell": "Actions",
     "pool_type_item": "Items",
     "pool_any": "Any",
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
     "topdeck_label": "TOPDECK",
-    "spell_effects_label": "SPELL EFFECTS",
-    "spell_keywords_label": "SPELL KEYWORDS",
+    "spell_effects_label": "ACTION EFFECTS",
+    "spell_keywords_label": "ACTION KEYWORDS",
     "token_to_summon": "TOKEN TO SUMMON",
     "config_below_tokens": "Configure in \"Tokens to Summon\" below",
     "targeted_race_clan": "TARGETED RACE / CLAN",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Required",
     "atk_is_x": "(+ATK = X value)",
     "neg_atk_is_x": "(-ATK = X value)",
-    "spell_cost_y": "SPELL COST (Y)",
-    "spell_count_is_x": "(the spell count = the X value)",
+    "spell_cost_y": "ACTION COST (Y)",
+    "spell_count_is_x": "(the number of Actions = value X)",
     "fda_condition": "(while ≥7 creatures in your graveyard)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "English prompt for image generation…",
     "trigger_tap_activation": "On activation (tap)",
     "trigger_automatic": "Automatic (passive/conditional)",
-    "trigger_spell_resolution_full": "On spell resolution",
+    "trigger_spell_resolution_full": "When the Action resolves",
     "container_label": "Container:",
     "derived_from_type": "(derived from card type)",
     "no_ability_add_below": "No abilities. Add one below.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "All allied units",
     "one_allied_unit": "1 allied unit",
     "add_effect": "+ Effect:",
-    "spell_effect_dash": "-- spell effect --",
+    "spell_effect_dash": "-- Action effect --",
     "add_confer": "+ Confer:",
     "ability_to_confer_dash": "-- ability to confer --",
     "save": "Save",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "GENERATE AN ABILITY ICON",
     "parameters": "PARAMETERS",
     "ability_label": "ABILITY",
-    "ability_polymorph": "🔀 Polymorphic ability — the icon will be saved for both the creature AND the spell.",
+    "ability_polymorph": "🔀 Polymorph ability — the icon will be saved for both the creature AND the Action.",
     "ability_creature": "👤 Creature ability.",
-    "ability_spell": "🪄 Spell ability.",
-    "ability_legend": "👤 creature · 🪄 spell · 🔀 shared",
+    "ability_spell": "🪄 Action ability.",
+    "ability_legend": "👤 creature · 🪄 Action · 🔀 shared",
     "icon_name_label": "ICON NAME",
     "icon_name_placeholder": "E.g.: Shield v2",
     "style_label": "STYLE",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Lycanthropy X: select a transformation token before saving.",
     "validation_entraide": "Mutual Aid (Race): select the target race before saving.",
     "validation_appel_supreme": "Supreme Call: select the target race before saving.",
-    "validation_multi_convocation_spell": "Multiple Summons (spell): add at least one token to the list before saving.",
-    "validation_convocation_spell": "Summon (spell): select a token in the picker before saving.",
+    "validation_multi_convocation_spell": "Multiple Convocations (Action): add at least one token to the list before saving.",
+    "validation_convocation_spell": "Convocation (Action): select a token in the picker before saving.",
     "card_added": "\"{name}\" added!",
     "unknown_error": "Unknown error",
     "illustration_generated": "Illustration generated ({model})",
@@ -2481,7 +2481,7 @@
     "alternative_warn_alone": "only one branch checked: the effect resolves normally",
     "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
-    "random_min_hint": "Minimum cost (A): each cost is drawn between {min} and {max}.",
+    "random_min_hint": "Minimum cost (A): each cost is rolled between {min} and {max}.",
     "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Tactics (shares its permanent abilities)",
     "content_retour_differe": "Delayed return (under the deck)",
     "content_silence": "Silence (strips the target)",
-    "content_dechainement": "Unleashing X/Y (random spells)",
-    "content_selection_magique": "Magical Selection (1 spell of 3)"
+    "content_dechainement": "Unleash X/Y (random Actions)",
+    "content_selection_magique": "Magic Selection (1 Action out of 3)"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",
@@ -2567,8 +2567,8 @@
     "history_title": "Recent Actions",
     "history_hero_friendly": "your hero",
     "history_hero_enemy": "the enemy hero",
-    "history_spell": "{source} cast",
-    "history_spell_on": "{source} cast on {target}",
+    "history_spell": "Action played: {source}",
+    "history_spell_on": "Action played: {source} (target: {target})",
     "history_spell_countered": "{source} countered",
     "history_attack": "{source} attacks {target}",
     "history_attack_alone": "{source} attacks",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Well spotted — it joins your hand.",
     "presage_miss": "Missed. The correct card is highlighted in green.",
     "apprentissage_title": "📖 Apprenticeship",
-    "apprentissage_subtitle": "Which spell should the creature memorize?",
+    "apprentissage_subtitle": "Which Action should the creature memorize?",
     "foi_title": "✨ Faith",
     "foi_subtitle": "Choose a card to put in your hand. Its cost is deducted from your Faith; the rest is kept.",
     "conquete_title": "🚩 Conquest",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "Not enough cards in hand for its additional costs.",
     "eveil_blocked_plateau": "Not enough creatures to sacrifice.",
     "eveil_blocked_deck": "Not enough cards to exile in your deck.",
-    "eveil_blocked_sans_cible": "No valid target for this spell.",
+    "eveil_blocked_sans_cible": "No valid target for this Action.",
     "eveil_suspend": "Set to awaken ({count, plural, one {# point} other {# points}})",
     "eveil_pay_n": "{count, plural, one {Pay #} other {Pay #}}",
     "eveil_max": "max {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "At the start of each of your turns, in order:",
     "hand_title": "Hand & Draw",
     "creatures_title": "Creatures",
-    "spells_title": "Spells",
+    "spells_title": "Actions",
     "combat_title": "Combat",
     "combat_see_full_list": "The full ability list is at the bottom of the page.",
     "hero_title": "Hero & Hero Power",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Game Loop (A&M Specifics)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combat — Resolution",
-    "tcg_hero_spells_title": "Hero & Spells",
+    "tcg_hero_spells_title": "Heroes & Actions",
     "lexicon_eyebrow": "Combat Glossary",
     "lexicon_subtitle": "Complete reference, always up to date with the game. \"X\" and \"Y\" are values set on each card.",
     "lexicon_title": "All Abilities",
     "search_placeholder": "Search for an ability…",
     "creature_abilities_group": "Creature Abilities ({count})",
-    "spell_abilities_group": "Spell Abilities ({count})",
+    "spell_abilities_group": "Action abilities ({count})",
     "no_ability_match": "No ability matches \"{query}\"."
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "Max {max} Mercenaries (currently {current})",
     "max_capability_current": "Max {max} \"{label}\" abilities (currently {count})",
     "card_not_owned": "Card not owned",
-    "no_items_in_deck": "Items can't go in a deck: they are found during play.",
-    "no_items_in_deck_current": "This deck contains {count, plural, one {# item} other {# items}}: remove them, items can no longer go in a deck.",
+    "no_items_in_deck": "Items don't go in a deck: you find them in play.",
+    "no_items_in_deck_current": "This deck contains {count, plural, one {# item} other {# items}}: remove them, items no longer go in a deck.",
     "deck_full": "Deck full",
     "singleton_yes": "Singleton deck ✓",
     "singleton_no": "Singleton deck ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "First choose a faction in tab 1 · Preparation.",
     "search_placeholder": "Search...",
     "creatures": "Creatures",
-    "spells": "Spells",
+    "spells": "Actions",
     "items": "Items",
     "all_capabilities": "Abilities",
     "all_races": "Races",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
     "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
     "unplayable_badge": "{count} missing card(s)",
-    "items_badge": "Contains {count, plural, one {# item} other {# items}} — remove",
+    "items_badge": "Contains {count, plural, one {# item} other {# items}} — must be removed",
     "unplayable_reason": "This deck contains cards from faction(s) you no longer own: {factions}. It remains intact — reacquire the faction to play it again.",
     "unplayable_rebuy": "Get it in the shop"
   },

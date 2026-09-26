@@ -18,7 +18,7 @@
     "29": {
       "name": "Durgrim",
       "power_name": "Armor",
-      "power_description": "Grant Armor to a target unit (reduces non-spell damage taken by half)"
+      "power_description": "Grant Armor to a target unit (reduces non-action damage taken by half)"
     },
     "30": {
       "name": "Asterion",
@@ -48,7 +48,7 @@
     "36": {
       "name": "Primordis",
       "power_name": "Stone Skin",
-      "power_description": "The target creature gains Armor: Reduces combat damage taken by half (rounded up); spell damage is not reduced."
+      "power_description": "The target creature gains Armor: Reduces combat damage taken by half (rounded up); action damage is not reduced."
     },
     "37": {
       "name": "Sylvaran",
@@ -62,8 +62,8 @@
     },
     "39": {
       "name": "Naïa",
-      "power_name": "Instant Spell",
-      "power_description": "Choose a spell from 3 random spells (all factions) with cost ≤ X to add to your hand."
+      "power_name": "Instant Action",
+      "power_description": "Choose an action from 3 random actions (all factions) with cost ≤ X to add to your hand."
     },
     "40": {
       "name": "Elyndra",
@@ -145,7 +145,7 @@
     "29": {
       "name": "Durgrim",
       "power_name": "Armadura",
-      "power_description": "Otorga armadura a una unidad objetivo (reduce a la mitad el daño recibido que no provenga de hechizos)"
+      "power_description": "Otorga armadura a una unidad objetivo (reduce a la mitad el daño recibido que no provenga de acciones)"
     },
     "30": {
       "name": "Asterion",
@@ -175,7 +175,7 @@
     "36": {
       "name": "Primordis",
       "power_name": "Piel de Piedra",
-      "power_description": "La criatura objetivo gana Armadura: reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de hechizos no se reduce."
+      "power_description": "La criatura objetivo gana Armadura: reduce a la mitad el daño de combate recibido (redondeado hacia arriba); el daño de las acciones no se reduce."
     },
     "37": {
       "name": "Sylvaran",
@@ -189,8 +189,8 @@
     },
     "39": {
       "name": "Naïa",
-      "power_name": "Hechizo Instantáneo",
-      "power_description": "Elige un hechizo entre 3 hechizos aleatorios (de todas las facciones) de coste ≤ X para añadir a tu mano."
+      "power_name": "Acción Instantánea",
+      "power_description": "Elige una acción entre 3 acciones aleatorias (de todas las facciones) de coste ≤ X para añadir a tu mano."
     },
     "40": {
       "name": "Elyndra",
@@ -272,7 +272,7 @@
     "29": {
       "name": "Durgrim",
       "power_name": "Rüstung",
-      "power_description": "Verleihe einer Zieleinheit Rüstung (halbiert erlittenen Schaden, der nicht von Zaubern stammt)"
+      "power_description": "Verleihe einer Zieleinheit Rüstung (halbiert erlittenen Schaden, der nicht von Aktionen stammt)"
     },
     "30": {
       "name": "Asterion",
@@ -302,7 +302,7 @@
     "36": {
       "name": "Primordis",
       "power_name": "Steinhaut",
-      "power_description": "Die Zielkreatur erhält Rüstung: Halbiert erlittenen Kampfschaden (aufgerundet); Zauberschaden wird nicht reduziert."
+      "power_description": "Die Zielkreatur erhält Rüstung: Halbiert erlittenen Kampfschaden (aufgerundet); Schaden durch Aktionen wird nicht reduziert."
     },
     "37": {
       "name": "Sylvaran",
@@ -316,8 +316,8 @@
     },
     "39": {
       "name": "Naïa",
-      "power_name": "Sofortzauber",
-      "power_description": "Wähle einen Zauber aus 3 zufälligen Zaubern (alle Fraktionen) mit Kosten ≤ X, um ihn auf die Hand zu nehmen."
+      "power_name": "Sofortaktion",
+      "power_description": "Wähle eine Aktion aus 3 zufälligen Aktionen (alle Fraktionen) mit Kosten ≤ X, um sie auf die Hand zu nehmen."
     },
     "40": {
       "name": "Elyndra",
@@ -399,7 +399,7 @@
     "29": {
       "name": "Durgrim",
       "power_name": "Armatura",
-      "power_description": "Conferisce armatura a un'unità bersaglio (riduce della metà i danni subiti che non provengono da magie)"
+      "power_description": "Conferisce armatura a un'unità bersaglio (riduce della metà i danni subiti che non provengono da azioni)"
     },
     "30": {
       "name": "Asterion",
@@ -429,7 +429,7 @@
     "36": {
       "name": "Primordis",
       "power_name": "Pelle di Pietra",
-      "power_description": "La creatura bersaglio ottiene Armatura: riduce della metà i danni da combattimento subiti (arrotondati per eccesso); i danni da magie non vengono ridotti."
+      "power_description": "La creatura bersaglio ottiene Armatura: riduce della metà i danni da combattimento subiti (arrotondati per eccesso); i danni delle azioni non vengono ridotti."
     },
     "37": {
       "name": "Sylvaran",
@@ -443,8 +443,8 @@
     },
     "39": {
       "name": "Naïa",
-      "power_name": "Incantesimo Istantaneo",
-      "power_description": "Scegli una magia tra 3 magie casuali (tutte le fazioni) di costo ≤ X da aggiungere in mano."
+      "power_name": "Azione Istantanea",
+      "power_description": "Scegli un'azione tra 3 azioni casuali (tutte le fazioni) di costo ≤ X da aggiungere in mano."
     },
     "40": {
       "name": "Elyndra",
@@ -526,7 +526,7 @@
     "29": {
       "name": "Durgrim",
       "power_name": "Armadura",
-      "power_description": "Concede Armadura a uma unidade-alvo (reduz à metade o dano recebido que não seja proveniente de magias)"
+      "power_description": "Concede Armadura a uma unidade-alvo (reduz à metade o dano recebido que não seja proveniente de ações)"
     },
     "30": {
       "name": "Asterion",
@@ -556,7 +556,7 @@
     "36": {
       "name": "Primordis",
       "power_name": "Pele de Pedra",
-      "power_description": "A criatura-alvo ganha Armadura: reduz à metade o dano de combate recebido (arredondado para cima); o dano de magias não é reduzido."
+      "power_description": "A criatura-alvo ganha Armadura: reduz à metade o dano de combate recebido (arredondado para cima); o dano das ações não é reduzido."
     },
     "37": {
       "name": "Sylvaran",
@@ -570,8 +570,8 @@
     },
     "39": {
       "name": "Naïa",
-      "power_name": "Feitiço Instantâneo",
-      "power_description": "Escolha uma magia entre 3 magias aleatórias (todas as facções) de custo ≤ X para adicionar à sua mão."
+      "power_name": "Ação Instantânea",
+      "power_description": "Escolha uma ação entre 3 ações aleatórias (todas as facções) de custo ≤ X para adicionar à sua mão."
     },
     "40": {
       "name": "Elyndra",
@@ -653,7 +653,7 @@
     "29": {
       "name": "ダーグリム",
       "power_name": "アーマー",
-      "power_description": "対象の味方ユニットに「アーマー」を付与する（呪文以外から受けるダメージを半減する）"
+      "power_description": "対象の味方ユニットに「アーマー」を付与する（アクション以外から受けるダメージを半減する）"
     },
     "30": {
       "name": "アステリオン",
@@ -683,7 +683,7 @@
     "36": {
       "name": "プリモルディス",
       "power_name": "石の肌",
-      "power_description": "対象のクリーチャーに「アーマー」を付与する：受ける戦闘ダメージを半減する（端数は切り上げ）；呪文によるダメージは軽減されない。"
+      "power_description": "対象のクリーチャーに「アーマー」を付与する：受ける戦闘ダメージを半減する（端数は切り上げ）；アクションによるダメージは軽減されない。"
     },
     "37": {
       "name": "シルヴァラン",
@@ -697,8 +697,8 @@
     },
     "39": {
       "name": "ナイア",
-      "power_name": "瞬間魔法",
-      "power_description": "コスト≤Xのランダムな呪文3枚（全派閥）の中から1枚選び、手札に加える。"
+      "power_name": "瞬間アクション",
+      "power_description": "コスト≤Xのランダムなアクション3枚（全派閥）の中から1枚選び、手札に加える。"
     },
     "40": {
       "name": "エリンドラ",
@@ -780,7 +780,7 @@
     "29": {
       "name": "杜格林",
       "power_name": "护甲",
-      "power_description": "赋予目标单位护甲（将所受的非法术伤害减半）"
+      "power_description": "赋予目标单位护甲（将所受的非行动伤害减半）"
     },
     "30": {
       "name": "阿斯特里昂",
@@ -810,7 +810,7 @@
     "36": {
       "name": "原初者",
       "power_name": "石皮",
-      "power_description": "目标生物获得护甲：将所受战斗伤害减半（向上取整）；法术伤害不受影响。"
+      "power_description": "目标生物获得护甲：将所受战斗伤害减半（向上取整）；行动伤害不受影响。"
     },
     "37": {
       "name": "西尔瓦兰",
@@ -824,8 +824,8 @@
     },
     "39": {
       "name": "奈亚",
-      "power_name": "即时咒语",
-      "power_description": "从费用≤X的随机3张法术牌（全阵营）中选择一张加入手牌。"
+      "power_name": "即时行动",
+      "power_description": "从费用≤X的随机3张行动牌（全阵营）中选择一张加入手牌。"
     },
     "40": {
       "name": "艾琳德拉",

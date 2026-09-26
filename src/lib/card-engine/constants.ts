@@ -1147,7 +1147,7 @@ export function getAlignmentLabel(
 // justification était FAUSSE, la forge n'en enregistre aucun (`type` est un
 // simple useState). Le libellé reste mappé vers `spell` dans
 // `FORGE_TO_GAME_TYPE` — filet pour une sortie du générateur IA, rien de plus.
-export const TYPES = ["Unité", "Sort", "Objet", "Magie"];
+export const TYPES = ["Unité", "Action", "Objet", "Magie"];
 
 /** Types que le générateur ALÉATOIRE (masse) peut tirer. « Objet » en est
  *  exclu : le générateur ne sait pas doter un objet d'un coût d'équipement, ni

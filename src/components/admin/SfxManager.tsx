@@ -18,7 +18,7 @@ const EVENT_TYPES = [
   { value: "creature_death", label: "Mort de créature" },
   { value: "end_turn", label: "Fin de tour" },
   { value: "draw_card", label: "Pioche" },
-  { value: "spell_cast", label: "Sort lancé" },
+  { value: "spell_cast", label: "Action jouée" },
   { value: "hero_power", label: "Pouvoir héros" },
   { value: "divine_shield", label: "Bouclier divin" },
   { value: "poison", label: "Poison" },

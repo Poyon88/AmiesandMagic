@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Chant",
-        "desc": "Vos sorts avec Chant sont renforcés tant que cette unité est en jeu."
+        "desc": "Vos actions avec Chant sont renforcées tant que cette unité est en jeu."
       },
       "lune": {
         "label": "Lune X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Armure",
-        "desc": "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts de sorts ne sont pas réduits."
+        "desc": "Réduit de moitié les dégâts de combat reçus (arrondi au supérieur) ; les dégâts des actions ne sont pas réduits."
       },
       "commandement": {
         "label": "Commandement X",
@@ -135,15 +135,15 @@
       },
       "invisible": {
         "label": "Invisible",
-        "desc": "Ne peut pas être ciblé par des sorts ni par des capacités d'unités adverses."
+        "desc": "Ne peut pas être ciblé par des actions ni par des capacités d'unités adverses."
       },
       "canalisation": {
         "label": "Canalisation",
-        "desc": "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1)."
+        "desc": "Tant que cette unité est en jeu, vos actions coûtent 1 mana de moins (minimum 1)."
       },
       "contresort": {
         "label": "Contresort X",
-        "desc": "Annule les X prochains sorts adverses."
+        "desc": "Annule les X prochaines actions adverses."
       },
       "exclusion": {
         "label": "Exclusion X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Savant",
-        "desc": "Gagne +1 ATK et +1 PV par sort dans votre cimetière."
+        "desc": "Gagne +1 ATK et +1 PV par action dans votre cimetière."
       },
       "liaison_de_vie": {
         "label": "Liaison de vie",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Transcendance",
-        "desc": "Immunité totale aux sorts adverses : ne peut subir aucun dégât ni effet de sort, y compris les sorts de zone."
+        "desc": "Immunité totale aux actions adverses : ne peut subir aucun dégât ni effet d'action, y compris les actions de zone."
       },
       "vampirisme": {
         "label": "Vampirisme X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Sélection magique X",
-        "desc": "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main."
+        "desc": "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main."
       },
       "renfort_royal": {
         "label": "Sélection Royale X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Relancer X",
-        "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires."
+        "desc": "Rejoue les X dernières actions jouées avec des cibles aléatoires."
       },
       "tempete": {
         "label": "Tempête X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Apprentissage",
-        "desc": "Retire un sort de votre main et le mémorise : la créature peut le lancer en payant ses coûts."
+        "desc": "Retire une action de votre main et la mémorise : la créature peut la jouer en payant ses coûts."
       },
       "impact": {
         "label": "Impact X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Concentration X",
-        "desc": "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions)."
+        "desc": "Chaque action en main devient une action au hasard de coût +X, réduite de X (toutes factions)."
       },
       "remontee": {
         "label": "Remontée",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Préincanter X",
-        "desc": "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
+        "desc": "La première action de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
       },
       "conferer": {
         "label": "Conférer",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Déchainement X/Y",
-        "desc": "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
+        "desc": "Joue X actions aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
       },
       "force_des_ancetres": {
         "label": "Force des ancêtres +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Touché mortel",
-        "desc": "Toute créature blessée par ce sort meurt, quels que soient ses PV."
+        "desc": "Toute créature blessée par cette action meurt, quels que soient ses PV."
       },
       "precision": {
         "label": "Précision",
-        "desc": "Les dégâts de ce sort ignorent la Résistance, l'Armure et le Bouclier."
+        "desc": "Les dégâts de cette action ignorent la Résistance, l'Armure et le Bouclier."
       },
       "poison": {
         "label": "Poison",
@@ -549,7 +549,7 @@
       },
       "contresort": {
         "label": "Contresort X",
-        "desc": "Annule les X prochains sorts adverses."
+        "desc": "Annule les X prochaines actions adverses."
       },
       "exclusion": {
         "label": "Exclusion X",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Seuil de colère X",
-        "desc": "Si votre deck compte 25 cartes ou moins, ce sort inflige X dégâts supplémentaires."
+        "desc": "Si votre deck compte 25 cartes ou moins, cette action inflige X dégâts supplémentaires."
       },
       "chant": {
         "label": "Chant X",
-        "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de ce sort sont augmentées de X."
+        "desc": "Si vous contrôlez une créature avec Chant, toutes les valeurs de cette action sont augmentées de X."
       },
       "lune": {
         "label": "Lune X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Sélection magique X",
-        "desc": "Révèle 3 sorts communs {alignment} de coût X ; ajoutez-en un en main"
-      },
-      "renfort_royal": {
-        "label": "Sélection Royale X",
-        "desc": "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une"
+        "desc": "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main"
       },
       "tresor": {
         "label": "Trésor X",
         "desc": "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main"
       },
+      "renfort_royal": {
+        "label": "Sélection Royale X",
+        "desc": "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une"
+      },
       "relancer": {
         "label": "Relancer X",
-        "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires"
+        "desc": "Rejoue les X dernières actions jouées avec des cibles aléatoires"
       },
       "dechainement": {
         "label": "Déchainement X/Y",
-        "desc": "Lance X sorts aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
+        "desc": "Joue X actions aléatoires de coût Y de votre collection ({alignment}), avec des cibles aléatoires."
       },
       "invocation": {
         "label": "Invocation X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Boomerang",
-        "desc": "Après sa résolution, ce sort est mélangé dans votre deck au lieu d'aller au cimetière."
+        "desc": "Après sa résolution, cette action est mélangée dans votre deck au lieu d'aller au cimetière."
       },
       "siphon": {
         "label": "Siphon X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "Si toutes vos créatures en jeu ont un coût de même parité que celui de ce sort, +X/+Y à une créature alliée ciblée."
+        "desc": "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à une créature alliée ciblée."
       },
       "affaiblissement": {
         "label": "Affaiblissement -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Seconde vie X",
-        "desc": "Peut être lancé depuis votre cimetière pour X mana. Il perd alors Seconde vie."
+        "desc": "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie."
       },
       "incineration": {
         "label": "Incinération X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Préincanter X",
-        "desc": "Le premier sort de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
+        "desc": "La première action de votre deck en partant du dessus coûte X mana de moins (minimum 1), de façon permanente."
       },
       "concentration": {
         "label": "Concentration X",
-        "desc": "Chaque sort en main devient un sort au hasard de coût +X, réduit de X (toutes factions)."
+        "desc": "Chaque action en main devient une action au hasard de coût +X, réduite de X (toutes factions)."
       },
       "invocations_multiples": {
         "label": "Invocations multiples",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Douleur X",
-        "desc": "Au lancement, inflige X dégâts à votre héros."
+        "desc": "Quand cette action est jouée, inflige X dégâts à votre héros."
       },
       "afflux": {
         "label": "Afflux X",
@@ -829,13 +829,13 @@
         "rappel_cost": " (coût ≤ {max})",
         "rappel_one_any": "une carte",
         "rappel_one_creature": "une unité",
-        "rappel_one_spell": "un sort",
+        "rappel_one_spell": "une action",
         "rappel_all_any": "toutes les cartes",
         "rappel_all_creature": "toutes les unités",
-        "rappel_all_spell": "tous les sorts",
+        "rappel_all_spell": "toutes les actions",
         "rappel_upto_any": "jusqu'à {n} cartes",
         "rappel_upto_creature": "jusqu'à {n} unités",
-        "rappel_upto_spell": "jusqu'à {n} sorts",
+        "rappel_upto_spell": "jusqu'à {n} actions",
         "invocation": "invoque une créature aléatoire de coût {x}{filter}",
         "invocation_card": "invoque la carte désignée",
         "invocation_cards": "invoque les {n} cartes désignées",
@@ -854,14 +854,14 @@
         "alternative": "Au choix : ",
         "devoration": "dévore",
         "silence": "réduit au silence",
-        "dechainement": "lance {x} sorts aléatoires de coût {y}",
-        "dechainement_one": "lance un sort aléatoire de coût {y}",
+        "dechainement": "joue {x} actions aléatoires de coût {y}",
+        "dechainement_one": "joue une action aléatoire de coût {y}",
         "tactique_one": "transmet au hasard une de ses capacités permanentes",
         "tactique_many": "transmet au hasard {x} de ses capacités permanentes",
         "retour_differe": "place sous le deck de son propriétaire",
         "selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
         "faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
-        "selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
+        "selection_magique": "révèle 3 actions{filter} (coût {x}) et en garde une en main",
         "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
         "tresor": "révèle 3 objets{filter} (coût {x}) et en garde un en main"
       },
@@ -906,7 +906,7 @@
         "clan": " du clan {v}",
         "keyword": " portant {v}",
         "type_creature": " de type unité",
-        "type_spell": " de type sort",
+        "type_spell": " de type action",
         "type_item": " de type objet"
       },
       "self": {
@@ -1678,7 +1678,7 @@
         "start_of_turn": "au début du tour",
         "draw": "à la pioche",
         "low_hp": "sous {n} PV",
-        "spell": "à la résolution du sort",
+        "spell": "à la résolution de l'action",
         "wound": "quand elle est blessée sans mourir"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "Toutes raretés",
     "all_types": "Tous types",
     "type_creature": "Créature",
-    "type_spell": "Sort",
+    "type_spell": "Action",
     "no_auctions": "Aucune enchère trouvée",
     "previous": "Précédent",
     "next": "Suivant",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "CARTES VISÉES",
     "card_kind_all": "Toutes",
     "card_kind_creature": "Unités seulement",
-    "card_kind_spell": "Sorts seulement",
+    "card_kind_spell": "Actions seulement",
     "legacy_grants_heading": "Dons hérités (ancien format) — convertissez-les pour pouvoir viser l'adversaire",
     "convert_to_composed": "Convertir",
     "effects_heading": "Effets de la carte",
-    "effects_subtitle": "tous les effets du sort, dans une seule liste",
+    "effects_subtitle": "tous les effets de l'action, dans une seule liste",
     "effect_kind_curated": "MÉCANIQUE",
     "group_composed": "Effets paramétrables",
     "group_curated": "Mécaniques particulières",
@@ -2064,7 +2064,7 @@
     "pool_hint_invocation": "Filtres cumulatifs. Sans eux, le pool suit l'alignement de la carte ; le coût invoqué est EXACTEMENT X.",
     "label_designated_card": "CARTE DÉSIGNÉE",
     "designated_card_hint": "Désignez une ou plusieurs créatures : elles sont invoquées telles quelles, dans cet ordre (la même carte peut être désignée plusieurs fois). Sans désignation, tirage aléatoire au coût X selon les filtres.",
-    "tuteur_card_hint": "Désignez une ou plusieurs cartes, créatures ou sorts : elles rejoignent votre main dans cet ordre. La même carte peut être désignée plusieurs fois (autant d'exemplaires). Sans désignation, l'effet ne fait rien.",
+    "tuteur_card_hint": "Désignez une ou plusieurs cartes, créatures ou actions : elles rejoignent votre main dans cet ordre. La même carte peut être désignée plusieurs fois (autant d'exemplaires). Sans désignation, l'effet ne fait rien.",
     "content_selection": "Sélection (1 parmi 3)",
     "content_faveur": "Faveur (1 carte au hasard → main)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
@@ -2074,7 +2074,7 @@
     "label_pool_keyword": "POOL — MOT-CLÉ PORTÉ",
     "label_pool_card_type": "POOL — TYPE DE CARTE",
     "pool_type_creature": "Unités",
-    "pool_type_spell": "Sorts",
+    "pool_type_spell": "Actions",
     "pool_type_item": "Objets",
     "pool_any": "Indifférent",
     "pool_hint": "Filtres cumulatifs, en plus des règles de base (Commune, coût ≤ X, alignement de la carte).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXIL",
     "topdeck_label": "REPLI",
-    "spell_effects_label": "EFFETS DU SORT",
-    "spell_keywords_label": "MOTS-CLÉS DE SORT",
+    "spell_effects_label": "EFFETS DE L'ACTION",
+    "spell_keywords_label": "MOTS-CLÉS D'ACTION",
     "token_to_summon": "TOKEN À INVOQUER",
     "config_below_tokens": "Config dans « Tokens à invoquer » ci-dessous",
     "targeted_race_clan": "RACE / CLAN CIBLÉ",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Requise",
     "atk_is_x": "(le +ATK = la valeur X)",
     "neg_atk_is_x": "(le -ATK = la valeur X)",
-    "spell_cost_y": "COÛT DES SORTS (Y)",
-    "spell_count_is_x": "(le nombre de sorts = la valeur X)",
+    "spell_cost_y": "COÛT DES ACTIONS (Y)",
+    "spell_count_is_x": "(le nombre d'actions = la valeur X)",
     "fda_condition": "(≥7 créatures au cimetière)",
     "choose_ability": "-- Choisir une capacité --",
     "scope_one_ally": "1 allié ciblé",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "Prompt en anglais pour la génération d'image…",
     "trigger_tap_activation": "À l'activation (tap)",
     "trigger_automatic": "Automatique (passif/conditionnel)",
-    "trigger_spell_resolution_full": "À la résolution du sort",
+    "trigger_spell_resolution_full": "À la résolution de l'action",
     "container_label": "Contenant :",
     "derived_from_type": "(déduit du type de carte)",
     "no_ability_add_below": "Aucune capacité. Ajoutez-en une ci-dessous.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "Toutes les unités alliées",
     "one_allied_unit": "1 unité alliée",
     "add_effect": "+ Effet :",
-    "spell_effect_dash": "-- effet du sort --",
+    "spell_effect_dash": "-- effet de l'action --",
     "add_confer": "+ Conférer :",
     "ability_to_confer_dash": "-- capacité à conférer --",
     "save": "Sauvegarder",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "GÉNÉRER UNE ICÔNE DE CAPACITÉ",
     "parameters": "PARAMÈTRES",
     "ability_label": "CAPACITÉ",
-    "ability_polymorph": "🔀 Capacité polymorphe — l'icône sera enregistrée pour la créature ET le sort.",
+    "ability_polymorph": "🔀 Capacité polymorphe — l'icône sera enregistrée pour la créature ET l'action.",
     "ability_creature": "👤 Capacité de créature.",
-    "ability_spell": "🪄 Capacité de sort.",
-    "ability_legend": "👤 créature · 🪄 sort · 🔀 partagée",
+    "ability_spell": "🪄 Capacité d'action.",
+    "ability_legend": "👤 créature · 🪄 action · 🔀 partagée",
     "icon_name_label": "NOM DE L'ICÔNE",
     "icon_name_placeholder": "Ex: Bouclier v2",
     "style_label": "STYLE",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Lycanthropie X : sélectionnez un token de transformation avant de sauvegarder.",
     "validation_entraide": "Entraide (Race) : sélectionnez la race cible avant de sauvegarder.",
     "validation_appel_supreme": "Appel Suprême : sélectionnez la race cible avant de sauvegarder.",
-    "validation_multi_convocation_spell": "Convocations multiples (sort) : ajoutez au moins un token dans la liste avant de sauvegarder.",
-    "validation_convocation_spell": "Convocation (sort) : sélectionnez un token dans le picker avant de sauvegarder.",
+    "validation_multi_convocation_spell": "Convocations multiples (action) : ajoutez au moins un token dans la liste avant de sauvegarder.",
+    "validation_convocation_spell": "Convocation (action) : sélectionnez un token dans le picker avant de sauvegarder.",
     "card_added": "« {name} » ajoutée !",
     "unknown_error": "Erreur inconnue",
     "illustration_generated": "Illustration générée ({model})",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Tactique (partage ses capacités permanentes)",
     "content_retour_differe": "Retour différé (sous le deck)",
     "content_silence": "Silence (retire tout à la cible)",
-    "content_dechainement": "Déchainement X/Y (sorts aléatoires)",
-    "content_selection_magique": "Sélection magique (1 sort parmi 3)"
+    "content_dechainement": "Déchainement X/Y (actions aléatoires)",
+    "content_selection_magique": "Sélection magique (1 action parmi 3)"
   },
   "game": {
     "error_not_authenticated": "Non authentifié",
@@ -2567,8 +2567,8 @@
     "history_title": "Dernières actions",
     "history_hero_friendly": "votre héros",
     "history_hero_enemy": "le héros adverse",
-    "history_spell": "{source} lancé",
-    "history_spell_on": "{source} lancé sur {target}",
+    "history_spell": "Action jouée : {source}",
+    "history_spell_on": "Action jouée : {source} (cible : {target})",
     "history_spell_countered": "{source} contré",
     "history_attack": "{source} attaque {target}",
     "history_attack_alone": "{source} attaque",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Bien vu — elle rejoint votre main.",
     "presage_miss": "Raté. La bonne carte est en vert.",
     "apprentissage_title": "📖 Apprentissage",
-    "apprentissage_subtitle": "Quel sort la créature doit-elle mémoriser ?",
+    "apprentissage_subtitle": "Quelle action la créature doit-elle mémoriser ?",
     "foi_title": "✨ Foi",
     "foi_subtitle": "Choisissez une carte à prendre en main. Son coût sera retiré de votre Foi, le reste est conservé.",
     "conquete_title": "🚩 Conquête",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "Pas assez de cartes en main pour ses coûts additionnels.",
     "eveil_blocked_plateau": "Pas assez de créatures à sacrifier.",
     "eveil_blocked_deck": "Pas assez de cartes à exiler dans votre deck.",
-    "eveil_blocked_sans_cible": "Aucune cible valide pour ce sort.",
+    "eveil_blocked_sans_cible": "Aucune cible valide pour cette action.",
     "eveil_suspend": "Mettre en éveil ({count, plural, one {# point} other {# points}})",
     "eveil_pay_n": "{count, plural, one {Payer #} other {Payer #}}",
     "eveil_max": "max {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "Au début de chacun de vos tours, dans l'ordre :",
     "hand_title": "La main et la pioche",
     "creatures_title": "Les créatures",
-    "spells_title": "Les sorts",
+    "spells_title": "Les actions",
     "combat_title": "Le combat",
     "combat_see_full_list": "La liste complète des capacités est en bas de page.",
     "hero_title": "Le héros et son pouvoir",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Boucle de jeu (spécificités A&M)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combat — résolution",
-    "tcg_hero_spells_title": "Héros & sorts",
+    "tcg_hero_spells_title": "Héros & actions",
     "lexicon_eyebrow": "Le lexique du combat",
     "lexicon_subtitle": "Référence complète, toujours à jour avec le jeu. « X » et « Y » sont des valeurs réglées sur chaque carte.",
     "lexicon_title": "Toutes les capacités",
     "search_placeholder": "Rechercher une capacité…",
     "creature_abilities_group": "Capacités de créature ({count})",
-    "spell_abilities_group": "Capacités de sort ({count})",
+    "spell_abilities_group": "Capacités d'action ({count})",
     "no_ability_match": "Aucune capacité ne correspond à « {query} »."
   },
   "deck": {
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "Choisissez d'abord une faction dans l'onglet 1 · Préparation.",
     "search_placeholder": "Rechercher...",
     "creatures": "Créatures",
-    "spells": "Sorts",
+    "spells": "Actions",
     "items": "Objets",
     "all_capabilities": "Capacités",
     "all_races": "Races",

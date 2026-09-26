@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "咏唱",
-        "desc": "只要这个单位在场，你带有“咏唱”的法术就会得到强化。"
+        "desc": "只要此单位在场，你拥有\"吟唱\"的行动便会得到强化。"
       },
       "lune": {
         "label": "月 X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "护甲",
-        "desc": "所受战斗伤害减半（向上取整）；法术伤害不受此效果影响。"
+        "desc": "将受到的战斗伤害减半（向上取整）；行动造成的伤害不受影响。"
       },
       "commandement": {
         "label": "号令X",
@@ -135,19 +135,19 @@
       },
       "invisible": {
         "label": "隐形",
-        "desc": "不能被法术或敌方单位技能指定为目标。"
+        "desc": "不能成为对方行动或单位技能的目标。"
       },
       "canalisation": {
         "label": "法力引导",
-        "desc": "此单位在场时，你的法术费用降低 1 点法力（最低 1 点）。"
+        "desc": "只要此单位在场，你的行动费用便减少1点法力（最低为1）。"
       },
       "contresort": {
         "label": "反制法术 X",
-        "desc": "使接下来X个敌方法术无效。"
+        "desc": "抵消接下来的X个对方行动。"
       },
       "exclusion": {
         "label": "排斥 X",
-        "desc": "使接下来X次敌方单位召唤无效。"
+        "desc": "抵消接下来的X次对方单位召唤。"
       },
       "convocation": {
         "label": "召唤 X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "学者",
-        "desc": "你墓地中每有一个法术，获得+1 ATK和+1生命值。"
+        "desc": "每有一张行动在你的墓地中，获得+1攻击力和+1生命值。"
       },
       "liaison_de_vie": {
         "label": "生命链接",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "超脱",
-        "desc": "对敌方所有法术完全免疫：不受任何法术的伤害或效果影响，包括范围法术。"
+        "desc": "对对方行动完全免疫：不会受到任何伤害或行动效果影响，包括范围行动。"
       },
       "vampirisme": {
         "label": "吸血 X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "魔法抉择 X",
-        "desc": "展示3张费用为X的{alignment}普通法术；选择一张加入手牌。"
+        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌。"
       },
       "renfort_royal": {
         "label": "皇家抉择 X",
@@ -379,7 +379,7 @@
       },
       "tresor": {
         "label": "宝藏 X",
-        "desc": "展示3件费用为X的{alignment}或中立普通物品；将其中一件加入手牌。"
+        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌。"
       },
       "lycanthropie": {
         "label": "狼人变身 X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "重铸 X",
-        "desc": "以随机目标重新施放最近施放的X个法术。"
+        "desc": "以随机目标重新打出最近打出的X张行动。"
       },
       "tempete": {
         "label": "风暴 X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "修习",
-        "desc": "从你的手牌中移除一张法术并将其记住：该随从可支付其费用来施放该法术。"
+        "desc": "从你的手牌中移除一张行动并将其记忆：该生物可以支付其费用来打出该行动。"
       },
       "impact": {
         "label": "冲击 X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "专注 X",
-        "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
+        "desc": "手牌中的每张行动都会变为一张随机行动，其费用+X后再减少X（涵盖所有阵营）。"
       },
       "remontee": {
         "label": "回弹",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "预施法 X",
-        "desc": "使你牌库中从顶部数起的第一张法术牌的法力消耗永久减少X点（最低为1）。"
+        "desc": "你牌库最上方的第一张行动永久减少X点法力费用（最低为1）。"
       },
       "conferer": {
         "label": "赋予",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "倾泻 X/Y",
-        "desc": "从你的收藏中以随机目标施放X个费用为Y的随机法术（{alignment}）。"
+        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。"
       },
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "死触",
-        "desc": "被该法术伤害的任何生物都会死亡，无论其生命值为多少。"
+        "desc": "被此行动伤害的任何生物都会死亡，无论其生命值为多少。"
       },
       "precision": {
         "label": "精准",
-        "desc": "此法术造成的伤害无视抗性、护甲和护盾。"
+        "desc": "此行动造成的伤害无视抗性、护甲和护盾。"
       },
       "poison": {
         "label": "中毒",
@@ -549,11 +549,11 @@
       },
       "contresort": {
         "label": "反制法术 X",
-        "desc": "使接下来X个敌方法术无效。"
+        "desc": "抵消接下来的X个对方行动。"
       },
       "exclusion": {
         "label": "排斥 X",
-        "desc": "使接下来X次敌方单位召唤无效。"
+        "desc": "抵消接下来的X次对方单位召唤。"
       },
       "convocation_simple": {
         "label": "召唤",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "愤怒阈值 X",
-        "desc": "如果你的牌库中有25张或更少的牌，此法术将造成X点额外伤害。"
+        "desc": "如果你的牌库剩余25张或更少的卡牌，此行动额外造成X点伤害。"
       },
       "chant": {
         "label": "咏唱 X",
-        "desc": "如果你控制一个拥有\"吟唱\"的随从，此法术的所有数值提升X点。"
+        "desc": "如果你控制一个拥有\"吟唱\"的生物，此行动的所有数值都提高X。"
       },
       "lune": {
         "label": "月 X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "魔法甄选 X",
-        "desc": "展示3张费用为X的{alignment}普通法术；将其中一张加入手牌"
+        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌"
+      },
+      "tresor": {
+        "label": "宝藏 X",
+        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌"
       },
       "renfort_royal": {
         "label": "皇家甄选 X",
         "desc": "展示你3张费用为X的限定版卡牌（需持有≥30张；否则展示3张{alignment}普通卡）；保留其中一张"
       },
-      "tresor": {
-        "label": "宝藏 X",
-        "desc": "展示3件费用为X的{alignment}或中立普通物品；将其中一件加入手牌"
-      },
       "relancer": {
         "label": "重施 X",
-        "desc": "以随机目标重新施放最近X个法术。"
+        "desc": "以随机目标重新打出最近打出的X张行动"
       },
       "dechainement": {
         "label": "倾泻 X/Y",
-        "desc": "从你的收藏中以随机目标施放X个费用为Y的随机法术（{alignment}）。"
+        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。"
       },
       "invocation": {
         "label": "召唤 X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "回旋镖",
-        "desc": "结算后，此法术将被洗入你的牌库，而非进入墓地。"
+        "desc": "此行动结算后，会被洗入你的牌库，而不是进入墓地。"
       },
       "siphon": {
         "label": "虹吸 X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "纪律 +X/+Y",
-        "desc": "若你场上所有随从的费用奇偶性与此法术相同，使一个目标友方随从获得+X/+Y。"
+        "desc": "如果你场上所有生物的费用奇偶性都与此行动相同，则目标友方生物获得+X/+Y。"
       },
       "affaiblissement": {
         "label": "弱化 -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "重生X",
-        "desc": "可从你的墓地以X点法力施放，之后失去重生。"
+        "desc": "可以从你的墓地以X点法力打出。打出后失去\"重生\"。"
       },
       "incineration": {
         "label": "焚烧 X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "预施法 X",
-        "desc": "使你牌库中从顶部数起的第一张法术牌的法力消耗永久减少X点（最低为1）。"
+        "desc": "你牌库最上方的第一张行动永久减少X点法力费用（最低为1）。"
       },
       "concentration": {
         "label": "专注 X",
-        "desc": "手牌中的每张法术都变为一张费用+X、再减少X的随机法术（不限阵营）。"
+        "desc": "手牌中的每张行动都会变为一张随机行动，其费用+X后再减少X（涵盖所有阵营）。"
       },
       "invocations_multiples": {
         "label": "多重召唤",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "苦痛 X",
-        "desc": "施放时，对己方英雄造成 X 点伤害。"
+        "desc": "当此行动被打出时，对你的英雄造成X点伤害。"
       },
       "afflux": {
         "label": "涌流 X",
@@ -808,9 +808,9 @@
         "poison": "中毒",
         "grant_keyword": "赋予 {ability}",
         "random_range": "1至{max}",
-        "random_range_from": "{min}至{max}",
+        "random_range_from": "{min} 到 {max}",
         "appel": "将你牌库中费用≤{x}的第一张单位牌置入战场",
-        "appel_item": "将你牌库中第一件费用≤{x}的物品放入战场",
+        "appel_item": "将你牌库中费用≤ {x} 的第一件物品放置于场上",
         "ability_generic": "一个能力",
         "draw_cards_one": "抽 {x} 张牌",
         "draw_cards_many": "抽 {x} 张牌",
@@ -829,13 +829,13 @@
         "rappel_cost": "（费用≤{max}）",
         "rappel_one_any": "一张牌",
         "rappel_one_creature": "一张单位牌",
-        "rappel_one_spell": "一张法术牌",
+        "rappel_one_spell": "一张行动",
         "rappel_all_any": "所有牌",
         "rappel_all_creature": "所有单位牌",
-        "rappel_all_spell": "所有法术牌",
+        "rappel_all_spell": "所有行动",
         "rappel_upto_any": "至多{n}张牌",
         "rappel_upto_creature": "至多{n}张单位牌",
-        "rappel_upto_spell": "至多{n}张法术牌",
+        "rappel_upto_spell": "最多{n}个行动",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "invocation_card": "召唤指定卡牌",
         "invocation_cards": "召唤指定的{n}张卡牌",
@@ -854,16 +854,16 @@
         "alternative": "择一：",
         "devoration": "吞噬",
         "silence": "沉默",
-        "dechainement": "施放 {x} 个费用为 {y} 的随机法术",
-        "dechainement_one": "施放一个费用为 {y} 的随机法术",
+        "dechainement": "打出{x}张费用为{y}的随机行动",
+        "dechainement_one": "打出一张费用为{y}的随机行动",
         "tactique_one": "随机传授自身的1个永久技能",
         "tactique_many": "随机传授自身的{x}个永久技能",
         "retour_differe": "放到其拥有者牌库底",
         "selection": "展示3张{filter}卡牌（费用为 {x}），并保留其中一张至手牌",
         "faveur": "随机将一张{filter}卡牌（费用{x}）加入手牌",
-        "selection_magique": "展示3张{filter}法术（费用为{x}），并留其中一张入手",
+        "selection_magique": "展示3张{filter}行动（费用{x}），并保留一张入手",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
-        "tresor": "展示3件物品{filter}（费用{x}）并将一件加入手牌"
+        "tresor": "展示3件{filter}物品（费用{x}），并保留一件入手"
       },
       "emblem": {
         "badge": "纹章",
@@ -905,9 +905,9 @@
         "faction": "阵营为{v}的",
         "clan": "氏族为{v}的",
         "keyword": "带有{v}的",
-        "type_creature": "（单位）",
-        "type_spell": "（法术）",
-        "type_item": "（物品）"
+        "type_creature": " 单位类型的",
+        "type_spell": " 行动类型的",
+        "type_item": " 物品类型的"
       },
       "self": {
         "deal_damage_one": "对自身造成{x}点伤害",
@@ -1678,7 +1678,7 @@
         "start_of_turn": "回合开始时",
         "draw": "抽牌时",
         "low_hp": "生命值低于{n}点时",
-        "spell": "法术结算时",
+        "spell": "行动结算时",
         "wound": "当它受伤但未死亡时"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "所有稀有度",
     "all_types": "所有类型",
     "type_creature": "生物",
-    "type_spell": "法术",
+    "type_spell": "行动",
     "no_auctions": "未找到拍卖",
     "previous": "上一页",
     "next": "下一页",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "目标卡牌",
     "card_kind_all": "全部",
     "card_kind_creature": "仅随从",
-    "card_kind_spell": "仅限法术",
+    "card_kind_spell": "仅行动",
     "legacy_grants_heading": "遗留赠予效果(旧格式)——请转换以便可以指向对手",
     "convert_to_composed": "转换",
     "effects_heading": "卡牌效果",
-    "effects_subtitle": "法术的所有效果,汇于一份列表",
+    "effects_subtitle": "行动的所有效果，列于同一列表",
     "effect_kind_curated": "机制",
     "group_composed": "可配置效果",
     "group_curated": "特殊机制",
@@ -2064,17 +2064,17 @@
     "pool_hint_invocation": "筛选条件可叠加。若不设置，卡池将遵循该卡牌的阵营；召唤的费用严格等于X。",
     "label_designated_card": "指定卡牌",
     "designated_card_hint": "指定一个或多个随从：它们将按此顺序原样召唤（同一张卡可被多次指定）。若未指定，则依据筛选条件随机抽取一张费用为X的卡。",
-    "tuteur_card_hint": "指定一张或多张卡牌，随从或法术：它们将按此顺序加入你的手牌。同一张卡可被多次指定（对应多张副本）。若未指定，则该效果不产生任何作用。",
+    "tuteur_card_hint": "指定一张或多张卡牌、单位或行动：它们将按此顺序加入你的手牌。同一张卡牌可被多次指定（对应多份）。若未指定，效果不产生任何作用。",
     "content_selection": "选择（三选一）",
     "content_faveur": "恩惠（1张随机卡 → 手牌）",
     "content_renfort_royal": "皇家甄选（三选一）",
-    "content_tresor": "宝藏（3件物品中选1）",
+    "content_tresor": "宝藏（从3件中选1件物品）",
     "label_pool_membership": "卡池 — 归属",
     "label_pool_faction": "卡池 — 阵营",
     "label_pool_keyword": "卡池 — 携带关键词",
-    "label_pool_card_type": "卡池 — 卡牌类型",
+    "label_pool_card_type": "卡池——卡牌类型",
     "pool_type_creature": "单位",
-    "pool_type_spell": "法术",
+    "pool_type_spell": "行动",
     "pool_type_item": "物品",
     "pool_any": "不限",
     "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
-    "spell_effects_label": "法术效果",
-    "spell_keywords_label": "法术关键词",
+    "spell_effects_label": "行动效果",
+    "spell_keywords_label": "行动关键词",
     "token_to_summon": "待召唤衍生物",
     "config_below_tokens": "在下方\"待召唤衍生物\"中配置",
     "targeted_race_clan": "目标种族／阵营",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "必填",
     "atk_is_x": "（+攻击 = X值）",
     "neg_atk_is_x": "（-攻击 = X值）",
-    "spell_cost_y": "法术费用（Y）",
-    "spell_count_is_x": "（法术数量 = X值）",
+    "spell_cost_y": "行动费用 (Y)",
+    "spell_count_is_x": "（行动数量 = X值）",
     "fda_condition": "（墓地中有7个或更多生物时）",
     "choose_ability": "-- 选择技能 --",
     "scope_one_ally": "1个目标友方",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "用于图像生成的英文提示词…",
     "trigger_tap_activation": "激活时（tap）",
     "trigger_automatic": "自动（被动/条件）",
-    "trigger_spell_resolution_full": "法术结算时",
+    "trigger_spell_resolution_full": "行动结算时",
     "container_label": "容器：",
     "derived_from_type": "（由卡牌类型推导）",
     "no_ability_add_below": "暂无能力，请在下方添加。",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "所有友方单位",
     "one_allied_unit": "1个友方单位",
     "add_effect": "+ 效果：",
-    "spell_effect_dash": "-- 法术效果 --",
+    "spell_effect_dash": "--行动效果--",
     "add_confer": "+ 赋予：",
     "ability_to_confer_dash": "-- 待赋予的能力 --",
     "save": "保存",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "生成技能图标",
     "parameters": "参数",
     "ability_label": "技能",
-    "ability_polymorph": "🔀 多态技能——图标将同时保存至该生物与法术。",
+    "ability_polymorph": "🔀 变形能力——图标将同时保存给单位和行动。",
     "ability_creature": "👤 生物技能。",
-    "ability_spell": "🪄 法术技能。",
-    "ability_legend": "👤 生物 · 🪄 法术 · 🔀 共享",
+    "ability_spell": "🪄 行动能力。",
+    "ability_legend": "👤 单位 · 🪄 行动 · 🔀 共享",
     "icon_name_label": "图标名称",
     "icon_name_placeholder": "例：盾牌 v2",
     "style_label": "风格",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "狼人变身 X：请选择一个变身 token 后再保存。",
     "validation_entraide": "互助（种族）：请选择目标种族后再保存。",
     "validation_appel_supreme": "至高召唤：请选择目标种族后再保存。",
-    "validation_multi_convocation_spell": "多重召唤（法术）：请在列表中至少添加一个 token 后再保存。",
-    "validation_convocation_spell": "召唤（法术）：请在选择器中选择一个 token 后再保存。",
+    "validation_multi_convocation_spell": "多重召唤（行动）：保存前请在列表中至少添加一个衍生物。",
+    "validation_convocation_spell": "召唤（行动）：保存前请在选择器中选择一个衍生物。",
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
@@ -2481,7 +2481,7 @@
     "alternative_warn_alone": "仅勾选了一个分支：该效果将正常结算",
     "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
-    "random_min_hint": "最低费用（A）：每个费用在{min}至{max}之间随机抽取。",
+    "random_min_hint": "最低费用（A）：每个费用在{min}和{max}之间随机抽取。",
     "random_hint_faveur": "所赠卡牌的费用在1到{max}之间随机。若未勾选该选项，则费用恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
@@ -2495,8 +2495,8 @@
     "content_tactique": "战术（分享自身永久技能）",
     "content_retour_differe": "延迟归返（置于牌库底）",
     "content_silence": "沉默（移除目标的一切）",
-    "content_dechainement": "解放 X/Y（随机法术）",
-    "content_selection_magique": "魔法甄选（三选一法术）"
+    "content_dechainement": "释放X/Y（随机行动）",
+    "content_selection_magique": "魔法抉择（从3张中选1张行动）"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2567,8 +2567,8 @@
     "history_title": "最近动作",
     "history_hero_friendly": "你的英雄",
     "history_hero_enemy": "敌方英雄",
-    "history_spell": "{source} 已施放",
-    "history_spell_on": "{source} 施放于 {target}",
+    "history_spell": "打出的行动：{source}",
+    "history_spell_on": "打出的行动：{source}（目标：{target}）",
     "history_spell_countered": "{source} 被反制",
     "history_attack": "{source} 攻击 {target}",
     "history_attack_alone": "{source} 发起攻击",
@@ -2620,7 +2620,7 @@
     "presage_hit": "猜对了——它将进入您的手牌。",
     "presage_miss": "猜错了。正确的卡以绿色标出。",
     "apprentissage_title": "📖 学习",
-    "apprentissage_subtitle": "该生物应该记忆哪个法术？",
+    "apprentissage_subtitle": "该单位应记住哪个行动？",
     "foi_title": "✨ 信仰",
     "foi_subtitle": "选择一张牌加入手牌。其费用将从你的信仰中扣除，其余保留。",
     "conquete_title": "🚩 征服",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "手牌数量不足，无法支付额外费用。",
     "eveil_blocked_plateau": "可献祭的生物数量不足。",
     "eveil_blocked_deck": "您的牌库中可放逐的卡牌数量不足。",
-    "eveil_blocked_sans_cible": "该法术没有合法目标。",
+    "eveil_blocked_sans_cible": "该行动没有有效目标。",
     "eveil_suspend": "置入觉醒（{count, plural, other {#点}}）",
     "eveil_pay_n": "{count, plural, other {支付#}}",
     "eveil_max": "最多{count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "每回合开始时，按顺序执行：",
     "hand_title": "手牌与抽牌",
     "creatures_title": "随从",
-    "spells_title": "法术",
+    "spells_title": "行动",
     "combat_title": "战斗",
     "combat_see_full_list": "完整技能列表见页面底部。",
     "hero_title": "英雄与英雄技能",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "游戏循环（A&M特有机制）",
     "tcg_deckbuilding_title": "构筑牌组",
     "tcg_combat_title": "战斗结算",
-    "tcg_hero_spells_title": "英雄与法术",
+    "tcg_hero_spells_title": "英雄与行动",
     "lexicon_eyebrow": "战斗词典",
     "lexicon_subtitle": "完整参考，与游戏实时同步。「X」与「Y」为各卡牌上的设定数值。",
     "lexicon_title": "全部技能",
     "search_placeholder": "搜索技能…",
     "creature_abilities_group": "随从技能（{count}）",
-    "spell_abilities_group": "法术技能（{count}）",
+    "spell_abilities_group": "行动能力（{count}）",
     "no_ability_match": "没有与「{query}」匹配的技能。"
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "最多 {max} 名雇佣兵（当前 {current}）",
     "max_capability_current": "最多 {max} 张「{label}」能力牌（当前 {count}）",
     "card_not_owned": "未拥有此牌",
-    "no_items_in_deck": "物品不能放入卡组：它们在对局中获得。",
-    "no_items_in_deck_current": "此卡组包含{count}件物品：请移除，物品不能再放入卡组。",
+    "no_items_in_deck": "物品不能放入牌组：它们只能在游戏中获得。",
+    "no_items_in_deck_current": "该牌组中包含{count, plural, one {#件物品} other {#件物品}}：请将其移除，物品已不能再放入牌组。",
     "deck_full": "牌组已满",
     "singleton_yes": "单卡组 ✓",
     "singleton_no": "单卡牌组 ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "请先在第 1 步「准备」标签页中选择一个势力。",
     "search_placeholder": "搜索...",
     "creatures": "生物",
-    "spells": "法术",
+    "spells": "行动",
     "items": "物品",
     "all_capabilities": "能力",
     "all_races": "种族",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
     "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
     "unplayable_badge": "缺少 {count} 张卡牌",
-    "items_badge": "含{count}件物品 — 请移除",
+    "items_badge": "包含{count, plural, one {# 个物品} other {# 个物品}} — 待移除",
     "unplayable_reason": "此卡组包含你已不再拥有的阵营卡牌：{factions}。卡组保持完整——重新获得该阵营即可继续使用。",
     "unplayable_rebuy": "前往商店购买"
   },

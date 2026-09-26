@@ -263,7 +263,7 @@ export default function BalanceEditor() {
           </label>
         </div>
         <p style={{ fontSize: 10, color: "#999", margin: "12px 0 0" }}>
-          La puissance d&apos;un sort suit le coût de l&apos;attaque. Calibration d&apos;origine : 1 SE ≈ 4,5 pts.
+          La puissance d&apos;une action suit le coût de l&apos;attaque. Calibration d&apos;origine : 1 SE ≈ 4,5 pts.
         </p>
       </div>
 

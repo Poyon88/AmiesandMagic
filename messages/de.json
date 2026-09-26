@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Gesang",
-        "desc": "Eure Zaubersprüche mit Gesang werden verstärkt, solange diese Einheit im Spiel ist."
+        "desc": "Ihre Aktionen mit Gesang werden verstärkt, solange diese Einheit im Spiel ist."
       },
       "lune": {
         "label": "Mond X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Rüstung",
-        "desc": "Halbiert erlittenen Kampfschaden (aufgerundet); Zaubrerschaden wird nicht reduziert."
+        "desc": "Halbiert erlittenen Kampfschaden (aufgerundet); Schaden durch Aktionen wird nicht reduziert."
       },
       "commandement": {
         "label": "Kommando X",
@@ -135,15 +135,15 @@
       },
       "invisible": {
         "label": "Unsichtbar",
-        "desc": "Kann weder von Zaubern noch von Fähigkeiten feindlicher Einheiten gezielt werden."
+        "desc": "Kann nicht von gegnerischen Aktionen oder Einheitenfähigkeiten als Ziel gewählt werden."
       },
       "canalisation": {
         "label": "Kanalisation",
-        "desc": "Solange diese Einheit im Spiel ist, kosten Ihre Zauber 1 Mana weniger (mindestens 1)."
+        "desc": "Solange diese Einheit im Spiel ist, kosten Ihre Aktionen 1 Mana weniger (mindestens 1)."
       },
       "contresort": {
         "label": "Gegenzauber X",
-        "desc": "Annulliert die nächsten X gegnerischen Zauber."
+        "desc": "Annulliert die nächsten X gegnerischen Aktionen."
       },
       "exclusion": {
         "label": "Ausschluss X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Gelehrter",
-        "desc": "Erhält +1 ATK und +1 LP pro Zauber in eurem Friedhof."
+        "desc": "Erhält +1 ATK und +1 LP pro Aktion in Ihrem Friedhof."
       },
       "liaison_de_vie": {
         "label": "Lebensband",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Transzendenz",
-        "desc": "Vollständige Immunität gegen gegnerische Zauber: Kann weder Schaden noch Effekte von Zaubern erleiden, einschließlich Flächenzauber."
+        "desc": "Vollständige Immunität gegen gegnerische Aktionen: kann keinen Schaden und keine Aktionseffekte erleiden, einschließlich Flächenaktionen."
       },
       "vampirisme": {
         "label": "Vampirismus X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten X auf; füge einen davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
@@ -379,7 +379,7 @@
       },
       "tresor": {
         "label": "Schatz X",
-        "desc": "Decke 3 gewöhnliche {alignment} oder neutrale Gegenstände mit Kosten X auf; nimm einen auf die Hand."
+        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu."
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Neu würfeln X",
-        "desc": "Wiederholt die letzten X gewirkten Zauber mit zufälligen Zielen."
+        "desc": "Spielt die letzten X gespielten Aktionen erneut, mit zufälligen Zielen."
       },
       "tempete": {
         "label": "Sturm X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Lehre",
-        "desc": "Entfernt einen Zauber aus deiner Hand und lernt ihn: Die Kreatur kann ihn wirken, indem sie seine Kosten bezahlt."
+        "desc": "Entfernt eine Aktion aus Ihrer Hand und merkt sie sich: Die Kreatur kann sie durch Zahlung ihrer Kosten spielen."
       },
       "impact": {
         "label": "Wucht X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Konzentration X",
-        "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
+        "desc": "Jede Aktion auf der Hand wird zu einer zufälligen Aktion mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
       "remontee": {
         "label": "Aufschwung",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Vorzaubern X",
-        "desc": "Der erste Zauber von oben in deinem Deck kostet dauerhaft X Mana weniger (mindestens 1)."
+        "desc": "Die oberste Aktion Ihres Decks kostet dauerhaft X Mana weniger (mindestens 1)."
       },
       "conferer": {
         "label": "Verleihen",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Entfesselung X/Y",
-        "desc": "Wirkt X zufällige Zauber mit Kosten Y aus deiner Sammlung ({alignment}), mit zufälligen Zielen."
+        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen."
       },
       "force_des_ancetres": {
         "label": "Kraft der Ahnen +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Todesberührung",
-        "desc": "Jede Kreatur, die von diesem Zauber verwundet wird, stirbt, unabhängig von ihren LP."
+        "desc": "Jede von dieser Aktion verwundete Kreatur stirbt, unabhängig von ihren LP."
       },
       "precision": {
         "label": "Präzision",
-        "desc": "Der Schaden dieses Zaubers ignoriert Resistenz, Rüstung und Schild."
+        "desc": "Der Schaden dieser Aktion ignoriert Resistenz, Rüstung und Schild."
       },
       "poison": {
         "label": "Gift",
@@ -549,7 +549,7 @@
       },
       "contresort": {
         "label": "Gegenzauber X",
-        "desc": "Annulliert die nächsten X gegnerischen Zauber."
+        "desc": "Annulliert die nächsten X gegnerischen Aktionen."
       },
       "exclusion": {
         "label": "Ausschluss X",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Zornschwelle X",
-        "desc": "Wenn dein Deck 25 Karten oder weniger enthält, verursacht dieser Zauber X zusätzlichen Schaden."
+        "desc": "Wenn Ihr Deck 25 Karten oder weniger enthält, fügt diese Aktion X zusätzlichen Schaden zu."
       },
       "chant": {
         "label": "Gesang X",
-        "desc": "Wenn du eine Kreatur mit Gesang kontrollierst, werden alle Werte dieses Zauberspruchs um X erhöht."
+        "desc": "Wenn Sie eine Kreatur mit Gesang kontrollieren, werden alle Werte dieser Aktion um X erhöht."
       },
       "lune": {
         "label": "Mond X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Zauber {alignment} mit Kosten X auf; fügt einen davon zur Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu"
+      },
+      "tresor": {
+        "label": "Schatz X",
+        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu"
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
         "desc": "Deckt 3 eurer limitierten Editionen mit Kosten X auf (≥30 erforderlich; sonst 3 gewöhnliche Karten {alignment}); behaltet eine davon"
       },
-      "tresor": {
-        "label": "Schatz X",
-        "desc": "Decke 3 gewöhnliche {alignment} oder neutrale Gegenstände mit Kosten X auf; nimm einen auf die Hand"
-      },
       "relancer": {
         "label": "Wiederholen X",
-        "desc": "Spielt die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
+        "desc": "Spielt die letzten X gespielten Aktionen erneut, mit zufälligen Zielen"
       },
       "dechainement": {
         "label": "Entfesselung X/Y",
-        "desc": "Wirkt X zufällige Zauber mit Kosten Y aus deiner Sammlung ({alignment}), mit zufälligen Zielen."
+        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen."
       },
       "invocation": {
         "label": "Beschwörung X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Bumerang",
-        "desc": "Nach seiner Auflösung wird dieser Zauber in dein Deck gemischt, anstatt auf den Friedhof zu gehen."
+        "desc": "Nach ihrer Auflösung wird diese Aktion in Ihr Deck gemischt, anstatt auf den Friedhof zu gehen."
       },
       "siphon": {
         "label": "Siphon X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Disziplin +X/+Y",
-        "desc": "Wenn alle deine im Spiel befindlichen Kreaturen Kosten derselben Parität wie dieser Zauber haben, erhält eine gezielte verbündete Kreatur +X/+Y."
+        "desc": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, erhält eine anvisierte verbündete Kreatur +X/+Y."
       },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Zweites Leben X",
-        "desc": "Kann für X Mana aus eurem Friedhof gewirkt werden. Verliert dabei Zweites Leben."
+        "desc": "Kann für X Mana aus Ihrem Friedhof gespielt werden. Danach verliert sie Zweites Leben."
       },
       "incineration": {
         "label": "Einäscherung X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Vorzaubern X",
-        "desc": "Der erste Zauber von oben in deinem Deck kostet dauerhaft X Mana weniger (mindestens 1)."
+        "desc": "Die oberste Aktion Ihres Decks kostet dauerhaft X Mana weniger (mindestens 1)."
       },
       "concentration": {
         "label": "Konzentration X",
-        "desc": "Jeder Zauber auf der Hand wird zu einem zufälligen Zauber mit Kosten +X, reduziert um X (alle Fraktionen)."
+        "desc": "Jede Aktion auf der Hand wird zu einer zufälligen Aktion mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
       "invocations_multiples": {
         "label": "Mehrfachbeschwörungen",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Schmerz X",
-        "desc": "Beim Wirken erleidet dein Held X Schaden."
+        "desc": "Wenn diese Aktion gespielt wird, fügt sie Ihrem Helden X Schaden zu."
       },
       "afflux": {
         "label": "Zufluss X",
@@ -810,7 +810,7 @@
         "random_range": "1 bis {max}",
         "random_range_from": "{min} bis {max}",
         "appel": "bringt die 1. Einheit deines Decks mit Kosten ≤ {x} ins Spiel",
-        "appel_item": "bringt den ersten Gegenstand deines Decks mit Kosten ≤ {x} ins Spiel",
+        "appel_item": "bringt das 1. Objekt Ihres Decks mit Kosten ≤ {x} ins Spiel",
         "ability_generic": "eine Fähigkeit",
         "draw_cards_one": "zieht {x} Karte",
         "draw_cards_many": "zieht {x} Karten",
@@ -829,13 +829,13 @@
         "rappel_cost": " (Kosten ≤ {max})",
         "rappel_one_any": "eine Karte",
         "rappel_one_creature": "eine Einheit",
-        "rappel_one_spell": "einen Zauber",
+        "rappel_one_spell": "eine Aktion",
         "rappel_all_any": "alle Karten",
         "rappel_all_creature": "alle Einheiten",
-        "rappel_all_spell": "alle Zauber",
+        "rappel_all_spell": "alle Aktionen",
         "rappel_upto_any": "bis zu {n} Karten",
         "rappel_upto_creature": "bis zu {n} Einheiten",
-        "rappel_upto_spell": "bis zu {n} Zauber",
+        "rappel_upto_spell": "bis zu {n} Aktionen",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "invocation_card": "beschwört die bestimmte Karte",
         "invocation_cards": "beschwört die {n} bestimmten Karten",
@@ -854,16 +854,16 @@
         "alternative": "Wahlweise: ",
         "devoration": "verschlingt",
         "silence": "bringt zum Schweigen",
-        "dechainement": "wirkt {x} zufällige Zauber mit Kosten {y}",
-        "dechainement_one": "wirkt einen zufälligen Zauber mit Kosten {y}",
+        "dechainement": "spielt {x} zufällige Aktionen mit Kosten {y}",
+        "dechainement_one": "spielt eine zufällige Aktion mit Kosten {y}",
         "tactique_one": "gibt zufällig eine ihrer permanenten Fähigkeiten weiter",
         "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
         "retour_differe": "legt unter das Deck ihres Besitzers",
         "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
         "faveur": "fügt eurer Hand eine zufällige Karte{filter} (Kosten {x}) hinzu",
-        "selection_magique": "deckt 3 Zauber{filter} auf (Kosten {x}) und behält einen davon auf der Hand",
+        "selection_magique": "deckt 3 Aktionen{filter} auf (Kosten {x}) und behält eine auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
-        "tresor": "deckt 3 Gegenstände{filter} (Kosten {x}) auf und nimmt einen auf die Hand"
+        "tresor": "deckt 3 Gegenstände{filter} auf (Kosten {x}) und behält einen auf der Hand"
       },
       "emblem": {
         "badge": "Emblem",
@@ -906,7 +906,7 @@
         "clan": " des Klans {v}",
         "keyword": " mit {v}",
         "type_creature": " vom Typ Einheit",
-        "type_spell": " vom Typ Zauber",
+        "type_spell": " vom Typ Aktion",
         "type_item": " vom Typ Gegenstand"
       },
       "self": {
@@ -1678,7 +1678,7 @@
         "start_of_turn": "am Rundenanfang",
         "draw": "beim Ziehen",
         "low_hp": "unter {n} LP",
-        "spell": "bei der Auflösung des Zaubers",
+        "spell": "bei der Auflösung der Aktion",
         "wound": "wenn sie verwundet wird, ohne zu sterben"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "Alle Seltenheiten",
     "all_types": "Alle Typen",
     "type_creature": "Kreatur",
-    "type_spell": "Zauber",
+    "type_spell": "Aktion",
     "no_auctions": "Keine Auktionen gefunden",
     "previous": "Zurück",
     "next": "Weiter",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "ZIELKARTEN",
     "card_kind_all": "Alle",
     "card_kind_creature": "Nur Einheiten",
-    "card_kind_spell": "Nur Zaubersprüche",
+    "card_kind_spell": "Nur Aktionen",
     "legacy_grants_heading": "Vererbte Boni (altes Format) — konvertiere sie, um den Gegner anvisieren zu können",
     "convert_to_composed": "Konvertieren",
     "effects_heading": "Karteneffekte",
-    "effects_subtitle": "alle Effekte des Zaubers in einer einzigen Liste",
+    "effects_subtitle": "alle Effekte der Aktion in einer einzigen Liste",
     "effect_kind_curated": "MECHANIK",
     "group_composed": "Konfigurierbare Effekte",
     "group_curated": "Besondere Mechaniken",
@@ -2064,17 +2064,17 @@
     "pool_hint_invocation": "Kumulative Filter. Ohne sie folgt der Pool der Ausrichtung der Karte; die beschworenen Kosten betragen EXAKT X.",
     "label_designated_card": "FESTGELEGTE KARTE",
     "designated_card_hint": "Legt eine oder mehrere Kreaturen fest: Sie werden genau so beschworen, in dieser Reihenfolge (dieselbe Karte kann mehrfach festgelegt werden). Ohne Festlegung erfolgt ein Zufallszug zu den Kosten X gemäß den Filtern.",
-    "tuteur_card_hint": "Legt eine oder mehrere Karten fest, Kreaturen oder Zaubersprüche: Sie kommen in dieser Reihenfolge in eure Hand. Dieselbe Karte kann mehrfach festgelegt werden (entsprechend viele Exemplare). Ohne Festlegung bewirkt der Effekt nichts.",
+    "tuteur_card_hint": "Wählt eine oder mehrere Karten, Kreaturen oder Aktionen aus: Sie kommen in dieser Reihenfolge auf eure Hand. Dieselbe Karte kann mehrfach ausgewählt werden (entsprechend viele Exemplare). Ohne Auswahl bewirkt der Effekt nichts.",
     "content_selection": "Auswahl (1 von 3)",
     "content_faveur": "Gunst (1 zufällige Karte → Hand)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
-    "content_tresor": "Schatz (1 Gegenstand aus 3)",
+    "content_tresor": "Schatz (1 Gegenstand von 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
     "label_pool_faction": "POOL — FRAKTION",
     "label_pool_keyword": "POOL — SCHLÜSSELWORT",
     "label_pool_card_type": "POOL — KARTENTYP",
     "pool_type_creature": "Einheiten",
-    "pool_type_spell": "Zauber",
+    "pool_type_spell": "Aktionen",
     "pool_type_item": "Gegenstände",
     "pool_any": "Beliebig",
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
     "topdeck_label": "RÜCKZUG",
-    "spell_effects_label": "ZAUBEREFFEKTE",
-    "spell_keywords_label": "ZAUBERSCHLÜSSELWÖRTER",
+    "spell_effects_label": "EFFEKTE DER AKTION",
+    "spell_keywords_label": "AKTIONS-SCHLÜSSELWÖRTER",
     "token_to_summon": "ZU BESCHWÖRENDER TOKEN",
     "config_below_tokens": "Konfig. unter „Zu beschwörende Tokens\" unten",
     "targeted_race_clan": "GEZIELTE RASSE / KLAN",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Erforderlich",
     "atk_is_x": "(+ATK = Wert X)",
     "neg_atk_is_x": "(-ATK = Wert X)",
-    "spell_cost_y": "ZAUBERKOSTEN (Y)",
-    "spell_count_is_x": "(die Anzahl der Zauber = Wert X)",
+    "spell_cost_y": "AKTIONSKOSTEN (Y)",
+    "spell_count_is_x": "(Anzahl der Aktionen = Wert X)",
     "fda_condition": "(solange ≥7 Kreaturen im Friedhof)",
     "choose_ability": "-- Fähigkeit wählen --",
     "scope_one_ally": "1 gezielter Verbündeter",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "Englischer Prompt für die Bildgenerierung…",
     "trigger_tap_activation": "Bei Aktivierung (Tap)",
     "trigger_automatic": "Automatisch (passiv/bedingt)",
-    "trigger_spell_resolution_full": "Bei der Zauberauflösung",
+    "trigger_spell_resolution_full": "Bei der Auflösung der Aktion",
     "container_label": "Behälter:",
     "derived_from_type": "(aus Kartentyp abgeleitet)",
     "no_ability_add_below": "Keine Fähigkeit. Füge unten eine hinzu.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "Alle verbündeten Einheiten",
     "one_allied_unit": "1 verbündete Einheit",
     "add_effect": "+ Effekt:",
-    "spell_effect_dash": "-- Zaubereffekt --",
+    "spell_effect_dash": "-- Effekt der Aktion --",
     "add_confer": "+ Verleihen:",
     "ability_to_confer_dash": "-- zu verleihende Fähigkeit --",
     "save": "Speichern",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "FÄHIGKEITSSYMBOL GENERIEREN",
     "parameters": "PARAMETER",
     "ability_label": "FÄHIGKEIT",
-    "ability_polymorph": "🔀 Polymorphe Fähigkeit – das Symbol wird für die Kreatur UND den Zauber gespeichert.",
+    "ability_polymorph": "🔀 Polymorphe Fähigkeit — das Symbol wird sowohl für die Kreatur als auch für die Aktion gespeichert.",
     "ability_creature": "👤 Kreaturenfähigkeit.",
-    "ability_spell": "🪄 Zauberfähigkeit.",
-    "ability_legend": "👤 Kreatur · 🪄 Zauber · 🔀 geteilt",
+    "ability_spell": "🪄 Aktionsfähigkeit.",
+    "ability_legend": "👤 Kreatur · 🪄 Aktion · 🔀 geteilt",
     "icon_name_label": "SYMBOLNAME",
     "icon_name_placeholder": "z. B.: Schild v2",
     "style_label": "STIL",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Lykanthropie X: Wähle einen Verwandlungstoken aus, bevor du speicherst.",
     "validation_entraide": "Zusammenhalt (Rasse): Wähle die Zielrasse aus, bevor du speicherst.",
     "validation_appel_supreme": "Höchster Ruf: Wähle die Zielrasse aus, bevor du speicherst.",
-    "validation_multi_convocation_spell": "Mehrfachbeschwörung (Zauber): Füge mindestens einen Token zur Liste hinzu, bevor du speicherst.",
-    "validation_convocation_spell": "Beschwörung (Zauber): Wähle einen Token im Picker aus, bevor du speicherst.",
+    "validation_multi_convocation_spell": "Mehrfachbeschwörungen (Aktion): Fügt mindestens ein Token zur Liste hinzu, bevor ihr speichert.",
+    "validation_convocation_spell": "Beschwörung (Aktion): Wählt ein Token im Picker aus, bevor ihr speichert.",
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
@@ -2481,7 +2481,7 @@
     "alternative_warn_alone": "nur ein Zweig markiert: Der Effekt wird normal ausgeführt",
     "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
-    "random_min_hint": "Mindestkosten (A): jede Kostenstufe wird zwischen {min} und {max} gezogen.",
+    "random_min_hint": "Mindestkosten (A): Jede Kostenhöhe wird zwischen {min} und {max} ausgewürfelt.",
     "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",
     "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
     "content_silence": "Stille (nimmt dem Ziel alles)",
-    "content_dechainement": "Entfesselung X/Y (zufällige Zauber)",
-    "content_selection_magique": "Magische Auswahl (1 Zauber von 3)"
+    "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
+    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2567,8 +2567,8 @@
     "history_title": "Letzte Aktionen",
     "history_hero_friendly": "euer Held",
     "history_hero_enemy": "der gegnerische Held",
-    "history_spell": "{source} gewirkt",
-    "history_spell_on": "{source} gewirkt auf {target}",
+    "history_spell": "Aktion gespielt: {source}",
+    "history_spell_on": "Aktion gespielt: {source} (Ziel: {target})",
     "history_spell_countered": "{source} gekontert",
     "history_attack": "{source} greift {target} an",
     "history_attack_alone": "{source} greift an",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Richtig erkannt — sie wandert in Ihre Hand.",
     "presage_miss": "Daneben. Die richtige Karte ist grün markiert.",
     "apprentissage_title": "📖 Lehre",
-    "apprentissage_subtitle": "Welchen Zauber soll die Kreatur sich merken?",
+    "apprentissage_subtitle": "Welche Aktion soll sich die Kreatur einprägen?",
     "foi_title": "✨ Glaube",
     "foi_subtitle": "Wähle eine Karte für deine Hand. Ihre Kosten werden von deinem Glauben abgezogen; der Rest bleibt erhalten.",
     "conquete_title": "🚩 Eroberung",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "Nicht genug Karten auf der Hand für die zusätzlichen Kosten.",
     "eveil_blocked_plateau": "Nicht genug Kreaturen zum Opfern.",
     "eveil_blocked_deck": "Nicht genug Karten in Ihrem Deck zum Verbannen.",
-    "eveil_blocked_sans_cible": "Kein gültiges Ziel für diesen Zauber.",
+    "eveil_blocked_sans_cible": "Kein gültiges Ziel für diese Aktion.",
     "eveil_suspend": "Erwachen lassen ({count, plural, one {# Punkt} other {# Punkte}})",
     "eveil_pay_n": "{count, plural, one {# zahlen} other {# zahlen}}",
     "eveil_max": "max {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "Zu Beginn jeder deiner Runden, der Reihe nach:",
     "hand_title": "Hand und Nachziehen",
     "creatures_title": "Die Kreaturen",
-    "spells_title": "Die Zauber",
+    "spells_title": "Die Aktionen",
     "combat_title": "Der Kampf",
     "combat_see_full_list": "Die vollständige Fähigkeitenliste befindet sich am Seitenende.",
     "hero_title": "Der Held und seine Fähigkeit",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Spielablauf (A&M-Besonderheiten)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Kampf — Abwicklung",
-    "tcg_hero_spells_title": "Held & Zauber",
+    "tcg_hero_spells_title": "Helden & Aktionen",
     "lexicon_eyebrow": "Das Kampflexikon",
     "lexicon_subtitle": "Vollständige Referenz, stets aktuell mit dem Spiel. „X\" und „Y\" sind Werte, die auf jeder Karte festgelegt sind.",
     "lexicon_title": "Alle Fähigkeiten",
     "search_placeholder": "Fähigkeit suchen…",
     "creature_abilities_group": "Kreaturfähigkeiten ({count})",
-    "spell_abilities_group": "Zauberfähigkeiten ({count})",
+    "spell_abilities_group": "Aktionsfähigkeiten ({count})",
     "no_ability_match": "Keine Fähigkeit entspricht „{query}\"."
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "Max. {max} Söldner (aktuell {current})",
     "max_capability_current": "Max. {max} Fähigkeiten „{label}\" (aktuell {count})",
     "card_not_owned": "Karte nicht im Besitz",
-    "no_items_in_deck": "Gegenstände kommen nicht ins Deck: Man findet sie im Spiel.",
-    "no_items_in_deck_current": "Dieses Deck enthält {count, plural, one {# Gegenstand} other {# Gegenstände}}: Entferne sie, Gegenstände gehören nicht mehr ins Deck.",
+    "no_items_in_deck": "Gegenstände gehören nicht ins Deck: Man findet sie im Spiel.",
+    "no_items_in_deck_current": "Dieses Deck enthält {count, plural, one {# Gegenstand} other {# Gegenstände}}: Entfernt sie, Gegenstände gehören nicht mehr ins Deck.",
     "deck_full": "Deck voll",
     "singleton_yes": "Singulär-Deck ✓",
     "singleton_no": "Singleton-Deck ✗",
@@ -2724,8 +2724,8 @@
     "choose_faction_first_tab": "Wähle zuerst eine Fraktion im Tab 1 · Vorbereitung.",
     "search_placeholder": "Suchen...",
     "creatures": "Kreaturen",
-    "spells": "Zauber",
-    "items": "Gegenstände",
+    "spells": "Aktionen",
+    "items": "Objekte",
     "all_capabilities": "Fähigkeiten",
     "all_races": "Rassen",
     "all_clans": "Clans",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
     "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
     "unplayable_badge": "{count} fehlende Karte(n)",
-    "items_badge": "Enthält {count, plural, one {# Gegenstand} other {# Gegenstände}} — entfernen",
+    "items_badge": "Enthält {count, plural, one {# Objekt} other {# Objekte}} — zu entfernen",
     "unplayable_reason": "Dieses Deck enthält Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unverändert – hol dir die Fraktion zurück, um es wieder zu spielen.",
     "unplayable_rebuy": "Im Shop zurückholen"
   },

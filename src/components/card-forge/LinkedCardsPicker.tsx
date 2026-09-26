@@ -104,7 +104,7 @@ export default function LinkedCardsPicker({
   }, [catalog, search, creaturesOnly]);
 
   const cardLabel = (c: PickableCard) => {
-    const stats = c.card_type === "creature" ? ` ${c.attack ?? 0}/${c.health ?? 0}` : " (sort)";
+    const stats = c.card_type === "creature" ? ` ${c.attack ?? 0}/${c.health ?? 0}` : " (action)";
     const fac = c.faction ? ` · ${getFactionDisplayName(c.faction)}` : "";
     return `${c.name} — ${c.mana_cost}💧${stats}${fac}`;
   };

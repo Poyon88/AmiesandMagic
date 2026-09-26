@@ -148,11 +148,11 @@ describe("Ce que les cartes annoncent", () => {
     }))).toBe("Réduit au silence toutes les unités ennemies.");
 
     expect(describeComposedCap(capDe({ content: "dechainement", magnitude: { x: 2, y: 3 } })))
-      .toBe("Lance 2 sorts aléatoires de coût 3.");
+      .toBe("Joue 2 actions aléatoires de coût 3.");
 
     // « ? » sur Y : le coût devient un plafond, le texte doit le dire.
     expect(describeComposedCap(capDe({ content: "dechainement", magnitude: { x: 2, y: 4, randomY: true } })))
-      .toBe("Lance 2 sorts aléatoires de coût 1 à 4.");
+      .toBe("Joue 2 actions aléatoires de coût 1 à 4.");
 
     // Couple NEUTRE peint « 2/3 », jamais « +2/+3 ».
     expect(composedValueText(capDe({ content: "dechainement", magnitude: { x: 2, y: 3 } }))).toBe("2/3");

@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Cântico",
-        "desc": "Seus feitiços com Canto são fortalecidos enquanto esta unidade estiver em jogo."
+        "desc": "Suas ações com Cântico são reforçadas enquanto esta unidade estiver em jogo."
       },
       "lune": {
         "label": "Lua X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Armadura",
-        "desc": "Reduz à metade o dano de combate recebido (arredondado para cima); dano de magias não é reduzido."
+        "desc": "Reduz pela metade o dano de combate recebido (arredondado para cima); o dano de ações não é reduzido."
       },
       "commandement": {
         "label": "Comando X",
@@ -135,19 +135,19 @@
       },
       "invisible": {
         "label": "Invisível",
-        "desc": "Não pode ser alvo de magias nem de habilidades de unidades adversárias."
+        "desc": "Não pode ser alvo de ações nem de habilidades de unidades inimigas."
       },
       "canalisation": {
         "label": "Canalização",
-        "desc": "Enquanto esta unidade estiver em jogo, suas magias custam 1 mana a menos (mínimo 1)."
+        "desc": "Enquanto esta unidade estiver em jogo, suas ações custam 1 mana a menos (mínimo 1)."
       },
       "contresort": {
         "label": "Contramagia X",
-        "desc": "Anula os próximos X feitiços inimigos."
+        "desc": "Anula as próximas X ações do adversário."
       },
       "exclusion": {
         "label": "Exclusão X",
-        "desc": "Anula as próximas X invocações de unidades inimigas."
+        "desc": "Anula as próximas X invocações de unidades do adversário."
       },
       "convocation": {
         "label": "Convocação X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Sábio",
-        "desc": "Ganha +1 ATK e +1 PV por feitiço no seu cemitério."
+        "desc": "Ganha +1 ATQ e +1 PV por ação em seu cemitério."
       },
       "liaison_de_vie": {
         "label": "Vínculo de vida",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Transcendência",
-        "desc": "Imunidade total a magias adversárias: não pode sofrer dano nem efeito de magia, incluindo magias de área."
+        "desc": "Imunidade total a ações do adversário: não pode sofrer nenhum dano nem efeito de ação, incluindo ações em área."
       },
       "vampirisme": {
         "label": "Vampirismo X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Seleção Mágica X",
-        "desc": "Revela 3 feitiços comuns {alignment} de custo X; adicione um à mão."
+        "desc": "Revela 3 ações comuns {alignment} de custo X; adicione uma à sua mão."
       },
       "renfort_royal": {
         "label": "Seleção Real X",
@@ -379,7 +379,7 @@
       },
       "tresor": {
         "label": "Tesouro X",
-        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à mão."
+        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à sua mão."
       },
       "lycanthropie": {
         "label": "Licantropia X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Relançar X",
-        "desc": "Relança os últimos X feitiços lançados com alvos aleatórios."
+        "desc": "Rejoga as últimas X ações jogadas com alvos aleatórios."
       },
       "tempete": {
         "label": "Tempestade X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Aprendizado",
-        "desc": "Retira uma magia da sua mão e a memoriza: a criatura pode lançá-la pagando seus custos."
+        "desc": "Remove uma ação da sua mão e a memoriza: a criatura pode jogá-la pagando seus custos."
       },
       "impact": {
         "label": "Impacto X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Concentração X",
-        "desc": "Cada feitiço na mão se torna um feitiço aleatório de custo +X, reduzido em X (todas as facções)."
+        "desc": "Cada ação na mão se torna uma ação aleatória de custo +X, reduzida em X (todas as facções)."
       },
       "remontee": {
         "label": "Reviravolta",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Pré-encantar X",
-        "desc": "O primeiro feitiço do topo do seu baralho custa X de mana a menos (mínimo 1), permanentemente."
+        "desc": "A primeira ação do seu deck, a partir do topo, custa X mana a menos (mínimo 1), permanentemente."
       },
       "conferer": {
         "label": "Conferir",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Desencadeamento X/Y",
-        "desc": "Lança X feitiços aleatórios de custo Y da tua coleção ({alignment}), com alvos aleatórios."
+        "desc": "Joga X ações aleatórias de custo Y da sua coleção ({alignment}), com alvos aleatórios."
       },
       "force_des_ancetres": {
         "label": "Força dos ancestrais +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Toque Mortal",
-        "desc": "Toda criatura ferida por esta magia morre, independentemente de seus PV."
+        "desc": "Qualquer criatura ferida por esta ação morre, independentemente dos PV."
       },
       "precision": {
         "label": "Precisão",
-        "desc": "Os danos deste feitiço ignoram a Resistência, a Armadura e o Escudo."
+        "desc": "O dano desta ação ignora Resistência, Armadura e Escudo."
       },
       "poison": {
         "label": "Veneno",
@@ -549,11 +549,11 @@
       },
       "contresort": {
         "label": "Contramagia X",
-        "desc": "Anula os próximos X feitiços inimigos."
+        "desc": "Anula as próximas X ações do adversário."
       },
       "exclusion": {
         "label": "Exclusão X",
-        "desc": "Anula as próximas X invocações de unidades inimigas."
+        "desc": "Anula as próximas X invocações de unidades do adversário."
       },
       "convocation_simple": {
         "label": "Convocação",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Limiar de ira X",
-        "desc": "Se o teu baralho tiver 25 cartas ou menos, este feitiço causa X de dano adicional."
+        "desc": "Se o seu deck tiver 25 cartas ou menos, esta ação causa X de dano adicional."
       },
       "chant": {
         "label": "Canto X",
-        "desc": "Se você controlar uma criatura com Cântico, todos os valores desta magia são aumentados em X."
+        "desc": "Se você controla uma criatura com Cântico, todos os valores desta ação são aumentados em X."
       },
       "lune": {
         "label": "Lua X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Seleção Mágica X",
-        "desc": "Revela 3 feitiços comuns {alignment} de custo X; adicione um à mão"
+        "desc": "Revela 3 ações comuns {alignment} de custo X; adicione uma à sua mão"
+      },
+      "tresor": {
+        "label": "Tesouro X",
+        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à sua mão"
       },
       "renfort_royal": {
         "label": "Seleção Real X",
         "desc": "Revela 3 das suas edições limitadas de custo X (≥30 necessárias; caso contrário, 3 comuns {alignment}); fique com uma"
       },
-      "tresor": {
-        "label": "Tesouro X",
-        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à mão"
-      },
       "relancer": {
         "label": "Relançar X",
-        "desc": "Relança os X últimos feitiços conjurados com alvos aleatórios"
+        "desc": "Rejoga as últimas X ações jogadas com alvos aleatórios"
       },
       "dechainement": {
         "label": "Desencadeamento X/Y",
-        "desc": "Lança X feitiços aleatórios de custo Y da tua coleção ({alignment}), com alvos aleatórios."
+        "desc": "Joga X ações aleatórias de custo Y da sua coleção ({alignment}), com alvos aleatórios."
       },
       "invocation": {
         "label": "Invocação X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Bumerangue",
-        "desc": "Após sua resolução, esta magia é embaralhada no seu deck em vez de ir para o cemitério."
+        "desc": "Após sua resolução, esta ação é misturada ao seu deck em vez de ir para o cemitério."
       },
       "siphon": {
         "label": "Sifão X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Se todas as suas criaturas em jogo tiverem um custo da mesma paridade que o desta magia, +X/+Y a uma criatura aliada escolhida."
+        "desc": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o desta ação, +X/+Y para uma criatura aliada alvo."
       },
       "affaiblissement": {
         "label": "Enfraquecimento -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Segunda vida X",
-        "desc": "Pode ser lançado do seu cemitério por X de mana. Ele perde então Segunda vida."
+        "desc": "Pode ser jogada do seu cemitério por X mana. Ela então perde Segunda Vida."
       },
       "incineration": {
         "label": "Incineração X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Pré-encantar X",
-        "desc": "O primeiro feitiço do topo do seu baralho custa X de mana a menos (mínimo 1), permanentemente."
+        "desc": "A primeira ação do seu deck, a partir do topo, custa X mana a menos (mínimo 1), permanentemente."
       },
       "concentration": {
         "label": "Concentração X",
-        "desc": "Cada feitiço na mão se torna um feitiço aleatório de custo +X, reduzido em X (todas as facções)."
+        "desc": "Cada ação na mão se torna uma ação aleatória de custo +X, reduzida em X (todas as facções)."
       },
       "invocations_multiples": {
         "label": "Invocações múltiplas",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Dor X",
-        "desc": "Ao lançar, causa X de dano ao seu herói."
+        "desc": "Quando esta ação é jogada, causa X de dano ao seu herói."
       },
       "afflux": {
         "label": "Afluxo X",
@@ -810,7 +810,7 @@
         "random_range": "1 a {max}",
         "random_range_from": "{min} a {max}",
         "appel": "coloca em jogo a 1ª unidade do seu deck de custo ≤ {x}",
-        "appel_item": "coloca em jogo o primeiro objeto do seu baralho de custo ≤ {x}",
+        "appel_item": "coloca em jogo o 1º objeto do seu deck de custo ≤ {x}",
         "ability_generic": "uma habilidade",
         "draw_cards_one": "compre {x} carta",
         "draw_cards_many": "compre {x} cartas",
@@ -829,13 +829,13 @@
         "rappel_cost": " (custo ≤ {max})",
         "rappel_one_any": "uma carta",
         "rappel_one_creature": "uma unidade",
-        "rappel_one_spell": "um feitiço",
+        "rappel_one_spell": "uma ação",
         "rappel_all_any": "todas as cartas",
         "rappel_all_creature": "todas as unidades",
-        "rappel_all_spell": "todos os feitiços",
+        "rappel_all_spell": "todas as ações",
         "rappel_upto_any": "até {n} cartas",
         "rappel_upto_creature": "até {n} unidades",
-        "rappel_upto_spell": "até {n} feitiços",
+        "rappel_upto_spell": "até {n} ações",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "invocation_card": "invoca a carta indicada",
         "invocation_cards": "invoca as {n} cartas indicadas",
@@ -854,16 +854,16 @@
         "alternative": "À escolha: ",
         "devoration": "devora",
         "silence": "silencia",
-        "dechainement": "lança {x} feitiços aleatórios de custo {y}",
-        "dechainement_one": "lança um feitiço aleatório de custo {y}",
+        "dechainement": "joga {x} ações aleatórias de custo {y}",
+        "dechainement_one": "joga uma ação aleatória de custo {y}",
         "tactique_one": "transmite ao acaso uma das suas habilidades permanentes",
         "tactique_many": "transmite ao acaso {x} das suas habilidades permanentes",
         "retour_differe": "coloca debaixo do deck de seu dono",
         "selection": "revela 3 cartas{filter} (custo {x}) e mantém uma na mão",
         "faveur": "adiciona à mão uma carta{filter} (custo {x}) aleatória",
-        "selection_magique": "revela 3 feitiços{filter} (custo {x}) e mantém um na mão",
+        "selection_magique": "revela 3 ações{filter} (custo {x}) e mantém uma na mão",
         "renfort_royal": "revela 3 cartas de coleção{filter} (custo {x}) e mantém uma na mão",
-        "tresor": "revela 3 objetos{filter} (custo {x}) e fica com um na mão"
+        "tresor": "revela 3 objetos{filter} (custo {x}) e mantém um na mão"
       },
       "emblem": {
         "badge": "Emblema",
@@ -906,7 +906,7 @@
         "clan": " do clã {v}",
         "keyword": " portando {v}",
         "type_creature": " do tipo unidade",
-        "type_spell": " do tipo feitiço",
+        "type_spell": " do tipo ação",
         "type_item": " do tipo objeto"
       },
       "self": {
@@ -1678,7 +1678,7 @@
         "start_of_turn": "no início do turno",
         "draw": "à compra",
         "low_hp": "abaixo de {n} PV",
-        "spell": "à resolução da magia",
+        "spell": "na resolução da ação",
         "wound": "quando ela é ferida sem morrer"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "Todas as raridades",
     "all_types": "Todos os tipos",
     "type_creature": "Criatura",
-    "type_spell": "Feitiço",
+    "type_spell": "Ação",
     "no_auctions": "Nenhum leilão encontrado",
     "previous": "Anterior",
     "next": "Seguinte",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "CARTAS ALVO",
     "card_kind_all": "Todas",
     "card_kind_creature": "Apenas unidades",
-    "card_kind_spell": "Apenas feitiços",
+    "card_kind_spell": "Apenas ações",
     "legacy_grants_heading": "Dons herdados (formato antigo) — converta-os para poder visar o adversário",
     "convert_to_composed": "Converter",
     "effects_heading": "Efeitos da carta",
-    "effects_subtitle": "todos os efeitos do feitiço, numa única lista",
+    "effects_subtitle": "todos os efeitos da ação, em uma única lista",
     "effect_kind_curated": "MECÂNICA",
     "group_composed": "Efeitos configuráveis",
     "group_curated": "Mecânicas específicas",
@@ -2064,7 +2064,7 @@
     "pool_hint_invocation": "Filtros cumulativos. Sem eles, o pool segue o alinhamento da carta; o custo invocado é EXATAMENTE X.",
     "label_designated_card": "CARTA DESIGNADA",
     "designated_card_hint": "Designe uma ou mais criaturas: elas são invocadas tal como estão, nessa ordem (a mesma carta pode ser designada várias vezes). Sem designação, é feito um sorteio aleatório ao custo X segundo os filtros.",
-    "tuteur_card_hint": "Designe uma ou mais cartas, criaturas ou feitiços: elas vão para a sua mão nessa ordem. A mesma carta pode ser designada várias vezes (tantas cópias quantas forem necessárias). Sem designação, o efeito não faz nada.",
+    "tuteur_card_hint": "Designe uma ou mais cartas, criaturas ou ações: elas entram na sua mão nessa ordem. A mesma carta pode ser designada várias vezes (o mesmo número de cópias). Sem designação, o efeito não faz nada.",
     "content_selection": "Seleção (1 de 3)",
     "content_faveur": "Favor (1 carta aleatória → mão)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
@@ -2074,7 +2074,7 @@
     "label_pool_keyword": "POOL — PALAVRA-CHAVE",
     "label_pool_card_type": "POOL — TIPO DE CARTA",
     "pool_type_creature": "Unidades",
-    "pool_type_spell": "Feitiços",
+    "pool_type_spell": "Ações",
     "pool_type_item": "Objetos",
     "pool_any": "Indiferente",
     "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "SACRIFÍCIO",
     "exile_label": "EXÍLIO",
     "topdeck_label": "RECOLOCAÇÃO",
-    "spell_effects_label": "EFEITOS DO FEITIÇO",
-    "spell_keywords_label": "PALAVRAS-CHAVE DE FEITIÇO",
+    "spell_effects_label": "EFEITOS DA AÇÃO",
+    "spell_keywords_label": "PALAVRAS-CHAVE DE AÇÃO",
     "token_to_summon": "TOKEN A INVOCAR",
     "config_below_tokens": "Config em «Tokens a invocar» abaixo",
     "targeted_race_clan": "RAÇA / CLÃ ALVO",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Obrigatória",
     "atk_is_x": "(o +ATK = o valor X)",
     "neg_atk_is_x": "(o -ATK = o valor X)",
-    "spell_cost_y": "CUSTO DOS FEITIÇOS (Y)",
-    "spell_count_is_x": "(o número de feitiços = o valor X)",
+    "spell_cost_y": "CUSTO DAS AÇÕES (Y)",
+    "spell_count_is_x": "(o número de ações = o valor X)",
     "fda_condition": "(enquanto ≥7 criaturas no cemitério)",
     "choose_ability": "-- Escolher uma habilidade --",
     "scope_one_ally": "1 aliado-alvo",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "Prompt em inglês para geração de imagem…",
     "trigger_tap_activation": "Na ativação (tap)",
     "trigger_automatic": "Automático (passivo/condicional)",
-    "trigger_spell_resolution_full": "Na resolução do feitiço",
+    "trigger_spell_resolution_full": "Na resolução da ação",
     "container_label": "Contêiner :",
     "derived_from_type": "(deduzido do tipo de carta)",
     "no_ability_add_below": "Nenhuma habilidade. Adicione uma abaixo.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "Todas as unidades aliadas",
     "one_allied_unit": "1 unidade aliada",
     "add_effect": "+ Efeito :",
-    "spell_effect_dash": "-- efeito do feitiço --",
+    "spell_effect_dash": "-- efeito da ação --",
     "add_confer": "+ Conferir :",
     "ability_to_confer_dash": "-- habilidade a conferir --",
     "save": "Salvar",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "GERAR UM ÍCONE DE HABILIDADE",
     "parameters": "PARÂMETROS",
     "ability_label": "HABILIDADE",
-    "ability_polymorph": "🔀 Habilidade polimórfica — o ícone será guardado para a criatura E para o feitiço.",
+    "ability_polymorph": "🔀 Habilidade polimorfa — o ícone será salvo para a criatura E a ação.",
     "ability_creature": "👤 Habilidade de criatura.",
-    "ability_spell": "🪄 Habilidade de feitiço.",
-    "ability_legend": "👤 criatura · 🪄 feitiço · 🔀 partilhada",
+    "ability_spell": "🪄 Habilidade de ação.",
+    "ability_legend": "👤 criatura · 🪄 ação · 🔀 compartilhada",
     "icon_name_label": "NOME DO ÍCONE",
     "icon_name_placeholder": "Ex: Escudo v2",
     "style_label": "ESTILO",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Licantropria X: selecione um token de transformação antes de salvar.",
     "validation_entraide": "Entreajuda (Raça): selecione a raça alvo antes de salvar.",
     "validation_appel_supreme": "Chamado Supremo: selecione a raça alvo antes de salvar.",
-    "validation_multi_convocation_spell": "Convocações múltiplas (magia): adicione pelo menos um token na lista antes de salvar.",
-    "validation_convocation_spell": "Convocação (magia): selecione um token no seletor antes de salvar.",
+    "validation_multi_convocation_spell": "Convocações múltiplas (ação): adicione pelo menos um token na lista antes de salvar.",
+    "validation_convocation_spell": "Convocação (ação): selecione um token no seletor antes de salvar.",
     "card_added": "« {name} » adicionada!",
     "unknown_error": "Erro desconhecido",
     "illustration_generated": "Ilustração gerada ({model})",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Tática (partilha as suas habilidades permanentes)",
     "content_retour_differe": "Retorno adiado (sob o baralho)",
     "content_silence": "Silêncio (retira tudo ao alvo)",
-    "content_dechainement": "Desencadeamento X/Y (feitiços aleatórios)",
-    "content_selection_magique": "Seleção mágica (1 feitiço de 3)"
+    "content_dechainement": "Desencadeamento X/Y (ações aleatórias)",
+    "content_selection_magique": "Seleção mágica (1 ação entre 3)"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",
@@ -2567,8 +2567,8 @@
     "history_title": "Últimas ações",
     "history_hero_friendly": "seu herói",
     "history_hero_enemy": "o herói adversário",
-    "history_spell": "{source} lançado",
-    "history_spell_on": "{source} lançado em {target}",
+    "history_spell": "Ação jogada: {source}",
+    "history_spell_on": "Ação jogada: {source} (alvo: {target})",
     "history_spell_countered": "{source} anulado",
     "history_attack": "{source} ataca {target}",
     "history_attack_alone": "{source} ataca",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Bem visto — ela junta-se à sua mão.",
     "presage_miss": "Falhou. A carta certa está a verde.",
     "apprentissage_title": "📖 Aprendizagem",
-    "apprentissage_subtitle": "Que feitiço deve a criatura memorizar?",
+    "apprentissage_subtitle": "Qual ação a criatura deve memorizar?",
     "foi_title": "✨ Fé",
     "foi_subtitle": "Escolha uma carta para a sua mão. O seu custo é deduzido da sua Fé; o resto é conservado.",
     "conquete_title": "🚩 Conquista",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "Cartas insuficientes na mão para os seus custos adicionais.",
     "eveil_blocked_plateau": "Criaturas insuficientes para sacrificar.",
     "eveil_blocked_deck": "Cartas insuficientes para exilar no seu deck.",
-    "eveil_blocked_sans_cible": "Nenhum alvo válido para este feitiço.",
+    "eveil_blocked_sans_cible": "Nenhum alvo válido para esta ação.",
     "eveil_suspend": "Pôr em despertar ({count, plural, one {# ponto} other {# pontos}})",
     "eveil_pay_n": "{count, plural, one {Pagar #} other {Pagar #}}",
     "eveil_max": "máx {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "No início de cada um dos seus turnos, nesta ordem:",
     "hand_title": "A mão e o baralho",
     "creatures_title": "As criaturas",
-    "spells_title": "As magias",
+    "spells_title": "As ações",
     "combat_title": "O combate",
     "combat_see_full_list": "A lista completa de habilidades está no final da página.",
     "hero_title": "O herói e seu poder",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Loop de jogo (especificidades A&M)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combate — resolução",
-    "tcg_hero_spells_title": "Herói & magias",
+    "tcg_hero_spells_title": "Heróis & ações",
     "lexicon_eyebrow": "O léxico do combate",
     "lexicon_subtitle": "Referência completa, sempre atualizada com o jogo. «X» e «Y» são valores definidos em cada carta.",
     "lexicon_title": "Todas as habilidades",
     "search_placeholder": "Buscar uma habilidade…",
     "creature_abilities_group": "Habilidades de criatura ({count})",
-    "spell_abilities_group": "Habilidades de magia ({count})",
+    "spell_abilities_group": "Habilidades de ação ({count})",
     "no_ability_match": "Nenhuma habilidade corresponde a «{query}»."
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "Máx {max} Mercenários (atualmente {current})",
     "max_capability_current": "Máx {max} capacidades « {label} » (atualmente {count})",
     "card_not_owned": "Carta não possuída",
-    "no_items_in_deck": "Objetos não entram no baralho: são encontrados durante a partida.",
-    "no_items_in_deck_current": "Este baralho contém {count, plural, one {# objeto} other {# objetos}}: remova-os, objetos não entram mais no baralho.",
+    "no_items_in_deck": "Objetos não entram em um deck: eles são encontrados em jogo.",
+    "no_items_in_deck_current": "Este deck contém {count, plural, one {# objeto} other {# objetos}}: remova-os, objetos não entram mais em um deck.",
     "deck_full": "Deck cheio",
     "singleton_yes": "Deck singular ✓",
     "singleton_no": "Deck Singular ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "Escolha primeiro uma facção na aba 1 · Preparação.",
     "search_placeholder": "Pesquisar...",
     "creatures": "Criaturas",
-    "spells": "Feitiços",
+    "spells": "Ações",
     "items": "Objetos",
     "all_capabilities": "Capacidades",
     "all_races": "Raças",
@@ -2818,7 +2818,7 @@
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
     "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
     "unplayable_badge": "{count} carta(s) faltando",
-    "items_badge": "Contém {count, plural, one {# objeto} other {# objetos}} — remover",
+    "items_badge": "Contém {count, plural, one {# objeto} other {# objetos}} — a remover",
     "unplayable_reason": "Este deck contém cartas de facção(ões) que você não possui mais: {factions}. Ele permanece intacto — recupere a facção para jogá-lo novamente.",
     "unplayable_rebuy": "Resgatar na loja"
   },

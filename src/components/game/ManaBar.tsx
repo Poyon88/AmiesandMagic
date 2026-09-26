@@ -123,8 +123,8 @@ export default function ManaBar({
           data-contresort-badge={side}
           aria-label={`Contresort armé : ${contresort}`}
           title={(contresort ?? 0) > 1
-            ? `Contresort armé — les ${contresort} prochains sorts adverses sont annulés`
-            : "Contresort armé — le prochain sort adverse est annulé"}
+            ? `Contresort armé — les ${contresort} prochaines actions adverses sont annulées`
+            : "Contresort armé — la prochaine action adverse est annulée"}
           className="relative inline-flex items-center justify-center gap-0.5 h-7 min-w-7 px-1 rounded-full border-2 border-red-400/70 bg-red-900/40 text-red-100 text-[13px] font-bold leading-none shadow-[0_0_8px_rgba(248,113,113,0.6)]"
         >
           <span aria-hidden>🚫</span>

@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Canto",
-        "desc": "I tuoi incantesimi con Canto sono potenziati finché questa unità è in gioco."
+        "desc": "Le tue azioni con Canto sono potenziate finché questa unità è in gioco."
       },
       "lune": {
         "label": "Luna X",
@@ -119,7 +119,7 @@
       },
       "armure": {
         "label": "Armatura",
-        "desc": "Dimezza i danni da combattimento subiti (arrotondati per eccesso); i danni da magie non vengono ridotti."
+        "desc": "Dimezza i danni da combattimento subiti (arrotondati per eccesso); i danni delle azioni non vengono ridotti."
       },
       "commandement": {
         "label": "Comando X",
@@ -135,15 +135,15 @@
       },
       "invisible": {
         "label": "Invisibile",
-        "desc": "Non può essere bersaglio di magie né di capacità di unità avversarie."
+        "desc": "Non può essere bersaglio di azioni né di abilità di unità avversarie."
       },
       "canalisation": {
         "label": "Canalizzazione",
-        "desc": "Finché questa unità è in gioco, le tue magie costano 1 mana in meno (minimo 1)."
+        "desc": "Finché questa unità è in gioco, le tue azioni costano 1 mana in meno (minimo 1)."
       },
       "contresort": {
         "label": "Contromalia X",
-        "desc": "Annulla i prossimi X incantesimi avversari."
+        "desc": "Annulla le prossime X azioni avversarie."
       },
       "exclusion": {
         "label": "Esclusione X",
@@ -219,7 +219,7 @@
       },
       "savant": {
         "label": "Sapiente",
-        "desc": "Ottiene +1 ATK e +1 PV per incantesimo nel tuo cimitero."
+        "desc": "Guadagna +1 ATT e +1 PV per ogni azione nel tuo cimitero."
       },
       "liaison_de_vie": {
         "label": "Legame vitale",
@@ -299,7 +299,7 @@
       },
       "transcendance": {
         "label": "Trascendenza",
-        "desc": "Immunità totale alle magie avversarie: non può subire alcun danno né effetto da magia, incluse le magie ad area."
+        "desc": "Immunità totale alle azioni avversarie: non può subire alcun danno né effetto d'azione, incluse le azioni ad area."
       },
       "vampirisme": {
         "label": "Vampirismo X",
@@ -371,7 +371,7 @@
       },
       "selection_magique": {
         "label": "Selezione Magica X",
-        "desc": "Rivela 3 incantesimi comuni {alignment} di costo X; aggiungine uno in mano."
+        "desc": "Rivela 3 azioni comuni {alignment} di costo X; aggiungine una alla mano."
       },
       "renfort_royal": {
         "label": "Selezione Reale X",
@@ -387,7 +387,7 @@
       },
       "relancer": {
         "label": "Rilanciare X",
-        "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali."
+        "desc": "Rigioca le ultime X azioni giocate con bersagli casuali."
       },
       "tempete": {
         "label": "Tempesta X",
@@ -419,7 +419,7 @@
       },
       "apprentissage": {
         "label": "Apprendistato",
-        "desc": "Rimuove un incantesimo dalla vostra mano e lo memorizza: la creatura può lanciarlo pagandone i costi."
+        "desc": "Rimuove un'azione dalla tua mano e la memorizza: la creatura può giocarla pagandone i costi."
       },
       "impact": {
         "label": "Impatto X",
@@ -475,7 +475,7 @@
       },
       "concentration": {
         "label": "Concentrazione X",
-        "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
+        "desc": "Ogni azione in mano diventa un'azione casuale di costo +X, ridotta di X (tutte le fazioni)."
       },
       "remontee": {
         "label": "Rimonta",
@@ -495,7 +495,7 @@
       },
       "preincanter": {
         "label": "Preincantare X",
-        "desc": "La prima magia del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
+        "desc": "La prima azione del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
       },
       "conferer": {
         "label": "Conferire",
@@ -507,7 +507,7 @@
       },
       "dechainement": {
         "label": "Scatenamento X/Y",
-        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
+        "desc": "Gioca X azioni casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       },
       "force_des_ancetres": {
         "label": "Forza degli antenati +X/+Y",
@@ -533,11 +533,11 @@
     "spell_keywords": {
       "touche_mortel": {
         "label": "Tocco letale",
-        "desc": "Qualsiasi creatura ferita da questo incantesimo muore, indipendentemente dai suoi PV."
+        "desc": "Qualsiasi creatura ferita da questa azione muore, indipendentemente dai suoi PV."
       },
       "precision": {
         "label": "Precisione",
-        "desc": "I danni di questo incantesimo ignorano la Resistenza, l'Armatura e lo Scudo."
+        "desc": "I danni di questa azione ignorano Resistenza, Armatura e Scudo."
       },
       "poison": {
         "label": "Veleno",
@@ -549,7 +549,7 @@
       },
       "contresort": {
         "label": "Contromalia X",
-        "desc": "Annulla i prossimi X incantesimi avversari."
+        "desc": "Annulla le prossime X azioni avversarie."
       },
       "exclusion": {
         "label": "Esclusione X",
@@ -561,11 +561,11 @@
       },
       "seuil_colere": {
         "label": "Soglia d'ira X",
-        "desc": "Se il tuo mazzo contiene 25 carte o meno, questa magia infligge X danni aggiuntivi."
+        "desc": "Se il tuo mazzo conta 25 carte o meno, questa azione infligge X danni aggiuntivi."
       },
       "chant": {
         "label": "Canto X",
-        "desc": "Se controlli una creatura con Canto, tutti i valori di questa magia sono aumentati di X."
+        "desc": "Se controlli una creatura con Canto, tutti i valori di questa azione aumentano di X."
       },
       "lune": {
         "label": "Luna X",
@@ -617,23 +617,23 @@
       },
       "selection_magique": {
         "label": "Selezione Magica X",
-        "desc": "Rivela 3 incantesimi comuni {alignment} di costo X; aggiungetene uno alla mano"
-      },
-      "renfort_royal": {
-        "label": "Selezione Reale X",
-        "desc": "Rivela 3 delle vostre edizioni limitate di costo X (richieste ≥30; altrimenti 3 comuni {alignment}); tenetene una"
+        "desc": "Rivela 3 azioni comuni {alignment} di costo X; aggiungine una alla mano"
       },
       "tresor": {
         "label": "Tesoro X",
         "desc": "Rivela 3 oggetti comuni {alignment} o neutrali di costo X; aggiungine uno alla mano"
       },
+      "renfort_royal": {
+        "label": "Selezione Reale X",
+        "desc": "Rivela 3 delle vostre edizioni limitate di costo X (richieste ≥30; altrimenti 3 comuni {alignment}); tenetene una"
+      },
       "relancer": {
         "label": "Rilanciare X",
-        "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
+        "desc": "Rigioca le ultime X azioni giocate con bersagli casuali"
       },
       "dechainement": {
         "label": "Scatenamento X/Y",
-        "desc": "Lancia X incantesimi casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
+        "desc": "Gioca X azioni casuali di costo Y dalla tua collezione ({alignment}), con bersagli casuali."
       },
       "invocation": {
         "label": "Invocazione X",
@@ -649,7 +649,7 @@
       },
       "boomerang": {
         "label": "Boomerang",
-        "desc": "Dopo la sua risoluzione, questo incantesimo viene mescolato nel vostro mazzo invece di andare nel cimitero."
+        "desc": "Dopo la sua risoluzione, questa azione viene mescolata nel tuo mazzo invece di finire nel cimitero."
       },
       "siphon": {
         "label": "Sifone X",
@@ -673,7 +673,7 @@
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Se tutte le vostre creature in gioco hanno un costo della stessa parità di quello di questo incantesimo, +X/+Y a una creatura alleata bersaglio."
+        "desc": "Se tutte le tue creature in gioco hanno un costo della stessa parità di quello di questa azione, +X/+Y a una creatura alleata bersaglio."
       },
       "affaiblissement": {
         "label": "Indebolimento -X/-Y",
@@ -685,7 +685,7 @@
       },
       "seconde_vie": {
         "label": "Seconda vita X",
-        "desc": "Può essere lanciato dal vostro cimitero per X mana. Perde quindi Seconda vita."
+        "desc": "Può essere giocata dal tuo cimitero per X mana. In tal caso perde Seconda vita."
       },
       "incineration": {
         "label": "Incenerimento X",
@@ -741,11 +741,11 @@
       },
       "preincanter": {
         "label": "Preincantare X",
-        "desc": "La prima magia del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
+        "desc": "La prima azione del tuo mazzo partendo dall'alto costa X mana in meno (minimo 1), in modo permanente."
       },
       "concentration": {
         "label": "Concentrazione X",
-        "desc": "Ogni incantesimo in mano diventa un incantesimo casuale di costo +X, ridotto di X (tutte le fazioni)."
+        "desc": "Ogni azione in mano diventa un'azione casuale di costo +X, ridotta di X (tutte le fazioni)."
       },
       "invocations_multiples": {
         "label": "Invocazioni multiple",
@@ -765,7 +765,7 @@
       },
       "douleur": {
         "label": "Dolore X",
-        "desc": "All'attivazione, infligge X danni al tuo eroe."
+        "desc": "Quando questa azione viene giocata, infligge X danni al tuo eroe."
       },
       "afflux": {
         "label": "Afflusso X",
@@ -808,7 +808,7 @@
         "poison": "avvelena",
         "grant_keyword": "conferisce {ability}",
         "random_range": "Da 1 a {max}",
-        "random_range_from": "Da {min} a {max}",
+        "random_range_from": "da {min} a {max}",
         "appel": "mette in gioco la prima unità del vostro mazzo di costo ≤ {x}",
         "appel_item": "mette in gioco il primo oggetto del tuo mazzo di costo ≤ {x}",
         "ability_generic": "un'abilità",
@@ -829,13 +829,13 @@
         "rappel_cost": " (costo ≤ {max})",
         "rappel_one_any": "una carta",
         "rappel_one_creature": "una unità",
-        "rappel_one_spell": "un incantesimo",
+        "rappel_one_spell": "un'azione",
         "rappel_all_any": "tutte le carte",
         "rappel_all_creature": "tutte le unità",
-        "rappel_all_spell": "tutti gli incantesimi",
+        "rappel_all_spell": "tutte le azioni",
         "rappel_upto_any": "fino a {n} carte",
         "rappel_upto_creature": "fino a {n} unità",
-        "rappel_upto_spell": "fino a {n} incantesimi",
+        "rappel_upto_spell": "fino a {n} azioni",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "invocation_card": "evoca la carta designata",
         "invocation_cards": "evoca le {n} carte designate",
@@ -854,14 +854,14 @@
         "alternative": "A scelta: ",
         "devoration": "divora",
         "silence": "mette a tacere",
-        "dechainement": "lancia {x} incantesimi casuali di costo {y}",
-        "dechainement_one": "lancia un incantesimo casuale di costo {y}",
+        "dechainement": "gioca {x} azioni casuali di costo {y}",
+        "dechainement_one": "gioca un'azione casuale di costo {y}",
         "tactique_one": "trasmette a caso una delle sue capacità permanenti",
         "tactique_many": "trasmette a caso {x} delle sue capacità permanenti",
         "retour_differe": "mette sotto il deck del proprietario",
         "selection": "rivela 3 carte{filter} (costo {x}) e ne tiene una in mano",
         "faveur": "aggiunge in mano una carta{filter} (costo {x}) a caso",
-        "selection_magique": "rivela 3 incantesimi{filter} (costo {x}) e ne tiene uno in mano",
+        "selection_magique": "rivela 3 azioni{filter} (costo {x}) e ne tiene una in mano",
         "renfort_royal": "rivela 3 carte da collezione{filter} (costo {x}) e ne tiene una in mano",
         "tresor": "rivela 3 oggetti{filter} (costo {x}) e ne tiene uno in mano"
       },
@@ -906,7 +906,7 @@
         "clan": " del clan {v}",
         "keyword": " con {v}",
         "type_creature": " di tipo unità",
-        "type_spell": " di tipo incantesimo",
+        "type_spell": " di tipo azione",
         "type_item": " di tipo oggetto"
       },
       "self": {
@@ -1678,7 +1678,7 @@
         "start_of_turn": "all'inizio del turno",
         "draw": "alla pescata",
         "low_hp": "sotto {n} PV",
-        "spell": "alla risoluzione dell'incantesimo",
+        "spell": "alla risoluzione dell'azione",
         "wound": "quando è ferita senza morire"
       }
     },
@@ -1851,7 +1851,7 @@
     "all_rarities": "Tutte le rarità",
     "all_types": "Tutti i tipi",
     "type_creature": "Creatura",
-    "type_spell": "Incantesimo",
+    "type_spell": "Azione",
     "no_auctions": "Nessuna asta trovata",
     "previous": "Precedente",
     "next": "Successivo",
@@ -2052,11 +2052,11 @@
     "label_card_kind": "CARTE BERSAGLIO",
     "card_kind_all": "Tutte",
     "card_kind_creature": "Solo unità",
-    "card_kind_spell": "Solo incantesimi",
+    "card_kind_spell": "Solo azioni",
     "legacy_grants_heading": "Doni ereditati (vecchio formato) — convertili per poterli indirizzare all'avversario",
     "convert_to_composed": "Converti",
     "effects_heading": "Effetti della carta",
-    "effects_subtitle": "tutti gli effetti dell'incantesimo, in un'unica lista",
+    "effects_subtitle": "tutti gli effetti dell'azione, in un'unica lista",
     "effect_kind_curated": "MECCANICA",
     "group_composed": "Effetti configurabili",
     "group_curated": "Meccaniche speciali",
@@ -2064,17 +2064,17 @@
     "pool_hint_invocation": "Filtri cumulativi. Senza di essi, il pool segue l'allineamento della carta; il costo evocato è ESATTAMENTE X.",
     "label_designated_card": "CARTA DESIGNATA",
     "designated_card_hint": "Designa una o più creature: vengono evocate così come sono, in quest'ordine (la stessa carta può essere designata più volte). Senza designazione, pescaggio casuale al costo X secondo i filtri.",
-    "tuteur_card_hint": "Designa una o più carte, creature o incantesimi: entrano nella tua mano in quest'ordine. La stessa carta può essere designata più volte (altrettante copie). Senza designazione, l'effetto non fa nulla.",
+    "tuteur_card_hint": "Indica una o più carte, creature o azioni: raggiungeranno la tua mano in quest'ordine. La stessa carta può essere indicata più volte (altrettante copie). Senza indicazione, l'effetto non fa nulla.",
     "content_selection": "Selezione (1 su 3)",
     "content_faveur": "Favore (1 carta a caso → mano)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
-    "content_tresor": "Tesoro (1 oggetto su 3)",
+    "content_tresor": "Tesoro (1 oggetto tra 3)",
     "label_pool_membership": "POOL — APPARTENENZA",
     "label_pool_faction": "POOL — FAZIONE",
     "label_pool_keyword": "POOL — PAROLA CHIAVE",
     "label_pool_card_type": "POOL — TIPO DI CARTA",
     "pool_type_creature": "Unità",
-    "pool_type_spell": "Incantesimi",
+    "pool_type_spell": "Azioni",
     "pool_type_item": "Oggetti",
     "pool_any": "Indifferente",
     "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta).",
@@ -2191,8 +2191,8 @@
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "ESILIO",
     "topdeck_label": "RIPIEGO",
-    "spell_effects_label": "EFFETTI DELL'INCANTESIMO",
-    "spell_keywords_label": "PAROLE CHIAVE DELL'INCANTESIMO",
+    "spell_effects_label": "EFFETTI DELL'AZIONE",
+    "spell_keywords_label": "PAROLE CHIAVE D'AZIONE",
     "token_to_summon": "TOKEN DA EVOCARE",
     "config_below_tokens": "Config in «Token da evocare» qui sotto",
     "targeted_race_clan": "RAZZA / CLAN BERSAGLIO",
@@ -2225,8 +2225,8 @@
     "required_caps_f": "Richiesta",
     "atk_is_x": "(il +ATK = il valore X)",
     "neg_atk_is_x": "(il -ATK = il valore X)",
-    "spell_cost_y": "COSTO DEGLI INCANTESIMI (Y)",
-    "spell_count_is_x": "(il numero di incantesimi = il valore X)",
+    "spell_cost_y": "COSTO DELLE AZIONI (Y)",
+    "spell_count_is_x": "(il numero di azioni = il valore X)",
     "fda_condition": "(finché ≥7 creature nel cimitero)",
     "choose_ability": "-- Scegli una capacità --",
     "scope_one_ally": "1 alleato bersaglio",
@@ -2256,7 +2256,7 @@
     "english_prompt_placeholder": "Prompt in inglese per la generazione dell'immagine…",
     "trigger_tap_activation": "All'attivazione (tap)",
     "trigger_automatic": "Automatico (passivo/condizionale)",
-    "trigger_spell_resolution_full": "Alla risoluzione dell'incantesimo",
+    "trigger_spell_resolution_full": "Alla risoluzione dell'azione",
     "container_label": "Contenitore :",
     "derived_from_type": "(dedotto dal tipo di carta)",
     "no_ability_add_below": "Nessuna capacità. Aggiungine una qui sotto.",
@@ -2282,7 +2282,7 @@
     "all_allied_units": "Tutte le unità alleate",
     "one_allied_unit": "1 unità alleata",
     "add_effect": "+ Effetto :",
-    "spell_effect_dash": "-- effetto dell'incantesimo --",
+    "spell_effect_dash": "-- effetto dell'azione --",
     "add_confer": "+ Conferire :",
     "ability_to_confer_dash": "-- capacità da conferire --",
     "save": "Salva",
@@ -2367,10 +2367,10 @@
     "generate_ability_icon_title": "GENERA UN'ICONA DI ABILITÀ",
     "parameters": "PARAMETRI",
     "ability_label": "ABILITÀ",
-    "ability_polymorph": "🔀 Abilità polimorfa — l'icona verrà salvata per la creatura E per l'incantesimo.",
+    "ability_polymorph": "🔀 Abilità polimorfa — l'icona verrà salvata sia per la creatura CHE per l'azione.",
     "ability_creature": "👤 Abilità di creatura.",
-    "ability_spell": "🪄 Abilità di incantesimo.",
-    "ability_legend": "👤 creatura · 🪄 incantesimo · 🔀 condivisa",
+    "ability_spell": "🪄 Abilità d'azione.",
+    "ability_legend": "👤 creatura · 🪄 azione · 🔀 condivisa",
     "icon_name_label": "NOME DELL'ICONA",
     "icon_name_placeholder": "Es: Scudo v2",
     "style_label": "STILE",
@@ -2465,8 +2465,8 @@
     "validation_lycanthropie": "Licantropia X: seleziona un token di trasformazione prima di salvare.",
     "validation_entraide": "Aiuto reciproco (Razza): seleziona la razza bersaglio prima di salvare.",
     "validation_appel_supreme": "Richiamo Supremo: seleziona la razza bersaglio prima di salvare.",
-    "validation_multi_convocation_spell": "Convocazioni multiple (magia): aggiungi almeno un token nella lista prima di salvare.",
-    "validation_convocation_spell": "Convocazione (magia): seleziona un token nel selettore prima di salvare.",
+    "validation_multi_convocation_spell": "Convocazioni multiple (azione): aggiungi almeno un token nella lista prima di salvare.",
+    "validation_convocation_spell": "Convocazione (azione): seleziona un token nel picker prima di salvare.",
     "card_added": "« {name} » aggiunta!",
     "unknown_error": "Errore sconosciuto",
     "illustration_generated": "Illustrazione generata ({model})",
@@ -2495,8 +2495,8 @@
     "content_tactique": "Tattica (condivide le sue capacità permanenti)",
     "content_retour_differe": "Ritorno differito (sotto il mazzo)",
     "content_silence": "Silenzio (spoglia il bersaglio)",
-    "content_dechainement": "Scatenamento X/Y (incantesimi casuali)",
-    "content_selection_magique": "Selezione magica (1 incantesimo su 3)"
+    "content_dechainement": "Scatenamento X/Y (azioni casuali)",
+    "content_selection_magique": "Selezione magica (1 azione tra 3)"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",
@@ -2567,8 +2567,8 @@
     "history_title": "Ultime azioni",
     "history_hero_friendly": "il tuo eroe",
     "history_hero_enemy": "l'eroe avversario",
-    "history_spell": "{source} lanciato",
-    "history_spell_on": "{source} lanciato su {target}",
+    "history_spell": "Azione giocata: {source}",
+    "history_spell_on": "Azione giocata: {source} (bersaglio: {target})",
     "history_spell_countered": "{source} contrastato",
     "history_attack": "{source} attacca {target}",
     "history_attack_alone": "{source} attacca",
@@ -2620,7 +2620,7 @@
     "presage_hit": "Ben visto — entra nella vostra mano.",
     "presage_miss": "Sbagliato. La carta giusta è in verde.",
     "apprentissage_title": "📖 Apprendistato",
-    "apprentissage_subtitle": "Quale incantesimo deve memorizzare la creatura?",
+    "apprentissage_subtitle": "Quale azione deve memorizzare la creatura?",
     "foi_title": "✨ Fede",
     "foi_subtitle": "Scegli una carta da aggiungere alla tua mano. Il suo costo viene sottratto dalla tua Fede; il resto è conservato.",
     "conquete_title": "🚩 Conquista",
@@ -2640,7 +2640,7 @@
     "eveil_blocked_main": "Carte in mano insufficienti per i suoi costi aggiuntivi.",
     "eveil_blocked_plateau": "Creature insufficienti da sacrificare.",
     "eveil_blocked_deck": "Carte insufficienti da esiliare nel vostro deck.",
-    "eveil_blocked_sans_cible": "Nessun bersaglio valido per questo incantesimo.",
+    "eveil_blocked_sans_cible": "Nessun bersaglio valido per questa azione.",
     "eveil_suspend": "Metti in risveglio ({count, plural, one {# punto} other {# punti}})",
     "eveil_pay_n": "{count, plural, one {Paga #} other {Paga #}}",
     "eveil_max": "max {count}",
@@ -2664,7 +2664,7 @@
     "turn_intro": "All'inizio di ciascuno dei tuoi turni, in ordine:",
     "hand_title": "La mano e il mazzo",
     "creatures_title": "Le creature",
-    "spells_title": "Gli incantesimi",
+    "spells_title": "Le azioni",
     "combat_title": "Il combattimento",
     "combat_see_full_list": "L'elenco completo delle abilità è in fondo alla pagina.",
     "hero_title": "L'eroe e il suo potere",
@@ -2680,13 +2680,13 @@
     "tcg_gameloop_title": "Ciclo di gioco (specificità A&M)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combattimento — risoluzione",
-    "tcg_hero_spells_title": "Eroe & incantesimi",
+    "tcg_hero_spells_title": "Eroi & azioni",
     "lexicon_eyebrow": "Il lessico del combattimento",
     "lexicon_subtitle": "Riferimento completo, sempre aggiornato con il gioco. « X » e « Y » sono valori definiti su ogni carta.",
     "lexicon_title": "Tutte le abilità",
     "search_placeholder": "Cerca un'abilità…",
     "creature_abilities_group": "Abilità creature ({count})",
-    "spell_abilities_group": "Abilità incantesimi ({count})",
+    "spell_abilities_group": "Abilità d'azione ({count})",
     "no_ability_match": "Nessuna abilità corrisponde a « {query} »."
   },
   "deck": {
@@ -2694,8 +2694,8 @@
     "max_mercenaires_current": "Max {max} Mercenari (attualmente {current})",
     "max_capability_current": "Max {max} capacità « {label} » (attualmente {count})",
     "card_not_owned": "Carta non posseduta",
-    "no_items_in_deck": "Gli oggetti non vanno nel mazzo: si trovano durante la partita.",
-    "no_items_in_deck_current": "Questo mazzo contiene {count, plural, one {# oggetto} other {# oggetti}}: rimuovili, gli oggetti non vanno più nel mazzo.",
+    "no_items_in_deck": "Gli oggetti non si inseriscono in un mazzo: si trovano in gioco.",
+    "no_items_in_deck_current": "Questo mazzo contiene {count, plural, one {# oggetto} other {# oggetti}}: rimuovili, gli oggetti non si inseriscono più in un mazzo.",
     "deck_full": "Mazzo pieno",
     "singleton_yes": "Deck singolo ✓",
     "singleton_no": "Mazzo singolo ✗",
@@ -2724,7 +2724,7 @@
     "choose_faction_first_tab": "Scegli prima una fazione nella scheda 1 · Preparazione.",
     "search_placeholder": "Cerca...",
     "creatures": "Creature",
-    "spells": "Magie",
+    "spells": "Azioni",
     "items": "Oggetti",
     "all_capabilities": "Capacità",
     "all_races": "Razze",

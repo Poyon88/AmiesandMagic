@@ -109,18 +109,18 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_one": "une créature",
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
-  // Rappel composé : {who} = « une carte / une unité / un sort », etc.
+  // Rappel composé : {who} = « une carte / une unité / une action », etc.
   "content.rappel": "renvoie {who} de votre cimetière dans votre main{cost}",
   "content.rappel_cost": " (coût ≤ {max})",
   "content.rappel_one_any": "une carte",
   "content.rappel_one_creature": "une unité",
-  "content.rappel_one_spell": "un sort",
+  "content.rappel_one_spell": "une action",
   "content.rappel_all_any": "toutes les cartes",
   "content.rappel_all_creature": "toutes les unités",
-  "content.rappel_all_spell": "tous les sorts",
+  "content.rappel_all_spell": "toutes les actions",
   "content.rappel_upto_any": "jusqu'à {n} cartes",
   "content.rappel_upto_creature": "jusqu'à {n} unités",
-  "content.rappel_upto_spell": "jusqu'à {n} sorts",
+  "content.rappel_upto_spell": "jusqu'à {n} actions",
   // Sélection composée : {filter} porte la restriction de pool (vide si aucune).
   "content.invocation": "invoque une créature aléatoire de coût {x}{filter}",
   // Invocation DÉSIGNÉE : le nom de la carte est peint à part (pastille
@@ -145,8 +145,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.alternative": "Au choix : ",
   "content.devoration": "dévore",
   "content.silence": "réduit au silence",
-  "content.dechainement": "lance {x} sorts aléatoires de coût {y}",
-  "content.dechainement_one": "lance un sort aléatoire de coût {y}",
+  "content.dechainement": "joue {x} actions aléatoires de coût {y}",
+  "content.dechainement_one": "joue une action aléatoire de coût {y}",
   "content.tactique_one": "transmet au hasard une de ses capacités permanentes",
   "content.tactique_many": "transmet au hasard {x} de ses capacités permanentes",
   "content.retour_differe": "place sous le deck de son propriétaire",
@@ -154,7 +154,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // Faveur : « au hasard » est la moitié de l'effet, il doit être dit — sans lui
   // la phrase se lirait comme un Tuteur, où le joueur désigne la carte.
   "content.faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
-  "content.selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
+  "content.selection_magique": "révèle 3 actions{filter} (coût {x}) et en garde une en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
   "content.tresor": "révèle 3 objets{filter} (coût {x}) et en garde un en main",
   "pool.race": " de race {v}",
@@ -162,7 +162,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "pool.clan": " du clan {v}",
   "pool.keyword": " portant {v}",
   "pool.type_creature": " de type unité",
-  "pool.type_spell": " de type sort",
+  "pool.type_spell": " de type action",
   "pool.type_item": " de type objet",
 
   // Cible « soi-même » : le français veut une tournure RÉFLÉCHIE, pas un
