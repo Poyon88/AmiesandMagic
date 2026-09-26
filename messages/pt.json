@@ -871,6 +871,9 @@
         "rappel_upto_spell": "até {n} ações",
         "invocation": "invoca uma criatura aleatória de custo {x}{filter}",
         "invocation_card": "invoca a carta indicada",
+        "invocation_card_item": "coloca em jogo o objeto indicado",
+        "invocation_cards_item": "coloca em jogo os {n} objetos indicados",
+        "invocation_copies_item": "coloca em jogo {n} exemplares do objeto indicado",
         "invocation_cards": "invoca as {n} cartas indicadas",
         "invocation_copies": "invoca {n} cópias da carta indicada",
         "tuteur": "adicione a carta indicada à sua mão",
@@ -910,9 +913,9 @@
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
         "dechainement_one_any": "joga uma ação aleatória",
-        "invocation_card_item": "coloca em jogo o objeto indicado",
-        "invocation_cards_item": "coloca em jogo os {n} objetos indicados",
-        "invocation_copies_item": "coloca em jogo {n} exemplares do objeto indicado"
+        "retour_differe_cible": "coloca {target} sob o deck {proprio}",
+        "proprio_one": "do seu proprietário",
+        "proprio_many": "do respectivo proprietário"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "Cada carta revelada tira O SEU PRÓPRIO custo, entre 1 e {max}. Sem a caixa, as três custam exatamente {max}.",
     "random_min_hint": "Custo mínimo (A): cada custo é sorteado entre {min} e {max}.",
     "cost_optional_hint": "Deixe em branco para qualquer custo.",
+    "cost_any_label": "qualquer custo",
+    "cost_any_toggle": "Qualquer custo (clique de novo para voltar a X = 1)",
     "random_hint_faveur": "A carta oferecida tem um custo sorteado entre 1 e {max}. Sem a caixa marcada, vale exatamente {max}.",
     "content_appel": "Chamado do baralho",
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",

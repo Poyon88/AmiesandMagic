@@ -871,6 +871,9 @@
         "rappel_upto_spell": "bis zu {n} Aktionen",
         "invocation": "beschwört eine zufällige Kreatur mit Kosten {x}{filter}",
         "invocation_card": "beschwört die bestimmte Karte",
+        "invocation_card_item": "bringt den bezeichneten Gegenstand ins Spiel",
+        "invocation_cards_item": "bringt die {n} bezeichneten Gegenstände ins Spiel",
+        "invocation_copies_item": "bringt {n} Exemplare des bezeichneten Gegenstands ins Spiel",
         "invocation_cards": "beschwört die {n} bestimmten Karten",
         "invocation_copies": "beschwört {n} Exemplare der bestimmten Karte",
         "tuteur": "füge die bestimmte Karte deiner Hand hinzu",
@@ -910,9 +913,9 @@
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
         "dechainement_one_any": "spielt eine zufällige Aktion",
-        "invocation_card_item": "bringt den bezeichneten Gegenstand ins Spiel",
-        "invocation_cards_item": "bringt die {n} bezeichneten Gegenstände ins Spiel",
-        "invocation_copies_item": "bringt {n} Exemplare des bezeichneten Gegenstands ins Spiel"
+        "retour_differe_cible": "legt {target} unter das Deck von {proprio}",
+        "proprio_one": "seinem Besitzer",
+        "proprio_many": "ihrem jeweiligen Besitzer"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
     "random_min_hint": "Mindestkosten (A): Jede Kostenhöhe wird zwischen {min} und {max} ausgewürfelt.",
     "cost_optional_hint": "Leer lassen für beliebige Kosten.",
+    "cost_any_label": "beliebige Kosten",
+    "cost_any_toggle": "Beliebige Kosten (erneut klicken für X = 1)",
     "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",

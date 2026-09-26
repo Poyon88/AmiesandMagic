@@ -871,6 +871,9 @@
         "rappel_upto_spell": "fino a {n} azioni",
         "invocation": "evoca una creatura casuale di costo {x}{filter}",
         "invocation_card": "evoca la carta designata",
+        "invocation_card_item": "mette in gioco l'oggetto designato",
+        "invocation_cards_item": "mette in gioco i {n} oggetti designati",
+        "invocation_copies_item": "mette in gioco {n} copie dell'oggetto designato",
         "invocation_cards": "evoca le {n} carte designate",
         "invocation_copies": "evoca {n} copie della carta designata",
         "tuteur": "aggiungete la carta designata alla vostra mano",
@@ -910,9 +913,9 @@
         "appel_item_any": "mette in gioco il primo oggetto del tuo mazzo",
         "dechainement_any": "gioca {x} azioni casuali",
         "dechainement_one_any": "gioca un'azione casuale",
-        "invocation_card_item": "mette in gioco l'oggetto designato",
-        "invocation_cards_item": "mette in gioco i {n} oggetti designati",
-        "invocation_copies_item": "mette in gioco {n} copie dell'oggetto designato"
+        "retour_differe_cible": "mette {target} in fondo al mazzo {proprio}",
+        "proprio_one": "del suo proprietario",
+        "proprio_many": "del rispettivo proprietario"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "Ogni carta rivelata estrae IL PROPRIO costo, fra 1 e {max}. Senza la casella, tutte e tre costano esattamente {max}.",
     "random_min_hint": "Costo minimo (A): ogni costo viene estratto tra {min} e {max}.",
     "cost_optional_hint": "Lascia vuoto per qualsiasi costo.",
+    "cost_any_label": "qualsiasi costo",
+    "cost_any_toggle": "Qualsiasi costo (clicca di nuovo per tornare a X = 1)",
     "random_hint_faveur": "La carta offerta ha un costo compreso tra 1 e {max}. Senza la casella, vale esattamente {max}.",
     "content_appel": "Richiamo dal mazzo",
     "content_appel_supreme": "Richiamo Supremo (mazzo → mano, la più costosa)",

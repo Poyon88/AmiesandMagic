@@ -871,6 +871,9 @@
         "rappel_upto_spell": "up to {n} actions",
         "invocation": "summons a random creature with cost {x}{filter}",
         "invocation_card": "summons the designated card",
+        "invocation_card_item": "puts the designated item into play",
+        "invocation_cards_item": "puts the {n} designated items into play",
+        "invocation_copies_item": "puts {n} copies of the designated item into play",
         "invocation_cards": "summons the {n} designated cards",
         "invocation_copies": "summons {n} copies of the designated card",
         "tuteur": "add the designated card to your hand",
@@ -910,9 +913,9 @@
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
         "dechainement_one_any": "plays a random action",
-        "invocation_card_item": "puts the designated item into play",
-        "invocation_cards_item": "puts the {n} designated items into play",
-        "invocation_copies_item": "puts {n} copies of the designated item into play"
+        "retour_differe_cible": "places {target} at the bottom of {proprio}'s deck",
+        "proprio_one": "its owner",
+        "proprio_many": "their respective owner"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
     "random_min_hint": "Minimum cost (A): each cost is rolled between {min} and {max}.",
     "cost_optional_hint": "Leave blank for any cost.",
+    "cost_any_label": "any cost",
+    "cost_any_toggle": "Any cost (click again to go back to X = 1)",
     "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",

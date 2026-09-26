@@ -871,6 +871,9 @@
         "rappel_upto_spell": "最大{n}枚のアクション",
         "invocation": "コスト{x}{filter}のランダムなクリーチャーを召喚する",
         "invocation_card": "指定されたカードを召喚する",
+        "invocation_card_item": "指定されたアイテムを配置する",
+        "invocation_cards_item": "指定されたアイテムを{n}枚配置する",
+        "invocation_copies_item": "指定されたアイテムのコピーを{n}枚配置する",
         "invocation_cards": "指定された{n}枚のカードを召喚する",
         "invocation_copies": "指定されたカードを{n}枚召喚する",
         "tuteur": "指定されたカードを自分の手札に加える",
@@ -910,9 +913,9 @@
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
         "dechainement_one_any": "ランダムなアクションを1枚プレイする",
-        "invocation_card_item": "指定されたアイテムを配置する",
-        "invocation_cards_item": "指定されたアイテムを{n}枚配置する",
-        "invocation_copies_item": "指定されたアイテムのコピーを{n}枚配置する"
+        "retour_differe_cible": "{target}を{proprio}のデッキの下に置く",
+        "proprio_one": "その所有者",
+        "proprio_many": "それぞれの所有者"
       },
       "emblem": {
         "badge": "紋章",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
     "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間でランダムに決定されます。",
     "cost_optional_hint": "空欄のままにすると、コストは問いません。",
+    "cost_any_label": "任意のコスト",
+    "cost_any_toggle": "任意のコスト（もう一度クリックで X = 1 に戻す）",
     "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",

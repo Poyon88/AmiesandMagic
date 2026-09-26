@@ -871,6 +871,9 @@
         "rappel_upto_spell": "最多{n}个行动",
         "invocation": "召唤一个费用为{x}{filter}的随机生物",
         "invocation_card": "召唤指定卡牌",
+        "invocation_card_item": "放置指定的物品",
+        "invocation_cards_item": "放置{n}件指定的物品",
+        "invocation_copies_item": "放置{n}份指定物品的副本",
         "invocation_cards": "召唤指定的{n}张卡牌",
         "invocation_copies": "召唤{n}张指定卡牌的复制品",
         "tuteur": "将指定卡牌加入你的手牌",
@@ -910,9 +913,9 @@
         "appel_item_any": "将你牌库中的首个物品置入场上",
         "dechainement_any": "打出{x}张随机行动牌",
         "dechainement_one_any": "打出一张随机行动牌",
-        "invocation_card_item": "放置指定的物品",
-        "invocation_cards_item": "放置{n}件指定的物品",
-        "invocation_copies_item": "放置{n}份指定物品的副本"
+        "retour_differe_cible": "将{target}置于{proprio}的牌库底部",
+        "proprio_one": "其拥有者",
+        "proprio_many": "各自的拥有者"
       },
       "emblem": {
         "badge": "纹章",
@@ -2557,6 +2560,8 @@
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
     "random_min_hint": "最低费用（A）：每个费用在{min}和{max}之间随机抽取。",
     "cost_optional_hint": "留空以匹配任意费用。",
+    "cost_any_label": "任意费用",
+    "cost_any_toggle": "任意费用（再次点击恢复为 X = 1）",
     "random_hint_faveur": "所赠卡牌的费用在1到{max}之间随机。若未勾选该选项，则费用恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",

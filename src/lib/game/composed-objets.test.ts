@@ -160,3 +160,13 @@ describe("Invocation d'un OBJET désigné", () => {
     expect(describeComposedCap(cap)).toContain("ose l'objet désigné");
   });
 });
+
+describe("texte du Retour différé", () => {
+  const cap = (composed: ComposedEffect) => ({ uid: "u", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed }) as Capability;
+  it("la cible au milieu, le propriétaire accordé", () => {
+    expect(describeComposedCap(cap({ content: "retour_differe", target: cible({ entity: "unit", side: "enemy" }) })))
+      .toBe("Place toutes les unités ennemies sous le deck de leur propriétaire respectif.");
+    expect(describeComposedCap(cap({ content: "retour_differe", target: cible({ entity: "unit", side: "enemy", count: 1, designation: "choice" }) })))
+      .toBe("Place une unité ennemie au choix sous le deck de son propriétaire.");
+  });
+});

@@ -167,6 +167,11 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.tactique_one": "transmet au hasard une de ses capacités permanentes",
   "content.tactique_many": "transmet au hasard {x} de ses capacités permanentes",
   "content.retour_differe": "place sous le deck de son propriétaire",
+  // Retour différé AVEC sa cible au milieu : « place {target} sous le deck de
+  // {proprio} » — le propriétaire s'accorde avec le nombre de cibles.
+  "content.retour_differe_cible": "place {target} sous le deck de {proprio}",
+  "content.proprio_one": "son propriétaire",
+  "content.proprio_many": "leur propriétaire respectif",
   "content.selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
   // Faveur : « au hasard » est la moitié de l'effet, il doit être dit — sans lui
   // la phrase se lirait comme un Tuteur, où le joueur désigne la carte.
@@ -737,6 +742,17 @@ function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean, 
   return "";
 }
 
+/** Retour différé : la cible est un complément DIRECT placé au milieu de la
+ *  phrase, et le propriétaire s'accorde avec le nombre de cibles — « Place
+ *  toutes les unités ennemies sous le deck de leur propriétaire respectif. » */
+function describeRetourDiffere(target: TargetSpec, t?: SafeT): string {
+  const many = target.count === "all" || (typeof target.count === "number" && target.count > 1);
+  return frag(t, "content.retour_differe_cible", {
+    target: describeTarget(target, t, true),
+    proprio: frag(t, many ? "content.proprio_many" : "content.proprio_one"),
+  });
+}
+
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
 const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence"]);
@@ -907,6 +923,7 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
   const selfBody = eff.target?.entity === "self" ? describeSelfContent(eff, t) : null;
   const body = selfBody
     ?? describeScatter(eff, t)
+    ?? (eff.content === "retour_differe" && eff.target ? describeRetourDiffere(eff.target, t) : null)
     ?? [
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),

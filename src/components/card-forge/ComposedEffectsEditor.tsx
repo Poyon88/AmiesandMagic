@@ -373,11 +373,26 @@ export default function ComposedEffectsEditor({
     return { ...c, composed: { ...eff, target: { ...(eff.target ?? DEFAULT_TARGET), ...p } } };
   }));
   /** Champ de COÛT optionnel : vide ⇒ `undefined` (n'importe quel coût). */
-  const numInputCout = (val: number | undefined, on: (n: number | undefined) => void) => (
-    <input type="number" min={1} max={20} value={val != null && val > 0 ? val : ""} placeholder="∞" title={tr('cost_optional_hint')}
-      onChange={(e) => on(e.target.value === "" ? undefined : Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-      style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-  );
+  // Un bouton « ∞ » EXPLICITE en plus du champ vidable : vider un champ
+  // numérique au doigt (iPad) n'a rien d'évident, et rien ne signalait que
+  // c'était possible tant que le champ affichait 1.
+  const numInputCout = (val: number | undefined, on: (n: number | undefined) => void) => {
+    const libre = !(val != null && val > 0);
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+        <input type="number" min={1} max={20} value={libre ? "" : val} placeholder="∞" title={tr('cost_optional_hint')}
+          onChange={(e) => on(e.target.value === "" ? undefined : Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+          style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+        <button type="button" onClick={() => on(libre ? 1 : undefined)} aria-pressed={libre}
+          title={tr('cost_any_toggle')}
+          style={{
+            padding: "1px 7px", borderRadius: 4, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel',serif",
+            border: `1px solid ${libre ? "#b3541e" : "#e0d4b8"}`,
+            background: libre ? "#b3541e" : "transparent", color: libre ? "#fff" : "#8a6d3b",
+          }}>∞ {tr('cost_any_label')}</button>
+      </span>
+    );
+  };
   const numInput = (val: number, on: (n: number) => void, min = 0, max = 20) => (
     <input type="number" min={min} max={max} value={val} onChange={(e) => on(Math.max(min, Math.min(max, parseInt(e.target.value) || 0)))}
       style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
