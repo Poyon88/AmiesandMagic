@@ -373,6 +373,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // TRANSFORMATION — selon son déclencheur, la créature DEVIENT la carte
+  // désignée (linkedCardIds[0], même sélecteur que Tuteur) : neuve, sans ses
+  // effets d'entrée en jeu, objets et état d'attaque conservés. À la mort, elle
+  // reste sur le plateau sous sa nouvelle forme. Elle retrouve sa forme
+  // d'origine dès qu'elle quitte le plateau.
+  transformation: {
+    id: "transformation", label: "Transformation", symbol: "🦋",
+    desc: "Se transforme en la carte désignée. Retrouve sa forme d'origine si elle quitte le plateau.",
+    applicable_to: ["creature"],
+    creature: { cost: 6, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
+  },
   // MAÎTRE D'ARME — la créature s'équipe, gratuitement, de TOUS les objets en
   // jeu de son contrôleur, y compris ceux que portent ses autres créatures.
   // Seule exception à la règle « un objet par créature » (cf. estMaitreDArme).
@@ -862,17 +873,20 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
 
   // ─── Polymorphic — creature + spell ───────────────────────────────────────
+  // RAPPEL X — X = coût MAXIMUM de la carte ramenée ; X absent ⇒ n'importe
+  // laquelle (le Rappel d'avant). Barème : 2,5 + 0,5 par X, soit 7 — l'ancien
+  // prix fixe — pour un Rappel sans coût, compté comme X = 10.
   rappel: {
-    id: "rappel", label: "Rappel", symbol: "🪦",
-    desc: "Renvoie une carte alliée du cimetière dans la main.",
+    id: "rappel", label: "Rappel X", symbol: "🪦",
+    desc: "Renvoie une carte alliée de coût ≤ X du cimetière dans la main.",
     applicable_to: ["creature", "spell"],
     creature: {
-      cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Cimetière",
-      desc: "Remettez une carte ciblée de votre cimetière dans votre main.",
+      cost: 2.5, costPerX: 0.5, se: 1.5, minTier: 1, scalable: true, zone: "Cimetière",
+      desc: "Remettez une carte ciblée de coût ≤ X de votre cimetière dans votre main.",
     },
     spell: {
-      desc: "Renvoie une carte de votre cimetière dans votre main",
-      params: [], needsTarget: true, targetType: "friendly_graveyard",
+      desc: "Renvoie une carte de coût ≤ X de votre cimetière dans votre main",
+      params: ["amount"], needsTarget: true, targetType: "friendly_graveyard",
     },
   },
   exhumation: {
@@ -1060,9 +1074,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   silence: {
     id: "silence", label: "Silence", symbol: "🤫",
-    desc: "Retire tous les mots-clés d'une créature ciblée et ramène ses stats à leur valeur d'origine",
+    desc: "Retire tous les mots-clés d'une créature ciblée et ramène ses stats à leur valeur d'origine ; sur un objet, retire ses mots-clés et laisse ses caractéristiques",
     applicable_to: ["spell"],
-    spell: { params: [], needsTarget: true, targetType: "any_creature" },
+    spell: { params: [], needsTarget: true, targetType: "any_creature_or_item" },
   },
   renforcement: {
     id: "renforcement", label: "Renforcement +X/+Y", symbol: "⬆️",
@@ -1273,8 +1287,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Place l'unité ciblée sous le deck de son propriétaire.",
     },
     spell: {
-      desc: "Place l'unité ciblée sous le deck de son propriétaire",
-      params: [], needsTarget: true, targetType: "any_creature",
+      desc: "Place l'unité ou l'objet ciblé sous le deck de son propriétaire",
+      params: [], needsTarget: true, targetType: "any_creature_or_item",
     },
   },
   epargne: {
@@ -1355,8 +1369,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
     },
     spell: {
-      desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
-      params: [], needsTarget: true, targetType: "any_creature",
+      desc: "Renvoie une unité ou un objet ciblé dans la main de son propriétaire d'origine.",
+      params: [], needsTarget: true, targetType: "any_creature_or_item",
     },
   },
   renforcement_multiple: {
@@ -1793,6 +1807,8 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
   "contresort", "exclusion", "maitre_darme", "profanation", "heritage_du_cimetiere",
+  // Transformation : liste de déclencheurs PROPRE (cf. attachTriggerMeta).
+  "transformation",
 ]);
 
 /** Sous-ensemble des ids curés dont l'effet exige que la SOURCE soit en jeu
@@ -1997,7 +2013,12 @@ export function deriveAbilityTriggerMeta(a: AbilityDef): AbilityTriggerMeta {
     // TOUS les déclencheurs habituels (invocation, mort, activation, retour,
     // fin de tour, attaque). Exception : les effets exigeant la source en jeu
     // (CURATED_ONBOARD_ONLY_IDS) n'offrent ni mort ni retour en main.
-    if (CURATED_ONBOARD_ONLY_IDS.has(cid)) creatureTriggers = ["on_play", "on_activation", "on_end_of_turn", "on_start_of_turn", "on_attack", "on_low_hp", "on_wound"];
+    // Transformation : pas d'entrée en jeu (la carte n'a pas encore d'autre
+    // forme à prendre), ni retour en main ni pioche (hors plateau, rien à
+    // transformer). La mort, elle, est légitime : la créature revient
+    // transformée.
+    if (cid === "transformation") creatureTriggers = ["on_death", "on_activation", "on_end_of_turn", "on_start_of_turn", "on_attack", "on_low_hp", "on_wound"];
+    else if (CURATED_ONBOARD_ONLY_IDS.has(cid)) creatureTriggers = ["on_play", "on_activation", "on_end_of_turn", "on_start_of_turn", "on_attack", "on_low_hp", "on_wound"];
     else if (curatedMultiMode) creatureTriggers = ["on_play", "on_death", "on_activation", "on_return", "on_end_of_turn", "on_start_of_turn", "on_attack", "on_draw", "on_low_hp", "on_wound"];
     else if (deathNature) creatureTriggers = ["on_death"];
     else if (automatic) creatureTriggers = ["automatic"];
@@ -2039,3 +2060,73 @@ export function getCapabilityTriggers(cardType: CardType, abilityId: string): Ca
 export const ITEM_ABILITIES: AbilityDef[] = Object.values(ABILITIES)
   .filter((a) => a.applicable_to.includes("creature") && isItemAuthorable(creatureEngineId(a)))
   .sort((a, b) => (a.creature?.label ?? a.label).localeCompare(b.creature?.label ?? b.label, "fr"));
+
+/** COÛT OPTIONNEL — capacités dont le X désigne un COÛT et peut rester vide :
+ *  X absent ⇒ n'importe quel coût (cf. `coutLibre` dans engine.ts). « max » :
+ *  X est un plafond (coût ≤ X) ; « exact » : X est un coût précis, tiré au
+ *  hasard (Déchainement : c'est son Y). Sert au barème de la forge (un X vide
+ *  vaut X = 10 pour un plafond, X = 5 pour un coût exact), aux éditeurs (champ
+ *  vidable) et à l'affichage (icône seule, description sans coût). */
+export const COUT_OPTIONNEL: Readonly<Record<string, "max" | "exact">> = {
+  rappel: "max",
+  exhumation: "max",
+  appel_du_clan: "max",
+  selection: "exact",
+  selection_magique: "exact",
+  renfort_royal: "exact",
+  tresor: "exact",
+  faveur: "exact",
+  invocation: "exact",
+  dechainement: "exact",
+};
+
+/** X équivalent d'un coût vide, pour le barème de la forge. */
+export function xEquivalentCoutLibre(id: string): number {
+  return COUT_OPTIONNEL[id] === "max" ? 10 : 5;
+}
+
+/** Descriptions FR quand le coût n'est PAS renseigné — la mention du coût
+ *  disparaît. Graine de `vocab.keywords.{id}.desc_any` / `vocab.spell_keywords.
+ *  {id}.desc_any` (generate-vocab-fr), et repli runtime. */
+export const DESC_COUT_LIBRE: Readonly<Record<string, { creature?: string; spell?: string }>> = {
+  rappel: {
+    creature: "Remettez une carte ciblée de votre cimetière dans votre main.",
+    spell: "Renvoie une carte de votre cimetière dans votre main",
+  },
+  exhumation: {
+    creature: "Ressuscite une unité de votre cimetière, quel que soit son coût.",
+    spell: "Ressuscite une créature de votre cimetière sur le terrain, quel que soit son coût",
+  },
+  appel_du_clan: {
+    creature: "Met en jeu gratuitement la 1re unité {clan_de} du dessus de votre deck.",
+    spell: "Met en jeu gratuitement la 1re unité {clan_de} de votre deck.",
+  },
+  selection: {
+    creature: "Révèle 3 communes {alignment} ; ajoutez-en une en main.",
+    spell: "Révèle 3 communes {alignment} ; ajoutez-en une en main",
+  },
+  selection_magique: {
+    creature: "Révèle 3 actions communes {alignment} ; ajoutez-en une en main.",
+    spell: "Révèle 3 actions communes {alignment} ; ajoutez-en une en main",
+  },
+  renfort_royal: {
+    creature: "Révèle 3 de vos éditions limitées (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
+    spell: "Révèle 3 de vos éditions limitées (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une",
+  },
+  tresor: {
+    creature: "Révèle 3 objets communs {alignment} ou neutres ; ajoutez-en un en main.",
+    spell: "Révèle 3 objets communs {alignment} ou neutres ; ajoutez-en un en main",
+  },
+  faveur: {
+    creature: "Ajoute en main une commune {alignment}, au hasard.",
+    spell: "Ajoute en main une commune {alignment}, au hasard",
+  },
+  invocation: {
+    creature: "Invoque une créature aléatoire de votre collection ({alignment}, format en cours).",
+    spell: "Invoque une créature aléatoire de votre collection ({alignment}, format en cours)",
+  },
+  dechainement: {
+    creature: "Joue X actions aléatoires de votre collection ({alignment}), avec des cibles aléatoires.",
+    spell: "Joue X actions aléatoires de votre collection ({alignment}), avec des cibles aléatoires",
+  },
+};

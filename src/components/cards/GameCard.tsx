@@ -597,7 +597,7 @@ export default function GameCard({
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                  {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : undefined} />}
+                  {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, effectiveTokens, x)} scale={s} />
                 </div>

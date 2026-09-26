@@ -102,8 +102,9 @@
         "desc": "このターン最初に出したカードなら、そのすべての数値がXだけ永続的に上昇する。"
       },
       "rappel": {
-        "label": "帰還",
-        "desc": "対象の墓地のカード1枚を手札に戻す。"
+        "label": "リコール X",
+        "desc": "墓地から対象のコストX以下のカード1枚を手札に戻す。",
+        "desc_any": "墓地から対象のカード1枚を手札に戻す。"
       },
       "combustion": {
         "label": "燃焼",
@@ -149,6 +150,14 @@
         "label": "排除X",
         "desc": "次のX回の敵のユニット召喚を無効化する。"
       },
+      "maitre_darme": {
+        "label": "武器の達人",
+        "desc": "戦場にある自分のすべてのアイテムを、他の自分のクリーチャーが装備しているものも含めて、無償で装備する。"
+      },
+      "transformation": {
+        "label": "変身",
+        "desc": "指定されたカードに変身する。プレイエリアを離れると元の姿に戻る。"
+      },
       "convocation": {
         "label": "召喚 X",
         "desc": "{token}を作成する。"
@@ -159,7 +168,8 @@
       },
       "invocation": {
         "label": "召喚 X",
-        "desc": "コレクションからコストXのクリーチャーを1体ランダムに召喚する（{alignment}、現行フォーマット）。"
+        "desc": "コレクションからコストXのクリーチャーを1体ランダムに召喚する（{alignment}、現行フォーマット）。",
+        "desc_any": "あなたのコレクションからランダムなクリーチャーを1体召喚する({alignment}、現在のフォーマット)。"
       },
       "malediction": {
         "label": "呪い",
@@ -275,7 +285,8 @@
       },
       "exhumation": {
         "label": "発掘 X",
-        "desc": "マナコストがX以下の墓地のユニット1体を蘇生する。"
+        "desc": "マナコストがX以下の墓地のユニット1体を蘇生する。",
+        "desc_any": "コストに関係なく、墓地からユニット1体を蘇生する。"
       },
       "heritage_du_cimetiere": {
         "label": "墓地の遺産",
@@ -343,7 +354,8 @@
       },
       "appel_du_clan": {
         "label": "一族の呼び声 X",
-        "desc": "自分のデッキの上から、コストX以下の最初の{clan_de}ユニットを無料で場に出す。"
+        "desc": "自分のデッキの上から、コストX以下の最初の{clan_de}ユニットを無料で場に出す。",
+        "desc_any": "デッキの一番上にある最初の{clan_de}ユニットを無償で場に出す。"
       },
       "appel_supreme": {
         "label": "至高の召喚",
@@ -363,23 +375,28 @@
       },
       "selection": {
         "label": "選択 X",
-        "desc": "コストXの{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。"
+        "desc": "コストXの{alignment}のコモンを3枚公開し、その中から1枚を手札に加える。",
+        "desc_any": "{alignment}のコモン3枚を公開し、その中から1枚を手札に加える。"
       },
       "faveur": {
         "label": "寵愛X",
-        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える。"
+        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える。",
+        "desc_any": "{alignment}のコモンをランダムに1枚手札に加える。"
       },
       "selection_magique": {
         "label": "魔法選択 X",
-        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える。"
+        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える。",
+        "desc_any": "{alignment}のコモンアクション3枚を公開し、その中から1枚を手札に加える。"
       },
       "renfort_royal": {
         "label": "王室選択 X",
-        "desc": "コストXの限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
+        "desc": "コストXの限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。",
+        "desc_any": "あなたの限定カード3枚を公開し(30枚以上必要。未満の場合は{alignment}のコモン3枚)、その中から1枚を残す。"
       },
       "tresor": {
         "label": "秘宝X",
-        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える。"
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える。",
+        "desc_any": "{alignment}または中立のコモンアイテム3枚を公開し、その中から1枚を手札に加える。"
       },
       "lycanthropie": {
         "label": "獣人変化 X",
@@ -503,7 +520,8 @@
       },
       "dechainement": {
         "label": "解放 X/Y",
-        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。"
+        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。",
+        "desc_any": "あなたのコレクション({alignment})からランダムなアクションをX枚、ランダムな対象に対してプレイする。"
       },
       "force_des_ancetres": {
         "label": "祖霊の力 +X/+Y",
@@ -524,10 +542,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "maitre_darme": {
-        "label": "武器の達人",
-        "desc": "戦場にある自分のすべてのアイテムを、他の自分のクリーチャーが装備しているものも含めて、無償で装備する。"
       }
     },
     "spell_keywords": {
@@ -589,7 +603,8 @@
       },
       "appel_du_clan": {
         "label": "氏族の呼び声 X",
-        "desc": "自分のデッキから、コストX以下の最初の{clan_de}ユニットを無料で場に出す。"
+        "desc": "自分のデッキから、コストX以下の最初の{clan_de}ユニットを無料で場に出す。",
+        "desc_any": "デッキの中から最初の{clan_de}ユニットを無償で場に出す。"
       },
       "appel_supreme": {
         "label": "至高の召喚",
@@ -600,32 +615,39 @@
         "desc": "デッキの上からX枚を公開し、{race_pl}を手札に残して残りを捨てる。"
       },
       "rappel": {
-        "label": "帰還",
-        "desc": "自分の墓地からカードを1枚手札に戻す"
+        "label": "リコール X",
+        "desc": "墓地からコストX以下のカード1枚を手札に戻す",
+        "desc_any": "墓地からカード1枚を手札に戻す"
       },
       "exhumation": {
         "label": "発掘 X",
-        "desc": "墓地からクリーチャー（コスト≤X）1体を場に復活させる。"
+        "desc": "墓地からクリーチャー（コスト≤X）1体を場に復活させる。",
+        "desc_any": "コストに関係なく、墓地からクリーチャー1体を場に蘇生する"
       },
       "selection": {
         "label": "選択 X",
-        "desc": "コストXの{alignment}のコモンを3枚公開し、そのうち1枚を手札に加える"
+        "desc": "コストXの{alignment}のコモンを3枚公開し、そのうち1枚を手札に加える",
+        "desc_any": "{alignment}のコモン3枚を公開し、その中から1枚を手札に加える"
       },
       "faveur": {
         "label": "寵愛X",
-        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える"
+        "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える",
+        "desc_any": "{alignment}のコモンをランダムに1枚手札に加える"
       },
       "selection_magique": {
         "label": "魔法の選択 X",
-        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える"
+        "desc": "コストXの{alignment}のコモンアクションを3枚公開し、その中から1枚を手札に加える",
+        "desc_any": "{alignment}のコモンアクション3枚を公開し、その中から1枚を手札に加える"
       },
       "tresor": {
         "label": "秘宝X",
-        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える"
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、その中の1枚を手札に加える",
+        "desc_any": "{alignment}または中立のコモンアイテム3枚を公開し、その中から1枚を手札に加える"
       },
       "renfort_royal": {
         "label": "王家の選択 X",
-        "desc": "コストXの自分のリミテッド版カードを3枚公開する(30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。そのうち1枚を残す"
+        "desc": "コストXの自分のリミテッド版カードを3枚公開する(30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。そのうち1枚を残す",
+        "desc_any": "あなたの限定カード3枚を公開し(30枚以上必要。未満の場合は{alignment}のコモン3枚)、その中から1枚を残す"
       },
       "relancer": {
         "label": "再詠唱 X",
@@ -633,11 +655,13 @@
       },
       "dechainement": {
         "label": "解放 X/Y",
-        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。"
+        "desc": "あなたのコレクション({alignment})からコストYのランダムなアクションをX枚、ランダムな対象でプレイする。",
+        "desc_any": "あなたのコレクション({alignment})からランダムなアクションをX枚、ランダムな対象に対してプレイする"
       },
       "invocation": {
         "label": "召喚 X",
-        "desc": "コレクションからコストXのクリーチャーを1体ランダムに召喚する（{alignment}、現行フォーマット）。"
+        "desc": "コレクションからコストXのクリーチャーを1体ランダムに召喚する（{alignment}、現行フォーマット）。",
+        "desc_any": "あなたのコレクションからランダムなクリーチャーを1体召喚する({alignment}、現在のフォーマット)"
       },
       "impact": {
         "label": "衝撃 X",
@@ -665,7 +689,7 @@
       },
       "silence": {
         "label": "沈黙",
-        "desc": "対象のクリーチャー1体のキーワードをすべて取り除き、その能力値を元の値に戻す。"
+        "desc": "対象クリーチャーの全キーワードを除去し、ステータスを元の値に戻す。アイテムの場合はキーワードのみ除去し、能力値はそのままにする"
       },
       "renforcement": {
         "label": "強化 +X/+Y",
@@ -701,7 +725,7 @@
       },
       "retour_differe": {
         "label": "遅延帰還",
-        "desc": "対象のユニットを所有者のデッキの一番下に置く"
+        "desc": "対象のユニットまたはアイテムを、その所有者のデッキの一番下に置く"
       },
       "epargne": {
         "label": "貯蓄X",
@@ -725,7 +749,7 @@
       },
       "remontee": {
         "label": "帰還",
-        "desc": "対象のユニットを元の持ち主の手札に戻す。"
+        "desc": "対象のユニットまたはアイテムを、元の所有者の手札に戻す。"
       },
       "renforcement_multiple": {
         "label": "集団強化",
@@ -821,6 +845,19 @@
         "exhum_one": "クリーチャー1体",
         "exhum_all": "すべてのクリーチャー",
         "exhum_upto": "クリーチャー{n}体まで",
+        "exhumation_item": "墓地から{who}を場に戻す（コスト{x}以下）",
+        "exhum_item_one": "アイテム1つ",
+        "exhum_item_all": "全てのアイテム",
+        "exhum_item_upto": "最大{n}個のアイテム",
+        "exhum_uoi_one": "クリーチャーまたはアイテム1つ",
+        "exhum_uoi_all": "全てのクリーチャーとアイテム",
+        "exhum_uoi_upto": "最大{n}体のクリーチャーまたはアイテム",
+        "rappel_one_item": "アイテム1つ",
+        "rappel_all_item": "全てのアイテム",
+        "rappel_upto_item": "最大{n}個のアイテム",
+        "draw_items_one": "デッキからアイテムを{x}枚引く",
+        "draw_items_many": "デッキからアイテムを{x}枚引く",
+        "invocation_item": "コスト{x}{filter}のアイテムをランダムに1つ場に出す",
         "rappel": "自分の墓地から{who}を手札に戻す{cost}",
         "rappel_cost": "(コスト{max}以下)",
         "rappel_one_any": "カード1枚",
@@ -859,7 +896,23 @@
         "faveur": "{filter}カードをランダムに1枚手札に加える（コスト{x}）",
         "selection_magique": "{filter}アクションを3枚公開し（コスト{x}）、1枚を手札に加える",
         "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
-        "tresor": "{filter}アイテムを3枚公開し（コスト{x}）、1枚を手札に加える"
+        "tresor": "{filter}アイテムを3枚公開し（コスト{x}）、1枚を手札に加える",
+        "selection_any": "カード{filter}を3枚公開し、その中から1枚を手札に加える",
+        "faveur_any": "カード{filter}をランダムに1枚手札に加える",
+        "selection_magique_any": "アクション{filter}を3枚公開し、その中から1枚を手札に加える",
+        "renfort_royal_any": "コレクションカード{filter}を3枚公開し、その中から1枚を手札に加える",
+        "tresor_any": "アイテム{filter}を3枚公開し、その中から1枚を手札に加える",
+        "invocation_any": "ランダムなクリーチャー{filter}を1体召喚する",
+        "invocation_item_any": "ランダムなアイテム{filter}を1つ場に出す",
+        "exhumation_any": "墓地から{who}を蘇生する",
+        "exhumation_item_any": "墓地から{who}を場に戻す",
+        "appel_any": "デッキの最初のユニットを場に出す",
+        "appel_item_any": "デッキの最初のアイテムを場に出す",
+        "dechainement_any": "ランダムなアクションを{x}枚プレイする",
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
+        "invocation_card_item": "指定されたアイテムを配置する",
+        "invocation_cards_item": "指定されたアイテムを{n}枚配置する",
+        "invocation_copies_item": "指定されたアイテムのコピーを{n}枚配置する"
       },
       "emblem": {
         "badge": "紋章",
@@ -922,6 +975,14 @@
         "count_one": "ユニット1体",
         "count_n": "ユニット{n}体",
         "count_scatter": "最大{n}体のユニット",
+        "item_count_all": "全てのアイテム",
+        "item_count_one": "アイテム1つ",
+        "item_count_n": "アイテム{n}個",
+        "item_count_scatter": "最大{n}個のアイテム",
+        "uoi_count_all": "全てのユニットとアイテム",
+        "uoi_count_one": "ユニットまたはアイテム1つ",
+        "uoi_count_n": "ユニットまたはアイテム{n}個",
+        "uoi_count_scatter": "最大{n}個のユニットまたはアイテム",
         "hero_ally": "あなたのヒーロー",
         "hero_enemy": "敵ヒーロー",
         "both_all": "すべてのユニットと{side}ヒーロー",
@@ -941,6 +1002,18 @@
         "count_one": "ユニット1体に",
         "count_n": "{n}体のユニットに",
         "count_scatter": "最大{n}体のユニットに",
+        "item_count_all": "全てのアイテムに",
+        "item_count_one": "アイテム1つに",
+        "item_count_n": "アイテム{n}個に",
+        "item_count_scatter": "最大{n}個のアイテムに",
+        "uoi_count_all": "全てのユニットとアイテムに",
+        "uoi_count_one": "ユニットまたはアイテム1つに",
+        "uoi_count_n": "ユニットまたはアイテム{n}個に",
+        "uoi_count_scatter": "最大{n}個のユニットまたはアイテムに",
+        "side_ally_one_m": "味方",
+        "side_ally_many_m": "味方",
+        "side_enemy_one_m": "敵",
+        "side_enemy_many_m": "敵",
         "side_ally_one": "味方の",
         "side_ally_many": "味方の",
         "side_enemy_one": "敵の",
@@ -2072,6 +2145,7 @@
     "pool_type_creature": "ユニット",
     "pool_type_spell": "アクション",
     "pool_type_item": "アイテム",
+    "draw_items_only": "デッキのアイテムのみ",
     "pool_any": "指定なし",
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
@@ -2085,6 +2159,8 @@
     "label_targets": "対象",
     "label_type": "タイプ",
     "entity_unit": "ユニット",
+    "entity_item": "アイテム",
+    "entity_unit_or_item": "ユニットまたはアイテム",
     "entity_hero": "ヒーロー",
     "entity_both": "両方（ヒーロー＋ユニット）",
     "entity_self": "自身（クリーチャー）",
@@ -2480,6 +2556,7 @@
     "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
     "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間でランダムに決定されます。",
+    "cost_optional_hint": "空欄のままにすると、コストは問いません。",
     "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",

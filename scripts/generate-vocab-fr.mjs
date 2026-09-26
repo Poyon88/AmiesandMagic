@@ -23,6 +23,7 @@ const FR_PATH = path.join(ROOT, "messages", "fr.json");
 // résolvant l'alias @/* via tsconfig, puis on l'importe pour lire les valeurs.
 const entry = `
 export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+export { DESC_COUT_LIBRE } from "@/lib/game/abilities";
 export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { COMPOSED_FR } from "@/lib/game/composed-display";
 export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
@@ -42,10 +43,10 @@ const built = await esbuild.build({
 
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
-let KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
+let DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
 let RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR;
 try {
-  ({ KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS,
+  ({ DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS,
      RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
@@ -75,6 +76,9 @@ for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
   // diverger du libellé d'affichage (cf. KEYWORD_DESC_BY_ID dans abilities.ts).
   const desc = KEYWORDS?.[label]?.desc ?? KEYWORD_DESC_BY_ID?.[id];
   if (desc) vocab.keywords[id].desc = desc;
+  // Coût optionnel laissé vide : description SANS la mention du coût.
+  const libre = DESC_COUT_LIBRE?.[id]?.creature;
+  if (libre) vocab.keywords[id].desc_any = libre;
 }
 
 // Mots-clés de SORT (registre distinct, gabarits label/desc avec X/Y/amount
@@ -82,6 +86,8 @@ for (const [id, label] of Object.entries(KEYWORD_LABELS)) {
 for (const [id, def] of Object.entries(SPELL_KEYWORDS ?? {})) {
   vocab.spell_keywords[id] = { label: def.label };
   if (def.desc) vocab.spell_keywords[id].desc = def.desc;
+  const libre = DESC_COUT_LIBRE?.[id]?.spell;
+  if (libre) vocab.spell_keywords[id].desc_any = libre;
 }
 
 // Effets composés : fragments de phrase paramétriques (source unique

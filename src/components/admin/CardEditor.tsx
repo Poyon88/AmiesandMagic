@@ -19,7 +19,7 @@ import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
-import { RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
+import { COUT_OPTIONNEL, RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCardsPicker";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
@@ -227,7 +227,8 @@ export default function CardEditor() {
   const [afY, setAfY] = useState<number>(1);
   // Déchainement X/Y (créature) : le coût Y des sorts lancés. Le X (nombre de
   // sorts) réutilise keywordXValues ; sérialisé dans keyword_instances.
-  const [dcY, setDcY] = useState<number>(1);
+  // Y de Déchainement ; null = vidé ⇒ actions de n'importe quel coût.
+  const [dcY, setDcY] = useState<number | null>(1);
   // Déchainement : « ? » sur Y (coût plafond 1 à Y). Persisté dans keyword_instances[i].randomY.
   const [dcRandomY, setDcRandomY] = useState<boolean>(false);
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X)
@@ -251,6 +252,8 @@ export default function CardEditor() {
   const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
   // Tuteur : ids des cartes liées ajoutées en main (doublons permis).
   const [tuteurCardIds, setTuteurCardIds] = useState<number[]>([]);
+  // Transformation : la carte CIBLE (une seule).
+  const [transformationCardIds, setTransformationCardIds] = useState<number[]>([]);
   // Effets composés (modèle hybride) de la carte en cours d'édition.
   const [composedCaps, setComposedCaps] = useState<Capability[]>([]);
 
@@ -375,11 +378,12 @@ export default function CardEditor() {
     const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     let dcRandomYLoaded = false;
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
+    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     let compagnonsLoaded: number[] = [];
     let tuteurLoaded: number[] = [];
+    let transformationLoaded: number[] = [];
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
@@ -394,7 +398,7 @@ export default function CardEditor() {
       if (inst.id === "discipline") dscYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
-      if (inst.id === "dechainement") { dcYLoaded = inst.y ?? 1; dcRandomYLoaded = inst.randomY === true; }
+      if (inst.id === "dechainement") { dcYLoaded = inst.y ?? null; dcRandomYLoaded = inst.randomY === true; }
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
       if (inst.id === "seuil_sacrificiel") ssYLoaded = inst.y ?? 1;
       if (inst.id === "purete") purYLoaded = inst.y ?? 1;
@@ -406,11 +410,13 @@ export default function CardEditor() {
       }
       if (inst.id === "compagnons") compagnonsLoaded = inst.linkedCardIds ?? [];
       if (inst.id === "tuteur") tuteurLoaded = inst.linkedCardIds ?? [];
+      if (inst.id === "transformation") transformationLoaded = (inst.linkedCardIds ?? []).slice(0, 1);
     }
     setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setTuteurCardIds(tuteurLoaded);
+    setTransformationCardIds(transformationLoaded);
     setKeywordModes(modes);
     setKeywordSingulier(singuliers);
     setKeywordRandomX(aleatoires);
@@ -576,6 +582,18 @@ export default function CardEditor() {
         setSaving(false);
         return;
       }
+      if (activeKeywords.includes("transformation") && porteStats) {
+        if (transformationCardIds.length === 0) {
+          setSaveResult({ ok: false, msg: "Transformation : choisissez la carte en laquelle la créature se transforme." });
+          setSaving(false);
+          return;
+        }
+        if (!keywordModes["transformation"]) {
+          setSaveResult({ ok: false, msg: "Transformation : choisissez un déclencheur (mort, attaque, début de tour…) — l'entrée en jeu n'en est pas un." });
+          setSaving(false);
+          return;
+        }
+      }
       if (
         spellKws.some((k) => k.id === "tuteur") &&
         !spellKws.find((k) => k.id === "tuteur")?.linkedCardIds?.length
@@ -637,7 +655,8 @@ export default function CardEditor() {
           }
           // Déchainement X/Y (créature) : porte X (nombre de sorts) / Y (coût) ; toujours émis.
           if (id === "dechainement" && !isSpellCard) {
-            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: dcY, ...(dcRandomY ? { randomY: true } : {}) };
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1,
+              ...(dcY != null ? { y: dcY } : {}), ...(dcRandomY && dcY != null ? { randomY: true } : {}) };
           }
           // Invocations multiples : porte la liste des coûts ; toujours émise.
           if (id === "invocations_multiples") {
@@ -660,6 +679,12 @@ export default function CardEditor() {
             return {
               id: id as Keyword, ...(mode ? { mode } : {}),
               ...(tuteurCardIds.length ? { linkedCardIds: tuteurCardIds } : {}),
+            };
+          }
+          if (id === "transformation" && !isSpellCard) {
+            return {
+              id: id as Keyword, ...(mode ? { mode } : {}),
+              ...(transformationCardIds.length ? { linkedCardIds: transformationCardIds.slice(0, 1) } : {}),
             };
           }
           // Force des ancêtres +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émis
@@ -784,7 +809,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1514,9 +1539,12 @@ export default function CardEditor() {
                         {def.params.includes("amount") && (
                           <div>
                             <label style={{ fontSize: 7, color: "#666" }}>X</label>
-                            <input type="number" min={1} max={20} value={kw.amount ?? 1}
+                            <input type="number" min={1} max={20} value={kw.amount ?? (COUT_OPTIONNEL[kw.id] ? "" : 1)}
+                              placeholder={COUT_OPTIONNEL[kw.id] ? "∞" : undefined}
+                              title={COUT_OPTIONNEL[kw.id] ? "Vide = n'importe quel coût" : undefined}
                               onChange={e => {
-                                const val = Math.max(1, parseInt(e.target.value) || 1);
+                                const vide = e.target.value === "" && !!COUT_OPTIONNEL[kw.id];
+                                const val = vide ? undefined : Math.max(1, parseInt(e.target.value) || 1);
                                 setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, amount: val } : k));
                               }}
                               style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }}
@@ -1775,8 +1803,16 @@ export default function CardEditor() {
                           <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333" }}>{label.replace(/ X$/, "")}</span>
                           <input
                             type="number" min={1} max={10}
-                            value={keywordXValues[kw] ?? 1}
-                            onChange={e => setKeywordXValues(prev => ({ ...prev, [kw]: parseInt(e.target.value) || 1 }))}
+                            value={keywordXValues[kw] ?? (COUT_OPTIONNEL[kw] ? "" : 1)}
+                            placeholder={COUT_OPTIONNEL[kw] ? "∞" : undefined}
+                            title={COUT_OPTIONNEL[kw] ? "Vide = n'importe quel coût" : undefined}
+                            onChange={e => setKeywordXValues(prev => {
+                              // Coût optionnel vidé : n'importe quel coût (X absent).
+                              const next = { ...prev };
+                              if (e.target.value === "" && COUT_OPTIONNEL[kw]) delete next[kw];
+                              else next[kw] = parseInt(e.target.value) || 1;
+                              return next;
+                            })}
                             style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #d0c8ff", fontSize: 11, textAlign: "center" }}
                           />
                           {/* SÉLECTION AU HASARD : le X devient un plafond, tiré
@@ -2137,6 +2173,13 @@ export default function CardEditor() {
                 <LinkedCardsPicker value={compagnonsCardIds} onChange={setCompagnonsCardIds} accent="#8a6d3b" />
               </div>
             )}
+            {/* Transformation (créature) : la carte cible, une seule. */}
+            {((editFields.keywords as string[]) || []).includes("transformation") && porteStats && (
+              <div style={{ marginBottom: 8 }}>
+                <LinkedCardsPicker title="🦋 Transformation — se transforme en (1 carte)" value={transformationCardIds}
+                  onChange={(ids) => setTransformationCardIds(ids.slice(-1))} accent="#8e44ad" />
+              </div>
+            )}
             {/* Tuteur (créature) : cartes ajoutées en main. */}
             {((editFields.keywords as string[]) || []).includes("tuteur") && porteStats && (
               <div style={{ marginBottom: 8 }}>
@@ -2289,11 +2332,11 @@ export default function CardEditor() {
                   />
                   <span style={{ fontSize: 9, color: "#b3541e" }}>Coût (Y)</span>
                   <input
-                    type="number" min={1} max={10} value={dcY}
-                    onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                    type="number" min={1} max={10} value={dcY ?? ""} placeholder="∞" title="Vide = actions de n'importe quel coût"
+                    onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
                   />
-                  <label title={`Coût tiré au hasard entre 1 et ${dcY} pour chaque action jouée.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
+                  <label title={`Coût tiré au hasard entre 1 et ${dcY ?? 1} pour chaque action jouée.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                 </div>
               </div>
             )}

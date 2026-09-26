@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { COUT_OPTIONNEL } from "@/lib/game/abilities";
 import { badgeAleatoire } from "@/lib/game/random-range";
 import { CostShield, EquipToken, StatShields } from "@/components/card/CardCounters";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
@@ -70,7 +71,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Bravoure":         "🦁",
   "Pillage X":        "💰",
   "Riposte X":        "↩️",
-  "Rappel":           "🔄",
+  "Rappel X":           "🔄",
   "Combustion":       "🔥",
   // Tier 2
   "Terreur":          "👁️",
@@ -85,6 +86,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Contresort X":     "🚫",
   "Exclusion X":      "⛔",
   "Maître d'arme":    "🤺",
+  "Transformation":   "🦋",
   "Trésor X":         "💎",
   "Convocation X":    "📣",
   "Malédiction":      "💀",
@@ -261,7 +263,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       badgeText,
       displayName: isPair && badgeText
         ? (/[+-]X\/[+-]Y/.test(label) ? label.replace(/[+-]X\/[+-]Y/, badgeText) : `${label} ${badgeText}`)
-        : xVal != null ? label.replace(/ X$/, ` ${xNumeral(xVal)}`) : label,
+        : xVal != null ? label.replace(/ X$/, ` ${xNumeral(xVal)}`)
+        // Coût optionnel laissé vide : n'importe quel coût, le X disparaît.
+        : COUT_OPTIONNEL[forgeKeywordId(kw)] ? label.replace(/ X$/, "") : label,
       displayDesc: vocab.keywordDesc(id as never, ctx as never) ?? "",
     };
   };

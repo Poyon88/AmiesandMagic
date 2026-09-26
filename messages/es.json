@@ -102,8 +102,9 @@
         "desc": "Si es la primera carta jugada en el turno, todos sus valores aumentan en X — de forma permanente."
       },
       "rappel": {
-        "label": "Llamada",
-        "desc": "Devuelve una carta objetivo de tu cementerio a tu mano."
+        "label": "Recuperación X",
+        "desc": "Devuelve una carta objetivo de coste ≤ X de tu cementerio a tu mano.",
+        "desc_any": "Devuelve una carta objetivo de tu cementerio a tu mano."
       },
       "combustion": {
         "label": "Combustión",
@@ -149,6 +150,14 @@
         "label": "Exclusión X",
         "desc": "Anula las próximas X invocaciones de unidades enemigas."
       },
+      "maitre_darme": {
+        "label": "Maestro de armas",
+        "desc": "Se equipa gratuitamente con todos tus objetos en juego, incluidos los que llevan tus otras criaturas."
+      },
+      "transformation": {
+        "label": "Transformación",
+        "desc": "Se transforma en la carta indicada. Recupera su forma original si abandona el tablero."
+      },
       "convocation": {
         "label": "Invocación X",
         "desc": "Crea {token}."
@@ -159,7 +168,8 @@
       },
       "invocation": {
         "label": "Invocación X",
-        "desc": "Invoca una criatura aleatoria de coste X de tu colección ({alignment}, formato actual)."
+        "desc": "Invoca una criatura aleatoria de coste X de tu colección ({alignment}, formato actual).",
+        "desc_any": "Invoca una criatura aleatoria de tu colección ({alignment}, formato actual)."
       },
       "malediction": {
         "label": "Maldición",
@@ -275,7 +285,8 @@
       },
       "exhumation": {
         "label": "Exhumación X",
-        "desc": "Resucita una unidad de tu cementerio cuyo coste de maná sea igual o menor a X."
+        "desc": "Resucita una unidad de tu cementerio cuyo coste de maná sea igual o menor a X.",
+        "desc_any": "Resucita una unidad de tu cementerio, sin importar su coste."
       },
       "heritage_du_cimetiere": {
         "label": "Herencia del cementerio",
@@ -343,7 +354,8 @@
       },
       "appel_du_clan": {
         "label": "Llamada del clan X",
-        "desc": "Pone en juego gratis la 1ª unidad {clan_de} de coste ≤ X de la parte superior de tu mazo."
+        "desc": "Pone en juego gratis la 1ª unidad {clan_de} de coste ≤ X de la parte superior de tu mazo.",
+        "desc_any": "Pone en juego gratis la 1ª unidad {clan_de} de la parte superior de tu mazo."
       },
       "appel_supreme": {
         "label": "Llamada Suprema",
@@ -363,23 +375,28 @@
       },
       "selection": {
         "label": "Selección X",
-        "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano."
+        "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano.",
+        "desc_any": "Revela 3 comunes {alignment}; añade una a tu mano."
       },
       "faveur": {
         "label": "Favor X",
-        "desc": "Añade a la mano una común {alignment} de coste X, al azar."
+        "desc": "Añade a la mano una común {alignment} de coste X, al azar.",
+        "desc_any": "Añade a tu mano una común {alignment}, al azar."
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano."
+        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano.",
+        "desc_any": "Revela 3 acciones comunes {alignment}; añade una a tu mano."
       },
       "renfort_royal": {
         "label": "Selección Real X",
-        "desc": "Revela 3 de tus ediciones limitadas de coste X (se requieren ≥30; si no, 3 comunes {alignment}); conserva una."
+        "desc": "Revela 3 de tus ediciones limitadas de coste X (se requieren ≥30; si no, 3 comunes {alignment}); conserva una.",
+        "desc_any": "Revela 3 de tus ediciones limitadas (≥30 requeridas; si no, 3 comunes {alignment}); conserva una."
       },
       "tresor": {
         "label": "Tesoro X",
-        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano."
+        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano.",
+        "desc_any": "Revela 3 objetos comunes {alignment} o neutrales; añade uno a tu mano."
       },
       "lycanthropie": {
         "label": "Licantropía X",
@@ -503,7 +520,8 @@
       },
       "dechainement": {
         "label": "Desencadenamiento X/Y",
-        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios."
+        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios.",
+        "desc_any": "Juega X acciones aleatorias de tu colección ({alignment}), con objetivos aleatorios."
       },
       "force_des_ancetres": {
         "label": "Fuerza de los ancestros +X/+Y",
@@ -524,10 +542,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "maitre_darme": {
-        "label": "Maestro de armas",
-        "desc": "Se equipa gratuitamente con todos tus objetos en juego, incluidos los que llevan tus otras criaturas."
       }
     },
     "spell_keywords": {
@@ -589,7 +603,8 @@
       },
       "appel_du_clan": {
         "label": "Llamada del clan X",
-        "desc": "Pone en juego gratis la 1ª unidad {clan_de} de coste ≤ X de tu mazo."
+        "desc": "Pone en juego gratis la 1ª unidad {clan_de} de coste ≤ X de tu mazo.",
+        "desc_any": "Pone en juego gratis la 1ª unidad {clan_de} de tu mazo."
       },
       "appel_supreme": {
         "label": "Llamada Suprema",
@@ -600,32 +615,39 @@
         "desc": "Revela las X primeras cartas del mazo; conserva los {race_pl} en la mano y descarta el resto."
       },
       "rappel": {
-        "label": "Retorno",
-        "desc": "Devuelve una carta de tu cementerio a tu mano"
+        "label": "Recuperación X",
+        "desc": "Devuelve una carta de coste ≤ X de tu cementerio a tu mano",
+        "desc_any": "Devuelve una carta de tu cementerio a tu mano"
       },
       "exhumation": {
         "label": "Exhumación X",
-        "desc": "Resucita una criatura (coste ≤ X) de tu cementerio al campo de batalla."
+        "desc": "Resucita una criatura (coste ≤ X) de tu cementerio al campo de batalla.",
+        "desc_any": "Resucita una criatura de tu cementerio al campo de batalla, sin importar su coste"
       },
       "selection": {
         "label": "Selección X",
-        "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano"
+        "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano",
+        "desc_any": "Revela 3 comunes {alignment}; añade una a tu mano"
       },
       "faveur": {
         "label": "Favor X",
-        "desc": "Añade a la mano una común {alignment} de coste X, al azar"
+        "desc": "Añade a la mano una común {alignment} de coste X, al azar",
+        "desc_any": "Añade a tu mano una común {alignment}, al azar"
       },
       "selection_magique": {
         "label": "Selección mágica X",
-        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano"
+        "desc": "Revela 3 acciones comunes {alignment} de coste X; añade una a tu mano",
+        "desc_any": "Revela 3 acciones comunes {alignment}; añade una a tu mano"
       },
       "tresor": {
         "label": "Tesoro X",
-        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano"
+        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano",
+        "desc_any": "Revela 3 objetos comunes {alignment} o neutrales; añade uno a tu mano"
       },
       "renfort_royal": {
         "label": "Selección Real X",
-        "desc": "Revela 3 de tus ediciones limitadas de coste X (≥30 requeridas; si no, 3 comunes {alignment}); quédate con una"
+        "desc": "Revela 3 de tus ediciones limitadas de coste X (≥30 requeridas; si no, 3 comunes {alignment}); quédate con una",
+        "desc_any": "Revela 3 de tus ediciones limitadas (≥30 requeridas; si no, 3 comunes {alignment}); conserva una"
       },
       "relancer": {
         "label": "Relanzar X",
@@ -633,11 +655,13 @@
       },
       "dechainement": {
         "label": "Desencadenamiento X/Y",
-        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios."
+        "desc": "Juega X acciones aleatorias de coste Y de tu colección ({alignment}), con objetivos aleatorios.",
+        "desc_any": "Juega X acciones aleatorias de tu colección ({alignment}), con objetivos aleatorios"
       },
       "invocation": {
         "label": "Invocación X",
-        "desc": "Invoca una criatura aleatoria de coste X de tu colección ({alignment}, formato actual)."
+        "desc": "Invoca una criatura aleatoria de coste X de tu colección ({alignment}, formato actual).",
+        "desc_any": "Invoca una criatura aleatoria de tu colección ({alignment}, formato actual)"
       },
       "impact": {
         "label": "Impacto X",
@@ -665,7 +689,7 @@
       },
       "silence": {
         "label": "Silencio",
-        "desc": "Elimina todas las palabras clave de una criatura objetivo y restablece sus estadísticas a sus valores originales."
+        "desc": "Elimina todas las palabras clave de una criatura objetivo y restaura sus estadísticas a su valor original; en un objeto, elimina sus palabras clave y deja sus características"
       },
       "renforcement": {
         "label": "Refuerzo +X/+Y",
@@ -701,7 +725,7 @@
       },
       "retour_differe": {
         "label": "Regreso diferido",
-        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario"
+        "desc": "Coloca la unidad o el objeto objetivo bajo el mazo de su propietario"
       },
       "epargne": {
         "label": "Ahorro X",
@@ -725,7 +749,7 @@
       },
       "remontee": {
         "label": "Retorno",
-        "desc": "Devuelve una unidad objetivo a la mano de su propietario original."
+        "desc": "Devuelve una unidad o un objeto objetivo a la mano de su propietario original."
       },
       "renforcement_multiple": {
         "label": "Refuerzo múltiple",
@@ -821,6 +845,19 @@
         "exhum_one": "una criatura",
         "exhum_all": "todas las criaturas",
         "exhum_upto": "hasta {n} criaturas",
+        "exhumation_item": "pon en juego {who} de tu cementerio (coste ≤ {x})",
+        "exhum_item_one": "un objeto",
+        "exhum_item_all": "todos los objetos",
+        "exhum_item_upto": "hasta {n} objetos",
+        "exhum_uoi_one": "una criatura o un objeto",
+        "exhum_uoi_all": "todas las criaturas y todos los objetos",
+        "exhum_uoi_upto": "hasta {n} criaturas u objetos",
+        "rappel_one_item": "un objeto",
+        "rappel_all_item": "todos los objetos",
+        "rappel_upto_item": "hasta {n} objetos",
+        "draw_items_one": "roba {x} objeto de tu mazo",
+        "draw_items_many": "roba {x} objetos de tu mazo",
+        "invocation_item": "pon en juego un objeto aleatorio de coste {x}{filter}",
         "rappel": "devuelve {who} de tu cementerio a tu mano{cost}",
         "rappel_cost": " (coste ≤ {max})",
         "rappel_one_any": "una carta",
@@ -859,7 +896,23 @@
         "faveur": "añade a la mano una carta{filter} (coste {x}) al azar",
         "selection_magique": "revela 3 acciones{filter} (coste {x}) y se queda una en la mano",
         "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano",
-        "tresor": "revela 3 objetos{filter} (coste {x}) y se queda uno en la mano"
+        "tresor": "revela 3 objetos{filter} (coste {x}) y se queda uno en la mano",
+        "selection_any": "revela 3 cartas{filter} y conserva una en tu mano",
+        "faveur_any": "añade a tu mano una carta{filter} al azar",
+        "selection_magique_any": "revela 3 acciones{filter} y conserva una en tu mano",
+        "renfort_royal_any": "revela 3 cartas de colección{filter} y conserva una en tu mano",
+        "tresor_any": "revela 3 objetos{filter} y conserva uno en tu mano",
+        "invocation_any": "invoca una criatura aleatoria{filter}",
+        "invocation_item_any": "coloca un objeto aleatorio{filter}",
+        "exhumation_any": "resucita a {who} de tu cementerio",
+        "exhumation_item_any": "vuelve a poner en juego {who} de tu cementerio",
+        "appel_any": "pone en juego la 1ª unidad de tu mazo",
+        "appel_item_any": "pone en juego el 1er objeto de tu mazo",
+        "dechainement_any": "juega {x} acciones aleatorias",
+        "dechainement_one_any": "juega una acción aleatoria",
+        "invocation_card_item": "pone en juego el objeto designado",
+        "invocation_cards_item": "pone en juego los {n} objetos designados",
+        "invocation_copies_item": "pone en juego {n} ejemplares del objeto designado"
       },
       "emblem": {
         "badge": "Emblema",
@@ -922,6 +975,14 @@
         "count_one": "una unidad",
         "count_n": "{n} unidades",
         "count_scatter": "como máximo {n} unidades",
+        "item_count_all": "todos los objetos",
+        "item_count_one": "un objeto",
+        "item_count_n": "{n} objetos",
+        "item_count_scatter": "como máximo {n} objetos",
+        "uoi_count_all": "todas las unidades y todos los objetos",
+        "uoi_count_one": "una unidad o un objeto",
+        "uoi_count_n": "{n} unidades u objetos",
+        "uoi_count_scatter": "como máximo {n} unidades u objetos",
         "hero_ally": "tu héroe",
         "hero_enemy": "el héroe enemigo",
         "both_all": "todas las unidades y el héroe {side}",
@@ -941,6 +1002,18 @@
         "count_one": "a una unidad",
         "count_n": "a {n} unidades",
         "count_scatter": "a como máximo {n} unidades",
+        "item_count_all": "a todos los objetos",
+        "item_count_one": "a un objeto",
+        "item_count_n": "a {n} objetos",
+        "item_count_scatter": "a como máximo {n} objetos",
+        "uoi_count_all": "a todas las unidades y todos los objetos",
+        "uoi_count_one": "a una unidad o un objeto",
+        "uoi_count_n": "a {n} unidades u objetos",
+        "uoi_count_scatter": "a como máximo {n} unidades u objetos",
+        "side_ally_one_m": "aliado",
+        "side_ally_many_m": "aliados",
+        "side_enemy_one_m": "enemigo",
+        "side_enemy_many_m": "enemigos",
         "side_ally_one": "aliada",
         "side_ally_many": "aliadas",
         "side_enemy_one": "enemiga",
@@ -2072,6 +2145,7 @@
     "pool_type_creature": "Unidades",
     "pool_type_spell": "Acciones",
     "pool_type_item": "Objetos",
+    "draw_items_only": "Solo objetos del mazo",
     "pool_any": "Indiferente",
     "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
     "label_magnitude": "MAGNITUD",
@@ -2085,6 +2159,8 @@
     "label_targets": "OBJETIVOS",
     "label_type": "TIPO",
     "entity_unit": "Unidad",
+    "entity_item": "Objeto",
+    "entity_unit_or_item": "Unidad u objeto",
     "entity_hero": "Héroe",
     "entity_both": "Ambos (héroe + unidades)",
     "entity_self": "Sí mismo (la criatura)",
@@ -2204,7 +2280,7 @@
     "json_hint": "Obsoleto: el motor solo lo lee para Relanzar en cartas antiguas. Para componer un efecto, usa «Efecto compuesto» más abajo.",
     "abilities_count": "CAPACIDADES ({count})",
     "conferred_abilities_toggle": "HABILIDADES CONFERIDAS A LAS CRIATURAS ({count})",
-    "conferred_abilities_hint": "otorgadas a las criaturas cuando se juega la Acción (verde = todos los aliados, gris = criatura seleccionada)",
+    "conferred_abilities_hint": "otorgadas a las criaturas cuando se juega la acción (verde = todos los aliados, gris = criatura seleccionada)",
     "mode_title_play": "Al invocar (defecto)",
     "mode_title_death": "Al morir (deathrattle)",
     "mode_title_tap": "Activada por tap (agotamiento)",
@@ -2480,6 +2556,7 @@
     "alternative_warn_triggers": "ramas en disparadores distintos: no se excluyen entre sí",
     "random_hint_selection": "Cada carta revelada saca SU PROPIO coste, entre 1 y {max}. Sin marcar, las tres cuestan exactamente {max}.",
     "random_min_hint": "Coste mínimo (A): cada coste se sortea entre {min} y {max}.",
+    "cost_optional_hint": "Deja vacío para cualquier coste.",
     "random_hint_faveur": "La carta ofrecida obtiene un coste entre 1 y {max}. Sin la casilla, vale exactamente {max}.",
     "content_appel": "Llamada desde el mazo",
     "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",

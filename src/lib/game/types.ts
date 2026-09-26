@@ -21,7 +21,7 @@ export type Keyword =
   | "rappel" | "combustion"
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  | "canalisation" | "contresort" | "exclusion" | "maitre_darme" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
+  | "canalisation" | "contresort" | "exclusion" | "maitre_darme" | "transformation" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution" | "pietinement"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
@@ -686,7 +686,12 @@ export interface TargetSpec {
    *  `on_wound` : la créature coupable si elle est encore en jeu, sinon le
    *  héros de son camp quand le contenu sait toucher un héros (dégâts, soin),
    *  sinon rien. Sous tout autre déclencheur, l'effet ne fait rien. */
-  entity: "unit" | "hero" | "both" | "self" | "damage_source";
+  entity: "unit" | "hero" | "both" | "self" | "damage_source"
+    // OBJETS (sur la table : la zone `items` ; ailleurs : les cartes objet de
+    // la zone). « unit_or_item » = unités ET objets. Un objet n'est pas une
+    // unité : seuls les contenus qui le prévoient le proposent (buff, renvoi,
+    // retour différé, silence, exhumation, rappel).
+    | "item" | "unit_or_item";
   /** Nombre d'unités impactées : un entier, ou "all" pour tout le pool filtré. */
   count: number | "all";
   /** Bord visé. */
@@ -1189,6 +1194,10 @@ export interface CardInstance {
   // s'écrivent que par armerGarde / consommerGarde (engine.ts).
   contresortActive: boolean;
   contresortCharges?: number;
+  // TRANSFORMATION : la carte d'ORIGINE, tant que l'instance joue sous une autre
+  // forme. Restaurée dès que l'instance quitte le plateau (main, deck,
+  // cimetière) — cf. restaurerFormesDOrigine. Absent ⇒ forme d'origine.
+  formeOrigine?: Card;
   // Exclusion X : garde de l'UNITÉ contre les invocations d'unités adverses —
   // nombre d'invocations qu'elle annule encore (absent ou 0 ⇒ désarmée).
   exclusionCharges?: number;

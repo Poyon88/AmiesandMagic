@@ -109,6 +109,20 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.exhum_one": "une créature",
   "content.exhum_all": "toutes les créatures",
   "content.exhum_upto": "jusqu'à {n} créatures",
+  // Exhumation d'OBJETS : ils ne « ressuscitent » pas, ils reviennent en jeu.
+  "content.exhumation_item": "remet en jeu {who} de votre cimetière (coût ≤ {x})",
+  "content.exhum_item_one": "un objet",
+  "content.exhum_item_all": "tous les objets",
+  "content.exhum_item_upto": "jusqu'à {n} objets",
+  "content.exhum_uoi_one": "une créature ou un objet",
+  "content.exhum_uoi_all": "toutes les créatures et tous les objets",
+  "content.exhum_uoi_upto": "jusqu'à {n} créatures ou objets",
+  "content.rappel_one_item": "un objet",
+  "content.rappel_all_item": "tous les objets",
+  "content.rappel_upto_item": "jusqu'à {n} objets",
+  "content.draw_items_one": "piochez {x} objet de votre deck",
+  "content.draw_items_many": "piochez {x} objets de votre deck",
+  "content.invocation_item": "pose un objet aléatoire de coût {x}{filter}",
   // Rappel composé : {who} = « une carte / une unité / une action », etc.
   "content.rappel": "renvoie {who} de votre cimetière dans votre main{cost}",
   "content.rappel_cost": " (coût ≤ {max})",
@@ -126,6 +140,9 @@ export const COMPOSED_FR: Record<string, string> = {
   // Invocation DÉSIGNÉE : le nom de la carte est peint à part (pastille
   // CompagnonsNames), la phrase reste générique.
   "content.invocation_card": "invoque la carte désignée",
+  "content.invocation_card_item": "pose l'objet désigné",
+  "content.invocation_cards_item": "pose les {n} objets désignés",
+  "content.invocation_copies_item": "pose {n} exemplaires de l'objet désigné",
   "content.invocation_cards": "invoque les {n} cartes désignées",
   // Toutes les désignations visent la MÊME carte : on compte les exemplaires
   // plutôt que « les 7 cartes désignées » — la pastille, elle, n'est peinte
@@ -157,6 +174,20 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.selection_magique": "révèle 3 actions{filter} (coût {x}) et en garde une en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
   "content.tresor": "révèle 3 objets{filter} (coût {x}) et en garde un en main",
+  // Variantes « n'importe quel coût » (X, ou Y de Déchainement, non renseigné).
+  "content.selection_any": "révèle 3 cartes{filter} et en garde une en main",
+  "content.faveur_any": "ajoute en main une carte{filter} au hasard",
+  "content.selection_magique_any": "révèle 3 actions{filter} et en garde une en main",
+  "content.renfort_royal_any": "révèle 3 cartes de collection{filter} et en garde une en main",
+  "content.tresor_any": "révèle 3 objets{filter} et en garde un en main",
+  "content.invocation_any": "invoque une créature aléatoire{filter}",
+  "content.invocation_item_any": "pose un objet aléatoire{filter}",
+  "content.exhumation_any": "ressuscite {who} de votre cimetière",
+  "content.exhumation_item_any": "remet en jeu {who} de votre cimetière",
+  "content.appel_any": "met en jeu la 1re unité de votre deck",
+  "content.appel_item_any": "met en jeu le 1er objet de votre deck",
+  "content.dechainement_any": "joue {x} actions aléatoires",
+  "content.dechainement_one_any": "joue une action aléatoire",
   "pool.race": " de race {v}",
   "pool.faction": " de la faction {v}",
   "pool.clan": " du clan {v}",
@@ -189,6 +220,14 @@ export const COMPOSED_FR: Record<string, string> = {
   "targetd.count_one": "une unité",
   "targetd.count_n": "{n} unités",
   "targetd.count_scatter": "au plus {n} unités",
+  "targetd.item_count_all": "tous les objets",
+  "targetd.item_count_one": "un objet",
+  "targetd.item_count_n": "{n} objets",
+  "targetd.item_count_scatter": "au plus {n} objets",
+  "targetd.uoi_count_all": "toutes les unités et tous les objets",
+  "targetd.uoi_count_one": "une unité ou un objet",
+  "targetd.uoi_count_n": "{n} unités ou objets",
+  "targetd.uoi_count_scatter": "au plus {n} unités ou objets",
   "targetd.hero_ally": "votre héros",
   "targetd.hero_enemy": "le héros adverse",
   "targetd.both_all": "toutes les unités et le héros {side}",
@@ -207,6 +246,19 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.count_one": "à une unité",
   "target.count_n": "à {n} unités",
   "target.count_scatter": "à au plus {n} unités",
+  // Cibles OBJET, et UNITÉ OU OBJET (accords au masculin).
+  "target.item_count_all": "à tous les objets",
+  "target.item_count_one": "à un objet",
+  "target.item_count_n": "à {n} objets",
+  "target.item_count_scatter": "à au plus {n} objets",
+  "target.uoi_count_all": "à toutes les unités et tous les objets",
+  "target.uoi_count_one": "à une unité ou un objet",
+  "target.uoi_count_n": "à {n} unités ou objets",
+  "target.uoi_count_scatter": "à au plus {n} unités ou objets",
+  "target.side_ally_one_m": "allié",
+  "target.side_ally_many_m": "alliés",
+  "target.side_enemy_one_m": "ennemi",
+  "target.side_enemy_many_m": "ennemis",
   "target.side_ally_one": "alliée",
   "target.side_ally_many": "alliées",
   "target.side_enemy_one": "ennemie",
@@ -540,6 +592,12 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
 function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
   const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
+  // COÛT OPTIONNEL laissé vide (X — ou Y pour Déchainement — absent) :
+  // n'importe quel coût, la phrase perd sa mention du coût (clés « _any »).
+  // ≤ 0 compte comme vide : c'est la convention du moteur (cf. coutLibre).
+  const valeurDeCout = eff.content === "dechainement" ? eff.magnitude?.y : eff.magnitude?.x;
+  const coutLibre = valeurDeCout == null || valeurDeCout <= 0;
+  const libre = (cle: string) => (coutLibre ? `${cle}_any` : cle);
   const y = eff.magnitude?.y ?? 0;
   const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
@@ -558,16 +616,18 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       // « le 1er objet », et non « la 1re unité … de type objet ».
       if (eff.pool?.cardType === "item") {
         const { cardType: _type, ...reste } = eff.pool;
-        return frag(t, "content.appel_item", { x: xAff }) + describePoolFilter({ ...eff, pool: reste }, t);
+        return frag(t, libre("content.appel_item"), { x: xAff }) + describePoolFilter({ ...eff, pool: reste }, t);
       }
-      return frag(t, "content.appel", { x: xAff }) + describePoolFilter(eff, t);
+      return frag(t, libre("content.appel"), { x: xAff }) + describePoolFilter(eff, t);
     }
     case "appel_supreme":
       return frag(t, "content.appel_supreme", {
         filter: describePoolFilter(eff, t),
         cost: x > 0 ? frag(t, "content.appel_supreme_cost", { max: xAff }) : "",
       });
-    case "draw_cards": return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
+    case "draw_cards":
+      if (eff.pool?.cardType === "item") return frag(t, x > 1 ? "content.draw_items_many" : "content.draw_items_one", { x: xAff });
+      return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
     case "summon_token": {
       // NOM SEUL. Les stats du token — et depuis peu ses effets composés, qu'une
@@ -594,21 +654,23 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     // `amplitudeAffichee` rend « 1 à 4 » — le texte ne doit pas promettre un
     // coût exact quand le moteur tire dans une fourchette.
     case "dechainement":
-      return frag(t, x > 1 ? "content.dechainement" : "content.dechainement_one", { x: xAff, y: yAff });
+      return frag(t, libre(x > 1 ? "content.dechainement" : "content.dechainement_one"), { x: xAff, y: yAff });
     // « … à une unité alliée » : verbe à complément indirect, donc hors de
     // DIRECT_OBJECT_CONTENT.
     case "tactique": return frag(t, x > 1 ? "content.tactique_many" : "content.tactique_one", { x: xAff });
     case "retour_differe": return frag(t, "content.retour_differe");
     case "exhumation": {
       const n = eff.target?.count;
-      const who = typeof n === "number" && n > 1 ? frag(t, "content.exhum_upto", { n })
-        : n === "all" ? frag(t, "content.exhum_all")
-        : frag(t, "content.exhum_one");
-      return frag(t, "content.exhumation", { who, x });
+      const ent = eff.target?.entity;
+      const q = ent === "item" ? "exhum_item_" : ent === "unit_or_item" ? "exhum_uoi_" : "exhum_";
+      const who = typeof n === "number" && n > 1 ? frag(t, `content.${q}upto`, { n })
+        : n === "all" ? frag(t, `content.${q}all`)
+        : frag(t, `content.${q}one`);
+      return frag(t, libre(ent === "item" || ent === "unit_or_item" ? "content.exhumation_item" : "content.exhumation"), { who, x });
     }
     case "rappel": {
       const n = eff.target?.count;
-      const kind = eff.target?.cardKind ?? "any";
+      const kind = eff.target?.entity === "item" ? "item" : eff.target?.cardKind ?? "any";
       const who = typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
         : n === "all" ? frag(t, `content.rappel_all_${kind}`)
         : frag(t, `content.rappel_one_${kind}`);
@@ -619,10 +681,16 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       {
         const ids = designatedCardIds(eff);
         const n = ids.length;
-        if (n > 1) return frag(t, groupDesignatedIds(ids).length === 1 ? "content.invocation_copies" : "content.invocation_cards", { n });
-        if (n === 1) return frag(t, "content.invocation_card");
+        // Objet(s) désigné(s) : posés, pas invoqués.
+        const o = eff.pool?.cardType === "item" ? "_item" : "";
+        if (n > 1) return frag(t, (groupDesignatedIds(ids).length === 1 ? "content.invocation_copies" : "content.invocation_cards") + o, { n });
+        if (n === 1) return frag(t, "content.invocation_card" + o);
       }
-      return frag(t, "content.invocation", { x: xAff, filter: describePoolFilter(eff, t) });
+      if (eff.pool?.cardType === "item") {
+        const { cardType: _type, ...reste } = eff.pool;
+        return frag(t, libre("content.invocation_item"), { x: xAff, filter: describePoolFilter({ ...eff, pool: reste }, t) });
+      }
+      return frag(t, libre("content.invocation"), { x: xAff, filter: describePoolFilter(eff, t) });
     case "tuteur": {
       const ids = tuteurCardIds(eff);
       const n = ids.length;
@@ -635,7 +703,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "renfort_royal":
     case "faveur":
     case "tresor":
-      return frag(t, `content.${eff.content}`, { x: xAff, filter: describePoolFilter(eff, t) });
+      return frag(t, libre(`content.${eff.content}`), { x: xAff, filter: describePoolFilter(eff, t) });
     default: return String(eff.content);
   }
 }
@@ -662,9 +730,10 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
 }
 
 // Adjectif de camp accordé en genre/nombre (alliée/alliées/ennemie/ennemies).
-function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean): string {
-  if (side === "ally") return frag(t, many ? "target.side_ally_many" : "target.side_ally_one");
-  if (side === "enemy") return frag(t, many ? "target.side_enemy_many" : "target.side_enemy_one");
+function sideAdj(t: SafeT | undefined, side: string | undefined, many: boolean, masculin = false): string {
+  const m = masculin ? "_m" : "";
+  if (side === "ally") return frag(t, (many ? "target.side_ally_many" : "target.side_ally_one") + m);
+  if (side === "enemy") return frag(t, (many ? "target.side_enemy_many" : "target.side_enemy_one") + m);
   return "";
 }
 
@@ -715,11 +784,13 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   // donc de 1 à n. Annoncer « n unités » mentirait — d'où la fourchette. À n = 1
   // la fourchette n'a pas lieu d'être et on retombe sur la tournure normale.
   const scatterRange = t.designation === "scatter" && typeof t.count === "number" && t.count > 1;
-  const count = scatterRange ? frag(tr, `${p}.count_scatter`, { n: t.count })
-    : t.count === "all" ? frag(tr, `${p}.count_all`)
-    : t.count === 1 ? frag(tr, `${p}.count_one`)
-    : frag(tr, `${p}.count_n`, { n: t.count });
-  const sideTxt = sideAdj(tr, t.side, many);
+  // Jeu de fragments selon la nature visée : unités (défaut), objets, ou les deux.
+  const q = t.entity === "item" ? `${p}.item_` : t.entity === "unit_or_item" ? `${p}.uoi_` : `${p}.`;
+  const count = scatterRange ? frag(tr, `${q}count_scatter`, { n: t.count })
+    : t.count === "all" ? frag(tr, `${q}count_all`)
+    : t.count === 1 ? frag(tr, `${q}count_one`)
+    : frag(tr, `${q}count_n`, { n: t.count });
+  const sideTxt = sideAdj(tr, t.side, many, t.entity === "item" || t.entity === "unit_or_item");
   const mtxt = membershipLabel(t.membership, tr);
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")

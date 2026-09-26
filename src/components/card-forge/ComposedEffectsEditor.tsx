@@ -89,13 +89,26 @@ const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection",
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
  *  en jeu) ; Invocation n'invoque que des unités et Sélection magique ne
  *  propose que des sorts : le filtre n'y aurait aucun sens. */
-const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal", "faveur", "appel_supreme", "appel"]);
+const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation"]);
+
+/** Contenus capables de viser un OBJET (types de cible « Objet » et « Unité ou
+ *  objet ») : l'objet reçoit le buff, part en main / sous le deck, perd ses
+ *  mots-clés, ou revient du cimetière (sur la table ou en main). */
+/** Contenus dont le X est un COÛT optionnel : vide ⇒ n'importe quel coût
+ *  (Déchainement : c'est son Y, traité à part). */
+const CONTENUS_COUT_X = new Set<ComposedEffectContent>(["selection", "selection_magique", "renfort_royal", "tresor", "faveur", "invocation", "exhumation", "appel", "appel_supreme"]);
+
+const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "retour_differe", "silence", "exhumation", "rappel"]);
+
+/** Contenus où le type de carte n'offre que « Unités » (défaut) ou « Objets » :
+ *  ils mettent quelque chose EN JEU, et une action ne s'y pose pas. */
+const TYPE_UNITE_OU_OBJET = new Set<ComposedEffectContent>(["appel", "invocation"]);
 
 function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content: ComposedEffectContent): ComposedPoolFilter | undefined {
   if (!pool?.cardType) return pool;
   // Appel n'accepte que « Objets » : un « Sorts » hérité d'une Sélection lui
   // ferait chercher une unité de type sort, c'est-à-dire rien.
-  if (CARD_TYPE_POOL_CONTENTS.has(content) && (content !== "appel" || pool.cardType === "item")) return pool;
+  if (CARD_TYPE_POOL_CONTENTS.has(content) && (!TYPE_UNITE_OU_OBJET.has(content) || pool.cardType === "item")) return pool;
   const { cardType: _retire, ...reste } = pool;
   return Object.keys(reste).length > 0 ? reste : undefined;
 }
@@ -359,6 +372,12 @@ export default function ComposedEffectsEditor({
     const eff = c.composed as ComposedEffect;
     return { ...c, composed: { ...eff, target: { ...(eff.target ?? DEFAULT_TARGET), ...p } } };
   }));
+  /** Champ de COÛT optionnel : vide ⇒ `undefined` (n'importe quel coût). */
+  const numInputCout = (val: number | undefined, on: (n: number | undefined) => void) => (
+    <input type="number" min={1} max={20} value={val != null && val > 0 ? val : ""} placeholder="∞" title={tr('cost_optional_hint')}
+      onChange={(e) => on(e.target.value === "" ? undefined : Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+      style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+  );
   const numInput = (val: number, on: (n: number) => void, min = 0, max = 20) => (
     <input type="number" min={min} max={max} value={val} onChange={(e) => on(Math.max(min, Math.min(max, parseInt(e.target.value) || 0)))}
       style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
@@ -677,8 +696,14 @@ export default function ComposedEffectsEditor({
                   : v === "exhumation" || v === "rappel"
                     ? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const }
                     : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
+                // Un type « Objet » ne survit pas à un contenu qui ne sait pas
+                // agir sur un objet : il ciblerait des objets pour ne rien faire.
+                const cibleAjustee = nextTarget && (nextTarget.entity === "item" || nextTarget.entity === "unit_or_item")
+                  && !ITEM_TARGET_CONTENTS.has(v)
+                  ? { ...nextTarget, entity: "unit" as const }
+                  : nextTarget;
                 patchEffect(idx, {
-                  content: v, target: nextTarget,
+                  content: v, target: cibleAjustee,
                   grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
                   grantTrigger: v === "grant_keyword"
                     ? (eff.grantTrigger ?? defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? ""))
@@ -688,7 +713,9 @@ export default function ComposedEffectsEditor({
                   // Le type de carte, lui, ne survit qu'entre contenus qui le
                   // proposent : « Objets » passé à une Invocation viderait son
                   // pool en silence, sans case à l'écran pour s'en apercevoir.
-                  pool: POOL_CONTENTS.has(v) ? poolSansTypeHorsPerimetre(eff.pool, v) : undefined,
+                  pool: POOL_CONTENTS.has(v) ? poolSansTypeHorsPerimetre(eff.pool, v)
+                    // Piocher garde son seul réglage de pool : « objets seulement ».
+                    : v === "draw_cards" && eff.pool?.cardType === "item" ? { cardType: "item" } : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
                   cardIds: v === "invocation" || v === "tuteur" ? eff.cardIds : undefined,
@@ -702,7 +729,9 @@ export default function ComposedEffectsEditor({
                     {/* Liste ORDONNÉE, doublons permis : plusieurs créatures désignées
                         = Invocations multiples désignées. Vide ⇒ tirage aléatoire. */}
                     <LinkedCardsPicker
-                      title={`📣 ${tr('label_designated_card')}`} required={false} creaturesOnly
+                      title={`📣 ${tr('label_designated_card')}`} required={false}
+                      // Type « Objets » : on désigne un objet, posé sur la table.
+                      types={eff.pool?.cardType === "item" ? ["item"] : ["creature"]}
                       value={designatedCardIds(eff)}
                       onChange={(v) => patchEffect(idx, { cardIds: v, cardId: undefined })}
                     />
@@ -737,11 +766,15 @@ export default function ComposedEffectsEditor({
               {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                <label style={{ fontSize: 9, color: "#666" }}>X {numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
+                <label style={{ fontSize: 9, color: "#666" }}>X {CONTENUS_COUT_X.has(eff.content)
+                  ? numInputCout(eff.magnitude?.x, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n, ...(n == null ? { randomX: undefined, minX: undefined } : {}) } }))
+                  : numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
                 {/* « ? » — la valeur saisie devient un PLAFOND et le nombre est
                     tiré entre 1 et lui, une seule fois, à la résolution. */}
                 {aleaX(idx, eff)}
-                {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
+                {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {eff.content === "dechainement"
+                  ? numInputCout(eff.magnitude?.y, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n, ...(n == null ? { randomY: undefined } : {}) } }))
+                  : numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}
                 {showY && aleaY(idx, eff)}
               </span>
               </>)}
@@ -796,6 +829,16 @@ export default function ComposedEffectsEditor({
                   </>
                 );
               })()}
+              {/* Piocher : toutes cartes (défaut) ou seulement les objets du deck. */}
+              {eff.content === "draw_cards" && (
+                <>
+                  <span style={labelStyle}>{tr('label_pool_card_type')}</span>
+                  {sel(eff.pool?.cardType === "item" ? "item" : "", [
+                    { v: "", l: tr('pool_any') },
+                    { v: "item", l: tr('draw_items_only') },
+                  ], (v) => patchEffect(idx, { pool: v === "item" ? { cardType: "item" } : undefined }))}
+                </>
+              )}
               {eff.content === "summon_token" && (
                 <>
                   <span style={labelStyle}>{tr('label_token')}</span>
@@ -818,7 +861,7 @@ export default function ComposedEffectsEditor({
                   {CARD_TYPE_POOL_CONTENTS.has(eff.content) && (
                     <>
                       <span style={labelStyle}>{tr('label_pool_card_type')}</span>
-                      {sel(eff.pool?.cardType ?? "", eff.content === "appel"
+                      {sel(eff.pool?.cardType ?? "", TYPE_UNITE_OU_OBJET.has(eff.content)
                         // Appel : pas d'« Indifférent » — sans filtre, il appelle
                         // une UNITÉ, et c'est ce que la case doit dire.
                         ? [{ v: "", l: tr('pool_type_creature') }, { v: "item", l: tr('pool_type_item') }]
@@ -854,6 +897,10 @@ export default function ComposedEffectsEditor({
                       ...(meta.target === "unit_or_hero"
                         ? [{ v: "unit", l: tr('entity_unit') }, { v: "hero", l: tr('entity_hero') }, { v: "both", l: tr('entity_both') }, { v: "self", l: tr('entity_self') }]
                         : [{ v: "unit", l: tr('entity_unit') }, { v: "self", l: tr('entity_self') }]),
+                      // OBJETS : seulement pour les contenus qui savent agir sur un objet.
+                      ...(ITEM_TARGET_CONTENTS.has(eff.content)
+                        ? [{ v: "item", l: tr('entity_item') }, { v: "unit_or_item", l: tr('entity_unit_or_item') }]
+                        : []),
                       // Propre au déclencheur Blessure : ce qui vient de blesser la porteuse.
                       ...(cap.trigger === "on_wound" ? [{ v: "damage_source", l: tr('entity_damage_source') }] : []),
                     ],
@@ -875,7 +922,7 @@ export default function ComposedEffectsEditor({
                   <span style={labelStyle}>{tr('label_side')}</span>
                   {sel(t.side, [{ v: "ally", l: tr('side_ally') }, { v: "enemy", l: tr('side_enemy') }, { v: "any", l: tr('side_any') }], (v) => patchTarget(idx, { side: v as TargetSpec["side"] }))}
 
-                  {(t.entity === "unit" || t.entity === "both") && (
+                  {(t.entity === "unit" || t.entity === "both" || t.entity === "item" || t.entity === "unit_or_item") && (
                     <>
                       {/* En répartition « point par point » (dégâts / soin), c'est
                           X qui porte le nombre de passes : NOMBRE n'a plus de rôle

@@ -1081,7 +1081,7 @@ function BoardCreature({
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                  {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} icon={kw === "tuteur" ? "🎓" : undefined} />}
+                  {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.18} />
                   {/* Apprentissage : le sort MÉMORISÉ, nommé et survolable —

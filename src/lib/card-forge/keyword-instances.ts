@@ -38,11 +38,11 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Augure": "augure", "Bénédiction": "benediction", "Bravoure": "bravoure",
   "Pillage X": "pillage", "Riposte X": "riposte",
   // Tier 1 — Cimetière / Main
-  "Rappel": "rappel", "Combustion": "combustion",
+  "Rappel X": "rappel", "Combustion": "combustion",
   // Tier 2 — Terrain
   "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
   "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
-  "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion", "Maître d'arme": "maitre_darme",
+  "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion", "Maître d'arme": "maitre_darme", "Transformation": "transformation",
   "Conférer": "conferer",
   "Déclenchement": "declenchement",
   "Convocation X": "convocation", "Malédiction": "malediction",
@@ -111,7 +111,7 @@ export interface ForgeKeywordExtras {
   /** Renforcement multiple : +Y PV, et filtres race/clan facultatifs. */
   rmY?: number; rmRace?: string; rmClan?: string;
   /** Seconds membres des capacités à couple X/Y. */
-  afY?: number; rfY?: number; dcY?: number; glY?: number; fdaY?: number;
+  afY?: number; rfY?: number; dcY?: number | null; glY?: number; fdaY?: number;
   /** Déchainement : « ? » sur Y (coût plafond, 1 à Y). */
   dcRandomY?: boolean;
   /** Invocations multiples : coûts à invoquer + restriction de pool. */
@@ -124,6 +124,8 @@ export interface ForgeKeywordExtras {
   compagnonsCardIds?: number[];
   /** Tuteur : ids des cartes liées ajoutées à la main (doublons permis). */
   tuteurCardIds?: number[];
+  /** Transformation (créature) : la carte CIBLE — une seule, la première. */
+  transformationCardIds?: number[];
 }
 
 /** Couples X/Y traités par une branche DÉDIÉE ci-dessous (leur second membre
@@ -204,7 +206,11 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // / Y (coût des sorts, dédié) ; toujours émis — sans le Y persisté, le
       // moteur retomberait sur coût 1 quelle que soit la saisie.
       if (id === "dechainement" && !isSpellCard) {
-        return { id, ...(mode ? { mode } : {}), x: x ?? 1, y: extras.dcY ?? 1, ...(extras.dcRandomY ? { randomY: true } : {}) };
+        // Y vidé exprès (null) : AUCUN Y ⇒ actions de n'importe quel coût.
+        // Absent (undefined, autres éditeurs) : le défaut historique, 1.
+        return { id, ...(mode ? { mode } : {}), x: x ?? 1,
+          ...(extras.dcY === null ? {} : { y: extras.dcY ?? 1 }),
+          ...(extras.dcRandomY && extras.dcY != null ? { randomY: true } : {}) };
       }
       // Gloire : porte +X (ATK générique) / +Y (PV dédié). Émise aussi sur
       // un SORT, qui la CONFÈRE — sans le Y persisté, le don retombait sur
@@ -256,6 +262,11 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // Tuteur (créature) : même annexe que Compagnons, même logement.
       if (id === "tuteur" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.tuteurCardIds?.length ? { linkedCardIds: extras.tuteurCardIds } : {}) };
+      }
+      // Transformation : porte la carte CIBLE (une seule) ; toujours émise, le
+      // déclencheur étant obligatoire.
+      if (id === "transformation" && !isSpellCard) {
+        return { id, ...(mode ? { mode } : {}), ...(extras.transformationCardIds?.length ? { linkedCardIds: extras.transformationCardIds.slice(0, 1) } : {}) };
       }
       // Sélection au hasard : le drapeau seul suffit à créer l'instance (le X
       // est toujours là pour une capacité scalable, mais on ne s'y fie pas).

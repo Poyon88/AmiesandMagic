@@ -1,5 +1,5 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
-import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
+import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, COUT_OPTIONNEL, DESC_COUT_LIBRE, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
 import { plageAleatoire, resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
 import { badgeAleatoire } from "./random-range";
@@ -151,7 +151,11 @@ function getSpellKeywordDescBase(
   if (!def) return String(kw.id);
   // Gabarit localisé (vocab.spell_keywords.{id}.desc) ; repli FR = def.desc.
   // La substitution X/Y/amount et les surcharges d'invocation restent en aval.
-  let desc = t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc;
+  // Coût libre : la description SANS la mention du coût.
+  const libre = spellCoutLibre(kw);
+  let desc = libre
+    ? (t?.(`vocab.spell_keywords.${kw.id}.desc_any`) ?? DESC_COUT_LIBRE[kw.id]?.spell ?? def.desc)
+    : (t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc);
 
   // Marqueurs nommés ({race}, {clan_de}, {alignment}…). Une capacité comme
   // Sélection ou Appel Suprême existe côté créature ET côté sort avec la même
@@ -205,10 +209,28 @@ function getSpellKeywordDescBase(
 }
 
 /** Get the display label for a spell keyword */
+/** Coût NON renseigné sur une capacité à coût optionnel (cf. COUT_OPTIONNEL) :
+ *  n'importe quel coût — icône seule, libellé sans X, description sans coût.
+ *  Déchainement : c'est son Y (le coût) qui compte ; Invocation : l'ancienne
+ *  ATK tient lieu de coût sur les cartes d'avant la refonte. */
+export function spellCoutLibre(kw: SpellKeywordInstance): boolean {
+  if (!COUT_OPTIONNEL[kw.id]) return false;
+  if (kw.id === "dechainement") return kw.health == null;
+  if (kw.id === "invocation") return kw.amount == null && kw.attack == null;
+  return kw.amount == null;
+}
+
 export function getSpellKeywordLabel(kw: SpellKeywordInstance, t?: SafeT): string {
   const def = SPELL_KEYWORDS[kw.id];
   if (!def) return String(kw.id);
   let label = t?.(`vocab.spell_keywords.${kw.id}.label`) ?? def.label;
+  if (spellCoutLibre(kw)) {
+    // « Rappel », « Sélection » ; Déchainement garde son nombre : « Déchainement 2 ».
+    label = kw.id === "dechainement"
+      ? label.replace(/X\/Y/, String(kw.amount ?? 1))
+      : label.replace(/ X$/, "");
+    return kw.singulier === true ? `${label} · ${singulierLabel(t)}` : label;
+  }
   // Invocation : repli legacy sur `attack` (ex-« Invocation X/Y »), cf. desc.
   if (kw.id === "invocation") label = label.replace(/X/, String(kw.amount ?? kw.attack ?? 1));
   else if (def.params.includes("attack")) label = label.replace(/X/, String(kw.attack ?? 0));
@@ -238,6 +260,8 @@ export function getSpellKeywordBadgeValue(kw: SpellKeywordInstance): string | nu
     const sign = def.label.includes("+X") ? "+" : def.label.includes("-X") ? "-" : "";
     return `${sign}${kw.attack ?? 0}/${sign}${kw.health ?? 0}`;
   }
+  // Coût libre : icône seule (Déchainement garde son nombre d'actions).
+  if (spellCoutLibre(kw)) return kw.id === "dechainement" ? String(kw.amount ?? 1) : null;
   if (usesAmount && usesHealth) return `${kw.amount ?? 1}/${kw.health ?? 1}${kw.randomY === true && (kw.health ?? 1) > 1 ? "?" : ""}`;
   if (usesAmount) {
     const v = kw.id === "invocation" ? (kw.amount ?? kw.attack ?? 1) : (kw.amount ?? 1);

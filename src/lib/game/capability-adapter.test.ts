@@ -365,6 +365,14 @@ describe("registre — métadonnées de taxonomie", () => {
     for (const a of Object.values(ABILITIES)) {
       if (CURATED_MULTIMODE_IDS.has(creatureEngineId(a))) {
         expect(a.triggers!.curatedMultiMode, a.id).toBe(true);
+        // Transformation : liste PROPRE — ni entrée en jeu (aucune autre forme à
+        // prendre en arrivant), ni retour en main ni pioche (hors plateau).
+        if (creatureEngineId(a) === "transformation") {
+          expect(a.triggers!.creatureTriggers, a.id).toEqual([
+            "on_death", "on_activation", "on_end_of_turn", "on_start_of_turn", "on_attack", "on_low_hp", "on_wound",
+          ]);
+          continue;
+        }
         // Effets exigeant la source en jeu (Sacrifice, Mimique, Métamorphose…) :
         // jamais mort ni retour en main — seulement les déclencheurs sur plateau
         // (« Sous 15 PV » en fait partie : la source est en jeu au balayage).

@@ -1,7 +1,7 @@
 import type { Keyword, KeywordMode, KeywordInstance, SpellKeywordInstance } from "./types";
 import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X } from "./abilities";
+import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X, COUT_OPTIONNEL } from "./abilities";
 import { SINGULIER_COLOR } from "./singulier";
 import { badgeAleatoire } from "./random-range";
 
@@ -389,7 +389,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
   "terreur", "armure", "commandement", "fureur", "double_attaque", "invisible",
-  "canalisation", "contresort", "exclusion", "maitre_darme", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
+  "canalisation", "contresort", "exclusion", "maitre_darme", "transformation", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
   "touche_mortel",
   "paralysie", "permutation", "persecution", "pietinement",
   "catalyse", "ombre_du_passe", "profanation", "prescience", "suprematie", "divination", "savant",
@@ -448,10 +448,10 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   poison: "Poison", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
   pillage: "Pillage X", riposte: "Riposte X", chant: "Chant", lune: "Lune X", soleil: "Soleil X",
-  rappel: "Rappel", combustion: "Combustion",
+  rappel: "Rappel X", combustion: "Combustion",
   terreur: "Terreur", pauvrete: "Pauvreté X", armure: "Armure",
   commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
-  canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", convocation: "Convocation X",
+  canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", transformation: "Transformation", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",
   malediction: "Malédiction", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
   paralysie: "Paralysie", permutation: "Permutation", persecution: "Persécution X",
@@ -570,6 +570,8 @@ export function keywordBadgeValue(
   // libellé de la capacité donnée, que la description résout déjà.
   if (kw === "conferer") return null;
   if (NEUTRAL_PAIR_KEYWORDS.has(kw)) {
+    // Y (coût) non renseigné : n'importe quel coût, seul le nombre s'affiche.
+    if (inst?.y == null && COUT_OPTIONNEL[kw]) return String(x ?? inst?.x ?? 0);
     // Déchainement au hasard : « 2/3? » — le plafond, marqué comme tel.
     return `${x ?? inst?.x ?? 0}/${inst?.y ?? 0}${inst?.randomY === true && (inst?.y ?? 0) > 1 ? "?" : ""}`;
   }
@@ -615,7 +617,9 @@ export function applyKeywordValueToLabel(
   // lettre comprise — et ce sont les 50 cartes déjà en base qui étaient dans ce
   // cas, pas une exception.
   const valeur = x ?? KEYWORD_DEFAULT_X[kw];
-  return valeur != null ? label.replace(/ X$/, ` ${xNumeral(valeur)}`) : label;
+  if (valeur != null) return label.replace(/ X$/, ` ${xNumeral(valeur)}`);
+  // COÛT OPTIONNEL non renseigné : n'importe quel coût, le X disparaît du nom.
+  return COUT_OPTIONNEL[kw] ? label.replace(/ X$/, "") : label;
 }
 
 export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
@@ -628,7 +632,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   rappel: "🔄", combustion: "🔥",
   terreur: "👁️", pauvrete: "📉", armure: "/icons/armure.png",
   commandement: "👑", fureur: "💢", double_attaque: "⚔️", invisible: "👻",
-  canalisation: "🔮", contresort: "🚫", exclusion: "⛔", maitre_darme: "🤺", convocation: "📣",
+  canalisation: "🔮", contresort: "🚫", exclusion: "⛔", maitre_darme: "🤺", transformation: "🦋", convocation: "📣",
   convocation_simple: "📯", invocation: "📣",
   malediction: "💀", necrophagie: "🦴", richesse: "🤑", sacrifice_demoniaque: "👹",
   paralysie: "⛓️", permutation: "🔀", persecution: "🩻", pietinement: "🐾",

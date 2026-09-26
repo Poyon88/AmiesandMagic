@@ -22,7 +22,7 @@ describe("buildKeywordInstances — cas générique", () => {
   });
 
   it("un mode seul suffit à produire une instance", () => {
-    expect(buildKeywordInstances({ labels: ["Rappel"], modes: { "Rappel": "death" } }))
+    expect(buildKeywordInstances({ labels: ["Rappel X"], modes: { "Rappel X": "death" } }))
       .toEqual([{ id: "rappel", mode: "death" }]);
   });
 

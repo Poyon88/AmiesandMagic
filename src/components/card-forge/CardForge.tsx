@@ -24,7 +24,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, COUT_OPTIONNEL, creatureEngineId, RANDOM_X_ABILITY_IDS, xEquivalentCoutLibre, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
 import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
@@ -1789,6 +1789,16 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
   // Plancher A du « ? », par libellé (cf. KeywordInstance.minX).
   const [keywordMinX, setKeywordMinX] = useState<Record<string, number>>({});
+  /** Capacité à COÛT OPTIONNEL (par libellé forge) : son X peut rester vide. */
+  const coutOpt = (label: string) => !!COUT_OPTIONNEL[FORGE_TO_GAME_KEYWORD[label] ?? ""];
+  /** Saisie d'un X : vide ⇒ supprimé (n'importe quel coût) si la capacité le
+   *  permet, sinon ramené à 1 comme avant ; borné à [1, 10]. */
+  const setX = (label: string, brut: string) => setKeywordXValues(prev => {
+    const next = { ...prev };
+    if (brut === "" && coutOpt(label)) delete next[label];
+    else next[label] = Math.max(1, Math.min(10, parseInt(brut) || 1));
+    return next;
+  });
   // Action : liste des capacités CONFÉRÉES aux créatures, repliée par défaut.
   const [confereesOuvertes, setConfereesOuvertes] = useState(false);
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
@@ -1809,6 +1819,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [compagnonsCardIds, setCompagnonsCardIds] = useState<number[]>([]);
   // Tuteur : ids des cartes liées ajoutées à la MAIN (doublons permis).
   const [tuteurCardIds, setTuteurCardIds] = useState<number[]>([]);
+  // Transformation : la carte CIBLE (une seule).
+  const [transformationCardIds, setTransformationCardIds] = useState<number[]>([]);
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
@@ -1831,7 +1843,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [glY, setGlY] = useState<number>(1);
   // Déchainement X/Y (créature) : le coût Y des sorts lancés (le nombre de
   // sorts = la valeur X générique).
-  const [dcY, setDcY] = useState<number>(1);
+  // Y de Déchainement ; null = vidé exprès ⇒ actions de n'importe quel coût.
+  const [dcY, setDcY] = useState<number | null>(1);
   // Déchainement : « ? » sur Y (coût plafond 1 à Y) — cf. keyword-instances (dcRandomY).
   const [dcRandomY, setDcRandomY] = useState<boolean>(false);
   // Force des ancêtres +X/+Y (créature) : le +PV (Y) dédié (le +ATK = la valeur X).
@@ -1924,7 +1937,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       // de la première).
       const x = kw === "Compagnons" ? Math.max(1, compagnonsCardIds.length)
         : kw === "Tuteur" ? Math.max(1, tuteurCardIds.length)
-        : keywordXValues[kw] ?? 1;
+        : keywordXValues[kw]
+          // Coût optionnel laissé vide : barème d'un X = 10 (plafond) ou 5 (coût exact).
+          ?? (coutOpt(kw) ? xEquivalentCoutLibre(FORGE_TO_GAME_KEYWORD[kw] ?? "") : 1);
       return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
     }, 0)
   );
@@ -1960,7 +1975,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Renforcement +X/+Y": rfY,
       "Renforcement multiple": rmY,
       "Affaiblissement -X/-Y": afY,
-      "Déchainement X/Y": dcY,
+      // Y vidé (null) : pas de Y — l'aperçu affiche alors le seul nombre.
+      ...(dcY != null ? { "Déchainement X/Y": dcY } : {}),
       "Force des ancêtres +X/+Y": fdaY,
     },
     keywordGrantScope: !porteStats ? keywordGrantScope : undefined,
@@ -2539,6 +2555,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setCompagnonsCardIds([]);
     setTuteurCardIds([]);
+    setTransformationCardIds([]);
     setConferAbilityId(""); setConferX(1); setConferY(1);
     // Jetons et races ciblées
     setConvocationTokenId(null);
@@ -2604,6 +2621,18 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         setSaveResult({ ok: false, msg: "Tuteur : choisissez au moins une carte à ajouter en main." });
         setSaving(false);
         return;
+      }
+      if (gameKeywords.includes("transformation")) {
+        if (transformationCardIds.length === 0) {
+          setSaveResult({ ok: false, msg: "Transformation : choisissez la carte en laquelle la créature se transforme." });
+          setSaving(false);
+          return;
+        }
+        if (!keywordModes["Transformation"]) {
+          setSaveResult({ ok: false, msg: "Transformation : choisissez un déclencheur (mort, attaque, début de tour…) — l'entrée en jeu n'en est pas un." });
+          setSaving(false);
+          return;
+        }
       }
       // Same guard on the spell side: a sort with `invocation_multiple`
       // (= "Convocations multiples" in the picker) must carry the token
@@ -2672,7 +2701,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
           conferAbilityId, conferX, conferY, declenchementTriggers,
-          compagnonsCardIds, tuteurCardIds,
+          compagnonsCardIds, tuteurCardIds, transformationCardIds,
         },
       });
 
@@ -2790,7 +2819,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3622,9 +3651,13 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               {def.params.includes("amount") && (
                                 <div>
                                   <label style={{ fontSize: 7, color: "#666" }}>X</label>
-                                  <input type="number" min={1} max={20} value={kw.amount ?? 1}
+                                  <input type="number" min={1} max={20} value={kw.amount ?? (COUT_OPTIONNEL[kw.id] ? "" : 1)}
+                                    placeholder={COUT_OPTIONNEL[kw.id] ? "∞" : undefined}
+                                    title={COUT_OPTIONNEL[kw.id] ? tf('cost_optional_hint') : undefined}
                                     onChange={e => {
-                                      const val = Math.max(1, parseInt(e.target.value) || 1);
+                                      // Coût optionnel vidé : n'importe quel coût (amount absent).
+                                      const vide = e.target.value === "" && !!COUT_OPTIONNEL[kw.id];
+                                      const val = vide ? undefined : Math.max(1, parseInt(e.target.value) || 1);
                                       setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, amount: val } : k));
                                     }}
                                     style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }}
@@ -3920,8 +3953,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             {xSurPuce && (
                               <input
                                 type="number" min={1} max={10}
-                                value={keywordXValues[id] ?? 1}
-                                onChange={e => setKeywordXValues(prev => ({ ...prev, [id]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
+                                value={keywordXValues[id] ?? (coutOpt(id) ? "" : 1)}
+                                placeholder={coutOpt(id) ? "∞" : undefined}
+                                title={coutOpt(id) ? tf('cost_optional_hint') : undefined}
+                                onChange={e => setX(id, e.target.value)}
                                 style={{
                                   width: 32, padding: "3px 4px", borderRadius: "0 5px 5px 0",
                                   border: `1px solid ${fac.color}`, borderLeft: "none",
@@ -4218,11 +4253,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         <div style={{ fontSize: 8, color: "#b3541e", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>🌋 DÉCHAINEMENT</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 9, color: "#b3541e" }}>{tf('spell_cost_y')}</span>
-                          <input type="number" min={1} max={10} value={dcY}
-                            onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                          <input type="number" min={1} max={10} value={dcY ?? ""} placeholder="∞" title={tf('cost_optional_hint')}
+                            onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
-                          <label title={tf('random_hint', { max: dcY })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
+                          <label title={tf('random_hint', { max: dcY ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                           <span style={{ fontSize: 8, color: "#888" }}>{tf('spell_count_is_x')}</span>
                         </div>
                       </div>
@@ -4247,6 +4282,13 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     {manualKeywords.includes("Tuteur") && (
                       <div style={{ marginTop: 6 }}>
                         <LinkedCardsPicker title="🎓 Tuteur — cartes ajoutées en main" value={tuteurCardIds} onChange={setTuteurCardIds} accent="#8a6d3b" />
+                      </div>
+                    )}
+                    {/* Transformation — la carte cible (une seule) */}
+                    {manualKeywords.includes("Transformation") && (
+                      <div style={{ marginTop: 6 }}>
+                        <LinkedCardsPicker title="🦋 Transformation — se transforme en (1 carte)" value={transformationCardIds}
+                          onChange={(ids) => setTransformationCardIds(ids.slice(-1))} accent="#8e44ad" />
                       </div>
                     )}
                     {/* Conférer — capacité conférée + portée */}
@@ -4626,8 +4668,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             <span style={{ ...valStyle, display: "flex", alignItems: "center", gap: 8 }}>
                               {def?.creature?.desc ?? def?.desc ?? label}
                               {scalable && !XY_LABELS_X_DANS_PANNEAU.has(label) && !isCoupleXYGenerique(label) && (
-                                <input type="number" min={1} max={10} value={keywordXValues[label] ?? 1}
-                                  onChange={e => setKeywordXValues(prev => ({ ...prev, [label]: Math.max(1, Math.min(10, parseInt(e.target.value) || 1)) }))}
+                                <input type="number" min={1} max={10} value={keywordXValues[label] ?? (coutOpt(label) ? "" : 1)}
+                                  placeholder={coutOpt(label) ? "∞" : undefined}
+                                  onChange={e => setX(label, e.target.value)}
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
                                   title={tf('x_value_title')} />
                               )}
@@ -4729,8 +4772,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               <div style={{ ...labelStyle, color: "#b3541e", marginBottom: 3 }}>🌋 {tf('spell_cost_y')} <span style={{ color: "#888", fontWeight: 400 }}>{tf('spell_count_is_x')}</span></div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#b3541e" }}>Y</span>
-                                <input type="number" min={1} max={10} value={dcY} onChange={e => setDcY(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-                                <label title={tf('random_hint', { max: dcY })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY} onChange={e => setDcRandomY(e.target.checked)} />?</label>
+                                <input type="number" min={1} max={10} value={dcY ?? ""} placeholder="∞" title={tf('cost_optional_hint')} onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <label title={tf('random_hint', { max: dcY ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                               </div>
                             </div>
                           )}

@@ -102,8 +102,9 @@
         "desc": "Wenn dies die erste in diesem Zug gespielte Karte ist, werden alle ihre Werte dauerhaft um X erhöht."
       },
       "rappel": {
-        "label": "Rückruf",
-        "desc": "Legt eine anvisierte Karte aus eurem Friedhof zurück auf eure Hand."
+        "label": "Rückruf X",
+        "desc": "Legt eine anvisierte Karte mit Kosten ≤ X aus deinem Friedhof auf deine Hand.",
+        "desc_any": "Legt eine anvisierte Karte aus deinem Friedhof auf deine Hand."
       },
       "combustion": {
         "label": "Verbrennung",
@@ -149,6 +150,14 @@
         "label": "Ausschluss X",
         "desc": "Annulliert die nächsten X gegnerischen Einheitenbeschwörungen."
       },
+      "maitre_darme": {
+        "label": "Waffenmeister",
+        "desc": "Rüstet sich kostenlos mit allen euren im Spiel befindlichen Gegenständen aus, einschließlich derer, die eure anderen Kreaturen tragen."
+      },
+      "transformation": {
+        "label": "Verwandlung",
+        "desc": "Verwandelt sich in die angegebene Karte. Nimmt ihre ursprüngliche Form wieder an, wenn sie das Spielfeld verlässt."
+      },
       "convocation": {
         "label": "Beschwörung X",
         "desc": "Erschafft {token}."
@@ -159,7 +168,8 @@
       },
       "invocation": {
         "label": "Beschwörung X",
-        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format)."
+        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format).",
+        "desc_any": "Beschwört eine zufällige Kreatur aus deiner Sammlung ({alignment}, aktuelles Format)."
       },
       "malediction": {
         "label": "Fluch",
@@ -275,7 +285,8 @@
       },
       "exhumation": {
         "label": "Exhumierung X",
-        "desc": "Erweckt eine Einheit aus eurem Friedhof mit Manakosten von X oder weniger."
+        "desc": "Erweckt eine Einheit aus eurem Friedhof mit Manakosten von X oder weniger.",
+        "desc_any": "Erweckt eine Einheit aus deinem Friedhof wieder, unabhängig von ihren Kosten."
       },
       "heritage_du_cimetiere": {
         "label": "Erbe des Friedhofs",
@@ -343,7 +354,8 @@
       },
       "appel_du_clan": {
         "label": "Ruf des Clans X",
-        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X von oben deines Decks aus."
+        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X von oben deines Decks aus.",
+        "desc_any": "Bringt die erste Einheit {clan_de} von oben deines Decks kostenlos ins Spiel."
       },
       "appel_supreme": {
         "label": "Oberster Ruf",
@@ -363,23 +375,28 @@
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; füge eine davon deiner Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; füge eine davon deiner Hand hinzu.",
+        "desc_any": "Deckt 3 gewöhnliche Karten {alignment} auf; nimm eine davon auf die Hand."
       },
       "faveur": {
         "label": "Gunst X",
-        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu."
+        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu.",
+        "desc_any": "Fügt zufällig eine gewöhnliche Karte {alignment} zur Hand hinzu."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu.",
+        "desc_any": "Deckt 3 gewöhnliche Aktionen {alignment} auf; nimm eine davon auf die Hand."
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
+        "desc": "Deckt 3 deiner limitierten Editionen mit Kosten X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon.",
+        "desc_any": "Deckt 3 deiner limitierten Editionen auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
       },
       "tresor": {
         "label": "Schatz X",
-        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu."
+        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu.",
+        "desc_any": "Deckt 3 gewöhnliche Gegenstände {alignment} oder neutrale auf; nimm einen davon auf die Hand."
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
@@ -503,7 +520,8 @@
       },
       "dechainement": {
         "label": "Entfesselung X/Y",
-        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen."
+        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen.",
+        "desc_any": "Spielt X zufällige Aktionen aus deiner Sammlung ({alignment}) mit zufälligen Zielen."
       },
       "force_des_ancetres": {
         "label": "Kraft der Ahnen +X/+Y",
@@ -524,10 +542,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "maitre_darme": {
-        "label": "Waffenmeister",
-        "desc": "Rüstet sich kostenlos mit allen euren im Spiel befindlichen Gegenständen aus, einschließlich derer, die eure anderen Kreaturen tragen."
       }
     },
     "spell_keywords": {
@@ -589,7 +603,8 @@
       },
       "appel_du_clan": {
         "label": "Clanruf X",
-        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X aus deinem Deck aus."
+        "desc": "Spielt kostenlos die erste Einheit {clan_de} mit Kosten ≤ X aus deinem Deck aus.",
+        "desc_any": "Bringt die erste Einheit {clan_de} deines Decks kostenlos ins Spiel."
       },
       "appel_supreme": {
         "label": "Supremer Ruf",
@@ -600,32 +615,39 @@
         "desc": "Deckt die obersten X Karten des Decks auf; behalte die {race_pl} auf der Hand, wirf den Rest ab."
       },
       "rappel": {
-        "label": "Rückruf",
-        "desc": "Bringt eine Karte aus eurem Friedhof zurück auf die Hand"
+        "label": "Rückruf X",
+        "desc": "Legt eine Karte mit Kosten ≤ X aus deinem Friedhof auf deine Hand",
+        "desc_any": "Legt eine Karte aus deinem Friedhof auf deine Hand"
       },
       "exhumation": {
         "label": "Exhumierung X",
-        "desc": "Erweckt eine Kreatur (Kosten ≤ X) aus deinem Friedhof auf dem Spielfeld."
+        "desc": "Erweckt eine Kreatur (Kosten ≤ X) aus deinem Friedhof auf dem Spielfeld.",
+        "desc_any": "Erweckt eine Kreatur aus deinem Friedhof auf dem Spielfeld, unabhängig von ihren Kosten"
       },
       "selection": {
         "label": "Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; fügt eine davon zur Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; fügt eine davon zur Hand hinzu",
+        "desc_any": "Deckt 3 gewöhnliche Karten {alignment} auf; nimm eine davon auf die Hand"
       },
       "faveur": {
         "label": "Gunst X",
-        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu"
+        "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu",
+        "desc_any": "Fügt zufällig eine gewöhnliche Karte {alignment} zur Hand hinzu"
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
-        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Aktionen {alignment} mit Kosten X auf; fügen Sie eine davon Ihrer Hand hinzu",
+        "desc_any": "Deckt 3 gewöhnliche Aktionen {alignment} auf; nimm eine davon auf die Hand"
       },
       "tresor": {
         "label": "Schatz X",
-        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu"
+        "desc": "Deckt 3 gewöhnliche Objekte {alignment} oder neutrale mit Kosten X auf; fügen Sie eines davon Ihrer Hand hinzu",
+        "desc_any": "Deckt 3 gewöhnliche Gegenstände {alignment} oder neutrale auf; nimm einen davon auf die Hand"
       },
       "renfort_royal": {
         "label": "Königliche Auswahl X",
-        "desc": "Deckt 3 eurer limitierten Editionen mit Kosten X auf (≥30 erforderlich; sonst 3 gewöhnliche Karten {alignment}); behaltet eine davon"
+        "desc": "Deckt 3 eurer limitierten Editionen mit Kosten X auf (≥30 erforderlich; sonst 3 gewöhnliche Karten {alignment}); behaltet eine davon",
+        "desc_any": "Deckt 3 deiner limitierten Editionen auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon"
       },
       "relancer": {
         "label": "Wiederholen X",
@@ -633,11 +655,13 @@
       },
       "dechainement": {
         "label": "Entfesselung X/Y",
-        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen."
+        "desc": "Spielt X zufällige Aktionen mit Kosten Y aus Ihrer Sammlung ({alignment}), mit zufälligen Zielen.",
+        "desc_any": "Spielt X zufällige Aktionen aus deiner Sammlung ({alignment}) mit zufälligen Zielen"
       },
       "invocation": {
         "label": "Beschwörung X",
-        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format)."
+        "desc": "Beschwört eine zufällige Kreatur mit Kosten X aus deiner Sammlung ({alignment}, aktuelles Format).",
+        "desc_any": "Beschwört eine zufällige Kreatur aus deiner Sammlung ({alignment}, aktuelles Format)"
       },
       "impact": {
         "label": "Einschlag X",
@@ -665,7 +689,7 @@
       },
       "silence": {
         "label": "Stille",
-        "desc": "Entfernt alle Schlüsselwörter einer anvisierten Kreatur und setzt ihre Werte auf die Ursprungswerte zurück."
+        "desc": "Entfernt alle Schlüsselwörter einer Zielkreatur und setzt ihre Werte auf die Ausgangswerte zurück; bei einem Gegenstand werden dessen Schlüsselwörter entfernt, seine Eigenschaften bleiben jedoch erhalten"
       },
       "renforcement": {
         "label": "Stärkung +X/+Y",
@@ -701,7 +725,7 @@
       },
       "retour_differe": {
         "label": "Verzögerte Rückkehr",
-        "desc": "Legt die anvisierte Einheit unter das Deck ihres Besitzers"
+        "desc": "Legt die anvisierte Einheit oder den anvisierten Gegenstand unter das Deck des Besitzers"
       },
       "epargne": {
         "label": "Sparen X",
@@ -725,7 +749,7 @@
       },
       "remontee": {
         "label": "Rückzug",
-        "desc": "Gibt eine Zieleinheit auf die Hand ihres ursprünglichen Besitzers zurück."
+        "desc": "Schickt eine anvisierte Einheit oder einen anvisierten Gegenstand zurück in die Hand des ursprünglichen Besitzers."
       },
       "renforcement_multiple": {
         "label": "Mehrfachstärkung",
@@ -821,6 +845,19 @@
         "exhum_one": "eine Kreatur",
         "exhum_all": "alle Kreaturen",
         "exhum_upto": "bis zu {n} Kreaturen",
+        "exhumation_item": "bringt {who} aus eurem Friedhof ins Spiel zurück (Kosten ≤ {x})",
+        "exhum_item_one": "einen Gegenstand",
+        "exhum_item_all": "alle Gegenstände",
+        "exhum_item_upto": "bis zu {n} Gegenstände",
+        "exhum_uoi_one": "eine Kreatur oder einen Gegenstand",
+        "exhum_uoi_all": "alle Kreaturen und alle Gegenstände",
+        "exhum_uoi_upto": "bis zu {n} Kreaturen oder Gegenstände",
+        "rappel_one_item": "einen Gegenstand",
+        "rappel_all_item": "alle Gegenstände",
+        "rappel_upto_item": "bis zu {n} Gegenstände",
+        "draw_items_one": "zieht {x} Gegenstand aus eurem Deck",
+        "draw_items_many": "zieht {x} Gegenstände aus eurem Deck",
+        "invocation_item": "spielt einen zufälligen Gegenstand mit Kosten {x}{filter}",
         "rappel": "bringt {who} aus deinem Friedhof auf deine Hand zurück{cost}",
         "rappel_cost": " (Kosten ≤ {max})",
         "rappel_one_any": "eine Karte",
@@ -859,7 +896,23 @@
         "faveur": "fügt eurer Hand eine zufällige Karte{filter} (Kosten {x}) hinzu",
         "selection_magique": "deckt 3 Aktionen{filter} auf (Kosten {x}) und behält eine auf der Hand",
         "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
-        "tresor": "deckt 3 Gegenstände{filter} auf (Kosten {x}) und behält einen auf der Hand"
+        "tresor": "deckt 3 Gegenstände{filter} auf (Kosten {x}) und behält einen auf der Hand",
+        "selection_any": "deckt 3 Karten{filter} auf und behält eine davon auf der Hand",
+        "faveur_any": "fügt zufällig eine Karte{filter} zur Hand hinzu",
+        "selection_magique_any": "deckt 3 Aktionen{filter} auf und behält eine davon auf der Hand",
+        "renfort_royal_any": "deckt 3 Sammlungskarten{filter} auf und behält eine davon auf der Hand",
+        "tresor_any": "deckt 3 Gegenstände{filter} auf und behält einen davon auf der Hand",
+        "invocation_any": "beschwört eine zufällige Kreatur{filter}",
+        "invocation_item_any": "legt einen zufälligen Gegenstand{filter}",
+        "exhumation_any": "erweckt {who} aus deinem Friedhof",
+        "exhumation_item_any": "bringt {who} aus deinem Friedhof zurück ins Spiel",
+        "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
+        "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
+        "dechainement_any": "spielt {x} zufällige Aktionen",
+        "dechainement_one_any": "spielt eine zufällige Aktion",
+        "invocation_card_item": "bringt den bezeichneten Gegenstand ins Spiel",
+        "invocation_cards_item": "bringt die {n} bezeichneten Gegenstände ins Spiel",
+        "invocation_copies_item": "bringt {n} Exemplare des bezeichneten Gegenstands ins Spiel"
       },
       "emblem": {
         "badge": "Emblem",
@@ -922,6 +975,14 @@
         "count_one": "eine Einheit",
         "count_n": "{n} Einheiten",
         "count_scatter": "höchstens {n} Einheiten",
+        "item_count_all": "alle Gegenstände",
+        "item_count_one": "einen Gegenstand",
+        "item_count_n": "{n} Gegenstände",
+        "item_count_scatter": "höchstens {n} Gegenstände",
+        "uoi_count_all": "alle Einheiten und alle Gegenstände",
+        "uoi_count_one": "eine Einheit oder einen Gegenstand",
+        "uoi_count_n": "{n} Einheiten oder Gegenstände",
+        "uoi_count_scatter": "höchstens {n} Einheiten oder Gegenstände",
         "hero_ally": "euer Held",
         "hero_enemy": "der gegnerische Held",
         "both_all": "alle Einheiten und der Held {side}",
@@ -941,6 +1002,18 @@
         "count_one": "an eine Einheit",
         "count_n": "an {n} Einheiten",
         "count_scatter": "an höchstens {n} Einheiten",
+        "item_count_all": "an alle Gegenstände",
+        "item_count_one": "an einen Gegenstand",
+        "item_count_n": "an {n} Gegenstände",
+        "item_count_scatter": "an höchstens {n} Gegenstände",
+        "uoi_count_all": "an alle Einheiten und alle Gegenstände",
+        "uoi_count_one": "an eine Einheit oder einen Gegenstand",
+        "uoi_count_n": "an {n} Einheiten oder Gegenstände",
+        "uoi_count_scatter": "an höchstens {n} Einheiten oder Gegenstände",
+        "side_ally_one_m": "verbündet",
+        "side_ally_many_m": "verbündete",
+        "side_enemy_one_m": "gegnerisch",
+        "side_enemy_many_m": "gegnerische",
         "side_ally_one": "verbündeten",
         "side_ally_many": "verbündete",
         "side_enemy_one": "feindliche",
@@ -2072,6 +2145,7 @@
     "pool_type_creature": "Einheiten",
     "pool_type_spell": "Aktionen",
     "pool_type_item": "Gegenstände",
+    "draw_items_only": "Nur Gegenstände aus dem Deck",
     "pool_any": "Beliebig",
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
@@ -2085,6 +2159,8 @@
     "label_targets": "ZIELE",
     "label_type": "TYP",
     "entity_unit": "Einheit",
+    "entity_item": "Gegenstand",
+    "entity_unit_or_item": "Einheit oder Gegenstand",
     "entity_hero": "Held",
     "entity_both": "Beide (Held + Einheiten)",
     "entity_self": "Sich selbst (die Kreatur)",
@@ -2480,6 +2556,7 @@
     "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
     "random_min_hint": "Mindestkosten (A): Jede Kostenhöhe wird zwischen {min} und {max} ausgewürfelt.",
+    "cost_optional_hint": "Leer lassen für beliebige Kosten.",
     "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",

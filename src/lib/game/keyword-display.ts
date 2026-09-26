@@ -3,7 +3,7 @@ import type { SafeT } from "@/i18n/config";
 import { KEYWORDS, KEYWORD_DESC_BY_ID } from "@/lib/card-engine/constants";
 import { getRaceForm } from "@/lib/card-engine/race-forms";
 import { KEYWORD_LABELS, getKeywordDisplayLabel, keywordModeColor } from "./keyword-labels";
-import { AUTOMATIC_ABILITY_IDS, CURATED_MULTIMODE_IDS, DEATH_NATURE_IDS } from "./abilities";
+import { AUTOMATIC_ABILITY_IDS, COUT_OPTIONNEL, CURATED_MULTIMODE_IDS, DEATH_NATURE_IDS, DESC_COUT_LIBRE } from "./abilities";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, type Resolver } from "./desc-markers";
 import { SINGULIER_COLOR } from "./singulier";
@@ -168,7 +168,12 @@ export function keywordScopeNote(
 }
 
 /** Gabarit brut d'un mot-clé : message localisé, sinon repli FR du registre. */
-function template(kw: Keyword, t?: SafeT): string | null {
+function template(kw: Keyword, t?: SafeT, coutLibre = false): string | null {
+  // Coût optionnel non renseigné : la description SANS la mention du coût.
+  if (coutLibre) {
+    const libre = t?.(`vocab.keywords.${kw}.desc_any`) ?? DESC_COUT_LIBRE[kw]?.creature;
+    if (libre) return libre;
+  }
   const forgeKey = KEYWORD_LABELS[kw];
   const fallback =
     (forgeKey ? KEYWORDS[forgeKey]?.desc : undefined) ?? KEYWORD_DESC_BY_ID[kw];
@@ -184,7 +189,10 @@ export function describeKeyword(
   ctx: KeywordDescCtx = {},
   t?: SafeT,
 ): string | null {
-  const tmpl = template(kw, t);
+  // Déchainement : le coût est son Y ; ailleurs, le X.
+  const coutLibre = !!COUT_OPTIONNEL[kw]
+    && (kw === "dechainement" ? (ctx.instance != null && ctx.instance.y == null) : ctx.x == null);
+  const tmpl = template(kw, t, coutLibre);
   if (!tmpl) return null;
   const s = resolveMarkers(tmpl, kw, ctx, t, TOKEN_RESOLVERS);
 

@@ -17,7 +17,7 @@ interface PickableCard {
   id: number;
   name: string;
   mana_cost: number;
-  card_type: "creature" | "spell";
+  card_type: "creature" | "spell" | "item";
   faction: string | null;
   attack: number | null;
   health: number | null;
@@ -69,7 +69,7 @@ const normalize = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function LinkedCardsPicker({
-  value, onChange, accent = "#8a6d3b", title, single = false, required = true, creaturesOnly = false,
+  value, onChange, accent = "#8a6d3b", title, single = false, required = true, creaturesOnly = false, types,
 }: {
   value: number[];
   onChange: (v: number[]) => void;
@@ -80,8 +80,10 @@ export default function LinkedCardsPicker({
   single?: boolean;
   /** Affiche « requis » tant que rien n'est choisi. */
   required?: boolean;
-  /** Ne propose que des créatures (une Invocation ne met en jeu qu'une créature). */
+  /** Ne propose que des créatures (raccourci de `types: ["creature"]`). */
   creaturesOnly?: boolean;
+  /** Types de carte proposés (défaut : tous). Invocation « Objets » : ["item"]. */
+  types?: ("creature" | "spell" | "item")[];
 }) {
   const [catalog, setCatalog] = useState<PickableCard[]>(catalogCache ?? []);
   const [search, setSearch] = useState("");
@@ -99,12 +101,16 @@ export default function LinkedCardsPicker({
     const needle = normalize(search.trim());
     if (!needle) return [];
     return catalog
-      .filter((c) => (!creaturesOnly || c.card_type === "creature") && normalize(c.name).includes(needle))
+      .filter((c) => {
+        const admis = types ?? (creaturesOnly ? ["creature"] : undefined);
+        return (!admis || admis.includes(c.card_type)) && normalize(c.name).includes(needle);
+      })
       .slice(0, 20);
-  }, [catalog, search, creaturesOnly]);
+  }, [catalog, search, creaturesOnly, types]);
 
   const cardLabel = (c: PickableCard) => {
-    const stats = c.card_type === "creature" ? ` ${c.attack ?? 0}/${c.health ?? 0}` : " (action)";
+    const stats = c.card_type === "creature" ? ` ${c.attack ?? 0}/${c.health ?? 0}`
+      : c.card_type === "item" ? ` +${c.attack ?? 0}/+${c.health ?? 0} (objet)` : " (action)";
     const fac = c.faction ? ` · ${getFactionDisplayName(c.faction)}` : "";
     return `${c.name} — ${c.mana_cost}💧${stats}${fac}`;
   };

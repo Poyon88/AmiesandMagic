@@ -356,13 +356,13 @@ export default function GamePage() {
         const linkedIds = new Set<number>();
         const collectLinked = (c: Card) => {
           for (const inst of c.keyword_instances ?? []) {
-            if (inst.id === "compagnons" || inst.id === "tuteur") for (const id of inst.linkedCardIds ?? []) linkedIds.add(id);
+            if (inst.id === "compagnons" || inst.id === "tuteur" || inst.id === "transformation") for (const id of inst.linkedCardIds ?? []) linkedIds.add(id);
           }
           for (const sk of c.spell_keywords ?? []) {
             if (sk.id === "compagnons" || sk.id === "tuteur") for (const id of sk.linkedCardIds ?? []) linkedIds.add(id);
           }
           for (const cap of c.capabilities ?? []) {
-            if (cap.abilityId === "compagnons" || cap.abilityId === "tuteur") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
+            if (cap.abilityId === "compagnons" || cap.abilityId === "tuteur" || cap.abilityId === "transformation") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
             // Invocation DÉSIGNÉE (effet composé) : même besoin, même passe.
             // Invocation DÉSIGNÉE et TUTEUR (effets composés) : même besoin, même passe.
             for (const id of designatedCardIds(cap.composed)) linkedIds.add(id);

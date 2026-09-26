@@ -144,7 +144,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Domination": ALL_MODES,
   "Corruption": ALL_MODES,
   "Exhumation X": ALL_MODES,
-  "Rappel": ALL_MODES,
+  "Rappel X": ALL_MODES,
   "Divination": ALL_MODES,
   "Traque du destin X": ALL_MODES,
   "Affaiblissement -X/-Y": ALL_MODES,
@@ -159,6 +159,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Contresort X": ONBOARD_MODES,
   "Exclusion X": ONBOARD_MODES,
   "Maître d'arme": ONBOARD_MODES,
+  // Transformation : mort comprise, mais ni retour en main ni pioche.
+  "Transformation": new Set<CuratedMode>(["death", "tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound"]),
   "Profanation X": ONBOARD_MODES,
   "Héritage du cimetière": ONBOARD_MODES,
 };
@@ -795,7 +797,7 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur": 0.55, "Rappel": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération X": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
+    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur": 0.55, "Rappel X": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération X": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
     forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Insatiables et corrompus : résurrection, drain de vie et magie du cimetière.",
     // La Cour Écarlate héberge CINQ races (le clan le plus peuplé du jeu) : elle
@@ -861,10 +863,10 @@ export const FACTIONS: Record<string, {
       // Sluaghs : la horde volante des morts sans repos. Trois poids doivent
       // DÉPASSER l'ombrelle pour exister — Vol (0.15), Rappel (0.55) et
       // Convocation X (0.40) y figurent déjà.
-      "Sluaghs": { statWeights: { atk: 1.10, def: 0.65 }, likelyKeywords: { "Vol": 0.80, "Instinct de meute X": 0.60, "Rappel": 0.60, "Convocation X": 0.55, "Esquive": 0.45, "Ombre": 0.35 } },
+      "Sluaghs": { statWeights: { atk: 1.10, def: 0.65 }, likelyKeywords: { "Vol": 0.80, "Instinct de meute X": 0.60, "Rappel X": 0.60, "Convocation X": 0.55, "Esquive": 0.45, "Ombre": 0.35 } },
     },
     clanProfiles: {
-      "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
+      "Les Rangs Silencieux": { statWeights: { atk: 1.00, def: 0.90 }, likelyKeywords: { "Nécrophagie": 0.55, "Exhumation X": 0.55, "Rappel X": 0.50, "Convocation X": 0.50, "Poison": 0.40, "Sacrifice": 0.35, "Pacte de sang": 0.35 } },
       // Le Voile Hurlant passe de DEUX à CINQ races et cède ses `statWeights`
       // (quatrième clan du jeu). Le Dullahan est la raison : cavalier décapiteur,
       // c'est le seul corps SOLIDE d'un clan d'intangibles, et 1.05/0.75 en

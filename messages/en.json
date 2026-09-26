@@ -102,8 +102,9 @@
         "desc": "If this is the first card played this turn, all its values are increased by X — permanently."
       },
       "rappel": {
-        "label": "Recall",
-        "desc": "Return a targeted card from your graveyard to your hand."
+        "label": "Recall X",
+        "desc": "Return a targeted card with cost ≤ X from your graveyard to your hand.",
+        "desc_any": "Return a targeted card from your graveyard to your hand."
       },
       "combustion": {
         "label": "Combustion",
@@ -149,6 +150,14 @@
         "label": "Exclusion X",
         "desc": "Cancels the next X enemy unit summons."
       },
+      "maitre_darme": {
+        "label": "Weapon Master",
+        "desc": "Equips all your items in play for free, including those carried by your other creatures."
+      },
+      "transformation": {
+        "label": "Transformation",
+        "desc": "Transforms into the designated card. Reverts to its original form if it leaves the board."
+      },
       "convocation": {
         "label": "Summon X",
         "desc": "Creates {token}."
@@ -159,7 +168,8 @@
       },
       "invocation": {
         "label": "Invocation X",
-        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format)."
+        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format).",
+        "desc_any": "Summons a random creature from your collection ({alignment}, current format)."
       },
       "malediction": {
         "label": "Curse",
@@ -275,7 +285,8 @@
       },
       "exhumation": {
         "label": "Exhumation X",
-        "desc": "Resurrects a unit from your graveyard whose mana cost is equal to or less than X."
+        "desc": "Resurrects a unit from your graveyard whose mana cost is equal to or less than X.",
+        "desc_any": "Resurrects a unit from your graveyard, regardless of its cost."
       },
       "heritage_du_cimetiere": {
         "label": "Graveyard Legacy",
@@ -343,7 +354,8 @@
       },
       "appel_du_clan": {
         "label": "Clan Call X",
-        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from the top of your deck."
+        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from the top of your deck.",
+        "desc_any": "Puts the top {clan_de} unit from your deck into play for free."
       },
       "appel_supreme": {
         "label": "Supreme Call",
@@ -363,23 +375,28 @@
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Reveal 3 {alignment} commons with cost X; add one to your hand."
+        "desc": "Reveal 3 {alignment} commons with cost X; add one to your hand.",
+        "desc_any": "Reveals 3 {alignment} commons; add one to your hand."
       },
       "faveur": {
         "label": "Favor X",
-        "desc": "Adds a random {alignment} common of cost X to your hand."
+        "desc": "Adds a random {alignment} common of cost X to your hand.",
+        "desc_any": "Adds a random {alignment} common to your hand."
       },
       "selection_magique": {
         "label": "Arcane Selection X",
-        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand."
+        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand.",
+        "desc_any": "Reveals 3 {alignment} common actions; add one to your hand."
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Reveal 3 of your limited editions with cost X (≥30 required; otherwise 3 {alignment} commons); keep one."
+        "desc": "Reveal 3 of your limited editions with cost X (≥30 required; otherwise 3 {alignment} commons); keep one.",
+        "desc_any": "Reveals 3 of your limited editions (≥30 required; otherwise 3 {alignment} commons); keep one."
       },
       "tresor": {
         "label": "Treasure X",
-        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand."
+        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand.",
+        "desc_any": "Reveals 3 common {alignment} or neutral items; add one to your hand."
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
@@ -503,7 +520,8 @@
       },
       "dechainement": {
         "label": "Unleash X/Y",
-        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets."
+        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets.",
+        "desc_any": "Plays X random actions from your collection ({alignment}), with random targets."
       },
       "force_des_ancetres": {
         "label": "Ancestral Strength +X/+Y",
@@ -524,10 +542,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
-      "maitre_darme": {
-        "label": "Weapon Master",
-        "desc": "Equips all your items in play for free, including those carried by your other creatures."
       }
     },
     "spell_keywords": {
@@ -589,7 +603,8 @@
       },
       "appel_du_clan": {
         "label": "Clan Call X",
-        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from your deck."
+        "desc": "Puts into play for free the 1st {clan_de} unit with cost ≤ X from your deck.",
+        "desc_any": "Puts the top {clan_de} unit from your deck into play for free."
       },
       "appel_supreme": {
         "label": "Supreme Call",
@@ -600,32 +615,39 @@
         "desc": "Reveal the top X cards of your deck; keep the {race_pl} in hand, discard the rest."
       },
       "rappel": {
-        "label": "Recall",
-        "desc": "Returns a card from your graveyard to your hand"
+        "label": "Recall X",
+        "desc": "Returns a card with cost ≤ X from your graveyard to your hand",
+        "desc_any": "Returns a card from your graveyard to your hand"
       },
       "exhumation": {
         "label": "Exhumation X",
-        "desc": "Resurrect a creature (cost ≤ X) from your graveyard onto the battlefield."
+        "desc": "Resurrect a creature (cost ≤ X) from your graveyard onto the battlefield.",
+        "desc_any": "Resurrects a creature from your graveyard onto the field, regardless of its cost"
       },
       "selection": {
         "label": "Selection X",
-        "desc": "Reveals 3 {alignment} commons of cost X; add one to your hand"
+        "desc": "Reveals 3 {alignment} commons of cost X; add one to your hand",
+        "desc_any": "Reveals 3 {alignment} commons; add one to your hand"
       },
       "faveur": {
         "label": "Favor X",
-        "desc": "Adds a random {alignment} common of cost X to your hand"
+        "desc": "Adds a random {alignment} common of cost X to your hand",
+        "desc_any": "Adds a random {alignment} common to your hand"
       },
       "selection_magique": {
         "label": "Magic Selection X",
-        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand"
+        "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand",
+        "desc_any": "Reveals 3 {alignment} common actions; add one to your hand"
       },
       "tresor": {
         "label": "Treasure X",
-        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand"
+        "desc": "Reveals 3 common {alignment} or neutral items of cost X; add one to your hand",
+        "desc_any": "Reveals 3 common {alignment} or neutral items; add one to your hand"
       },
       "renfort_royal": {
         "label": "Royal Selection X",
-        "desc": "Reveals 3 of your limited editions of cost X (≥30 required; otherwise 3 {alignment} commons); keep one"
+        "desc": "Reveals 3 of your limited editions of cost X (≥30 required; otherwise 3 {alignment} commons); keep one",
+        "desc_any": "Reveals 3 of your limited editions (≥30 required; otherwise 3 {alignment} commons); keep one"
       },
       "relancer": {
         "label": "Recast X",
@@ -633,11 +655,13 @@
       },
       "dechainement": {
         "label": "Unleash X/Y",
-        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets."
+        "desc": "Plays X random actions of cost Y from your collection ({alignment}), with random targets.",
+        "desc_any": "Plays X random actions from your collection ({alignment}), with random targets"
       },
       "invocation": {
         "label": "Invocation X",
-        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format)."
+        "desc": "Summons a random creature of cost X from your collection ({alignment}, current format).",
+        "desc_any": "Summons a random creature from your collection ({alignment}, current format)"
       },
       "impact": {
         "label": "Impact X",
@@ -665,7 +689,7 @@
       },
       "silence": {
         "label": "Silence",
-        "desc": "Remove all keywords from a targeted creature and reset its stats to their original values."
+        "desc": "Removes all keywords from a targeted creature and resets its stats to their original values; on an item, removes its keywords and leaves its characteristics unchanged"
       },
       "renforcement": {
         "label": "Reinforcement +X/+Y",
@@ -701,7 +725,7 @@
       },
       "retour_differe": {
         "label": "Delayed Return",
-        "desc": "Places the targeted unit under its owner's deck"
+        "desc": "Places the targeted unit or item under its owner's deck"
       },
       "epargne": {
         "label": "Thrift X",
@@ -725,7 +749,7 @@
       },
       "remontee": {
         "label": "Recall",
-        "desc": "Returns a targeted unit to its owner's hand."
+        "desc": "Returns a targeted unit or item to its original owner's hand."
       },
       "renforcement_multiple": {
         "label": "Mass Reinforcement",
@@ -821,6 +845,19 @@
         "exhum_one": "a creature",
         "exhum_all": "all creatures",
         "exhum_upto": "up to {n} creatures",
+        "exhumation_item": "returns {who} from your graveyard to play (cost ≤ {x})",
+        "exhum_item_one": "an item",
+        "exhum_item_all": "all items",
+        "exhum_item_upto": "up to {n} items",
+        "exhum_uoi_one": "a creature or an item",
+        "exhum_uoi_all": "all creatures and items",
+        "exhum_uoi_upto": "up to {n} creatures or items",
+        "rappel_one_item": "an item",
+        "rappel_all_item": "all items",
+        "rappel_upto_item": "up to {n} items",
+        "draw_items_one": "draw {x} item from your deck",
+        "draw_items_many": "draw {x} items from your deck",
+        "invocation_item": "puts a random item with cost {x}{filter} into play",
         "rappel": "returns {who} from your graveyard to your hand{cost}",
         "rappel_cost": " (cost ≤ {max})",
         "rappel_one_any": "a card",
@@ -828,10 +865,10 @@
         "rappel_one_spell": "an action",
         "rappel_all_any": "all cards",
         "rappel_all_creature": "all units",
-        "rappel_all_spell": "all Actions",
+        "rappel_all_spell": "all actions",
         "rappel_upto_any": "up to {n} cards",
         "rappel_upto_creature": "up to {n} units",
-        "rappel_upto_spell": "up to {n} Actions",
+        "rappel_upto_spell": "up to {n} actions",
         "invocation": "summons a random creature with cost {x}{filter}",
         "invocation_card": "summons the designated card",
         "invocation_cards": "summons the {n} designated cards",
@@ -850,8 +887,8 @@
         "alternative": "One of: ",
         "devoration": "devours",
         "silence": "silences",
-        "dechainement": "plays {x} random Actions of cost {y}",
-        "dechainement_one": "plays a random Action of cost {y}",
+        "dechainement": "plays {x} random actions of cost {y}",
+        "dechainement_one": "plays a random action of cost {y}",
         "tactique_one": "passes on one of its permanent abilities at random",
         "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
@@ -859,7 +896,23 @@
         "faveur": "adds a random{filter} card (cost {x}) to hand",
         "selection_magique": "reveals 3 Actions{filter} (cost {x}) and keeps one in hand",
         "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
-        "tresor": "reveals 3 items{filter} (cost {x}) and keeps one in hand"
+        "tresor": "reveals 3 items{filter} (cost {x}) and keeps one in hand",
+        "selection_any": "reveals 3 cards{filter} and keeps one in hand",
+        "faveur_any": "adds a random card{filter} to your hand",
+        "selection_magique_any": "reveals 3 actions{filter} and keeps one in hand",
+        "renfort_royal_any": "reveals 3 collection cards{filter} and keeps one in hand",
+        "tresor_any": "reveals 3 Items{filter} and keeps one in hand",
+        "invocation_any": "summons a random creature{filter}",
+        "invocation_item_any": "deploys a random item{filter}",
+        "exhumation_any": "resurrects {who} from your graveyard",
+        "exhumation_item_any": "returns {who} from your graveyard into play",
+        "appel_any": "puts the top unit from your deck into play",
+        "appel_item_any": "puts the top item from your deck into play",
+        "dechainement_any": "plays {x} random actions",
+        "dechainement_one_any": "plays a random action",
+        "invocation_card_item": "puts the designated item into play",
+        "invocation_cards_item": "puts the {n} designated items into play",
+        "invocation_copies_item": "puts {n} copies of the designated item into play"
       },
       "emblem": {
         "badge": "Emblem",
@@ -902,8 +955,8 @@
         "clan": " of clan {v}",
         "keyword": " bearing {v}",
         "type_creature": " of type Unit",
-        "type_spell": " of type Action",
-        "type_item": " of type Item"
+        "type_spell": " of type action",
+        "type_item": " of type item"
       },
       "self": {
         "deal_damage_one": "deals {x} damage to itself",
@@ -922,6 +975,14 @@
         "count_one": "a unit",
         "count_n": "{n} units",
         "count_scatter": "at most {n} units",
+        "item_count_all": "all items",
+        "item_count_one": "an item",
+        "item_count_n": "{n} items",
+        "item_count_scatter": "up to {n} items",
+        "uoi_count_all": "all units and items",
+        "uoi_count_one": "a unit or an item",
+        "uoi_count_n": "{n} units or items",
+        "uoi_count_scatter": "up to {n} units or items",
         "hero_ally": "your hero",
         "hero_enemy": "the enemy hero",
         "both_all": "all units and the {side} hero",
@@ -941,6 +1002,18 @@
         "count_one": "to one unit",
         "count_n": "to {n} units",
         "count_scatter": "to at most {n} units",
+        "item_count_all": "to all items",
+        "item_count_one": "to an item",
+        "item_count_n": "to {n} items",
+        "item_count_scatter": "to up to {n} items",
+        "uoi_count_all": "to all units and items",
+        "uoi_count_one": "to a unit or an item",
+        "uoi_count_n": "to {n} units or items",
+        "uoi_count_scatter": "to up to {n} units or items",
+        "side_ally_one_m": "ally",
+        "side_ally_many_m": "allies",
+        "side_enemy_one_m": "enemy",
+        "side_enemy_many_m": "enemies",
         "side_ally_one": "friendly",
         "side_ally_many": "allied",
         "side_enemy_one": "enemy",
@@ -1674,7 +1747,7 @@
         "start_of_turn": "at start of turn",
         "draw": "on draw",
         "low_hp": "below {n} HP",
-        "spell": "when the Action resolves",
+        "spell": "when the action resolves",
         "wound": "when it is wounded without dying"
       }
     },
@@ -2052,7 +2125,7 @@
     "legacy_grants_heading": "Legacy grants (old format) — convert them to be able to target the opponent",
     "convert_to_composed": "Convert",
     "effects_heading": "Card effects",
-    "effects_subtitle": "all the Action's effects, in a single list",
+    "effects_subtitle": "all the action's effects, in a single list",
     "effect_kind_curated": "MECHANIC",
     "group_composed": "Configurable effects",
     "group_curated": "Special mechanics",
@@ -2060,7 +2133,7 @@
     "pool_hint_invocation": "Cumulative filters. Without them, the pool follows the card's alignment; the summoned cost is EXACTLY X.",
     "label_designated_card": "DESIGNATED CARD",
     "designated_card_hint": "Designate one or more creatures: they are summoned as-is, in this order (the same card can be designated multiple times). Without designation, a random card is drawn at cost X according to the filters.",
-    "tuteur_card_hint": "Designate one or more cards, creatures or Actions: they join your hand in that order. The same card can be designated multiple times (that many copies). Without a designation, the effect does nothing.",
+    "tuteur_card_hint": "Designate one or more cards, creatures or actions: they join your hand in that order. The same card can be designated multiple times (that many copies). Without a designation, the effect does nothing.",
     "content_selection": "Selection (1 of 3)",
     "content_faveur": "Favor (1 random card → hand)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
@@ -2072,6 +2145,7 @@
     "pool_type_creature": "Units",
     "pool_type_spell": "Actions",
     "pool_type_item": "Items",
+    "draw_items_only": "Deck items only",
     "pool_any": "Any",
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
@@ -2085,6 +2159,8 @@
     "label_targets": "TARGETS",
     "label_type": "TYPE",
     "entity_unit": "Unit",
+    "entity_item": "Item",
+    "entity_unit_or_item": "Unit or item",
     "entity_hero": "Hero",
     "entity_both": "Both (hero + units)",
     "entity_self": "Self (the creature)",
@@ -2224,7 +2300,7 @@
     "atk_is_x": "(+ATK = X value)",
     "neg_atk_is_x": "(-ATK = X value)",
     "spell_cost_y": "ACTION COST (Y)",
-    "spell_count_is_x": "(the number of Actions = value X)",
+    "spell_count_is_x": "(the number of actions = value X)",
     "fda_condition": "(while ≥7 creatures in your graveyard)",
     "choose_ability": "-- Choose an ability --",
     "scope_one_ally": "1 targeted ally",
@@ -2254,7 +2330,7 @@
     "english_prompt_placeholder": "English prompt for image generation…",
     "trigger_tap_activation": "On activation (tap)",
     "trigger_automatic": "Automatic (passive/conditional)",
-    "trigger_spell_resolution_full": "When the Action resolves",
+    "trigger_spell_resolution_full": "When the action resolves",
     "container_label": "Container:",
     "derived_from_type": "(derived from card type)",
     "no_ability_add_below": "No abilities. Add one below.",
@@ -2365,7 +2441,7 @@
     "generate_ability_icon_title": "GENERATE AN ABILITY ICON",
     "parameters": "PARAMETERS",
     "ability_label": "ABILITY",
-    "ability_polymorph": "🔀 Polymorph ability — the icon will be saved for both the creature AND the Action.",
+    "ability_polymorph": "🔀 Polymorph ability — the icon will be saved for both the creature AND the action.",
     "ability_creature": "👤 Creature ability.",
     "ability_spell": "🪄 Action ability.",
     "ability_legend": "👤 creature · 🪄 Action · 🔀 shared",
@@ -2480,6 +2556,7 @@
     "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
     "random_min_hint": "Minimum cost (A): each cost is rolled between {min} and {max}.",
+    "cost_optional_hint": "Leave blank for any cost.",
     "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
@@ -2493,7 +2570,7 @@
     "content_tactique": "Tactics (shares its permanent abilities)",
     "content_retour_differe": "Delayed return (under the deck)",
     "content_silence": "Silence (strips the target)",
-    "content_dechainement": "Unleash X/Y (random Actions)",
+    "content_dechainement": "Unleash X/Y (random actions)",
     "content_selection_magique": "Magic Selection (1 Action out of 3)"
   },
   "game": {
@@ -2562,7 +2639,7 @@
     "zone_deck_opponent": "Opponent's Deck",
     "zone_graveyard_yours": "Your Graveyard",
     "zone_graveyard_opponent": "Opponent's Graveyard",
-    "history_title": "Recent Actions",
+    "history_title": "Recent actions",
     "history_hero_friendly": "your hero",
     "history_hero_enemy": "the enemy hero",
     "history_spell": "Action played: {source}",
@@ -2618,7 +2695,7 @@
     "presage_hit": "Well spotted — it joins your hand.",
     "presage_miss": "Missed. The correct card is highlighted in green.",
     "apprentissage_title": "📖 Apprenticeship",
-    "apprentissage_subtitle": "Which Action should the creature memorize?",
+    "apprentissage_subtitle": "Which action should the creature memorize?",
     "foi_title": "✨ Faith",
     "foi_subtitle": "Choose a card to put in your hand. Its cost is deducted from your Faith; the rest is kept.",
     "conquete_title": "🚩 Conquest",
@@ -2638,7 +2715,7 @@
     "eveil_blocked_main": "Not enough cards in hand for its additional costs.",
     "eveil_blocked_plateau": "Not enough creatures to sacrifice.",
     "eveil_blocked_deck": "Not enough cards to exile in your deck.",
-    "eveil_blocked_sans_cible": "No valid target for this Action.",
+    "eveil_blocked_sans_cible": "No valid target for this action.",
     "eveil_suspend": "Set to awaken ({count, plural, one {# point} other {# points}})",
     "eveil_pay_n": "{count, plural, one {Pay #} other {Pay #}}",
     "eveil_max": "max {count}",

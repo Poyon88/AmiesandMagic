@@ -102,8 +102,9 @@
         "desc": "若这是本回合打出的第一张牌，其所有数值永久提升X点。"
       },
       "rappel": {
-        "label": "召回",
-        "desc": "将你墓地中一张目标卡牌放回手牌。"
+        "label": "回想 X",
+        "desc": "将你墓地中一张费用≤X的目标卡牌放回手牌。",
+        "desc_any": "将你墓地中一张目标卡牌放回手牌。"
       },
       "combustion": {
         "label": "燃烧",
@@ -149,6 +150,14 @@
         "label": "排斥 X",
         "desc": "抵消接下来的X次对方单位召唤。"
       },
+      "maitre_darme": {
+        "label": "武器大师",
+        "desc": "免费装备场上你所有的物品，包括你其他随从所佩戴的物品。"
+      },
+      "transformation": {
+        "label": "变形",
+        "desc": "变形为指定的卡牌。若其离开场上,则恢复原本形态。"
+      },
       "convocation": {
         "label": "召唤 X",
         "desc": "创造{token}。"
@@ -159,7 +168,8 @@
       },
       "invocation": {
         "label": "召唤 X",
-        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。"
+        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。",
+        "desc_any": "从你的收藏中召唤一个随机生物（{alignment}，当前赛制）。"
       },
       "malediction": {
         "label": "诅咒",
@@ -275,7 +285,8 @@
       },
       "exhumation": {
         "label": "掘墓 X",
-        "desc": "复活你墓地中法力消耗等于或小于X的一个单位。"
+        "desc": "复活你墓地中法力消耗等于或小于X的一个单位。",
+        "desc_any": "复活你墓地中的一个单位，无论其费用为何。"
       },
       "heritage_du_cimetiere": {
         "label": "墓地传承",
@@ -343,7 +354,8 @@
       },
       "appel_du_clan": {
         "label": "氏族召唤 X",
-        "desc": "免费将你牌库顶部费用≤X的第一个{clan_de}单位置入场上。"
+        "desc": "免费将你牌库顶部费用≤X的第一个{clan_de}单位置入场上。",
+        "desc_any": "免费将你牌库顶的首个{clan_de}单位置入场上。"
       },
       "appel_supreme": {
         "label": "至高召唤",
@@ -363,23 +375,28 @@
       },
       "selection": {
         "label": "抉择 X",
-        "desc": "展示3张费用为X的{alignment}普通卡；选择一张加入手牌。"
+        "desc": "展示3张费用为X的{alignment}普通卡；选择一张加入手牌。",
+        "desc_any": "展示3张{alignment}普通卡；从中选一张加入手牌。"
       },
       "faveur": {
         "label": "恩宠X",
-        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌。"
+        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌。",
+        "desc_any": "随机将一张{alignment}普通卡加入手牌。"
       },
       "selection_magique": {
         "label": "魔法抉择 X",
-        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌。"
+        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌。",
+        "desc_any": "展示3张{alignment}普通行动牌；从中选一张加入手牌。"
       },
       "renfort_royal": {
         "label": "皇家抉择 X",
-        "desc": "展示你牌库中3张费用为X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。"
+        "desc": "展示你牌库中3张费用为X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。",
+        "desc_any": "展示你收藏中的3张限定版卡牌（需≥30张；否则展示3张{alignment}普通卡）；保留其中一张。"
       },
       "tresor": {
         "label": "宝藏 X",
-        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌。"
+        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌。",
+        "desc_any": "展示3张{alignment}或中立的普通物品；从中选一张加入手牌。"
       },
       "lycanthropie": {
         "label": "狼人变身 X",
@@ -503,7 +520,8 @@
       },
       "dechainement": {
         "label": "倾泻 X/Y",
-        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。"
+        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。",
+        "desc_any": "从你的收藏中（{alignment}）随机打出X张行动牌，目标随机。"
       },
       "force_des_ancetres": {
         "label": "先祖之力 +X/+Y",
@@ -524,10 +542,6 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
-      "maitre_darme": {
-        "label": "武器大师",
-        "desc": "免费装备场上你所有的物品，包括你其他随从所佩戴的物品。"
       }
     },
     "spell_keywords": {
@@ -589,7 +603,8 @@
       },
       "appel_du_clan": {
         "label": "族群召唤 X",
-        "desc": "免费将你牌库中费用≤X的第一个{clan_de}单位置入场上。"
+        "desc": "免费将你牌库中费用≤X的第一个{clan_de}单位置入场上。",
+        "desc_any": "免费将你牌库中的首个{clan_de}单位置入场上。"
       },
       "appel_supreme": {
         "label": "至高召唤",
@@ -600,32 +615,39 @@
         "desc": "展示牌库顶部X张卡；保留{race_pl}至手牌，其余弃置。"
       },
       "rappel": {
-        "label": "召回",
-        "desc": "将你墓地中的一张牌返回手牌"
+        "label": "回想 X",
+        "desc": "将你墓地中一张费用≤X的卡牌返回手牌",
+        "desc_any": "将你墓地中一张卡牌返回手牌"
       },
       "exhumation": {
         "label": "掘墓 X",
-        "desc": "将你墓地中一个生物（费用≤X）复活至战场。"
+        "desc": "将你墓地中一个生物（费用≤X）复活至战场。",
+        "desc_any": "将你墓地中的一个生物复活至场上，无论其费用为何"
       },
       "selection": {
         "label": "甄选 X",
-        "desc": "展示3张费用为X的{alignment}普通卡；将其中一张加入手牌"
+        "desc": "展示3张费用为X的{alignment}普通卡；将其中一张加入手牌",
+        "desc_any": "展示3张{alignment}普通卡；从中选一张加入手牌"
       },
       "faveur": {
         "label": "恩宠X",
-        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌"
+        "desc": "随机将一张费用为X的{alignment}普通卡加入手牌",
+        "desc_any": "随机将一张{alignment}普通卡加入手牌"
       },
       "selection_magique": {
         "label": "魔法甄选 X",
-        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌"
+        "desc": "展示3张费用为X的{alignment}普通行动；将其中一张加入你的手牌",
+        "desc_any": "展示3张{alignment}普通行动牌；从中选一张加入手牌"
       },
       "tresor": {
         "label": "宝藏 X",
-        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌"
+        "desc": "展示3张费用为X的{alignment}或中立普通物品；将其中一张加入你的手牌",
+        "desc_any": "展示3张{alignment}或中立的普通物品；从中选一张加入手牌"
       },
       "renfort_royal": {
         "label": "皇家甄选 X",
-        "desc": "展示你3张费用为X的限定版卡牌（需持有≥30张；否则展示3张{alignment}普通卡）；保留其中一张"
+        "desc": "展示你3张费用为X的限定版卡牌（需持有≥30张；否则展示3张{alignment}普通卡）；保留其中一张",
+        "desc_any": "展示你收藏中的3张限定版卡牌（需≥30张；否则展示3张{alignment}普通卡）；保留其中一张"
       },
       "relancer": {
         "label": "重施 X",
@@ -633,11 +655,13 @@
       },
       "dechainement": {
         "label": "倾泻 X/Y",
-        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。"
+        "desc": "从你的收藏（{alignment}）中打出X张费用为Y的随机行动，目标随机。",
+        "desc_any": "从你的收藏中（{alignment}）随机打出X张行动牌，目标随机"
       },
       "invocation": {
         "label": "召唤 X",
-        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。"
+        "desc": "从你的收藏中随机召唤一个费用为X的生物（{alignment}，当前赛制）。",
+        "desc_any": "从你的收藏中召唤一个随机生物（{alignment}，当前赛制）"
       },
       "impact": {
         "label": "冲击 X",
@@ -665,7 +689,7 @@
       },
       "silence": {
         "label": "沉默",
-        "desc": "移除目标生物的所有关键词，并将其属性重置为初始数值。"
+        "desc": "移除目标生物的所有关键词，并将其数值恢复为原始值；若目标为物品，则移除其关键词但保留其属性"
       },
       "renforcement": {
         "label": "强化 +X/+Y",
@@ -701,7 +725,7 @@
       },
       "retour_differe": {
         "label": "延迟归还",
-        "desc": "将目标单位放到其拥有者牌库底"
+        "desc": "将目标单位或物品置于其拥有者的牌堆之下"
       },
       "epargne": {
         "label": "储蓄 X",
@@ -725,7 +749,7 @@
       },
       "remontee": {
         "label": "归还",
-        "desc": "将目标单位返回其原主手中。"
+        "desc": "将目标单位或物品送回其原拥有者的手牌。"
       },
       "renforcement_multiple": {
         "label": "群体强化",
@@ -821,6 +845,19 @@
         "exhum_one": "一个生物",
         "exhum_all": "所有生物",
         "exhum_upto": "至多 {n} 个生物",
+        "exhumation_item": "将您墓地中的{who}放置回场上（费用 ≤ {x}）",
+        "exhum_item_one": "一件物品",
+        "exhum_item_all": "所有物品",
+        "exhum_item_upto": "至多{n}件物品",
+        "exhum_uoi_one": "一个生物或一件物品",
+        "exhum_uoi_all": "所有生物和所有物品",
+        "exhum_uoi_upto": "至多{n}个生物或物品",
+        "rappel_one_item": "一件物品",
+        "rappel_all_item": "所有物品",
+        "rappel_upto_item": "至多{n}件物品",
+        "draw_items_one": "从您的牌组中抽取{x}件物品",
+        "draw_items_many": "从您的牌组中抽取{x}件物品",
+        "invocation_item": "放置一件费用为{x}{filter}的随机物品",
         "rappel": "将{who}从你的墓地返回手牌{cost}",
         "rappel_cost": "（费用≤{max}）",
         "rappel_one_any": "一张牌",
@@ -859,7 +896,23 @@
         "faveur": "随机将一张{filter}卡牌（费用{x}）加入手牌",
         "selection_magique": "展示3张{filter}行动（费用{x}），并保留一张入手",
         "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
-        "tresor": "展示3件{filter}物品（费用{x}），并保留一件入手"
+        "tresor": "展示3件{filter}物品（费用{x}），并保留一件入手",
+        "selection_any": "展示3张卡牌{filter}，并保留其中一张加入手牌",
+        "faveur_any": "随机将一张卡牌{filter}加入手牌",
+        "selection_magique_any": "展示3张行动牌{filter}，并保留其中一张加入手牌",
+        "renfort_royal_any": "展示你收藏中的3张卡牌{filter}，并保留其中一张加入手牌",
+        "tresor_any": "展示3件物品{filter}，并保留其中一件加入手牌",
+        "invocation_any": "召唤一个随机生物{filter}",
+        "invocation_item_any": "放置一个随机物品{filter}",
+        "exhumation_any": "从你的墓地中复活{who}",
+        "exhumation_item_any": "从你的墓地中将{who}重新置入场上",
+        "appel_any": "将你牌库中的首个单位置入场上",
+        "appel_item_any": "将你牌库中的首个物品置入场上",
+        "dechainement_any": "打出{x}张随机行动牌",
+        "dechainement_one_any": "打出一张随机行动牌",
+        "invocation_card_item": "放置指定的物品",
+        "invocation_cards_item": "放置{n}件指定的物品",
+        "invocation_copies_item": "放置{n}份指定物品的副本"
       },
       "emblem": {
         "badge": "纹章",
@@ -922,6 +975,14 @@
         "count_one": "一个单位",
         "count_n": "{n}个单位",
         "count_scatter": "至多{n}个单位",
+        "item_count_all": "所有物品",
+        "item_count_one": "一件物品",
+        "item_count_n": "{n}件物品",
+        "item_count_scatter": "至多{n}件物品",
+        "uoi_count_all": "所有单位和所有物品",
+        "uoi_count_one": "一个单位或一件物品",
+        "uoi_count_n": "{n}个单位或物品",
+        "uoi_count_scatter": "至多{n}个单位或物品",
         "hero_ally": "你的英雄",
         "hero_enemy": "敌方英雄",
         "both_all": "所有单位和{side}英雄",
@@ -941,6 +1002,18 @@
         "count_one": "对一个单位",
         "count_n": "对 {n} 个单位",
         "count_scatter": "向至多{n}个单位",
+        "item_count_all": "对所有物品",
+        "item_count_one": "对一件物品",
+        "item_count_n": "对{n}件物品",
+        "item_count_scatter": "对至多{n}件物品",
+        "uoi_count_all": "对所有单位和所有物品",
+        "uoi_count_one": "对一个单位或一件物品",
+        "uoi_count_n": "对{n}个单位或物品",
+        "uoi_count_scatter": "对至多{n}个单位或物品",
+        "side_ally_one_m": "友方",
+        "side_ally_many_m": "友方",
+        "side_enemy_one_m": "敌方",
+        "side_enemy_many_m": "敌方",
         "side_ally_one": "友方",
         "side_ally_many": "友方",
         "side_enemy_one": "敌方",
@@ -2072,6 +2145,7 @@
     "pool_type_creature": "单位",
     "pool_type_spell": "行动",
     "pool_type_item": "物品",
+    "draw_items_only": "仅牌组中的物品",
     "pool_any": "不限",
     "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
     "label_magnitude": "幅度",
@@ -2085,6 +2159,8 @@
     "label_targets": "目标",
     "label_type": "类型",
     "entity_unit": "单位",
+    "entity_item": "物品",
+    "entity_unit_or_item": "单位或物品",
     "entity_hero": "英雄",
     "entity_both": "两者（英雄 + 单位）",
     "entity_self": "自身（生物）",
@@ -2480,6 +2556,7 @@
     "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
     "random_min_hint": "最低费用（A）：每个费用在{min}和{max}之间随机抽取。",
+    "cost_optional_hint": "留空以匹配任意费用。",
     "random_hint_faveur": "所赠卡牌的费用在1到{max}之间随机。若未勾选该选项，则费用恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",

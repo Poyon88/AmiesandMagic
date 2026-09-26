@@ -819,6 +819,29 @@ function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMo
   return getCardKwX(ci.card, kw, mode, defaultX);
 }
 
+/** COÛT OPTIONNEL — convention UNIQUE du moteur pour les capacités dont le X
+ *  désigne un coût (Rappel, Exhumation, Appel du clan, Sélections, Faveur,
+ *  Trésor, Invocation, le Y de Déchainement) : X absent ou ≤ 0 ⇒ N'IMPORTE
+ *  QUEL COÛT. Les lectures de X de ces capacités retombent donc sur 0, jamais
+ *  sur un défaut hérité (1, ou « coût de la carte − 1 »). */
+function coutLibre(x: number | undefined): boolean {
+  return !(x != null && x > 0);
+}
+/** La carte respecte-t-elle un plafond de coût optionnel (« coût ≤ X ») ? */
+function respecteCoutMax(c: Pick<Card, "mana_cost">, x: number | undefined): boolean {
+  return coutLibre(x) || (c.mana_cost ?? 0) <= x!;
+}
+/** « N'importe quel coût » tiré au hasard : chaque coût PRÉSENT a les mêmes
+ *  chances, puis on garde les candidats à ce coût — sans quoi les coûts bas,
+ *  bien plus nombreux, écraseraient les autres. Un `rng()` exactement, sur un
+ *  état identique chez les deux clients. */
+function restreindreAUnCoutTire<T extends { mana_cost: number }>(cands: T[]): T[] {
+  const couts = [...new Set(cands.map(c => c.mana_cost))].sort((a, b) => a - b);
+  if (couts.length === 0) return cands;
+  const cout = couts[Math.floor(rng() * couts.length)];
+  return cands.filter(c => c.mana_cost === cout);
+}
+
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
 // stay terse. Canalisation/Entraide reductions never apply here: only mana_cost
 // is reducible by design.
@@ -1269,16 +1292,29 @@ function applyGrantCapability(
 // `composed` empruntent ce chemin générique ; les autres restent curées (chemin
 // abilityId). Réutilise les helpers d'effet existants (dégâts, soin, token…).
 
+/** L'entité d'un TargetSpec vise-t-elle des UNITÉS ? des OBJETS ? */
+function visesUnites(e: import("./types").TargetSpec["entity"]): boolean {
+  return e === "unit" || e === "both" || e === "unit_or_item";
+}
+function visesObjets(e: import("./types").TargetSpec["entity"]): boolean {
+  return e === "item" || e === "unit_or_item";
+}
+
 function composedTargetPool(
   spec: import("./types").TargetSpec,
   owner: PlayerState,
   opponent: PlayerState,
 ): CardInstance[] {
+  // UNITÉS et/ou OBJETS selon l'entité. Sur la table, les objets vivent dans
+  // leur propre zone ; ailleurs, on trie les cartes de la zone par type.
+  const unites = visesUnites(spec.entity);
+  const objets = visesObjets(spec.entity);
   const zoneOf = (p: PlayerState): CardInstance[] =>
-    spec.location === "board" ? p.board
-      : spec.location === "hand" ? p.hand
+    spec.location === "board" ? [...(unites ? p.board : []), ...(objets ? objetsDe(p) : [])]
+      : (spec.location === "hand" ? p.hand
         : spec.location === "deck" ? p.deck
-          : p.graveyard;
+          : p.graveyard)
+        .filter((c) => (c.card.card_type === "item" ? objets : unites));
   let pool: CardInstance[] =
     spec.side === "ally" ? [...zoneOf(owner)]
       : spec.side === "enemy" ? [...zoneOf(opponent)]
@@ -1291,8 +1327,10 @@ function composedTargetPool(
   // créature que l'effet précédent vient de tuer, gaspillant la 2e destruction.
   // On ne filtre QUE le plateau : cimetière/main/deck n'ont pas de notion de PV
   // vivants (Exhumation, Résurrection… ciblent justement des cartes « mortes »).
+  // Un OBJET n'a pas de PV propres (sa colonne `health` est un BONUS) : le
+  // filtre des cadavres ne le concerne pas.
   if (spec.location === "board") {
-    pool = pool.filter((c) => c.currentHealth > 0);
+    pool = pool.filter((c) => c.card.card_type === "item" || c.currentHealth > 0);
   }
   // APPARTENANCE — deux niveaux, et il faut les distinguer :
   //   • DANS une catégorie, les valeurs sont alternatives (race Elfes OU Nains) ;
@@ -1343,7 +1381,7 @@ function composedChoiceTargetIds(
     else if (t.side === "enemy") ids.push("enemy_hero");
     else ids.push("friendly_hero", "enemy_hero");
   }
-  if (t.entity === "unit" || t.entity === "both") {
+  if (visesUnites(t.entity) || visesObjets(t.entity)) {
     for (const c of composedTargetPool(t, player, opponent)) {
       const targetable = !opponent.board.includes(c)
         || (!hasKw(c, "invisible")
@@ -1419,6 +1457,12 @@ function applyComposedToUnit(
   // outre (cf. resolveComposedEffect qui le dérive du déclencheur).
   fromSpell = false,
 ): void {
+  // Cible OBJET : traitement dédié (un objet n'est pas une unité — pas de PV,
+  // pas de mort ; ses stats sont le bonus qu'il confère).
+  if (u.card.card_type === "item") {
+    appliquerComposeAObjet(composed, u, x, y, owner, opponent);
+    return;
+  }
   switch (composed.content) {
     case "devoration": {
       // Sans instance source (effet porté par un SORT), il n'y a personne pour
@@ -1533,7 +1577,7 @@ function buildComposedPool(
 ): ComposedTargetRef[] {
   const pool: ComposedTargetRef[] = [];
   const wantsHero = spec.entity === "hero" || spec.entity === "both";
-  const wantsUnit = spec.entity === "unit" || spec.entity === "both";
+  const wantsUnit = visesUnites(spec.entity) || visesObjets(spec.entity);
   if (wantsHero) {
     if (spec.side === "ally") pool.push({ kind: "hero", hero: owner.hero });
     else if (spec.side === "enemy") pool.push({ kind: "hero", hero: opponent.hero });
@@ -1592,7 +1636,7 @@ function composedTargetIds(
 ): string[] {
   const ids: string[] = [];
   const wantsHero = spec.entity === "hero" || spec.entity === "both";
-  const wantsUnit = spec.entity === "unit" || spec.entity === "both";
+  const wantsUnit = visesUnites(spec.entity) || visesObjets(spec.entity);
   if (wantsHero) {
     if (spec.side === "ally") ids.push("friendly_hero");
     else if (spec.side === "enemy") ids.push("enemy_hero");
@@ -1682,7 +1726,21 @@ function resolveComposedEffect(
 
   // Effets sur le contrôleur (sans ciblage d'entité)
   switch (composed.content) {
-    case "draw_cards": for (let i = 0; i < x; i++) drawCard(owner); return;
+    case "draw_cards":
+      // « Objets seulement » (pool.cardType « item ») : les X PREMIERS objets du
+      // deck, dans l'ordre, rejoignent la main — les autres cartes restent en
+      // place. Rarement plus d'un : les decks n'en contiennent qu'apportés en
+      // cours de partie (Compagnons).
+      if (composed.pool?.cardType === "item") {
+        for (let i = 0; i < x && owner.hand.length < MAX_HAND_SIZE; i++) {
+          const idx = owner.deck.findIndex(c => c.card.card_type === "item");
+          if (idx < 0) break;
+          owner.hand.push(owner.deck.splice(idx, 1)[0]);
+        }
+        return;
+      }
+      for (let i = 0; i < x; i++) drawCard(owner);
+      return;
     case "gain_mana": owner.mana += x; return;
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
@@ -1753,7 +1811,7 @@ function resolveComposedEffect(
         if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
         const idx = owner.deck.findIndex(c =>
           c.card.card_type === (appelleUnObjet ? "item" : "creature")
-          && c.card.mana_cost <= x
+          && respecteCoutMax(c.card, x)
           && matchesPoolFilter(c.card, composed.pool));
         if (idx < 0) break;
         const [appelee] = owner.deck.splice(idx, 1);
@@ -1861,12 +1919,25 @@ function resolveComposedEffect(
       const maxCost = x;
       const cnt = composed.target?.count;
       const desired = typeof cnt === "number" ? cnt : Infinity;
+      // Nature ramenable : unités et/ou objets selon l'entité visée (défaut :
+      // unités, comportement historique).
+      const entite = composed.target?.entity ?? "unit";
+      const ramenable = (c: CardInstance) =>
+        (c.card.card_type === "creature" && visesUnites(entite))
+        || (c.card.card_type === "item" && visesObjets(entite));
       const resurrect = (inst: CardInstance | undefined): boolean => {
         if (!inst || placesOccupees(owner) >= MAX_BOARD_SIZE) return false;
-        if (inst.card.card_type !== "creature" || inst.card.mana_cost > maxCost) return false;
+        if (!ramenable(inst) || !respecteCoutMax(inst.card, maxCost)) return false;
         owner.graveyard = owner.graveyard.filter((c) => c !== inst);
         returnInstanceToPlay(inst);
         inst.instanceId = generateInstanceId();
+        // OBJET : reposé sur la table, non équipé.
+        if (inst.card.card_type === "item") {
+          inst.equippedToInstanceId = null;
+          owner.items = [...objetsDe(owner), inst];
+          recalculateAuras(owner, opponent);
+          return true;
+        }
         // Traque (charge) → pas de mal d'invocation, même ressuscitée.
         inst.hasSummoningSickness = !inst.card.keywords.includes("charge");
         owner.board.push(inst);
@@ -1884,7 +1955,7 @@ function resolveComposedEffect(
       } else {
         // Non-interactif : repli déterministe, plus hauts coûts d'abord.
         while (done < desired && placesOccupees(owner) < MAX_BOARD_SIZE) {
-          const eligible = owner.graveyard.filter((c) => c.card.card_type === "creature" && c.card.mana_cost <= maxCost);
+          const eligible = owner.graveyard.filter((c) => ramenable(c) && respecteCoutMax(c.card, maxCost));
           if (eligible.length === 0) break;
           const best = eligible.reduce((b, c) => (c.card.mana_cost > b.card.mana_cost ? c : b), eligible[0]);
           if (!resurrect(best)) break;
@@ -1916,6 +1987,15 @@ function resolveComposedEffect(
       // filtre de pool s'il est renseigné.
       const invocCard = source?.card ?? opts?.sourceCard;
       if (!invocCard) return;
+      // OBJET (pool.cardType « item ») : un objet aléatoire posé sur la table.
+      if (composed.pool?.cardType === "item") {
+        for (let i = 0; i < occurrences; i++) {
+          if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
+          resolveInvocationObjet(owner, invocCard, x, composed.pool,
+            composed.magnitude?.randomX === true, composed.magnitude?.minX);
+        }
+        return;
+      }
       // Chaque passe tire sa propre créature (resolveInvocationSummon s'arrête
       // de lui-même sur un plateau plein).
       for (let i = 0; i < occurrences; i++) {
@@ -5126,7 +5206,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // même alignement que cette carte, légale dans le format du match.
     // Polymorphe : même mot-clé disponible côté sort dans resolveSpellKeywords.
     if (hasKwOnPlay(cardInstance, "invocation")) {
-      const x = getKwX(cardInstance, "invocation", undefined, 1);
+      const x = getKwX(cardInstance, "invocation", undefined, 0);
       resolveInvocationSummon(player, cardInstance.card, x, newState.factionCardPool, newState.formatCode ?? null);
     }
 
@@ -5157,7 +5237,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "dechainement")) {
       const inst = cardInstance.card.keyword_instances?.find(i => i.id === "dechainement" && !i.mode);
       const x = inst?.x ?? getKwX(cardInstance, "dechainement", undefined, 1);
-      const y = inst?.y ?? 1;
+      const y = inst?.y ?? 0; // Y absent ⇒ actions de n'importe quel coût
       resolveDechainement(newState, player, opponent, cardInstance.card, x, y, inst?.randomY === true);
     }
 
@@ -5388,8 +5468,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       // cartes anciennes qui ne déclarent aucune valeur : l'appliquer d'office
       // faisait ignorer le X de la carte, si bien qu'une « Exhumation 2 » posée
       // sur une créature à 6 mana ranimait en réalité jusqu'à 5.
-      const x = getKwX(cardInstance, "exhumation", undefined, Math.max(1, cardInstance.card.mana_cost - 1));
-      const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x);
+      // X absent ⇒ n'importe quel coût (convention coutLibre).
+      const x = getKwX(cardInstance, "exhumation", undefined, 0);
+      const resurrectable = player.graveyard.filter(c => c.card.card_type === "creature" && respecteCoutMax(c.card, x));
       if (resurrectable.length > 0 && placesOccupees(player) < MAX_BOARD_SIZE) {
         const target = (action.graveyardTargetInstanceId
           ? resurrectable.find(c => c.instanceId === action.graveyardTargetInstanceId)
@@ -5420,10 +5501,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Rappel: remettre une carte du cimetière en main
-    if (hasKwOnPlay(cardInstance, "rappel") && player.graveyard.length > 0) {
+    // Rappel X : carte du cimetière de coût ≤ X (X absent ⇒ n'importe laquelle).
+    const rappelables = hasKwOnPlay(cardInstance, "rappel")
+      ? player.graveyard.filter(c => respecteCoutMax(c.card, getKwX(cardInstance, "rappel", undefined, 0)))
+      : [];
+    if (rappelables.length > 0) {
       const recallTarget = (action.graveyardTargetInstanceId
-        ? player.graveyard.find(c => c.instanceId === action.graveyardTargetInstanceId)
-        : player.graveyard[player.graveyard.length - 1]) ?? player.graveyard[player.graveyard.length - 1];
+        ? rappelables.find(c => c.instanceId === action.graveyardTargetInstanceId)
+        : rappelables[rappelables.length - 1]) ?? rappelables[rappelables.length - 1];
       if (recallTarget && player.hand.length < MAX_HAND_SIZE) {
         player.graveyard = player.graveyard.filter(c => c !== recallTarget);
         // Conserve les bonus accumulés (nouvelle identité d'instance).
@@ -5510,9 +5595,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Gated sur hasKwOnPlay pour qu'une instance en mode mort/attaque/retour/fin-de-tour/
     // tap ne se déclenche PAS à l'invocation ; elle passe alors par resolveCuratedKeywordEffect.
     if (hasKwOnPlay(cardInstance, "appel_du_clan") && cardInstance.card.clan && placesOccupees(player) < MAX_BOARD_SIZE) {
-      const adcXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = adcXVals["appel_du_clan"] || Math.max(1, cardInstance.card.mana_cost - 1);
-      const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
+      // X lu dans le modèle unifié (le repli [Appel du clan X] du texte y est
+      // intégré) ; absent ⇒ n'importe quel coût.
+      const x = getKwX(cardInstance, "appel_du_clan", undefined, 0);
+      const idx = player.deck.findIndex(c => c.card.clan === cardInstance.card.clan && c.card.card_type === "creature" && respecteCoutMax(c.card, x));
       if (idx >= 0) {
         const [called] = player.deck.splice(idx, 1);
         const calledInstance = createCardInstance(called.card);
@@ -6565,6 +6651,7 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) appliquerSilence(target);
+          else silencierObjet(ctx.caster, ctx.opponent, targetId);
         }
         break;
       }
@@ -6646,7 +6733,8 @@ function resolveSpellKeywords(
         // Invocation X : créature aléatoire de la collection au coût exact X.
         // Migration legacy : les sorts sauvés en « Invocation X/Y » (token)
         // n'ont pas de `amount` — leur ancienne ATK devient le coût X.
-        const x = kw.amount ?? kw.attack ?? 1;
+        // Ni amount ni ancienne ATK ⇒ n'importe quel coût.
+        const x = kw.amount ?? kw.attack ?? 0;
         resolveInvocationSummon(ctx.caster, ctx.card, x, ctx.state.factionCardPool, ctx.state.formatCode ?? null);
         break;
       }
@@ -6672,7 +6760,7 @@ function resolveSpellKeywords(
         // Déchainement X/Y : lance X sorts aléatoires (amount) de coût
         // exactement Y (health) de la collection, cibles au hasard.
         const x = kw.amount ?? 1;
-        const y = kw.health ?? 1;
+        const y = kw.health ?? 0; // Y absent ⇒ n'importe quel coût
         resolveDechainement(ctx.state, ctx.caster, ctx.opponent, ctx.card, x, y, kw.randomY === true);
         break;
       }
@@ -6825,8 +6913,9 @@ function resolveSpellKeywords(
           const gravIdx = ctx.caster.graveyard.findIndex(c => c.instanceId === targetId);
           if (gravIdx !== -1) {
             const target = ctx.caster.graveyard[gravIdx];
-            // Toute carte, sort compris (triggerReturnToHand ignore les sorts).
-            if (ctx.caster.hand.length < MAX_HAND_SIZE) {
+            // Toute carte, sort compris (triggerReturnToHand ignore les sorts),
+            // de coût ≤ X — X absent ⇒ n'importe quel coût.
+            if (ctx.caster.hand.length < MAX_HAND_SIZE && respecteCoutMax(target.card, kw.amount ?? 0)) {
               ctx.caster.graveyard.splice(gravIdx, 1);
               // Conserve les bonus accumulés (nouvelle identité d'instance).
               returnInstanceToPlay(target);
@@ -6864,13 +6953,13 @@ function resolveSpellKeywords(
         break;
       }
       case "exhumation": {
-        const maxCost = kw.amount ?? 1;
+        const maxCost = kw.amount ?? 0; // absent ⇒ n'importe quel coût
         if (targetId) {
           const gravIdx = ctx.caster.graveyard.findIndex(c => c.instanceId === targetId);
           if (gravIdx !== -1) {
             const target = ctx.caster.graveyard[gravIdx];
             if (target.card.card_type === "creature"
-                && target.card.mana_cost <= maxCost
+                && respecteCoutMax(target.card, maxCost)
                 && placesOccupees(ctx.caster) < MAX_BOARD_SIZE) {
               ctx.caster.graveyard.splice(gravIdx, 1);
               // Conserve les bonus accumulés (nouvelle identité d'instance).
@@ -6894,10 +6983,10 @@ function resolveSpellKeywords(
         // (mana cost ≤ X) found in the deck directly into play, free and with
         // summoning sickness. Uses the spell's own clan — a no-op when the
         // spell has no clan or the board is full (same fail-safe as creatures).
-        const x = kw.amount ?? 1;
+        const x = kw.amount ?? 0; // absent ⇒ n'importe quel coût
         const clan = ctx.card.clan;
         if (!clan || placesOccupees(ctx.caster) >= MAX_BOARD_SIZE) break;
-        const idx = ctx.caster.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= x);
+        const idx = ctx.caster.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && respecteCoutMax(c.card, x));
         if (idx >= 0) {
           const [called] = ctx.caster.deck.splice(idx, 1);
           const calledInstance = createCardInstance(called.card);
@@ -7383,9 +7472,16 @@ function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | un
   // Exhumation composée : cible une créature du cimetière ALLIÉ (résurrection) →
   // picker cimetière existant. Cimetière ennemi non pris en charge.
   if (t.location === "graveyard") {
-    return t.entity === "unit" && t.side === "ally" ? "friendly_graveyard_to_board" : undefined;
+    if (t.side !== "ally") return undefined;
+    if (t.entity === "unit") return "friendly_graveyard_to_board";
+    // Objets du cimetière : tout le cimetière, restreint ensuite au pool exact
+    // par restreindreCreneauCompose.
+    return visesObjets(t.entity) ? "friendly_graveyard" : undefined;
   }
   if (t.location !== "board") return undefined;
+  // Objets sur la table : créatures + objets des deux camps, restreint ensuite
+  // (camp, nature) par restreindreCreneauCompose.
+  if (visesObjets(t.entity)) return "any_creature_or_item";
   return t.side === "ally" ? "friendly_creature" : t.side === "enemy" ? "enemy_creature" : "any_creature";
 }
 
@@ -7830,6 +7926,116 @@ function sacrificeItem(state: GameState, action: import("./types").SacrificeItem
   return newState;
 }
 
+/** TRANSFORMATION — `source` DEVIENT la carte `cibleId`.
+ *
+ *  Sur le plateau : transformation SUR PLACE — la même instance (même
+ *  instanceId, donc objets équipés et références de combat intacts) prend les
+ *  stats pleines de la nouvelle carte ; dégâts, bonus et capacités gagnées sont
+ *  perdus ; l'état d'attaque (engagée, mal d'invocation, attaques restantes)
+ *  est conservé. Aucun effet d'entrée en jeu : elle change de forme, elle
+ *  n'arrive pas.
+ *
+ *  Au cimetière (déclencheur « mort ») : elle en sort sous sa nouvelle forme,
+ *  PV pleins, et ne peut pas attaquer avant son prochain tour (Traque exceptée).
+ *
+ *  La forme d'origine est mémorisée UNE fois (`??=`) : une chaîne A → B → C
+ *  reste A à l'origine. « Une seule fois » découle de la carte elle-même — la
+ *  forme B ne porte plus la Transformation de A. */
+function transformer(source: CardInstance, owner: PlayerState, opponent: PlayerState, cibleId: number | undefined): void {
+  if (cibleId == null) return;
+  const cible = currentCardPools.factionCardPool?.find(c => c.id === cibleId)
+    ?? currentCardPools.allSpellsPool?.find(c => c.id === cibleId);
+  if (!cible || cible.card_type !== "creature") {
+    console.warn(`[engine] Transformation : carte cible ${cibleId} introuvable ou non-créature pour « ${source.card.name} ».`);
+    return;
+  }
+  const surPlateau = owner.board.includes(source);
+  const auCimetiere = !surPlateau && owner.graveyard.includes(source);
+  if (!surPlateau && !auCimetiere) return;
+  if (auCimetiere && placesOccupees(owner) >= MAX_BOARD_SIZE) return;
+
+  const origine = source.formeOrigine ?? source.card;
+  const neuve = createCardInstance(cible);
+  const etatDeTour = surPlateau
+    ? {
+        hasAttacked: source.hasAttacked,
+        attacksRemaining: source.attacksRemaining,
+        hasSummoningSickness: source.hasSummoningSickness,
+        tapped: source.tapped,
+        targetsAttackedThisTurn: source.targetsAttackedThisTurn,
+      }
+    : {};
+  const identite = {
+    instanceId: source.instanceId,
+    originalOwnerId: source.originalOwnerId,
+    trueOwnerId: source.trueOwnerId,
+  };
+  Object.assign(source, neuve, identite, etatDeTour, { formeOrigine: origine });
+  if (auCimetiere) {
+    owner.graveyard = owner.graveyard.filter(g => g !== source);
+    source.hasSummoningSickness = !source.card.keywords.includes("charge");
+    owner.board.push(source);
+  }
+  recalculateAuras(owner, opponent);
+}
+
+/** Rend leur forme d'origine aux instances transformées qui ne sont plus sur le
+ *  plateau (main, deck, cimetière, éveil). Même identité, stats d'origine
+ *  pleines — les bonus de la forme transformée ne la suivent pas. */
+function restaurerFormesDOrigine(state: GameState): void {
+  for (const p of state.players) {
+    const zones = [p.hand, p.deck, p.graveyard, ...(p.eveil ?? []).map(e => [e.instance])];
+    for (const zone of zones) {
+      for (const inst of zone) {
+        if (!inst.formeOrigine) continue;
+        const origine = inst.formeOrigine;
+        const neuve = createCardInstance(origine);
+        Object.assign(inst, neuve, {
+          instanceId: inst.instanceId,
+          diedOnTurn: inst.diedOnTurn,
+          cycleEternelAutoPlay: inst.cycleEternelAutoPlay,
+          originalOwnerId: inst.originalOwnerId,
+          trueOwnerId: inst.trueOwnerId,
+        });
+        delete inst.formeOrigine;
+      }
+    }
+  }
+}
+
+/** INVOCATION d'OBJET — un objet aléatoire, du vivier de Trésor (communs de
+ *  l'alignement de la carte OU neutres, alignement lu sur l'objet), au coût
+ *  EXACT X — ou de A à X sous « ? » — posé sur la table, non équipé, sans ses
+ *  effets d'arrivée, comme une créature invoquée. Tirage par la RNG partagée
+ *  (on est dans applyAction : identique chez les deux clients). */
+function resolveInvocationObjet(
+  owner: PlayerState,
+  sourceCard: Card,
+  x: number,
+  filter: ComposedPoolFilter | undefined,
+  plafond: boolean,
+  minX?: number,
+): void {
+  if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
+  const libre = coutLibre(x);
+  const aligne = alignementDeLaCarte(sourceCard);
+  const tranche = aligne === "bon" || aligne === "maléfique";
+  const plancher = plancherAleatoire(minX, x);
+  const candidats = (currentCardPools.factionCardPool ?? []).filter(c =>
+    c.card_type === "item"
+    && c.rarity === "Commune"
+    && (libre || (plafond ? c.mana_cost >= plancher && c.mana_cost <= x : c.mana_cost === x))
+    && matchesPoolFilter(c, { ...(filter ?? {}), cardType: "item" })
+    && (!tranche || [aligne, "neutre"].includes(alignementDeLaCarte(c) ?? "")));
+  if (candidats.length === 0) {
+    console.warn(`[engine] Invocation d'objet : aucun objet au coût ${plafond ? `${plancher} à ${x}` : x} pour « ${sourceCard.name} ».`);
+    return;
+  }
+  const tirables = libre ? restreindreAUnCoutTire(candidats) : candidats;
+  const choisi = tirables[Math.floor(rng() * tirables.length)];
+  owner.items = [...objetsDe(owner), createCardInstance(choisi)];
+}
+
 /** MAÎTRE D'ARME — `porteur` s'équipe de TOUS les objets en jeu de son
  *  contrôleur, sans payer leur coût d'équipement, y compris ceux que portaient
  *  ses autres créatures (qui perdent aussitôt bonus et capacités transférées,
@@ -7851,19 +8057,71 @@ function equiperMaitreDArme(porteur: CardInstance, owner: PlayerState, opponent:
  *  et d'Exécution (action ciblée). Rend `false` si l'id n'est pas un objet en
  *  jeu — l'appelant n'a donc pas à savoir d'avance ce qu'il vise. */
 function detruireObjet(a: PlayerState, b: PlayerState, itemInstanceId: string): boolean {
-  const proprio = objetsDe(a).some(o => o.instanceId === itemInstanceId) ? a
-    : objetsDe(b).some(o => o.instanceId === itemInstanceId) ? b : null;
-  if (!proprio) return false;
-  const item = objetsDe(proprio).find(o => o.instanceId === itemInstanceId)!;
+  return deplacerObjet(a, b, itemInstanceId, "cimetiere");
+}
+
+/** Objet EN JEU (sur la table de l'un des deux camps), avec son propriétaire. */
+function trouverObjet(a: PlayerState, b: PlayerState, itemInstanceId: string): { proprio: PlayerState; item: CardInstance } | null {
+  for (const p of [a, b]) {
+    const item = objetsDe(p).find(o => o.instanceId === itemInstanceId);
+    if (item) return { proprio: p, item };
+  }
+  return null;
+}
+
+/** Fait QUITTER LA TABLE un objet, vers le cimetière (Exécution, sacrifice), la
+ *  main (Remontée, renvoi composé) ou le dessous du deck (Retour différé) de son
+ *  propriétaire. Le lien d'équipement est effacé avant le départ, et le porteur
+ *  perd aussitôt bonus et capacités transférées. `false` si l'id n'est pas un
+ *  objet en jeu — l'appelant retombe alors sur son chemin « créature ». Main
+ *  pleine : l'objet part au cimetière, comme une carte qui déborde. */
+function deplacerObjet(a: PlayerState, b: PlayerState, itemInstanceId: string, vers: "cimetiere" | "main" | "deck"): boolean {
+  const trouve = trouverObjet(a, b, itemInstanceId);
+  if (!trouve) return false;
+  const { proprio, item } = trouve;
   proprio.items = objetsDe(proprio).filter(o => o !== item);
-  // Le lien est effacé AVANT le départ : l'instance s'en va au cimetière, d'où
-  // elle peut revenir (Rappel, Exhumation…), et elle n'a rien à y emporter d'un
-  // porteur qu'elle ne sert plus.
   item.equippedToInstanceId = null;
-  proprio.graveyard.push(item);
-  // Le porteur perd le bonus et les capacités transférées de l'objet.
+  if (vers === "main" && proprio.hand.length < MAX_HAND_SIZE) proprio.hand.push(item);
+  else if (vers === "deck") proprio.deck.push(item);
+  else proprio.graveyard.push(item);
   recalculateAuras(a, b);
   return true;
+}
+
+/** SILENCE sur un objet : ses mots-clés et capacités disparaissent (son porteur
+ *  les perd), ses caractéristiques — bonus d'ATK/PV, coût d'équipement —
+ *  restent. `false` si l'id n'est pas un objet en jeu. */
+function silencierObjet(a: PlayerState, b: PlayerState, itemInstanceId: string): boolean {
+  const trouve = trouverObjet(a, b, itemInstanceId);
+  if (!trouve) return false;
+  const { item } = trouve;
+  item.card = { ...item.card, keywords: [], keyword_instances: null, capabilities: null };
+  recalculateAuras(a, b);
+  return true;
+}
+
+/** Effet composé appliqué à un OBJET en jeu. Seuls les contenus qui ont un
+ *  sens sur un objet agissent ; les autres sont sans effet. */
+function appliquerComposeAObjet(
+  composed: import("./types").ComposedEffect,
+  item: CardInstance,
+  x: number,
+  y: number,
+  owner: PlayerState,
+  opponent: PlayerState,
+): void {
+  switch (composed.content) {
+    case "buff":
+      // L'objet DONNE plus : son bonus grandit, définitivement. Le porteur en
+      // profite au recalcul, et tout porteur suivant aussi.
+      item.card = { ...item.card, attack: (item.card.attack ?? 0) + x, health: (item.card.health ?? 0) + y };
+      recalculateAuras(owner, opponent);
+      return;
+    case "bounce": deplacerObjet(owner, opponent, item.instanceId, "main"); return;
+    case "retour_differe": deplacerObjet(owner, opponent, item.instanceId, "deck"); return;
+    case "silence": silencierObjet(owner, opponent, item.instanceId); return;
+    default: return;
+  }
 }
 
 function cloneStateForAction(state: GameState): GameState {
@@ -7992,6 +8250,8 @@ function resolveRetourDiffere(
   // Même contrat que resolveRemontee : false pour une désignation NON ciblée.
   targeted = true,
 ): void {
+  // OBJET ciblé : sous le deck de son propriétaire.
+  if (targetInstanceId && deplacerObjet(controller, other, targetInstanceId, "deck")) return;
   let target: CardInstance | undefined;
   if (targetInstanceId) {
     const cand = findCreatureOnBoard(controller, targetInstanceId)
@@ -8652,6 +8912,8 @@ function resolveRemontee(
   // toutes) : les protections de ciblage ne jouent pas (cf. canBeRemonteed).
   targeted = true,
 ): void {
+  // OBJET ciblé : il quitte la table pour la main de son propriétaire.
+  if (targetInstanceId && deplacerObjet(controller, other, targetInstanceId, "main")) return;
   const sourceId = sourceInstanceId;
   let target: CardInstance | undefined;
   if (targetInstanceId) {
@@ -9411,8 +9673,13 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // is skipped for these instances via the hasKwOnPlay gate elsewhere,
     // so each instance fires exactly once at the right time.
     const customDeathInstances = c.card.keyword_instances ?? [];
+    // TRANSFORMATION à la mort : mise de côté, appliquée APRÈS tous les effets
+    // de mort de la carte. Transformée plus tôt, l'instance changerait de carte
+    // en plein milieu — et ce seraient les effets composés « à la mort » de la
+    // NOUVELLE forme qui partiraient juste en dessous.
+    const transformationALaMort = customDeathInstances.find(i => i.mode === "death" && i.id === "transformation");
     for (const inst of customDeathInstances) {
-      if (inst.mode === "death") {
+      if (inst.mode === "death" && inst.id !== "transformation") {
         // Remontée-mort passe désormais ICI comme les autres mots-clés curés :
         // c'est un renvoi CIBLÉ (sélecteur sur le tour du contrôleur, tirage
         // sinon). Elle était sautée tant que l'auto-renvoi la traitait plus
@@ -9423,6 +9690,11 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Effets composés à la mort (modèle hybride).
     runComposedCapsForCard(c.card, "on_death", c, owner, enemy);
+
+    // Transformation à la mort : elle ressort du cimetière sous sa nouvelle
+    // forme — si une autre règle (Résurrection, Cycle éternel, Remontée) ne l'a
+    // pas déjà réclamée : transformer() exige qu'elle y soit encore.
+    if (transformationALaMort) transformer(c, owner, enemy, transformationALaMort.linkedCardIds?.[0]);
 
     // (Instinct de meute is now an on-play trigger — see playCard,
     // resolved once at summon based on whether any same-faction ally has
@@ -10141,8 +10413,8 @@ function resolveCuratedKeywordEffect(
       // de l'instance (inst.x) ; à défaut on retombe sur max(1, coût − 1).
       const clan = source.card.clan;
       if (!clan || placesOccupees(owner) >= MAX_BOARD_SIZE) break;
-      const cost = inst?.x ?? Math.max(1, source.card.mana_cost - 1);
-      const idx = owner.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && c.card.mana_cost <= cost);
+      const cost = inst?.x ?? getCardKwX(source.card, "appel_du_clan", inst?.mode, 0);
+      const idx = owner.deck.findIndex(c => c.card.clan === clan && c.card.card_type === "creature" && respecteCoutMax(c.card, cost));
       if (idx >= 0) {
         const [called] = owner.deck.splice(idx, 1);
         const calledInstance = createCardInstance(called.card);
@@ -10215,6 +10487,10 @@ function resolveCuratedKeywordEffect(
     }
     case "maitre_darme": {
       equiperMaitreDArme(source, owner, opponent);
+      return;
+    }
+    case "transformation": {
+      transformer(source, owner, opponent, inst?.linkedCardIds?.[0]);
       return;
     }
     case "solidarite": {
@@ -10320,8 +10596,8 @@ function resolveCuratedKeywordEffect(
       // `inst.x` d'abord, puis le X déclaré dans les capabilities : une capacité
       // portée uniquement par `capabilities` (sans keyword_instances) tombait
       // sinon sur la dérivation `coût - 1`, même défaut que le chemin d'entrée.
-      const xE = inst?.x ?? getCardKwX(source.card, "exhumation", inst?.mode, Math.max(1, source.card.mana_cost - 1));
-      const resurrectable = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature" && c.card.mana_cost <= xE);
+      const xE = inst?.x ?? getCardKwX(source.card, "exhumation", inst?.mode, 0);
+      const resurrectable = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.card_type === "creature" && respecteCoutMax(c.card, xE));
       if (resurrectable.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       const targetE = resurrectable[Math.floor(rng() * resurrectable.length)];
       owner.graveyard = owner.graveyard.filter(c => c !== targetE);
@@ -10334,7 +10610,8 @@ function resolveCuratedKeywordEffect(
     case "rappel": {
       // Renvoie une carte du cimetière en main, au hasard, source exclue
       // (le retour-de-soi à la mort est le rôle de Remontée/Résurrection).
-      const recallPool = owner.graveyard.filter(c => c.instanceId !== source.instanceId);
+      const xR = inst?.x ?? getCardKwX(source.card, "rappel", inst?.mode, 0);
+      const recallPool = owner.graveyard.filter(c => c.instanceId !== source.instanceId && respecteCoutMax(c.card, xR));
       if (recallPool.length === 0 || owner.hand.length >= MAX_HAND_SIZE) return;
       const targetR = recallPool[Math.floor(rng() * recallPool.length)];
       owner.graveyard = owner.graveyard.filter(c => c !== targetR);
@@ -11899,6 +12176,12 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     if (head && head !== prevHead) result.choiceStartedAt = Date.now();
     else if (!head) result.choiceStartedAt = undefined;
   }
+  // TRANSFORMATION : toute instance transformée qui a quitté le plateau (morte,
+  // renvoyée en main, mise dans le deck) reprend sa forme d'origine. Balayage
+  // unique en fin d'action plutôt qu'à chacun des dizaines de chemins qui
+  // retirent une créature du plateau : ses effets « à la mort » sont donc bien
+  // ceux de la forme sous laquelle elle est morte.
+  if (result !== state) restaurerFormesDOrigine(result);
   // Persist the advanced RNG position into the returned state so the next
   // action (here or on the other client) resumes the same stream.
   if (result !== state) result.rngState = rngState;
@@ -12204,7 +12487,7 @@ function firstOnPlayComposedChoiceCap(card: Card): import("./types").Capability 
     const t = c.composed?.target;
     return composeExecutable(c) && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
-      && (t.entity === "unit" || t.entity === "both") && t.location === "board";
+      && (visesUnites(t.entity) || visesObjets(t.entity)) && t.location === "board";
   });
 }
 
@@ -12217,7 +12500,7 @@ function firstOnPlayComposedGraveyardChoiceCap(card: Card): import("./types").Ca
     const t = c.composed?.target;
     return composeExecutable(c) && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
-      && t.entity === "unit" && t.location === "graveyard" && t.side === "ally";
+      && (t.entity === "unit" || visesObjets(t.entity)) && t.location === "graveyard" && t.side === "ally";
   });
 }
 
@@ -12430,7 +12713,8 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
   for (const kw of card.keywords) {
     if (!cardHasKwOnPlay(card, kw)) continue;
     if (kw === "rappel") {
-      return player.graveyard.map(c => c.instanceId);
+      const x = getCardKwX(card, "rappel", undefined, 0);
+      return player.graveyard.filter(c => respecteCoutMax(c.card, x)).map(c => c.instanceId);
     }
     if (kw === "heritage_du_cimetiere") {
       return player.graveyard.filter(c => c.card.card_type === "creature").map(c => c.instanceId);
@@ -12439,8 +12723,8 @@ export function getGraveyardTargets(state: GameState, card: Card): string[] {
       // Même plafond que la résolution (cf. hasKwOnPlay "exhumation") : un écart
       // ici proposerait au cimetière des créatures que le moteur refusera, ou
       // — comme c'était le cas — en proposerait de trop chères.
-      const x = getCardKwX(card, "exhumation", undefined, Math.max(1, card.mana_cost - 1));
-      return player.graveyard.filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x).map(c => c.instanceId);
+      const x = getCardKwX(card, "exhumation", undefined, 0);
+      return player.graveyard.filter(c => c.card.card_type === "creature" && respecteCoutMax(c.card, x)).map(c => c.instanceId);
     }
   }
   return [];
@@ -12887,7 +13171,9 @@ function resolveInvocationSummon(
   minX = 1,
 ): void {
   if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
-  if (!pool || pool.length === 0 || x <= 0) return;
+  if (!pool || pool.length === 0) return;
+  // X absent / ≤ 0 ⇒ n'importe quel coût (tiré à chances égales par coût).
+  const libre = coutLibre(x);
   const plancher = plancherAleatoire(minX, x);
   const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
   const buckets = selectionFactionBuckets(sourceCard, owner);
@@ -12896,7 +13182,7 @@ function resolveInvocationSummon(
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "creature"
-    && (plafond ? (c.mana_cost >= plancher && c.mana_cost <= x) : c.mana_cost === x)
+    && (libre || (plafond ? (c.mana_cost >= plancher && c.mana_cost <= x) : c.mana_cost === x))
     && (restricted
       // matchesPoolFilter : même prédicat que les Sélections composées, donc
       // clan et « mot-clé porté » deviennent utilisables ici aussi.
@@ -12912,7 +13198,7 @@ function resolveInvocationSummon(
     // coûte 6) : autant que ça se voie en console, comme pour Compagnons et
     // l'Invocation désignée.
     console.warn(
-      `[engine] Invocation : aucune créature au coût ${plafond ? `${plancher} à ${x}` : x}`
+      `[engine] Invocation : aucune créature au coût ${libre ? "(libre)" : plafond ? `${plancher} à ${x}` : x}`
       + (restricted ? ` pour le filtre ${JSON.stringify(restrict)}` : "")
       + ` dans la collection pour « ${sourceCard.name} » — rien n'est invoqué.`,
     );
@@ -12921,9 +13207,10 @@ function resolveInvocationSummon(
   // Pondération 2:1 en faveur de l'alignement propre — sauf quand `restrict`
   // a REMPLACÉ le filtre d'alignement : « invoque un Loup » ne doit pas se voir
   // réintroduire une préférence d'alignement par la bande.
+  const tirables = libre ? restreindreAUnCoutTire(candidates) : candidates;
   const chosen = restricted
-    ? candidates[Math.floor(rng() * candidates.length)]
-    : tirageUniquePondere(candidates, buckets)!;
+    ? tirables[Math.floor(rng() * tirables.length)]
+    : tirageUniquePondere(tirables, buckets)!;
   mettreEnJeuInvoquee(owner, chosen);
 }
 
@@ -12958,8 +13245,14 @@ function resolveDesignatedSummon(
     console.warn(`[engine] Invocation désignée : carte id=${cardId} introuvable dans les pools du match pour « ${sourceName} » — no-op.`);
     return;
   }
+  // OBJET désigné : posé sur la table, non équipé, sans ses effets d'arrivée —
+  // comme l'objet d'une Invocation aléatoire.
+  if (def.card_type === "item") {
+    owner.items = [...objetsDe(owner), createCardInstance(def)];
+    return;
+  }
   if (def.card_type !== "creature") {
-    console.warn(`[engine] Invocation désignée : la carte id=${cardId} n'est pas une créature (« ${sourceName} ») — no-op.`);
+    console.warn(`[engine] Invocation désignée : la carte id=${cardId} n'est ni une créature ni un objet (« ${sourceName} ») — no-op.`);
     return;
   }
   mettreEnJeuInvoquee(owner, def);
@@ -13036,14 +13329,16 @@ function resolveDechainement(
   randomY = false,
 ): void {
   const pool = state.allSpellsPool;
-  if (!pool || pool.length === 0 || x <= 0 || y <= 0) return;
+  if (!pool || pool.length === 0 || x <= 0) return;
+  // Y absent / ≤ 0 ⇒ actions de n'importe quel coût (un coût tiré par action).
+  const libre = coutLibre(y);
   const buckets = selectionFactionBuckets(sourceCard, player);
   const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
   const legal = state.formatCode ? getFormatFilterByCode(state.formatCode) : null;
   const ownedLimited = new Set(player.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "spell"
-    && (randomY ? (c.mana_cost >= 1 && c.mana_cost <= y) : c.mana_cost === y)
+    && (libre || (randomY ? (c.mana_cost >= 1 && c.mana_cost <= y) : c.mana_cost === y))
     && !!c.faction && allowedFactions.has(c.faction)
     && ((c.rarity ?? "Commune") === "Commune"
       || (c.card_year != null && c.set_id == null && ownedLimited.has(c.id)))
@@ -13059,7 +13354,7 @@ function resolveDechainement(
   for (let i = 0; i < x; i++) {
     // Un `rng()` par sort, pondéré — le COMPTE d'appels reste identique chez
     // les deux clients, ce qui préserve la synchro du flux aléatoire.
-    const chosen = tirageUniquePondere(candidates, buckets)!;
+    const chosen = tirageUniquePondere(libre ? restreindreAUnCoutTire(candidates) : candidates, buckets)!;
     castSpellWithRandomTargets(state, player, opponent, chosen);
   }
 }
@@ -13128,14 +13423,16 @@ function offreSelection(
   // Plancher A du « ? » : les coûts se tirent entre A et X (1 par défaut).
   minX = 1,
 ): Card[] {
-  if (!randomX) {
-    // X ≤ 0 : aucun filtre de coût (comportement historique des cartes qui ne
-    // renseignent pas d'amplitude).
-    const exact = x > 0 ? vivier.filter(c => c.mana_cost === x) : vivier;
+  // X absent / ≤ 0 ⇒ N'IMPORTE QUEL COÛT : même régime que « ? », sur tous les
+  // coûts présents — chaque carte tire son coût à chances égales, au lieu d'un
+  // tirage direct où les coûts bas, plus nombreux, écraseraient les autres.
+  const libre = x <= 0;
+  if (!randomX && !libre) {
+    const exact = vivier.filter(c => c.mana_cost === x);
     return offrePonderee(exact, buckets, Math.min(SELECTION_OFFER_COUNT, exact.length), melanger);
   }
-  const plafond = Math.max(1, x);
-  const plancher = plancherAleatoire(minX, plafond);
+  const plafond = libre ? Infinity : Math.max(1, x);
+  const plancher = libre ? -Infinity : plancherAleatoire(minX, plafond);
   const coutsDisponibles = [...new Set(
     vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= plafond).map(c => c.mana_cost),
   )].sort((a, b) => a - b);
@@ -13334,7 +13631,10 @@ export function getFaveurCard(
   // dans tout le vivier) — même repli historique que les Sélections.
   let candidats: Card[];
   if (x <= 0) {
-    candidats = vivier;
+    // N'importe quel coût : un coût tiré à chances égales, puis la carte.
+    const couts = [...new Set(vivier.map(c => c.mana_cost))].sort((a, b) => a - b);
+    const cout = couts[Math.floor(pseudoRng() * couts.length)];
+    candidats = vivier.filter(c => c.mana_cost === cout);
   } else if (!randomX) {
     candidats = vivier.filter(c => c.mana_cost === x);
   } else {
@@ -13556,7 +13856,7 @@ function restreindreCreneauCompose(
   const t = getCapabilities(card).find((c) => c.uid === m[1] && c.composed)?.composed?.target;
   if (!t) return base;
   const memb = t.membership;
-  const restreint = t.maxCost != null
+  const restreint = t.maxCost != null || visesObjets(t.entity)
     || !!(memb && (memb.faction?.length || memb.race?.length || memb.clan?.length));
   if (!restreint) return base;
   const player = state.players[state.currentPlayerIndex];
@@ -13656,15 +13956,18 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
   if (!kw) return [];
 
   if (kw.id === "rappel") {
-    return player.graveyard.map(c => c.instanceId); // sorts compris
+    // Sorts compris. Plafond = X + amplificateurs ; X absent ⇒ aucun plafond
+    // (un bonus de Chant ne doit pas en inventer un).
+    const cap = kw.amount == null ? 0 : kw.amount + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
+    return player.graveyard.filter(c => respecteCoutMax(c.card, cap)).map(c => c.instanceId);
   }
   if (kw.id === "exhumation") {
     // Plafond de coût = X du mot-clé + bonus de Chant. Le moteur applique déjà
     // le bonus (via spellResolutionInstances) : sans le même calcul ici, le
     // picker proposait strictement moins que ce que la résolution acceptait.
-    const maxCost = (kw.amount ?? 1) + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
+    const maxCost = kw.amount == null ? 0 : kw.amount + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
     return player.graveyard
-      .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= maxCost)
+      .filter(c => c.card.card_type === "creature" && respecteCoutMax(c.card, maxCost))
       .map(c => c.instanceId);
   }
   return [];
