@@ -20,6 +20,7 @@ import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import ComposedMarker from "@/components/cards/ComposedMarker";
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { CostShield, EquipToken, StatShields, cardAriaLabel, statShieldsReserve, toneFor } from "@/components/card/CardCounters";
 import { getEquipCost } from "@/lib/game/items";
 import { RightSlots, RIGHT_SLOT, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
@@ -899,14 +900,15 @@ function HandCard({
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
                       minWidth: 32, height: 32, borderRadius: 3,
                       padding: x != null ? "0 2px" : 0,
-                      background: isAllAllies ? "#27ae6055" : (hasImg ? "transparent" : `${accentColor}33`),
-                      border: isAllAllies ? "1px solid #27ae60" : (hasImg ? "none" : `1px solid ${accentColor}66`),
+                      background: hasImg ? "transparent" : `${accentColor}33`,
+                      border: hasImg ? "none" : `1px solid ${accentColor}66`,
                       display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                       fontSize: 8, overflow: "visible",
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                        <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                           <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
+                          {isAllAllies && <AllAlliesMarker size={8} color={modeColor} />}
                         </span>
                       </span>
                       {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}

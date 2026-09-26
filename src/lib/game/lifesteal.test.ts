@@ -158,20 +158,6 @@ describe("Drain de vie — combat (non-régression)", () => {
 });
 
 describe("Drain de vie — garde-fous", () => {
-  it("le coût de Douleur (auto-dégât) ne se rembourse pas", () => {
-    const s = mkState();
-    s.players[0].hero.hp = 20;
-    const douloureuse = mkInstance(mkCard({
-      name: "Pénitente", mana_cost: 2, attack: 3, health: 3,
-      keywords: ["douleur", "drain_de_vie"], effect_text: "[Douleur 2]",
-    }));
-
-    const next = play(s, douloureuse);
-
-    // Les 2 dégâts sont bien payés, et NON récupérés par le drain.
-    expect(p1Hp(next)).toBe(18);
-  });
-
   it("la fatigue ne soigne personne (aucune source)", () => {
     const s = mkState();
     const p2 = mkPlayer("P2");

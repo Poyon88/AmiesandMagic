@@ -425,10 +425,6 @@
         "label": "冲击 X",
         "desc": "对目标（任意一方的生物或英雄）造成X点伤害。"
       },
-      "douleur": {
-        "label": "痛苦 X",
-        "desc": "对你的英雄造成X点伤害。"
-      },
       "inspiration": {
         "label": "启示 X",
         "desc": "抽X张卡。"
@@ -528,6 +524,10 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "maitre_darme": {
+        "label": "武器大师",
+        "desc": "免费装备场上你所有的物品，包括你其他随从所佩戴的物品。"
       }
     },
     "spell_keywords": {
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "处决",
-        "desc": "消灭目标生物。"
+        "desc": "摧毁一个目标生物或物品"
       },
       "silence": {
         "label": "沉默",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "浩劫 X",
         "desc": "对所有生物（己方与敌方）造成 X 点伤害。"
-      },
-      "douleur": {
-        "label": "苦痛 X",
-        "desc": "当此行动被打出时，对你的英雄造成X点伤害。"
       },
       "afflux": {
         "label": "涌流 X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "旧版JSON格式（已弃用）",
     "json_hint": "已弃用：引擎现在仅在旧卡牌上读取此项以支持\"重掷\"。若要构建效果，请使用下方的\"复合效果\"。",
     "abilities_count": "技能（{count}）",
+    "conferred_abilities_toggle": "赋予生物的能力（{count}）",
+    "conferred_abilities_hint": "行动结算时赋予生物的能力（绿色=所有友方生物，灰色=目标生物）",
     "mode_title_play": "召唤时（默认）",
     "mode_title_death": "死亡时（亡语）",
     "mode_title_tap": "横置激活（tap）",

@@ -14,10 +14,8 @@ describe("le barème", () => {
     }
   });
 
-  it("la vie est ANCRÉE sur Douleur X, au point près", () => {
-    // Même geste — infliger un dégât à son propre héros — donc même prix. Si
-    // Douleur X est rééquilibrée, ce test le signalera.
-    expect(ADDITIONAL_COST_POINTS.life).toBe(KEYWORDS["Douleur X"].cost);
+  it("la vie vaut −3 par PV payé (ancien ancrage sur Douleur X, retirée)", () => {
+    expect(ADDITIONAL_COST_POINTS.life).toBe(-3);
   });
 
   it("la défausse est ANCRÉE sur le prix d'une carte", () => {

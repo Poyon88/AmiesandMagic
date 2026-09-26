@@ -24,6 +24,7 @@ import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import ComposedMarker from "@/components/cards/ComposedMarker";
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 
 /** Glyphe texte d'un coût additionnel — la vignette n'a pas la place d'une
  *  silhouette ; le glyphe + la couleur suffisent à repérer la carte. */
@@ -78,7 +79,7 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
             style={cell(isCreature ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw))}>
             <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
               <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={box * 0.6} keyword={kw} fill mode={mode} singulier={entry.singulier} light />
-              {allAllies && <ComposedMarker mode={undefined} color="#27ae60" size={box * 0.3} />}
+              {allAllies && <AllAlliesMarker size={box * 0.4} color={color} />}
             </span>
             {val != null && <span style={{ ...badge, color: color ?? "#fff" }}>{val}</span>}
           </span>

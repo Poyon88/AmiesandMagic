@@ -6,7 +6,7 @@
 // dix, le bonus vaut X.
 //
 // Périmètre assumé (décision de conception) : tout X, y compris ceux qui ne sont
-// pas des amplitudes — Douleur (auto-dégâts) et les compteurs plafonnés en font
+// pas des amplitudes — les compteurs plafonnés en font
 // partie. Les cas correspondants sont verrouillés ici pour que le choix reste
 // VISIBLE si on veut un jour le restreindre.
 import { describe, expect, it } from "vitest";
@@ -219,15 +219,6 @@ describe("Chant X — instantané et étanchéité", () => {
 });
 
 describe("Chant X — conséquences ASSUMÉES du périmètre « tout X »", () => {
-  it("Douleur est boostée elle aussi : le sort fait plus mal à SON lanceur", () => {
-    const { s } = table(1);
-    const hpAvant = s.players[0].hero.hp;
-    const st = lancer(s, sortChant(2, { id: "douleur", amount: 1 }));
-    // 1 + 2 = 3 dégâts à son propre héros. Le jour où cela pose problème, le
-    // repli est un `Set` d'ids exclus dans `chanted` — rien d'autre.
-    expect(st.players[0].hero.hp).toBe(hpAvant - 3);
-  });
-
   it("Épargne boostée reste écrêtée au plafond, en silence", () => {
     const { s } = table(1);
     const st = lancer(s, sortChant(4, { id: "epargne", amount: MAX_EPARGNE }));

@@ -425,10 +425,6 @@
         "label": "Impatto X",
         "desc": "Infligge X danni a un bersaglio scelto (creatura o eroe, qualsiasi lato)."
       },
-      "douleur": {
-        "label": "Dolore X",
-        "desc": "Infligge X danni al tuo eroe."
-      },
       "inspiration": {
         "label": "Ispirazione X",
         "desc": "Pesca X carte."
@@ -528,6 +524,10 @@
       "tuteur": {
         "label": "Tutore",
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
+      },
+      "maitre_darme": {
+        "label": "Maestro d'armi",
+        "desc": "Si equipaggia gratuitamente con tutti i vostri oggetti in gioco, compresi quelli indossati dalle vostre altre creature."
       }
     },
     "spell_keywords": {
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "Esecuzione",
-        "desc": "Distrugge una creatura bersagliata"
+        "desc": "Distrugge una creatura o un oggetto bersaglio"
       },
       "silence": {
         "label": "Silenzio",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "Cataclisma X",
         "desc": "Infligge X danni a tutte le creature (alleate E nemiche)."
-      },
-      "douleur": {
-        "label": "Dolore X",
-        "desc": "Quando questa azione viene giocata, infligge X danni al tuo eroe."
       },
       "afflux": {
         "label": "Afflusso X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "VECCHIO FORMATO JSON (obsoleto)",
     "json_hint": "Obsoleto: il motore lo legge solo per Rilancia su carte precedenti. Per comporre un effetto, usa «Effetto composto» più sotto.",
     "abilities_count": "CAPACITÀ ({count})",
+    "conferred_abilities_toggle": "CAPACITÀ CONFERITE ALLE CREATURE ({count})",
+    "conferred_abilities_hint": "date alle creature quando l'azione viene giocata (verde = tutti gli alleati, grigio = creatura bersaglio)",
     "mode_title_play": "All'invocazione (default)",
     "mode_title_death": "Alla morte (deathrattle)",
     "mode_title_tap": "Attivata da tap (ingaggio)",

@@ -17,9 +17,8 @@ export default function ComposedMarker({ mode, size = 7, color }: {
   mode: KeywordMode | undefined;
   /** Taille de référence, calée sur ~0,5× l'icône ; l'échelle commune s'applique par-dessus. */
   size?: number;
-  /** Couleur imposée. Sert au marqueur de PORTÉE (capacité conférée à tous les
-   *  alliés, en vert) : même signal discret dans le coin de l'icône, sans le
-   *  pavé de couleur qui écrasait l'icône. */
+  /** Couleur imposée (plus d'appelant depuis que la portée « tous les
+   *  alliés » a son propre marqueur, AllAlliesMarker). */
   color?: string;
 }) {
   return (

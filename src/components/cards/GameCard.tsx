@@ -62,6 +62,7 @@ import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTrigge
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
 
 import ComposedMarker from "@/components/cards/ComposedMarker";
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { LIMITED_PRINT_COUNTS, ALIGNMENTS, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import RarityFrame from "./RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -440,7 +441,7 @@ export default function GameCard({
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} singulier={entry.singulier} />
                   </span>
-                  {isAllAllies && <ComposedMarker mode={undefined} color="#27ae60" size={15 * icoS} />}
+                  {isAllAllies && <AllAlliesMarker size={13 * icoS} color={modeColor} />}
                 </span>
                 {keywordBadgeValue(kw, x, instance) != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{keywordBadgeValue(kw, x, instance)}</span>}
               </div>

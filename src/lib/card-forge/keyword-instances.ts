@@ -42,7 +42,7 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   // Tier 2 — Terrain
   "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
   "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
-  "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion",
+  "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion", "Maître d'arme": "maitre_darme",
   "Conférer": "conferer",
   "Déclenchement": "declenchement",
   "Convocation X": "convocation", "Malédiction": "malediction",
@@ -75,7 +75,6 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Lycanthropie X": "lycanthropie",
   "Tempête X": "tempete",
   "Cataclysme X": "cataclysme",
-  "Douleur X": "douleur",
   "Inspiration X": "inspiration",
 };
 

@@ -425,10 +425,6 @@
         "label": "Impact X",
         "desc": "Deal X damage to a target (creature or hero, either side)."
       },
-      "douleur": {
-        "label": "Pain X",
-        "desc": "Deals X damage to your hero."
-      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Draw X cards."
@@ -528,6 +524,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
+      "maitre_darme": {
+        "label": "Weapon Master",
+        "desc": "Equips all your items in play for free, including those carried by your other creatures."
       }
     },
     "spell_keywords": {
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "Execution",
-        "desc": "Destroy a targeted creature."
+        "desc": "Destroys a targeted creature or item"
       },
       "silence": {
         "label": "Silence",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "Cataclysm X",
         "desc": "Deals X damage to all creatures (allied AND enemy)."
-      },
-      "douleur": {
-        "label": "Pain X",
-        "desc": "When this action is played, deals X damage to your hero."
       },
       "afflux": {
         "label": "Surge X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "OLD JSON FORMAT (deprecated)",
     "json_hint": "Deprecated: the engine now only reads this for Relaunch on old cards. To compose an effect, use \"Composed effect\" below.",
     "abilities_count": "ABILITIES ({count})",
+    "conferred_abilities_toggle": "ABILITIES GRANTED TO CREATURES ({count})",
+    "conferred_abilities_hint": "granted to creatures when the action is played (green = all allies, gray = targeted creature)",
     "mode_title_play": "On play (default)",
     "mode_title_death": "On death (deathrattle)",
     "mode_title_tap": "Activated by tap (engage)",

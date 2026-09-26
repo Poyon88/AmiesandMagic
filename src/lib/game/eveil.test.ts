@@ -309,20 +309,20 @@ describe("arrivée en jeu", () => {
   });
 
   it("les effets d'INVOCATION se résolvent comme depuis la main", () => {
-    // Douleur 2 : la créature inflige 2 dégâts à son propre héros en arrivant.
+    // Pillage 2 : l'adversaire défausse 2 cartes à l'arrivée de la créature.
     const { s, carte } = etat(creature({
-      eveil_cost: 1, effect_text: "[Douleur 2]",
-      keywords: ["douleur"] as never,
-      keyword_instances: [{ id: "douleur", x: 2 }] as KeywordInstance[],
+      eveil_cost: 1,
+      keywords: ["pillage"] as never,
+      keyword_instances: [{ id: "pillage", x: 2 }] as KeywordInstance[],
     }));
-    const pvAvant = s.players[0].hero.hp;
+    s.players[1].hand = [0, 1, 2].map((i) => mkInstance(mkCard({ name: `Main${i}` })));
     const st0 = applyAction(s, { type: "suspend_eveil", cardInstanceId: carte.instanceId });
 
     const st = applyAction(st0, {
       type: "play_card", cardInstanceId: carte.instanceId, fromEveil: true,
     });
 
-    expect(st.players[0].hero.hp).toBe(pvAvant - 2);
+    expect(st.players[1].hand).toHaveLength(1);
   });
 
   it("compte comme POSÉE DEPUIS LA MAIN pour Esprit de corps", () => {

@@ -68,6 +68,7 @@ import {
   deferredKwTargetIds,
   endOfTurnTriggerTargets,
 } from "@/lib/game/engine";
+import { peutRecevoirObjet } from "@/lib/game/items";
 import { MAX_HAND_SIZE, MAX_CONQUETE } from "@/lib/game/constants";
 import { attackerRemovedItself } from "@/lib/game/attack-wave-order";
 import { drawnCardIds } from "@/lib/game/drawn-cards";
@@ -4238,7 +4239,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
       const selectableSlots = slots.filter(s =>
-        s.type === "any" || s.type === "any_creature"
+        s.type === "any" || s.type === "any_creature" || s.type === "any_creature_or_item"
         || s.type === "friendly_creature" || s.type === "enemy_creature"
         || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
       );
@@ -4435,7 +4436,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // joueur de viser une créature qui ne peut pas l'accueillir — un refus
     // silencieux du moteur serait illisible.
     const libres = moi.board
-      .filter(c => !(moi.items ?? []).some(o => o.equippedToInstanceId === c.instanceId))
+      .filter(c => peutRecevoirObjet(moi, c, objet))
       .map(c => c.instanceId);
     set({
       targetingMode: "equip",
@@ -5358,7 +5359,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
       const selectableSlots = slots.filter(s =>
-        s.type === "any" || s.type === "any_creature"
+        s.type === "any" || s.type === "any_creature" || s.type === "any_creature_or_item"
         || s.type === "friendly_creature" || s.type === "enemy_creature"
         || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
       );

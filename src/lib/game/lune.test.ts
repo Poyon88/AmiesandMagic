@@ -209,19 +209,18 @@ describe("Lune X — le compteur ne retient que ce que le joueur JOUE", () => {
     // « joué ». Même montage que le test jumeau de Chant — l'historique porte
     // le sort à rejouer.
     const { s } = table(1);
-    // Douleur 2 plutôt qu'Impact : elle frappe le héros du lanceur sans avoir
-    // besoin d'une cible, ce qui rend le montant relancé lisible sans dépendre
-    // du ciblage d'un sort tiré de l'historique.
+    // Pillage 2 plutôt qu'Impact : il agit sans cible, ce qui rend le montant
+    // relancé lisible sans dépendre du ciblage d'un sort tiré de l'historique.
     const ancien = mkCard({
-      name: "Vieille Douleur", card_type: "spell", attack: null, health: null,
-      spell_keywords: [{ id: "douleur", amount: 2 }] as SpellKeywordInstance[],
+      name: "Vieux Pillage", card_type: "spell", attack: null, health: null,
+      spell_keywords: [{ id: "pillage", amount: 2 }] as SpellKeywordInstance[],
     });
     s.players[0].spellHistory = [{ card: ancien }] as never;
-    const pvAvant = s.players[0].hero.hp;
+    s.players[1].hand = Array.from({ length: 5 }, (_, i) => mkInstance(mkCard({ name: `Main${i}` })));
 
     const st = jouer(s, sortLune(2, [{ id: "relancer", amount: 1 }]));
-    // Le sort relancé n'a pas Lune : il inflige ses 2 points nus, pas 4.
-    expect(st.players[0].hero.hp).toBe(pvAvant - 2);
+    // Le sort relancé n'a pas Lune : 2 défausses nues, pas 4.
+    expect(st.players[1].hand).toHaveLength(3);
     // Une seule carte JOUÉE de plus : celle qui portait Relancer.
     expect(st.players[0].cardsPlayedThisTurn).toBe(2);
   });

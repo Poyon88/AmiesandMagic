@@ -98,3 +98,32 @@ export function bonusDObjet(item: CardInstance): { atk: number; pv: number } {
 export function uidCapaciteObjet(item: CardInstance, uidOrigine: string): string {
   return `obj_${item.instanceId}_${uidOrigine}`;
 }
+
+/** La créature porte-t-elle MAÎTRE D'ARME ? Seule exception à la règle « un
+ *  objet par créature » : elle peut en cumuler autant que son contrôleur en
+ *  possède. Lu sur `keywords`, où toute capacité curée figure — ce module ne
+ *  tire pas le moteur. */
+export function estMaitreDArme(c: Pick<CardInstance, "card">): boolean {
+  return (c.card.keywords as unknown as string[]).includes("maitre_darme");
+}
+
+/** Cette créature peut-elle recevoir `item` (en plus de ce qu'elle porte) ?
+ *  Règle UNIQUE pour le moteur (equipItem), le store (cibles d'équipement) et le
+ *  plateau (vignette cliquable) : une créature libre, ou un Maître d'arme. Un
+ *  objet déjà porté par cette même créature n'a nulle part où aller. */
+export function peutRecevoirObjet(p: PlayerState, c: CardInstance, item: CardInstance): boolean {
+  if (item.equippedToInstanceId === c.instanceId) return false;
+  return estMaitreDArme(c) || !objetPorteParUnite(p, c.instanceId);
+}
+
+/** Somme des bonus d'ATK / PV de TOUS les objets portés par une créature. Une
+ *  créature ordinaire n'en porte qu'un ; un Maître d'arme les cumule. */
+export function bonusDesObjetsPortes(p: PlayerState, creatureInstanceId: string): { atk: number; pv: number } {
+  let atk = 0, pv = 0;
+  for (const o of objetsDe(p)) {
+    if (o.equippedToInstanceId !== creatureInstanceId) continue;
+    const b = bonusDObjet(o);
+    atk += b.atk; pv += b.pv;
+  }
+  return { atk, pv };
+}

@@ -287,10 +287,10 @@ describe("deriveCapabilities — créatures", () => {
     expect(cap.params).toEqual({ x: 3 });
   });
 
-  it("douleur sur créature → on_play immédiat (pas automatic)", () => {
+  it("pillage sur créature → on_play immédiat (pas automatic)", () => {
     const c = card({
-      keywords: ["douleur"] as Card["keywords"],
-      keyword_instances: [{ id: "douleur", x: 2 }] as KeywordInstance[],
+      keywords: ["pillage"] as Card["keywords"],
+      keyword_instances: [{ id: "pillage", x: 2 }] as KeywordInstance[],
     });
     const [cap] = deriveCapabilities(c);
     expect(cap.trigger).toBe("on_play");

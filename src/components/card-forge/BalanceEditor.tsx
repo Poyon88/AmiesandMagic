@@ -30,7 +30,7 @@ type EtatSauvegarde = "repos" | "encours" | "ok" | "erreur";
 const ZONES = ["Terrain", "Mixte", "Cimetière", "Main", "Deck", "Race", "Clan"] as const;
 const RARETES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const COUTS_ADD: { k: keyof typeof ADDITIONAL_COST_POINTS; nom: string; unite: string; note: string }[] = [
-  { k: "life", nom: "Vie", unite: "par PV", note: "Ancré sur Douleur X" },
+  { k: "life", nom: "Vie", unite: "par PV", note: "1 PV payé par le héros" },
   { k: "discard", nom: "Défausse", unite: "par carte", note: "Ancré sur Inspiration X / Pillage X" },
   { k: "topdeck", nom: "Repli", unite: "par carte", note: "La carte revient : seul le tempo est payé" },
   { k: "exile", nom: "Exil", unite: "par carte", note: "Perte aveugle, cartes du deck" },

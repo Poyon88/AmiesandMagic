@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } fro
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
-import { getEquipCost, objetsDe, occupeUnePlace, placesOccupees } from "@/lib/game/items";
+import { getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupees } from "@/lib/game/items";
 import { canPlayFromGraveyard, hasSecondeVie } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
@@ -445,10 +445,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const peutEquiper = useCallback((o: CardInstance) => {
     if (!myTurn || !myPlayer) return false;
     if (myPlayer.mana < getEquipCost(o.card)) return false;
-    return myPlayer.board.some(c =>
-      c.instanceId !== o.equippedToInstanceId
-      && !mesObjets.some(autre => autre.equippedToInstanceId === c.instanceId));
-  }, [myTurn, myPlayer, mesObjets]);
+    return myPlayer.board.some(c => peutRecevoirObjet(myPlayer, c, o));
+  }, [myTurn, myPlayer]);
 
   // Hand spacing keyed off card COUNT against the fixed DESIGN_W canvas (not the
   // window width — under scale-to-fit the window no longer reflects on-canvas
@@ -1356,7 +1354,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               plateau adverse « à trois créatures » paraîtrait avoir cinq places
               libres alors qu'il n'en a qu'une. Aucun geste possible dessus. */}
           {objetsDe(opponent).map((o) => (
-            <BoardItem key={o.instanceId} item={o} isOwn={false} />
+            <BoardItem key={o.instanceId} item={o} isOwn={false}
+              isTargetable={validTargets.includes(o.instanceId)}
+              onTarget={() => handleSelectTarget(o.instanceId)} />
           ))}
         </div>
 
@@ -1467,6 +1467,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               canSacrifice={myTurn}
               onEquip={() => startEquipItem(o.instanceId)}
               onSacrifice={() => { const a = sacrificeItem(o.instanceId); if (a) broadcast(a); }}
+              isTargetable={validTargets.includes(o.instanceId)}
+              onTarget={() => handleSelectTarget(o.instanceId)}
             />
           ))}
           </div>

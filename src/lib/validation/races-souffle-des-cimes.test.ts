@@ -121,7 +121,6 @@ describe("tables de pouvoirs — le farceur et l'orage", () => {
   it("la Néphélide est l'orage, pas la brise", () => {
     const kws = Object.keys(prof("Néphélides").likelyKeywords ?? {});
     expect(kws).toContain("Paralysie");
-    expect(kws).toContain("Douleur X");
   });
 
   it("aucune ne double un pouvoir du clan", () => {

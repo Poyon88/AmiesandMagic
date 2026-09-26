@@ -37,8 +37,8 @@ const CHEMINS: Array<{
     poser: (s) => {
       const c = mkInstance(mkCard({
         name: "Tapeuse", mana_cost: 1, attack: 2, health: 4,
-        keywords: ["douleur", "ombre"] as never,
-        keyword_instances: [{ id: "douleur", mode: "tap", x: 1 }] as KeywordInstance[],
+        keywords: ["afflux", "ombre"] as never,
+        keyword_instances: [{ id: "afflux", mode: "tap", x: 1 }] as KeywordInstance[],
       } as Partial<Card>));
       c.hasSummoningSickness = false;
       s.players[0].board.push(c);

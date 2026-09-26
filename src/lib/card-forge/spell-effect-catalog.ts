@@ -40,7 +40,6 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   cataclysme: { content: "deal_damage", magnitude: { x: 1 }, target: board({ count: "all", side: "any", designation: "automatic" }) },
   // Tempête = X points répartis un à un : c'est exactement la désignation "scatter".
   tempete: { content: "deal_damage", magnitude: { x: 1 }, target: board({ designation: "scatter" }) },
-  douleur: { content: "deal_damage", magnitude: { x: 1 }, target: board({ entity: "hero", side: "ally", designation: "automatic" }) },
   entrave: { content: "paralyze", target: board({}) },
   execution: { content: "destroy", target: board({ side: "any" }) },
   remontee: { content: "bounce", target: board({ side: "any" }) },

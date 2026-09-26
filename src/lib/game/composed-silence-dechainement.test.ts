@@ -104,18 +104,18 @@ describe("Déchainement composé", () => {
     return Array.from({ length: n }, (_, i) => mkCard({
       id: 9500 + i, name: `Éclair${i}`, card_type: "spell", attack: null, health: null,
       mana_cost: cout, faction: "Mercenaires", rarity: "Commune",
-      spell_keywords: [{ id: "douleur", amount: 1 }] as never,
+      spell_keywords: [{ id: "pillage", amount: 1 }] as never,
     }));
   }
 
   it("lance X sorts du coût demandé", () => {
     const s = mkState();
     s.allSpellsPool = collectionDeSorts(3);
-    s.players[0].hero.hp = 30;
+    s.players[1].hand = Array.from({ length: 5 }, (_, i) => mkInstance(mkCard({ name: `Main${i}` })));
     initRNG(11);
     const apres = jouer(s, porteuse({ content: "dechainement", magnitude: { x: 3, y: 3 } }));
-    // Douleur 1 frappe le héros du LANCEUR : trois sorts ⇒ trois points.
-    expect(30 - apres.players[0].hero.hp).toBe(3);
+    // Pillage 1 fait défausser l'adversaire : trois actions ⇒ trois cartes.
+    expect(5 - apres.players[1].hand.length).toBe(3);
   });
 
   it("aucun sort au coût demandé : rien ne se passe, en silence", () => {

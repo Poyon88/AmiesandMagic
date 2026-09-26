@@ -425,10 +425,6 @@
         "label": "Impacto X",
         "desc": "Causa X de dano a um alvo escolhido (criatura ou herói, qualquer lado)."
       },
-      "douleur": {
-        "label": "Dor X",
-        "desc": "Inflige X de dano ao seu herói."
-      },
       "inspiration": {
         "label": "Inspiração X",
         "desc": "Compre X cartas."
@@ -528,6 +524,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
+      "maitre_darme": {
+        "label": "Mestre de Armas",
+        "desc": "Equipa-se gratuitamente com todos os seus objetos em jogo, incluindo os usados por suas outras criaturas."
       }
     },
     "spell_keywords": {
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "Execução",
-        "desc": "Destrói uma criatura alvo"
+        "desc": "Destrói uma criatura ou objeto alvo"
       },
       "silence": {
         "label": "Silêncio",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "Cataclismo X",
         "desc": "Causa X de dano a todas as criaturas (aliadas E inimigas)."
-      },
-      "douleur": {
-        "label": "Dor X",
-        "desc": "Quando esta ação é jogada, causa X de dano ao seu herói."
       },
       "afflux": {
         "label": "Afluxo X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "FORMATO JSON ANTIGO (obsoleto)",
     "json_hint": "Obsoleto: o motor só lê isto para Relançar em cartas antigas. Para compor um efeito, use «Efeito composto» abaixo.",
     "abilities_count": "HABILIDADES ({count})",
+    "conferred_abilities_toggle": "CAPACIDADES CONFERIDAS ÀS CRIATURAS ({count})",
+    "conferred_abilities_hint": "concedidas às criaturas quando a ação é jogada (verde = todos os aliados, cinza = criatura selecionada)",
     "mode_title_play": "Ao invocar (padrão)",
     "mode_title_death": "Ao morrer (deathrattle)",
     "mode_title_tap": "Ativada por tap (engajamento)",

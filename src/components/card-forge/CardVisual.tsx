@@ -17,6 +17,7 @@ import TokenNames from '@/components/cards/TokenNames';
 import CompagnonsNames from '@/components/cards/CompagnonsNames';
 import { tokenCardsForKeyword, tokenCardsForComposed } from '@/lib/game/token-preview';
 import ComposedMarker from '@/components/cards/ComposedMarker';
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 
@@ -83,6 +84,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Catalyse":         "⚗️",
   "Contresort X":     "🚫",
   "Exclusion X":      "⛔",
+  "Maître d'arme":    "🤺",
   "Trésor X":         "💎",
   "Convocation X":    "📣",
   "Malédiction":      "💀",
@@ -416,10 +418,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const grantScope = card!.type !== "Unité"
                 ? (card!.keywordGrantScope?.[kw] === "all_allies" ? "all_allies" : "target")
                 : null;
-              // Portée « tous les alliés » : plus de pavé vert (il écrasait
-              // l'icône). L'icône reste classique et c'est un marqueur ✦ vert
-              // dans le coin qui porte le signal — même langage visuel que le
-              // marqueur des effets composés.
+              // Portée « tous les alliés » : un « A » dans le coin bas-gauche de
+              // l'icône, de la couleur de l'icône (blanche ici, l'aperçu ne teinte
+              // pas par déclencheur).
               const isAllAllies = grantScope === "all_allies";
               const badgeColor = grantScope === "target" ? "#cfd8dc" : fac.color;
               const scopeNote = isAllAllies ? ` · ${t('detail_note_all_allies')}` : "";
@@ -435,7 +436,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={forgeKeywordId(kw)} size={15 * s} fill />
-                    {isAllAllies && <ComposedMarker mode={undefined} color="#27ae60" size={8 * s} />}
+                    {isAllAllies && <AllAlliesMarker size={7 * s} color="#fff" />}
                   </span>
                   {badgeText != null && (
                     <span style={{

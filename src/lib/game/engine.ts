@@ -38,7 +38,7 @@ import type {
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
-import { bonusDObjet, estUnObjet, getEquipCost, objetPorteParUnite, objetsDe, occupeUnePlace, placesOccupees, uidCapaciteObjet } from "./items";
+import { bonusDesObjetsPortes, estUnObjet, getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -3390,10 +3390,9 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
 
   /** Bonus d'objet d'une créature, par camp. Recalculé à chaque passe : c'est
    *  un bonus CONDITIONNÉ à un lien vivant, pas un acquis permanent. */
-  const bonusObjetDe = (p: PlayerState, c: CardInstance): { atk: number; pv: number } => {
-    const o = objetPorteParUnite(p, c.instanceId);
-    return o ? bonusDObjet(o) : { atk: 0, pv: 0 };
-  };
+  // SOMME de tous les objets portés : un Maître d'arme en cumule plusieurs.
+  const bonusObjetDe = (p: PlayerState, c: CardInstance): { atk: number; pv: number } =>
+    bonusDesObjetsPortes(p, c.instanceId);
 
   // Reset ATK to base + permanent bonuses (not auras)
   for (const c of player.board) {
@@ -4832,24 +4831,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       drainStack(newState);
     }
 
-    // Douleur X: drawback — la créature inflige X dégâts à votre héros
-    // dès son arrivée en jeu, avant tout autre effet d'invocation. Le
-    // moteur ne s'arrête pas si l'auto-dégât est létal — checkWinCondition
-    // appelé en fin de playCard détectera la défaite.
     // Afflux X : gagne X mana ce tour, à l'entrée en jeu. Même règle que la
     // forme sort et que le contenu composé `gain_mana` : aucun plafond, le
     // surplus se perd à la fin du tour.
     if (hasKwOnPlay(cardInstance, "afflux")) {
       player.mana += getKwX(cardInstance, "afflux", undefined, 1);
-    }
-
-    if (hasKwOnPlay(cardInstance, "douleur")) {
-      const douleurXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = douleurXVals["douleur"] ?? 1;
-      // Source passée pour l'uniformité : c'est un COÛT payé sur son propre
-      // héros, donc la restriction « camp adverse » d'applyLifesteal l'empêche
-      // de se rembourser via Drain de vie.
-      dealDamageToHero(player.hero, x, cardInstance);
     }
 
     // Inspiration X: pioche X cartes à l'invocation.
@@ -5081,6 +5067,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Contresort X : annule les X prochains sorts adverses.
     if (hasKwOnPlay(cardInstance, "contresort")) {
       armerGarde(cardInstance, "contresort", getKwX(cardInstance, "contresort", undefined, 1));
+    }
+    // Maître d'arme : s'équipe de tous les objets en jeu du contrôleur.
+    if (hasKwOnPlay(cardInstance, "maitre_darme")) {
+      equiperMaitreDArme(cardInstance, player, opponent);
     }
     // Exclusion X : annule les X prochaines invocations d'unités adverses.
     if (hasKwOnPlay(cardInstance, "exclusion")) {
@@ -5974,6 +5964,12 @@ function pickRandomTarget(
       opponent.board.forEach(c => candidates.push(c.instanceId));
       player.board.forEach(c => candidates.push(c.instanceId));
       break;
+    case "any_creature_or_item":
+      opponent.board.forEach(c => candidates.push(c.instanceId));
+      player.board.forEach(c => candidates.push(c.instanceId));
+      objetsDe(opponent).forEach(o => candidates.push(o.instanceId));
+      objetsDe(player).forEach(o => candidates.push(o.instanceId));
+      break;
     case "enemy_hero":
       candidates.push("enemy_hero");
       break;
@@ -6434,14 +6430,6 @@ function resolveSpellKeywords(
         resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true);
         break;
       }
-      case "douleur": {
-        // Drawback : le sort inflige X dégâts au héros qui le lance.
-        // Atteint uniquement si le sort n'a pas été contré (le check
-        // Contresort est en amont, dans playCard avant resolveSpellKeywords).
-        const amount = kw.amount ?? 0;
-        dealDamageToHero(ctx.caster.hero, amount);
-        break;
-      }
       case "impact": {
         const amount = kw.amount ?? 0;
         if (targetId === "enemy_hero") {
@@ -6566,6 +6554,10 @@ function resolveSpellKeywords(
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = 0;
+          // OBJET ciblé : il quitte la table pour le cimetière de son
+          // propriétaire. Pas un « mort » — un objet n'est pas une unité, aucun
+          // râle ne part ; son porteur perd simplement ce qu'il lui apportait.
+          else detruireObjet(ctx.caster, ctx.opponent, targetId);
         }
         break;
       }
@@ -7312,7 +7304,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
 // ============================================================
 
 function requiresPlayerSelection(targetType: SpellTargetType): boolean {
-  return targetType === "any" || targetType === "any_creature"
+  return targetType === "any" || targetType === "any_creature" || targetType === "any_creature_or_item"
     || targetType === "friendly_creature" || targetType === "enemy_creature"
     || targetType === "friendly_graveyard" || targetType === "friendly_graveyard_to_board";
 }
@@ -7788,10 +7780,9 @@ function equipItem(state: GameState, action: import("./types").EquipItemAction):
   const cible = player.board.find(c => c.instanceId === action.targetInstanceId);
   if (!cible) return state;
 
-  // « Un objet par créature » — sauf s'il s'agit de CET objet, auquel cas le
-  // geste est un simple gaspillage de mana, refusé lui aussi.
-  const dejaPorte = objetPorteParUnite(player, cible.instanceId);
-  if (dejaPorte) return state;
+  // « Un objet par créature » (Maître d'arme excepté) — et pas le même objet
+  // sur le même porteur, simple gaspillage de mana refusé lui aussi.
+  if (!peutRecevoirObjet(player, cible, item)) return state;
 
   const cout = getEquipCost(item.card);
   if (player.mana < cout) return state;
@@ -7833,16 +7824,46 @@ function sacrificeItem(state: GameState, action: import("./types").SacrificeItem
   const item = restants.find(o => o.instanceId === action.itemInstanceId);
   if (!item) return state;
 
-  player.items = restants.filter(o => o.instanceId !== item.instanceId);
+  detruireObjet(player, opponent, item.instanceId);
+
+  newState.lastAction = action;
+  return newState;
+}
+
+/** MAÎTRE D'ARME — `porteur` s'équipe de TOUS les objets en jeu de son
+ *  contrôleur, sans payer leur coût d'équipement, y compris ceux que portaient
+ *  ses autres créatures (qui perdent aussitôt bonus et capacités transférées,
+ *  le lien étant la seule source de vérité). Sans effet si le porteur n'est
+ *  plus sur le plateau : un déclencheur tardif ne l'équipe pas au cimetière. */
+function equiperMaitreDArme(porteur: CardInstance, owner: PlayerState, opponent: PlayerState): void {
+  if (!owner.board.includes(porteur)) return;
+  let change = false;
+  for (const o of objetsDe(owner)) {
+    if (o.equippedToInstanceId === porteur.instanceId) continue;
+    o.equippedToInstanceId = porteur.instanceId;
+    change = true;
+  }
+  if (change) recalculateAuras(owner, opponent);
+}
+
+/** Retire un OBJET de la table, quel que soit son camp, vers le cimetière de
+ *  son propriétaire. Point unique du sacrifice (gratuit, par son propriétaire)
+ *  et d'Exécution (action ciblée). Rend `false` si l'id n'est pas un objet en
+ *  jeu — l'appelant n'a donc pas à savoir d'avance ce qu'il vise. */
+function detruireObjet(a: PlayerState, b: PlayerState, itemInstanceId: string): boolean {
+  const proprio = objetsDe(a).some(o => o.instanceId === itemInstanceId) ? a
+    : objetsDe(b).some(o => o.instanceId === itemInstanceId) ? b : null;
+  if (!proprio) return false;
+  const item = objetsDe(proprio).find(o => o.instanceId === itemInstanceId)!;
+  proprio.items = objetsDe(proprio).filter(o => o !== item);
   // Le lien est effacé AVANT le départ : l'instance s'en va au cimetière, d'où
   // elle peut revenir (Rappel, Exhumation…), et elle n'a rien à y emporter d'un
   // porteur qu'elle ne sert plus.
   item.equippedToInstanceId = null;
-  player.graveyard.push(item);
-  recalculateAuras(player, opponent);
-
-  newState.lastAction = action;
-  return newState;
+  proprio.graveyard.push(item);
+  // Le porteur perd le bonus et les capacités transférées de l'objet.
+  recalculateAuras(a, b);
+  return true;
 }
 
 function cloneStateForAction(state: GameState): GameState {
@@ -10037,13 +10058,6 @@ function resolveCuratedKeywordEffect(
       }
       break;
     }
-    case "douleur": {
-      // In on-play, Douleur damages the OWN hero (cost). In the new
-      // death/tap modes the trigger represents the creature lashing out,
-      // so we point it at the OPPONENT's hero — more interesting design.
-      dealDamageToHero(opponent.hero, x, source);
-      break;
-    }
     case "vampirisme": {
       // Tap mode: drain X from a chosen enemy creature (mirrors on-play).
       // Death / no-target fallback: hit the opposing hero.
@@ -10197,6 +10211,10 @@ function resolveCuratedKeywordEffect(
     }
     case "exclusion": {
       armerGarde(source, "exclusion", inst?.x ?? x);
+      return;
+    }
+    case "maitre_darme": {
+      equiperMaitreDArme(source, owner, opponent);
       return;
     }
     case "solidarite": {
@@ -11620,6 +11638,11 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
           return player.board.map(c => c.instanceId);
         case "any_creature":
           return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
+        case "any_creature_or_item":
+          return [
+            ...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId),
+            ...objetsDe(player).map(o => o.instanceId), ...objetsDe(opponent).map(o => o.instanceId),
+          ];
         default:
           return [];
       }
@@ -13600,6 +13623,14 @@ export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTa
       return [
         ...player.board.map(c => c.instanceId),
         ...filterEnemyTargetable(opponent.board).map(c => c.instanceId),
+      ];
+    case "any_creature_or_item":
+      // Les objets n'ont ni Ombre ni Invisible : ils sont toujours visables.
+      return [
+        ...player.board.map(c => c.instanceId),
+        ...filterEnemyTargetable(opponent.board).map(c => c.instanceId),
+        ...objetsDe(player).map(o => o.instanceId),
+        ...objetsDe(opponent).map(o => o.instanceId),
       ];
     case "friendly_creature":
       return player.board.map(c => c.instanceId);

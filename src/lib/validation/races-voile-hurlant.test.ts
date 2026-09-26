@@ -181,7 +181,6 @@ describe("dégraissage PARTIEL de la table de clan", () => {
 
 describe("tables de pouvoirs des trois nouvelles", () => {
   it("chacune joue son propre registre", () => {
-    expect(Object.keys(prof("Poltergeists").likelyKeywords ?? {})).toContain("Douleur X");
     expect(Object.keys(prof("Poltergeists").likelyKeywords ?? {})).toContain("Pillage X");
     expect(Object.keys(prof("Dullahans").likelyKeywords ?? {})).toContain("Première Frappe");
     expect(Object.keys(prof("Sluaghs").likelyKeywords ?? {})).toContain("Vol");

@@ -185,6 +185,7 @@ function pickTargetForType(state: GameState, type: SpellTargetType): string | un
     case "any":
       return opp.board[0]?.instanceId ?? "enemy_hero";
     case "any_creature":
+    case "any_creature_or_item":
       return opp.board[0]?.instanceId ?? me.board[0]?.instanceId;
     case "enemy_creature":
       return opp.board[0]?.instanceId;

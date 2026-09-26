@@ -425,10 +425,6 @@
         "label": "Wucht X",
         "desc": "Fügt einem gezielten Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
       },
-      "douleur": {
-        "label": "Schmerz X",
-        "desc": "Fügt deinem Helden X Schaden zu."
-      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
@@ -528,6 +524,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "maitre_darme": {
+        "label": "Waffenmeister",
+        "desc": "Rüstet sich kostenlos mit allen euren im Spiel befindlichen Gegenständen aus, einschließlich derer, die eure anderen Kreaturen tragen."
       }
     },
     "spell_keywords": {
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "Hinrichtung",
-        "desc": "Zerstört eine anvisierte Kreatur."
+        "desc": "Zerstört eine anvisierte Kreatur oder einen anvisierten Gegenstand"
       },
       "silence": {
         "label": "Stille",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "Katastrophe X",
         "desc": "Fügt allen Kreaturen (verbündeten UND feindlichen) X Schaden zu."
-      },
-      "douleur": {
-        "label": "Schmerz X",
-        "desc": "Wenn diese Aktion gespielt wird, fügt sie Ihrem Helden X Schaden zu."
       },
       "afflux": {
         "label": "Zufluss X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "ALTES JSON-FORMAT (veraltet)",
     "json_hint": "Veraltet: Die Engine liest es nur noch für „Neu ziehen“ bei älteren Karten. Um einen Effekt zusammenzusetzen, nutzen Sie weiter unten „Zusammengesetzter Effekt“.",
     "abilities_count": "FÄHIGKEITEN ({count})",
+    "conferred_abilities_toggle": "AN KREATUREN VERLIEHENE FÄHIGKEITEN ({count})",
+    "conferred_abilities_hint": "werden Kreaturen verliehen, wenn die Aktion gespielt wird (grün = alle Verbündeten, grau = anvisierte Kreatur)",
     "mode_title_play": "Bei Beschwörung (Standard)",
     "mode_title_death": "Bei Tod (Deathrattle)",
     "mode_title_tap": "Per Tap aktiviert (Einsatz)",

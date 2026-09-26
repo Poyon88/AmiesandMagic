@@ -1789,6 +1789,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
   // Plancher A du « ? », par libellé (cf. KeywordInstance.minX).
   const [keywordMinX, setKeywordMinX] = useState<Record<string, number>>({});
+  // Action : liste des capacités CONFÉRÉES aux créatures, repliée par défaut.
+  const [confereesOuvertes, setConfereesOuvertes] = useState(false);
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -3840,7 +3842,26 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
 
                   {/* Capacités */}
                   <div style={{ position: "relative" }}>
-                    <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('abilities_count', { count: manualKeywords.length })}</label>
+                    {porteStats ? (
+                      <label style={{ fontSize: 9, color: "#666", letterSpacing: 1 }}>{tf('abilities_count', { count: manualKeywords.length })}</label>
+                    ) : (
+                      // ACTION : ces capacités sont CONFÉRÉES aux créatures.
+                      // Repliées par défaut pour ne pas les confondre avec les
+                      // capacités de l'action elle-même ; le compteur dit si la
+                      // liste contient déjà quelque chose.
+                      <button
+                        type="button"
+                        onClick={() => setConfereesOuvertes(o => !o)}
+                        aria-expanded={confereesOuvertes}
+                        style={{ display: "block", width: "100%", textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: 9, color: "#27ae60", fontWeight: 600, letterSpacing: 1 }}
+                      >
+                        {confereesOuvertes ? "▾" : "▸"} {tf('conferred_abilities_toggle', { count: manualKeywords.length })}
+                        {confereesOuvertes && (
+                          <span style={{ fontWeight: 400, marginLeft: 6, letterSpacing: 0 }}>— {tf('conferred_abilities_hint')}</span>
+                        )}
+                      </button>
+                    )}
+                    {(porteStats || confereesOuvertes) && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                       {availableManualKeywords.map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
@@ -4024,6 +4045,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         );
                       })}
                     </div>
+                    )}
                     {/* Convocation token selector — partagé entre Convocation X
                         (créature, X scaling), Convocation (créature, sans X) et
                         Convocation (sort, sans X). Champ FK unique : convocation_token_id. */}

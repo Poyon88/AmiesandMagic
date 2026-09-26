@@ -149,6 +149,10 @@
         "label": "Exclusion X",
         "desc": "Annule les X prochaines invocations d'unités adverses."
       },
+      "maitre_darme": {
+        "label": "Maître d'arme",
+        "desc": "S'équipe gratuitement de tous vos objets en jeu, y compris ceux que portent vos autres créatures."
+      },
       "convocation": {
         "label": "Convocation X",
         "desc": "Crée {token}."
@@ -425,10 +429,6 @@
         "label": "Impact X",
         "desc": "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord)."
       },
-      "douleur": {
-        "label": "Douleur X",
-        "desc": "Inflige X dégâts à votre héros."
-      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Piochez X cartes."
@@ -661,7 +661,7 @@
       },
       "execution": {
         "label": "Exécution",
-        "desc": "Détruit une créature ciblée"
+        "desc": "Détruit une créature ou un objet ciblé"
       },
       "silence": {
         "label": "Silence",
@@ -762,10 +762,6 @@
       "cataclysme": {
         "label": "Cataclysme X",
         "desc": "Inflige X dégâts à toutes les créatures (alliées ET ennemies)."
-      },
-      "douleur": {
-        "label": "Douleur X",
-        "desc": "Quand cette action est jouée, inflige X dégâts à votre héros."
       },
       "afflux": {
         "label": "Afflux X",
@@ -2207,6 +2203,8 @@
     "composable_effects_advanced": "ANCIEN FORMAT JSON (obsolète)",
     "json_hint": "Obsolète : le moteur ne le lit plus que pour Relancer sur d'anciennes cartes. Pour composer un effet, utilisez « Effet composé » plus bas.",
     "abilities_count": "CAPACITÉS ({count})",
+    "conferred_abilities_toggle": "CAPACITÉS CONFÉRÉES AUX CRÉATURES ({count})",
+    "conferred_abilities_hint": "données aux créatures quand l'action est jouée (vert = tous les alliés, gris = créature ciblée)",
     "mode_title_play": "À l'invocation (défaut)",
     "mode_title_death": "À la mort (deathrattle)",
     "mode_title_tap": "Activée par tap (engagement)",

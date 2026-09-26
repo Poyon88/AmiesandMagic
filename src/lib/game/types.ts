@@ -21,7 +21,7 @@ export type Keyword =
   | "rappel" | "combustion"
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  | "canalisation" | "contresort" | "exclusion" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
+  | "canalisation" | "contresort" | "exclusion" | "maitre_darme" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution" | "pietinement"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
@@ -80,8 +80,6 @@ export type Keyword =
   // jouée du tour. Les deux conditions s'excluant, une carte peut porter les
   // deux — une seule tombera.
   | "soleil"
-  // Drawback — self-damage on ETB / cast
-  | "douleur"
   // Drawback — self ATK reduced by opponent's hand size (dynamic aura)
   | "pauvrete"
   // Reactive — gains +X/+X each time any player discards a card
@@ -168,6 +166,9 @@ export type Keyword =
 export type SpellTargetType =
   | "any"
   | "any_creature"
+  // Créature OU objet, des deux camps (Exécution) : un objet n'est pas une
+  // unité, seuls les effets qui le disent explicitement peuvent le viser.
+  | "any_creature_or_item"
   | "enemy_hero"
   | "friendly_hero"
   | "friendly_creature"
@@ -241,7 +242,6 @@ export type SpellKeywordId =
   | "tresor"
   | "relancer"
   | "tempete"
-  | "douleur"
   | "appel_du_clan"
   | "appel_supreme"
   | "rassemblement"

@@ -27,6 +27,10 @@ interface BoardItemProps {
   canSacrifice?: boolean;
   onEquip?: () => void;
   onSacrifice?: () => void;
+  /** Cible valide de l'action en cours de ciblage (Exécution) : le clic
+   *  DÉSIGNE l'objet, avant tout geste d'équipement. */
+  isTargetable?: boolean;
+  onTarget?: () => void;
 }
 
 /** UN OBJET SUR LA TABLE.
@@ -48,6 +52,7 @@ interface BoardItemProps {
  *  « laisser tomber ». Signalé en partie. */
 function BoardItem({
   item, isOwn, isEquipping, bearerName, canEquip, canSacrifice, onEquip, onSacrifice,
+  isTargetable, onTarget,
 }: BoardItemProps) {
   // Sacrifice EN DEUX TEMPS : la croix demande d'abord « Sûr ? ». L'armement
   // se désarme seul au bout de trois secondes — sans quoi une question oubliée
@@ -71,7 +76,8 @@ function BoardItem({
   const atk = card.attack ?? 0;
   const pv = card.health ?? 0;
   const equipe = !!item.equippedToInstanceId;
-  const cliquable = isOwn && canEquip && !!onEquip;
+  const ciblable = !!isTargetable && !!onTarget;
+  const cliquable = ciblable || (isOwn && canEquip && !!onEquip);
 
   return (
     <motion.div
@@ -84,10 +90,11 @@ function BoardItem({
       }}
       exit={{ opacity: 0, scale: 0.8 }}
       transition={SPRINGS.boardSettle}
-      onClick={cliquable ? onEquip : undefined}
+      onClick={ciblable ? onTarget : cliquable ? onEquip : undefined}
       onMouseLeave={() => { if (arme) { setArme(false); if (minuteur.current) clearTimeout(minuteur.current); } }}
       title={
-        isOwn
+        ciblable ? `${card.name}\nClic : cibler cet objet`
+        : isOwn
           ? `${card.name}${bearerName ? ` — porté par ${bearerName}` : ""}\n`
             + `Clic : ${equipe ? "déplacer" : "équiper"} (${cout} mana)\n`
             + `Croix : sacrifier (gratuit, libère la place)`
@@ -101,7 +108,10 @@ function BoardItem({
         // Bordure bronze, plus marquée quand l'objet sert déjà : d'un coup d'œil
         // on distingue l'objet AU TRAVAIL de celui qui attend un porteur.
         border: `1px solid ${equipe ? OBJET_TEINTE : `rgba(${OBJET_RGB},0.45)`}`,
-        boxShadow: isEquipping
+        boxShadow: ciblable
+          // Même rouge que le halo de cible d'une créature.
+          ? "0 0 0 2px #e74c3c, 0 0 14px rgba(231,76,60,0.8)"
+          : isEquipping
           ? `0 0 0 2px ${OBJET_TEINTE}, 0 0 14px rgba(${OBJET_RGB},0.8)`
           : equipe ? `0 0 8px rgba(${OBJET_RGB},0.35)` : "none",
         background: "#12100c",

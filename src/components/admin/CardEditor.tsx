@@ -144,6 +144,8 @@ export default function CardEditor() {
   const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredKw, setHoveredKw] = useState<Keyword | null>(null);
+  // Action : liste des capacités CONFÉRÉES aux créatures, repliée par défaut.
+  const [confereesOuvertes, setConfereesOuvertes] = useState(false);
   const [keywordXValues, setKeywordXValues] = useState<Record<string, number>>({});
   // Per-keyword trigger mode override, keyed by game keyword id. Missing
   // entry = on-play (default). Only curated keywords accept non-play modes.
@@ -1464,7 +1466,7 @@ export default function CardEditor() {
               const setSpellKws = (next: SpellKeywordInstance[]) => updateField("spell_keywords", next);
               return (
                 <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
-                  <div style={{ ...S.label, color: "#9b59b6" }}>Capacités d'action ({spellKws.length})</div>
+                  <div style={{ ...S.label, color: "#9b59b6" }}>{"Capacités d'action"} ({spellKws.length})</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                     {SORTED_SPELL_KEYWORDS.map(kwId => {
                       const def = SPELL_KEYWORDS[kwId];
@@ -1639,14 +1641,28 @@ export default function CardEditor() {
               const visibleKeywords = SORTED_KEYWORDS;
               return (
             <div style={{ marginBottom: 8 }}>
-              <div style={S.label}>
-                Mots-clés ({activeCreatureKws.length})
-                {isSpell && (
-                  <span style={{ color: "#27ae60", fontWeight: 600, marginLeft: 6, fontSize: 9 }}>
-                    ✦ Capacités conférées aux créatures lors du lancement — réglez la portée ci-dessous (vert = tous les alliés, gris = créature ciblée).
-                  </span>
-                )}
-              </div>
+              {isSpell ? (
+                // Sur une ACTION, ces mots-clés sont CONFÉRÉS aux créatures :
+                // liste repliée par défaut, pour ne plus la confondre avec les
+                // capacités de l'action elle-même (bloc violet au-dessus). Le
+                // compteur signale qu'elle n'est pas vide.
+                <button
+                  type="button"
+                  onClick={() => setConfereesOuvertes(o => !o)}
+                  aria-expanded={confereesOuvertes}
+                  style={{ ...S.label, display: "block", width: "100%", textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer", color: "#27ae60", fontWeight: 600 }}
+                >
+                  {confereesOuvertes ? "▾" : "▸"} Capacités conférées aux créatures ({activeCreatureKws.length})
+                  {confereesOuvertes && (
+                    <span style={{ fontWeight: 400, marginLeft: 6, fontSize: 9 }}>
+                      — quand l’action est jouée ; réglez la portée ci-dessous (vert = tous les alliés, gris = créature ciblée).
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <div style={S.label}>Mots-clés ({activeCreatureKws.length})</div>
+              )}
+              {(!isSpell || confereesOuvertes) && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3, position: "relative" }}>
                 {visibleKeywords.map(kw => {
                   const active = ((editFields.keywords as string[]) || []).includes(kw);
@@ -1695,6 +1711,7 @@ export default function CardEditor() {
                   );
                 })}
               </div>
+              )}
 
               {/* Mots-clés ORPHELINS : présents sur la carte mais absents du
                   registre courant (id renommé ou retiré depuis la création de la

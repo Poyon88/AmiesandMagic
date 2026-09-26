@@ -68,7 +68,6 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Inspiration X": ALL_MODES,
   "Afflux X": ALL_MODES,
   "Pillage X": ALL_MODES,
-  "Douleur X": ALL_MODES,
   // Vampirisme à l'attaque : draine une créature ennemie au hasard (héros à
   // défaut) — le flux d'attaque ne peut pas ouvrir de picker.
   "Vampirisme X": ALL_MODES,
@@ -159,6 +158,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Métamorphose": ONBOARD_MODES,
   "Contresort X": ONBOARD_MODES,
   "Exclusion X": ONBOARD_MODES,
+  "Maître d'arme": ONBOARD_MODES,
   "Profanation X": ONBOARD_MODES,
   "Héritage du cimetière": ONBOARD_MODES,
 };
@@ -740,7 +740,7 @@ export const FACTIONS: Record<string, {
       "Sylphes": { likelyKeywords: { "Invisible": 0.55, "Permutation": 0.50, "Mimique": 0.45, "Métamorphose": 0.40, "Contresort X": 0.35, "Précision": 0.30 } },
       // Néphélides : les nymphes des nuées — l'orage, pas la brise. Canalisation
       // (0.45) et Régénération (0.35) doivent dépasser l'ombrelle.
-      "Néphélides": { likelyKeywords: { "Paralysie": 0.55, "Canalisation": 0.55, "Douleur X": 0.50, "Régénération X": 0.40, "Malédiction": 0.40, "Bénédiction": 0.35 } },
+      "Néphélides": { likelyKeywords: { "Paralysie": 0.55, "Canalisation": 0.55, "Régénération X": 0.40, "Malédiction": 0.40, "Bénédiction": 0.35 } },
     },
     clanProfiles: {
       "La Colère des Flammes": { statWeights: { atk: 1.40, def: 0.75 }, likelyKeywords: { "Fureur": 0.70, "Souffle de feu X": 0.60, "Gloire +X/+Y": 0.50, "Sacrifice": 0.35, "Combustion": 0.50, "Carnage X": 0.40 } },
@@ -818,7 +818,7 @@ export const FACTIONS: Record<string, {
       // Vampires : reprise EXACTE des lignes retirées du clan, pour que la
       // génération d'un Vampire de la Cour Écarlate reste identique au bit près.
       "Vampires": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Célérité": 0.45, "Régénération X": 0.45, "Terreur": 0.35, "Vol": 0.30 } },
-      "Homuncules de Sang": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Sacrifice": 0.55, "Douleur X": 0.50, "Catalyse": 0.45, "Liaison de vie": 0.45, "Solidarité X": 0.40, "Corruption": 0.35 } },
+      "Homuncules de Sang": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Sacrifice": 0.55, "Catalyse": 0.45, "Liaison de vie": 0.45, "Solidarité X": 0.40, "Corruption": 0.35 } },
       "Gargouilles": { statWeights: { atk: 0.95, def: 1.35 }, likelyKeywords: { "Armure": 0.65, "Ancré": 0.55, "Provocation": 0.55, "Résistance X": 0.50, "Riposte X": 0.45, "Vol": 0.40, "Indestructible": 0.25 } },
       "Dhampirs": { statWeights: { atk: 1.20, def: 1.00 }, likelyKeywords: { "Traque": 0.60, "Première Frappe": 0.55, "Précision": 0.50, "Sang mêlé": 0.50, "Esquive": 0.45, "Double Attaque": 0.35 } },
       "Chiroptères": { statWeights: { atk: 1.15, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Esquive": 0.55, "Traque": 0.50, "Convocation X": 0.50, "Instinct de meute X": 0.45, "Célérité": 0.40 } },
@@ -853,7 +853,7 @@ export const FACTIONS: Record<string, {
       // Poltergeists : il ne combat pas, il harcèle — le corps le plus faible du
       // clan, et un registre d'objets projetés (Douleur X, Pillage X, Carnage X)
       // qu'aucune autre race de la Nécropole ne joue.
-      "Poltergeists": { statWeights: { atk: 0.90, def: 0.70 }, likelyKeywords: { "Douleur X": 0.55, "Invisible": 0.55, "Esquive": 0.50, "Pillage X": 0.45, "Ombre": 0.40, "Carnage X": 0.35 } },
+      "Poltergeists": { statWeights: { atk: 0.90, def: 0.70 }, likelyKeywords: { "Invisible": 0.55, "Esquive": 0.50, "Pillage X": 0.45, "Ombre": 0.40, "Carnage X": 0.35 } },
       // Dullahans : le seul corps solide du clan, et la raison du don. Son
       // registre est celui de l'exécuteur monté — il n'a délibérément NI Ombre NI
       // Invisible : on le voit venir, c'est tout l'effroi.

@@ -373,6 +373,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // MAÎTRE D'ARME — la créature s'équipe, gratuitement, de TOUS les objets en
+  // jeu de son contrôleur, y compris ceux que portent ses autres créatures.
+  // Seule exception à la règle « un objet par créature » (cf. estMaitreDArme).
+  // Objets EN JEU seulement : ceux de la main se jouent toujours (mana, place).
+  maitre_darme: {
+    id: "maitre_darme", label: "Maître d'arme", symbol: "🤺",
+    desc: "S'équipe gratuitement de tous vos objets en jeu, y compris ceux que portent vos autres créatures.",
+    applicable_to: ["creature"],
+    creature: { cost: 7, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
+  },
   exclusion: {
     id: "exclusion", label: "Exclusion X", symbol: "⛔",
     desc: "Annule les X prochaines invocations d'unités adverses.",
@@ -1044,9 +1054,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   execution: {
     id: "execution", label: "Exécution", symbol: "☠️",
-    desc: "Détruit une créature ciblée",
+    desc: "Détruit une créature ou un objet ciblé",
     applicable_to: ["spell"],
-    spell: { params: [], needsTarget: true, targetType: "any_creature" },
+    spell: { params: [], needsTarget: true, targetType: "any_creature_or_item" },
   },
   silence: {
     id: "silence", label: "Silence", symbol: "🤫",
@@ -1463,25 +1473,6 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { params: ["amount"], needsTarget: false },
   },
-  // Premier mot-clé "drawback" du jeu : son cost et son costPerX sont
-  // négatifs pour qu'il fonctionne comme un discount budget en forge —
-  // l'auteur de carte récupère du budget en l'attachant, en échange du
-  // coût en PV au moment de l'arrivée en jeu (unité) ou du lancement
-  // (sort). Pas d'anti-letalité : checkWinCondition gère le cas du
-  // suicide par Douleur.
-  douleur: {
-    id: "douleur", label: "Douleur X", symbol: "🤕",
-    desc: "Inflige X dégâts à votre héros quand l'unité arrive en jeu ou quand l'action est jouée.",
-    applicable_to: ["creature", "spell"],
-    creature: {
-      cost: -3, costPerX: -3, se: -1.0, minTier: 0, scalable: true, zone: "Terrain",
-      desc: "Inflige X dégâts à votre héros.",
-    },
-    spell: {
-      desc: "Quand cette action est jouée, inflige X dégâts à votre héros.",
-      params: ["amount"], needsTarget: false,
-    },
-  },
   afflux: {
     id: "afflux", label: "Afflux X", symbol: "💎",
     desc: "Gagnez X mana ce tour",
@@ -1783,7 +1774,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  donc load-bearing — l'adaptateur DOIT respecter le mode exact. Liste tirée
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
-  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "douleur", "entrainement", "inspiration", "afflux",
+  "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "entrainement", "inspiration", "afflux",
   "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
@@ -1801,7 +1792,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "apprentissage",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
-  "contresort", "exclusion", "profanation", "heritage_du_cimetiere",
+  "contresort", "exclusion", "maitre_darme", "profanation", "heritage_du_cimetiere",
 ]);
 
 /** Sous-ensemble des ids curés dont l'effet exige que la SOURCE soit en jeu
@@ -1816,7 +1807,7 @@ export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
   // L'apprendre en mourant ou depuis la main donnerait un pouvoir inutilisable.
   "apprentissage",
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
-  "contresort", "exclusion", "profanation", "heritage_du_cimetiere",
+  "contresort", "exclusion", "maitre_darme", "profanation", "heritage_du_cimetiere",
 ]);
 
 /** Capacités qu'un TEMPLATE DE TOKEN ne peut pas encore porter, parce que leur
