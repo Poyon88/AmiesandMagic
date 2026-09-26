@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import MatchmakingQueue from "@/components/game/MatchmakingQueue";
+import { objetsParDeck } from "@/lib/decks/objetsParDeck";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function PlayPage() {
       .select(
         `
         *,
-        deck_cards (quantity)
+        deck_cards (card_id, quantity)
       `
       )
       .eq("user_id", user.id)
@@ -31,7 +32,15 @@ export default async function PlayPage() {
       .order("id"),
   ]);
 
+  // Un deck qui contient encore des objets (enregistré avant la règle) ne se
+  // lance pas : la page des decks le signale, le constructeur dit quoi retirer.
+  const objets = await objetsParDeck(
+    supabase,
+    (decks ?? []) as { id: number; deck_cards: { card_id: number; quantity: number }[] }[],
+  );
+
   const validDecks = (decks ?? [])
+    .filter((deck) => !objets.has(deck.id as number))
     .map((deck) => ({
       ...deck,
       cardCount: (deck.deck_cards as { quantity: number }[]).reduce(

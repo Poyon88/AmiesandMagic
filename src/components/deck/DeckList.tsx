@@ -23,6 +23,9 @@ interface DeckWithCount {
   missingFactions?: string[];
   /** Cartes du deck que le joueur ne possède plus. */
   missingCount?: number;
+  /** Exemplaires d'objets encore dans le deck (enregistré avant la règle) :
+   *  le deck ne se lance pas tant qu'ils n'ont pas été retirés. */
+  itemCount?: number;
 }
 
 const ALL = "__all__";
@@ -172,7 +175,8 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredDecks.map((deck, i) => {
-              const isValid = deck.cardCount === DECK_SIZE;
+              const objets = deck.itemCount ?? 0;
+              const isValid = deck.cardCount === DECK_SIZE && objets === 0;
               // Un deck peut être complet ET injouable : la taille et la
               // possession sont deux conditions distinctes, et les confondre
               // afficherait un deck « valide » que le joueur ne peut pas lancer.
@@ -224,6 +228,12 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-300">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
                         {t("unplayable_badge", { count: missing })}
+                      </span>
+                    )}
+                    {objets > 0 && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/50 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                        {t("items_badge", { count: objets })}
                       </span>
                     )}
                   </div>

@@ -46,6 +46,8 @@ export type Keyword =
   | "selection_magique"
   // Tier 3 — Collection (limited prints, ≥30 owned)
   | "renfort_royal"
+  // Trésor X : Sélection limitée aux OBJETS
+  | "tresor"
   // Tier 3 — Relancer
   | "relancer"
   // Polymorphic — cast X random collection spells of cost Y (same alignment,
@@ -236,6 +238,7 @@ export type SpellKeywordId =
   | "selection"
   | "faveur"
   | "renfort_royal"
+  | "tresor"
   | "relancer"
   | "tempete"
   | "douleur"
@@ -666,7 +669,11 @@ export type ComposedEffectContent =
   // non une option de `selection` : c'est le choix, pas le nombre de cartes,
   // qui fait la différence de puissance — et donc de barème.
   | "faveur"
-  | "renfort_royal";
+  | "renfort_royal"
+  // TRÉSOR : Sélection dont le vivier ne contient que des OBJETS. Contenu
+  // distinct (et non `selection` + filtre `cardType`) pour porter son propre
+  // nom, sa propre icône et son propre barème.
+  | "tresor";
 
 /** Spécification de cibles d'un effet composé. Le filtre de COÛT est en place
  *  (`maxCost`) ; les filtres par ATK/déf/rareté et par capacités possédées
@@ -2021,7 +2028,7 @@ export interface PlayCardAction {
    *  seule carte était gagnée, les deux autres capacités restant muettes.
    *  Même patron que `deckChoiceIndices` ; `selectionCardId` reste le REPLI
    *  (cartes à une seule Sélection, actions déjà journalisées). */
-  selectionCardIds?: Partial<Record<"selection" | "renfort_royal" | "selection_magique", number>>;
+  selectionCardIds?: Partial<Record<SelectionFamilyId, number>>;
   // Alternative-cost payments chosen by the player. discardInstanceIds picks
   // cards from the player's hand to discard (length must equal card.discard_cost);
   // sacrificeInstanceIds picks allied creatures to sacrifice (length must
@@ -2281,6 +2288,11 @@ export interface EndOfTurnStep {
   emblemIndex?: number;
 }
 
+/** Famille des « 1 parmi 3 » : même modale, mêmes déclencheurs différés, même
+ *  repli au hasard — seul le VIVIER change (cf. selectionCardsForKeyword).
+ *  Trésor = Sélection limitée aux OBJETS. */
+export type SelectionFamilyId = "selection" | "selection_magique" | "renfort_royal" | "tresor";
+
 export interface PendingTrigger {
   /** EMBLÈME composé en attente d'un choix de cible : indice dans
    *  `PlayerState.emblems` du contrôleur. Présent ⇒ `sourceInstanceId` est null,
@@ -2302,7 +2314,7 @@ export interface PendingTrigger {
    *  (selection / selection_magique / renfort_royal). Le contrôleur choisit une
    *  carte parmi `selectionOptionIds` via la modale de sélection ; la carte
    *  choisie est ajoutée à sa main. */
-  selectionType?: "selection" | "selection_magique" | "renfort_royal";
+  selectionType?: SelectionFamilyId;
   /** Ids des cartes offertes (résolus en Card côté store via les pools). */
   selectionOptionIds?: number[];
   /** Présent ⇒ variante « pioche au choix dans le deck » (Traque du destin en

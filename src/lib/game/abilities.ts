@@ -930,6 +930,24 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // TRÉSOR X — Sélection limitée aux OBJETS. Les objets ne se mettent pas dans
+  // un deck : Trésor est leur porte d'entrée dédiée (avec Compagnons, Tuteur et
+  // les Sélections / Faveurs sans filtre). Même vivier que Sélection (communes
+  // de l'alignement, quota de neutres, coût exact / « ? » / plancher A), même
+  // modale, même barème.
+  tresor: {
+    id: "tresor", label: "Trésor X", symbol: "💎",
+    desc: "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 9, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Mixte",
+      desc: "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main.",
+    },
+    spell: {
+      desc: "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   renfort_royal: {
     id: "renfort_royal", label: "Sélection Royale X", symbol: "👑",
     desc: "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une.",
@@ -1619,7 +1637,7 @@ export const KEYWORD_DEFAULT_X: Readonly<Record<string, number>> = {
   regeneration: 2,
 };
 
-export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal", "faveur"]);
+export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal", "faveur", "tresor"]);
 
 export const SPELL_KEYWORDS: Record<SpellKeywordId, DerivedSpellKeywordDef> = (() => {
   const out: Partial<Record<SpellKeywordId, DerivedSpellKeywordDef>> = {};
@@ -1772,7 +1790,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
-  "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal",
+  "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor",
   "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a

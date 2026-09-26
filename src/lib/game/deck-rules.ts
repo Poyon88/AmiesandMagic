@@ -100,3 +100,25 @@ export function excludeNonDiscoverable<T extends { discoverable?: boolean | null
 ): T[] {
   return cards.filter((c) => c.discoverable !== false);
 }
+
+/** Une carte peut-elle entrer dans un deck construit ?
+ *
+ *  Les OBJETS n'y entrent jamais : on les trouve EN JEU (Trésor, Compagnons,
+ *  Tuteur, Sélection, Faveur, Épargne…). Règle appliquée à trois étages — le
+ *  constructeur (canAddCard, violations), le lancement de partie, et un
+ *  déclencheur Postgres sur `deck_cards` (supabase-migration-deck-sans-objets.sql),
+ *  l'enregistrement d'un deck se faisant depuis le navigateur. */
+export function estAjoutableAuDeck(card: Pick<Card, "card_type">): boolean {
+  return card.card_type !== "item";
+}
+
+/** Nombre d'exemplaires d'objets dans un deck (quantités comprises). Sert aux
+ *  decks enregistrés AVANT la règle : ils restent intacts en base, mais sont
+ *  signalés et bloqués jusqu'à ce que le joueur retire ses objets. */
+export function objetsDansLeDeck(
+  entries: Iterable<{ card: Pick<Card, "card_type">; quantity: number }>,
+): number {
+  let n = 0;
+  for (const { card, quantity } of entries) if (!estAjoutableAuDeck(card)) n += quantity;
+  return n;
+}

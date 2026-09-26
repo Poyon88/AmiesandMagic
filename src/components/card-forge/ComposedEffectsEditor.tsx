@@ -77,12 +77,13 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "faveur", l: "Faveur (1 carte au hasard → main)", target: "none" },
   { v: "selection_magique", l: "Sélection magique (1 sort parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
+  { v: "tresor", l: "Trésor (1 objet parmi 3)", target: "none" },
 ];
 
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor"]);
 
 /** Sous-ensemble dont le pool peut être restreint par type de carte.
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas

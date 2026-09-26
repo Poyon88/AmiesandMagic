@@ -52,6 +52,7 @@ import {
   getFoiOffer,
   getConqueteOffer,
   getRenfortRoyalCards,
+  selectionCardsForKeyword,
   getMagicalSelectionCards,
   deckAfterDivination,
   deckAfterCreuser,
@@ -197,7 +198,7 @@ function auCimetiereAvecSecondeVie(player: PlayerState, instanceId: string | nul
  *  par le moteur avec son pseudo-hasard semé sur l'état. Le client passe donc
  *  X et le drapeau tels quels, et voit exactement la même offre que le moteur —
  *  ce qui n'était pas garanti quand il tirait son plafond au `Math.random`. */
-function amplitudeSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): { x: number; randomX: boolean; minX: number } {
+function amplitudeSelectionEntree(card: Card, id: import("@/lib/game/types").SelectionFamilyId): { x: number; randomX: boolean; minX: number } {
   return selectionAmplitudeOnPlay(card, id);
 }
 
@@ -1541,7 +1542,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     return (
       tryOpen("selection", (x, alea, min) => getSelectionCards(gs, x, cardInst.card, undefined, alea, undefined, min)) ||
       tryOpen("selection_magique", (x, alea, min) => getMagicalSelectionCards(gs, x, cardInst.card, undefined, undefined, alea, min)) ||
-      tryOpen("renfort_royal", (x, alea, min) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea, min))
+      tryOpen("renfort_royal", (x, alea, min) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea, min)) ||
+      tryOpen("tresor", (x, alea, min) => selectionCardsForKeyword("tresor", gs, x, cardInst.card, undefined, undefined, alea, min))
     );
   };
 
@@ -1692,11 +1694,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     for (const kw of ordreSelectionsCreature(card)) {
       if (deja[kw] != null) continue;
       const amp = amplitudeSelectionEntree(card, kw);
-      const choices = kw === "selection"
-        ? getSelectionCards(gs, amp.x, card, undefined, amp.randomX, undefined, amp.minX)
-        : kw === "renfort_royal"
-          ? getRenfortRoyalCards(gs, amp.x, card, undefined, undefined, amp.randomX, amp.minX)
-          : getMagicalSelectionCards(gs, amp.x, card, undefined, undefined, amp.randomX, amp.minX);
+      // Même aiguillage que le moteur (selectionCardsForKeyword), sans sel : c'est
+      // l'appel historique des trois Sélections, et Trésor s'y range.
+      const choices = selectionCardsForKeyword(kw, gs, amp.x, card, undefined, undefined, amp.randomX, amp.minX);
       // Rien à proposer (pool vide) : on passe à la suivante plutôt que de
       // bloquer la pose sur un sélecteur vide.
       if (choices.length === 0) continue;
@@ -5552,6 +5552,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         choices = getRenfortRoyalCards(gameState, x, heroSource);
       } else if (effect.keywordId === "selection_magique") {
         choices = getMagicalSelectionCards(gameState, x, heroSource);
+      } else if (effect.keywordId === "tresor") {
+        choices = selectionCardsForKeyword("tresor", gameState, x, heroSource);
       }
       if (choices !== null) {
         if (choices.length === 0) return null; // no candidates → power fizzles
@@ -5653,11 +5655,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Sélection / Sélection magique / Renfort Royal au tap : ouvre la modale
     // « 1 parmi 3 » (même flux qu'à l'invocation). Le choix est renvoyé via
     // selectTarget → tap_activate { selectionCardId }.
-    if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
+    if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal" || instance.id === "tresor") {
       const x = instance.x ?? 0;
-      const choices = instance.id === "selection_magique" ? getMagicalSelectionCards(gameState, x, source.card)
-        : instance.id === "renfort_royal" ? getRenfortRoyalCards(gameState, x, source.card)
-          : getSelectionCards(gameState, x, source.card);
+      // « ? » et plancher A transmis : le tap les ignorait et offrait toujours
+      // le coût exact X.
+      const choices = selectionCardsForKeyword(instance.id, gameState, x, source.card, undefined, undefined,
+        instance.randomX === true, instance.minX);
       if (choices.length === 0) {
         // Aucune carte éligible → on engage quand même la créature (fizzle).
         return get().dispatchAction({ type: "tap_activate", sourceInstanceId, instanceIdx });

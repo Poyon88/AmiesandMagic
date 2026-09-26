@@ -1949,7 +1949,8 @@ function resolveComposedEffect(
     }
     case "selection":
     case "selection_magique":
-    case "renfort_royal": {
+    case "renfort_royal":
+    case "tresor": {
       // Sélection composée : révèle 3 cartes de la collection, le joueur en
       // garde 1. Même moteur de pool que le mot-clé curé (l'aiguillage
       // selectionCardsForKeyword), plus le filtre `composed.pool`.
@@ -4238,7 +4239,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       queue.shift();
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
-      if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
+      if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal" || inst.id === "tresor") {
         const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId, inst.randomX === true, inst.minX);
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
@@ -6078,7 +6079,7 @@ function castSpellWithRandomTargets(
   // Trois Peuples » relancé résolvait Tempête 3 mais pas Sélection 2). On tire
   // au hasard parmi les options éligibles avec le RNG semé partagé — même
   // parti pris que le chemin créature quand la modale ne peut pas s'ouvrir.
-  const SELECTION_KW_IDS = ["selection", "renfort_royal", "selection_magique"] as const;
+  const SELECTION_KW_IDS = ["selection", "renfort_royal", "selection_magique", "tresor"] as const;
   for (const kw of card.spell_keywords ?? []) {
     const selId = SELECTION_KW_IDS.find((id) => id === kw.id);
     if (!selId) continue;
@@ -6847,18 +6848,18 @@ function resolveSpellKeywords(
       }
       case "selection":
       case "renfort_royal":
-      case "selection_magique": {
+      case "selection_magique":
+      case "tresor": {
         // All three routes look up the chosen card by id. Sélection /
         // Renfort Royal source from factionCardPool ; Sélection magique
         // sources from allSpellsPool. We try both pools so any of the
         // three keywords can resolve regardless of their source.
-        const slotKey = kw.id === "selection" ? "selection_0"
-          : kw.id === "renfort_royal" ? "renfort_royal_0"
-          : "selection_magique_0";
+        const slotKey = `${kw.id}_0`;
         const slotVal = ctx.targetMap[slotKey]
           ?? ctx.targetMap["selection_0"]
           ?? ctx.targetMap["renfort_royal_0"]
-          ?? ctx.targetMap["selection_magique_0"];
+          ?? ctx.targetMap["selection_magique_0"]
+          ?? ctx.targetMap["tresor_0"];
         const selCardId = slotVal ? parseInt(slotVal) : null;
         if (selCardId != null) {
           const chosenCard = ctx.state.factionCardPool?.find(c => c.id === selCardId)
@@ -8988,7 +8989,8 @@ function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): im
   // coûts réellement peuplés (même règle que `offreSelection`), ce qui exige
   // que le drapeau lui parvienne intact.
   if (composed.content === "selection" || composed.content === "selection_magique"
-    || composed.content === "renfort_royal" || composed.content === "faveur") return composed;
+    || composed.content === "renfort_royal" || composed.content === "faveur"
+    || composed.content === "tresor") return composed;
   const tirer = (plafond: number | undefined): number | undefined => {
     if (plafond == null || plafond < 1) return plafond;
     return 1 + Math.floor(rng() * plafond);
@@ -10352,7 +10354,8 @@ function resolveCuratedKeywordEffect(
     }
     case "selection":
     case "selection_magique":
-    case "renfort_royal": {
+    case "renfort_royal":
+    case "tresor": {
       // Sélection « 1 parmi 3 » : modale sur le tour du contrôleur (déclencheur
       // différé), tirage AU HASARD parmi les options révélées sinon (tour
       // adverse ou mode attaque — la modale ne peut pas s'ouvrir).
@@ -10650,7 +10653,7 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
     // remonter). Index absent (client sans modale) → 0, donc désignation juste :
     // déterministe, et rejouable à l'identique par le pair.
     resolvePresage(player, action.divinationChoiceIndex ?? 0);
-  } else if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal") {
+  } else if (instance.id === "selection" || instance.id === "selection_magique" || instance.id === "renfort_royal" || instance.id === "tresor") {
     // Sélection au tap : la carte choisie (modale « 1 parmi 3 ») est ajoutée en
     // main. Lookup dans les deux pools comme pour l'invocation.
     if (action.selectionCardId != null && player.hand.length < MAX_HAND_SIZE) {
@@ -11494,6 +11497,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
           targetMap.selection_0 = sid;
           targetMap.renfort_royal_0 = sid;
           targetMap.selection_magique_0 = sid;
+          targetMap.tresor_0 = sid;
         }
         const ctx: SpellResolutionContext = {
           state: newState,
@@ -12531,7 +12535,7 @@ export function getTraqueDuDestinX(card: Card): number {
  *  historique (celui des anciens blocs du store). L'ordre d'AUTEUR, quand la
  *  carte le donne (`keyword_instances`), prime côté client — cf.
  *  ordreSelectionsCreature. */
-export const SELECTION_KWS_CREATURE = ["selection", "renfort_royal", "selection_magique"] as const;
+export const SELECTION_KWS_CREATURE = ["selection", "renfort_royal", "selection_magique", "tresor"] as const;
 export type SelectionKwCreature = typeof SELECTION_KWS_CREATURE[number];
 
 /** Sélections d'une créature qui s'ouvrent à l'ENTRÉE, dans l'ordre d'auteur
@@ -12558,6 +12562,10 @@ export function creatureNeedsSelection(card: Card): boolean {
 
 export function creatureNeedsRenfortRoyal(card: Card): boolean {
   return card.card_type === "creature" && cardHasKwOnPlay(card, "renfort_royal" as Keyword);
+}
+
+export function creatureNeedsTresor(card: Card): boolean {
+  return card.card_type === "creature" && cardHasKwOnPlay(card, "tresor" as Keyword);
 }
 
 export function creatureNeedsMagicalSelection(card: Card): boolean {
@@ -12649,16 +12657,26 @@ function factionsForSelectionAlignment(
 /** Répartit des candidats déjà filtrés selon les deux paniers d'alignement. */
 function partitionParAlignement<T extends { faction?: string | null }>(
   candidats: T[],
-  buckets: { propre: Set<string>; neutre: Set<string> },
+  buckets: PaniersAlignement,
 ): { propre: T[]; neutre: T[] } {
   const propre: T[] = [];
   const neutre: T[] = [];
   for (const c of candidats) {
-    if (c.faction && buckets.neutre.has(c.faction)) neutre.push(c);
+    const estNeutre = buckets.estNeutre
+      ? buckets.estNeutre(c as unknown as Card)
+      : !!c.faction && buckets.neutre.has(c.faction);
+    if (estNeutre) neutre.push(c);
     else propre.push(c);
   }
   return { propre, neutre };
 }
+
+/** Paniers d'alignement d'une offre. Par défaut, le tri se fait par FACTION
+ *  (`neutre` = factions neutres). `estNeutre`, quand il est fourni, trie carte
+ *  par carte — Trésor en a besoin : ses objets portent leur PROPRE alignement,
+ *  distinct de celui de leur faction (des objets « neutres » de la faction
+ *  Elfes, par exemple). */
+type PaniersAlignement = { propre: Set<string>; neutre: Set<string>; estNeutre?: (c: Card) => boolean };
 
 /** Nombre de cartes NEUTRES tolérées dans une offre de `n` cartes : une sur
  *  trois, soit le ratio 2:1 de la règle. Toujours ≥ 1 dès qu'on propose au
@@ -12677,7 +12695,7 @@ function quotaNeutre(n: number): number {
  *  même offre sans consommer la RNG partagée. */
 function offrePonderee<T extends { faction?: string | null }>(
   candidats: T[],
-  buckets: { propre: Set<string>; neutre: Set<string> },
+  buckets: PaniersAlignement,
   n: number,
   melanger: (arr: T[]) => T[],
 ): T[] {
@@ -13081,7 +13099,7 @@ function offreSelection(
   vivier: Card[],
   x: number,
   randomX: boolean | undefined,
-  buckets: { propre: Set<string>; neutre: Set<string> },
+  buckets: PaniersAlignement,
   melanger: (arr: Card[]) => Card[],
   tirage: () => number,
   // Plancher A du « ? » : les coûts se tirent entre A et X (1 par défaut).
@@ -13310,6 +13328,74 @@ export function getFaveurCard(
   return candidats[Math.floor(pseudoRng() * candidats.length)];
 }
 
+/** Alignement PROPRE d'une carte : son `card_alignment` s'il en déclare un,
+ *  sinon celui de sa faction. Un objet peut être « neutre » tout en appartenant
+ *  à une faction tranchée — c'est le cas des objets de la faction Elfes. */
+function alignementDeLaCarte(c: { faction?: string | null; card_alignment?: string | null }): string | null {
+  if (c.card_alignment && c.card_alignment !== "spéciale") return c.card_alignment;
+  return getEffectiveAlignment(c);
+}
+
+/** TRÉSOR X : 3 OBJETS communs de l'alignement de la source + objets neutres.
+ *
+ *  Vivier distinct de la Sélection parce que l'alignement s'y lit sur l'OBJET
+ *  lui-même et non sur sa faction (cf. alignementDeLaCarte) : trier par faction
+ *  rangeait les objets neutres de la faction Elfes dans le camp « bon », et une
+ *  carte maléfique n'en trouvait jamais aucun.
+ *
+ *  Toutes les factions sont éligibles — seul l'alignement compte. Le reste suit
+ *  la Sélection : rareté Commune, filtre de pool composé (le type « objet » est
+ *  imposé PAR-DESSUS, il ne s'élargit pas), coût exact / « ? » / plancher A,
+ *  au plus un neutre sur trois quand l'alignement propre a de quoi remplir.
+ *  Source sans alignement (héros neutre sans faction…) : tous les objets. */
+export function getTresorCards(
+  state: GameState,
+  maxManaCost: number,
+  source?: { faction?: string | null; card_alignment?: string | null } | null,
+  filter?: ComposedPoolFilter,
+  randomX = false,
+  seedSalt?: string,
+  minX = 1,
+): Card[] {
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return [];
+  const player = state.players[state.currentPlayerIndex];
+  const aligne = source ? alignementDeLaCarte(source) : null;
+  const tranche = aligne === "bon" || aligne === "maléfique";
+  const filtre = { ...(filter ?? {}), cardType: "item" as const };
+  const vivier = pool.filter(c => {
+    if (c.rarity !== "Commune" || !matchesPoolFilter(c, filtre)) return false;
+    if (!tranche) return true;
+    const a = alignementDeLaCarte(c);
+    return a === aligne || a === "neutre";
+  });
+  if (vivier.length === 0) return [];
+
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 3999 + saltDeSource(seedSalt);
+  let hash = seed;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const melanger = (arr: Card[]): Card[] => {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(pseudoRng() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  // Paniers carte par carte : « neutre » = objet d'alignement neutre, et
+  // seulement quand la source est tranchée (pour une source neutre, tout est
+  // son propre alignement).
+  const paniers: PaniersAlignement = {
+    propre: new Set(), neutre: new Set(),
+    estNeutre: (c) => tranche && alignementDeLaCarte(c) === "neutre",
+  };
+  return offreSelection(vivier, maxManaCost, randomX, paniers, melanger, pseudoRng, minX);
+}
+
 /** Sélection magique : propose jusqu'à 3 sorts communs partageant
  *  l'alignement de la carte source (bon/neutre/maléfique). Le pool est lu
  *  dans state.allSpellsPool (chargé une fois au démarrage du match). Si la
@@ -13372,15 +13458,16 @@ export function getMagicalSelectionCards(
  *  qui ne vit que sur l'instance. */
 export function selectionAmplitudeOnPlay(
   card: Card,
-  id: "selection" | "selection_magique" | "renfort_royal" | "faveur",
+  id: import("./types").SelectionFamilyId | "faveur",
 ): { x: number; randomX: boolean; minX: number } {
   const cap = getCapabilities(card).find(c => c.abilityId === id && c.trigger === "on_play" && c.effectKind !== "emblem");
   return { x: cap?.params?.x ?? 0, randomX: cap?.params?.randomX === true, minX: cap?.params?.minX ?? 1 };
 }
 
-/** Aiguille vers le bon builder de cartes selon la famille de Sélection. */
-function selectionCardsForKeyword(
-  id: "selection" | "selection_magique" | "renfort_royal",
+/** Aiguille vers le bon builder de cartes selon la famille de Sélection.
+ *  Exporté : le client ouvre ses modales sur le MÊME vivier que le moteur. */
+export function selectionCardsForKeyword(
+  id: import("./types").SelectionFamilyId,
   state: GameState,
   maxManaCost: number,
   source?: { faction?: string | null; card_alignment?: string | null } | null,
@@ -13394,6 +13481,10 @@ function selectionCardsForKeyword(
 ): Card[] {
   if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt, randomX, minX);
   if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt, randomX, minX);
+  // TRÉSOR : le vivier de Sélection (communes, alignement, quota de neutres,
+  // coût exact / « ? » / plancher A), restreint aux OBJETS. Le type est imposé
+  // PAR-DESSUS un éventuel filtre composé, qui ne peut donc pas l'élargir.
+  if (id === "tresor") return getTresorCards(state, maxManaCost, source, filter, randomX, seedSalt, minX);
   return getSelectionCards(state, maxManaCost, source, filter, randomX, seedSalt, minX);
 }
 

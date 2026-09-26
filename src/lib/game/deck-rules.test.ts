@@ -1,6 +1,6 @@
 // Tests des règles de capacité à la composition de deck (deck-rules.ts).
 import { describe, expect, it } from "vitest";
-import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "./deck-rules";
+import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations, estAjoutableAuDeck, objetsDansLeDeck } from "./deck-rules";
 import type { Capability, Card } from "./types";
 
 let seq = 1;
@@ -75,5 +75,21 @@ describe("creatureCapabilityCounts + capabilityLimitViolations", () => {
   it("les sorts portant un mot-clé sont ignorés (créatures uniquement)", () => {
     const entries = Array.from({ length: 11 }, () => ({ card: mkCard({ card_type: "spell", attack: null, health: null, keywords: ["gloire"] as unknown as Card["keywords"] }), quantity: 1 }));
     expect(capabilityLimitViolations(creatureCapabilityCounts(entries))).toEqual([]);
+  });
+});
+
+describe("objets hors des decks", () => {
+  it("un objet n'est pas ajoutable, une créature ou un sort l'est", () => {
+    expect(estAjoutableAuDeck({ card_type: "item" })).toBe(false);
+    expect(estAjoutableAuDeck({ card_type: "creature" })).toBe(true);
+    expect(estAjoutableAuDeck({ card_type: "spell" })).toBe(true);
+  });
+  it("compte les exemplaires d'objets d'un deck enregistré avant la règle", () => {
+    expect(objetsDansLeDeck([
+      { card: { card_type: "item" }, quantity: 2 },
+      { card: { card_type: "creature" }, quantity: 3 },
+      { card: { card_type: "item" }, quantity: 1 },
+    ])).toBe(3);
+    expect(objetsDansLeDeck([{ card: { card_type: "spell" }, quantity: 3 }])).toBe(0);
   });
 });

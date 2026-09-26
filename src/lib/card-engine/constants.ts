@@ -113,6 +113,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Sélection X": ALL_MODES,
   "Sélection magique X": ALL_MODES,
   "Sélection Royale X": ALL_MODES,
+  "Trésor X": ALL_MODES,
   // Nouveaux entrants du chantier (effets sans ciblage ou à repli aléatoire).
   "Concentration X": ALL_MODES,
   // Épargne alimente un compteur : aucun ciblage, aucune source en jeu requise

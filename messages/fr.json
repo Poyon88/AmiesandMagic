@@ -377,6 +377,10 @@
         "label": "Sélection Royale X",
         "desc": "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une."
       },
+      "tresor": {
+        "label": "Trésor X",
+        "desc": "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main."
+      },
       "lycanthropie": {
         "label": "Lycanthropie X",
         "desc": "Se transforme en {lycanthrope} avec Traque."
@@ -619,6 +623,10 @@
         "label": "Sélection Royale X",
         "desc": "Révèle 3 de vos éditions limitées de coût X (≥30 requises ; sinon 3 communes {alignment}) ; gardez-en une"
       },
+      "tresor": {
+        "label": "Trésor X",
+        "desc": "Révèle 3 objets communs {alignment} ou neutres de coût X ; ajoutez-en un en main"
+      },
       "relancer": {
         "label": "Relancer X",
         "desc": "Rejoue les X derniers sorts lancés avec des cibles aléatoires"
@@ -854,7 +862,8 @@
         "selection": "révèle 3 cartes{filter} (coût {x}) et en garde une en main",
         "faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
         "selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
-        "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main"
+        "renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
+        "tresor": "révèle 3 objets{filter} (coût {x}) et en garde un en main"
       },
       "emblem": {
         "badge": "Emblème",
@@ -2059,6 +2068,7 @@
     "content_selection": "Sélection (1 parmi 3)",
     "content_faveur": "Faveur (1 carte au hasard → main)",
     "content_renfort_royal": "Sélection Royale (1 parmi 3)",
+    "content_tresor": "Trésor (1 objet parmi 3)",
     "label_pool_membership": "POOL — APPARTENANCE",
     "label_pool_faction": "POOL — FACTION",
     "label_pool_keyword": "POOL — MOT-CLÉ PORTÉ",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Max {max} Mercenaires (actuellement {current})",
     "max_capability_current": "Max {max} capacités « {label} » (actuellement {count})",
     "card_not_owned": "Carte non possédée",
+    "no_items_in_deck": "Les objets ne se mettent pas dans un deck : on les trouve en jeu.",
+    "no_items_in_deck_current": "Ce deck contient {count, plural, one {# objet} other {# objets}} : retirez-les, les objets ne se mettent plus dans un deck.",
     "deck_full": "Deck plein",
     "singleton_yes": "Deck singulier ✓",
     "singleton_no": "Deck singulier ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Rechercher...",
     "creatures": "Créatures",
     "spells": "Sorts",
+    "items": "Objets",
     "all_capabilities": "Capacités",
     "all_races": "Races",
     "all_clans": "Clans",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# carte verrouillée} other {# cartes verrouillées}}",
     "locked_hint": "Les communes des autres factions seront accessibles via l'offre de déblocage complet.",
     "unplayable_badge": "{count} carte(s) manquante(s)",
+    "items_badge": "Contient {count, plural, one {# objet} other {# objets}} — à retirer",
     "unplayable_reason": "Ce deck contient des cartes de faction(s) que vous ne possédez plus : {factions}. Il reste intact — récupérez la faction pour le rejouer.",
     "unplayable_rebuy": "Récupérer en boutique"
   },

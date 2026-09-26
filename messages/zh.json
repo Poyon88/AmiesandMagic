@@ -377,6 +377,10 @@
         "label": "皇家抉择 X",
         "desc": "展示你牌库中3张费用为X的限定版卡（需要≥30张；否则展示3张{alignment}普通卡）；保留一张。"
       },
+      "tresor": {
+        "label": "宝藏 X",
+        "desc": "展示3件费用为X的{alignment}或中立普通物品；将其中一件加入手牌。"
+      },
       "lycanthropie": {
         "label": "狼人变身 X",
         "desc": "变身为拥有追踪的{lycanthrope}。"
@@ -619,6 +623,10 @@
         "label": "皇家甄选 X",
         "desc": "展示你3张费用为X的限定版卡牌（需持有≥30张；否则展示3张{alignment}普通卡）；保留其中一张"
       },
+      "tresor": {
+        "label": "宝藏 X",
+        "desc": "展示3件费用为X的{alignment}或中立普通物品；将其中一件加入手牌"
+      },
       "relancer": {
         "label": "重施 X",
         "desc": "以随机目标重新施放最近X个法术。"
@@ -854,7 +862,8 @@
         "selection": "展示3张{filter}卡牌（费用为 {x}），并保留其中一张至手牌",
         "faveur": "随机将一张{filter}卡牌（费用{x}）加入手牌",
         "selection_magique": "展示3张{filter}法术（费用为{x}），并留其中一张入手",
-        "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌"
+        "renfort_royal": "展示3张{filter}收藏卡牌（费用为 {x}），并保留其中一张至手牌",
+        "tresor": "展示3件物品{filter}（费用{x}）并将一件加入手牌"
       },
       "emblem": {
         "badge": "纹章",
@@ -2059,6 +2068,7 @@
     "content_selection": "选择（三选一）",
     "content_faveur": "恩惠（1张随机卡 → 手牌）",
     "content_renfort_royal": "皇家甄选（三选一）",
+    "content_tresor": "宝藏（3件物品中选1）",
     "label_pool_membership": "卡池 — 归属",
     "label_pool_faction": "卡池 — 阵营",
     "label_pool_keyword": "卡池 — 携带关键词",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "最多 {max} 名雇佣兵（当前 {current}）",
     "max_capability_current": "最多 {max} 张「{label}」能力牌（当前 {count}）",
     "card_not_owned": "未拥有此牌",
+    "no_items_in_deck": "物品不能放入卡组：它们在对局中获得。",
+    "no_items_in_deck_current": "此卡组包含{count}件物品：请移除，物品不能再放入卡组。",
     "deck_full": "牌组已满",
     "singleton_yes": "单卡组 ✓",
     "singleton_no": "单卡牌组 ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "搜索...",
     "creatures": "生物",
     "spells": "法术",
+    "items": "物品",
     "all_capabilities": "能力",
     "all_races": "种族",
     "all_clans": "氏族",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, other {# 张已锁定的卡牌}}",
     "locked_hint": "其他阵营的普通卡将可通过完整解锁礼包获取。",
     "unplayable_badge": "缺少 {count} 张卡牌",
+    "items_badge": "含{count}件物品 — 请移除",
     "unplayable_reason": "此卡组包含你已不再拥有的阵营卡牌：{factions}。卡组保持完整——重新获得该阵营即可继续使用。",
     "unplayable_rebuy": "前往商店购买"
   },

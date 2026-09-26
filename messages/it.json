@@ -377,6 +377,10 @@
         "label": "Selezione Reale X",
         "desc": "Rivela 3 delle tue edizioni limitate di costo X (richieste ≥30; altrimenti 3 comuni {alignment}); tienine una."
       },
+      "tresor": {
+        "label": "Tesoro X",
+        "desc": "Rivela 3 oggetti comuni {alignment} o neutrali di costo X; aggiungine uno alla mano."
+      },
       "lycanthropie": {
         "label": "Licantropia X",
         "desc": "Si trasforma in {lycanthrope} con Caccia."
@@ -619,6 +623,10 @@
         "label": "Selezione Reale X",
         "desc": "Rivela 3 delle vostre edizioni limitate di costo X (richieste ≥30; altrimenti 3 comuni {alignment}); tenetene una"
       },
+      "tresor": {
+        "label": "Tesoro X",
+        "desc": "Rivela 3 oggetti comuni {alignment} o neutrali di costo X; aggiungine uno alla mano"
+      },
       "relancer": {
         "label": "Rilanciare X",
         "desc": "Rilancia gli ultimi X incantesimi lanciati con bersagli casuali"
@@ -854,7 +862,8 @@
         "selection": "rivela 3 carte{filter} (costo {x}) e ne tiene una in mano",
         "faveur": "aggiunge in mano una carta{filter} (costo {x}) a caso",
         "selection_magique": "rivela 3 incantesimi{filter} (costo {x}) e ne tiene uno in mano",
-        "renfort_royal": "rivela 3 carte da collezione{filter} (costo {x}) e ne tiene una in mano"
+        "renfort_royal": "rivela 3 carte da collezione{filter} (costo {x}) e ne tiene una in mano",
+        "tresor": "rivela 3 oggetti{filter} (costo {x}) e ne tiene uno in mano"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2059,6 +2068,7 @@
     "content_selection": "Selezione (1 su 3)",
     "content_faveur": "Favore (1 carta a caso → mano)",
     "content_renfort_royal": "Selezione Reale (1 su 3)",
+    "content_tresor": "Tesoro (1 oggetto su 3)",
     "label_pool_membership": "POOL — APPARTENENZA",
     "label_pool_faction": "POOL — FAZIONE",
     "label_pool_keyword": "POOL — PAROLA CHIAVE",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Max {max} Mercenari (attualmente {current})",
     "max_capability_current": "Max {max} capacità « {label} » (attualmente {count})",
     "card_not_owned": "Carta non posseduta",
+    "no_items_in_deck": "Gli oggetti non vanno nel mazzo: si trovano durante la partita.",
+    "no_items_in_deck_current": "Questo mazzo contiene {count, plural, one {# oggetto} other {# oggetti}}: rimuovili, gli oggetti non vanno più nel mazzo.",
     "deck_full": "Mazzo pieno",
     "singleton_yes": "Deck singolo ✓",
     "singleton_no": "Mazzo singolo ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Cerca...",
     "creatures": "Creature",
     "spells": "Magie",
+    "items": "Oggetti",
     "all_capabilities": "Capacità",
     "all_races": "Razze",
     "all_clans": "Clan",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# carta bloccata} other {# carte bloccate}}",
     "locked_hint": "Le comuni delle altre fazioni saranno accessibili tramite l'offerta di sblocco completo.",
     "unplayable_badge": "{count} carta/e mancante/i",
+    "items_badge": "Contiene {count, plural, one {# oggetto} other {# oggetti}} — da rimuovere",
     "unplayable_reason": "Questo mazzo contiene carte di fazione/i che non possiedi più: {factions}. Rimane intatto — recupera la fazione per rigiocarlo.",
     "unplayable_rebuy": "Recupera nel negozio"
   },

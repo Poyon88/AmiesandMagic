@@ -377,6 +377,10 @@
         "label": "Seleção Real X",
         "desc": "Revela 3 das suas edições limitadas de custo X (≥30 necessárias; caso contrário, 3 comuns {alignment}); mantenha uma."
       },
+      "tresor": {
+        "label": "Tesouro X",
+        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à mão."
+      },
       "lycanthropie": {
         "label": "Licantropia X",
         "desc": "Transforma-se em {lycanthrope} com Rastreio."
@@ -619,6 +623,10 @@
         "label": "Seleção Real X",
         "desc": "Revela 3 das suas edições limitadas de custo X (≥30 necessárias; caso contrário, 3 comuns {alignment}); fique com uma"
       },
+      "tresor": {
+        "label": "Tesouro X",
+        "desc": "Revela 3 objetos comuns {alignment} ou neutros de custo X; adicione um à mão"
+      },
       "relancer": {
         "label": "Relançar X",
         "desc": "Relança os X últimos feitiços conjurados com alvos aleatórios"
@@ -854,7 +862,8 @@
         "selection": "revela 3 cartas{filter} (custo {x}) e mantém uma na mão",
         "faveur": "adiciona à mão uma carta{filter} (custo {x}) aleatória",
         "selection_magique": "revela 3 feitiços{filter} (custo {x}) e mantém um na mão",
-        "renfort_royal": "revela 3 cartas de coleção{filter} (custo {x}) e mantém uma na mão"
+        "renfort_royal": "revela 3 cartas de coleção{filter} (custo {x}) e mantém uma na mão",
+        "tresor": "revela 3 objetos{filter} (custo {x}) e fica com um na mão"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2059,6 +2068,7 @@
     "content_selection": "Seleção (1 de 3)",
     "content_faveur": "Favor (1 carta aleatória → mão)",
     "content_renfort_royal": "Seleção Real (1 de 3)",
+    "content_tresor": "Tesouro (1 objeto entre 3)",
     "label_pool_membership": "POOL — PERTENÇA",
     "label_pool_faction": "POOL — FACÇÃO",
     "label_pool_keyword": "POOL — PALAVRA-CHAVE",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Máx {max} Mercenários (atualmente {current})",
     "max_capability_current": "Máx {max} capacidades « {label} » (atualmente {count})",
     "card_not_owned": "Carta não possuída",
+    "no_items_in_deck": "Objetos não entram no baralho: são encontrados durante a partida.",
+    "no_items_in_deck_current": "Este baralho contém {count, plural, one {# objeto} other {# objetos}}: remova-os, objetos não entram mais no baralho.",
     "deck_full": "Deck cheio",
     "singleton_yes": "Deck singular ✓",
     "singleton_no": "Deck Singular ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Pesquisar...",
     "creatures": "Criaturas",
     "spells": "Feitiços",
+    "items": "Objetos",
     "all_capabilities": "Capacidades",
     "all_races": "Raças",
     "all_clans": "Clãs",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
     "locked_hint": "As cartas comuns das outras facções ficarão acessíveis através da oferta de desbloqueio completo.",
     "unplayable_badge": "{count} carta(s) faltando",
+    "items_badge": "Contém {count, plural, one {# objeto} other {# objetos}} — remover",
     "unplayable_reason": "Este deck contém cartas de facção(ões) que você não possui mais: {factions}. Ele permanece intacto — recupere a facção para jogá-lo novamente.",
     "unplayable_rebuy": "Resgatar na loja"
   },

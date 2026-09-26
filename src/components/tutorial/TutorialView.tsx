@@ -333,6 +333,8 @@ function BeginnerGuide() {
             cinquante fois le même effet.</>,
           <>On ne mélange pas une faction <Hi>Bonne</Hi> et une faction <Hi>Maléfique</Hi> dans le même deck.</>,
           <>Un deck <Hi>sans aucun doublon</Hi> est dit <Hi>singulier</Hi> : il active les capacités Singulier. Facultatif, mais récompensé.</>,
+          <>Les <Hi>objets</Hi> ne se mettent pas dans un deck : on les trouve <Hi>en jeu</Hi> (Trésor, Compagnons, Tuteur,
+            Sélection, Faveur…).</>,
         ]} />
         <P>
           Deux <Hi>formats</Hi> encadrent enfin ce que vous pouvez jouer. Le mode <Hi>Classique</Hi> n'autorise que les

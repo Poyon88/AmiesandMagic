@@ -156,6 +156,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.faveur": "ajoute en main une carte{filter} (coût {x}) au hasard",
   "content.selection_magique": "révèle 3 sorts{filter} (coût {x}) et en garde un en main",
   "content.renfort_royal": "révèle 3 cartes de collection{filter} (coût {x}) et en garde une en main",
+  "content.tresor": "révèle 3 objets{filter} (coût {x}) et en garde un en main",
   "pool.race": " de race {v}",
   "pool.faction": " de la faction {v}",
   "pool.clan": " du clan {v}",
@@ -344,6 +345,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "faveur": return { symbol: KEYWORD_SYMBOLS.faveur, keyword: "faveur" };
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
+    case "tresor": return { symbol: KEYWORD_SYMBOLS.tresor, keyword: "tresor" };
     // L'APPEL emprunte l'icône et le nom d'« Appel du clan », le mot-clé le plus
     // proche : c'est le même geste de jeu — sortir une unité du deck et la poser
     // en jeu — à ceci près que la cible se déclare au lieu d'être héritée.
@@ -632,6 +634,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "selection_magique":
     case "renfort_royal":
     case "faveur":
+    case "tresor":
       return frag(t, `content.${eff.content}`, { x: xAff, filter: describePoolFilter(eff, t) });
     default: return String(eff.content);
   }

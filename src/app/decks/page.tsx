@@ -4,6 +4,7 @@ import DeckList from "@/components/deck/DeckList";
 import { entitlementsFromProfile } from "@/lib/game/collection";
 import { readFactionUnlocks } from "@/lib/game/factionUnlocks";
 import { deckPlayability } from "@/lib/game/deckPlayability";
+import { objetsParDeck } from "@/lib/decks/objetsParDeck";
 
 export const dynamic = "force-dynamic";
 
@@ -120,6 +121,12 @@ export default async function DecksPage() {
     }
   }
 
+  // Decks enregistrés avant la règle « pas d'objets » : signalés, pas modifiés.
+  const objetsDesDecks = await objetsParDeck(
+    supabase,
+    (decks ?? []) as { id: number; deck_cards: { card_id: number; quantity: number }[] }[],
+  );
+
   const decksWithCount = (decks ?? []).map((deck) => {
     const formatId = (deck.format_id as number | null) ?? null;
     return {
@@ -137,6 +144,7 @@ export default async function DecksPage() {
       // le défaut ne doit jamais être « injouable ».
       missingFactions: playabilityByDeck.get(deck.id as number)?.missingFactions ?? [],
       missingCount: playabilityByDeck.get(deck.id as number)?.missingCount ?? 0,
+      itemCount: objetsDesDecks.get(deck.id as number) ?? 0,
     };
   });
 

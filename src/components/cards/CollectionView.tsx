@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { OBJET_RGB, OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
 import { getFormatFilter } from "@/lib/game/format-legality";
@@ -82,7 +83,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [manaCostFilter, setManaCostFilter] = useState<number | null>(null);
-  const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | null>(null);
+  const [typeFilter, setTypeFilter] = useState<"creature" | "spell" | "item" | null>(null);
   const [keywordFilter, setKeywordFilter] = useState<string | null>(null);
   const [factionFilter, setFactionFilter] = useState<string | null>(null);
   const [rarityFilter, setRarityFilter] = useState<string | null>(null);
@@ -348,6 +349,23 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                 }`}
               >
                 {t("spells")}
+              </button>
+              {/* Objets : absents des decks, mais collectionnables — c'est ici
+                  qu'on les retrouve. Teinte bronze des objets (objet-theme). */}
+              <button
+                onClick={() =>
+                  setTypeFilter(typeFilter === "item" ? null : "item")
+                }
+                style={typeFilter === "item"
+                  ? { borderColor: `rgba(${OBJET_RGB}, 0.7)`, background: `rgba(${OBJET_RGB}, 0.18)`, color: OBJET_TEINTE }
+                  : undefined}
+                className={`rounded-lg px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 ${
+                  typeFilter === "item"
+                    ? "border"
+                    : "am-gild-border bg-am-bg-2 text-am-ink-soft hover:text-am-ink"
+                }`}
+              >
+                {t("items")}
               </button>
             </div>
 

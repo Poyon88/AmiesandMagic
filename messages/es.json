@@ -377,6 +377,10 @@
         "label": "Selección Real X",
         "desc": "Revela 3 de tus ediciones limitadas de coste X (se requieren ≥30; si no, 3 comunes {alignment}); conserva una."
       },
+      "tresor": {
+        "label": "Tesoro X",
+        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano."
+      },
       "lycanthropie": {
         "label": "Licantropía X",
         "desc": "Se transforma en {lycanthrope} con Acecho."
@@ -619,6 +623,10 @@
         "label": "Selección Real X",
         "desc": "Revela 3 de tus ediciones limitadas de coste X (≥30 requeridas; si no, 3 comunes {alignment}); quédate con una"
       },
+      "tresor": {
+        "label": "Tesoro X",
+        "desc": "Revela 3 objetos comunes {alignment} o neutrales de coste X; añade uno a tu mano"
+      },
       "relancer": {
         "label": "Relanzar X",
         "desc": "Vuelve a lanzar los X últimos hechizos lanzados con objetivos aleatorios."
@@ -854,7 +862,8 @@
         "selection": "revela 3 cartas{filter} (coste {x}) y se queda una en mano",
         "faveur": "añade a la mano una carta{filter} (coste {x}) al azar",
         "selection_magique": "revela 3 hechizos{filter} (coste {x}) y conserva uno en mano",
-        "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano"
+        "renfort_royal": "revela 3 cartas de colección{filter} (coste {x}) y se queda una en mano",
+        "tresor": "revela 3 objetos{filter} (coste {x}) y se queda uno en la mano"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2059,6 +2068,7 @@
     "content_selection": "Selección (1 de 3)",
     "content_faveur": "Favor (1 carta al azar → mano)",
     "content_renfort_royal": "Selección Real (1 de 3)",
+    "content_tresor": "Tesoro (1 objeto de 3)",
     "label_pool_membership": "POOL — PERTENENCIA",
     "label_pool_faction": "POOL — FACCIÓN",
     "label_pool_keyword": "POOL — PALABRA CLAVE",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Máx {max} Mercenarios (actualmente {current})",
     "max_capability_current": "Máx {max} capacidades « {label} » (actualmente {count})",
     "card_not_owned": "Carta no poseída",
+    "no_items_in_deck": "Los objetos no van en un mazo: se encuentran durante la partida.",
+    "no_items_in_deck_current": "Este mazo contiene {count, plural, one {# objeto} other {# objetos}}: quítalos, los objetos ya no van en un mazo.",
     "deck_full": "Mazo lleno",
     "singleton_yes": "Mazo singular ✓",
     "singleton_no": "Deck singular ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Buscar...",
     "creatures": "Criaturas",
     "spells": "Hechizos",
+    "items": "Objetos",
     "all_capabilities": "Capacidades",
     "all_races": "Razas",
     "all_clans": "Clanes",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# carta bloqueada} other {# cartas bloqueadas}}",
     "locked_hint": "Las comunes de las demás facciones estarán disponibles mediante la oferta de desbloqueo completo.",
     "unplayable_badge": "{count} carta(s) faltante(s)",
+    "items_badge": "Contiene {count, plural, one {# objeto} other {# objetos}} — quitar",
     "unplayable_reason": "Este deck contiene cartas de facción(es) que ya no posees: {factions}. Permanece intacto: recupera la facción para volver a jugarlo.",
     "unplayable_rebuy": "Recuperar en la tienda"
   },

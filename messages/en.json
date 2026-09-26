@@ -377,6 +377,10 @@
         "label": "Royal Selection X",
         "desc": "Reveal 3 of your limited editions with cost X (≥30 required; otherwise 3 {alignment} commons); keep one."
       },
+      "tresor": {
+        "label": "Treasure X",
+        "desc": "Reveal 3 common {alignment} or neutral items costing X; add one to your hand."
+      },
       "lycanthropie": {
         "label": "Lycanthropy X",
         "desc": "Transforms into {lycanthrope} with Hunt."
@@ -619,6 +623,10 @@
         "label": "Royal Selection X",
         "desc": "Reveals 3 of your limited editions of cost X (≥30 required; otherwise 3 {alignment} commons); keep one"
       },
+      "tresor": {
+        "label": "Treasure X",
+        "desc": "Reveal 3 common {alignment} or neutral items costing X; add one to your hand"
+      },
       "relancer": {
         "label": "Recast X",
         "desc": "Replays the last X spells cast with random targets."
@@ -854,7 +862,8 @@
         "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
         "faveur": "adds a random{filter} card (cost {x}) to hand",
         "selection_magique": "reveals 3 spells{filter} (cost {x}) and keeps one in hand",
-        "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand"
+        "renfort_royal": "reveals 3 collection cards{filter} (cost {x}) and keeps one in hand",
+        "tresor": "reveals 3 items{filter} (cost {x}) and keeps one in hand"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2059,6 +2068,7 @@
     "content_selection": "Selection (1 of 3)",
     "content_faveur": "Favor (1 random card → hand)",
     "content_renfort_royal": "Royal Selection (1 of 3)",
+    "content_tresor": "Treasure (1 item out of 3)",
     "label_pool_membership": "POOL — MEMBERSHIP",
     "label_pool_faction": "POOL — FACTION",
     "label_pool_keyword": "POOL — KEYWORD",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Max {max} Mercenaries (currently {current})",
     "max_capability_current": "Max {max} \"{label}\" abilities (currently {count})",
     "card_not_owned": "Card not owned",
+    "no_items_in_deck": "Items can't go in a deck: they are found during play.",
+    "no_items_in_deck_current": "This deck contains {count, plural, one {# item} other {# items}}: remove them, items can no longer go in a deck.",
     "deck_full": "Deck full",
     "singleton_yes": "Singleton deck ✓",
     "singleton_no": "Singleton deck ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Search...",
     "creatures": "Creatures",
     "spells": "Spells",
+    "items": "Items",
     "all_capabilities": "Abilities",
     "all_races": "Races",
     "all_clans": "Clans",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# locked card} other {# locked cards}}",
     "locked_hint": "Commons from other factions will become accessible via the full unlock offer.",
     "unplayable_badge": "{count} missing card(s)",
+    "items_badge": "Contains {count, plural, one {# item} other {# items}} — remove",
     "unplayable_reason": "This deck contains cards from faction(s) you no longer own: {factions}. It remains intact — reacquire the faction to play it again.",
     "unplayable_rebuy": "Get it in the shop"
   },

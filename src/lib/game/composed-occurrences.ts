@@ -18,7 +18,7 @@ import type { ComposedEffect } from "./types";
  *  n'aurait semé que le doute sur celui qui compte. */
 export const OCCURRENCE_CONTENTS: ReadonlySet<string> = new Set([
   "appel", "appel_supreme", "invocation", "tuteur",
-  "selection", "selection_magique", "renfort_royal", "faveur",
+  "selection", "selection_magique", "renfort_royal", "faveur", "tresor",
 ]);
 
 /** Plafond dur des répétitions. Les garde-fous naturels (plateau plein, main

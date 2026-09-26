@@ -9,7 +9,7 @@ import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned, type Entitlements, type OwnershipContext } from "@/lib/game/collection";
 import { DECK_SIZE, CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "@/lib/game/constants";
 import { ABILITIES } from "@/lib/game/abilities";
-import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations } from "@/lib/game/deck-rules";
+import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations, estAjoutableAuDeck, objetsDansLeDeck } from "@/lib/game/deck-rules";
 import { FACTIONS, ALIGNMENTS, getFactionForRace } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
@@ -400,6 +400,9 @@ export default function DeckBuilder({
 
   const filteredCards = useMemo(() => {
     return cards.filter((card) => {
+      // Les objets ne se mettent pas dans un deck : on les trouve en jeu. Ils
+      // restent visibles dans la Collection, pas ici.
+      if (!estAjoutableAuDeck(card)) return false;
       if (formatPredicate && !formatPredicate(card)) return false;
       if (search && !card.name.toLowerCase().includes(search.toLowerCase()))
         return false;
@@ -508,6 +511,11 @@ export default function DeckBuilder({
     const alignmentConflict = alignmentSet.has("bon") && alignmentSet.has("maléfique");
     const violations: string[] = [];
     if (alignmentConflict) violations.push(t("alignment_incompatible"));
+    // Deck enregistré avant la règle « pas d'objets » : intact en base, mais
+    // bloqué tant que le joueur n'a pas retiré ses objets (toujours listés dans
+    // le deck, donc retirables).
+    const objets = objetsDansLeDeck(deckCards.values());
+    if (objets > 0) violations.push(t("no_items_in_deck_current", { count: objets }));
     if (mercenairesCount > maxMercenaires) violations.push(t("max_mercenaires_current", { max: maxMercenaires, current: mercenairesCount }));
     // Limite par capacité nommée (Vol exempté). Le plafond n'est plus unique :
     // certaines capacités ont une dérogation (cf. capabilityLimitFor), d'où le
@@ -597,6 +605,7 @@ export default function DeckBuilder({
   }, [slotAllocation]);
 
   function canAddCard(card: Card): string | null {
+    if (!estAjoutableAuDeck(card)) return t("no_items_in_deck");
     if (!isCardOwned(card, ownership)) return t("card_not_owned");
     if (totalCards >= DECK_SIZE) return t("deck_full");
     const existing = deckCards.get(card.id);

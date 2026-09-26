@@ -377,6 +377,10 @@
         "label": "王室選択 X",
         "desc": "コストXの限定カードを3枚公開する(デッキが30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。その中から1枚を残す。"
       },
+      "tresor": {
+        "label": "財宝 X",
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、1枚を手札に加える。"
+      },
       "lycanthropie": {
         "label": "獣人変化 X",
         "desc": "追跡を持つ{lycanthrope}に変身する。"
@@ -619,6 +623,10 @@
         "label": "王家の選択 X",
         "desc": "コストXの自分のリミテッド版カードを3枚公開する(30枚以上必要。それ未満の場合は{alignment}のコモンを3枚)。そのうち1枚を残す"
       },
+      "tresor": {
+        "label": "財宝 X",
+        "desc": "コストXの{alignment}または中立のコモンアイテムを3枚公開し、1枚を手札に加える"
+      },
       "relancer": {
         "label": "再詠唱 X",
         "desc": "最後に唱えたX個の呪文をランダムな対象で再使用する。"
@@ -854,7 +862,8 @@
         "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
         "faveur": "{filter}カードをランダムに1枚手札に加える（コスト{x}）",
         "selection_magique": "呪文{filter}を3枚公開し(コスト{x})、その中から1枚を手札に加える",
-        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える"
+        "renfort_royal": "コレクションから3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
+        "tresor": "アイテム{filter}（コスト{x}）を3枚公開し、1枚を手札に加える"
       },
       "emblem": {
         "badge": "紋章",
@@ -2059,6 +2068,7 @@
     "content_selection": "選択（3枚中1枚）",
     "content_faveur": "恩恵（ランダムな1枚 → 手札）",
     "content_renfort_royal": "王家の選抜（3枚中1枚）",
+    "content_tresor": "財宝（アイテム3枚から1枚）",
     "label_pool_membership": "プール — 所属",
     "label_pool_faction": "プール — 陣営",
     "label_pool_keyword": "プール — 保有キーワード",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "傭兵は最大{max}枚（現在{current}枚）",
     "max_capability_current": "「{label}」能力は最大{max}枚（現在{count}枚）",
     "card_not_owned": "未所持のカード",
+    "no_items_in_deck": "アイテムはデッキに入れられません：ゲーム中に入手します。",
+    "no_items_in_deck_current": "このデッキには{count}個のアイテムが含まれています：取り除いてください。アイテムはデッキに入れられなくなりました。",
     "deck_full": "デッキ満杯",
     "singleton_yes": "シングルトンデッキ ✓",
     "singleton_no": "シングルトンデッキ ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "検索...",
     "creatures": "クリーチャー",
     "spells": "スペル",
+    "items": "アイテム",
     "all_capabilities": "能力",
     "all_races": "種族",
     "all_clans": "クラン",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, other {ロック中のカード #枚}}",
     "locked_hint": "他の勢力のコモンカードは、フル解放パッケージにより入手可能になります。",
     "unplayable_badge": "{count}枚のカードが不足",
+    "items_badge": "アイテム{count}個を含む — 取り除いてください",
     "unplayable_reason": "このデッキには、もう所持していないファクション（{factions}）のカードが含まれています。デッキ自体はそのまま保持されます — 再びプレイするにはファクションを再入手してください。",
     "unplayable_rebuy": "ショップで入手する"
   },

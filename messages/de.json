@@ -377,6 +377,10 @@
         "label": "Königliche Auswahl X",
         "desc": "Deckt 3 deiner limitierten Editionen mit Kosten X auf (≥30 erforderlich; andernfalls 3 gewöhnliche Karten {alignment}); behalte eine davon."
       },
+      "tresor": {
+        "label": "Schatz X",
+        "desc": "Decke 3 gewöhnliche {alignment} oder neutrale Gegenstände mit Kosten X auf; nimm einen auf die Hand."
+      },
       "lycanthropie": {
         "label": "Lykanthropie X",
         "desc": "Verwandelt sich mit Jagd in {lycanthrope}."
@@ -619,6 +623,10 @@
         "label": "Königliche Auswahl X",
         "desc": "Deckt 3 eurer limitierten Editionen mit Kosten X auf (≥30 erforderlich; sonst 3 gewöhnliche Karten {alignment}); behaltet eine davon"
       },
+      "tresor": {
+        "label": "Schatz X",
+        "desc": "Decke 3 gewöhnliche {alignment} oder neutrale Gegenstände mit Kosten X auf; nimm einen auf die Hand"
+      },
       "relancer": {
         "label": "Wiederholen X",
         "desc": "Spielt die letzten X gewirkten Zauber mit zufälligen Zielen erneut."
@@ -854,7 +862,8 @@
         "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
         "faveur": "fügt eurer Hand eine zufällige Karte{filter} (Kosten {x}) hinzu",
         "selection_magique": "deckt 3 Zauber{filter} auf (Kosten {x}) und behält einen davon auf der Hand",
-        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand"
+        "renfort_royal": "deckt 3 Sammelkarten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
+        "tresor": "deckt 3 Gegenstände{filter} (Kosten {x}) auf und nimmt einen auf die Hand"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2059,6 +2068,7 @@
     "content_selection": "Auswahl (1 von 3)",
     "content_faveur": "Gunst (1 zufällige Karte → Hand)",
     "content_renfort_royal": "Königliche Auswahl (1 von 3)",
+    "content_tresor": "Schatz (1 Gegenstand aus 3)",
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
     "label_pool_faction": "POOL — FRAKTION",
     "label_pool_keyword": "POOL — SCHLÜSSELWORT",
@@ -2684,6 +2694,8 @@
     "max_mercenaires_current": "Max. {max} Söldner (aktuell {current})",
     "max_capability_current": "Max. {max} Fähigkeiten „{label}\" (aktuell {count})",
     "card_not_owned": "Karte nicht im Besitz",
+    "no_items_in_deck": "Gegenstände kommen nicht ins Deck: Man findet sie im Spiel.",
+    "no_items_in_deck_current": "Dieses Deck enthält {count, plural, one {# Gegenstand} other {# Gegenstände}}: Entferne sie, Gegenstände gehören nicht mehr ins Deck.",
     "deck_full": "Deck voll",
     "singleton_yes": "Singulär-Deck ✓",
     "singleton_no": "Singleton-Deck ✗",
@@ -2713,6 +2725,7 @@
     "search_placeholder": "Suchen...",
     "creatures": "Kreaturen",
     "spells": "Zauber",
+    "items": "Gegenstände",
     "all_capabilities": "Fähigkeiten",
     "all_races": "Rassen",
     "all_clans": "Clans",
@@ -2805,6 +2818,7 @@
     "locked_summary": "{count, plural, one {# gesperrte Karte} other {# gesperrte Karten}}",
     "locked_hint": "Die gewöhnlichen Karten anderer Fraktionen werden über das Komplett-Freischaltangebot zugänglich sein.",
     "unplayable_badge": "{count} fehlende Karte(n)",
+    "items_badge": "Enthält {count, plural, one {# Gegenstand} other {# Gegenstände}} — entfernen",
     "unplayable_reason": "Dieses Deck enthält Karten aus Fraktion(en), die du nicht mehr besitzt: {factions}. Es bleibt unverändert – hol dir die Fraktion zurück, um es wieder zu spielen.",
     "unplayable_rebuy": "Im Shop zurückholen"
   },
