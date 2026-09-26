@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
@@ -155,6 +156,8 @@ interface ForgeCard {
   keywordXValues?: Record<string, number>;
   /** SÉLECTION AU HASARD par libellé : l'aperçu peint « 1 à X » et « X? ». */
   keywordRandomX?: Record<string, boolean>;
+  /** Plancher A du « ? » par libellé : « A à X » / « A–X ». */
+  keywordMinX?: Record<string, number>;
   /** +Y des mots-clés en paire de stats (Gloire, Renforcement, …) — cf. CardVisual. */
   keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
@@ -1784,6 +1787,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // SÉLECTION AU HASARD par libellé forge : le X devient un plafond tiré à
   // chaque déclenchement. Persisté dans keyword_instances[i].randomX.
   const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
+  // Plancher A du « ? », par libellé (cf. KeywordInstance.minX).
+  const [keywordMinX, setKeywordMinX] = useState<Record<string, number>>({});
   // Spell-only: per-conferred-keyword grant scope (indexed by forge FR label).
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
@@ -1942,6 +1947,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     keywords: manualKeywords,
     keywordXValues,
     keywordRandomX,
+    keywordMinX,
     // Les mots-clés « paire de stats » gardent leur +Y hors de keywordXValues :
     // on le transmet à l'aperçu pour qu'il peigne « +2/+1 » et non le seul X.
     // La grille générique d'abord, les six états dédiés ensuite (ils font foi
@@ -2323,7 +2329,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
@@ -2514,7 +2520,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
-    setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({});
+    setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({});
     setKeywordGrantScope({});
     setSpellKeywords([]);
     setSpellEffectsData(null);
@@ -2656,6 +2662,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         isSpellCard,
         singulier: keywordSingulier,
         randomX: keywordRandomX,
+        minX: keywordMinX,
         extras: {
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
@@ -2778,7 +2785,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3626,16 +3633,25 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 const inerte = plafond < 2;
                                 const actif = kw.randomX === true && !inerte;
                                 return (
+                                  <>
                                   <label
                                     title={inerte ? tf('random_needs_ceiling') : tf('random_hint_selection', { max: plafond })}
                                     style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
                                   >
                                     <input
                                       type="checkbox" disabled={inerte} checked={actif}
-                                      onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined } : k))}
+                                      onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined, ...(e.target.checked ? {} : { minX: undefined }) } : k))}
                                     />
                                     ?
                                   </label>
+                                  {actif && (
+                                    <PlancherAleatoireInput
+                                      value={kw.minX} plafond={plafond}
+                                      title={tf('random_min_hint', { min: kw.minX ?? 1, max: plafond })}
+                                      onChange={v => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, minX: v } : k))}
+                                    />
+                                  )}
+                                  </>
                                 );
                               })()}
                               {def.params.includes("attack") && (
@@ -3863,6 +3879,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordSingulier(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordRandomX(prev => { const next = { ...prev }; delete next[id]; return next; });
+                                setKeywordMinX(prev => { const next = { ...prev }; delete next[id]; return next; });
                               }
                             }}
                               style={{
@@ -3898,6 +3915,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               const inerte = plafond < 2;
                               const actif = keywordRandomX[id] === true && !inerte;
                               return (
+                                <>
                                 <label
                                   title={inerte ? tf('random_needs_ceiling') : tf('random_hint_selection', { max: plafond })}
                                   style={{ marginLeft: 3, display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
@@ -3908,6 +3926,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   />
                                   ?
                                 </label>
+                                {actif && (
+                                  <PlancherAleatoireInput
+                                    value={keywordMinX[id]} plafond={plafond}
+                                    title={tf('random_min_hint', { min: keywordMinX[id] ?? 1, max: plafond })}
+                                    onChange={v => setKeywordMinX(prev => { const n = { ...prev }; if (v) n[id] = v; else delete n[id]; return n; })}
+                                  />
+                                )}
+                                </>
                               );
                             })()}
                             {/* SINGULIER — condition ajoutée au déclencheur, pour

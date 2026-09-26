@@ -142,8 +142,12 @@
         "desc": "Tant que cette unité est en jeu, vos sorts coûtent 1 mana de moins (minimum 1)."
       },
       "contresort": {
-        "label": "Contresort",
-        "desc": "Annule le prochain sort adverse."
+        "label": "Contresort X",
+        "desc": "Annule les X prochains sorts adverses."
+      },
+      "exclusion": {
+        "label": "Exclusion X",
+        "desc": "Annule les X prochaines invocations d'unités adverses."
       },
       "convocation": {
         "label": "Convocation X",
@@ -540,8 +544,12 @@
         "desc": "L'adversaire défausse X cartes aléatoires de sa main."
       },
       "contresort": {
-        "label": "Contresort",
-        "desc": "Annule le prochain sort adverse."
+        "label": "Contresort X",
+        "desc": "Annule les X prochains sorts adverses."
+      },
+      "exclusion": {
+        "label": "Exclusion X",
+        "desc": "Annule les X prochaines invocations d'unités adverses."
       },
       "convocation_simple": {
         "label": "Convocation",
@@ -792,7 +800,9 @@
         "poison": "empoisonne",
         "grant_keyword": "confère {ability}",
         "random_range": "1 à {max}",
+        "random_range_from": "{min} à {max}",
         "appel": "met en jeu la 1re unité de votre deck de coût ≤ {x}",
+        "appel_item": "met en jeu le 1er objet de votre deck de coût ≤ {x}",
         "ability_generic": "une capacité",
         "draw_cards_one": "piochez {x} carte",
         "draw_cards_many": "piochez {x} cartes",
@@ -885,7 +895,10 @@
         "race": " de race {v}",
         "faction": " de la faction {v}",
         "clan": " du clan {v}",
-        "keyword": " portant {v}"
+        "keyword": " portant {v}",
+        "type_creature": " de type unité",
+        "type_spell": " de type sort",
+        "type_item": " de type objet"
       },
       "self": {
         "deal_damage_one": "s'inflige {x} dégât",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — APPARTENANCE",
     "label_pool_faction": "POOL — FACTION",
     "label_pool_keyword": "POOL — MOT-CLÉ PORTÉ",
+    "label_pool_card_type": "POOL — TYPE DE CARTE",
+    "pool_type_creature": "Unités",
+    "pool_type_spell": "Sorts",
+    "pool_type_item": "Objets",
     "pool_any": "Indifférent",
     "pool_hint": "Filtres cumulatifs, en plus des règles de base (Commune, coût ≤ X, alignement de la carte).",
     "label_magnitude": "AMPLITUDE",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "une seule branche cochée : l'effet se résout normalement",
     "alternative_warn_triggers": "branches sur des déclencheurs différents : elles ne s'excluent pas",
     "random_hint_selection": "Chaque carte révélée tire SON PROPRE coût, entre 1 et {max}. Sans la case, les trois valent exactement {max}.",
+    "random_min_hint": "Coût minimum (A) : chaque coût est tiré entre {min} et {max}.",
     "random_hint_faveur": "La carte offerte tire son coût entre 1 et {max}. Sans la case, elle vaut exactement {max}.",
     "content_appel": "Appel depuis le deck",
     "content_appel_supreme": "Appel Suprême (deck → main, la plus chère)",

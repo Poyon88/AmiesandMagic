@@ -142,8 +142,12 @@
         "desc": "Finché questa unità è in gioco, le tue magie costano 1 mana in meno (minimo 1)."
       },
       "contresort": {
-        "label": "Contromalia",
-        "desc": "Annulla il prossimo incantesimo avversario."
+        "label": "Contromalia X",
+        "desc": "Annulla i prossimi X incantesimi avversari."
+      },
+      "exclusion": {
+        "label": "Esclusione X",
+        "desc": "Annulla le prossime X evocazioni di unità avversarie."
       },
       "convocation": {
         "label": "Convocazione X",
@@ -540,8 +544,12 @@
         "desc": "L'avversario scarta X carte casuali dalla sua mano."
       },
       "contresort": {
-        "label": "Controincantesimo",
-        "desc": "Annulla il prossimo incantesimo avversario."
+        "label": "Contromalia X",
+        "desc": "Annulla i prossimi X incantesimi avversari."
+      },
+      "exclusion": {
+        "label": "Esclusione X",
+        "desc": "Annulla le prossime X evocazioni di unità avversarie."
       },
       "convocation_simple": {
         "label": "Convocazione",
@@ -792,7 +800,9 @@
         "poison": "avvelena",
         "grant_keyword": "conferisce {ability}",
         "random_range": "Da 1 a {max}",
+        "random_range_from": "Da {min} a {max}",
         "appel": "mette in gioco la prima unità del vostro mazzo di costo ≤ {x}",
+        "appel_item": "mette in gioco il primo oggetto del tuo mazzo di costo ≤ {x}",
         "ability_generic": "un'abilità",
         "draw_cards_one": "pesca {x} carta",
         "draw_cards_many": "pesca {x} carte",
@@ -885,7 +895,10 @@
         "race": " di razza {v}",
         "faction": " della fazione {v}",
         "clan": " del clan {v}",
-        "keyword": " con {v}"
+        "keyword": " con {v}",
+        "type_creature": " di tipo unità",
+        "type_spell": " di tipo incantesimo",
+        "type_item": " di tipo oggetto"
       },
       "self": {
         "deal_damage_one": "subisce {x} danno",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — APPARTENENZA",
     "label_pool_faction": "POOL — FAZIONE",
     "label_pool_keyword": "POOL — PAROLA CHIAVE",
+    "label_pool_card_type": "POOL — TIPO DI CARTA",
+    "pool_type_creature": "Unità",
+    "pool_type_spell": "Incantesimi",
+    "pool_type_item": "Oggetti",
     "pool_any": "Indifferente",
     "pool_hint": "Filtri cumulativi, in aggiunta alle regole base (Comune, costo ≤ X, allineamento della carta).",
     "label_magnitude": "AMPIEZZA",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "un solo ramo selezionato: l'effetto si risolve normalmente",
     "alternative_warn_triggers": "rami su inneschi diversi: non si escludono a vicenda",
     "random_hint_selection": "Ogni carta rivelata estrae IL PROPRIO costo, fra 1 e {max}. Senza la casella, tutte e tre costano esattamente {max}.",
+    "random_min_hint": "Costo minimo (A): ogni costo viene estratto tra {min} e {max}.",
     "random_hint_faveur": "La carta offerta ha un costo compreso tra 1 e {max}. Senza la casella, vale esattamente {max}.",
     "content_appel": "Richiamo dal mazzo",
     "content_appel_supreme": "Richiamo Supremo (mazzo → mano, la più costosa)",

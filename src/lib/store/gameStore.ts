@@ -197,7 +197,7 @@ function auCimetiereAvecSecondeVie(player: PlayerState, instanceId: string | nul
  *  par le moteur avec son pseudo-hasard semé sur l'état. Le client passe donc
  *  X et le drapeau tels quels, et voit exactement la même offre que le moteur —
  *  ce qui n'était pas garanti quand il tirait son plafond au `Math.random`. */
-function amplitudeSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): { x: number; randomX: boolean } {
+function amplitudeSelectionEntree(card: Card, id: "selection" | "selection_magique" | "renfort_royal"): { x: number; randomX: boolean; minX: number } {
   return selectionAmplitudeOnPlay(card, id);
 }
 
@@ -231,7 +231,7 @@ export function indexReelDuPicker(
 function pendingTriggerOverlay(
   gs: GameState | null,
   localPlayerId: string | null,
-): { targetingMode: "pending_trigger" | "selection" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; pendingTriggerNeeded: number; pendingTriggerPicked: string[]; selectionCards?: Card[]; alternativeOptions: AlternativeOption[] } {
+): { targetingMode: "pending_trigger" | "selection" | "divination" | "none"; validTargets: string[]; pendingTriggerId: string | null; pendingTriggerPrompt: string | null; pendingTriggerNeeded: number; pendingTriggerPicked: string[]; selectionCards?: Card[]; divinationCards?: CardInstance[]; deckPickerOrder?: null; alternativeOptions: AlternativeOption[] } {
   const none = { targetingMode: "none" as const, validTargets: [], pendingTriggerId: null, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], alternativeOptions: [] };
   const t = gs?.pendingTriggers?.[0];
   if (!t || !localPlayerId || t.controllerId !== localPlayerId) return none;
@@ -245,6 +245,15 @@ function pendingTriggerOverlay(
       pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [],
       alternativeOptions: t.alternativeOptions,
     };
+  }
+  // Variante « Traque du destin » de fin/début de tour : même modale qu'à
+  // l'invocation, sur les X cartes du dessus du deck du contrôleur (le deck ne
+  // bouge pas tant que le choix est en attente).
+  if (t.deckPick) {
+    const controller = gs!.players.find(p => p.id === t.controllerId);
+    const cartes = controller ? controller.deck.slice(0, Math.min(t.x ?? 1, controller.deck.length)) : [];
+    if (cartes.length === 0) return none;
+    return { targetingMode: "divination" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], divinationCards: cartes, deckPickerOrder: null, alternativeOptions: [] };
   }
   // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
   // cartes offertes sont portées par le trigger sous forme d'ids).
@@ -1508,7 +1517,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     const player = gs.players[gs.currentPlayerIndex];
     const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell" || !cardInst.card.spell_keywords) return false;
-    const tryOpen = (kwId: string, getter: (x: number, randomX: boolean) => Card[]): boolean => {
+    const tryOpen = (kwId: string, getter: (x: number, randomX: boolean, minX?: number) => Card[]): boolean => {
       const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
       if (!found) return false;
       // Coût de l'offre = X + bonus d'amplification (Chant, tempo), comme à la
@@ -1517,7 +1526,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const x = (found.amount ?? 0)
         + chantBonusForSpell(gs, cardInst.card)
         + tempoBonusForCard(gs, cardInst.card);
-      const choices = getter(x, found.randomX === true);
+      const choices = getter(x, found.randomX === true, found.minX);
       if (choices.length === 0) return false;
       set({
         targetingMode: "selection",
@@ -1530,9 +1539,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       return true;
     };
     return (
-      tryOpen("selection", (x, alea) => getSelectionCards(gs, x, cardInst.card, undefined, alea)) ||
-      tryOpen("selection_magique", (x, alea) => getMagicalSelectionCards(gs, x, cardInst.card, undefined, undefined, alea)) ||
-      tryOpen("renfort_royal", (x, alea) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea))
+      tryOpen("selection", (x, alea, min) => getSelectionCards(gs, x, cardInst.card, undefined, alea, undefined, min)) ||
+      tryOpen("selection_magique", (x, alea, min) => getMagicalSelectionCards(gs, x, cardInst.card, undefined, undefined, alea, min)) ||
+      tryOpen("renfort_royal", (x, alea, min) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea, min))
     );
   };
 
@@ -1684,10 +1693,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (deja[kw] != null) continue;
       const amp = amplitudeSelectionEntree(card, kw);
       const choices = kw === "selection"
-        ? getSelectionCards(gs, amp.x, card, undefined, amp.randomX)
+        ? getSelectionCards(gs, amp.x, card, undefined, amp.randomX, undefined, amp.minX)
         : kw === "renfort_royal"
-          ? getRenfortRoyalCards(gs, amp.x, card, undefined, undefined, amp.randomX)
-          : getMagicalSelectionCards(gs, amp.x, card, undefined, undefined, amp.randomX);
+          ? getRenfortRoyalCards(gs, amp.x, card, undefined, undefined, amp.randomX, amp.minX)
+          : getMagicalSelectionCards(gs, amp.x, card, undefined, undefined, amp.randomX, amp.minX);
       // Rien à proposer (pool vide) : on passe à la suivante plutôt que de
       // bloquer la pose sur un sélecteur vide.
       if (choices.length === 0) continue;
@@ -2237,13 +2246,38 @@ export const useGameStore = create<GameStore>((set, get) => {
     if (spellEvent && action.type === "play_card") {
       const opponentIdx = gameState.currentPlayerIndex === 0 ? 1 : 0;
       const oldOpponent = gameState.players[opponentIdx];
-      const hadCounter = oldOpponent.board.some(c => c.contresortActive);
       const newOpponent = newState.players[opponentIdx];
-      const stillHasCounter = newOpponent.board.some(c => c.contresortActive);
+      // Contresort X : une garde peut garder des charges après avoir contré —
+      // on compare donc le TOTAL des charges, pas la simple présence d'une garde.
+      const chargesUnites = (p: typeof oldOpponent) =>
+        p.board.reduce((n, c) => n + (c.contresortActive ? Math.max(1, c.contresortCharges ?? 1) : 0), 0);
       // Contre armé par un SORT adverse : consommé ⇒ le compteur baisse.
-      const counterSpent = (oldOpponent.contresort ?? 0) > (newOpponent.contresort ?? 0);
-      if ((hadCounter && !stillHasCounter) || counterSpent) {
+      const counterSpent = (oldOpponent.contresort ?? 0) > (newOpponent.contresort ?? 0)
+        || chargesUnites(oldOpponent) > chargesUnites(newOpponent);
+      if (counterSpent) {
         spellEvent = { ...spellEvent, countered: true, effectText: "Contré !" };
+      }
+    }
+
+    // EXCLUSION : une unité jouée puis annulée ne fait qu'un aller-retour
+    // main → cimetière, que rien d'autre n'animerait. On la montre comme un sort
+    // contré, avec l'overlay existant.
+    if (!spellEvent && action.type === "play_card") {
+      const opponentIdx = gameState.currentPlayerIndex === 0 ? 1 : 0;
+      const oldOpponent = gameState.players[opponentIdx];
+      const newOpponent = newState.players[opponentIdx];
+      const chargesExclusion = (p: typeof oldOpponent) =>
+        (p.exclusion ?? 0) + p.board.reduce((n, c) => n + Math.max(0, c.exclusionCharges ?? 0), 0);
+      const jouee = carteJouable(gameState.players[gameState.currentPlayerIndex], action.cardInstanceId);
+      if (jouee && jouee.card.card_type === "creature" && chargesExclusion(oldOpponent) > chargesExclusion(newOpponent)) {
+        spellEvent = {
+          spellName: jouee.card.name,
+          effectText: "Exclue !",
+          timestamp: Date.now(),
+          card: jouee.card,
+          targetIds: [],
+          countered: true,
+        };
       }
     }
 
@@ -4758,6 +4792,15 @@ export const useGameStore = create<GameStore>((set, get) => {
         graveyardTargetInstanceId: targetId,
         boardPosition: pendingBoardPosition ?? undefined,
       });
+    } else if (targetingMode === "divination" && get().pendingTriggerId
+      && get().gameState?.pendingTriggers?.find(t => t.id === get().pendingTriggerId)?.deckPick) {
+      // Traque du destin de fin/début de tour : la position cliquée est l'index
+      // dans la tranche du dessus (pas de permutation pour ce picker).
+      return get().dispatchAction({
+        type: "resolve_pending_trigger",
+        triggerId: get().pendingTriggerId!,
+        deckChoiceIndex: parseInt(targetId) || 0,
+      });
     } else if (targetingMode === "divination" && get().pendingConqueteSelection) {
       // Modale de CONQUÊTE : la position cliquée désigne une instance du deck
       // ADVERSE dans l'offre ; le moteur recalcule l'offre et re-valide le
@@ -5032,7 +5075,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // OBLIGATOIRE : on ne le laisse pas annuler (clic fond / clic droit) — on
     // ré-affiche le sélecteur.
     const overlay = pendingTriggerOverlay(get().gameState, get().localPlayerId);
-    if (overlay.targetingMode === "pending_trigger") {
+    // Traque du destin en attente : obligatoire aussi, et annuler reviendrait à
+    // regarder X cartes du deck gratuitement.
+    if (overlay.targetingMode === "pending_trigger" || (overlay.targetingMode === "divination" && overlay.pendingTriggerId)) {
       set(overlay);
       return;
     }

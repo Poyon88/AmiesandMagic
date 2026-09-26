@@ -156,7 +156,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Malédiction": ONBOARD_MODES,
   "Mimique": ONBOARD_MODES,
   "Métamorphose": ONBOARD_MODES,
-  "Contresort": ONBOARD_MODES,
+  "Contresort X": ONBOARD_MODES,
+  "Exclusion X": ONBOARD_MODES,
   "Profanation X": ONBOARD_MODES,
   "Héritage du cimetière": ONBOARD_MODES,
 };
@@ -249,12 +250,12 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.05, def: 0.85 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Traque": 0.50, "Esquive": 0.50, "Précision": 0.45, "Divination": 0.45, "Augure": 0.40, "Canalisation": 0.40, "Invisible": 0.40, "Contresort": 0.35, "Première Frappe": 0.35, "Loyauté": 0.35, "Bénédiction": 0.30, "Vol": 0.20 },
+    likelyKeywords: { "Traque": 0.50, "Esquive": 0.50, "Précision": 0.45, "Divination": 0.45, "Augure": 0.40, "Canalisation": 0.40, "Invisible": 0.40, "Contresort X": 0.35, "Première Frappe": 0.35, "Loyauté": 0.35, "Bénédiction": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Armure", "Gloire +X/+Y", "Nécrophagie", "Pillage X", "Carnage X"],
     description: "L'alliance du bon peuple des bois : elfes furtifs, fées mages, hobbits rusés et leurs colosses Hommes-Arbres.",
     raceProfiles: {
       "Aigles Géants": { statWeights: { atk: 1.20, def: 0.70 }, likelyKeywords: { "Vol": 0.90, "Traque": 0.60, "Première Frappe": 0.50, "Augure": 0.40 } },
-      "Fées": { statWeights: { atk: 0.75, def: 0.65 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.70, "Esquive": 0.65, "Augure": 0.55, "Divination": 0.50, "Canalisation": 0.60, "Drain de vie": 0.45, "Contresort": 0.40, "Héritage X": 0.35 } },
+      "Fées": { statWeights: { atk: 0.75, def: 0.65 }, likelyKeywords: { "Vol": 0.85, "Invisible": 0.70, "Esquive": 0.65, "Augure": 0.55, "Divination": 0.50, "Canalisation": 0.60, "Drain de vie": 0.45, "Contresort X": 0.40, "Héritage X": 0.35 } },
       "Hommes-Arbres": { statWeights: { atk: 0.90, def: 1.50 }, likelyKeywords: { "Provocation": 0.60, "Ancré": 0.55, "Régénération X": 0.40, "Riposte X": 0.35 } },
       // Farfadets : la chance et le tour joué — il se dérobe plus qu'il ne
       // frappe, d'où une part d'attaque sous les 50 %.
@@ -281,7 +282,7 @@ export const FACTIONS: Record<string, {
     },
     clanProfiles: {
       "Les Sylvains": { statWeights: { atk: 1.15, def: 0.80 }, likelyKeywords: { "Traque": 0.55, "Esquive": 0.55, "Invisible": 0.45, "Première Frappe": 0.45, "Précision": 0.45, "Combustion": 0.30 } },
-      "Les Hauts-Elfes": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Canalisation": 0.55, "Divination": 0.50, "Contresort": 0.45, "Augure": 0.45, "Prescience X": 0.40, "Précision": 0.35, "Suprématie": 0.35 } },
+      "Les Hauts-Elfes": { statWeights: { atk: 0.95, def: 0.90 }, likelyKeywords: { "Canalisation": 0.55, "Divination": 0.50, "Contresort X": 0.45, "Augure": 0.45, "Prescience X": 0.40, "Précision": 0.35, "Suprématie": 0.35 } },
       // Le clan passe de UNE à QUATRE races et CÈDE ses `statWeights`. Le
       // critère des Ghoules est satisfait sans rien avoir à inventer : les Fées
       // déclarent DÉJÀ leur propre gabarit (0.75/0.65), jusqu'ici mort-né dans
@@ -291,7 +292,7 @@ export const FACTIONS: Record<string, {
       //
       // Le FAUNE est la raison du don : un satyre à sabots n'est pas un lutin,
       // et 0.75/0.75 en aurait fait un feu follet de plus.
-      "La Forêt d'Émeraude": { likelyKeywords: { "Vol": 0.85, "Invisible": 0.60, "Canalisation": 0.55, "Divination": 0.50, "Augure": 0.50, "Drain de vie": 0.40, "Contresort": 0.40 } },
+      "La Forêt d'Émeraude": { likelyKeywords: { "Vol": 0.85, "Invisible": 0.60, "Canalisation": 0.55, "Divination": 0.50, "Augure": 0.50, "Drain de vie": 0.40, "Contresort X": 0.40 } },
       "La Combe Verte": { statWeights: { atk: 0.85, def: 1.05 }, likelyKeywords: { "Esquive": 0.55, "Loyauté": 0.55, "Bravoure": 0.45, "Invisible": 0.40, "Bénédiction": 0.40, "Régénération X": 0.35, "Ancré": 0.35, "Provocation": 0.35, "Résistance X": 0.35 } },
     },
     clanRaceBands: {
@@ -366,7 +367,7 @@ export const FACTIONS: Record<string, {
       // donc ses propres poids ; les mots-clés du clan, eux, s'appliquent aux
       // deux (c'est là que vit l'identité commune du clan).
       "Clan des Premiers Géants": { likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur": 0.35 } },
-      "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort": 0.35, "Riposte X": 0.30 } },
+      "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort X": 0.35, "Riposte X": 0.30 } },
     },
   },
   EmpireDuMilieu: {
@@ -396,7 +397,7 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 0.95, def: 1.10 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Tactique X": 0.50, "Divination": 0.45, "Contresort": 0.40, "Provocation": 0.40, "Première Frappe": 0.40, "Augure": 0.35, "Convocation X": 0.35, "Célérité": 0.30, "Traque": 0.30 },
+    likelyKeywords: { "Tactique X": 0.50, "Divination": 0.45, "Contresort X": 0.40, "Provocation": 0.40, "Première Frappe": 0.40, "Augure": 0.35, "Convocation X": 0.35, "Célérité": 0.30, "Traque": 0.30 },
     forbiddenKeywords: ["Poison", "Corruption", "Maléfice", "Pacte de sang", "Nécrophagie"],
     description: "Stratégie et contrôle : discipline, formations, mysticisme, furtivité, les gardiens naga des temples, les yōkai — tengu et oni — des montagnes et le qilin, présage des règnes justes.",
     raceProfiles: {
@@ -472,13 +473,13 @@ export const FACTIONS: Record<string, {
       "Qilins": { likelyKeywords: { "Bénédiction": 0.60, "Pureté +X/+Y": 0.55, "Bouclier": 0.50, "Présage": 0.45, "Transcendance": 0.40, "Souffle de feu X": 0.35, "Afflux X": 0.30 } },
       "Tengu": { likelyKeywords: { "Vol": 0.85, "Tactique X": 0.55, "Riposte X": 0.45, "Tempête X": 0.40, "Permutation": 0.40, "Mimique": 0.35 } },
       "Oni": { likelyKeywords: { "Terreur": 0.60, "Fureur": 0.55, "Piétinement": 0.50, "Gloire +X/+Y": 0.45, "Persécution X": 0.40, "Régénération X": 0.35, "Carnage X": 0.30 } },
-      "Nagas": { likelyKeywords: { "Contresort": 0.55, "Régénération X": 0.55, "Esquive": 0.50, "Divination": 0.50, "Canalisation": 0.45, "Augure": 0.40, "Liaison de vie": 0.35, "Prescience X": 0.30 } },
+      "Nagas": { likelyKeywords: { "Contresort X": 0.55, "Régénération X": 0.55, "Esquive": 0.50, "Divination": 0.50, "Canalisation": 0.45, "Augure": 0.40, "Liaison de vie": 0.35, "Prescience X": 0.30 } },
     },
     clanProfiles: {
       "Les Hordes des Steppes": { statWeights: { atk: 1.15, def: 0.90 }, likelyKeywords: { "Célérité": 0.55, "Traque": 0.55, "Raid": 0.50, "Première Frappe": 0.45, "Persécution X": 0.40, "Pillage X": 0.35 } },
       // GARDE ses statWeights alors qu'il héberge deux races (Humains, Qilins)
       // — voir le profil des Qilins plus haut.
-      "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort": 0.45, "Provocation": 0.45, "Commandement X": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
+      "L'Empire de Jade": { statWeights: { atk: 0.90, def: 1.20 }, likelyKeywords: { "Tactique X": 0.55, "Divination": 0.50, "Contresort X": 0.45, "Provocation": 0.45, "Commandement X": 0.40, "Convocation X": 0.40, "Augure": 0.35 } },
       // GARDE ses statWeights alors qu'il héberge trois races (Humains, Tengu,
       // Oni) — voir le profil des deux yōkai plus haut.
       "Les Lames de l'Ombre": { statWeights: { atk: 1.20, def: 0.80 }, likelyKeywords: { "Ombre": 0.60, "Invisible": 0.55, "Traque": 0.55, "Esquive": 0.50, "Célérité": 0.45, "Première Frappe": 0.45, "Précision": 0.40, "Remontée": 0.35 } },
@@ -522,7 +523,7 @@ export const FACTIONS: Record<string, {
     raceProfiles: {
       "Esprits": {
         statWeights: { atk: 0.85, def: 0.95 },
-        likelyKeywords: { "Invisible": 0.55, "Ombre": 0.50, "Esquive": 0.50, "Vol": 0.45, "Transcendance": 0.30, "Contresort": 0.30 },
+        likelyKeywords: { "Invisible": 0.55, "Ombre": 0.50, "Esquive": 0.50, "Vol": 0.45, "Transcendance": 0.30, "Contresort X": 0.30 },
       },
     },
     clanProfiles: {
@@ -591,7 +592,7 @@ export const FACTIONS: Record<string, {
       //    (Terreur). Pas de Vol : ailée dans le mythe, mais assise sur son
       //    rocher — le contrepoint immobile du pégase.
       "Pégases": { likelyKeywords: { "Vol": 0.90, "Loyauté": 0.60, "Raid": 0.55, "Bénédiction": 0.50, "Inspiration X": 0.40, "Piétinement": 0.35 } },
-      "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort": 0.45, "Provocation": 0.40, "Terreur": 0.40, "Ancré": 0.35 } },
+      "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort X": 0.45, "Provocation": 0.40, "Terreur": 0.40, "Ancré": 0.35 } },
     },
     clanProfiles: {
       // Conquête X en tête : signature du clan (compteur dépensé en découvertes
@@ -627,7 +628,7 @@ export const FACTIONS: Record<string, {
     statWeights: { atk: 1.20, def: 1.00 },
     guaranteedKeywords: [],
     likelyKeywords: { "Traque": 0.65, "Gloire +X/+Y": 0.55, "Fureur": 0.55, "Première Frappe": 0.45, "Régénération X": 0.40, "Bravoure": 0.40, "Combustion": 0.35, "Esquive": 0.35, "Persécution X": 0.30, "Augure": 0.30, "Vol": 0.20 },
-    forbiddenKeywords: ["Armure", "Commandement X", "Invisible", "Ancré", "Canalisation", "Contresort"],
+    forbiddenKeywords: ["Armure", "Commandement X", "Invisible", "Ancré", "Canalisation", "Contresort X"],
     description: "Sauvages et féroces : attaquent vite, régénèrent, entrent en rage.",
     // Première (et seule) race de la Meute à porter un profil : la faction et
     // ses clans suffisaient jusqu'ici aux hommes-bêtes, qui partagent un corps.
@@ -703,7 +704,7 @@ export const FACTIONS: Record<string, {
       "Ondins": { likelyKeywords: { "Provocation": 0.55, "Première Frappe": 0.50, "Armure": 0.45, "Riposte X": 0.45, "Solidarité X": 0.40, "Précision": 0.35 } },
       // Sirènes : le chant qui commande. Canalisation monte à 0.55 pour DÉPASSER
       // l'ombrelle (0.45), sans quoi la ligne ne dirait rien.
-      "Sirènes": { likelyKeywords: { "Domination": 0.60, "Canalisation": 0.55, "Malédiction": 0.50, "Contresort": 0.45, "Augure": 0.40, "Ombre": 0.30 } },
+      "Sirènes": { likelyKeywords: { "Domination": 0.60, "Canalisation": 0.55, "Malédiction": 0.50, "Contresort X": 0.45, "Augure": 0.40, "Ombre": 0.30 } },
       // Léviathans : le colosse des abysses. Fureur (0.40) et Carnage X (0.30)
       // doivent eux aussi dépasser l'ombrelle.
       "Léviathans": { likelyKeywords: { "Piétinement": 0.60, "Terreur": 0.55, "Dévoration": 0.50, "Fureur": 0.50, "Carnage X": 0.40, "Indestructible": 0.35 } },
@@ -712,7 +713,7 @@ export const FACTIONS: Record<string, {
       // Les trois races partagent son corps 0.85/1.50 et se séparent aux pouvoirs.
       // Cristallins : le conduit et le miroir — Canalisation monte à 0.55 et
       // Permutation à 0.40 pour DÉPASSER l'ombrelle (0.45 et 0.30).
-      "Cristallins": { likelyKeywords: { "Canalisation": 0.55, "Contresort": 0.50, "Précision": 0.45, "Permutation": 0.40, "Première Frappe": 0.35, "Bénédiction": 0.30 } },
+      "Cristallins": { likelyKeywords: { "Canalisation": 0.55, "Contresort X": 0.50, "Précision": 0.45, "Permutation": 0.40, "Première Frappe": 0.35, "Bénédiction": 0.30 } },
       // Troglodytes : ils vivent SOUS le monde — Creuser X lit le dessous du deck,
       // ce qu'aucune autre race du jeu ne fait.
       "Troglodytes": { likelyKeywords: { "Creuser X": 0.60, "Traque": 0.55, "Ombre": 0.50, "Invisible": 0.45, "Instinct de meute X": 0.40, "Célérité": 0.30 } },
@@ -735,7 +736,7 @@ export const FACTIONS: Record<string, {
       // Sylphes : l'esprit de l'air, insaisissable et farceur — il se dérobe et
       // il échange. Permutation (0.30), Mimique (0.30) et Métamorphose (0.35)
       // doivent dépasser l'ombrelle.
-      "Sylphes": { likelyKeywords: { "Invisible": 0.55, "Permutation": 0.50, "Mimique": 0.45, "Métamorphose": 0.40, "Contresort": 0.35, "Précision": 0.30 } },
+      "Sylphes": { likelyKeywords: { "Invisible": 0.55, "Permutation": 0.50, "Mimique": 0.45, "Métamorphose": 0.40, "Contresort X": 0.35, "Précision": 0.30 } },
       // Néphélides : les nymphes des nuées — l'orage, pas la brise. Canalisation
       // (0.45) et Régénération (0.35) doivent dépasser l'ombrelle.
       "Néphélides": { likelyKeywords: { "Paralysie": 0.55, "Canalisation": 0.55, "Douleur X": 0.50, "Régénération X": 0.40, "Malédiction": 0.40, "Bénédiction": 0.35 } },

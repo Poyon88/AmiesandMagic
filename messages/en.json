@@ -142,8 +142,12 @@
         "desc": "While this unit is in play, your spells cost 1 less mana (minimum 1)."
       },
       "contresort": {
-        "label": "Counterspell",
-        "desc": "Cancels the next enemy spell."
+        "label": "Counterspell X",
+        "desc": "Cancels the next X enemy spells."
+      },
+      "exclusion": {
+        "label": "Exclusion X",
+        "desc": "Cancels the next X enemy unit summons."
       },
       "convocation": {
         "label": "Summon X",
@@ -540,8 +544,12 @@
         "desc": "The opponent discards X random cards from their hand."
       },
       "contresort": {
-        "label": "Counterspell",
-        "desc": "Cancels the next enemy spell."
+        "label": "Counterspell X",
+        "desc": "Cancels the next X enemy spells."
+      },
+      "exclusion": {
+        "label": "Exclusion X",
+        "desc": "Cancels the next X enemy unit summons."
       },
       "convocation_simple": {
         "label": "Summon",
@@ -792,7 +800,9 @@
         "poison": "poisons",
         "grant_keyword": "grants {ability}",
         "random_range": "1 to {max}",
+        "random_range_from": "{min} to {max}",
         "appel": "puts into play the 1st unit in your deck with cost ≤ {x}",
+        "appel_item": "puts into play the 1st item in your deck with cost ≤ {x}",
         "ability_generic": "an ability",
         "draw_cards_one": "draw {x} card",
         "draw_cards_many": "draw {x} cards",
@@ -885,7 +895,10 @@
         "race": " of race {v}",
         "faction": " of faction {v}",
         "clan": " of clan {v}",
-        "keyword": " bearing {v}"
+        "keyword": " bearing {v}",
+        "type_creature": " of type unit",
+        "type_spell": " of type spell",
+        "type_item": " of type item"
       },
       "self": {
         "deal_damage_one": "deals {x} damage to itself",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — MEMBERSHIP",
     "label_pool_faction": "POOL — FACTION",
     "label_pool_keyword": "POOL — KEYWORD",
+    "label_pool_card_type": "POOL — CARD TYPE",
+    "pool_type_creature": "Units",
+    "pool_type_spell": "Spells",
+    "pool_type_item": "Items",
     "pool_any": "Any",
     "pool_hint": "Cumulative filters, in addition to the base rules (Common, cost ≤ X, card alignment).",
     "label_magnitude": "MAGNITUDE",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "only one branch checked: the effect resolves normally",
     "alternative_warn_triggers": "branches on different triggers: they do not exclude each other",
     "random_hint_selection": "Each revealed card rolls ITS OWN cost, between 1 and {max}. Unchecked, all three cost exactly {max}.",
+    "random_min_hint": "Minimum cost (A): each cost is drawn between {min} and {max}.",
     "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",

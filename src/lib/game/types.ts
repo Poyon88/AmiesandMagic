@@ -21,7 +21,7 @@ export type Keyword =
   | "rappel" | "combustion"
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  | "canalisation" | "contresort" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
+  | "canalisation" | "contresort" | "exclusion" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution" | "pietinement"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
@@ -268,9 +268,12 @@ export type SpellKeywordId =
   // Seconde vie côté SORT : le sort se relance depuis le cimetière pour X mana,
   // puis perd la capacité. Marqueur inerte à la résolution (aucun `case`).
   | "seconde_vie"
-  // Contresort côté SORT : arme un contre chez le lanceur (PlayerState.contresort),
-  // consommé par le prochain sort adverse.
+  // Contresort X côté SORT : arme X contres chez le lanceur
+  // (PlayerState.contresort), consommés un à un par les sorts adverses.
   | "contresort"
+  // Exclusion X côté SORT : même principe, contre les INVOCATIONS d'unités
+  // adverses (PlayerState.exclusion).
+  | "exclusion"
   // Divination côté SORT : même modale de deck que Creuser/Présage
   // (onPlayDeckPickers lit spell_keywords) ; l'index choisi voyage dans
   // targetMap["divination_0"].
@@ -335,6 +338,9 @@ export interface KeywordInstance {
    *  à chaque déclenchement. Même contrat que `ComposedEffect.magnitude.randomX`.
    *  Stocké dans la colonne JSONB existante — aucune migration. */
   randomX?: boolean;
+  /** Plancher A du « ? » : le coût se tire entre A et X au lieu de 1 et X.
+   *  Sans effet hors `randomX`, borné à [1, X] (cf. plancherAleatoire). */
+  minX?: number;
   /** DÉCHAINEMENT X/Y : le coût Y devient un PLAFOND — chaque sort lancé est
    *  tiré parmi ceux de coût 1 à Y (et non exactement Y). */
   randomY?: boolean;
@@ -358,6 +364,8 @@ export interface SpellKeywordInstance {
   singulier?: boolean;
   /** SÉLECTION au hasard : même contrat que `KeywordInstance.randomX`. */
   randomX?: boolean;
+  /** Plancher A du « ? » : même contrat que `KeywordInstance.minX`. */
+  minX?: number;
   /** DÉCHAINEMENT : même contrat que `KeywordInstance.randomY`. */
   randomY?: boolean;
 }
@@ -502,7 +510,7 @@ export interface Capability {
    *  +X/+Y — cf. XY_ABILITY_IDS, calqué sur KeywordInstance.x/y) ;
    *  `attack`/`health` = paire +X/+Y (renforcement, renforcement_multiple,
    *  invocation). */
-  params?: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean };
+  params?: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean; minX?: number };
   /** Race/clan ciblé (renforcement_multiple, entraide, race du token). */
   race?: string;
   clan?: string;
@@ -735,7 +743,10 @@ export interface ComposedEffect {
    *  X un PLAFOND de coût (créature au hasard parmi celles de coût 1 à X),
    *  comme le `randomY` de Déchainement. Un tirage de coût suivi d'un coût
    *  EXACT rendait l'effet muet dès qu'un palier n'a pas de candidat. */
-  magnitude?: { x?: number; y?: number; randomX?: boolean; randomY?: boolean };
+  magnitude?: { x?: number; y?: number; randomX?: boolean; randomY?: boolean;
+    /** Plancher A d'un coût « au hasard » (Sélections, Faveur, Invocation) :
+     *  coût tiré entre A et X. Sans effet hors `randomX`. */
+    minX?: number };
   /** Spécification de cibles. Absent ⇒ effet sur le contrôleur (pioche, mana…). */
   target?: TargetSpec;
   /** NOMBRE D'OCCURRENCES : combien de fois le contenu se REJOUE, d'affilée.
@@ -808,6 +819,9 @@ export interface ComposedPoolFilter {
   clan?: string;
   /** Id moteur d'une ability : ne garde que les cartes qui la portent. */
   keywordId?: string;
+  /** Type de carte : ne garde que les unités, les sorts ou les objets.
+   *  Proposé par l'éditeur pour les Sélections (1 parmi 3, Royale) et Faveur. */
+  cardType?: CardType;
 }
 
 // --- Composable effects ---
@@ -1162,8 +1176,15 @@ export interface CardInstance {
   ombreRevealed: boolean;
   // Corruption: IDs of units stolen (returned at end of turn)
   corruptionStolenIds: string[];
-  // Contresort: active counter-spell shield on the player
+  // Contresort X : garde de l'UNITÉ. `contresortActive` dit si elle est armée,
+  // `contresortCharges` combien de sorts adverses elle annule encore. Charges
+  // absentes sur une garde armée ⇒ 1 (instances d'avant Contresort X). Ne
+  // s'écrivent que par armerGarde / consommerGarde (engine.ts).
   contresortActive: boolean;
+  contresortCharges?: number;
+  // Exclusion X : garde de l'UNITÉ contre les invocations d'unités adverses —
+  // nombre d'invocations qu'elle annule encore (absent ou 0 ⇒ désarmée).
+  exclusionCharges?: number;
   // Malédiction: instanceId of cursed enemy (exiled next turn)
   maledictionTargetId: string | null;
   // Paralysie: is this unit paralyzed (can't attack next turn)
@@ -1551,12 +1572,15 @@ export interface PlayerState {
    *  deux clients. */
   epargne: number | null;
   /** CONTRESORT armé par un SORT : nombre de contres en attente chez ce
-   *  joueur. Chaque sort Contresort en ajoute un ; le prochain sort adverse en
+   *  joueur. Chaque sort Contresort X en ajoute X ; chaque sort adverse en
    *  consomme un et est annulé. Distinct de `CardInstance.contresortActive`,
    *  la garde d'une UNITÉ, qui reste visible sur le plateau — celui-ci n'a
    *  pas d'autre logement que le joueur. Optionnel : absent vaut 0 (aucune
    *  migration d'état, les parties en cours restent valides). */
   contresort?: number;
+  /** EXCLUSION armée par un SORT : nombre d'invocations d'unités adverses
+   *  encore annulées. Même conventions que `contresort` (absent vaut 0). */
+  exclusion?: number;
   /** Compteur de Foi, plafonné à MAX_FOI. Mêmes conventions que `epargne`
    *  (`null` = jamais déclenchée ⇒ masqué ; ne redevient jamais `null`).
    *
@@ -2119,6 +2143,9 @@ export interface ResolvePendingTriggerAction {
   targetInstanceIds?: string[];
   /** Carte choisie pour une Sélection en fin de tour (selectionType présent). */
   selectionCardId?: number;
+  /** Position choisie parmi les cartes révélées du deck (deckPick présent),
+   *  0 = carte du sommet. */
+  deckChoiceIndex?: number;
   /** Branche choisie pour un déclencheur « OU » (alternativeOptions présent) :
    *  uid de la capacité qui se résout, les autres sont abandonnées. */
   alternativeCapUid?: string;
@@ -2278,6 +2305,11 @@ export interface PendingTrigger {
   selectionType?: "selection" | "selection_magique" | "renfort_royal";
   /** Ids des cartes offertes (résolus en Card côté store via les pools). */
   selectionOptionIds?: number[];
+  /** Présent ⇒ variante « pioche au choix dans le deck » (Traque du destin en
+   *  fin/début de tour) : le contrôleur désigne une des `x` cartes du dessus de
+   *  SON deck, lues à l'ouverture de la modale — le deck ne bouge pas tant que
+   *  le choix est en attente. */
+  deckPick?: "traque_du_destin";
   /** Présent ⇒ variante « OU » : le contrôleur choisit LAQUELLE de ces branches
    *  se résout. L'effet composé de chaque branche voyage AVEC le déclencheur
    *  (et non par référence à la carte) pour deux raisons : un sort n'a plus

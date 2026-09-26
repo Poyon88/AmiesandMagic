@@ -142,8 +142,12 @@
         "desc": "此单位在场时，你的法术费用降低 1 点法力（最低 1 点）。"
       },
       "contresort": {
-        "label": "反制法术",
-        "desc": "抵消对手的下一个法术。"
+        "label": "反制法术 X",
+        "desc": "使接下来X个敌方法术无效。"
+      },
+      "exclusion": {
+        "label": "排斥 X",
+        "desc": "使接下来X次敌方单位召唤无效。"
       },
       "convocation": {
         "label": "召唤 X",
@@ -540,8 +544,12 @@
         "desc": "对手随机弃掉手中X张牌。"
       },
       "contresort": {
-        "label": "反制法术",
-        "desc": "抵消对手的下一个法术。"
+        "label": "反制法术 X",
+        "desc": "使接下来X个敌方法术无效。"
+      },
+      "exclusion": {
+        "label": "排斥 X",
+        "desc": "使接下来X次敌方单位召唤无效。"
       },
       "convocation_simple": {
         "label": "召唤",
@@ -792,7 +800,9 @@
         "poison": "中毒",
         "grant_keyword": "赋予 {ability}",
         "random_range": "1至{max}",
+        "random_range_from": "{min}至{max}",
         "appel": "将你牌库中费用≤{x}的第一张单位牌置入战场",
+        "appel_item": "将你牌库中第一件费用≤{x}的物品放入战场",
         "ability_generic": "一个能力",
         "draw_cards_one": "抽 {x} 张牌",
         "draw_cards_many": "抽 {x} 张牌",
@@ -885,7 +895,10 @@
         "race": "种族为{v}的",
         "faction": "阵营为{v}的",
         "clan": "氏族为{v}的",
-        "keyword": "带有{v}的"
+        "keyword": "带有{v}的",
+        "type_creature": "（单位）",
+        "type_spell": "（法术）",
+        "type_item": "（物品）"
       },
       "self": {
         "deal_damage_one": "对自身造成{x}点伤害",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "卡池 — 归属",
     "label_pool_faction": "卡池 — 阵营",
     "label_pool_keyword": "卡池 — 携带关键词",
+    "label_pool_card_type": "卡池 — 卡牌类型",
+    "pool_type_creature": "单位",
+    "pool_type_spell": "法术",
+    "pool_type_item": "物品",
     "pool_any": "不限",
     "pool_hint": "筛选条件可叠加，在基础规则（普通、费用 ≤ X、卡牌阵营）之外生效。",
     "label_magnitude": "幅度",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "仅勾选了一个分支：该效果将正常结算",
     "alternative_warn_triggers": "分支的触发时机不同：它们不会互斥",
     "random_hint_selection": "每张展示的卡牌各自抽取 1 到 {max} 之间的费用。不勾选时，三张的费用均恰好为 {max}。",
+    "random_min_hint": "最低费用（A）：每个费用在{min}至{max}之间随机抽取。",
     "random_hint_faveur": "所赠卡牌的费用在1到{max}之间随机。若未勾选该选项，则费用恰好为{max}。",
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",

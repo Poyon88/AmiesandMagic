@@ -359,16 +359,31 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Main" },
   },
   contresort: {
-    id: "contresort", label: "Contresort", symbol: "🚫",
-    desc: "Annule le prochain sort adverse.",
+    id: "contresort", label: "Contresort X", symbol: "🚫",
+    desc: "Annule les X prochains sorts adverses.",
     applicable_to: ["creature", "spell"],
-    creature: { cost: 13, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain" },
-    // Forme sort : le sort ARME un contre chez son lanceur (PlayerState.contresort),
-    // que le prochain sort adverse consomme. Ce n'est pas un don : pour poser la
-    // garde sur une unité, passer par l'effet composé « Conférer une capacité ».
+    // Coût de X = 1 inchangé (13) : les cartes existantes, passées à
+    // Contresort 1, gardent leur budget.
+    creature: { cost: 13, costPerX: 7, se: 3.0, minTier: 2, scalable: true, zone: "Terrain" },
+    // Forme sort : le sort ARME X contres chez son lanceur (PlayerState.contresort),
+    // que les sorts adverses consomment un à un. Ce n'est pas un don : pour poser
+    // la garde sur une unité, passer par l'effet composé « Conférer une capacité ».
     spell: {
-      desc: "Annule le prochain sort adverse.",
-      params: [], needsTarget: false,
+      desc: "Annule les X prochains sorts adverses.",
+      params: ["amount"], needsTarget: false,
+    },
+  },
+  exclusion: {
+    id: "exclusion", label: "Exclusion X", symbol: "⛔",
+    desc: "Annule les X prochaines invocations d'unités adverses.",
+    applicable_to: ["creature", "spell"],
+    // Miroir de Contresort X, un cran plus cher : les unités sont le cœur du
+    // jeu, en annuler une coûte à l'adversaire sa carte ET son tour de pose.
+    creature: { cost: 15, costPerX: 8, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
+    // Forme sort : arme X exclusions chez le lanceur (PlayerState.exclusion).
+    spell: {
+      desc: "Annule les X prochaines invocations d'unités adverses.",
+      params: ["amount"], needsTarget: false,
     },
   },
   convocation: {
@@ -1768,7 +1783,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "apprentissage",
   // Restreints aux déclencheurs « sur plateau » (cf. CURATED_ONBOARD_ONLY_IDS).
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
-  "contresort", "profanation", "heritage_du_cimetiere",
+  "contresort", "exclusion", "profanation", "heritage_du_cimetiere",
 ]);
 
 /** Sous-ensemble des ids curés dont l'effet exige que la SOURCE soit en jeu
@@ -1783,7 +1798,7 @@ export const CURATED_ONBOARD_ONLY_IDS: ReadonlySet<string> = new Set([
   // L'apprendre en mourant ou depuis la main donnerait un pouvoir inutilisable.
   "apprentissage",
   "sacrifice", "permutation", "malediction", "mimique", "metamorphose",
-  "contresort", "profanation", "heritage_du_cimetiere",
+  "contresort", "exclusion", "profanation", "heritage_du_cimetiere",
 ]);
 
 /** Capacités qu'un TEMPLATE DE TOKEN ne peut pas encore porter, parce que leur

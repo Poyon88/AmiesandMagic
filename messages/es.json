@@ -142,8 +142,12 @@
         "desc": "Mientras esta unidad esté en juego, tus hechizos cuestan 1 maná menos (mínimo 1)."
       },
       "contresort": {
-        "label": "Contrahechizo",
-        "desc": "Anula el próximo hechizo rival."
+        "label": "Contrahechizo X",
+        "desc": "Anula los próximos X hechizos enemigos."
+      },
+      "exclusion": {
+        "label": "Exclusión X",
+        "desc": "Anula las próximas X invocaciones de unidades enemigas."
       },
       "convocation": {
         "label": "Invocación X",
@@ -540,8 +544,12 @@
         "desc": "El adversario descarta X cartas aleatorias de su mano."
       },
       "contresort": {
-        "label": "Contrahechizo",
-        "desc": "Anula el próximo hechizo enemigo."
+        "label": "Contrahechizo X",
+        "desc": "Anula los próximos X hechizos enemigos."
+      },
+      "exclusion": {
+        "label": "Exclusión X",
+        "desc": "Anula las próximas X invocaciones de unidades enemigas."
       },
       "convocation_simple": {
         "label": "Convocación",
@@ -792,7 +800,9 @@
         "poison": "envenena",
         "grant_keyword": "otorga {ability}",
         "random_range": "1 a {max}",
+        "random_range_from": "{min} a {max}",
         "appel": "pone en juego la 1.ª unidad de tu mazo de coste ≤ {x}",
+        "appel_item": "pone en juego el primer objeto de tu mazo de coste ≤ {x}",
         "ability_generic": "una habilidad",
         "draw_cards_one": "roba {x} carta",
         "draw_cards_many": "roba {x} cartas",
@@ -885,7 +895,10 @@
         "race": " de raza {v}",
         "faction": " de la facción {v}",
         "clan": " del clan {v}",
-        "keyword": " con {v}"
+        "keyword": " con {v}",
+        "type_creature": " de tipo unidad",
+        "type_spell": " de tipo hechizo",
+        "type_item": " de tipo objeto"
       },
       "self": {
         "deal_damage_one": "se inflige {x} punto de daño",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — PERTENENCIA",
     "label_pool_faction": "POOL — FACCIÓN",
     "label_pool_keyword": "POOL — PALABRA CLAVE",
+    "label_pool_card_type": "POOL — TIPO DE CARTA",
+    "pool_type_creature": "Unidades",
+    "pool_type_spell": "Hechizos",
+    "pool_type_item": "Objetos",
     "pool_any": "Indiferente",
     "pool_hint": "Filtros acumulativos, además de las reglas básicas (Común, coste ≤ X, alineación de la carta).",
     "label_magnitude": "MAGNITUD",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "solo una rama marcada: el efecto se resuelve normalmente",
     "alternative_warn_triggers": "ramas en disparadores distintos: no se excluyen entre sí",
     "random_hint_selection": "Cada carta revelada saca SU PROPIO coste, entre 1 y {max}. Sin marcar, las tres cuestan exactamente {max}.",
+    "random_min_hint": "Coste mínimo (A): cada coste se sortea entre {min} y {max}.",
     "random_hint_faveur": "La carta ofrecida obtiene un coste entre 1 y {max}. Sin la casilla, vale exactamente {max}.",
     "content_appel": "Llamada desde el mazo",
     "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",

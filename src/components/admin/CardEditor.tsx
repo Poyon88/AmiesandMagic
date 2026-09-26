@@ -20,6 +20,7 @@ import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
+import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCardsPicker";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
@@ -153,6 +154,8 @@ export default function CardEditor() {
   // devient un plafond tiré entre 1 et lui à chaque déclenchement. Persisté
   // dans keyword_instances[i].randomX, comme la case « ? » des effets composés.
   const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
+  // Plancher A du « ? », par id (cf. KeywordInstance.minX).
+  const [keywordMinX, setKeywordMinX] = useState<Record<string, number>>({});
   // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
   // (single allied creature); "all_allies" = every allied creature on cast.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
@@ -367,6 +370,7 @@ export default function CardEditor() {
     const modes: Record<string, KeywordMode> = {};
     const singuliers: Record<string, boolean> = {};
     const aleatoires: Record<string, boolean> = {};
+    const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
@@ -378,6 +382,7 @@ export default function CardEditor() {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
       if (inst.randomX === true) aleatoires[inst.id] = true;
+      if (inst.randomX === true && (inst.minX ?? 1) > 1) planchers[inst.id] = inst.minX!;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.id === "renforcement_multiple") {
@@ -407,6 +412,7 @@ export default function CardEditor() {
     setKeywordModes(modes);
     setKeywordSingulier(singuliers);
     setKeywordRandomX(aleatoires);
+    setKeywordMinX(planchers);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
@@ -679,7 +685,8 @@ export default function CardEditor() {
           // Sélection au hasard : le drapeau seul justifie l'instance.
           const alea = RANDOM_X_ABILITY_IDS.has(id) && keywordRandomX[id] === true;
           if (!mode && x == null && !grantScope && !alea) return null;
-          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}) };
+          const plancher = alea && x != null && (keywordMinX[id] ?? 1) > 1 ? Math.min(keywordMinX[id], x) : undefined;
+          return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}), ...(plancher != null && plancher > 1 ? { minX: plancher } : {}) };
         })
         // SINGULIER : la condition s'ajoute à l'instance — et CRÉE l'instance
         // d'un mot-clé qui n'aurait sinon rien eu à stocker (même contrat que
@@ -775,7 +782,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1521,16 +1528,25 @@ export default function CardEditor() {
                           const inerte = plafond < 2;
                           const actif = kw.randomX === true && !inerte;
                           return (
+                            <>
                             <label
                               title={inerte ? "Un plafond d'au moins 2 est nécessaire pour tirer au hasard." : `Tiré au hasard entre 1 et ${plafond}, à la résolution.`}
                               style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
                             >
                               <input
                                 type="checkbox" disabled={inerte} checked={actif}
-                                onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined } : k))}
+                                onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, randomX: e.target.checked ? true : undefined, ...(e.target.checked ? {} : { minX: undefined }) } : k))}
                               />
                               ?
                             </label>
+                            {actif && (
+                                <PlancherAleatoireInput
+                                  value={kw.minX} plafond={plafond}
+                                  title={`Coût minimum : tiré entre ${kw.minX ?? 1} et ${plafond}.`}
+                                  onChange={v => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, minX: v } : k))}
+                                />
+                            )}
+                            </>
                           );
                         })()}
                         {def.params.includes("attack") && (
@@ -1754,6 +1770,7 @@ export default function CardEditor() {
                             const inerte = plafond < 2;
                             const actif = keywordRandomX[kw] === true && !inerte;
                             return (
+                              <>
                               <label
                                 title={inerte ? "Un plafond d'au moins 2 est nécessaire pour tirer au hasard." : `Tiré au hasard entre 1 et ${plafond}, à chaque déclenchement.`}
                                 style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 9, color: inerte ? "#ccc" : actif ? "#b3541e" : "#666", cursor: inerte ? "default" : "pointer", fontWeight: actif ? 700 : 400 }}
@@ -1764,6 +1781,14 @@ export default function CardEditor() {
                                 />
                                 ?
                               </label>
+                              {actif && (
+                                  <PlancherAleatoireInput
+                                    value={keywordMinX[kw]} plafond={plafond}
+                                    title={`Coût minimum : tiré entre ${keywordMinX[kw] ?? 1} et ${plafond}.`}
+                                    onChange={v => setKeywordMinX(prev => { const n = { ...prev }; if (v) n[kw] = v; else delete n[kw]; return n; })}
+                                  />
+                              )}
+                              </>
                             );
                           })()}
                         </div>

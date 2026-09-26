@@ -79,7 +79,7 @@ describe("le drapeau voyage dans le modèle unifié", () => {
     const cap = getCapabilities(card).find((c) => c.abilityId === "selection")!;
     expect(cap.params?.x).toBe(3);
     expect(cap.params?.randomX).toBe(true);
-    expect(selectionAmplitudeOnPlay(card, "selection")).toEqual({ x: 3, randomX: true });
+    expect(selectionAmplitudeOnPlay(card, "selection")).toEqual({ x: 3, randomX: true, minX: 1 });
   });
   it("créature sans drapeau : aucun champ parasite", () => {
     const card = mkCard({
@@ -88,7 +88,7 @@ describe("le drapeau voyage dans le modèle unifié", () => {
     });
     const cap = getCapabilities(card).find((c) => c.abilityId === "selection")!;
     expect(cap.params).toEqual({ x: 3 });
-    expect(selectionAmplitudeOnPlay(card, "selection")).toEqual({ x: 3, randomX: false });
+    expect(selectionAmplitudeOnPlay(card, "selection")).toEqual({ x: 3, randomX: false, minX: 1 });
   });
   it("sort : spell_keywords.randomX → capability.params.randomX", () => {
     const card = mkCard({

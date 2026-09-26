@@ -90,9 +90,11 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
   "grant_when.on_wound": ", qui se déclenchera quand elle sera blessée sans mourir",
   "content.random_range": "1 à {max}",
+  "content.random_range_from": "{min} à {max}",
   // « met en jeu la 1re unité de votre deck de coût ≤ 2 » (+ filtre de pool
   // accolé par describePoolFilter : « de race Elfes », « portant Traque »…).
   "content.appel": "met en jeu la 1re unité de votre deck de coût ≤ {x}",
+  "content.appel_item": "met en jeu le 1er objet de votre deck de coût ≤ {x}",
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
   "content.draw_cards_many": "piochez {x} cartes",
@@ -158,6 +160,9 @@ export const COMPOSED_FR: Record<string, string> = {
   "pool.faction": " de la faction {v}",
   "pool.clan": " du clan {v}",
   "pool.keyword": " portant {v}",
+  "pool.type_creature": " de type unité",
+  "pool.type_spell": " de type sort",
+  "pool.type_item": " de type objet",
 
   // Cible « soi-même » : le français veut une tournure RÉFLÉCHIE, pas un
   // complément accolé — « Se renvoie en main », et non « Renvoie en main à
@@ -489,6 +494,7 @@ function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   if (p.race) parts.push(frag(t, "pool.race", { v: getRaceName(p.race, t) }));
   if (p.faction) parts.push(frag(t, "pool.faction", { v: getFactionDisplayName(p.faction, t) }));
   if (p.clan) parts.push(frag(t, "pool.clan", { v: getClanName(p.clan, t) }));
+  if (p.cardType) parts.push(frag(t, `pool.type_${p.cardType}`));
   if (p.keywordId) {
     const id = p.keywordId;
     const a = ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id);
@@ -507,8 +513,13 @@ function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
  *
  *  Rendue en CHAÎNE, tandis que les appelants gardent le nombre pour choisir le
  *  singulier ou le pluriel — « 1 à 4 dégâts » s'accorde sur le plafond. */
-function amplitudeAffichee(v: number, aleatoire: boolean | undefined, t?: SafeT): string | number {
-  return aleatoire && v > 1 ? frag(t, "content.random_range", { max: v }) : v;
+function amplitudeAffichee(v: number, aleatoire: boolean | undefined, t?: SafeT, min?: number): string | number {
+  if (!aleatoire || v <= 1) return v;
+  // Plancher A (> 1) : « 4 à 6 ». Borné au plafond, comme le moteur.
+  const a = Math.min(Math.max(1, Math.floor(min ?? 1)), v);
+  return a > 1
+    ? frag(t, "content.random_range_from", { min: a, max: v })
+    : frag(t, "content.random_range", { max: v });
 }
 
 
@@ -526,7 +537,7 @@ function describeContent(eff: ComposedEffect, tokens: TokenTemplate[] | undefine
 
 function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | undefined, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 0;
-  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
   const y = eff.magnitude?.y ?? 0;
   const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
@@ -540,7 +551,15 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "poison": return frag(t, "content.poison");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
-    case "appel": return frag(t, "content.appel", { x: xAff }) + describePoolFilter(eff, t);
+    case "appel": {
+      // Le type n'est pas un filtre accolé ici mais le NOM de ce qui est appelé :
+      // « le 1er objet », et non « la 1re unité … de type objet ».
+      if (eff.pool?.cardType === "item") {
+        const { cardType: _type, ...reste } = eff.pool;
+        return frag(t, "content.appel_item", { x: xAff }) + describePoolFilter({ ...eff, pool: reste }, t);
+      }
+      return frag(t, "content.appel", { x: xAff }) + describePoolFilter(eff, t);
+    }
     case "appel_supreme":
       return frag(t, "content.appel_supreme", {
         filter: describePoolFilter(eff, t),
@@ -622,7 +641,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
 // null si le contenu n'en a pas : on retombe alors sur « contenu + à elle-même ».
 function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
   const x = eff.magnitude?.x ?? 0;
-  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
   const y = eff.magnitude?.y ?? 0;
   const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
@@ -718,7 +737,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   if (!tg || tg.designation !== "scatter") return null;
   if (eff.content !== "deal_damage" && eff.content !== "heal") return null;
   const x = eff.magnitude?.x ?? 0;
-  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t);
+  const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
   const action = eff.content === "deal_damage" ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
   const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);

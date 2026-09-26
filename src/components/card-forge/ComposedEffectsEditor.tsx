@@ -6,6 +6,7 @@
 // composed_capabilities et les persiste dans la colonne capabilities.
 
 import { useTranslations } from "next-intl";
+import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { composedDisplayOrder, positionAfterExisting, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
@@ -22,7 +23,7 @@ import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
-import type { Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
+import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -82,6 +83,21 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
 const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur"]);
+
+/** Sous-ensemble dont le pool peut être restreint par type de carte.
+ *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
+ *  en jeu) ; Invocation n'invoque que des unités et Sélection magique ne
+ *  propose que des sorts : le filtre n'y aurait aucun sens. */
+const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal", "faveur", "appel_supreme", "appel"]);
+
+function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content: ComposedEffectContent): ComposedPoolFilter | undefined {
+  if (!pool?.cardType) return pool;
+  // Appel n'accepte que « Objets » : un « Sorts » hérité d'une Sélection lui
+  // ferait chercher une unité de type sort, c'est-à-dire rien.
+  if (CARD_TYPE_POOL_CONTENTS.has(content) && (content !== "appel" || pool.cardType === "item")) return pool;
+  const { cardType: _retire, ...reste } = pool;
+  return Object.keys(reste).length > 0 ? reste : undefined;
+}
 
 /** Contenus incompatibles avec la répartition au hasard, malgré un bloc de
  *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
@@ -228,7 +244,13 @@ export default function ComposedEffectsEditor({
     plafond: number,
   ) => {
     const inerte = plafond < 2;
+    // Plancher A : seulement là où X est un COÛT de carte (Sélections, Faveur,
+    // Invocation) — le « ? » y reste un plafond, et A en borne le bas. Pour
+    // des dégâts ou un soin, « au moins 4 dégâts » serait un autre mot-clé.
+    const avecPlancher = champ === "randomX" && !inerte && !!eff.magnitude?.randomX
+      && (RANDOM_X_ABILITY_IDS.has(eff.content) || eff.content === "invocation");
     return (
+      <>
       <label
         // Les SÉLECTIONS ne tirent pas leur amplitude une fois pour toutes :
         // chaque carte révélée tire son propre coût. L'infobulle doit le dire,
@@ -252,10 +274,23 @@ export default function ComposedEffectsEditor({
           type="checkbox"
           disabled={inerte}
           checked={!!eff.magnitude?.[champ] && !inerte}
-          onChange={(e) => patchEffect(idx, { magnitude: { ...eff.magnitude, [champ]: e.target.checked } })}
+          onChange={(e) => patchEffect(idx, { magnitude: {
+            ...eff.magnitude, [champ]: e.target.checked,
+            // Décocher le « ? » efface aussi son plancher : sinon il ressurgirait
+            // au prochain cochage, sans que l'auteur l'ait redemandé.
+            ...(champ === "randomX" && !e.target.checked ? { minX: undefined } : {}),
+          } })}
         />
         ?
       </label>
+      {avecPlancher && (
+        <PlancherAleatoireInput
+          value={eff.magnitude?.minX} plafond={plafond}
+          title={tr('random_min_hint', { min: eff.magnitude?.minX ?? 1, max: plafond })}
+          onChange={(v) => patchEffect(idx, { magnitude: { ...eff.magnitude, minX: v } })}
+        />
+      )}
+      </>
     );
   };
   /** Ce que l'auteur doit savoir quand il coche « OU ».
@@ -649,7 +684,10 @@ export default function ComposedEffectsEditor({
                     : undefined,
                   // Le filtre de pool ne survit pas à un changement vers un
                   // contenu qui n'en a pas (sinon champ fantôme en base).
-                  pool: POOL_CONTENTS.has(v) ? eff.pool : undefined,
+                  // Le type de carte, lui, ne survit qu'entre contenus qui le
+                  // proposent : « Objets » passé à une Invocation viderait son
+                  // pool en silence, sans case à l'écran pour s'en apercevoir.
+                  pool: POOL_CONTENTS.has(v) ? poolSansTypeHorsPerimetre(eff.pool, v) : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
                   cardIds: v === "invocation" || v === "tuteur" ? eff.cardIds : undefined,
@@ -775,6 +813,22 @@ export default function ComposedEffectsEditor({
                   <span style={labelStyle}>{tr('label_pool_faction')}</span>
                   {sel(eff.pool?.faction ?? "", [{ v: "", l: tr('pool_any') }, ...FACTION_OPTIONS.map((f) => ({ v: f, l: getFactionDisplayName(f) }))],
                     (v) => patchPool(idx, { faction: v || undefined }))}
+
+                  {CARD_TYPE_POOL_CONTENTS.has(eff.content) && (
+                    <>
+                      <span style={labelStyle}>{tr('label_pool_card_type')}</span>
+                      {sel(eff.pool?.cardType ?? "", eff.content === "appel"
+                        // Appel : pas d'« Indifférent » — sans filtre, il appelle
+                        // une UNITÉ, et c'est ce que la case doit dire.
+                        ? [{ v: "", l: tr('pool_type_creature') }, { v: "item", l: tr('pool_type_item') }]
+                        : [
+                          { v: "", l: tr('pool_any') },
+                          { v: "creature", l: tr('pool_type_creature') },
+                          { v: "spell", l: tr('pool_type_spell') },
+                          { v: "item", l: tr('pool_type_item') },
+                        ], (v) => patchPool(idx, { cardType: (v || undefined) as CardType | undefined }))}
+                    </>
+                  )}
 
                   <span style={labelStyle}>{tr('label_pool_keyword')}</span>
                   {sel(eff.pool?.keywordId ?? "", [{ v: "", l: tr('pool_any') }, ...POOL_KEYWORDS.map((k) => ({ v: k.id, l: k.label }))],

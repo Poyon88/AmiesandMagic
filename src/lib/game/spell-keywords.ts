@@ -2,6 +2,7 @@ import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, Convo
 import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
 import { plageAleatoire, resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
+import { badgeAleatoire } from "./random-range";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -172,7 +173,7 @@ function getSpellKeywordDescBase(
   else if (def.params.includes("amount")) {
     // Sélection au hasard : « coût ≤ 1 à X ».
     const amount = kw.amount ?? 1;
-    desc = desc.replace(/X/g, kw.randomX === true && amount > 1 ? plageAleatoire(amount, t) : String(amount));
+    desc = desc.replace(/X/g, kw.randomX === true && amount > 1 ? plageAleatoire(amount, t, kw.minX) : String(amount));
   }
   if (def.params.includes("health")) {
     const h = kw.health ?? 0;
@@ -241,7 +242,7 @@ export function getSpellKeywordBadgeValue(kw: SpellKeywordInstance): string | nu
   if (usesAmount) {
     const v = kw.id === "invocation" ? (kw.amount ?? kw.attack ?? 1) : (kw.amount ?? 1);
     // Sélection au hasard : « 3? » — le plafond, marqué comme tel.
-    return kw.randomX === true && v > 1 ? `${v}?` : String(v);
+    return kw.randomX === true && v > 1 ? badgeAleatoire(v, kw.minX, String(v)) : String(v);
   }
   return null;
 }

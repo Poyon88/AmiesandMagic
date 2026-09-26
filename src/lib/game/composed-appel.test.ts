@@ -133,3 +133,63 @@ describe("icône sur la carte", () => {
     expect(composedIcon(cap).keyword).not.toBe("");
   });
 });
+
+describe("appel d'un OBJET (filtre de type « Objets »)", () => {
+  const objet = (nom: string, cout: number, p: Record<string, unknown> = {}) =>
+    mkInstance(mkCard({ name: nom, card_type: "item", mana_cost: cout, attack: null, health: null, ...p }));
+
+  it("pose le 1er objet de coût ≤ X dans une place, non équipé, et laisse les unités", () => {
+    const s = lancer([unite("Soldat", 1), objet("Cher", 5), objet("Épée", 2), objet("Anneau", 1)], 2, { cardType: "item" });
+    expect(surPlateau(s)).toEqual([]);
+    const items = s.players[0].items ?? [];
+    expect(items.map(c => c.card.name)).toEqual(["Épée"]);
+    expect(items[0].equippedToInstanceId ?? null).toBeNull();
+    expect(s.players[0].deck.map(c => c.card.name)).toEqual(["Soldat", "Cher", "Anneau"]);
+  });
+
+  it("sans filtre de type, l'Appel ignore les objets et appelle une unité", () => {
+    const s = lancer([objet("Épée", 1), unite("Soldat", 1)], 2);
+    expect(surPlateau(s)).toEqual(["Soldat"]);
+    expect(s.players[0].items ?? []).toHaveLength(0);
+  });
+
+  it("l'objet occupe une place : plateau plein ⇒ rien n'est posé", () => {
+    const s = mkState();
+    s.players[0].board = Array.from({ length: 8 }, (_, i) => unite(`U${i}`, 1));
+    s.players[0].deck = [objet("Épée", 1)];
+    const sort = sortAppel(2, { cardType: "item" });
+    s.players[0].hand.push(sort);
+    const next = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId });
+    expect(next.players[0].items ?? []).toHaveLength(0);
+    expect(next.players[0].deck).toHaveLength(1);
+  });
+
+  it("le texte nomme l'objet, sans « unité … de type objet »", () => {
+    const c = {
+      uid: "u", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+      composed: { content: "appel", magnitude: { x: 2 }, pool: { cardType: "item" } },
+    } as unknown as Capability;
+    expect(describeComposedCap(c)).toBe("Met en jeu le 1er objet de votre deck de coût ≤ 2.");
+  });
+});
+
+describe("appel suprême d'un OBJET", () => {
+  it("met en main l'objet le plus cher du deck", () => {
+    const s = mkState();
+    s.players[0].deck = [
+      mkInstance(mkCard({ name: "Géant", mana_cost: 9, attack: 5, health: 5 })),
+      mkInstance(mkCard({ name: "Épée", card_type: "item", mana_cost: 2, attack: null, health: null })),
+      mkInstance(mkCard({ name: "Anneau", card_type: "item", mana_cost: 1, attack: null, health: null })),
+    ];
+    const sort = mkInstance(mkCard({
+      name: "Le Grand Cor", card_type: "spell", attack: null, health: null,
+      capabilities: [{
+        uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+        composed: { content: "appel_supreme", magnitude: { x: 0 }, pool: { cardType: "item" } },
+      }] as never,
+    }));
+    s.players[0].hand.push(sort);
+    const next = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId });
+    expect(next.players[0].hand.map(c => c.card.name)).toEqual(["Épée"]);
+  });
+});

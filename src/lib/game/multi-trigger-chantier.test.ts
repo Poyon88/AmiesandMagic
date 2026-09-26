@@ -126,7 +126,7 @@ describe("Chantier multi-déclencheurs — effets sans ciblage", () => {
     expect(next.players[0].board.some(c => c.card.name === "Agresseur")).toBe(false);
   });
 
-  it("Traque du destin en FIN DE TOUR : ajoute une carte révélée au hasard en main", () => {
+  it("Traque du destin en FIN DE TOUR : le joueur choisit la carte parmi les révélées", () => {
     const s = mkState();
     const src = mkInstance(creature("Augure", 2, 3, {
       keywords: ["traque_du_destin"] as unknown as Card["keywords"],
@@ -139,11 +139,44 @@ describe("Chantier multi-déclencheurs — effets sans ciblage", () => {
       mkInstance(creature("Fond", 1, 1)),
     );
 
-    const next = applyAction(s, { type: "end_turn" } as GameAction);
-    // Une des 2 cartes révélées est en main, le reste du deck est intact (3 - 1).
+    // La fin de tour se met en PAUSE sur le choix : rien n'a encore bougé.
+    const paused = applyAction(s, { type: "end_turn" } as GameAction);
+    const trig = paused.pendingTriggers?.[0];
+    expect(trig?.deckPick).toBe("traque_du_destin");
+    expect(trig?.x).toBe(2);
+    expect(paused.endTurnPending).toBe(true);
+    expect(paused.currentPlayerIndex).toBe(0);
+    expect(paused.players[0].hand).toHaveLength(0);
+    expect(paused.players[0].deck).toHaveLength(3);
+
+    // Le joueur désigne la 2e carte révélée : c'est elle qui arrive en main,
+    // l'autre révélée passe dessous, puis le tour bascule.
+    const next = applyAction(paused, {
+      type: "resolve_pending_trigger", triggerId: trig!.id, deckChoiceIndex: 1,
+    } as GameAction);
+    expect(next.players[0].hand.map(c => c.card.name)).toEqual(["Top-2"]);
+    expect(next.players[0].deck.map(c => c.card.name)).toEqual(["Fond", "Top-1"]);
+    expect(next.pendingTriggers ?? []).toHaveLength(0);
+    expect(next.currentPlayerIndex).toBe(1);
+  });
+
+  it("Traque du destin en FIN DE TOUR : chrono écoulé ⇒ une des révélées au hasard", () => {
+    const s = mkState();
+    s.players[0].board.push(mkInstance(creature("Augure", 2, 3, {
+      keywords: ["traque_du_destin"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "traque_du_destin" as Keyword, mode: "end_of_turn", x: 2 }],
+    })));
+    s.players[0].deck.push(
+      mkInstance(creature("Top-1", 1, 1)),
+      mkInstance(creature("Top-2", 1, 1)),
+      mkInstance(creature("Fond", 1, 1)),
+    );
+    const paused = applyAction(s, { type: "end_turn" } as GameAction);
+    const next = applyAction(paused, { type: "auto_resolve_pending_triggers" } as GameAction);
     expect(next.players[0].hand).toHaveLength(1);
     expect(["Top-1", "Top-2"]).toContain(next.players[0].hand[0].card.name);
     expect(next.players[0].deck).toHaveLength(2);
+    expect(next.currentPlayerIndex).toBe(1);
   });
 });
 

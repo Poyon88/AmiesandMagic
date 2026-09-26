@@ -142,8 +142,12 @@
         "desc": "このユニットが場にある間、自分の呪文のコストが1マナ減少する（最小1）。"
       },
       "contresort": {
-        "label": "呪文封じ",
-        "desc": "相手の次の呪文を無効化する。"
+        "label": "呪文封じ X",
+        "desc": "次のX回の敵の呪文を無効にする。"
+      },
+      "exclusion": {
+        "label": "排除 X",
+        "desc": "次のX回の敵ユニットの召喚を無効にする。"
       },
       "convocation": {
         "label": "召喚 X",
@@ -540,8 +544,12 @@
         "desc": "相手の手札からランダムにX枚捨てさせる。"
       },
       "contresort": {
-        "label": "対抗呪文",
-        "desc": "相手の次の呪文を打ち消す。"
+        "label": "呪文封じ X",
+        "desc": "次のX回の敵の呪文を無効にする。"
+      },
+      "exclusion": {
+        "label": "排除 X",
+        "desc": "次のX回の敵ユニットの召喚を無効にする。"
       },
       "convocation_simple": {
         "label": "召喚",
@@ -792,7 +800,9 @@
         "poison": "毒を与える",
         "grant_keyword": "{ability}を付与する",
         "random_range": "1から{max}",
+        "random_range_from": "{min}から{max}",
         "appel": "自分のデッキからコスト{x}以下の最初のユニットを場に出す",
+        "appel_item": "デッキの一番上にあるコスト{x}以下のアイテムを場に出す",
         "ability_generic": "能力",
         "draw_cards_one": "カードを{x}枚引く",
         "draw_cards_many": "カードを{x}枚引く",
@@ -885,7 +895,10 @@
         "race": "（種族：{v}）",
         "faction": "（陣営：{v}）",
         "clan": "（氏族：{v}）",
-        "keyword": "（{v}を持つ）"
+        "keyword": "（{v}を持つ）",
+        "type_creature": "（ユニット）",
+        "type_spell": "（呪文）",
+        "type_item": "（アイテム）"
       },
       "self": {
         "deal_damage_one": "自身に{x}ダメージを与える",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "プール — 所属",
     "label_pool_faction": "プール — 陣営",
     "label_pool_keyword": "プール — 保有キーワード",
+    "label_pool_card_type": "プール — カード種別",
+    "pool_type_creature": "ユニット",
+    "pool_type_spell": "呪文",
+    "pool_type_item": "アイテム",
     "pool_any": "指定なし",
     "pool_hint": "基本ルール（コモン、コスト≤X、カードの属性）に加え、フィルターは累積して適用されます。",
     "label_magnitude": "強度",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "チェックが1つだけ：効果は通常どおり解決される",
     "alternative_warn_triggers": "誘発条件が異なる分岐：互いに排他とならない",
     "random_hint_selection": "公開される各カードが1〜{max}の範囲で個別にコストを決定する。チェックなしの場合、3枚ともちょうど{max}。",
+    "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間で抽選されます。",
     "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",

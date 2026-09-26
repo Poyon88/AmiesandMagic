@@ -49,6 +49,8 @@ interface ManaBarProps {
    *  ou absent ; visible dans les DEUX camps (comme la garde d'une unité sur le
    *  plateau), pour que l'adversaire sache que son prochain sort sera annulé. */
   contresort?: number | null;
+  /** Exclusions armées par un sort Exclusion X (PlayerState.exclusion). */
+  exclusion?: number | null;
 }
 
 export default function ManaBar({
@@ -58,6 +60,7 @@ export default function ManaBar({
   exploration = null,
   singleton = null,
   contresort = null,
+  exclusion = null,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
   const available = current - held;
@@ -119,11 +122,27 @@ export default function ManaBar({
         <span
           data-contresort-badge={side}
           aria-label={`Contresort armé : ${contresort}`}
-          title={`Contresort armé — le prochain sort adverse est annulé${(contresort ?? 0) > 1 ? ` (×${contresort})` : ""}`}
+          title={(contresort ?? 0) > 1
+            ? `Contresort armé — les ${contresort} prochains sorts adverses sont annulés`
+            : "Contresort armé — le prochain sort adverse est annulé"}
           className="relative inline-flex items-center justify-center gap-0.5 h-7 min-w-7 px-1 rounded-full border-2 border-red-400/70 bg-red-900/40 text-red-100 text-[13px] font-bold leading-none shadow-[0_0_8px_rgba(248,113,113,0.6)]"
         >
           <span aria-hidden>🚫</span>
           {(contresort ?? 0) > 1 && <span>{contresort}</span>}
+        </span>
+      )}
+      {(exclusion ?? 0) > 0 && (
+        // Même pastille que Contresort, pour les invocations d'unités.
+        <span
+          data-exclusion-badge={side}
+          aria-label={`Exclusion armée : ${exclusion}`}
+          title={(exclusion ?? 0) > 1
+            ? `Exclusion armée — les ${exclusion} prochaines invocations d'unités adverses sont annulées`
+            : "Exclusion armée — la prochaine invocation d'unité adverse est annulée"}
+          className="relative inline-flex items-center justify-center gap-0.5 h-7 min-w-7 px-1 rounded-full border-2 border-orange-400/70 bg-orange-900/40 text-orange-100 text-[13px] font-bold leading-none shadow-[0_0_8px_rgba(251,146,60,0.6)]"
+        >
+          <span aria-hidden>⛔</span>
+          {(exclusion ?? 0) > 1 && <span>{exclusion}</span>}
         </span>
       )}
       {foi !== null && (

@@ -41,6 +41,8 @@ export default function DivinationOverlay({ cards, onChoose, onCancel }: Divinat
   // the keyword of the card currently being summoned so the title/subtitle
   // describe what tapping a card will actually do.
   const isTraqueDuDestin = useGameStore((s) => {
+    // Déclencheur de fin/début de tour en attente (pas de carte en cours de pose).
+    if (s.pendingTriggerId && s.gameState?.pendingTriggers?.find((t) => t.id === s.pendingTriggerId)?.deckPick) return true;
     const id = s.selectedCardInstanceId;
     if (!id || !s.gameState) return false;
     for (const p of s.gameState.players) {

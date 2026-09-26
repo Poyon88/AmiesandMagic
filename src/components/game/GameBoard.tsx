@@ -1226,7 +1226,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             }
           />
           <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
         </div>
         )}
 
@@ -1257,7 +1257,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
           </div>
         )}
 
@@ -1556,7 +1556,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
         </div>
         )}
 
@@ -1591,7 +1591,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
           </div>
         )}
 

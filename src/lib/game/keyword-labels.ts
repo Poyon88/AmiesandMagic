@@ -3,6 +3,7 @@ import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X } from "./abilities";
 import { SINGULIER_COLOR } from "./singulier";
+import { badgeAleatoire } from "./random-range";
 
 /** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
  *  jeu (on-play) reçoit le mode "entry" (teinte jaune, comme les sorts) pour se
@@ -388,7 +389,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
   "terreur", "armure", "commandement", "fureur", "double_attaque", "invisible",
-  "canalisation", "contresort", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
+  "canalisation", "contresort", "exclusion", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
   "touche_mortel",
   "paralysie", "permutation", "persecution", "pietinement",
   "catalyse", "ombre_du_passe", "profanation", "prescience", "suprematie", "divination", "savant",
@@ -450,7 +451,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   rappel: "Rappel", combustion: "Combustion",
   terreur: "Terreur", pauvrete: "Pauvreté X", armure: "Armure",
   commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
-  canalisation: "Canalisation", contresort: "Contresort", convocation: "Convocation X",
+  canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",
   malediction: "Malédiction", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
   paralysie: "Paralysie", permutation: "Permutation", persecution: "Persécution X",
@@ -573,7 +574,7 @@ export function keywordBadgeValue(
     return `${x ?? inst?.x ?? 0}/${inst?.y ?? 0}${inst?.randomY === true && (inst?.y ?? 0) > 1 ? "?" : ""}`;
   }
   // Sélection au hasard : « 3? » — le plafond, marqué comme tel.
-  if (!isStatPairKeyword(kw)) return x != null ? (inst?.randomX === true && x > 1 ? `${xNumeral(x)}?` : xNumeral(x)) : null;
+  if (!isStatPairKeyword(kw)) return x != null ? (inst?.randomX === true && x > 1 ? badgeAleatoire(x, inst?.minX, xNumeral(x)) : xNumeral(x)) : null;
   const sign = NEGATIVE_STAT_PAIRS.has(kw) ? "-" : "+";
   return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;
 }
@@ -627,7 +628,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   rappel: "🔄", combustion: "🔥",
   terreur: "👁️", pauvrete: "📉", armure: "/icons/armure.png",
   commandement: "👑", fureur: "💢", double_attaque: "⚔️", invisible: "👻",
-  canalisation: "🔮", contresort: "🚫", convocation: "📣",
+  canalisation: "🔮", contresort: "🚫", exclusion: "⛔", convocation: "📣",
   convocation_simple: "📯", invocation: "📣",
   malediction: "💀", necrophagie: "🦴", richesse: "🤑", sacrifice_demoniaque: "👹",
   paralysie: "⛓️", permutation: "🔀", persecution: "🩻", pietinement: "🐾",
@@ -681,3 +682,4 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   compagnons: "🐾",
   tuteur: "🎓",
 };
+

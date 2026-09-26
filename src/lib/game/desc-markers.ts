@@ -23,7 +23,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY" | "minX"> | null;
   /** Esprit de corps : combien de points cette carte gagnerait si elle
    *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
    *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est
@@ -36,13 +36,22 @@ export interface MarkerCtx {
    *  `instance.randomX` — les appelants qui passent l'instance n'ont rien à
    *  ajouter. */
   randomX?: boolean | null;
+  /** Plancher A du « ? » : X s'affiche alors « A à X ». Même repli sur
+   *  `instance.minX`. */
+  minX?: number | null;
   tokens?: TokenTemplate[];
 }
 
 /** « 1 à {max} », localisé — la même formule que les amplitudes composées
  *  (`vocab.composed.content.random_range`), pour que les deux modèles parlent
  *  d'une seule voix sur la carte. */
-export function plageAleatoire(max: number, t?: SafeT): string {
+export function plageAleatoire(max: number, t?: SafeT, min?: number | null): string {
+  // Plancher A (> 1) : « 4 à 6 ». Borné au plafond, comme le moteur.
+  const a = Math.min(Math.max(1, Math.floor(min ?? 1)), max);
+  if (a > 1) {
+    return (t?.("vocab.composed.content.random_range_from") ?? "{min} à {max}")
+      .replace("{min}", String(a)).replace("{max}", String(max));
+  }
   return (t?.("vocab.composed.content.random_range") ?? "1 à {max}").replace("{max}", String(max));
 }
 
@@ -259,7 +268,7 @@ export function resolveMarkers(
   const x = ctx.x ?? KEYWORD_DEFAULT_X[kw];
   if (x != null) {
     const alea = (ctx.randomX ?? ctx.instance?.randomX) === true && x > 1;
-    s = s.replace(/X/g, alea ? plageAleatoire(x, t) : String(x));
+    s = s.replace(/X/g, alea ? plageAleatoire(x, t, ctx.minX ?? ctx.instance?.minX) : String(x));
   }
   const y = ctx.y ?? ctx.instance?.y;
   if (y != null) {

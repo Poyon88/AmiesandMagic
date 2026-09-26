@@ -42,7 +42,7 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   // Tier 2 — Terrain
   "Terreur": "terreur", "Pauvreté X": "pauvrete", "Armure": "armure", "Commandement": "commandement",
   "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
-  "Canalisation": "canalisation", "Contresort": "contresort",
+  "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion",
   "Conférer": "conferer",
   "Déclenchement": "declenchement",
   "Convocation X": "convocation", "Malédiction": "malediction",
@@ -161,13 +161,15 @@ export interface BuildKeywordInstancesInput {
   /** SÉLECTION AU HASARD par libellé : le X devient un plafond tiré à chaque
    *  déclenchement. N'a de sens que pour RANDOM_X_ABILITY_IDS ; ignoré ailleurs. */
   randomX?: Record<string, boolean>;
+  /** Plancher A du « ? », par libellé (ignoré sans « ? »). */
+  minX?: Record<string, number>;
   extras?: ForgeKeywordExtras;
 }
 
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
@@ -260,7 +262,8 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // est toujours là pour une capacité scalable, mais on ne s'y fie pas).
       const alea = RANDOM_X_ABILITY_IDS.has(id) && randomX[label] === true;
       if (!mode && x == null && !grantScope && !alea) return null; // pure play + no X + default scope → nothing to store
-      return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}) };
+      const plancher = alea && x != null && (minX[label] ?? 1) > 1 ? Math.min(minX[label], x) : undefined;
+      return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}), ...(plancher != null && plancher > 1 ? { minX: plancher } : {}) };
     }
   }
 }

@@ -79,6 +79,38 @@ describe("Sélection composée — filtre de pool", () => {
     expect(offeredNames(next)).toEqual(["Rapide"]);
   });
 
+  it("filtre par type de carte : objets seulement", () => {
+    const s = mkState();
+    s.factionCardPool = [
+      poolCard("Épée", { card_type: "item" }),
+      poolCard("Bouclier", { card_type: "item" }),
+      poolCard("Soldat", { card_type: "creature" }),
+      poolCard("Éclair", { card_type: "spell" }),
+    ];
+    const next = playHeraut(s, selectionCreature({ cardType: "item" }));
+    expect(offeredNames(next)).toEqual(["Bouclier", "Épée"]);
+
+    // L'objet choisi arrive en main comme n'importe quelle carte sélectionnée.
+    const trig = next.pendingTriggers![0];
+    const epee = s.factionCardPool.find((c) => c.name === "Épée")!;
+    const after = applyAction(next, {
+      type: "resolve_pending_trigger", triggerId: trig.id, selectionCardId: epee.id,
+    });
+    expect(after.players[0].hand.map((c) => c.card.name)).toEqual(["Épée"]);
+    expect(after.players[0].hand[0].card.card_type).toBe("item");
+  });
+
+  it("type de carte cumulé avec les autres filtres (ET logique)", () => {
+    const s = mkState();
+    s.factionCardPool = [
+      poolCard("Épée naine", { card_type: "item", race: "Nains" }),
+      poolCard("Épée elfe", { card_type: "item", race: "Elfes" }),
+      poolCard("Guerrier nain", { card_type: "creature", race: "Nains" }),
+    ];
+    const next = playHeraut(s, selectionCreature({ cardType: "item", race: "Nains" }));
+    expect(offeredNames(next)).toEqual(["Épée naine"]);
+  });
+
   it("s'ajoute aux règles de base : seul le coût EXACTEMENT X est offert", () => {
     const s = mkState();
     s.factionCardPool = [

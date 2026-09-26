@@ -132,7 +132,7 @@ describe("le clan GARDE ses stats — même règle que l'Eau", () => {
 
 describe("tables de pouvoirs — c'est elles qui séparent les trois", () => {
   it("chacune joue son propre registre", () => {
-    expect(Object.keys(prof("Cristallins").likelyKeywords ?? {})).toContain("Contresort");
+    expect(Object.keys(prof("Cristallins").likelyKeywords ?? {})).toContain("Contresort X");
     expect(Object.keys(prof("Troglodytes").likelyKeywords ?? {})).toContain("Creuser X");
     expect(Object.keys(prof("Bêtes Chtoniennes").likelyKeywords ?? {})).toContain("Piétinement");
   });

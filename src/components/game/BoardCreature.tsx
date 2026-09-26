@@ -739,7 +739,17 @@ function BoardCreature({
           color="#3b82f6"
           top={creature.hasDivineShield ? 26 : 4}
           side="right"
-          title="Contresort prêt"
+          title={`Contresort prêt${(creature.contresortCharges ?? 1) > 1 ? ` — encore ${creature.contresortCharges} sorts annulés` : ""}`}
+        />
+      )}
+      {/* Exclusion — même colonne, sous le bouclier et le contresort. */}
+      {(creature.exclusionCharges ?? 0) > 0 && (
+        <StatusPip
+          keyword={"exclusion" as Keyword}
+          color="#dc2626"
+          top={4 + 22 * ((creature.hasDivineShield ? 1 : 0) + (creature.contresortActive ? 1 : 0))}
+          side="right"
+          title={`Exclusion prête${(creature.exclusionCharges ?? 0) > 1 ? ` — encore ${creature.exclusionCharges} invocations annulées` : ""}`}
         />
       )}
 
@@ -764,7 +774,7 @@ function BoardCreature({
           <StatusPip
             keyword={"ombre" as Keyword}
             color={revele ? "#6b7280" : "#818cf8"}
-            top={4 + 22 * ((creature.hasDivineShield ? 1 : 0) + (creature.contresortActive ? 1 : 0))}
+            top={4 + 22 * ((creature.hasDivineShield ? 1 : 0) + (creature.contresortActive ? 1 : 0) + ((creature.exclusionCharges ?? 0) > 0 ? 1 : 0))}
             side="right"
             title={revele ? "Ombre dissipée — l'unité s'est révélée" : "Ombre — intargetable tant qu'elle n'a pas agi"}
             dimmed={revele}
@@ -997,7 +1007,14 @@ function BoardCreature({
           if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
           if (creature.isParalyzed) statuses.push({ kw: "paralysie" as Keyword, label: "Paralysé", color: "#8b5cf6" });
           if (creature.hasDivineShield) statuses.push({ kw: "divine_shield" as Keyword, label: "Bouclier divin", color: "#f1c40f" });
-          if (creature.contresortActive) statuses.push({ kw: "contresort" as Keyword, label: "Contresort prêt", color: "#3b82f6" });
+          if (creature.contresortActive) {
+            const n = creature.contresortCharges ?? 1;
+            statuses.push({ kw: "contresort" as Keyword, label: n > 1 ? `Contresort ×${n}` : "Contresort prêt", color: "#3b82f6" });
+          }
+          if ((creature.exclusionCharges ?? 0) > 0) {
+            const n = creature.exclusionCharges!;
+            statuses.push({ kw: "exclusion" as Keyword, label: n > 1 ? `Exclusion ×${n}` : "Exclusion prête", color: "#dc2626" });
+          }
           if (creature.fureurActive) statuses.push({ kw: "fureur" as Keyword, label: "Fureur", color: "#f97316" });
           if ((creature.gloireStacks ?? 0) > 0) {
             statuses.push({ kw: "gloire" as Keyword, label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });

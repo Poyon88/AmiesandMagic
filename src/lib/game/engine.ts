@@ -891,7 +891,7 @@ const CREATURE_KEYWORD_HERO_POWER_TARGET: Record<
  *   • `fureurActive` — garde de RÉ-ENTRANCE de la chaîne d'assauts (remise à
  *     zéro en fin de tour), pas un usage consommé ; la lever en pleine chaîne
  *     rouvrirait la boucle. */
-function rearmGrantedKeyword(creature: CardInstance, kwId: string): void {
+function rearmGrantedKeyword(creature: CardInstance, kwId: string, x?: number): void {
   switch (kwId) {
     case "ombre": creature.ombreRevealed = false; break;
     case "esquive": creature.esquiveUsedThisTurn = false; break;
@@ -899,9 +899,38 @@ function rearmGrantedKeyword(creature: CardInstance, kwId: string): void {
     // Contresort s'ARME à l'entrée en jeu (cf. playCard) : sans ce miroir, le
     // don posait le mot-clé sans jamais activer la garde — inerte jusqu'à ce
     // que l'unité repasse par un retour en jeu.
-    case "contresort": creature.contresortActive = true; break;
+    case "contresort": armerGarde(creature, "contresort", x ?? 1); break;
+    case "exclusion": armerGarde(creature, "exclusion", x ?? 1); break;
     default: break;
   }
+}
+
+/** GARDES D'ANNULATION d'une unité — Contresort X (sorts adverses) et
+ *  Exclusion X (invocations d'unités adverses). Seuls points d'écriture des
+ *  charges : `contresortActive` doit rester le reflet exact de
+ *  `contresortCharges`, l'interface et la détection du « contré » le lisent.
+ *
+ *  Armer ne BAISSE jamais une garde : une Exclusion 3 à moitié entamée qu'un
+ *  réarmement à 1 viendrait écraser perdrait des charges. */
+type GardeAnnulation = "contresort" | "exclusion";
+export function chargesDeGarde(inst: CardInstance, garde: GardeAnnulation): number {
+  if (garde === "exclusion") return Math.max(0, inst.exclusionCharges ?? 0);
+  return inst.contresortActive ? Math.max(1, inst.contresortCharges ?? 1) : 0;
+}
+function armerGarde(inst: CardInstance, garde: GardeAnnulation, x: number): void {
+  const n = Math.max(chargesDeGarde(inst, garde), Math.max(1, x));
+  if (garde === "exclusion") inst.exclusionCharges = n;
+  else { inst.contresortActive = true; inst.contresortCharges = n; }
+}
+function consommerGarde(inst: CardInstance, garde: GardeAnnulation): void {
+  const n = chargesDeGarde(inst, garde) - 1;
+  if (garde === "exclusion") inst.exclusionCharges = Math.max(0, n);
+  else { inst.contresortCharges = Math.max(0, n); inst.contresortActive = n > 0; }
+}
+function desarmerGardes(inst: CardInstance): void {
+  inst.contresortActive = false;
+  inst.contresortCharges = 0;
+  inst.exclusionCharges = 0;
 }
 
 /** Id moteur RÉELLEMENT posé par un don. `vol` est l'id de registre, `ranged`
@@ -1082,7 +1111,7 @@ function applyGrantedKeyword(
   if (kwId === "charge") {
     creature.hasSummoningSickness = false;
   }
-  if (rearm) rearmGrantedKeyword(creature, kwId);
+  if (rearm) rearmGrantedKeyword(creature, kwId, params?.amount);
   // CAPACITÉ CURÉE CONFÉRÉE — poser son instance dans le sidecar.
   //
   // C'est le geste qui ouvre le don au-delà des passives. Tous les chemins
@@ -1370,7 +1399,7 @@ function appliquerSilence(target: CardInstance): void {
   delete target.singulierStash;
   target.apprentissageSpell = undefined;
   target.hasDivineShield = false;
-  target.contresortActive = false;
+  desarmerGardes(target);
   target.isParalyzed = false;
   target.fureurActive = false;
   target.fureurATKBonus = 0;
@@ -1713,17 +1742,28 @@ function resolveComposedEffect(
     // Traque de l'appelée est respectée — sans quoi une unité mise en jeu
     // gratuitement attaquerait le tour même, ce qu'aucun appel ne permet.
     case "appel": {
-      // N occurrences = les N PREMIÈRES unités du deck qui satisfont le filtre :
+      // Filtre « Objets » : c'est le 1er OBJET du deck qui est posé, dans une
+      // place du plateau, non équipé. Sans filtre de type, l'Appel reste ce
+      // qu'il a toujours été : une UNITÉ. Aucun autre type n'a de sens ici — un
+      // sort ne se « met pas en jeu ».
+      const appelleUnObjet = composed.pool?.cardType === "item";
+      // N occurrences = les N PREMIÈRES cartes du deck qui satisfont le filtre :
       // chaque passe repart du deck amputé de la précédente.
       for (let i = 0; i < nombreDOccurrences(composed); i++) {
         if (placesOccupees(owner) >= MAX_BOARD_SIZE) break;
         const idx = owner.deck.findIndex(c =>
-          c.card.card_type === "creature"
+          c.card.card_type === (appelleUnObjet ? "item" : "creature")
           && c.card.mana_cost <= x
           && matchesPoolFilter(c.card, composed.pool));
         if (idx < 0) break;
         const [appelee] = owner.deck.splice(idx, 1);
         const inst = createCardInstance(appelee.card);
+        if (appelleUnObjet) {
+          // Comme l'unité appelée, l'objet arrive SANS ses effets « à l'arrivée
+          // en jeu » : l'Appel met en jeu, il ne joue pas la carte.
+          owner.items = [...objetsDe(owner), inst];
+          continue;
+        }
         inst.hasSummoningSickness = !hasKw(inst, "charge");
         owner.board.push(inst);
       }
@@ -1886,6 +1926,7 @@ function resolveComposedEffect(
           composed.pool,
           // « X au hasard » ⇒ X est un plafond de coût (cf. figerAmplitudeAleatoire).
           composed.magnitude?.randomX === true,
+          composed.magnitude?.minX,
         );
       }
       return;
@@ -1902,7 +1943,7 @@ function resolveComposedEffect(
       for (let i = 0; i < nombreDOccurrences(composed); i++) {
         if (owner.hand.length >= MAX_HAND_SIZE) break;
         resolveFaveur(owner, x, composed.magnitude?.randomX === true, faveurCard,
-          composed.pool, i === 0 ? selFaveur : `${selFaveur ?? ""}#occ${i}`);
+          composed.pool, i === 0 ? selFaveur : `${selFaveur ?? ""}#occ${i}`, composed.magnitude?.minX);
       }
       return;
     }
@@ -1996,7 +2037,7 @@ function resolveComposedEffect(
       for (let i = 0; i < nombreDOccurrences(composed); i++) {
         const selDeLaPasse = i === 0 ? seedSalt : `${seedSalt ?? ""}#occ${i}`;
         const options = selectionCardsForKeyword(selContent, selState, x, selCard, composed.pool, selDeLaPasse,
-          composed.magnitude?.randomX === true);
+          composed.magnitude?.randomX === true, composed.magnitude?.minX);
         // Pool vide après filtrage : no-op assumé. On n'élargit JAMAIS le filtre
         // en repli, sinon une carte « révèle 3 Hommes-Bêtes » proposerait
         // silencieusement autre chose.
@@ -2575,6 +2616,8 @@ function createCardInstance(card: Card): CardInstance {
     ombreRevealed: false,
     corruptionStolenIds: [],
     contresortActive: false,
+    contresortCharges: 0,
+    exclusionCharges: 0,
     maledictionTargetId: null,
     isParalyzed: false,
     loyauteATKBonus: 0,
@@ -2773,7 +2816,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.isPoisoned = false;
   inst.maledictionTargetId = null;
   inst.ombreRevealed = false;
-  inst.contresortActive = false;
+  desarmerGardes(inst);
   inst.fureurActive = false;
   inst.fureurATKBonus = 0;
   // gloireStacks N'EST PAS remis à zéro : le bonus +X/+Y correspondant est fondu
@@ -4196,7 +4239,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal") {
-        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId, inst.randomX === true);
+        const options = selectionCardsForKeyword(inst.id, newState, inst.x ?? 0, creature.card, undefined, creature.instanceId, inst.randomX === true, inst.minX);
         if (options.length > 0) {
           (newState.pendingTriggers ??= []).push({
             id: `${creature.instanceId}#${inst.id}`,
@@ -4208,6 +4251,19 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
           return pauseTurnPhase(newState, phase); // PAUSE
         }
         continue; // aucune carte offerte → no-op
+      }
+      // Traque du destin : interactif (modale des cartes du dessus du deck),
+      // comme à l'invocation. Sans cette pause, le moteur tirait la carte au
+      // hasard et le joueur la recevait sans avoir rien choisi.
+      if (inst.id === "traque_du_destin" && actif.deck.length > 0) {
+        (newState.pendingTriggers ??= []).push({
+          id: `${creature.instanceId}#traque_du_destin`,
+          controllerId: actif.id,
+          sourceInstanceId: creature.instanceId,
+          deckPick: "traque_du_destin",
+          x: inst.x ?? getTraqueDuDestinX(creature.card),
+        });
+        return pauseTurnPhase(newState, phase); // PAUSE
       }
       // Autres mots-clés curés : résolution immédiate (non interactive).
       resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, creature, actif, opponent, undefined, inst);
@@ -4303,6 +4359,10 @@ function triggerIsResolvable(state: GameState, trigger: import("./types").Pendin
   // à demander au joueur » tout en bas et se faisait purger — la pile serait
   // restée suspendue pour toujours, plateau inerte.
   if (trigger.alternativeOptions?.length) return true;
+  if (trigger.deckPick) {
+    const controller = state.players.find(p => p.id === trigger.controllerId);
+    return (controller?.deck.length ?? 0) > 0;
+  }
   if (trigger.selectionType) {
     const ids = new Set([
       ...(state.factionCardPool ?? []).map(c => c.id),
@@ -4664,6 +4724,28 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   if (card.card_type === "creature") {
     if (placesOccupees(player) >= MAX_BOARD_SIZE) return state;
 
+    // EXCLUSION — miroir de Contresort pour les unités. L'invocation est
+    // annulée APRÈS le paiement (mana, coûts additionnels, carte quittant sa
+    // zone), exactement comme un sort contré : l'unité part au cimetière sans
+    // être entrée en jeu, donc sans aucun déclencheur. Même ordre de
+    // consommation que Contresort : la réserve du joueur (armée par un sort,
+    // sans autre logement) passe avant la garde d'une unité.
+    //
+    // Seules les unités JOUÉES sont visées (main, éveil, Seconde vie) : les
+    // mises en jeu par effet (Invocation X, Appel, tokens, Résurrection) ne
+    // passent pas par ici, comme Contresort ne voit que les sorts joués.
+    const gardeExclusion = (opponent.exclusion ?? 0) > 0
+      ? null
+      : opponent.board.find(c => chargesDeGarde(c, "exclusion") > 0);
+    if ((opponent.exclusion ?? 0) > 0 || gardeExclusion) {
+      if (gardeExclusion) consommerGarde(gardeExclusion, "exclusion");
+      else opponent.exclusion = (opponent.exclusion ?? 0) - 1;
+      player.graveyard.push(cardInstance);
+      newState.lastAction = action;
+      checkWinCondition(newState);
+      return newState;
+    }
+
     // SECONDE VIE — l'instance arrive du CIMETIÈRE, donc dans l'état où elle y
     // est tombée : `currentHealth <= 0` et `diedOnTurn` gravé par
     // cleanDeadCreatures. Posée telle quelle, elle était immédiatement rebalayée
@@ -4995,9 +5077,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Contresort: annule le prochain sort adverse
+    // Contresort X : annule les X prochains sorts adverses.
     if (hasKwOnPlay(cardInstance, "contresort")) {
-      cardInstance.contresortActive = true;
+      armerGarde(cardInstance, "contresort", getKwX(cardInstance, "contresort", undefined, 1));
+    }
+    // Exclusion X : annule les X prochaines invocations d'unités adverses.
+    if (hasKwOnPlay(cardInstance, "exclusion")) {
+      armerGarde(cardInstance, "exclusion", getKwX(cardInstance, "exclusion", undefined, 1));
     }
 
     // Convocation X: crée un token X/X depuis le template choisi.
@@ -5398,19 +5484,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // choisit une (action.divinationChoiceIndex — reuse of the divination
     // picker UI), reste en dessous dans un ordre aléatoire.
     if (hasKwOnPlay(cardInstance, "traque_du_destin") && player.deck.length > 0) {
-      const x = getTraqueDuDestinX(cardInstance.card);
-      const count = Math.min(x, player.deck.length);
-      const revealed = player.deck.splice(0, count);
-      if (revealed.length > 0 && player.hand.length < MAX_HAND_SIZE) {
-        const chosenIdx = Math.min(
-          Math.max(0, action.divinationChoiceIndex ?? 0),
-          revealed.length - 1,
-        );
-        player.hand.push(revealed[chosenIdx]);
-        revealed.splice(chosenIdx, 1);
-        shuffleArray(revealed);
-        player.deck.push(...revealed);
-      }
+      resolveTraqueDuDestin(player, getTraqueDuDestinX(cardInstance.card), action.divinationChoiceIndex ?? 0);
     }
 
     // Sang mêlé (+1 ATK / +1 PV par race alliée différente) est désormais une
@@ -5469,8 +5543,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Aucune modale, donc rien à attendre du client — contrairement aux
     // Sélections juste au-dessus, qui lisent un choix dans `action`.
     if (hasKwOnPlay(cardInstance, "faveur")) {
-      const { x: xF, randomX: aleaF } = selectionAmplitudeOnPlay(cardInstance.card, "faveur");
-      resolveFaveur(player, xF, aleaF, cardInstance.card, undefined, cardInstance.instanceId);
+      const { x: xF, randomX: aleaF, minX: minF } = selectionAmplitudeOnPlay(cardInstance.card, "faveur");
+      resolveFaveur(player, xF, aleaF, cardInstance.card, undefined, cardInstance.instanceId, minF);
     }
 
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
@@ -5649,9 +5723,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       return newState;
     }
     // Contresort: check if opponent has an active counter-spell
-    const counterUnit = opponent.board.find(c => c.contresortActive);
+    const counterUnit = opponent.board.find(c => chargesDeGarde(c, "contresort") > 0);
     if (counterUnit) {
-      counterUnit.contresortActive = false;
+      consommerGarde(counterUnit, "contresort");
       // Spell is countered — goes to graveyard without effect
       player.graveyard.push(cardInstance);
       newState.lastAction = action;
@@ -6016,7 +6090,7 @@ function castSpellWithRandomTargets(
       players: [player, opponent],
       currentPlayerIndex: 0,
     } as GameState;
-    const options = selectionCardsForKeyword(selId, selState, kw.amount ?? 0, card, undefined, undefined, kw.randomX === true);
+    const options = selectionCardsForKeyword(selId, selState, kw.amount ?? 0, card, undefined, undefined, kw.randomX === true, kw.minX);
     if (options.length === 0) continue;
     targetMap[`${selId}_0`] = String(options[Math.floor(rng() * options.length)].id);
   }
@@ -6257,6 +6331,7 @@ function resolveFaveur(
   sourceCard: Card | null | undefined,
   filter?: ComposedPoolFilter,
   seedSalt?: string,
+  minX = 1,
 ): void {
   if (owner.hand.length >= MAX_HAND_SIZE) return;
   const faveurState = {
@@ -6270,7 +6345,7 @@ function resolveFaveur(
     // éternellement, sans la moindre erreur pour le signaler.
     turnNumber: currentTurnNumber,
   } as unknown as GameState;
-  const picked = getFaveurCard(faveurState, x, sourceCard ?? null, filter, randomX, seedSalt);
+  const picked = getFaveurCard(faveurState, x, sourceCard ?? null, filter, randomX, seedSalt, minX);
   if (!picked) return;
   owner.hand.push(createCardInstance(picked));
   faveurSink.push({ card: picked, ownerId: owner.id });
@@ -6466,9 +6541,14 @@ function resolveSpellKeywords(
         break;
       }
       case "contresort": {
-        // Forme sort : arme un contre chez le lanceur. Cumulatif — deux sorts
-        // Contresort annulent les deux prochains sorts adverses.
-        ctx.caster.contresort = (ctx.caster.contresort ?? 0) + 1;
+        // Forme sort : arme X contres chez le lanceur. Cumulatif — Contresort 2
+        // puis Contresort 1 annulent les trois prochains sorts adverses.
+        ctx.caster.contresort = (ctx.caster.contresort ?? 0) + Math.max(1, kw.amount ?? 1);
+        break;
+      }
+      case "exclusion": {
+        // Même principe contre les invocations d'unités adverses.
+        ctx.caster.exclusion = (ctx.caster.exclusion ?? 0) + Math.max(1, kw.amount ?? 1);
         break;
       }
       case "precision": {
@@ -6846,7 +6926,7 @@ function resolveSpellKeywords(
         // deux Faveurs lancées dans le même tour partageraient tout leur germe
         // et offriraient deux fois la même carte.
         resolveFaveur(ctx.caster, kw.amount ?? 0, kw.randomX === true, ctx.card,
-          undefined, `spell_${ctx.card.id}`);
+          undefined, `spell_${ctx.card.id}`, kw.minX);
         break;
       }
       case "rassemblement": {
@@ -7834,8 +7914,7 @@ function resolveIncineration(victim: PlayerState, x: number): void {
   // Les cartes recyclées repartent « neuves » : sans cette remise à zéro, une
   // créature repiochée traînerait ses dégâts et ses bonus de la partie d'avant.
   for (const inst of picked) returnInstanceToPlay(inst);
-  shuffleArray(picked);
-  victim.deck.push(...picked);
+  victim.deck.push(...shuffleArray(picked));
 }
 
 /** Camp propriétaire du CIMETIÈRE où se trouve `id`.
@@ -7874,8 +7953,7 @@ function resolveIncinerationChosen(
   }
   if (picked.length === 0) return;
   for (const inst of picked) returnInstanceToPlay(inst);
-  shuffleArray(picked);
-  victim.deck.push(...picked);
+  victim.deck.push(...shuffleArray(picked));
 }
 
 /** RETOUR DIFFÉRÉ — place l'unité ciblée sous le deck de son PROPRIÉTAIRE.
@@ -8074,6 +8152,27 @@ function resolvePresage(player: PlayerState, choiceIndex: number | undefined): v
   }
   player.deck.push(...revealed);
   player.deck = shuffleArray(player.deck);
+}
+
+/** TRAQUE DU DESTIN — révèle les `x` cartes du dessus, en ajoute une en main,
+ *  replace les autres dessous dans un ordre aléatoire.
+ *
+ *  `choiceIndex` indexe la tranche révélée (0 = sommet) ; `undefined` ⇒
+ *  personne n'a pu choisir, désignation au hasard (RNG semée). Main pleine :
+ *  rien n'est pris, les cartes révélées passent quand même dessous. */
+function resolveTraqueDuDestin(player: PlayerState, x: number, choiceIndex: number | undefined): void {
+  if (player.deck.length === 0) return;
+  const revealed = player.deck.splice(0, Math.min(x, player.deck.length));
+  if (player.hand.length < MAX_HAND_SIZE) {
+    const idx = choiceIndex != null
+      ? Math.min(Math.max(0, choiceIndex), revealed.length - 1)
+      : Math.floor(rng() * revealed.length);
+    player.hand.push(revealed[idx]);
+    revealed.splice(idx, 1);
+  }
+  // shuffleArray rend une COPIE : l'ancien code l'appelait sans lire le
+  // résultat, et les cartes repassaient dessous dans leur ordre d'origine.
+  player.deck.push(...shuffleArray(revealed));
 }
 
 /** DÉVORATION — détruit l'unité ciblée ; la source absorbe définitivement son
@@ -10091,7 +10190,11 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "contresort": {
-      source.contresortActive = true;
+      armerGarde(source, "contresort", inst?.x ?? x);
+      return;
+    }
+    case "exclusion": {
+      armerGarde(source, "exclusion", inst?.x ?? x);
       return;
     }
     case "solidarite": {
@@ -10113,7 +10216,7 @@ function resolveCuratedKeywordEffect(
       // aveugle. Faveur tire déjà au hasard par nature : il n'y a rien à
       // dégrader, donc aucune branche à écrire.
       resolveFaveur(owner, inst?.x ?? 0, inst?.randomX === true, source.card,
-        undefined, source.instanceId);
+        undefined, source.instanceId, inst?.minX);
       return;
     }
     case "rassemblement": {
@@ -10240,18 +10343,11 @@ function resolveCuratedKeywordEffect(
     }
     case "traque_du_destin": {
       // Révèle X cartes, en ajoute une AU HASARD en main, replace le reste
-      // dessous dans un ordre aléatoire (pas de modale hors invocation).
-      if (owner.deck.length === 0) return;
-      const xT = inst?.x ?? getTraqueDuDestinX(source.card);
-      const countT = Math.min(xT, owner.deck.length);
-      const revealedT = owner.deck.splice(0, countT);
-      if (owner.hand.length < MAX_HAND_SIZE) {
-        const pickIdx = Math.floor(rng() * revealedT.length);
-        owner.hand.push(revealedT[pickIdx]);
-        revealedT.splice(pickIdx, 1);
-      }
-      shuffleArray(revealedT);
-      owner.deck.push(...revealedT);
+      // dessous dans un ordre aléatoire. Hors invocation, seules les phases de
+      // fin/début de tour du contrôleur ouvrent la modale (déclencheur
+      // `deckPick`, cf. advanceTurnPhase) ; ailleurs (mort, attaque, tour
+      // adverse) personne ne peut choisir.
+      resolveTraqueDuDestin(owner, inst?.x ?? getTraqueDuDestinX(source.card), undefined);
       return;
     }
     case "selection":
@@ -10272,7 +10368,7 @@ function resolveCuratedKeywordEffect(
         // moindre erreur pour le signaler.
         turnNumber: currentTurnNumber,
       } as unknown as GameState;
-      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId, inst?.randomX === true);
+      const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId, inst?.randomX === true, inst?.minX);
       if (options.length === 0) return;
       // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
   // premier est au milieu du flux de combat, le second au milieu de startTurn
@@ -10885,6 +10981,7 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
     targetInstanceId: action.targetInstanceId,
     targetInstanceIds: action.targetInstanceIds,
     selectionCardId: action.selectionCardId,
+    deckChoiceIndex: action.deckChoiceIndex,
     alternativeCapUid: action.alternativeCapUid,
   });
 
@@ -10954,7 +11051,7 @@ function pendingChoiceIds(
 function applyOnePendingTrigger(
   newState: GameState,
   trigger: import("./types").PendingTrigger,
-  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number; alternativeCapUid?: string },
+  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number; deckChoiceIndex?: number; alternativeCapUid?: string },
 ): void {
   const controller = newState.players.find(p => p.id === trigger.controllerId);
   const other = newState.players.find(p => p.id !== trigger.controllerId);
@@ -11020,6 +11117,10 @@ function applyOnePendingTrigger(
         processDeathTriggers(deadO, other, controller);
       }
     }
+  } else if (trigger.deckPick) {
+    // Variante « Traque du destin » de fin/début de tour : la carte désignée
+    // parmi les X du dessus va en main. Index absent ⇒ tirage au hasard.
+    if (controller) resolveTraqueDuDestin(controller, trigger.x ?? 1, choice.deckChoiceIndex);
   } else if (trigger.selectionType) {
     // Variante « Sélection en fin de tour » : la carte choisie va en main.
     if (controller && choice.selectionCardId != null && controller.hand.length < MAX_HAND_SIZE) {
@@ -11094,6 +11195,8 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
     const queue = st.pendingTriggers ?? [];
     st.pendingTriggers = [];
     for (const trigger of queue) {
+      // Traque du destin : choice vide ⇒ deckChoiceIndex absent ⇒ le résolveur
+      // tire lui-même au hasard. Rien à préparer ici.
       let choice: { targetInstanceId?: string; selectionCardId?: number; alternativeCapUid?: string } = {};
       if (trigger.alternativeOptions?.length) {
         const opts = trigger.alternativeOptions;
@@ -12739,9 +12842,12 @@ function resolveInvocationSummon(
   // Invocation composée « X au hasard » : X devient un PLAFOND (coût 1 à X)
   // au lieu d'un coût exact, et le hasard porte sur la créature tirée.
   plafond = false,
+  // Plancher A de ce plafond : coût A à X (1 par défaut).
+  minX = 1,
 ): void {
   if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0 || x <= 0) return;
+  const plancher = plancherAleatoire(minX, x);
   const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
   const buckets = selectionFactionBuckets(sourceCard, owner);
   const allowedFactions = new Set([...buckets.propre, ...buckets.neutre]);
@@ -12749,7 +12855,7 @@ function resolveInvocationSummon(
   const ownedLimited = new Set(owner.ownedLimitedCardIds ?? []);
   const candidates = pool.filter(c =>
     c.card_type === "creature"
-    && (plafond ? (c.mana_cost >= 1 && c.mana_cost <= x) : c.mana_cost === x)
+    && (plafond ? (c.mana_cost >= plancher && c.mana_cost <= x) : c.mana_cost === x)
     && (restricted
       // matchesPoolFilter : même prédicat que les Sélections composées, donc
       // clan et « mot-clé porté » deviennent utilisables ici aussi.
@@ -12765,7 +12871,7 @@ function resolveInvocationSummon(
     // coûte 6) : autant que ça se voie en console, comme pour Compagnons et
     // l'Invocation désignée.
     console.warn(
-      `[engine] Invocation : aucune créature au coût ${plafond ? `1 à ${x}` : x}`
+      `[engine] Invocation : aucune créature au coût ${plafond ? `${plancher} à ${x}` : x}`
       + (restricted ? ` pour le filtre ${JSON.stringify(restrict)}` : "")
       + ` dans la collection pour « ${sourceCard.name} » — rien n'est invoqué.`,
     );
@@ -12917,8 +13023,8 @@ function resolveDechainement(
   }
 }
 
-/** Filtre de pool d'une Sélection COMPOSÉE (race / faction / clan / mot-clé
- *  porté). Cumulatif avec les règles de base (rareté, coût, alignement) : un
+/** Filtre de pool d'une Sélection COMPOSÉE (race / faction / clan / type de
+ *  carte / mot-clé porté). Cumulatif avec les règles de base (rareté, coût, alignement) : un
  *  champ absent ne filtre rien, un champ présent restreint. Le mot-clé est lu
  *  via le modèle unifié, donc une ability portée par `keyword_instances` ou
  *  `capabilities` seuls compte aussi. */
@@ -12927,6 +13033,7 @@ function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
   if (filter.race && card.race !== filter.race) return false;
   if (filter.faction && card.faction !== filter.faction) return false;
   if (filter.clan && card.clan !== filter.clan) return false;
+  if (filter.cardType && card.card_type !== filter.cardType) return false;
   if (filter.keywordId && !getCapabilities(card).some(c => c.abilityId === filter.keywordId)) return false;
   return true;
 }
@@ -12938,6 +13045,14 @@ function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
  *  sur la liste des communes (mêmes règles que Sélection X). Les deux
  *  clients doivent générer la même proposition, d'où le seed déterministe
  *  basé sur l'état de jeu visible. */
+/** PLANCHER A d'un coût « au hasard » (A à X). Borné à [1, X] : un A absent,
+ *  nul ou supérieur au plafond ne doit jamais vider le tirage en silence — au
+ *  pire il vaut X, et le coût redevient exact. */
+export function plancherAleatoire(minX: number | undefined, plafond: number): number {
+  const a = Math.floor(minX ?? 1);
+  return Math.min(Math.max(1, a), Math.max(1, plafond));
+}
+
 /** OFFRE d'une Sélection selon son RÉGIME DE COÛT.
  *
  *  COÛT EXACT (défaut) : les trois cartes valent précisément X. C'était
@@ -12969,6 +13084,8 @@ function offreSelection(
   buckets: { propre: Set<string>; neutre: Set<string> },
   melanger: (arr: Card[]) => Card[],
   tirage: () => number,
+  // Plancher A du « ? » : les coûts se tirent entre A et X (1 par défaut).
+  minX = 1,
 ): Card[] {
   if (!randomX) {
     // X ≤ 0 : aucun filtre de coût (comportement historique des cartes qui ne
@@ -12977,8 +13094,9 @@ function offreSelection(
     return offrePonderee(exact, buckets, Math.min(SELECTION_OFFER_COUNT, exact.length), melanger);
   }
   const plafond = Math.max(1, x);
+  const plancher = plancherAleatoire(minX, plafond);
   const coutsDisponibles = [...new Set(
-    vivier.filter(c => c.mana_cost >= 1 && c.mana_cost <= plafond).map(c => c.mana_cost),
+    vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= plafond).map(c => c.mana_cost),
   )].sort((a, b) => a - b);
   if (coutsDisponibles.length === 0) return [];
 
@@ -13010,8 +13128,9 @@ export function getRenfortRoyalCards(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
-  // « ? » : un coût tiré par carte, entre 1 et X (cf. offreSelection).
+  // « ? » : un coût tiré par carte, entre A et X (cf. offreSelection).
   randomX = false,
+  minX = 1,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -13025,7 +13144,7 @@ export function getRenfortRoyalCards(
   // Seuil évalué AVANT le filtre de pool : c'est une condition de collection
   // (« possède au moins N limitées »), pas une condition sur les candidats.
   if (ownedLimited.length < RENFORT_ROYAL_OWNERSHIP_THRESHOLD) {
-    return getSelectionCards(state, maxManaCost, source, filter, randomX);
+    return getSelectionCards(state, maxManaCost, source, filter, randomX, undefined, minX);
   }
   const filtered = ownedLimited.filter(c => matchesPoolFilter(c, filter));
   if (filtered.length === 0) return [];
@@ -13050,7 +13169,7 @@ export function getRenfortRoyalCards(
   // joueur, où la règle d'alignement 2:1 n'a pas cours. `offreSelection` s'y
   // réduit alors au mélange + découpe d'avant — seul le régime de coût change.
   return offreSelection(filtered, maxManaCost, randomX,
-    { propre: new Set<string>(), neutre: new Set<string>() }, melanger, pseudoRng);
+    { propre: new Set<string>(), neutre: new Set<string>() }, melanger, pseudoRng, minX);
 }
 
 /** Sélection : propose jusqu'à 3 cartes communes partageant l'alignement de
@@ -13074,6 +13193,8 @@ export function getSelectionCards(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
+  // Plancher A du « ? » (coûts tirés entre A et X).
+  minX = 1,
 ): Card[] {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return [];
@@ -13108,7 +13229,7 @@ export function getSelectionCards(
     }
     return out;
   };
-  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng, minX);
 }
 
 /** FAVEUR X : UNE carte commune, tirée au hasard, de l'alignement de la source
@@ -13143,6 +13264,8 @@ export function getFaveurCard(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
+  // Plancher A du « ? » (coût tiré entre A et X).
+  minX = 1,
 ): Card | null {
   const pool = state.factionCardPool;
   if (!pool || pool.length === 0) return null;
@@ -13174,9 +13297,10 @@ export function getFaveurCard(
   } else if (!randomX) {
     candidats = vivier.filter(c => c.mana_cost === x);
   } else {
-    // Tirage du coût parmi ceux RÉELLEMENT peuplés entre 1 et X.
+    // Tirage du coût parmi ceux RÉELLEMENT peuplés entre A et X.
+    const plancher = plancherAleatoire(minX, x);
     const coutsDisponibles = [...new Set(
-      vivier.filter(c => c.mana_cost >= 1 && c.mana_cost <= Math.max(1, x)).map(c => c.mana_cost),
+      vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= Math.max(1, x)).map(c => c.mana_cost),
     )].sort((a, b) => a - b);
     if (coutsDisponibles.length === 0) return null;
     const cout = coutsDisponibles[Math.floor(pseudoRng() * coutsDisponibles.length)];
@@ -13201,8 +13325,9 @@ export function getMagicalSelectionCards(
   // Identifiant de la source : distingue deux exemplaires de la MÊME carte
   // résolus au même instant (cf. saltDeSource).
   seedSalt?: string,
-  // « ? » : un coût tiré par carte, entre 1 et X (cf. offreSelection).
+  // « ? » : un coût tiré par carte, entre A et X (cf. offreSelection).
   randomX = false,
+  minX = 1,
 ): Card[] {
   const pool = state.allSpellsPool;
   if (!pool || pool.length === 0) return [];
@@ -13237,7 +13362,7 @@ export function getMagicalSelectionCards(
     }
     return out;
   };
-  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng, minX);
 }
 
 /** Amplitude d'une Sélection curée à l'ENTRÉE EN JEU, lue dans le modèle
@@ -13248,9 +13373,9 @@ export function getMagicalSelectionCards(
 export function selectionAmplitudeOnPlay(
   card: Card,
   id: "selection" | "selection_magique" | "renfort_royal" | "faveur",
-): { x: number; randomX: boolean } {
+): { x: number; randomX: boolean; minX: number } {
   const cap = getCapabilities(card).find(c => c.abilityId === id && c.trigger === "on_play" && c.effectKind !== "emblem");
-  return { x: cap?.params?.x ?? 0, randomX: cap?.params?.randomX === true };
+  return { x: cap?.params?.x ?? 0, randomX: cap?.params?.randomX === true, minX: cap?.params?.minX ?? 1 };
 }
 
 /** Aiguille vers le bon builder de cartes selon la famille de Sélection. */
@@ -13265,10 +13390,11 @@ function selectionCardsForKeyword(
   // viviers au lieu d'être converti en plafond par l'appelant — c'est là, et
   // là seulement, qu'on sait quels coûts existent réellement.
   randomX = false,
+  minX = 1,
 ): Card[] {
-  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt, randomX);
-  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt, randomX);
-  return getSelectionCards(state, maxManaCost, source, filter, randomX, seedSalt);
+  if (id === "selection_magique") return getMagicalSelectionCards(state, maxManaCost, source, filter, seedSalt, randomX, minX);
+  if (id === "renfort_royal") return getRenfortRoyalCards(state, maxManaCost, source, filter, seedSalt, randomX, minX);
+  return getSelectionCards(state, maxManaCost, source, filter, randomX, seedSalt, minX);
 }
 
 /** Ce créneau de cible est-il celui d'une Incinération ?

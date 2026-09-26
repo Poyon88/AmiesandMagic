@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { badgeAleatoire } from "@/lib/game/random-range";
 import { CostShield, EquipToken, StatShields } from "@/components/card/CardCounters";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 import { useTranslations } from 'next-intl';
@@ -80,7 +81,8 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Invisible":        "👻",
   "Canalisation":     "🔮",
   "Catalyse":         "⚗️",
-  "Contresort":       "🚫",
+  "Contresort X":     "🚫",
+  "Exclusion X":      "⛔",
   "Convocation X":    "📣",
   "Malédiction":      "💀",
   "Nécrophagie":      "🦴",
@@ -152,6 +154,8 @@ interface CardData {
   keywordXValues?: Record<string, number>;
   /** SÉLECTION AU HASARD par libellé forge — cf. CardForge.CardData. */
   keywordRandomX?: Record<string, boolean>;
+  /** Plancher A du « ? » par libellé : l'aperçu peint « A à X » et « A–X ». */
+  keywordMinX?: Record<string, number>;
   /** Mots-clés « paire de stats » (Gloire +X/+Y, Renforcement +X/+Y,
    *  Renforcement multiple, Affaiblissement -X/-Y) : le +Y dédié, keyé comme
    *  keywordXValues (libellé forge). Sans lui l'aperçu n'affiche que le X, ce
@@ -218,6 +222,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     x: card?.keywordXValues?.[kw] ?? null,
     // Sélection au hasard : la description peint « coût ≤ 1 à X ».
     randomX: card?.keywordRandomX?.[kw] === true,
+    minX: card?.keywordMinX?.[kw] ?? null,
     tokens,
   });
 
@@ -246,7 +251,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     const badgeText = isPair
       ? `${kw.includes("-X/-Y") ? "-" : "+"}${xVal ?? 0}/${kw.includes("-X/-Y") ? "-" : "+"}${card?.keywordYValues?.[kw] ?? 0}`
       // Sélection au hasard : « 3? », comme keywordBadgeValue en jeu.
-      : xVal != null ? (card?.keywordRandomX?.[kw] === true && xVal > 1 ? `${xNumeral(xVal)}?` : xNumeral(xVal)) : null;
+      : xVal != null ? (card?.keywordRandomX?.[kw] === true && xVal > 1 ? badgeAleatoire(xVal, card?.keywordMinX?.[kw], xNumeral(xVal)) : xNumeral(xVal)) : null;
     return {
       id,
       xVal,

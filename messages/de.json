@@ -142,8 +142,12 @@
         "desc": "Solange diese Einheit im Spiel ist, kosten Ihre Zauber 1 Mana weniger (mindestens 1)."
       },
       "contresort": {
-        "label": "Gegenzauber",
-        "desc": "Neutralisiert den nächsten gegnerischen Zauber."
+        "label": "Gegenzauber X",
+        "desc": "Annulliert die nächsten X gegnerischen Zauber."
+      },
+      "exclusion": {
+        "label": "Ausschluss X",
+        "desc": "Annulliert die nächsten X gegnerischen Einheitenbeschwörungen."
       },
       "convocation": {
         "label": "Beschwörung X",
@@ -540,8 +544,12 @@
         "desc": "Der Gegner legt X zufällige Karten aus seiner Hand ab."
       },
       "contresort": {
-        "label": "Gegenzauber",
-        "desc": "Annulliert den nächsten gegnerischen Zauber."
+        "label": "Gegenzauber X",
+        "desc": "Annulliert die nächsten X gegnerischen Zauber."
+      },
+      "exclusion": {
+        "label": "Ausschluss X",
+        "desc": "Annulliert die nächsten X gegnerischen Einheitenbeschwörungen."
       },
       "convocation_simple": {
         "label": "Beschwörung",
@@ -792,7 +800,9 @@
         "poison": "vergiftet",
         "grant_keyword": "verleiht {ability}",
         "random_range": "1 bis {max}",
+        "random_range_from": "{min} bis {max}",
         "appel": "bringt die 1. Einheit deines Decks mit Kosten ≤ {x} ins Spiel",
+        "appel_item": "bringt den ersten Gegenstand deines Decks mit Kosten ≤ {x} ins Spiel",
         "ability_generic": "eine Fähigkeit",
         "draw_cards_one": "zieht {x} Karte",
         "draw_cards_many": "zieht {x} Karten",
@@ -885,7 +895,10 @@
         "race": " der Rasse {v}",
         "faction": " der Fraktion {v}",
         "clan": " des Klans {v}",
-        "keyword": " mit {v}"
+        "keyword": " mit {v}",
+        "type_creature": " vom Typ Einheit",
+        "type_spell": " vom Typ Zauber",
+        "type_item": " vom Typ Gegenstand"
       },
       "self": {
         "deal_damage_one": "fügt sich selbst {x} Schaden zu",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — ZUGEHÖRIGKEIT",
     "label_pool_faction": "POOL — FRAKTION",
     "label_pool_keyword": "POOL — SCHLÜSSELWORT",
+    "label_pool_card_type": "POOL — KARTENTYP",
+    "pool_type_creature": "Einheiten",
+    "pool_type_spell": "Zauber",
+    "pool_type_item": "Gegenstände",
     "pool_any": "Beliebig",
     "pool_hint": "Kumulative Filter, zusätzlich zu den Grundregeln (Gewöhnlich, Kosten ≤ X, Gesinnung der Karte).",
     "label_magnitude": "STÄRKE",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "nur ein Zweig markiert: Der Effekt wird normal ausgeführt",
     "alternative_warn_triggers": "Zweige mit verschiedenen Auslösern: Sie schließen sich nicht aus",
     "random_hint_selection": "Jede aufgedeckte Karte würfelt IHRE EIGENEN Kosten zwischen 1 und {max}. Ohne Häkchen kosten alle drei genau {max}.",
+    "random_min_hint": "Mindestkosten (A): jede Kostenstufe wird zwischen {min} und {max} gezogen.",
     "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",

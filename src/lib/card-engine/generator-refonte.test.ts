@@ -270,7 +270,7 @@ describe("race Nagas — profil « gardiens des temples »", () => {
 
   it("joue le registre que le clan ne joue jamais", () => {
     const kws = Object.keys(nagas().likelyKeywords ?? {});
-    expect(kws).toContain("Contresort");
+    expect(kws).toContain("Contresort X");
     expect(kws).toContain("Régénération X");
     expect(kws).toContain("Esquive");
     // Le clan enfonce et tient ; la race ne double aucun de ces registres.

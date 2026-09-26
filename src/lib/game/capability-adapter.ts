@@ -33,9 +33,9 @@ import type {
 } from "./types";
 
 function pruneParams(
-  p: { x?: number | null; y?: number | null; attack?: number | null; health?: number | null; randomX?: boolean | null; randomY?: boolean | null },
+  p: { x?: number | null; y?: number | null; attack?: number | null; health?: number | null; randomX?: boolean | null; randomY?: boolean | null; minX?: number | null },
 ): Capability["params"] {
-  const out: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean } = {};
+  const out: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean; minX?: number } = {};
   if (p.x != null) out.x = p.x;
   if (p.y != null) out.y = p.y;
   if (p.attack != null) out.attack = p.attack;
@@ -43,6 +43,8 @@ function pruneParams(
   // Sélection au hasard : le drapeau voyage avec le X, sinon les lecteurs du
   // modèle unifié (selectionAmplitudeOnPlay) ne le verraient jamais.
   if (p.randomX === true) out.randomX = true;
+  // Le plancher n'a de sens que sous le « ? » ; 1 est la valeur neutre.
+  if (p.randomX === true && p.minX != null && p.minX > 1) out.minX = p.minX;
   if (p.randomY === true) out.randomY = true;
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -182,7 +184,7 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       trigger: "spell_resolution",
       effectKind: "immediate",
       abilityId: sk.id,
-      params: pruneParams({ x: sk.amount, attack: sk.attack, health: sk.health, randomX: sk.randomX, randomY: sk.randomY }),
+      params: pruneParams({ x: sk.amount, attack: sk.attack, health: sk.health, randomX: sk.randomX, randomY: sk.randomY, minX: sk.minX }),
       race: sk.race,
       clan: sk.clan,
       // invocations_multiples : liste des coûts + restriction de pool, portées
@@ -247,7 +249,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       // x = bonus ATK (+X), y = bonus PV (+Y).
       params = pruneParams({ attack: x, health: inst.y });
     } else {
-      params = pruneParams({ x, randomX: inst.randomX, randomY: inst.randomY });
+      params = pruneParams({ x, randomX: inst.randomX, randomY: inst.randomY, minX: inst.minX });
     }
 
     let race = inst.race;

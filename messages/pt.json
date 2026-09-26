@@ -142,8 +142,12 @@
         "desc": "Enquanto esta unidade estiver em jogo, suas magias custam 1 mana a menos (mínimo 1)."
       },
       "contresort": {
-        "label": "Contramagia",
-        "desc": "Anula o próximo feitiço adversário."
+        "label": "Contramagia X",
+        "desc": "Anula os próximos X feitiços inimigos."
+      },
+      "exclusion": {
+        "label": "Exclusão X",
+        "desc": "Anula as próximas X invocações de unidades inimigas."
       },
       "convocation": {
         "label": "Convocação X",
@@ -540,8 +544,12 @@
         "desc": "O adversário descarta X cartas aleatórias da sua mão."
       },
       "contresort": {
-        "label": "Contrafeitiço",
-        "desc": "Anula o próximo feitiço adversário."
+        "label": "Contramagia X",
+        "desc": "Anula os próximos X feitiços inimigos."
+      },
+      "exclusion": {
+        "label": "Exclusão X",
+        "desc": "Anula as próximas X invocações de unidades inimigas."
       },
       "convocation_simple": {
         "label": "Convocação",
@@ -792,7 +800,9 @@
         "poison": "envenena",
         "grant_keyword": "concede {ability}",
         "random_range": "1 a {max}",
+        "random_range_from": "{min} a {max}",
         "appel": "coloca em jogo a 1ª unidade do seu deck de custo ≤ {x}",
+        "appel_item": "coloca em jogo o primeiro objeto do seu baralho de custo ≤ {x}",
         "ability_generic": "uma habilidade",
         "draw_cards_one": "compre {x} carta",
         "draw_cards_many": "compre {x} cartas",
@@ -885,7 +895,10 @@
         "race": " da raça {v}",
         "faction": " da facção {v}",
         "clan": " do clã {v}",
-        "keyword": " portando {v}"
+        "keyword": " portando {v}",
+        "type_creature": " do tipo unidade",
+        "type_spell": " do tipo feitiço",
+        "type_item": " do tipo objeto"
       },
       "self": {
         "deal_damage_one": "sofre {x} de dano",
@@ -2049,6 +2062,10 @@
     "label_pool_membership": "POOL — PERTENÇA",
     "label_pool_faction": "POOL — FACÇÃO",
     "label_pool_keyword": "POOL — PALAVRA-CHAVE",
+    "label_pool_card_type": "POOL — TIPO DE CARTA",
+    "pool_type_creature": "Unidades",
+    "pool_type_spell": "Feitiços",
+    "pool_type_item": "Objetos",
     "pool_any": "Indiferente",
     "pool_hint": "Filtros cumulativos, além das regras básicas (Comum, custo ≤ X, alinhamento da carta).",
     "label_magnitude": "MAGNITUDE",
@@ -2454,6 +2471,7 @@
     "alternative_warn_alone": "só um ramo marcado: o efeito resolve-se normalmente",
     "alternative_warn_triggers": "ramos em gatilhos diferentes: não se excluem",
     "random_hint_selection": "Cada carta revelada tira O SEU PRÓPRIO custo, entre 1 e {max}. Sem a caixa, as três custam exatamente {max}.",
+    "random_min_hint": "Custo mínimo (A): cada custo é sorteado entre {min} e {max}.",
     "random_hint_faveur": "A carta oferecida tem um custo sorteado entre 1 e {max}. Sem a caixa marcada, vale exatamente {max}.",
     "content_appel": "Chamado do baralho",
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",
