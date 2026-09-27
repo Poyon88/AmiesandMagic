@@ -1501,6 +1501,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { params: ["amount"], needsTarget: false },
   },
+  // chez toutes les ennemies (portée « toutes », aura continue). Mise en œuvre
   conferer: {
     id: "conferer", label: "Conférer", symbol: "✋",
     desc: "Confère {ability} {scope}.",

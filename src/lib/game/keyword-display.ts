@@ -8,6 +8,7 @@ import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, type Resolver } from "./desc-markers";
 import { SINGULIER_COLOR } from "./singulier";
 import { getClanForm } from "@/lib/card-engine/race-forms";
+import type { TargetScope } from "./types";
 import {
   convocationPrefix,
   formatConvocationToken,
@@ -165,6 +166,19 @@ export function keywordScopeNote(
     return t?.("game.spell_grant_target") ?? " · à la créature ciblée";
   }
   return null;
+}
+
+const TARGET_SCOPE_NOTE_FR: Record<TargetScope, string> = {
+  all_enemies: "S'applique à toutes les créatures ennemies",
+  all_allies: "S'applique à toutes les créatures alliées",
+  all: "S'applique à toutes les créatures",
+};
+
+/** Note de PORTÉE « toutes » d'une capacité ciblée (cf. target-scope.ts),
+ *  affichée sous sa description. */
+export function targetScopeNote(scope: TargetScope | null | undefined, t?: SafeT): string | null {
+  if (!scope) return null;
+  return t?.(`game.target_scope_${scope}`) ?? TARGET_SCOPE_NOTE_FR[scope];
 }
 
 /** Gabarit brut d'un mot-clé : message localisé, sinon repli FR du registre. */

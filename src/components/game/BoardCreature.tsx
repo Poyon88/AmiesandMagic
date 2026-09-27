@@ -29,6 +29,8 @@ import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
+import { composedScope, creatureScopes, kwInstanceScope, porteeValide, scopeAriaLabel } from "@/lib/game/target-scope";
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -447,7 +449,7 @@ function BoardCreature({
         if (tapInstanceIdx !== null) {
           const instance = card.keyword_instances?.[tapInstanceIdx];
           if (!instance) return;
-          if (tapKeywordNeedsTarget(instance.id)) return;
+          if (tapKeywordNeedsTarget(instance.id) && !porteeValide(instance.targetScope, creatureScopes(instance.id))) return;
           onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
         } else if (peutLancerSortAppris) {
           // Le sort appris ouvre lui-même ses fenêtres de coût et de ciblage
@@ -889,6 +891,8 @@ function BoardCreature({
                 <span style={{ display: "inline-flex" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
+                    {/* « A » : capacité ciblée réglée sur « toutes les créatures ». */}
+                    {kwInstanceScope(entry.instance) && <AllAlliesMarker size={8} color={modeColor} label={scopeAriaLabel(kwInstanceScope(entry.instance)!)} />}
                   </span>
                 </span>
                 {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
@@ -920,6 +924,7 @@ function BoardCreature({
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={10} />
+                  {composedScope(cap) && <AllAlliesMarker size={8} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
                 </span>
                 {val && <span style={{ fontSize: 12, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
                 {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}

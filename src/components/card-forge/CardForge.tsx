@@ -12,9 +12,9 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { additionalCostPoints, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { additionalCostPoints, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
-import ComposedEffectsEditor from "./ComposedEffectsEditor";
+import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
 import { applyBalanceOverrides, type BalanceOverrides } from "@/lib/card-engine/balance";
 import CostListEditor from "./CostListEditor";
@@ -34,6 +34,8 @@ import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/t
 import CardEditor from "@/components/admin/CardEditor";
 import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
+import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import type { TargetScope } from "@/lib/game/types";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -162,6 +164,7 @@ interface ForgeCard {
   /** +Y des mots-clés en paire de stats (Gloire, Renforcement, …) — cf. CardVisual. */
   keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
+  keywordTargetScope?: Record<string, TargetScope>;
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
@@ -1813,6 +1816,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Missing entry = "target" (single allied creature); "all_allies" = every
   // allied creature on cast. Saved into card.keyword_instances.grantScope.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
+  // Unité : portée « toutes » d'une capacité CIBLÉE (libellé forge → portée).
+  // Absente = une cible. Persistée dans keyword_instances[i].targetScope.
+  const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
   // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
   // amplitude. « Conférer » n'a pas de X à lui : les x/y de son instance portent
   // celle de la capacité DONNÉE (Conférer → Résistance 2, → Gloire +2/+1).
@@ -1948,7 +1954,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         : keywordXValues[kw]
           // Coût optionnel laissé vide : barème d'un X = 10 (plafond) ou 5 (coût exact).
           ?? (coutOpt(kw) ? xEquivalentCoutLibre(FORGE_TO_GAME_KEYWORD[kw] ?? "") : 1);
-      return sum + kwDef.cost + kwDef.costPerX * Math.max(0, x - 1);
+      // Portée « toutes » : le coût de la capacité est multiplié (barème).
+      const porte = porteStats && porteeValide(keywordTargetScope[kw], creatureScopes(FORGE_TO_GAME_KEYWORD[kw] ?? ""));
+      return sum + (kwDef.cost + kwDef.costPerX * Math.max(0, x - 1)) * (porte ? BUDGET.scopeAll : 1);
     }, 0)
   );
   // Crédit rendu par les coûts additionnels, isolé pour l'afficher : sans lui la
@@ -1988,6 +1996,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Force des ancêtres +X/+Y": fdaY,
     },
     keywordGrantScope: !porteStats ? keywordGrantScope : undefined,
+    keywordTargetScope: porteStats ? keywordTargetScope : undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
@@ -2551,6 +2560,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setKeywordXValues({});
     setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({});
     setKeywordGrantScope({});
+    setKeywordTargetScope({});
     setSpellKeywords([]);
     setSpellEffectsData(null);
     setComposedCaps([]);
@@ -2701,6 +2711,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         yValues: keywordYValues,
         modes: keywordModes,
         grantScopes: keywordGrantScope,
+        targetScopes: keywordTargetScope,
         isSpellCard,
         singulier: keywordSingulier,
         randomX: keywordRandomX,
@@ -3920,7 +3931,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         const coupleGenerique = isCoupleXYGenerique(id);
                         const xSurPuce = isScalable && selected && !XY_LABELS_X_DANS_PANNEAU.has(id) && !coupleGenerique;
                         return (
-                          <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2, position: "relative" }}
+                          <div key={id} style={{ display: "inline-flex", alignItems: "center", gap: 2, position: "relative", flexWrap: "wrap", maxWidth: "100%" }}
                             onMouseEnter={e => {
                               const rect = e.currentTarget.getBoundingClientRect();
                               setHoveredKw({ id, rect });
@@ -3946,6 +3957,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               }
                               if (selected) {
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
+                                setKeywordTargetScope(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordSingulier(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordRandomX(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordMinX(prev => { const next = { ...prev }; delete next[id]; return next; });
@@ -4093,6 +4105,22 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   );
                                 })}
                               </div>
+                            )}
+                            {/* Portée « toutes » — unités, capacités ciblées seulement
+                                (cf. lib/game/target-scope.ts). Peint le « A ». */}
+                            {selected && porteStats && creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "").length > 0 && (
+                              <span style={{ marginLeft: 4 }}>
+                                <ScopeButtons
+                                  value={porteeValide(keywordTargetScope[id], creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? ""))}
+                                  options={creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "")}
+                                  onChange={(v) => setKeywordTargetScope(prev => {
+                                    const next = { ...prev };
+                                    if (v) next[id] = v; else delete next[id];
+                                    return next;
+                                  })}
+                                  tr={tf}
+                                />
+                              </span>
                             )}
                           </div>
                         );

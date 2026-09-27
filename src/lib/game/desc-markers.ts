@@ -23,7 +23,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY" | "minX"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "targetScope" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY" | "minX"> | null;
   /** Esprit de corps : combien de points cette carte gagnerait si elle
    *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
    *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est

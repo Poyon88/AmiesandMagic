@@ -1265,7 +1265,10 @@ export function additionalCostPoints(c: {
 /** Base du budget : `mana × BASE × multiplicateur de rareté`.
  *  Objet et non nombre nu : le barème de la forge peut le surcharger à chaud
  *  (cf. `balance.ts`), ce qu'une constante primitive interdirait. */
-export const BUDGET = { base: 10 };
+/** `base` : points par mana. `scopeAll` : coefficient appliqué au coût d'une
+ *  capacité de créature réglée sur la portée « toutes les créatures » au lieu
+ *  d'une cible (cf. lib/game/target-scope.ts). Tous deux réglables au barème. */
+export const BUDGET = { base: 10, scopeAll: 2 };
 /** @deprecated Lire `BUDGET.base`, seul champ que le barème peut surcharger. */
 export const MANA_BUDGET_BASE = 10;
 

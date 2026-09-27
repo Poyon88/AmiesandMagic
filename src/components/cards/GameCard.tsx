@@ -71,6 +71,7 @@ import CompagnonsNames from "./CompagnonsNames";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
+import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, kwTargetScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 
 interface GameCardProps {
   card: Card;
@@ -423,8 +424,13 @@ export default function GameCard({
               const grantScope = !isCreature
                 ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                 : null;
-              const isAllAllies = grantScope === "all_allies";
-              const grantSuffix = isAllAllies ? " · conférée à tous les alliés" : grantScope === "target" ? " · conférée à la cible" : "";
+              // « A » : don à tous les alliés, ou capacité ciblée réglée sur
+              // « toutes les créatures » (cf. target-scope.ts).
+              const portee = kwInstanceScope(instance ?? card.keyword_instances?.find((k) => k.id === kw));
+              const isAllAllies = portee != null;
+              const grantSuffix = grantScope === "all_allies" ? " · conférée à tous les alliés"
+                : grantScope === "target" ? " · conférée à la cible"
+                : portee ? ` · ${TARGET_SCOPE_FR[portee]}` : "";
               const displayTitle = baseTitle + grantSuffix;
               const hasImg = !!iconOverrides[kw];
               const modeColor = keywordModeColor(mode);
@@ -441,7 +447,7 @@ export default function GameCard({
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                     <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} singulier={entry.singulier} />
                   </span>
-                  {isAllAllies && <AllAlliesMarker size={13 * icoS} color={modeColor} />}
+                  {portee && <AllAlliesMarker size={13 * icoS} color={modeColor} label={scopeAriaLabel(portee)} />}
                 </span>
                 {keywordBadgeValue(kw, x, instance) != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{keywordBadgeValue(kw, x, instance)}</span>}
               </div>
@@ -455,7 +461,8 @@ export default function GameCard({
               // Skip stale ids that no longer exist in the registry — silently
               // dropping a single icon is better than crashing the whole card.
               if (!def) return null;
-              const displayTitle = vocab.spellKeywordLabel(spellKw);
+              const porteeSk = spellKwScope(spellKw);
+              const displayTitle = vocab.spellKeywordLabel(spellKw) + (porteeSk ? ` · ${TARGET_SCOPE_FR[porteeSk]}` : "");
               // Format centralisé (signe ±X/±Y d'après le libellé, paire
               // neutre amount+health de Déchainement, repli legacy Invocation).
               const valueText = getSpellKeywordBadgeValue(spellKw);
@@ -471,8 +478,9 @@ export default function GameCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 2 * s,
                 fontSize: 10 * s, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
+                  {porteeSk && <AllAlliesMarker size={13 * icoS} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
                   fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -506,6 +514,7 @@ export default function GameCard({
                   )}
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
+                  {composedScope(cap) && <AllAlliesMarker size={13 * icoS} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
                 </span>
                 {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{val}</span>}
                 {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}
@@ -596,6 +605,7 @@ export default function GameCard({
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
+                  {/* Portée « toutes » d'une capacité ciblée de créature. */}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
@@ -620,6 +630,7 @@ export default function GameCard({
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  {(() => { const n = vocab.targetScopeNote(spellKwScope(spellKw)); return n ? <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
                   {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, effectiveTokens)} scale={s} />

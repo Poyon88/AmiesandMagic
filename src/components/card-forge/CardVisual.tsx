@@ -21,6 +21,9 @@ import ComposedMarker from '@/components/cards/ComposedMarker';
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
+import { TARGET_SCOPE_FR, composedScope, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { targetScopeNote } from "@/lib/game/keyword-display";
+import type { TargetScope } from "@/lib/game/types";
 
 // Reverse of KEYWORD_LABELS: FR label → snake_case engine id. Forge state
 // stores keywords as FR labels, but the keyword-icon store is keyed by the
@@ -169,6 +172,9 @@ interface CardData {
   // Spell-only: per-conferred-keyword grant scope (FR-label keyed). Tints the
   // keyword icon green (all allies) vs white (single targeted creature).
   keywordGrantScope?: Record<string, "all_allies">;
+  // Unité : portée « toutes » d'une capacité CIBLÉE (FR-label keyed), cf.
+  // lib/game/target-scope.ts. Peint le « A » et la note de portée.
+  keywordTargetScope?: Record<string, TargetScope>;
   ability: string;
   flavorText: string;
   budgetUsed: number;
@@ -425,9 +431,12 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               // Portée « tous les alliés » : un « A » dans le coin bas-gauche de
               // l'icône, de la couleur de l'icône (blanche ici, l'aperçu ne teinte
               // pas par déclencheur).
-              const isAllAllies = grantScope === "all_allies";
+              // Unité : portée « toutes » d'une capacité ciblée — même « A ».
+              const portee = grantScope === "all_allies" ? "all_allies" as const
+                : grantScope == null ? porteeValide(card!.keywordTargetScope?.[kw], creatureScopes(forgeKeywordId(kw))) : undefined;
+              const isAllAllies = portee != null;
               const badgeColor = grantScope === "target" ? "#cfd8dc" : fac.color;
-              const scopeNote = isAllAllies ? ` · ${t('detail_note_all_allies')}` : "";
+              const scopeNote = grantScope === "all_allies" ? ` · ${t('detail_note_all_allies')}` : portee ? ` · ${TARGET_SCOPE_FR[portee]}` : "";
               return (
                 <div key={kw} title={`${displayName}${scopeNote}: ${displayDesc}`} style={{ order: ((card!.type === "Unité" || card!.type === "Objet") ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)),
                   minWidth: 19 * s, height: 19 * s, borderRadius: 6 * s,
@@ -440,7 +449,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
                     <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={forgeKeywordId(kw)} size={15 * s} fill />
-                    {isAllAllies && <AllAlliesMarker size={7 * s} color="#fff" />}
+                    {portee && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(portee)} />}
                   </span>
                   {badgeText != null && (
                     <span style={{
@@ -479,8 +488,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   boxShadow: `0 0 6px ${fac.color}44`,
                   transition: "all 0.2s",
                 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
+                  <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
                     <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} size={15 * s} fill mode="spell" singulier={spellKw.singulier} />
+                    {spellKwScope(spellKw) && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(spellKwScope(spellKw)!)} />}
                   </span>
                   {valueText && (
                     <span style={{
@@ -513,6 +523,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                     <span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span>
                     <ComposedMarker mode={cmode} size={8 * s} />
+                    {composedScope(cap) && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(composedScope(cap)!)} />}
                   </span>
                   {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`, marginLeft: -3 * s }}>{val}</span>}
                 </div>
@@ -647,6 +658,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                    {(() => { const n = targetScopeNote(spellKwScope(spellKw)); return n ? <div style={{ fontSize: 11.5 * s, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   </div>
                 </div>
               );

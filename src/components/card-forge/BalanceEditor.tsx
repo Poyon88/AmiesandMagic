@@ -222,6 +222,8 @@ export default function BalanceEditor() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
           <span style={{ fontSize: 11, color: "#666" }}>Base</span>
           <Champ valeur={BUDGET.base} defaut={d.budgetBase} onChange={(n) => maj({ ...ov, budgetBase: n })} />
+          <span style={{ fontSize: 11, color: "#666", marginLeft: 18 }} title="Coefficient appliqué au coût d'une capacité de créature réglée sur « toutes les créatures » au lieu d'une cible.">Portée « toutes » ×</span>
+          <Champ valeur={BUDGET.scopeAll} defaut={d.scopeAll} pas={0.1} onChange={(n) => maj({ ...ov, scopeAll: n })} />
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ borderCollapse: "collapse", fontSize: 11 }}>

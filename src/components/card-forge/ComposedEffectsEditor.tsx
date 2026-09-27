@@ -25,6 +25,8 @@ import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spe
 import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
+import { porteeValide, spellScopes } from "@/lib/game/target-scope";
+import type { TargetScope } from "@/lib/game/types";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -503,6 +505,19 @@ export default function ComposedEffectsEditor({
                 {/* Déchainement : « ? » sur Y — coût plafond, chaque sort tiré entre 1 et Y. */}
                 {kw.id === "dechainement" && <label title={tr('random_hint', { max: kw.health ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: kw.randomY === true ? "#b3541e" : "#666", cursor: "pointer", fontWeight: kw.randomY === true ? 700 : 400 }}><input type="checkbox" checked={kw.randomY === true} onChange={(e) => patchCurated(idx, { randomY: e.target.checked ? true : undefined })} />?</label>}
               </span>
+              {/* PORTÉE : une cible, ou toutes les créatures des camps que la
+                  capacité accepte (cf. lib/game/target-scope.ts). */}
+              {spellScopes(kw.id).length > 0 && (
+                <>
+                  <span style={labelStyle}>{tr('label_target_scope')}</span>
+                  <ScopeButtons
+                    value={porteeValide(kw.targetScope, spellScopes(kw.id))}
+                    options={spellScopes(kw.id)}
+                    onChange={(v) => patchCurated(idx, { targetScope: v })}
+                    tr={tr}
+                  />
+                </>
+              )}
               {kw.id === "renforcement_multiple" && (
                 <>
                   <span style={labelStyle}>{tr('race_clan_label')}</span>
@@ -1042,5 +1057,36 @@ export default function ComposedEffectsEditor({
         <button onClick={addComposed} style={{ order: POWER_ORDER_LAST, marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
       )}
     </div>
+  );
+}
+
+/** Sélecteur de PORTÉE d'une capacité ciblée : « Cible » (défaut) ou l'une des
+ *  portées « toutes » ouvertes à cette capacité. Partagé par la ligne de
+ *  mécanique d'action et le réglage des capacités de créature. */
+export function ScopeButtons({ value, options, onChange, tr }: {
+  value: TargetScope | undefined;
+  options: TargetScope[];
+  onChange: (v: TargetScope | undefined) => void;
+  tr: (key: string) => string;
+}) {
+  const choix: (TargetScope | "target")[] = ["target", ...options];
+  return (
+    <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap", maxWidth: "100%" }}>
+      {choix.map((c) => {
+        const actif = (value ?? "target") === c;
+        return (
+          <button key={c} type="button" onClick={() => onChange(c === "target" ? undefined : c)}
+            title={c === "target" ? undefined : tr(`target_scope_hint_${c}`)}
+            style={{
+              fontSize: 10, padding: "2px 6px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap",
+              border: `1px solid ${actif ? "#8a6d3b" : "#ccc"}`,
+              background: actif ? "#8a6d3b" : "#fff", color: actif ? "#fff" : "#555",
+              fontWeight: actif ? 700 : 400,
+            }}>
+            {c === "target" ? tr("target_scope_target") : <><b>A</b> {tr(`target_scope_${c}`)}</>}
+          </button>
+        );
+      })}
+    </span>
   );
 }

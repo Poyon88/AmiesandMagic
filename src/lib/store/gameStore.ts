@@ -72,6 +72,7 @@ import { peutRecevoirObjet } from "@/lib/game/items";
 import { MAX_HAND_SIZE, MAX_CONQUETE } from "@/lib/game/constants";
 import { attackerRemovedItself } from "@/lib/game/attack-wave-order";
 import { drawnCardIds } from "@/lib/game/drawn-cards";
+import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 
 /** PRÉSAGE — prépare la modale : les cartes du dessus du deck DANS LE DÉSORDRE,
  *  accompagnées de la table qui retraduit la position cliquée en index réel.
@@ -5743,7 +5744,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       return null;
     }
 
-    const targets = getTapActivateTargets(gameState, instance.id, sourceInstanceId);
+    // Portée « toutes » : pas de cible à désigner, l'activation part aussitôt.
+    const targets = porteeValide(instance.targetScope, creatureScopes(instance.id))
+      ? null
+      : getTapActivateTargets(gameState, instance.id, sourceInstanceId);
     if (targets && targets.length > 0) {
       set({
         selectedCardInstanceId: null,

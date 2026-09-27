@@ -25,6 +25,7 @@ import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, 
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
+import { composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 
 /** Glyphe texte d'un coût additionnel — la vignette n'a pas la place d'une
  *  silhouette ; le glyphe + la couleur suffisent à repérer la carte. */
@@ -73,13 +74,15 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
         const { kw, x, mode, instance } = entry;
         const val = keywordBadgeValue(kw, x, instance);
         const color = keywordModeColor(mode);
-        const allAllies = !isCreature && (instance?.grantScope ?? "target") === "all_allies";
+        // « A » : don à tous les alliés (action) ou capacité ciblée « toutes ».
+        const portee = !isCreature && (instance?.grantScope ?? "target") === "all_allies" ? "all_allies" as const
+          : isCreature ? kwInstanceScope(instance) : undefined;
         return (
           <span key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={applyKeywordValueToLabel(kw, KEYWORD_LABELS[kw] ?? kw, x, instance)}
             style={cell(isCreature ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw))}>
             <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
               <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={box * 0.6} keyword={kw} fill mode={mode} singulier={entry.singulier} light />
-              {allAllies && <AllAlliesMarker size={box * 0.4} color={color} />}
+              {portee && <AllAlliesMarker size={box * 0.4} color={color} label={scopeAriaLabel(portee)} />}
             </span>
             {val != null && <span style={{ ...badge, color: color ?? "#fff" }}>{val}</span>}
           </span>
@@ -90,8 +93,9 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
         const val = getSpellKeywordBadgeValue(sk);
         return (
           <span key={`sk_${i}`} title={SPELL_KEYWORD_LABELS[sk.id] ?? sk.id} style={cell(spellKeywordDisplayOrder(i))}>
-            <span style={{ display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
+            <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
               <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[sk.id] || "✦"} size={box * 0.6} keyword={`spell_${sk.id}`} fill mode="spell" singulier={sk.singulier} light />
+              {spellKwScope(sk) && <AllAlliesMarker size={box * 0.4} color={keywordModeColor("spell")} label={scopeAriaLabel(spellKwScope(sk)!)} />}
             </span>
             {val && <span style={{ ...badge, color: keywordModeColor("spell") ?? accent }}>{val}</span>}
           </span>
@@ -106,6 +110,7 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
             <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
               <KeywordIcon symbol={ic.symbol} size={box * 0.6} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} light />
               <ComposedMarker mode={cmode} size={box * 0.3} />
+              {composedScope(cap) && <AllAlliesMarker size={box * 0.4} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
             </span>
             {val && <span style={{ ...badge, color: keywordModeColor(cmode) ?? "#fff" }}>{val}</span>}
           </span>

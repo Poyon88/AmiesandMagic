@@ -14,7 +14,8 @@ import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
-import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
+import ComposedEffectsEditor, { ScopeButtons } from "@/components/card-forge/ComposedEffectsEditor";
+import { useTranslations } from "next-intl";
 import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -27,6 +28,8 @@ import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order
 import { positionAfterExisting } from "@/lib/game/composed-position";
 import { describeComposedCap } from "@/lib/game/composed-display";
 import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
+import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import type { TargetScope } from "@/lib/game/types";
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -139,6 +142,8 @@ const FILTER_KEYWORDS: { id: string; label: string }[] = (() => {
 })();
 
 export default function CardEditor() {
+  // Libellés du sélecteur de portée, partagés avec la forge.
+  const tForge = useTranslations("forge");
   // Data
   const [cards, setCards] = useState<DbCard[]>([]);
   const [sets, setSets] = useState<CardSet[]>([]);
@@ -162,6 +167,8 @@ export default function CardEditor() {
   // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
   // (single allied creature); "all_allies" = every allied creature on cast.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
+  // Unité : portée « toutes » d'une capacité CIBLÉE (id moteur → portée).
+  const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
 
   // Filters
   const [search, setSearch] = useState("");
@@ -378,6 +385,7 @@ export default function CardEditor() {
     const aleatoires: Record<string, boolean> = {};
     const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
+    const targetScopes: Record<string, TargetScope> = {};
     let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
@@ -392,6 +400,7 @@ export default function CardEditor() {
       if (inst.randomX === true && (inst.minX ?? 1) > 1) planchers[inst.id] = inst.minX!;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
+      if (inst.targetScope) targetScopes[inst.id] = inst.targetScope;
       if (inst.id === "renforcement_multiple") {
         rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
       }
@@ -424,6 +433,7 @@ export default function CardEditor() {
     setKeywordMinX(planchers);
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
+    setKeywordTargetScope(targetScopes);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
 
     // Strip X suffix from effect_text for editing
@@ -719,6 +729,13 @@ export default function CardEditor() {
         // SINGULIER : la condition s'ajoute à l'instance — et CRÉE l'instance
         // d'un mot-clé qui n'aurait sinon rien eu à stocker (même contrat que
         // buildKeywordInstances côté forge).
+        // PORTÉE « toutes » (unité, capacité ciblée) : même contrat que
+        // buildKeywordInstances — crée l'instance au besoin.
+        .map((inst, i): KeywordInstance | null => {
+          const id = activeKeywords[i];
+          const scope = isSpellCard ? undefined : porteeValide(keywordTargetScope[id], creatureScopes(id));
+          return scope ? { ...(inst ?? { id: id as Keyword }), targetScope: scope } : inst;
+        })
         .map((inst, i): KeywordInstance | null => {
           const id = activeKeywords[i];
           if (keywordSingulier[id] !== true) return inst;
@@ -1902,6 +1919,35 @@ export default function CardEditor() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* PORTÉE « toutes » des capacités ciblées d'une unité : une cible,
+                ou toutes les créatures des camps acceptés (« A » sur l'icône). */}
+            {porteStats && (() => {
+              const ciblees = ((editFields.keywords as string[]) || []).filter(kw => creatureScopes(kw).length > 0);
+              if (ciblees.length === 0) return null;
+              return (
+                <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#fbf7f0", border: "1px solid #e8dcc6" }}>
+                  <div style={{ ...S.label, color: "#8a6d3b", marginBottom: 6 }}>Portée des capacités ciblées</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {ciblees.map(kw => (
+                      <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{KEYWORD_LABELS[kw as Keyword] ?? kw}</span>
+                        <ScopeButtons
+                          value={porteeValide(keywordTargetScope[kw], creatureScopes(kw))}
+                          options={creatureScopes(kw)}
+                          onChange={(v) => setKeywordTargetScope(prev => {
+                            const next = { ...prev };
+                            if (v) next[kw] = v; else delete next[kw];
+                            return next;
+                          })}
+                          tr={tForge}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               );

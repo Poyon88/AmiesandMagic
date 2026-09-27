@@ -23,6 +23,7 @@ import {
 } from "./abilities";
 import { orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { orderCapabilitiesByAuthor } from "./composed-position";
+import { creatureScopes, porteeValide, spellScopes } from "./target-scope";
 import type {
   Capability,
   CapabilityTargetSlot,
@@ -177,8 +178,10 @@ function deriveSpellCapabilities(card: Card): Capability[] {
   // 1) Effets de sort prédéfinis (spell_keywords) → résolution, immédiat.
   (card.spell_keywords ?? []).forEach((sk, i) => {
     const def = SPELL_KEYWORDS[sk.id];
+    // Portée « toutes » : plus de cible à désigner, le slot disparaît.
+    const scope = porteeValide(sk.targetScope, spellScopes(sk.id));
     const targets: CapabilityTargetSlot[] =
-      def?.needsTarget && def.targetType ? [{ type: def.targetType, label: def.label }] : [];
+      def?.needsTarget && def.targetType && !scope ? [{ type: def.targetType, label: def.label }] : [];
     caps.push({
       uid: `sk_${i}`,
       trigger: "spell_resolution",
@@ -195,6 +198,7 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       linkedCardIds: sk.linkedCardIds,
       tokenId: sk.token_id ?? undefined,
       targets,
+      ...(scope ? { targetScope: scope } : {}),
       // Singulier : la condition suit l'effet dans le modèle unifié.
       ...(sk.singulier === true ? { singulier: true } : {}),
     });
@@ -287,6 +291,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       tokenId,
       tokens,
       targets: [],
+      ...(porteeValide(inst.targetScope, creatureScopes(id)) ? { targetScope: inst.targetScope } : {}),
       // Singulier : porté par la capacité dérivée, pour qu'un retrait chez un
       // joueur non singleton touche `capabilities` ET `keyword_instances`.
       ...(inst.singulier === true ? { singulier: true } : {}),

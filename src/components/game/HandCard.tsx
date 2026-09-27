@@ -34,6 +34,7 @@ import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
+import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -895,7 +896,9 @@ function HandCard({
                   const grantScope = card.card_type === "spell"
                     ? (card.keyword_instances?.find((k) => k.id === kw)?.grantScope ?? "target")
                     : null;
-                  const isAllAllies = grantScope === "all_allies";
+                  // « A » : don à tous les alliés, ou capacité ciblée « toutes ».
+                  const portee = grantScope === "all_allies" ? "all_allies" as const
+                    : kwInstanceScope(entry.instance ?? card.keyword_instances?.find((k) => k.id === kw));
                   return (
                     <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
                       minWidth: 32, height: 32, borderRadius: 3,
@@ -908,7 +911,7 @@ function HandCard({
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                         <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                           <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
-                          {isAllAllies && <AllAlliesMarker size={8} color={modeColor} />}
+                          {portee && <AllAlliesMarker size={8} color={modeColor} label={scopeAriaLabel(portee)} />}
                         </span>
                       </span>
                       {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
@@ -920,7 +923,8 @@ function HandCard({
             {card.spell_keywords && card.spell_keywords.length > 0 && card.spell_keywords.map((spellKw, i) => {
               const def = SPELL_KEYWORDS[spellKw.id];
               if (!def) return null;
-              const displayTitle = vocab.spellKeywordLabel(spellKw);
+              const porteeSk = spellKwScope(spellKw);
+              const displayTitle = vocab.spellKeywordLabel(spellKw) + (porteeSk ? ` · ${TARGET_SCOPE_FR[porteeSk]}` : "");
               // Format centralisé (cf. getSpellKeywordBadgeValue) — couvre la
               // paire neutre amount+health de Déchainement X/Y.
               const valueText = getSpellKeywordBadgeValue(spellKw);
@@ -936,8 +940,9 @@ function HandCard({
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 1,
                 fontSize: 8, overflow: "visible",
               }}>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
+                  {porteeSk && <AllAlliesMarker size={8} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
                   fontSize: 12, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
@@ -971,6 +976,7 @@ function HandCard({
                     )}
                     </span>
                     <ComposedMarker mode={cmode} size={10} />
+                    {composedScope(cap) && <AllAlliesMarker size={8} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
                   </span>
                   {val && <span style={{ fontSize: 12, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
                   {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}

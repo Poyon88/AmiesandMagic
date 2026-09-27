@@ -59,6 +59,7 @@ import {
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
 import { isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
+import { creatureScopes, creaturesDePortee, porteeValide, spellScopes } from "./target-scope";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
 // ============================================================
@@ -786,6 +787,39 @@ function cardHasKwOnPlay(card: Card, kw: Keyword): boolean {
   // backfillées sur le mode autoritaire de keyword_instances (cf. adapter), donc
   // une simple lecture du trigger suffit — `hasKwInMode` fait de même.
   return getCapabilities(card).some(c => c.abilityId === kw && c.trigger === "on_play");
+}
+
+/** Portée « toutes » de l'instance À L'ENTRÉE d'un mot-clé de créature, si
+ *  l'auteur l'a choisie et que la capacité l'accepte (cf. target-scope.ts). */
+function porteeOnPlay(card: Card, kw: Keyword): import("./types").TargetScope | undefined {
+  const cap = getCapabilities(card).find(c => c.abilityId === kw && c.trigger === "on_play");
+  return porteeValide(cap?.targetScope, creatureScopes(kw));
+}
+
+/** Cibles d'un mot-clé de créature à l'entrée en jeu : la cible choisie par le
+ *  joueur (éventuellement absente — chaque résolveur garde alors son repli), ou
+ *  TOUTES les créatures de la portée, source exclue. Le corps de chaque
+ *  capacité est rejoué tel quel sur chacune : même règle que côté sort. */
+function ciblesOnPlay(
+  source: CardInstance, kw: Keyword, chosen: string | undefined,
+  owner: PlayerState, opponent: PlayerState,
+): (string | undefined)[] {
+  const scope = porteeOnPlay(source.card, kw);
+  return scope
+    ? creaturesDePortee(scope, owner, opponent, source.instanceId).map(c => c.instanceId)
+    : [chosen];
+}
+
+/** MALÉDICTION — marque `target` pour l'exil au début du tour de son
+ *  propriétaire. La source ne mémorisait qu'UNE victime ; la portée « toutes »
+ *  range les suivantes dans `maledictionExtraIds`. */
+function maudire(source: CardInstance, target: CardInstance): void {
+  if (!source.maledictionTargetId || source.maledictionTargetId === target.instanceId) {
+    source.maledictionTargetId = target.instanceId;
+    return;
+  }
+  const extra = source.maledictionExtraIds ?? [];
+  if (!extra.includes(target.instanceId)) source.maledictionExtraIds = [...extra, target.instanceId];
 }
 
 /** Look up the X value for a specific keyword/mode pair. Prefers the
@@ -2916,6 +2950,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   levierParalysie(inst);
   inst.isPoisoned = false;
   inst.maledictionTargetId = null;
+  delete inst.maledictionExtraIds;
   inst.ombreRevealed = false;
   desarmerGardes(inst);
   inst.fureurActive = false;
@@ -3862,12 +3897,12 @@ export function startTurn(state: GameState): GameState {
   // Process Malédiction: exile cursed enemy units at start of their owner's turn
   for (const creature of [...player.board]) {
     if (creature.maledictionTargetId) {
-      const cursed = opponent.board.find(c => c.instanceId === creature.maledictionTargetId);
-      if (cursed) {
-        opponent.board = opponent.board.filter(c => c !== cursed);
-        // Exiled — not added to graveyard
-      }
+      // Portée « toutes » : les victimes supplémentaires partent en même temps.
+      const ids = new Set([creature.maledictionTargetId, ...(creature.maledictionExtraIds ?? [])]);
+      // Exiled — not added to graveyard
+      opponent.board = opponent.board.filter(c => !ids.has(c.instanceId));
       creature.maledictionTargetId = null;
+      delete creature.maledictionExtraIds;
     }
   }
 
@@ -5007,12 +5042,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Retour différé : l'unité ciblée repart sous le deck de son propriétaire.
     if (hasKwOnPlay(cardInstance, "retour_differe")) {
-      resolveRetourDiffere(action.targetInstanceId, cardInstance.instanceId, player, opponent);
+      const toutes = !!porteeOnPlay(cardInstance.card, "retour_differe");
+      for (const tid of ciblesOnPlay(cardInstance, "retour_differe", action.targetInstanceId, player, opponent)) {
+        resolveRetourDiffere(tid, cardInstance.instanceId, player, opponent, false, !toutes);
+      }
     }
 
     // Dévoration : détruit l'unité ciblée et absorbe ses stats.
     if (hasKwOnPlay(cardInstance, "devoration")) {
-      resolveDevoration(cardInstance, action.targetInstanceId, player, opponent);
+      for (const tid of ciblesOnPlay(cardInstance, "devoration", action.targetInstanceId, player, opponent)) {
+        resolveDevoration(cardInstance, tid, player, opponent);
+      }
     }
 
     // Épargne X : alimente le compteur du contrôleur à l'invocation. Les autres
@@ -5073,8 +5113,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Corruption: vole une unité ennemie jusqu'à fin du tour, elle gagne Traque
-    if (hasKwOnPlay(cardInstance, "corruption") && opponent.board.length > 0) {
-      const targetId = action.targetInstanceId;
+    if (hasKwOnPlay(cardInstance, "corruption")) for (const targetId of ciblesOnPlay(cardInstance, "corruption", action.targetInstanceId, player, opponent)) {
+      if (opponent.board.length === 0) break;
       const stealTarget = targetId
         ? opponent.board.find(c => c.instanceId === targetId)
         : opponent.board[Math.floor(rng() * opponent.board.length)];
@@ -5090,10 +5130,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Domination: take control of random enemy (permanent)
-    if (hasKwOnPlay(cardInstance, "domination") && opponent.board.length > 0) {
+    // Domination: take control of random enemy (permanent). Portée « toutes » :
+    // chaque ennemie, dans la limite des places libres.
+    if (hasKwOnPlay(cardInstance, "domination")) for (const tid of ciblesOnPlay(cardInstance, "domination", undefined, player, opponent)) {
+      if (opponent.board.length === 0) break;
       if (placesOccupees(player) < MAX_BOARD_SIZE) {
-        const idx = Math.floor(rng() * opponent.board.length);
+        const idx = tid ? opponent.board.findIndex(c => c.instanceId === tid) : Math.floor(rng() * opponent.board.length);
+        if (idx < 0) continue;
         const stolen = opponent.board.splice(idx, 1)[0];
         stolen.hasSummoningSickness = true;
         // Contrôle permanent, mais on mémorise le propriétaire d'origine (Remontée).
@@ -5105,7 +5148,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Remontée (invocation) : renvoie une unité ciblée dans la main de son
     // propriétaire d'origine. Cible choisie par le joueur (action.targetInstanceId).
     if (hasKwOnPlay(cardInstance, "remontee")) {
-      resolveRemontee(action.targetInstanceId, cardInstance.instanceId, player, opponent);
+      const toutes = !!porteeOnPlay(cardInstance.card, "remontee");
+      for (const tid of ciblesOnPlay(cardInstance, "remontee", action.targetInstanceId, player, opponent)) {
+        resolveRemontee(tid, cardInstance.instanceId, player, opponent, false, !toutes);
+      }
     }
 
     // Renforcement multiple (invocation) : +X/+Y à vos créatures de la race/clan
@@ -5331,25 +5377,23 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Malédiction: cible une unité ennemie, exilée fin du prochain tour adverse
-    if (hasKwOnPlay(cardInstance, "malediction") && action.targetInstanceId) {
-      const cursedTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
-      if (cursedTarget) {
-        cardInstance.maledictionTargetId = cursedTarget.instanceId;
-      }
+    if (hasKwOnPlay(cardInstance, "malediction")) for (const tid of ciblesOnPlay(cardInstance, "malediction", action.targetInstanceId, player, opponent)) {
+      const cursedTarget = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
+      if (cursedTarget) maudire(cardInstance, cursedTarget);
     }
 
     // Affaiblissement -X/-Y (invocation) : -X ATK / -Y PV à la créature ennemie
     // ciblée. X/Y lus depuis keyword_instances (comme renforcement_multiple).
-    if (hasKwOnPlay(cardInstance, "affaiblissement") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "affaiblissement")) for (const tid of ciblesOnPlay(cardInstance, "affaiblissement", action.targetInstanceId, player, opponent)) {
       const inst = cardInstance.card.keyword_instances?.find(i => i.id === "affaiblissement" && !i.mode);
-      const target = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      const target = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
       if (inst && target) applyAffaiblissement(target, inst.x ?? 0, inst.y ?? 0);
     }
 
     // Impact X (invocation) : X dégâts à la cible choisie (créature OU héros,
     // tout bord). applyImpactTo gère les sentinelles héros avant tout board.find.
-    if (hasKwOnPlay(cardInstance, "impact") && action.targetInstanceId) {
-      applyImpactTo(action.targetInstanceId, getKwX(cardInstance, "impact", undefined, 1), cardInstance, player, opponent);
+    if (hasKwOnPlay(cardInstance, "impact")) for (const tid of ciblesOnPlay(cardInstance, "impact", action.targetInstanceId, player, opponent)) {
+      applyImpactTo(tid, getKwX(cardInstance, "impact", undefined, 1), cardInstance, player, opponent);
     }
 
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
@@ -5370,10 +5414,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Vampirisme X: vole X PV à une unité ennemie ciblée
-    if (hasKwOnPlay(cardInstance, "vampirisme") && action.targetInstanceId) {
+    if (hasKwOnPlay(cardInstance, "vampirisme")) for (const tid of ciblesOnPlay(cardInstance, "vampirisme", action.targetInstanceId, player, opponent)) {
       const vampXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
       const x = vampXVals["vampirisme"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
-      const vampTarget = opponent.board.find(c => c.instanceId === action.targetInstanceId);
+      const vampTarget = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
       if (vampTarget) {
         const stolen = Math.min(x, vampTarget.currentHealth);
         vampTarget.currentHealth -= stolen;
@@ -5572,8 +5616,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Bénédiction: soigne complètement une unité ciblée
-    if (hasKwOnPlay(cardInstance, "benediction") && action.targetInstanceId) {
-      const healTarget = player.board.find(c => c.instanceId === action.targetInstanceId);
+    if (hasKwOnPlay(cardInstance, "benediction")) for (const tid of ciblesOnPlay(cardInstance, "benediction", action.targetInstanceId, player, opponent)) {
+      const healTarget = tid ? player.board.find(c => c.instanceId === tid) : undefined;
       if (healTarget) {
         healTarget.currentHealth = healTarget.maxHealth;
         healTarget.isPoisoned = false;
@@ -5731,8 +5775,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Tactique X : attribue à un allié X capacités de la source, TIRÉES AU
     // HASARD. Le joueur ne désigne que le bénéficiaire ; le X vient de la carte
     // (l'ancien code en transmettait toujours une seule, X saisi ou non).
-    if (hasKwOnPlay(cardInstance, "tactique") && action.targetInstanceId) {
-      const tacticTarget = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
+    if (hasKwOnPlay(cardInstance, "tactique")) for (const tid of ciblesOnPlay(cardInstance, "tactique", action.targetInstanceId, player, opponent)) {
+      const tacticTarget = tid ? player.board.find(c => c.instanceId === tid && c !== cardInstance) : undefined;
       if (tacticTarget) {
         const x = getKwX(cardInstance, "tactique", undefined, 1);
         for (const kw of tactiqueKeywordsAHasard(cardInstance, tacticTarget, x)) {
@@ -6153,6 +6197,8 @@ function castSpellWithRandomTargets(
       const kw = card.spell_keywords[i];
       const def = SPELL_KEYWORDS[kw.id];
       if (!def) continue;
+      // Portée « toutes » : la résolution se passe de cible.
+      if (porteeValide(kw.targetScope, spellScopes(kw.id))) continue;
       if (def.needsTarget) {
         // Cible cimetière : `pickRandomTarget` tire parmi TOUTES les créatures
         // du cimetière, sans appliquer les règles d'éligibilité propres au
@@ -6267,6 +6313,8 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
       token_id: c.tokenId ?? null,
       // Déchainement : « ? » sur le coût Y (plafond au lieu d'un coût exact).
       ...(c.params?.randomY === true ? { randomY: true } : {}),
+      // Portée « toutes » (déjà validée par l'adaptateur).
+      ...(c.targetScope ? { targetScope: c.targetScope } : {}),
     }));
 }
 
@@ -6531,13 +6579,25 @@ function resolveSpellKeywords(
     noteAbilitySfx(kw.id, "spell_resolution");
     // Resolve target: use keyword's implicit slot or first target slot
     const slot = def.needsTarget ? `kw_${i}` : undefined;
-    const targetId = slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined;
+    // PORTÉE « TOUTES » : la mécanique se rejoue telle quelle sur chaque
+    // créature du camp visé, comme si chacune avait été ciblée — un seul corps
+    // par mécanique, donc aucun écart possible entre la forme ciblée et la
+    // forme « toutes ». Liste figée AVANT le premier effet (cf.
+    // creaturesDePortee) ; une créature morte en cours de route est sautée par
+    // le `find` de chaque mécanique.
+    const scope = porteeValide(kw.targetScope, spellScopes(kw.id));
+    const targetIds: (string | undefined)[] = scope
+      ? creaturesDePortee(scope, ctx.caster, ctx.opponent).map(c => c.instanceId)
+      : [slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined];
 
+    for (const targetId of targetIds) {
     switch (kw.id) {
       case "remontee": {
         // Renvoie l'unité ciblée dans la main de son propriétaire d'origine.
         // Sort → respecte Transcendance.
-        resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true);
+        // Portée « toutes » : désignation NON ciblée (Ombre, Invisible ne
+        // protègent pas d'un effet de zone), comme un composé « toutes ».
+        resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true, !scope);
         break;
       }
       case "impact": {
@@ -6904,7 +6964,7 @@ function resolveSpellKeywords(
       }
       case "retour_differe": {
         // Sort → respecte Transcendance, comme Remontée.
-        resolveRetourDiffere(targetId, null, ctx.caster, ctx.opponent, true);
+        resolveRetourDiffere(targetId, null, ctx.caster, ctx.opponent, true, !scope);
         break;
       }
       case "pillage": {
@@ -7065,6 +7125,7 @@ function resolveSpellKeywords(
         break;
       }
     }
+    } // portée « toutes » : une passe par créature
 
     // FRONTIÈRE D'EFFET. Les morts causées par CE mot-clé — et leurs râles
     // d'agonie, cascades comprises — sont réglées avant que le suivant ne
@@ -7432,6 +7493,8 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
     card.spell_keywords.forEach((kw, i) => {
       const def = SPELL_KEYWORDS[kw.id];
       if (!def) return;
+      // Portée « toutes » : rien à désigner.
+      if (porteeValide(kw.targetScope, spellScopes(kw.id))) return;
       if (def.needsTarget && def.targetType) {
         slots.push({ slot: `kw_${i}`, type: def.targetType, label: def.label });
       }
@@ -10057,6 +10120,11 @@ function tactiqueKeywordsAHasard(source: CardInstance, target: CardInstance, x: 
   return shuffleArray(vivier).slice(0, Math.max(1, x));
 }
 
+/** Vrai pendant qu'une portée « toutes » rejoue une capacité curée : la
+ *  désignation n'est alors pas CIBLÉE (Ombre, Invisible ne protègent pas
+ *  d'un effet de zone), cf. resolveRemontee / resolveRetourDiffere. */
+let porteeEnCours = false;
+
 function resolveCuratedKeywordEffect(
   kw: Keyword,
   x: number,
@@ -10071,6 +10139,22 @@ function resolveCuratedKeywordEffect(
   // mort, retour, fin de tour, attaque, pioche). `inst.mode` porte le
   // déclencheur réel.
   noteAbilitySfx(kw, keywordModeToTrigger(inst?.mode));
+  // PORTÉE « TOUTES » : on rejoue la capacité avec, pour cible explicite,
+  // chaque créature du camp visé — le chemin « cible explicite » de chaque cas
+  // ci-dessous, sans picker différé ni tirage. Instantané pris avant le premier
+  // effet ; la source est exclue.
+  const scope = porteeValide(inst?.targetScope, creatureScopes(kw));
+  if (scope && !targetInstanceId) {
+    const cibles = creaturesDePortee(scope, owner, opponent, source.instanceId);
+    const precedent = porteeEnCours;
+    porteeEnCours = true;
+    try {
+      for (const c of cibles) resolveCuratedKeywordEffect(kw, x, source, owner, opponent, c.instanceId, inst);
+    } finally {
+      porteeEnCours = precedent;
+    }
+    return;
+  }
   switch (kw) {
     case "renforcement_multiple": {
       // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
@@ -10142,7 +10226,7 @@ function resolveCuratedKeywordEffect(
     case "remontee": {
       // Tap (ou résolution différée) : cible explicite → on résout tout de suite.
       if (targetInstanceId) {
-        resolveRemontee(targetInstanceId, source.instanceId, owner, opponent);
+        resolveRemontee(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours);
         return;
       }
       // Mort / retour : si c'est le tour du contrôleur ET qu'au moins une cible
@@ -10324,7 +10408,7 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "retour_differe": {
-      resolveRetourDiffere(targetInstanceId, source.instanceId, owner, opponent);
+      resolveRetourDiffere(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours);
       break;
     }
     case "devoration": {
@@ -10592,7 +10676,11 @@ function resolveCuratedKeywordEffect(
       // Prend le contrôle PERMANENT d'une unité ennemie au hasard (comme
       // l'effet d'invocation — déjà aléatoire, aucun picker à différer).
       if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
-      const idxD = Math.floor(rng() * opponent.board.length);
+      // Cible explicite : celle de la portée « toutes ».
+      const idxD = targetInstanceId
+        ? opponent.board.findIndex(c => c.instanceId === targetInstanceId)
+        : Math.floor(rng() * opponent.board.length);
+      if (idxD < 0) return;
       const stolen = opponent.board.splice(idxD, 1)[0];
       stolen.hasSummoningSickness = true;
       stolen.trueOwnerId = opponent.id;
@@ -10603,7 +10691,10 @@ function resolveCuratedKeywordEffect(
       // Vole une unité ennemie AU HASARD (le fallback aléatoire existe déjà à
       // l'invocation) ; elle gagne Traque et l'agressivité immédiate.
       if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
-      const stealTarget = opponent.board[Math.floor(rng() * opponent.board.length)];
+      const stealTarget = targetInstanceId
+        ? opponent.board.find(c => c.instanceId === targetInstanceId)
+        : opponent.board[Math.floor(rng() * opponent.board.length)];
+      if (!stealTarget) return;
       opponent.board = opponent.board.filter(c => c !== stealTarget);
       stealTarget.originalOwnerId = opponent.id;
       stealTarget.trueOwnerId = opponent.id;
@@ -10792,7 +10883,7 @@ function resolveCuratedKeywordEffect(
       // doit rester en jeu, d'où la restriction aux déclencheurs sur plateau).
       const resolveMal = (tid: string) => {
         const t = opponent.board.find(c => c.instanceId === tid);
-        if (t) source.maledictionTargetId = t.instanceId;
+        if (t) maudire(source, t);
       };
       if (targetInstanceId) { resolveMal(targetInstanceId); return; }
       const tidM = deferOrRandomTarget(kw, source, owner, opponent, inst);
@@ -12579,7 +12670,8 @@ export function creatureNeedsTarget(card: Card): boolean {
   // Only request an on-play target if the targeting keyword actually
   // fires on play. A vampirisme entry that lives only in tap/death mode
   // shouldn't trigger the on-summon picker.
-  if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw))) return true;
+  // Portée « toutes » : la capacité se passe de cible, le picker ne s'ouvre pas pour elle.
+  if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw) && !porteeOnPlay(card, kw))) return true;
   // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
   return !!firstOnPlayComposedChoiceCap(card);
 }
@@ -12665,7 +12757,8 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
   // Determine target pool based on the first targeting keyword that's
   // actually firing on play (skip ones that live only in tap/death mode).
   for (const kw of card.keywords) {
-    if (!cardHasKwOnPlay(card, kw)) continue;
+    // Portée « toutes » : la capacité ne cible pas, elle ne dicte pas le pool.
+    if (!cardHasKwOnPlay(card, kw) || porteeOnPlay(card, kw)) continue;
     switch (kw) {
       case "sacrifice":
       case "benediction":

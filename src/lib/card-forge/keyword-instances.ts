@@ -15,6 +15,8 @@
 
 import { CREATURE_LABEL_TO_ENGINE_ID, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import type { CapabilityTrigger, Keyword, KeywordInstance, KeywordMode } from "@/lib/game/types";
+import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import type { TargetScope } from "@/lib/game/types";
 
 /** Libellé FR de la forge → id moteur. Base dérivée du registre (exhaustive par
  *  construction), complétée par les alias legacy qui l'emportent : brouillons
@@ -155,6 +157,10 @@ export interface BuildKeywordInstancesInput {
   grantScopes?: Record<string, "target" | "all_allies">;
   /** Vrai pour un SORT : bascule les branches « côté créature ». */
   isSpellCard?: boolean;
+  /** Unité : portée « toutes » d'une capacité CIBLÉE, par libellé (cf.
+   *  lib/game/target-scope.ts). Ignorée sur un sort et sur une capacité qui ne
+   *  l'accepte pas. */
+  targetScopes?: Record<string, TargetScope>;
   /** SINGULIER par libellé : condition ajoutée au déclencheur. Un mot-clé qui
    *  n'aurait sinon rien à stocker (à l'invocation, sans X) produit quand même
    *  une instance `{ id, singulier: true }` — c'est elle qui porte la condition. */
@@ -170,15 +176,19 @@ export interface BuildKeywordInstancesInput {
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, targetScopes = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
       const id = FORGE_TO_GAME_KEYWORD[label];
       if (!id) return null;
-      const base = construireInstance(label, id);
-      if (singulier[label] !== true) return base;
-      return { ...(base ?? { id }), singulier: true };
+      let inst = construireInstance(label, id);
+      // Portée « toutes » : comme Singulier, une capacité sans rien d'autre à
+      // stocker produit quand même une instance, c'est elle qui la porte.
+      const scope = isSpellCard ? undefined : porteeValide(targetScopes[label], creatureScopes(id));
+      if (scope) inst = { ...(inst ?? { id }), targetScope: scope };
+      if (singulier[label] !== true) return inst;
+      return { ...(inst ?? { id }), singulier: true };
     })
     .filter((k): k is KeywordInstance => k !== null);
 
@@ -249,6 +259,7 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
         const xy = XY_ABILITY_IDS.has(extras.conferAbilityId ?? "");
         return { id, ...(mode ? { mode } : {}), ...(extras.conferAbilityId ? { grantAbilityId: extras.conferAbilityId } : {}), x: extras.conferX ?? 0, ...(xy ? { y: extras.conferY ?? 0 } : {}), ...(scope ? { grantScope: scope } : {}) };
       }
+      // La portée « toutes les ennemies » s'ajoute au point commun (targetScope).
       // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
       if (id === "declenchement" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.declenchementTriggers?.length ? { replayTriggers: extras.declenchementTriggers } : {}) };

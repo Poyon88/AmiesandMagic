@@ -29,6 +29,8 @@ export interface BalanceOverrides {
   stat?: { atk?: number; def?: number };
   additional?: Partial<Record<keyof typeof ADDITIONAL_COST_POINTS, number>>;
   budgetBase?: number;
+  /** Coefficient de la portée « toutes » (cf. BUDGET.scopeAll). */
+  scopeAll?: number;
   /** Par id de rareté (« Commune », « Rare »…). */
   rarityMultipliers?: Record<string, number>;
 }
@@ -46,6 +48,7 @@ const DEFAUTS = {
   stat: { ...STAT_COST },
   additional: { ...ADDITIONAL_COST_POINTS },
   budgetBase: BUDGET.base,
+  scopeAll: BUDGET.scopeAll,
   rarityMultipliers: Object.fromEntries(RARITIES.map((r) => [r.id, r.multiplier])) as Record<string, number>,
 };
 
@@ -82,6 +85,7 @@ export function applyBalanceOverrides(ov: BalanceOverrides): void {
     ADDITIONAL_COST_POINTS[k] = ov.additional?.[k] ?? DEFAUTS.additional[k];
   }
   BUDGET.base = ov.budgetBase ?? DEFAUTS.budgetBase;
+  BUDGET.scopeAll = ov.scopeAll ?? DEFAUTS.scopeAll;
   for (const r of RARITIES) {
     r.multiplier = ov.rarityMultipliers?.[r.id] ?? DEFAUTS.rarityMultipliers[r.id];
   }
@@ -105,6 +109,7 @@ export function countBalanceChanges(ov: BalanceOverrides): number {
     if (v != null && v !== DEFAUTS.additional[k as keyof typeof ADDITIONAL_COST_POINTS]) n++;
   }
   if (ov.budgetBase != null && ov.budgetBase !== DEFAUTS.budgetBase) n++;
+  if (ov.scopeAll != null && ov.scopeAll !== DEFAUTS.scopeAll) n++;
   for (const [k, v] of Object.entries(ov.rarityMultipliers ?? {})) {
     if (v != null && v !== DEFAUTS.rarityMultipliers[k]) n++;
   }
@@ -159,6 +164,7 @@ export function sanitizeBalanceOverrides(brut: unknown): BalanceOverrides {
   }
 
   if (estNombre(src.budgetBase)) out.budgetBase = src.budgetBase;
+  if (estNombre(src.scopeAll)) out.scopeAll = src.scopeAll;
 
   const rarSrc = src.rarityMultipliers as Record<string, unknown> | undefined;
   if (rarSrc && typeof rarSrc === "object") {
@@ -190,6 +196,9 @@ export function mergeBalanceOverrides(base: BalanceOverrides, ajout: BalanceOver
     ...((base.additional || ajout.additional) ? { additional: { ...base.additional, ...ajout.additional } } : {}),
     ...(ajout.budgetBase ?? base.budgetBase) != null
       ? { budgetBase: ajout.budgetBase ?? base.budgetBase }
+      : {},
+    ...(ajout.scopeAll ?? base.scopeAll) != null
+      ? { scopeAll: ajout.scopeAll ?? base.scopeAll }
       : {},
     ...((base.rarityMultipliers || ajout.rarityMultipliers)
       ? { rarityMultipliers: { ...base.rarityMultipliers, ...ajout.rarityMultipliers } }

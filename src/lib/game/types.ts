@@ -296,6 +296,12 @@ export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "atta
  *  `Card.keywordInstances` alongside the string `keywords` array so each
  *  visible icon can carry its own mode + X. Older cards without this field
  *  default every keyword to on-play mode with X parsed from effect_text. */
+/** PORTÉE d'une capacité qui cible une créature : au lieu d'une cible choisie,
+ *  elle frappe TOUTES les créatures du ou des camps désignés, chacune recevant
+ *  l'effet entier. Absente ⇒ une cible, le comportement historique. Les camps
+ *  ouverts à une capacité donnée vivent dans `target-scope.ts`. */
+export type TargetScope = "all_enemies" | "all_allies" | "all";
+
 export interface KeywordInstance {
   id: Keyword;
   mode?: KeywordMode; // undefined ⇒ on-play
@@ -317,6 +323,9 @@ export interface KeywordInstance {
    *  "target" (default) = a single chosen allied creature; "all_allies" =
    *  every allied creature on the board at cast time. Ignored on creatures. */
   grantScope?: "target" | "all_allies";
+  /** Capacité CIBLÉE d'une créature (Impact, Affaiblissement…) : portée
+   *  « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
+  targetScope?: TargetScope;
   /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
   grantAbilityId?: string;
   /** Mot-clé "invocations_multiples" : coût en mana de CHAQUE invocation, dans
@@ -351,6 +360,8 @@ export interface KeywordInstance {
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
+  /** Portée « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
+  targetScope?: TargetScope;
   amount?: number;   // X value for impact, deferlement, siphon, entrave (tours de paralysie), guerison, inspiration, afflux, pillage, cataclysme, invocation (coût de la créature invoquée)
   attack?: number;   // for renforcement, renforcement_multiple — et repli legacy d'invocation (ex-token X/Y : X devient le coût)
   health?: number;   // for renforcement, renforcement_multiple — legacy invocation (ignoré)
@@ -527,6 +538,9 @@ export interface Capability {
   faction?: string;
   /** GRANT uniquement : destinataires de la capacité conférée. */
   grantScope?: "target" | "all_allies";
+  /** Capacité ciblée (mot-clé de sort ou de créature) : portée « toutes » au
+   *  lieu d'une cible choisie. Cf. TargetScope. */
+  targetScope?: TargetScope;
   /** SINGULIER : condition ajoutée au déclencheur (cf. KeywordInstance). Porté
    *  aussi par les capacités dérivées, pour que `capabilities` et
    *  `keyword_instances` se retirent ENSEMBLE chez un joueur non singleton. */
@@ -1203,6 +1217,9 @@ export interface CardInstance {
   exclusionCharges?: number;
   // Malédiction: instanceId of cursed enemy (exiled next turn)
   maledictionTargetId: string | null;
+  // Malédiction à portée « toutes » : cibles SUPPLÉMENTAIRES exilées en même
+  // temps que `maledictionTargetId` (qui garde la première).
+  maledictionExtraIds?: string[];
   // Paralysie: is this unit paralyzed (can't attack next turn)
   isParalyzed: boolean;
   // Entrave X : nombre de tours de son CONTRÔLEUR pendant lesquels l'unité reste
