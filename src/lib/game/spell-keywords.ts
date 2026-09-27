@@ -3,6 +3,7 @@ import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, COUT_OPTIONNEL, 
 import type { SafeT } from "@/i18n/config";
 import { plageAleatoire, resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
 import { badgeAleatoire } from "./random-range";
+import { scopedDescTemplate } from "./target-scope";
 
 // Single source of truth lives in `src/lib/game/abilities.ts` (unified
 // registry shared with creature keywords). The map below is re-exported
@@ -156,6 +157,9 @@ function getSpellKeywordDescBase(
   let desc = libre
     ? (t?.(`vocab.spell_keywords.${kw.id}.desc_any`) ?? DESC_COUT_LIBRE[kw.id]?.spell ?? def.desc)
     : (t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc);
+  // Portée « toutes » : la phrase parle de TOUTES les créatures du camp, pas
+  // d'une cible (cf. target-scope.ts).
+  desc = scopedDescTemplate("spell", kw.id, kw.targetScope, t) ?? desc;
 
   // Marqueurs nommés ({race}, {clan_de}, {alignment}…). Une capacité comme
   // Sélection ou Appel Suprême existe côté créature ET côté sort avec la même

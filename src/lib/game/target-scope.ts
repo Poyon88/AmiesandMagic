@@ -119,14 +119,6 @@ export function spellKwScope(sk: Pick<SpellKeywordInstance, "id" | "targetScope"
   return sk ? porteeValide(sk.targetScope, spellScopes(sk.id)) : undefined;
 }
 
-/** Portée « toutes » CIBLÉE d'une instance de mot-clé de créature (sans le don
- *  à tous les alliés de Conférer, dont le texte dit déjà la portée). */
-export function kwTargetScope(inst: Pick<KeywordInstance, "id" | "targetScope"> | null | undefined): TargetScope | undefined {
-  // Neutralisation dit déjà sa portée dans sa description ({neutralise_cible}).
-  if (inst?.id === "neutralisation") return undefined;
-  return inst ? porteeValide(inst.targetScope, creatureScopes(inst.id as unknown as string)) : undefined;
-}
-
 /** Portée « toutes » d'une instance de mot-clé de CRÉATURE, pour le rendu.
  *  Conférer à tous les alliés (`grantScope`) en fait partie : même « A », que la
  *  capacité soit portée par une action ou par une créature. */
@@ -149,4 +141,70 @@ export function composedScope(cap: Pick<Capability, "composed"> | null | undefin
 /** Libellé lu par les lecteurs d'écran sur le « A ». */
 export function scopeAriaLabel(scope: TargetScope): string {
   return TARGET_SCOPE_FR[scope].charAt(0).toUpperCase() + TARGET_SCOPE_FR[scope].slice(1);
+}
+
+// ─── description : variante « toutes » ────────────────────────────────────
+//
+// La description d'une capacité ciblée parle d'UNE cible (« Paralyse une
+// créature ennemie ciblée »). En portée « toutes », elle est remplacée par sa
+// variante ci-dessous, où `{cibles}` devient « toutes les créatures ennemies »
+// (alliées, des deux camps). Les X/Y et autres marqueurs sont substitués ensuite
+// par le chemin habituel. Clés de traduction : vocab.target_scope.spell.{id},
+// vocab.target_scope.creature.{id}, vocab.target_scope.cibles.{portée}.
+
+/** Groupe nominal de la portée, sans préposition (« Inflige X dégâts à {cibles} »). */
+export const TARGET_SCOPE_CIBLES_FR: Record<TargetScope, string> = {
+  all_enemies: "toutes les créatures ennemies",
+  all_allies: "toutes les créatures alliées",
+  all: "toutes les créatures des deux camps",
+};
+
+const DESC_TOUTES_COMMUNES: Record<string, string> = {
+  impact: "Inflige X dégâts à {cibles}.",
+  affaiblissement: "Donne -X ATK et -Y PV à {cibles}.",
+  retour_differe: "Place {cibles} sous le deck de leur propriétaire.",
+  remontee: "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
+  corruption: "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
+  domination: "Prend le contrôle de {cibles}, dans la limite des places.",
+};
+
+/** Variantes « toutes » des mots-clés de SORT (repli FR). */
+export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
+  ...DESC_TOUTES_COMMUNES,
+  poison: "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
+  siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par créature touchée.",
+  entrave: "Paralyse {cibles} pendant X tour(s).",
+  execution: "Détruit {cibles}.",
+  silence: "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
+  renforcement: "+X/+Y à {cibles}.",
+  discipline: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
+  guerison: "Restaure X PV à {cibles}.",
+};
+
+/** Variantes « toutes » des mots-clés de CRÉATURE (repli FR). Neutralisation
+ *  n'y figure pas : sa description dit déjà sa portée ({neutralise_cible}). */
+export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
+  ...DESC_TOUTES_COMMUNES,
+  benediction: "Soigne complètement {cibles}.",
+  malediction: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
+  tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par créature).",
+  vampirisme: "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
+  devoration: "Détruit {cibles} ; cette créature gagne définitivement leur ATK et leurs PV.",
+};
+
+/** Gabarit « toutes » d'une capacité, `{cibles}` déjà résolu. null si la
+ *  capacité n'a pas de portée valide ou pas de variante (description ordinaire). */
+export function scopedDescTemplate(
+  kind: "spell" | "creature",
+  id: string,
+  scope: TargetScope | undefined,
+  t?: (key: string) => string | undefined,
+): string | null {
+  const valide = porteeValide(scope, kind === "spell" ? spellScopes(id) : creatureScopes(id));
+  if (!valide) return null;
+  const fr = (kind === "spell" ? SPELL_SCOPE_DESC_FR : CREATURE_SCOPE_DESC_FR)[id];
+  if (!fr) return null;
+  const tmpl = t?.(`vocab.target_scope.${kind}.${id}`) ?? fr;
+  const cibles = t?.(`vocab.target_scope.cibles.${valide}`) ?? TARGET_SCOPE_CIBLES_FR[valide];
+  return tmpl.replace(/\{cibles\}/g, cibles);
 }

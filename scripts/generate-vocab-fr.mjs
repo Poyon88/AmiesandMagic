@@ -29,6 +29,7 @@ export { COMPOSED_FR } from "@/lib/game/composed-display";
 export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
 export { RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR } from "@/lib/card-engine/race-forms";
 export { MARKERS_FR } from "@/lib/game/desc-markers";
+export { SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR } from "@/lib/game/target-scope";
 `;
 
 const built = await esbuild.build({
@@ -44,10 +45,10 @@ const built = await esbuild.build({
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
 let DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
-let RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR;
+let RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR, SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR;
 try {
   ({ DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS,
-     RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR } = await import(`file://${tmp}?t=${Date.now()}`));
+     RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR, SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
 }
@@ -116,6 +117,13 @@ for (const [id, de] of Object.entries(FACTION_FORMS_FR ?? {})) vocab.factions_fo
 // Replis génériques des marqueurs de description (« de même race »…). Sans ça
 // les locales non-FR afficheraient le repli EN FRANÇAIS.
 vocab.markers = { ...(MARKERS_FR ?? {}) };
+// Portée « toutes » : variantes des descriptions de capacités ciblées, et le
+// groupe nominal qui remplace {cibles} (cf. target-scope.ts).
+vocab.target_scope = {
+  spell: { ...(SPELL_SCOPE_DESC_FR ?? {}) },
+  creature: { ...(CREATURE_SCOPE_DESC_FR ?? {}) },
+  cibles: { ...(TARGET_SCOPE_CIBLES_FR ?? {}) },
+};
 
 for (const r of RARITIES) {
   vocab.rarities[r.id] = r.label;

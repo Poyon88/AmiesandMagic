@@ -154,6 +154,10 @@
         "label": "武器大师",
         "desc": "免费装备场上你所有的物品，包括你其他随从所佩戴的物品。"
       },
+      "neutralisation": {
+        "label": "中和",
+        "desc": "只要该单位在场，便中和{neutralise_cible}的{ability}。"
+      },
       "transformation": {
         "label": "变形",
         "desc": "变形为指定的卡牌。若其离开场上,则恢复原本形态。"
@@ -542,10 +546,6 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
-      "neutralisation": {
-        "label": "中和",
-        "desc": "只要该单位在场，便中和{neutralise_cible}的{ability}。"
       }
     },
     "spell_keywords": {
@@ -1775,6 +1775,42 @@
       "draw": "抽牌",
       "low_hp": "生命值低于{n}点",
       "wound": "受伤"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "对{cibles}造成X点伤害。",
+        "affaiblissement": "使{cibles}获得-X攻击力、-Y生命值。",
+        "retour_differe": "将{cibles}放入其拥有者的牌库底。",
+        "remontee": "将{cibles}送回其原主人的手牌。",
+        "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
+        "domination": "在场地上限内，获得对{cibles}的控制权。",
+        "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
+        "siphon": "对{cibles}造成X点伤害，并根据每个受创生物为您的英雄回复X点生命值。",
+        "entrave": "使{cibles}麻痹X回合。",
+        "execution": "消灭{cibles}。",
+        "silence": "移除{cibles}的所有关键词，并将其属性恢复为初始值。",
+        "renforcement": "使{cibles}获得+X/+Y。",
+        "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
+        "guerison": "为{cibles}恢复X点生命值。"
+      },
+      "creature": {
+        "impact": "对{cibles}造成X点伤害。",
+        "affaiblissement": "使{cibles}获得-X攻击力、-Y生命值。",
+        "retour_differe": "将{cibles}放入其拥有者的牌库底。",
+        "remontee": "将{cibles}送回其原主人的手牌。",
+        "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
+        "domination": "在场地上限内，获得对{cibles}的控制权。",
+        "benediction": "完全治愈{cibles}。",
+        "malediction": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
+        "tactique": "从其永久技能中随机抽取X项，永久赋予{cibles}（每个生物各抽取一次）。",
+        "vampirisme": "从{cibles}处窃取X点生命值，并将其加到此单位的生命值上。",
+        "devoration": "消灭{cibles}；此生物永久获得它们的攻击力和生命值。"
+      },
+      "cibles": {
+        "all_enemies": "所有敌方生物",
+        "all_allies": "所有友方生物",
+        "all": "双方所有生物"
+      }
     }
   },
   "home": {
@@ -2109,6 +2145,8 @@
     "emblem_repeat_warning": "该触发器会重复：纹章每次都会叠加，叠加 N 层的复合纹章会结算 N 次。",
     "label_content": "内容",
     "label_target_scope": "范围",
+    "label_neutralised_ability": "已中和能力",
+    "neutralisation_hint": "只要持有者在场，即可使目标敌方单位（或搭配“所有敌方”范围时的全部敌方单位）保持沉默。",
     "target_scope_target": "目标",
     "target_scope_all_enemies": "所有敌方",
     "target_scope_all_allies": "所有我方",
@@ -2593,9 +2631,7 @@
     "content_retour_differe": "延迟归返（置于牌库底）",
     "content_silence": "沉默（移除目标的一切）",
     "content_dechainement": "释放X/Y（随机行动）",
-    "content_selection_magique": "魔法抉择（从3张中选1张行动）",
-    "label_neutralised_ability": "已中和能力",
-    "neutralisation_hint": "只要持有者在场，即可使目标敌方单位（或搭配“所有敌方”范围时的全部敌方单位）保持沉默。"
+    "content_selection_magique": "魔法抉择（从3张中选1张行动）"
   },
   "game": {
     "error_not_authenticated": "未登录",
@@ -2695,9 +2731,6 @@
     "faveur_self": "🎁 恩惠——一张卡牌已加入你的手牌",
     "faveur_opponent": "🎁 恩惠——一张卡牌已加入对手的手牌",
     "spell_grant_all_allies": " · 对所有友方单位",
-    "target_scope_all_enemies": "作用于所有敌方随从",
-    "target_scope_all_allies": "作用于所有我方随从",
-    "target_scope_all": "作用于所有随从",
     "spell_grant_target": " · 对目标生物",
     "fire_breath_label": "烈焰吐息",
     "queue_eyebrow": "证明你的实力",

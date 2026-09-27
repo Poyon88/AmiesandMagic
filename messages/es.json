@@ -154,6 +154,10 @@
         "label": "Maestro de armas",
         "desc": "Se equipa gratuitamente con todos tus objetos en juego, incluidos los que llevan tus otras criaturas."
       },
+      "neutralisation": {
+        "label": "Neutralización",
+        "desc": "Mientras esté en juego, neutraliza {ability} {neutralise_cible}."
+      },
       "transformation": {
         "label": "Transformación",
         "desc": "Se transforma en la carta indicada. Recupera su forma original si abandona el tablero."
@@ -542,10 +546,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "neutralisation": {
-        "label": "Neutralización",
-        "desc": "Mientras esté en juego, neutraliza {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1775,6 +1775,42 @@
       "draw": "Robo",
       "low_hp": "Con menos de {n} PV",
       "wound": "Herida"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "Inflige X de daño a {cibles}.",
+        "affaiblissement": "Otorga -X ATQ y -Y PV a {cibles}.",
+        "retour_differe": "Coloca a {cibles} bajo el mazo de su propietario.",
+        "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
+        "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
+        "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
+        "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
+        "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada criatura alcanzada.",
+        "entrave": "Paraliza a {cibles} durante X turno(s).",
+        "execution": "Destruye a {cibles}.",
+        "silence": "Elimina todas las palabras clave de {cibles} y restablece sus estadísticas a su valor original.",
+        "renforcement": "+X/+Y a {cibles}.",
+        "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
+        "guerison": "Restaura X PV a {cibles}."
+      },
+      "creature": {
+        "impact": "Inflige X de daño a {cibles}.",
+        "affaiblissement": "Otorga -X ATQ y -Y PV a {cibles}.",
+        "retour_differe": "Coloca a {cibles} bajo el mazo de su propietario.",
+        "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
+        "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
+        "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
+        "benediction": "Cura completamente a {cibles}.",
+        "malediction": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
+        "tactique": "Asigna permanentemente X de sus capacidades permanentes, elegidas al azar, a {cibles} (un sorteo por criatura).",
+        "vampirisme": "Roba X PV a {cibles} y los añade a los PV de esta unidad.",
+        "devoration": "Destruye a {cibles}; esta criatura gana permanentemente su ATQ y sus PV."
+      },
+      "cibles": {
+        "all_enemies": "todas las criaturas enemigas",
+        "all_allies": "todas las criaturas aliadas",
+        "all": "todas las criaturas de ambos bandos"
+      }
     }
   },
   "home": {
@@ -2109,6 +2145,8 @@
     "emblem_repeat_warning": "Este disparador se repite: el emblema se acumulará cada vez, y un emblema compuesto con N acumulaciones se resuelve N veces.",
     "label_content": "CONTENIDO",
     "label_target_scope": "ALCANCE",
+    "label_neutralised_ability": "HABILIDAD NEUTRALIZADA",
+    "neutralisation_hint": "Silenciada en la enemiga objetivo (o en todas, con el alcance «Todas enemigas») mientras la portadora esté en juego.",
     "target_scope_target": "Objetivo",
     "target_scope_all_enemies": "Todas enemigas",
     "target_scope_all_allies": "Todas aliadas",
@@ -2593,9 +2631,7 @@
     "content_retour_differe": "Retorno diferido (bajo el mazo)",
     "content_silence": "Silencio (despoja al objetivo)",
     "content_dechainement": "Desenfreno X/Y (acciones aleatorias)",
-    "content_selection_magique": "Selección mágica (1 acción de entre 3)",
-    "label_neutralised_ability": "HABILIDAD NEUTRALIZADA",
-    "neutralisation_hint": "Silenciada en la enemiga objetivo (o en todas, con el alcance «Todas enemigas») mientras la portadora esté en juego."
+    "content_selection_magique": "Selección mágica (1 acción de entre 3)"
   },
   "game": {
     "error_not_authenticated": "No autenticado",
@@ -2695,9 +2731,6 @@
     "faveur_self": "🎁 Favor — carta añadida a tu mano",
     "faveur_opponent": "🎁 Favor — carta añadida a la mano rival",
     "spell_grant_all_allies": " · a todos los aliados",
-    "target_scope_all_enemies": "Se aplica a todas las criaturas enemigas",
-    "target_scope_all_allies": "Se aplica a todas las criaturas aliadas",
-    "target_scope_all": "Se aplica a todas las criaturas",
     "spell_grant_target": " · a la criatura objetivo",
     "fire_breath_label": "Aliento de Fuego",
     "queue_eyebrow": "Demuestra tu valía",

@@ -1775,6 +1775,42 @@
       "draw": "Pioche",
       "low_hp": "Sous {n} PV",
       "wound": "Blessure"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "Inflige X dégâts à {cibles}.",
+        "affaiblissement": "Donne -X ATK et -Y PV à {cibles}.",
+        "retour_differe": "Place {cibles} sous le deck de leur propriétaire.",
+        "remontee": "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
+        "corruption": "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
+        "domination": "Prend le contrôle de {cibles}, dans la limite des places.",
+        "poison": "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
+        "siphon": "Inflige X dégâts à {cibles} et soigne votre héros de X par créature touchée.",
+        "entrave": "Paralyse {cibles} pendant X tour(s).",
+        "execution": "Détruit {cibles}.",
+        "silence": "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
+        "renforcement": "+X/+Y à {cibles}.",
+        "discipline": "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
+        "guerison": "Restaure X PV à {cibles}."
+      },
+      "creature": {
+        "impact": "Inflige X dégâts à {cibles}.",
+        "affaiblissement": "Donne -X ATK et -Y PV à {cibles}.",
+        "retour_differe": "Place {cibles} sous le deck de leur propriétaire.",
+        "remontee": "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
+        "corruption": "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
+        "domination": "Prend le contrôle de {cibles}, dans la limite des places.",
+        "benediction": "Soigne complètement {cibles}.",
+        "malediction": "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
+        "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par créature).",
+        "vampirisme": "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
+        "devoration": "Détruit {cibles} ; cette créature gagne définitivement leur ATK et leurs PV."
+      },
+      "cibles": {
+        "all_enemies": "toutes les créatures ennemies",
+        "all_allies": "toutes les créatures alliées",
+        "all": "toutes les créatures des deux camps"
+      }
     }
   },
   "home": {
@@ -2695,9 +2731,6 @@
     "faveur_self": "🎁 Faveur — carte ajoutée à votre main",
     "faveur_opponent": "🎁 Faveur — carte ajoutée à la main adverse",
     "spell_grant_all_allies": " · à tous les alliés",
-    "target_scope_all_enemies": "S'applique à toutes les créatures ennemies",
-    "target_scope_all_allies": "S'applique à toutes les créatures alliées",
-    "target_scope_all": "S'applique à toutes les créatures",
     "spell_grant_target": " · à la créature ciblée",
     "fire_breath_label": "Souffle de Feu",
     "queue_eyebrow": "Prouve ta valeur",

@@ -22,7 +22,6 @@ import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 import { TARGET_SCOPE_FR, composedScope, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
-import { targetScopeNote } from "@/lib/game/keyword-display";
 import type { TargetScope } from "@/lib/game/types";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
@@ -235,6 +234,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       ? ({ grantAbilityId: card?.keywordNeutralise, targetScope: card?.keywordTargetScope?.[kw] } as const)
       : card?.keywordGrantScope?.[kw]
       ? ({ grantScope: card.keywordGrantScope[kw] } as const)
+      // Unité : portée « toutes » → variante de la description.
+      : card?.keywordTargetScope?.[kw]
+      ? ({ targetScope: card.keywordTargetScope[kw] } as const)
       : null,
     x: card?.keywordXValues?.[kw] ?? null,
     // Sélection au hasard : la description peint « coût ≤ 1 à X ».
@@ -647,7 +649,6 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
-                    {detailScope == null && forgeKeywordId(kw) !== "neutralisation" && (() => { const n = targetScopeNote(porteeValide(card!.keywordTargetScope?.[kw], creatureScopes(forgeKeywordId(kw)))); return n ? <div style={{ fontSize: 11.5 * s, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                     {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                     <TokenNames cards={tokenCardsForKeyword(forgeKeywordId(kw), sourceTokens(), tokens, card!.keywordXValues?.[kw])} scale={s} />
                   </div>
@@ -672,7 +673,6 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <div>
                     <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
-                    {(() => { const n = targetScopeNote(spellKwScope(spellKw)); return n ? <div style={{ fontSize: 11.5 * s, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   </div>
                 </div>
               );

@@ -154,6 +154,10 @@
         "label": "Waffenmeister",
         "desc": "Rüstet sich kostenlos mit allen euren im Spiel befindlichen Gegenständen aus, einschließlich derer, die eure anderen Kreaturen tragen."
       },
+      "neutralisation": {
+        "label": "Neutralisierung",
+        "desc": "Solange sie im Spiel ist, neutralisiert sie {ability} {neutralise_cible}."
+      },
       "transformation": {
         "label": "Verwandlung",
         "desc": "Verwandelt sich in die angegebene Karte. Nimmt ihre ursprüngliche Form wieder an, wenn sie das Spielfeld verlässt."
@@ -542,10 +546,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "neutralisation": {
-        "label": "Neutralisierung",
-        "desc": "Solange sie im Spiel ist, neutralisiert sie {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1775,6 +1775,42 @@
       "draw": "Ziehen",
       "low_hp": "Unter {n} LP",
       "wound": "Verwundung"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "Fügt {cibles} X Schaden zu.",
+        "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
+        "retour_differe": "Legt {cibles} unter das Deck ihres Besitzers.",
+        "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
+        "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
+        "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
+        "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
+        "siphon": "Fügt {cibles} X Schaden zu und heilt Ihren Helden um X pro getroffener Kreatur.",
+        "entrave": "Fesselt {cibles} für X Runde(n).",
+        "execution": "Zerstört {cibles}.",
+        "silence": "Entfernt alle Schlüsselwörter von {cibles} und setzt ihre Werte auf die Ausgangswerte zurück.",
+        "renforcement": "+X/+Y auf {cibles}.",
+        "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
+        "guerison": "Stellt {cibles} X LP wieder her."
+      },
+      "creature": {
+        "impact": "Fügt {cibles} X Schaden zu.",
+        "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
+        "retour_differe": "Legt {cibles} unter das Deck ihres Besitzers.",
+        "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
+        "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
+        "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
+        "benediction": "Heilt {cibles} vollständig.",
+        "malediction": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "tactique": "Verleiht {cibles} dauerhaft X ihrer zufällig ausgewählten permanenten Fähigkeiten (eine Ziehung pro Kreatur).",
+        "vampirisme": "Stiehlt {cibles} X LP und fügt sie den LP dieser Einheit hinzu.",
+        "devoration": "Zerstört {cibles}; diese Kreatur erhält dauerhaft deren ATK und LP."
+      },
+      "cibles": {
+        "all_enemies": "alle gegnerischen Kreaturen",
+        "all_allies": "alle verbündeten Kreaturen",
+        "all": "alle Kreaturen beider Seiten"
+      }
     }
   },
   "home": {
@@ -2109,6 +2145,8 @@
     "emblem_repeat_warning": "Dieser Auslöser wiederholt sich: Das Emblem stapelt sich jedes Mal, und ein zusammengesetztes Emblem mit N Stapeln wird N-mal ausgelöst.",
     "label_content": "INHALT",
     "label_target_scope": "REICHWEITE",
+    "label_neutralised_ability": "NEUTRALISIERTE FÄHIGKEIT",
+    "neutralisation_hint": "Stumm bei der gezielten gegnerischen Einheit (oder bei allen, mit der Reichweite „Alle gegnerischen“), solange die Trägereinheit im Spiel ist.",
     "target_scope_target": "Ziel",
     "target_scope_all_enemies": "Alle gegnerischen",
     "target_scope_all_allies": "Alle verbündeten",
@@ -2593,9 +2631,7 @@
     "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
     "content_silence": "Stille (nimmt dem Ziel alles)",
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
-    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
-    "label_neutralised_ability": "NEUTRALISIERTE FÄHIGKEIT",
-    "neutralisation_hint": "Stumm bei der gezielten gegnerischen Einheit (oder bei allen, mit der Reichweite „Alle gegnerischen“), solange die Trägereinheit im Spiel ist."
+    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
@@ -2695,9 +2731,6 @@
     "faveur_self": "🎁 Gunst — Karte zu eurer Hand hinzugefügt",
     "faveur_opponent": "🎁 Gunst — Karte zur gegnerischen Hand hinzugefügt",
     "spell_grant_all_allies": " · an alle Verbündeten",
-    "target_scope_all_enemies": "Wirkt auf alle gegnerischen Kreaturen",
-    "target_scope_all_allies": "Wirkt auf alle verbündeten Kreaturen",
-    "target_scope_all": "Wirkt auf alle Kreaturen",
     "spell_grant_target": " · an die Zielkreatur",
     "fire_breath_label": "Feueratem",
     "queue_eyebrow": "Beweise deinen Wert",

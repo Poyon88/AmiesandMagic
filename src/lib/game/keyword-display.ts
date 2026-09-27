@@ -9,6 +9,7 @@ import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, 
 import { SINGULIER_COLOR } from "./singulier";
 import { getClanForm } from "@/lib/card-engine/race-forms";
 import type { TargetScope } from "./types";
+import { scopedDescTemplate } from "./target-scope";
 import {
   convocationPrefix,
   formatConvocationToken,
@@ -168,19 +169,6 @@ export function keywordScopeNote(
   return null;
 }
 
-const TARGET_SCOPE_NOTE_FR: Record<TargetScope, string> = {
-  all_enemies: "S'applique à toutes les créatures ennemies",
-  all_allies: "S'applique à toutes les créatures alliées",
-  all: "S'applique à toutes les créatures",
-};
-
-/** Note de PORTÉE « toutes » d'une capacité ciblée (cf. target-scope.ts),
- *  affichée sous sa description. */
-export function targetScopeNote(scope: TargetScope | null | undefined, t?: SafeT): string | null {
-  if (!scope) return null;
-  return t?.(`game.target_scope_${scope}`) ?? TARGET_SCOPE_NOTE_FR[scope];
-}
-
 /** Gabarit brut d'un mot-clé : message localisé, sinon repli FR du registre. */
 function template(kw: Keyword, t?: SafeT, coutLibre = false): string | null {
   // Coût optionnel non renseigné : la description SANS la mention du coût.
@@ -206,7 +194,9 @@ export function describeKeyword(
   // Déchainement : le coût est son Y ; ailleurs, le X.
   const coutLibre = !!COUT_OPTIONNEL[kw]
     && (kw === "dechainement" ? (ctx.instance != null && ctx.instance.y == null) : ctx.x == null);
-  const tmpl = template(kw, t, coutLibre);
+  // Portée « toutes » : variante de la phrase qui parle de toutes les créatures
+  // du camp au lieu d'une cible (cf. target-scope.ts).
+  const tmpl = scopedDescTemplate("creature", kw, ctx.instance?.targetScope, t) ?? template(kw, t, coutLibre);
   if (!tmpl) return null;
   const s = resolveMarkers(tmpl, kw, ctx, t, TOKEN_RESOLVERS);
 

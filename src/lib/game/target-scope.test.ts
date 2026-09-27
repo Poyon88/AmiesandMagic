@@ -180,3 +180,23 @@ describe("chaîne forge → carte → moteur", () => {
     expect(composedScope(cap(2, "enemy"))).toBeUndefined();
   });
 });
+
+describe("description en portée « toutes »", () => {
+  it("action : la phrase parle de toutes les créatures, X substitué", async () => {
+    const { getSpellKeywordDesc } = await import("./spell-keywords");
+    expect(getSpellKeywordDesc({ id: "entrave", amount: 3, targetScope: "all_enemies" }))
+      .toBe("Paralyse toutes les créatures ennemies pendant 3 tour(s).");
+    expect(getSpellKeywordDesc({ id: "impact", amount: 2, targetScope: "all" }))
+      .toBe("Inflige 2 dégâts à toutes les créatures des deux camps.");
+    // Sans portée : description ordinaire.
+    expect(getSpellKeywordDesc({ id: "entrave", amount: 3 })).toContain("une créature ennemie ciblée");
+  });
+
+  it("créature : variante « toutes », et rien pour une portée refusée", async () => {
+    const { describeKeyword } = await import("./keyword-display");
+    expect(describeKeyword("malediction" as Keyword, { instance: { targetScope: "all_enemies" } }))
+      .toBe("Maudit toutes les créatures ennemies : elles sont exilées à la fin du prochain tour adverse.");
+    expect(describeKeyword("benediction" as Keyword, { instance: { targetScope: "all_enemies" } }))
+      .toBe("Soigne complètement l'unité ciblée.");
+  });
+});

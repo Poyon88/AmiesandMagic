@@ -71,7 +71,7 @@ import CompagnonsNames from "./CompagnonsNames";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
-import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, kwTargetScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 interface GameCardProps {
@@ -606,8 +606,6 @@ export default function GameCard({
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
-                  {/* Portée « toutes » d'une capacité ciblée de créature. */}
-                  {isCreature && (() => { const n = vocab.targetScopeNote(kwTargetScope(instance)); return n ? <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
@@ -632,7 +630,6 @@ export default function GameCard({
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
-                  {(() => { const n = vocab.targetScopeNote(spellKwScope(spellKw)); return n ? <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
                   {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, effectiveTokens)} scale={s} />

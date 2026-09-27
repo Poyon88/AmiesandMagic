@@ -154,6 +154,10 @@
         "label": "武器の達人",
         "desc": "戦場にある自分のすべてのアイテムを、他の自分のクリーチャーが装備しているものも含めて、無償で装備する。"
       },
+      "neutralisation": {
+        "label": "無力化",
+        "desc": "場に出ている間、{neutralise_cible}の{ability}を無力化する。"
+      },
       "transformation": {
         "label": "変身",
         "desc": "指定されたカードに変身する。プレイエリアを離れると元の姿に戻る。"
@@ -542,10 +546,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "neutralisation": {
-        "label": "無力化",
-        "desc": "場に出ている間、{neutralise_cible}の{ability}を無力化する。"
       }
     },
     "spell_keywords": {
@@ -1775,6 +1775,42 @@
       "draw": "ドロー時",
       "low_hp": "HP{n}以下",
       "wound": "負傷"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "{cibles}にXダメージを与える。",
+        "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
+        "retour_differe": "{cibles}を持ち主のデッキの一番下に置く。",
+        "remontee": "{cibles}を元の持ち主の手札に戻す。",
+        "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
+        "domination": "場の空きがある限り、{cibles}を支配下に置く。",
+        "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
+        "siphon": "{cibles}にXダメージを与え、命中したクリーチャー1体につきXだけ自分のヒーローを回復する。",
+        "entrave": "{cibles}をXターンの間束縛する。",
+        "execution": "{cibles}を破壊する。",
+        "silence": "{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
+        "renforcement": "{cibles}に+X/+Y。",
+        "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
+        "guerison": "{cibles}のHPをX回復する。"
+      },
+      "creature": {
+        "impact": "{cibles}にXダメージを与える。",
+        "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
+        "retour_differe": "{cibles}を持ち主のデッキの一番下に置く。",
+        "remontee": "{cibles}を元の持ち主の手札に戻す。",
+        "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
+        "domination": "場の空きがある限り、{cibles}を支配下に置く。",
+        "benediction": "{cibles}を完全に回復する。",
+        "malediction": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
+        "tactique": "このクリーチャーの永続能力のうちランダムに選ばれたX個を、{cibles}に永久に付与する（クリーチャー1体につき1回抽選）。",
+        "vampirisme": "{cibles}からHPをX奪い、このユニットのHPに加える。",
+        "devoration": "{cibles}を破壊する。このクリーチャーはそれらのATKとHPを永久に得る。"
+      },
+      "cibles": {
+        "all_enemies": "敵のすべてのクリーチャー",
+        "all_allies": "味方のすべてのクリーチャー",
+        "all": "両陣営のすべてのクリーチャー"
+      }
     }
   },
   "home": {
@@ -2109,6 +2145,8 @@
     "emblem_repeat_warning": "このトリガーは繰り返されます。エンブレムは毎回累積し、N個累積した複合エンブレムはN回解決されます。",
     "label_content": "内容",
     "label_target_scope": "射程",
+    "label_neutralised_ability": "無力化された能力",
+    "neutralisation_hint": "このカードが場に出ている間、対象の敵ユニット（範囲が「敵全体」の場合はすべての敵ユニット）の能力を沈黙させる。",
     "target_scope_target": "対象",
     "target_scope_all_enemies": "敵全体",
     "target_scope_all_allies": "味方全体",
@@ -2593,9 +2631,7 @@
     "content_retour_differe": "遅延帰還（デッキの下へ）",
     "content_silence": "沈黙（対象から全て取り除く）",
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
-    "content_selection_magique": "魔法選択（3枚から1つのアクション）",
-    "label_neutralised_ability": "無力化された能力",
-    "neutralisation_hint": "このカードが場に出ている間、対象の敵ユニット（範囲が「敵全体」の場合はすべての敵ユニット）の能力を沈黙させる。"
+    "content_selection_magique": "魔法選択（3枚から1つのアクション）"
   },
   "game": {
     "error_not_authenticated": "未認証",
@@ -2695,9 +2731,6 @@
     "faveur_self": "🎁 恩恵 — カードが手札に追加されました",
     "faveur_opponent": "🎁 恩恵 — カードが相手の手札に追加されました",
     "spell_grant_all_allies": " · 全味方クリーチャーに",
-    "target_scope_all_enemies": "敵の全クリーチャーに適用される",
-    "target_scope_all_allies": "味方の全クリーチャーに適用される",
-    "target_scope_all": "全クリーチャーに適用される",
     "spell_grant_target": " · 対象クリーチャーに",
     "fire_breath_label": "炎のブレス",
     "queue_eyebrow": "実力を証明せよ",
