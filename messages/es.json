@@ -546,6 +546,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar.",
+        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar."
       }
     },
     "spell_keywords": {
@@ -802,6 +807,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar",
+        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar"
       }
     },
     "composed": {
@@ -924,7 +934,11 @@
         "appel_any": "pone en juego la 1ª unidad de tu mazo",
         "appel_item_any": "pone en juego el 1er objeto de tu mazo",
         "dechainement_any": "juega {x} acciones aleatorias",
-        "dechainement_one_any": "juega una acción aleatoria"
+        "dechainement_one_any": "juega una acción aleatoria",
+        "forge": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {x} como máximo, al azar",
+        "forge_range": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} a {x}, al azar",
+        "forge_any": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter}, al azar",
+        "forge_any_min": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} como mínimo, al azar"
       },
       "self": {
         "transformation": "se transforma",
@@ -1745,7 +1759,13 @@
       "scope_all": "a todas tus unidades",
       "neutralise_cible": "de una unidad enemiga objetivo (o de todas)",
       "neutralise_cible_target": "en una unidad enemiga objetivo",
-      "neutralise_cible_all": "en todas las unidades enemigas"
+      "neutralise_cible_all": "en todas las unidades enemigas",
+      "forge_align": " o {alignment}",
+      "forge_cout": " de coste X como máximo",
+      "forge_cout_libre": "",
+      "forge_cout_max": " de coste X como máximo",
+      "forge_cout_range": " de coste {n} a X",
+      "forge_cout_min": " de coste {n} como mínimo"
     },
     "sets": {
       "1": "Set Base"
@@ -2644,7 +2664,9 @@
     "content_retour_differe": "Retorno diferido (bajo el mazo)",
     "content_silence": "Silencio (despoja al objetivo)",
     "content_dechainement": "Desenfreno X/Y (acciones aleatorias)",
-    "content_selection_magique": "Selección mágica (1 acción de entre 3)"
+    "content_selection_magique": "Selección mágica (1 acción de entre 3)",
+    "content_forge": "Forja (1 objeto mezclado en el mazo)",
+    "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste."
   },
   "game": {
     "error_not_authenticated": "No autenticado",

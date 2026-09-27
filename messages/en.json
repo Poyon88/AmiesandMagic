@@ -387,6 +387,11 @@
         "desc": "Adds a random {alignment} common of cost X to your hand.",
         "desc_any": "Adds a random {alignment} common to your hand."
       },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Shuffles a random item{forge_cout} into your deck — neutral{forge_align}.",
+        "desc_any": "Shuffles a random item{forge_cout_libre} into your deck — neutral{forge_align}."
+      },
       "selection_magique": {
         "label": "Arcane Selection X",
         "desc": "Reveals 3 common {alignment} actions of cost X; add one to your hand.",
@@ -632,6 +637,11 @@
         "label": "Selection X",
         "desc": "Reveals 3 {alignment} commons of cost X; add one to your hand",
         "desc_any": "Reveals 3 {alignment} commons; add one to your hand"
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Shuffles a random item{forge_cout} into your deck — neutral{forge_align}",
+        "desc_any": "Shuffles a random item{forge_cout_libre} into your deck — neutral{forge_align}"
       },
       "faveur": {
         "label": "Favor X",
@@ -917,6 +927,10 @@
         "selection_magique_any": "reveals 3 actions{filter} and keeps one in hand",
         "renfort_royal_any": "reveals 3 collection cards{filter} and keeps one in hand",
         "tresor_any": "reveals 3 Items{filter} and keeps one in hand",
+        "forge": "shuffles a random neutral or your alignment item{filter} costing {x} or less into your deck",
+        "forge_range": "shuffles a random neutral or your alignment item{filter} costing {min} to {x} into your deck",
+        "forge_any": "shuffles a random neutral or your alignment item{filter} into your deck",
+        "forge_any_min": "shuffles a random neutral or your alignment item{filter} costing {min} or more into your deck",
         "invocation_any": "summons a random creature{filter}",
         "invocation_item_any": "deploys a random item{filter}",
         "exhumation_any": "resurrects {who} from your graveyard",
@@ -1745,7 +1759,13 @@
       "scope_all": "to all your units",
       "neutralise_cible": "of a targeted enemy unit (or all)",
       "neutralise_cible_target": "on a targeted enemy unit",
-      "neutralise_cible_all": "on all enemy units"
+      "neutralise_cible_all": "on all enemy units",
+      "forge_align": " or {alignment}",
+      "forge_cout": " costing X or less",
+      "forge_cout_libre": "",
+      "forge_cout_max": " costing X or less",
+      "forge_cout_range": " costing {n} to X",
+      "forge_cout_min": " costing {n} or more"
     },
     "sets": {
       "1": "Base Set"
@@ -2633,6 +2653,8 @@
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
     "content_tuteur": "Tutor (named cards → hand)",
     "content_transformation": "Transform into designated card",
+    "content_forge": "Forge (1 item shuffled into deck)",
+    "forge_min_hint": "Minimum cost of the forged item (lower bound A). The maximum cost is X; empty X = any cost.",
     "transformation_card_hint": "Each targeted unit becomes this card; with multiple cards, each one draws its own at random. It reverts to its original form when leaving the battlefield.",
     "content_epargne": "Savings (counter)",
     "content_foi": "Faith (counter)",

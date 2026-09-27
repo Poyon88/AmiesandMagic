@@ -546,6 +546,11 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
+      },
+      "forge": {
+        "label": "鍛造X",
+        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる。",
+        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる。"
       }
     },
     "spell_keywords": {
@@ -802,6 +807,11 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
+      },
+      "forge": {
+        "label": "鍛造X",
+        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる",
+        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる"
       }
     },
     "composed": {
@@ -924,7 +934,11 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
+        "forge": "中立または自分の陣営のアイテム{filter}を、コスト{x}以下でランダムにデッキに混ぜる",
+        "forge_range": "中立または自分の陣営のアイテム{filter}を、コスト{min}から{x}の範囲でランダムにデッキに混ぜる",
+        "forge_any": "中立または自分の陣営のアイテム{filter}を、ランダムにデッキに混ぜる",
+        "forge_any_min": "中立または自分の陣営のアイテム{filter}を、コスト{min}以上でランダムにデッキに混ぜる"
       },
       "self": {
         "transformation": "変身する",
@@ -1745,7 +1759,13 @@
       "scope_all": "あなたの全ユニットに",
       "neutralise_cible": "対象の敵ユニット1体（またはすべて）",
       "neutralise_cible_target": "対象の敵ユニット1体",
-      "neutralise_cible_all": "敵ユニット全体"
+      "neutralise_cible_all": "敵ユニット全体",
+      "forge_align": "または{alignment}",
+      "forge_cout": "（コストX以下）",
+      "forge_cout_libre": "",
+      "forge_cout_max": "（コストX以下）",
+      "forge_cout_range": "（コスト{n}~X）",
+      "forge_cout_min": "（コスト{n}以上）"
     },
     "sets": {
       "1": "基本セット"
@@ -2644,7 +2664,9 @@
     "content_retour_differe": "遅延帰還（デッキの下へ）",
     "content_silence": "沈黙（対象から全て取り除く）",
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
-    "content_selection_magique": "魔法選択（3枚から1つのアクション）"
+    "content_selection_magique": "魔法選択（3枚から1つのアクション）",
+    "content_forge": "鍛造（デッキに混ぜるアイテム1つ）",
+    "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。"
   },
   "game": {
     "error_not_authenticated": "未認証",

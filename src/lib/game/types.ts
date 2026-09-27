@@ -48,6 +48,9 @@ export type Keyword =
   | "renfort_royal"
   // Trésor X : Sélection limitée aux OBJETS
   | "tresor"
+  // Forge X : un objet de la collection (neutre ou de l'alignement de la carte,
+  // coût ≤ X, ≥ A) mélangé dans le deck, au hasard, sans révélation.
+  | "forge"
   // Tier 3 — Relancer
   | "relancer"
   // Polymorphic — cast X random collection spells of cost Y (same alignment,
@@ -240,6 +243,7 @@ export type SpellKeywordId =
   | "faveur"
   | "renfort_royal"
   | "tresor"
+  | "forge"
   | "relancer"
   | "tempete"
   | "appel_du_clan"
@@ -692,7 +696,10 @@ export type ComposedEffectContent =
   // TRÉSOR : Sélection dont le vivier ne contient que des OBJETS. Contenu
   // distinct (et non `selection` + filtre `cardType`) pour porter son propre
   // nom, sa propre icône et son propre barème.
-  | "tresor";
+  | "tresor"
+  // FORGE : un objet du vivier (neutre ou alignement de la source, coût ≤ X et
+  // ≥ A, filtre de pool) MÉLANGÉ dans le deck du contrôleur, sans révélation.
+  | "forge";
 
 /** Spécification de cibles d'un effet composé. Le filtre de COÛT est en place
  *  (`maxCost`) ; les filtres par ATK/déf/rareté et par capacités possédées

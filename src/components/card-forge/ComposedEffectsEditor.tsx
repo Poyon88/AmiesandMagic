@@ -84,12 +84,15 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "selection_magique", l: "Sélection magique (1 action parmi 3)", target: "none" },
   { v: "renfort_royal", l: "Sélection Royale (1 parmi 3)", target: "none" },
   { v: "tresor", l: "Trésor (1 objet parmi 3)", target: "none" },
+  // Forge : un objet neutre ou de l'alignement de la carte, coût ≤ X (≥ A),
+  // mélangé dans le deck, sans révélation.
+  { v: "forge", l: "Forge (1 objet mélangé dans le deck)", target: "none" },
 ];
 
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge"]);
 
 /** Sous-ensemble dont le pool peut être restreint par type de carte.
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
@@ -102,7 +105,7 @@ const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "re
  *  mots-clés, ou revient du cimetière (sur la table ou en main). */
 /** Contenus dont le X est un COÛT optionnel : vide ⇒ n'importe quel coût
  *  (Déchainement : c'est son Y, traité à part). */
-const CONTENUS_COUT_X = new Set<ComposedEffectContent>(["selection", "selection_magique", "renfort_royal", "tresor", "faveur", "invocation", "exhumation", "appel", "appel_supreme"]);
+const CONTENUS_COUT_X = new Set<ComposedEffectContent>(["selection", "selection_magique", "renfort_royal", "tresor", "faveur", "invocation", "exhumation", "appel", "appel_supreme", "forge"]);
 
 const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "retour_differe", "silence", "exhumation", "rappel"]);
 
@@ -499,6 +502,10 @@ export default function ComposedEffectsEditor({
                 {def.params.includes("amount") && (
                   <label style={{ fontSize: 9, color: "#9b59b6" }}>X {numInput(kw.amount ?? 1, (n) => patchCurated(idx, { amount: Math.max(1, n) }), 1)}</label>
                 )}
+                {kw.id === "forge" && (
+                  <PlancherAleatoireInput value={kw.minX} plafond={kw.amount || 20}
+                    title={tr('forge_min_hint')} onChange={(v) => patchCurated(idx, { minX: v })} />
+                )}
                 {def.params.includes("attack") && (
                   <label style={{ fontSize: 9, color: "#e74c3c" }}>ATK {numInput(kw.attack ?? 1, (n) => patchCurated(idx, { attack: n }))}</label>
                 )}
@@ -816,7 +823,13 @@ export default function ComposedEffectsEditor({
                   : numInput(eff.magnitude?.x ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, x: n } }))}</label>
                 {/* « ? » — la valeur saisie devient un PLAFOND et le nombre est
                     tiré entre 1 et lui, une seule fois, à la résolution. */}
-                {aleaX(idx, eff)}
+                {/* Forge : X est toujours un PLAFOND ; pas de « ? », seulement la
+                    borne basse A (coût minimum de l'objet forgé). */}
+                {eff.content === "forge"
+                  ? <PlancherAleatoireInput value={eff.magnitude?.minX} plafond={eff.magnitude?.x || 20}
+                      title={tr('forge_min_hint')}
+                      onChange={(v) => patchEffect(idx, { magnitude: { ...eff.magnitude, minX: v } })} />
+                  : aleaX(idx, eff)}
                 {showY && <label style={{ fontSize: 9, color: "#666" }}>Y {eff.content === "dechainement"
                   ? numInputCout(eff.magnitude?.y, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n, ...(n == null ? { randomY: undefined } : {}) } }))
                   : numInput(eff.magnitude?.y ?? 0, (n) => patchEffect(idx, { magnitude: { ...eff.magnitude, y: n } }))}</label>}

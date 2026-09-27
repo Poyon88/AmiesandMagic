@@ -2102,6 +2102,14 @@ function resolveComposedEffect(
       }
       return;
     }
+    // FORGE : N occurrences ⇒ N objets forgés, chacun tiré à part.
+    case "forge": {
+      const forgeCard = source?.card ?? opts?.sourceCard;
+      for (let i = 0; i < nombreDOccurrences(composed); i++) {
+        resolveForge(owner, composed.magnitude?.x == null ? undefined : x, composed.magnitude?.minX, forgeCard, composed.pool);
+      }
+      return;
+    }
     case "selection":
     case "selection_magique":
     case "renfort_royal":
@@ -5741,6 +5749,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveFaveur(player, xF, aleaF, cardInstance.card, undefined, cardInstance.instanceId, minF);
     }
 
+    // Forge X : un objet de la collection mélangé dans le deck, au hasard.
+    if (hasKwOnPlay(cardInstance, "forge")) {
+      const cap = getCapabilities(cardInstance.card).find(c => c.abilityId === "forge" && c.trigger === "on_play");
+      resolveForge(player, cap?.params?.x, cap?.params?.minX, cardInstance.card);
+    }
+
     // Rassemblement X: révèle X premières cartes du deck, unités de même race en main, reste défaussé
     if (hasKwOnPlay(cardInstance, "rassemblement") && cardInstance.card.race && player.deck.length > 0) {
       const rasXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
@@ -6362,6 +6376,11 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
       token_id: c.tokenId ?? null,
       // Déchainement : « ? » sur le coût Y (plafond au lieu d'un coût exact).
       ...(c.params?.randomY === true ? { randomY: true } : {}),
+      // « ? » sur X et plancher A : ils n'étaient pas transmis, si bien que
+      // Faveur et les Sélections en forme SORT ignoraient leur tirage et leur
+      // plancher (Forge X lit aussi `minX`).
+      ...(c.params?.randomX === true ? { randomX: true } : {}),
+      ...(c.params?.minX != null ? { minX: c.params.minX } : {}),
       // Portée « toutes » (déjà validée par l'adaptateur).
       ...(c.targetScope ? { targetScope: c.targetScope } : {}),
     }));
@@ -6517,6 +6536,40 @@ function appelSupreme(player: PlayerState, cands: CardInstance[] = player.deck):
   const chosen = tied[Math.floor(rng() * tied.length)];
   player.deck = player.deck.filter(c => c !== chosen);
   player.hand.push(chosen);
+}
+
+/** FORGE X — POINT DE RÉSOLUTION UNIQUE des quatre chemins (entrée en jeu,
+ *  déclencheur curé, sort, composé). Un OBJET de la collection est mélangé dans
+ *  le deck du contrôleur, SANS révélation (arbitrage auteur, 2026-09-27) :
+ *    - alignement : neutre, ou celui de la carte source (lu comme Trésor, sur
+ *      `card_alignment` puis la faction) ; une source neutre ne forge que du neutre ;
+ *    - coût : X au plus (vide ou ≤ 0 ⇒ tout coût), A au moins si la borne
+ *      basse est posée (`minX` > 1) ;
+ *    - filtre de pool optionnel (forme composée) ;
+ *    - chances ÉGALES entre objets éligibles, position au hasard dans le deck,
+ *      via `rng()` semé — le même tirage chez les deux joueurs.
+ *  Aucun objet éligible : rien ne se passe. */
+function resolveForge(
+  owner: PlayerState,
+  x: number | undefined,
+  minX: number | undefined,
+  sourceCard: Card | null | undefined,
+  filter?: ComposedPoolFilter,
+): void {
+  const pool = currentCardPools.factionCardPool ?? [];
+  const aligne = sourceCard ? alignementDeLaCarte(sourceCard) : null;
+  const plafond = x != null && x > 0 ? x : Number.POSITIVE_INFINITY;
+  const plancher = minX != null && minX > 1 ? minX : 0;
+  const filtre = { ...(filter ?? {}), cardType: "item" as const };
+  const vivier = pool.filter(c => {
+    if (!matchesPoolFilter(c, filtre)) return false;
+    if (c.mana_cost > plafond || c.mana_cost < plancher) return false;
+    const a = alignementDeLaCarte(c);
+    return a === "neutre" || (aligne != null && a === aligne);
+  });
+  if (vivier.length === 0) return;
+  const choisi = vivier[Math.floor(rng() * vivier.length)];
+  owner.deck.splice(Math.floor(rng() * (owner.deck.length + 1)), 0, createCardInstance(choisi));
 }
 
 /** FAVEUR X — POINT DE RÉSOLUTION UNIQUE des quatre chemins (entrée en jeu,
@@ -7143,6 +7196,10 @@ function resolveSpellKeywords(
         // et offriraient deux fois la même carte.
         resolveFaveur(ctx.caster, kw.amount ?? 0, kw.randomX === true, ctx.card,
           undefined, `spell_${ctx.card.id}`, kw.minX);
+        break;
+      }
+      case "forge": {
+        resolveForge(ctx.caster, kw.amount, kw.minX, ctx.card);
         break;
       }
       case "rassemblement": {
@@ -10684,6 +10741,11 @@ function resolveCuratedKeywordEffect(
       // dégrader, donc aucune branche à écrire.
       resolveFaveur(owner, inst?.x ?? 0, inst?.randomX === true, source.card,
         undefined, source.instanceId, inst?.minX);
+      return;
+    }
+    case "forge": {
+      // Mêmes règles sur tous les déclencheurs : aucun choix, rien à différer.
+      resolveForge(owner, inst?.x ?? undefined, inst?.minX, source.card);
       return;
     }
     case "rassemblement": {

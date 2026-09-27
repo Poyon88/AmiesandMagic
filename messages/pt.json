@@ -546,6 +546,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente.",
+        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente."
       }
     },
     "spell_keywords": {
@@ -802,6 +807,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente",
+        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente"
       }
     },
     "composed": {
@@ -924,7 +934,11 @@
         "appel_any": "coloca em jogo a 1ª unidade do seu baralho",
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
-        "dechainement_one_any": "joga uma ação aleatória"
+        "dechainement_one_any": "joga uma ação aleatória",
+        "forge": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo até {x}, aleatoriamente",
+        "forge_range": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} a {x}, aleatoriamente",
+        "forge_any": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter}, aleatoriamente",
+        "forge_any_min": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} no mínimo, aleatoriamente"
       },
       "self": {
         "transformation": "se transforma",
@@ -1745,7 +1759,13 @@
       "scope_all": "a todas as suas unidades",
       "neutralise_cible": "de uma unidade inimiga alvo (ou de todas)",
       "neutralise_cible_target": "em uma unidade inimiga alvo",
-      "neutralise_cible_all": "em todas as unidades inimigas"
+      "neutralise_cible_all": "em todas as unidades inimigas",
+      "forge_align": " ou {alignment}",
+      "forge_cout": " de custo até X",
+      "forge_cout_libre": "",
+      "forge_cout_max": " de custo até X",
+      "forge_cout_range": " de custo {n} a X",
+      "forge_cout_min": " de custo {n} no mínimo"
     },
     "sets": {
       "1": "Set Básico"
@@ -2644,7 +2664,9 @@
     "content_retour_differe": "Retorno adiado (sob o baralho)",
     "content_silence": "Silêncio (retira tudo ao alvo)",
     "content_dechainement": "Desencadeamento X/Y (ações aleatórias)",
-    "content_selection_magique": "Seleção mágica (1 ação entre 3)"
+    "content_selection_magique": "Seleção mágica (1 ação entre 3)",
+    "content_forge": "Forja (1 objeto misturado no deck)",
+    "forge_min_hint": "Custo mínimo do objeto forjado (limite inferior A). O custo máximo é X; X vazio = qualquer custo."
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

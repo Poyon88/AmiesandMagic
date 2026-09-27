@@ -546,6 +546,11 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "forge": {
+        "label": "熔铸 X",
+        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆。",
+        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆。"
       }
     },
     "spell_keywords": {
@@ -802,6 +807,11 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "forge": {
+        "label": "熔铸 X",
+        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆",
+        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆"
       }
     },
     "composed": {
@@ -924,7 +934,11 @@
         "appel_any": "将你牌库中的首个单位置入场上",
         "appel_item_any": "将你牌库中的首个物品置入场上",
         "dechainement_any": "打出{x}张随机行动牌",
-        "dechainement_one_any": "打出一张随机行动牌"
+        "dechainement_one_any": "打出一张随机行动牌",
+        "forge": "随机将一件中立或你的阵营{filter}、费用至多为{x}的物品混入你的牌堆",
+        "forge_range": "随机将一件中立或你的阵营{filter}、费用为{min}到{x}的物品混入你的牌堆",
+        "forge_any": "随机将一件中立或你的阵营{filter}的物品混入你的牌堆",
+        "forge_any_min": "随机将一件中立或你的阵营{filter}、费用至少为{min}的物品混入你的牌堆"
       },
       "self": {
         "transformation": "自身变形",
@@ -1745,7 +1759,13 @@
       "scope_all": "给你所有的单位",
       "neutralise_cible": "一个目标敌方单位（或全部单位）",
       "neutralise_cible_target": "一个目标敌方单位",
-      "neutralise_cible_all": "所有敌方单位"
+      "neutralise_cible_all": "所有敌方单位",
+      "forge_align": "或{alignment}",
+      "forge_cout": "，费用至多为X",
+      "forge_cout_libre": "",
+      "forge_cout_max": "，费用至多为X",
+      "forge_cout_range": "，费用为{n}到X",
+      "forge_cout_min": "，费用至少为{n}"
     },
     "sets": {
       "1": "基础系列"
@@ -2644,7 +2664,9 @@
     "content_retour_differe": "延迟归返（置于牌库底）",
     "content_silence": "沉默（移除目标的一切）",
     "content_dechainement": "释放X/Y（随机行动）",
-    "content_selection_magique": "魔法抉择（从3张中选1张行动）"
+    "content_selection_magique": "魔法抉择（从3张中选1张行动）",
+    "content_forge": "熔铸（1件物品混入牌堆）",
+    "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。"
   },
   "game": {
     "error_not_authenticated": "未登录",

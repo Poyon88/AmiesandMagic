@@ -289,8 +289,12 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // Sélection au hasard : le drapeau seul suffit à créer l'instance (le X
       // est toujours là pour une capacité scalable, mais on ne s'y fie pas).
       const alea = RANDOM_X_ABILITY_IDS.has(id) && randomX[label] === true;
-      if (!mode && x == null && !grantScope && !alea) return null; // pure play + no X + default scope → nothing to store
-      const plancher = alea && x != null && (minX[label] ?? 1) > 1 ? Math.min(minX[label], x) : undefined;
+      // Forge : la borne basse A vaut SANS « ? » (X y est toujours un plafond),
+      // et même sans X (tout coût, au moins A).
+      const plancherSeul = id === "forge" && (minX[label] ?? 1) > 1;
+      if (!mode && x == null && !grantScope && !alea && !plancherSeul) return null; // pure play + no X + default scope → nothing to store
+      const plancher = plancherSeul ? (x != null ? Math.min(minX[label], x) : minX[label])
+        : alea && x != null && (minX[label] ?? 1) > 1 ? Math.min(minX[label], x) : undefined;
       return { id, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}), ...(plancher != null && plancher > 1 ? { minX: plancher } : {}) };
     }
   }

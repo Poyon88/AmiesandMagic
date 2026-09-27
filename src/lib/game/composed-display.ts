@@ -196,6 +196,11 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.selection_magique_any": "révèle 3 actions{filter} et en garde une en main",
   "content.renfort_royal_any": "révèle 3 cartes de collection{filter} et en garde une en main",
   "content.tresor_any": "révèle 3 objets{filter} et en garde un en main",
+  // Forge : objet neutre ou de l'alignement de la carte, mélangé dans le deck.
+  "content.forge": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {x} au plus, au hasard",
+  "content.forge_range": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {min} à {x}, au hasard",
+  "content.forge_any": "mélange dans votre deck un objet neutre ou de votre alignement{filter}, au hasard",
+  "content.forge_any_min": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {min} au moins, au hasard",
   "content.invocation_any": "invoque une créature aléatoire{filter}",
   "content.invocation_item_any": "pose un objet aléatoire{filter}",
   "content.exhumation_any": "ressuscite {who} de votre cimetière",
@@ -416,6 +421,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "selection_magique": return { symbol: KEYWORD_SYMBOLS.selection_magique, keyword: "selection_magique" };
     case "renfort_royal": return { symbol: KEYWORD_SYMBOLS.renfort_royal, keyword: "renfort_royal" };
     case "tresor": return { symbol: KEYWORD_SYMBOLS.tresor, keyword: "tresor" };
+    case "forge": return { symbol: KEYWORD_SYMBOLS.forge, keyword: "forge" };
     // L'APPEL emprunte l'icône et le nom d'« Appel du clan », le mot-clé le plus
     // proche : c'est le même geste de jeu — sortir une unité du deck et la poser
     // en jeu — à ceci près que la cible se déclare au lieu d'être héritée.
@@ -723,6 +729,13 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "faveur":
     case "tresor":
       return frag(t, libre(`content.${eff.content}`), { x: xAff, filter: describePoolFilter(eff, t) });
+    // Forge : X est un PLAFOND, la borne basse A (minX) s'y ajoute.
+    case "forge": {
+      const a = eff.magnitude?.minX ?? 1;
+      const cle = coutLibre ? (a > 1 ? "content.forge_any_min" : "content.forge_any")
+        : a > 1 ? "content.forge_range" : "content.forge";
+      return frag(t, cle, { x, min: a, filter: describePoolFilter(eff, t) });
+    }
     default: return String(eff.content);
   }
 }

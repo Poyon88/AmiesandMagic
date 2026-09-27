@@ -113,6 +113,17 @@ export const MARKERS_FR: Record<string, string> = {
   "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
   "neutralise_cible_target": "chez une unité ennemie ciblée",
   "neutralise_cible_all": "chez toutes les unités ennemies",
+  // Forge X : clause de coût. X au plus ; avec la borne basse A, « de A à X » ;
+  // X vide (tout coût) : rien, ou « A au moins » si la borne est posée.
+  // « un objet neutre{forge_align} » : rien pour une carte neutre (ou sans
+  // alignement), « ou d'alignement Bon » sinon.
+  "forge_align": " ou {alignment}",
+  // Replis génériques des marqueurs Forge (résolus sans contexte de carte).
+  "forge_cout": " de coût X au plus",
+  "forge_cout_libre": "",
+  "forge_cout_max": " de coût X au plus",
+  "forge_cout_range": " de coût {n} à X",
+  "forge_cout_min": " de coût {n} au moins",
 };
 
 export function marker(key: string, t?: SafeT): string | undefined {
@@ -184,6 +195,22 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
   ability: (_kw, ctx, t) => {
     const id = ctx.instance?.grantAbilityId;
     return id ? getKeywordDisplayLabel(id as Keyword, t) : null;
+  },
+  forge_align: (_kw, ctx, t) => {
+    const a = ctx.card ? getEffectiveAlignment(ctx.card) : null;
+    if (!a || a === "neutre") return "";
+    const al = (marker("alignment_of", t) ?? "d'alignement {a}").replace(/\{a\}/g, getAlignmentLabel(a, t));
+    return (marker("forge_align", t) ?? " ou {alignment}").replace(/\{alignment\}/g, al);
+  },
+  forge_cout: (_kw, ctx, t) => {
+    const a = ctx.instance?.minX ?? ctx.minX;
+    return a != null && a > 1
+      ? (marker("forge_cout_range", t) ?? "").replace(/\{n\}/g, String(a))
+      : marker("forge_cout_max", t) ?? null;
+  },
+  forge_cout_libre: (_kw, ctx, t) => {
+    const a = ctx.instance?.minX ?? ctx.minX;
+    return a != null && a > 1 ? (marker("forge_cout_min", t) ?? "").replace(/\{n\}/g, String(a)) : "";
   },
   neutralise_cible: (_kw, ctx, t) =>
     marker(ctx.instance?.targetScope === "all_enemies" ? "neutralise_cible_all" : "neutralise_cible_target", t) ?? null,

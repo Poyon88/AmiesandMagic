@@ -400,7 +400,8 @@ export default function CardEditor() {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
       if (inst.randomX === true) aleatoires[inst.id] = true;
-      if (inst.randomX === true && (inst.minX ?? 1) > 1) planchers[inst.id] = inst.minX!;
+      // Forge : la borne basse A existe sans « ? ».
+      if ((inst.randomX === true || inst.id === "forge") && (inst.minX ?? 1) > 1) planchers[inst.id] = inst.minX!;
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.targetScope) targetScopes[inst.id] = inst.targetScope;
@@ -733,8 +734,11 @@ export default function CardEditor() {
           }
           // Sélection au hasard : le drapeau seul justifie l'instance.
           const alea = RANDOM_X_ABILITY_IDS.has(id) && keywordRandomX[id] === true;
-          if (!mode && x == null && !grantScope && !alea) return null;
-          const plancher = alea && x != null && (keywordMinX[id] ?? 1) > 1 ? Math.min(keywordMinX[id], x) : undefined;
+          // Forge : borne basse A sans « ? » (X plafond), même sans X.
+          const plancherSeul = id === "forge" && (keywordMinX[id] ?? 1) > 1;
+          if (!mode && x == null && !grantScope && !alea && !plancherSeul) return null;
+          const plancher = plancherSeul ? (x != null ? Math.min(keywordMinX[id], x) : keywordMinX[id])
+            : alea && x != null && (keywordMinX[id] ?? 1) > 1 ? Math.min(keywordMinX[id], x) : undefined;
           return { id: id as Keyword, ...(mode ? { mode } : {}), ...(x != null ? { x } : {}), ...(grantScope ? { grantScope } : {}), ...(alea ? { randomX: true } : {}), ...(plancher != null && plancher > 1 ? { minX: plancher } : {}) };
         })
         // SINGULIER : la condition s'ajoute à l'instance — et CRÉE l'instance
@@ -1597,6 +1601,13 @@ export default function CardEditor() {
                         )}
                         {/* SÉLECTION AU HASARD (forme sort) : même case « ? »
                             que côté créature ; persistée dans spell_keywords[i].randomX. */}
+                        {kw.id === "forge" && (
+                          <PlancherAleatoireInput
+                            value={kw.minX} plafond={kw.amount || 20}
+                            title="Coût minimum de l'objet forgé (borne basse A). X = coût maximum ; X vide = tout coût."
+                            onChange={v => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, minX: v } : k))}
+                          />
+                        )}
                         {RANDOM_X_ABILITY_IDS.has(kw.id) && def.params.includes("amount") && (() => {
                           const plafond = kw.amount ?? 1;
                           const inerte = plafond < 2;
@@ -1871,6 +1882,13 @@ export default function CardEditor() {
                           {/* SÉLECTION AU HASARD : le X devient un plafond, tiré
                               entre 1 et lui à chaque déclenchement. Inerte sous
                               2 — « entre 1 et 1 » est une constante. */}
+                          {kw === "forge" && (
+                            <PlancherAleatoireInput
+                              value={keywordMinX[kw]} plafond={keywordXValues[kw] || 20}
+                              title="Coût minimum de l'objet forgé (borne basse A). X = coût maximum ; X vide = tout coût."
+                              onChange={v => setKeywordMinX(prev => { const n = { ...prev }; if (v) n[kw] = v; else delete n[kw]; return n; })}
+                            />
+                          )}
                           {RANDOM_X_ABILITY_IDS.has(kw) && (() => {
                             const plafond = keywordXValues[kw] ?? 1;
                             const inerte = plafond < 2;

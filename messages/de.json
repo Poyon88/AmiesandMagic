@@ -546,6 +546,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck.",
+        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck."
       }
     },
     "spell_keywords": {
@@ -802,6 +807,11 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck",
+        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck"
       }
     },
     "composed": {
@@ -924,7 +934,11 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion"
+        "dechainement_one_any": "spielt eine zufällige Aktion",
+        "forge": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von höchstens {x} zufällig in dein Deck",
+        "forge_range": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von {min} bis {x} zufällig in dein Deck",
+        "forge_any": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} zufällig in dein Deck",
+        "forge_any_min": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von mindestens {min} zufällig in dein Deck"
       },
       "self": {
         "transformation": "verwandelt sich",
@@ -1745,7 +1759,13 @@
       "scope_all": "auf alle deine Einheiten",
       "neutralise_cible": "einer gezielten gegnerischen Einheit (oder aller)",
       "neutralise_cible_target": "bei einer gezielten gegnerischen Einheit",
-      "neutralise_cible_all": "bei allen gegnerischen Einheiten"
+      "neutralise_cible_all": "bei allen gegnerischen Einheiten",
+      "forge_align": " oder {alignment}",
+      "forge_cout": " mit Kosten von höchstens X",
+      "forge_cout_libre": "",
+      "forge_cout_max": " mit Kosten von höchstens X",
+      "forge_cout_range": " mit Kosten von {n} bis X",
+      "forge_cout_min": " mit Kosten von mindestens {n}"
     },
     "sets": {
       "1": "Basis-Set"
@@ -2644,7 +2664,9 @@
     "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
     "content_silence": "Stille (nimmt dem Ziel alles)",
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
-    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)"
+    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
+    "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
+    "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten."
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

@@ -96,5 +96,19 @@
         "tagline": "The desert remembers its kings"
       }
     }
+  },
+  "vocab": {
+    "keywords": {
+      "forge": {
+        "desc": "Shuffles a random item{forge_cout} into your deck — neutral{forge_align}.",
+        "desc_any": "Shuffles a random item{forge_cout_libre} into your deck — neutral{forge_align}."
+      }
+    },
+    "spell_keywords": {
+      "forge": {
+        "desc": "Shuffles a random item{forge_cout} into your deck — neutral{forge_align}",
+        "desc_any": "Shuffles a random item{forge_cout_libre} into your deck — neutral{forge_align}"
+      }
+    }
   }
 }

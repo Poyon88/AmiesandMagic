@@ -44,8 +44,10 @@ function pruneParams(
   // Sélection au hasard : le drapeau voyage avec le X, sinon les lecteurs du
   // modèle unifié (selectionAmplitudeOnPlay) ne le verraient jamais.
   if (p.randomX === true) out.randomX = true;
-  // Le plancher n'a de sens que sous le « ? » ; 1 est la valeur neutre.
-  if (p.randomX === true && p.minX != null && p.minX > 1) out.minX = p.minX;
+  // Plancher A ; 1 est la valeur neutre. Il voyage aussi SANS « ? » : Forge X
+  // en fait une borne basse de son plafond. Les autres capacités ne le lisent
+  // que sous le « ? » (cf. plancherAleatoire), rien ne change pour elles.
+  if (p.minX != null && p.minX > 1) out.minX = p.minX;
   if (p.randomY === true) out.randomY = true;
   return Object.keys(out).length > 0 ? out : undefined;
 }

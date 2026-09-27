@@ -3694,6 +3694,13 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   )}
                                 </div>
                               )}
+                              {kw.id === "forge" && (
+                                <PlancherAleatoireInput
+                                  value={kw.minX} plafond={kw.amount || 20}
+                                  title={tf('forge_min_hint')}
+                                  onChange={v => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, minX: v } : k))}
+                                />
+                              )}
                               {/* SÉLECTION AU HASARD (forme sort) : persistée dans
                                   spell_keywords[i].randomX. */}
                               {RANDOM_X_ABILITY_IDS.has(kw.id) && def.params.includes("amount") && (() => {
@@ -4032,6 +4039,16 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 </>
                               );
                             })()}
+                            {/* Forge X : borne basse A du coût de l'objet forgé, sans « ? ». */}
+                            {selected && FORGE_TO_GAME_KEYWORD[id] === "forge" && (
+                              <span style={{ marginLeft: 3 }}>
+                                <PlancherAleatoireInput
+                                  value={keywordMinX[id]} plafond={keywordXValues[id] || 20}
+                                  title={tf('forge_min_hint')}
+                                  onChange={v => setKeywordMinX(prev => { const n = { ...prev }; if (v) n[id] = v; else delete n[id]; return n; })}
+                                />
+                              </span>
+                            )}
                             {/* SINGULIER — condition ajoutée au déclencheur, pour
                                 TOUTE capacité (un passif comme « Provocation
                                 (Singulier) » y a droit). Turquoise réservé. */}

@@ -387,6 +387,11 @@
         "desc": "Ajoute en main une commune {alignment} de coût X, au hasard.",
         "desc_any": "Ajoute en main une commune {alignment}, au hasard."
       },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mélange dans votre deck un objet neutre{forge_align}{forge_cout}, au hasard.",
+        "desc_any": "Mélange dans votre deck un objet neutre{forge_align}{forge_cout_libre}, au hasard."
+      },
       "selection_magique": {
         "label": "Sélection magique X",
         "desc": "Révèle 3 actions communes {alignment} de coût X ; ajoutez-en une en main.",
@@ -632,6 +637,11 @@
         "label": "Sélection X",
         "desc": "Révèle 3 communes {alignment} de coût X ; ajoutez-en une en main",
         "desc_any": "Révèle 3 communes {alignment} ; ajoutez-en une en main"
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mélange dans votre deck un objet neutre{forge_align}{forge_cout}, au hasard",
+        "desc_any": "Mélange dans votre deck un objet neutre{forge_align}{forge_cout_libre}, au hasard"
       },
       "faveur": {
         "label": "Faveur X",
@@ -917,6 +927,10 @@
         "selection_magique_any": "révèle 3 actions{filter} et en garde une en main",
         "renfort_royal_any": "révèle 3 cartes de collection{filter} et en garde une en main",
         "tresor_any": "révèle 3 objets{filter} et en garde un en main",
+        "forge": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {x} au plus, au hasard",
+        "forge_range": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {min} à {x}, au hasard",
+        "forge_any": "mélange dans votre deck un objet neutre ou de votre alignement{filter}, au hasard",
+        "forge_any_min": "mélange dans votre deck un objet neutre ou de votre alignement{filter} de coût {min} au moins, au hasard",
         "invocation_any": "invoque une créature aléatoire{filter}",
         "invocation_item_any": "pose un objet aléatoire{filter}",
         "exhumation_any": "ressuscite {who} de votre cimetière",
@@ -1745,7 +1759,13 @@
       "scope_all": "à toutes vos unités",
       "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
       "neutralise_cible_target": "chez une unité ennemie ciblée",
-      "neutralise_cible_all": "chez toutes les unités ennemies"
+      "neutralise_cible_all": "chez toutes les unités ennemies",
+      "forge_align": " ou {alignment}",
+      "forge_cout": " de coût X au plus",
+      "forge_cout_libre": "",
+      "forge_cout_max": " de coût X au plus",
+      "forge_cout_range": " de coût {n} à X",
+      "forge_cout_min": " de coût {n} au moins"
     },
     "sets": {
       "1": "Set de Base"
@@ -2633,6 +2653,8 @@
     "content_appel_supreme": "Appel Suprême (deck → main, la plus chère)",
     "content_tuteur": "Tuteur (cartes désignées → main)",
     "content_transformation": "Transformer en carte désignée",
+    "content_forge": "Forge (1 objet mélangé dans le deck)",
+    "forge_min_hint": "Coût minimum de l'objet forgé (borne basse A). Le coût maximum est X ; X vide = tout coût.",
     "transformation_card_hint": "Chaque unité visée devient cette carte ; avec plusieurs cartes, chacune tire la sienne au hasard. Elle reprend sa forme d'origine en quittant le plateau.",
     "content_epargne": "Épargne (compteur)",
     "content_foi": "Foi (compteur)",

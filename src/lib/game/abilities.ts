@@ -929,6 +929,28 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // Calibrage : Sélection X (1 parmi 3) vaut 9 / +4 par point / se 2.5, tier 2.
   // Faveur rend la même carte en retirant le choix — strictement plus faible,
   // d'où 7 / +4 / se 2.0, tier 1. À réajuster après essai en partie.
+  // FORGE X : un objet de la collection — neutre ou de l'alignement de la carte,
+  // de coût X au plus (et A au moins si la borne basse est posée ; X vide = tout
+  // coût) — est MÉLANGÉ dans le deck, au hasard, SANS révélation. Point unique
+  // `resolveForge` (engine.ts) pour les quatre chemins (entrée, déclencheur,
+  // sort, composé).
+  //
+  // Calibrage : Trésor X (choisir 1 objet parmi 3, EN MAIN) vaut 9 / +4. Forge
+  // tire au hasard et l'objet doit encore être pioché : 5 / +2 (arbitrage
+  // auteur, 2026-09-27).
+  forge: {
+    id: "forge", label: "Forge X", symbol: "🔨",
+    desc: "Mélange dans votre deck un objet neutre{forge_align}{forge_cout}, au hasard.",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 5, costPerX: 2, se: 1.5, minTier: 1, scalable: true, zone: "Mixte",
+      desc: "Mélange dans votre deck un objet neutre{forge_align}{forge_cout}, au hasard.",
+    },
+    spell: {
+      desc: "Mélange dans votre deck un objet neutre{forge_align}{forge_cout}, au hasard",
+      params: ["amount"], needsTarget: false,
+    },
+  },
   faveur: {
     id: "faveur", label: "Faveur X", symbol: "🎁",
     desc: "Ajoute en main une commune {alignment} de coût X, au hasard.",
@@ -1807,7 +1829,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
-  "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor",
+  "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "forge",
   "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
@@ -2090,6 +2112,8 @@ export const COUT_OPTIONNEL: Readonly<Record<string, "max" | "exact">> = {
   renfort_royal: "exact",
   tresor: "exact",
   faveur: "exact",
+  // Forge : X est un PLAFOND ; vide ⇒ tout coût.
+  forge: "max",
   invocation: "exact",
   dechainement: "exact",
 };
@@ -2134,6 +2158,10 @@ export const DESC_COUT_LIBRE: Readonly<Record<string, { creature?: string; spell
   faveur: {
     creature: "Ajoute en main une commune {alignment}, au hasard.",
     spell: "Ajoute en main une commune {alignment}, au hasard",
+  },
+  forge: {
+    creature: "Mélange dans votre deck un objet neutre{forge_align}{forge_cout_libre}, au hasard.",
+    spell: "Mélange dans votre deck un objet neutre{forge_align}{forge_cout_libre}, au hasard",
   },
   invocation: {
     creature: "Invoque une créature aléatoire de votre collection ({alignment}, format en cours).",

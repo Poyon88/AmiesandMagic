@@ -76,6 +76,8 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   // Faveur X : même vivier que Sélection, une carte, sans choix. Le « ? » y
   // tire le coût de l'unique carte entre 1 et X (cf. getFaveurCard).
   faveur: { content: "faveur", magnitude: { x: 1 } },
+  // Forge X : un objet mélangé dans le deck ; X plafond, A optionnel.
+  forge: { content: "forge", magnitude: { x: 1 } },
   selection_magique: { content: "selection_magique", magnitude: { x: 1 } },
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },
   tresor: { content: "tresor", magnitude: { x: 1 } },
