@@ -647,7 +647,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 <div key={kw} style={{ order: ((card!.type === "Unité" || card!.type === "Objet") ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon {...forgeIcon(kw)} size={18 * s} /></span>
                   <div>
-                    <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
+                    <div style={{ fontSize: 14 * s, color: fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
                     {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                     <TokenNames cards={tokenCardsForKeyword(forgeKeywordId(kw), sourceTokens(), tokens, card!.keywordXValues?.[kw])} scale={s} />

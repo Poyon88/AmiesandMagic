@@ -592,19 +592,21 @@ export default function GameCard({
               // la couleur de l'icône/du texte la transmet, le descriptif est allégé.
               const displayLabel = applyKeywordValueToLabel(kw, label, x, instance);
               const desc = vocab.keywordDesc(kw, ctx);
-              // Conferred-keyword scope on a spell: green for "all allies".
+              // Portée d'un mot-clé conféré par un sort : note « · à tous les alliés » / « · à la créature ciblée ».
               const grantScope = !isCreature ? (instance?.grantScope ?? "target") : null;
               const scopeNote = vocab.keywordScopeNote(grantScope);
               const modeColor = keywordModeColor(mode);
               // Nom = couleur de l'icône : teinte de mode si présente, sinon BLANC
               // (l'icône d'un effet persistant/passif est une silhouette blanche).
-              const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
+              // La portée « tous les alliés » est portée par le « A » de l'icône ;
+              // le nom garde la couleur de l'icône, comme toute autre capacité.
+              const labelColor = modeColor ?? "#fff";
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon {...keywordIconFor(kw, entry.instance)} size={18 * s} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
-                  {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
+                  {scopeNote && <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
