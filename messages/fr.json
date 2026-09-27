@@ -680,8 +680,8 @@
         "desc": "Inflige X dégâts à une cible et soigne votre héros du même montant"
       },
       "entrave": {
-        "label": "Entrave",
-        "desc": "Paralyse une créature ennemie ciblée"
+        "label": "Entrave X",
+        "desc": "Paralyse une créature ennemie ciblée pendant X tour(s)"
       },
       "execution": {
         "label": "Exécution",
@@ -825,6 +825,8 @@
         "destroy": "détruit",
         "bounce": "renvoie en main",
         "paralyze": "paralyse",
+        "paralyze_turns_one": "pendant {n} tour",
+        "paralyze_turns_many": "pendant {n} tours",
         "poison": "empoisonne",
         "grant_keyword": "confère {ability}",
         "random_range": "1 à {max}",

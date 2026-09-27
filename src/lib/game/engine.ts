@@ -1432,13 +1432,30 @@ function designationCiblee(composed: import("./types").ComposedEffect): boolean 
  *  Enfin les STATS : le Silence ne coupe pas que les pouvoirs, il reprend tous
  *  les gains accumulés (dont les +X/+Y de Gloire et de Renforcement, cuits dans
  *  `card`). */
+/** Paralyse une unité pour `tours` tours de son contrôleur, tour en cours
+ *  compris (Entrave X ; 1 pour le mot-clé Paralysie et les cartes d'avant X).
+ *  Une paralysie déjà en place n'est jamais RACCOURCIE : on garde la plus
+ *  longue des deux durées restantes — une Entrave 1 sur une unité sous
+ *  Entrave 3 ne la libère pas deux tours plus tôt. */
+export function paralyser(u: CardInstance, tours = 1): void {
+  const duree = Math.max(1, Math.floor(tours));
+  const restant = u.isParalyzed ? (u.paralysisTurnsLeft ?? 1) : 0;
+  u.isParalyzed = true;
+  u.paralysisTurnsLeft = Math.max(restant, duree);
+}
+
+function levierParalysie(u: CardInstance): void {
+  u.isParalyzed = false;
+  delete u.paralysisTurnsLeft;
+}
+
 function appliquerSilence(target: CardInstance): void {
   target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
   delete target.singulierStash;
   target.apprentissageSpell = undefined;
   target.hasDivineShield = false;
   desarmerGardes(target);
-  target.isParalyzed = false;
+  levierParalysie(target);
   target.fureurActive = false;
   target.fureurATKBonus = 0;
   stripBoostsToBase(target);
@@ -1532,7 +1549,9 @@ function applyComposedToUnit(
       // La carte quitte donc sa zone pour le cimetière de son propriétaire.
       if (!destroyOutsideBoard(u, owner, opponent)) u.currentHealth = 0;
       break;
-    case "paralyze": u.isParalyzed = true; break;
+    // X = nombre de tours (Entrave X), lu RÉSOLU (Chant, Lune/Soleil…) ;
+    // magnitude absente ⇒ 1, la durée des cartes d'avant X.
+    case "paralyze": paralyser(u, composed.magnitude?.x == null ? 1 : x); break;
     case "silence": appliquerSilence(u); break;
     // ÉTAT empoisonné (1 PV perdu à chaque fin de tour), pas le mot-clé Poison :
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
@@ -2175,10 +2194,11 @@ function resolveComposedEffect(
   //   • deal_damage / heal : `x` EST le total de points, servis 1 par passe.
   //     `count` est ignoré (le champ est d'ailleurs masqué dans la forge).
   //   • tout autre contenu : `x` est l'amplitude de l'effet (buff +X/+Y…) ou
-  //     n'a aucun sens (paralyze, destroy, bounce) — on ne peut donc pas le
-  //     découper. Le nombre de passes vient de `count` et chaque passe applique
-  //     l'effet ENTIER. Le hasard sur le nombre de cibles vient alors des
-  //     doublons : une 2ᵉ passe sur une créature déjà paralysée ne fait rien.
+  //     une durée (paralyze : nombre de tours) ou n'a aucun sens (destroy,
+  //     bounce) — on ne peut donc pas le découper. Le nombre de passes vient
+  //     de `count` et chaque passe applique l'effet ENTIER. Le hasard sur le
+  //     nombre de cibles vient alors des doublons : une 2ᵉ passe sur une
+  //     créature déjà paralysée ne l'allonge pas.
   //
   // Résolution SÉQUENTIELLE : le pool est reconstruit AVANT chaque passe et les
   // unités mortes en sont exclues (currentHealth ≤ 0), pour ne pas gaspiller une
@@ -2893,7 +2913,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.attacksRemaining = maxAttacksFor(inst);
   inst.targetsAttackedThisTurn = [];
   inst.esquiveUsedThisTurn = false;
-  inst.isParalyzed = false;
+  levierParalysie(inst);
   inst.isPoisoned = false;
   inst.maledictionTargetId = null;
   inst.ombreRevealed = false;
@@ -4536,9 +4556,13 @@ function finishEndTurn(newState: GameState): GameState {
   // affected player's turn began — exactly when they were trying to
   // diagnose what was happening.
   const outgoing = newState.players[newState.currentPlayerIndex];
+  // Entrave X : chaque fin de tour du camp paralysé consomme un tour ; la
+  // paralysie ne tombe qu'au dernier.
   for (const creature of outgoing.board) {
     if (creature.isParalyzed) {
-      creature.isParalyzed = false;
+      const restant = (creature.paralysisTurnsLeft ?? 1) - 1;
+      if (restant > 0) creature.paralysisTurnsLeft = restant;
+      else levierParalysie(creature);
     }
     // Reset Fureur's trigger guard at end of turn so the creature can
     // fire again next turn if hit. No ATK to revert — Fureur is now a
@@ -6552,9 +6576,10 @@ function resolveSpellKeywords(
         break;
       }
       case "entrave": {
+        // Entrave X : X tours de paralysie (absent ⇒ 1, les cartes d'avant X).
         if (targetId) {
           const target = findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) target.isParalyzed = true;
+          if (target) paralyser(target, kw.amount ?? 1);
         }
         break;
       }
@@ -7309,7 +7334,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
     case "paralyze": {
       if (targetId) {
         const target = findCreatureOnBoard(ctx.opponent, targetId);
-        if (target) target.isParalyzed = true;
+        if (target) paralyser(target, effect.amount ?? 1);
       }
       break;
     }
@@ -8717,7 +8742,7 @@ function dealDamageToCreature(
   // passage unique, après réductions et immunités (une blessure RÉELLE) et sur
   // une cible SURVIVANTE ; jamais sur elle-même (Cataclysme touche son camp).
   if (creature.currentHealth > 0 && source && "instanceId" in source && source !== creature) {
-    if (hasKw(source, "paralysie")) creature.isParalyzed = true;
+    if (hasKw(source, "paralysie")) paralyser(creature, 1);
     // POISON : même règle — « les unités blessées » par une créature qui le
     // porte, quel que soit le chemin des dégâts, pas seulement le combat.
     if (hasKw(source, "poison")) creature.isPoisoned = true;

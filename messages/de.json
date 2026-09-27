@@ -680,8 +680,8 @@
         "desc": "Fügt einem Ziel X Schaden zu und heilt deinen Helden um denselben Betrag."
       },
       "entrave": {
-        "label": "Fesselung",
-        "desc": "Lähmt eine anvisierte feindliche Kreatur."
+        "label": "Fesselung X",
+        "desc": "Paralysiert eine anvisierte gegnerische Kreatur für X Runde(n)"
       },
       "execution": {
         "label": "Hinrichtung",
@@ -825,6 +825,8 @@
         "destroy": "vernichtet",
         "bounce": "zurück auf die Hand",
         "paralyze": "lähmt",
+        "paralyze_turns_one": "für {n} Runde",
+        "paralyze_turns_many": "für {n} Runden",
         "poison": "vergiftet",
         "grant_keyword": "verleiht {ability}",
         "random_range": "1 bis {max}",
@@ -895,6 +897,9 @@
         "tactique_one": "gibt zufällig eine ihrer permanenten Fähigkeiten weiter",
         "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
         "retour_differe": "legt unter das Deck ihres Besitzers",
+        "retour_differe_cible": "legt {target} unter das Deck von {proprio}",
+        "proprio_one": "seinem Besitzer",
+        "proprio_many": "ihrem jeweiligen Besitzer",
         "selection": "deckt 3 Karten{filter} auf (Kosten {x}) und behält eine davon auf der Hand",
         "faveur": "fügt eurer Hand eine zufällige Karte{filter} (Kosten {x}) hinzu",
         "selection_magique": "deckt 3 Aktionen{filter} auf (Kosten {x}) und behält eine auf der Hand",
@@ -912,10 +917,7 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion",
-        "retour_differe_cible": "legt {target} unter das Deck von {proprio}",
-        "proprio_one": "seinem Besitzer",
-        "proprio_many": "ihrem jeweiligen Besitzer"
+        "dechainement_one_any": "spielt eine zufällige Aktion"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2561,7 +2563,7 @@
     "random_min_hint": "Mindestkosten (A): Jede Kostenhöhe wird zwischen {min} und {max} ausgewürfelt.",
     "cost_optional_hint": "Leer lassen für beliebige Kosten.",
     "cost_any_label": "beliebige Kosten",
-    "cost_any_toggle": "Beliebige Kosten (erneut klicken für X = 1)",
+    "cost_any_toggle": "Beliebige Kosten (erneut klicken, um zu X = 1 zurückzukehren)",
     "random_hint_faveur": "Die angebotene Karte hat zufällige Kosten zwischen 1 und {max}. Ohne das Kästchen beträgt sie genau {max}.",
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",

@@ -728,7 +728,7 @@ function BoardCreature({
           color="#8b5cf6"
           top={creature.isPoisoned ? 36 : 14}
           side="left"
-          title="Paralysé"
+          title={(creature.paralysisTurnsLeft ?? 1) > 1 ? `Paralysé (${creature.paralysisTurnsLeft} tours)` : "Paralysé"}
         />
       )}
 
@@ -1005,7 +1005,11 @@ function BoardCreature({
           // donc plus de divergence possible entre les trois surfaces.
           const statuses: { kw: Keyword; label: string; color: string }[] = [];
           if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
-          if (creature.isParalyzed) statuses.push({ kw: "paralysie" as Keyword, label: "Paralysé", color: "#8b5cf6" });
+          if (creature.isParalyzed) {
+            // Entrave X : tours restants, celui en cours compris.
+            const n = creature.paralysisTurnsLeft ?? 1;
+            statuses.push({ kw: "paralysie" as Keyword, label: n > 1 ? `Paralysé (${n} tours)` : "Paralysé", color: "#8b5cf6" });
+          }
           if (creature.hasDivineShield) statuses.push({ kw: "divine_shield" as Keyword, label: "Bouclier divin", color: "#f1c40f" });
           if (creature.contresortActive) {
             const n = creature.contresortCharges ?? 1;

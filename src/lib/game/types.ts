@@ -351,7 +351,7 @@ export interface KeywordInstance {
 
 export interface SpellKeywordInstance {
   id: SpellKeywordId;
-  amount?: number;   // X value for impact, deferlement, siphon, guerison, inspiration, afflux, pillage, cataclysme, invocation (coût de la créature invoquée)
+  amount?: number;   // X value for impact, deferlement, siphon, entrave (tours de paralysie), guerison, inspiration, afflux, pillage, cataclysme, invocation (coût de la créature invoquée)
   attack?: number;   // for renforcement, renforcement_multiple — et repli legacy d'invocation (ex-token X/Y : X devient le coût)
   health?: number;   // for renforcement, renforcement_multiple — legacy invocation (ignoré)
   race?: string;     // legacy invocation (race du token, ignoré) and renforcement_multiple (race ciblée)
@@ -1205,6 +1205,10 @@ export interface CardInstance {
   maledictionTargetId: string | null;
   // Paralysie: is this unit paralyzed (can't attack next turn)
   isParalyzed: boolean;
+  // Entrave X : nombre de tours de son CONTRÔLEUR pendant lesquels l'unité reste
+  // paralysée, tour en cours compris (décrémenté à chaque fin de tour de son
+  // camp). Absent ⇒ 1, la durée historique — cf. `paralyser` dans le moteur.
+  paralysisTurnsLeft?: number;
   // Loyauté: permanent on-summon bonus
   loyauteATKBonus: number;
   loyautePVBonus: number;

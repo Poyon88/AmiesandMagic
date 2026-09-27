@@ -1061,10 +1061,10 @@ export const ABILITIES: Record<string, AbilityDef> = {
     spell: { params: ["amount"], needsTarget: true, targetType: "enemy_creature" },
   },
   entrave: {
-    id: "entrave", label: "Entrave", symbol: "⛓️",
-    desc: "Paralyse une créature ennemie ciblée",
+    id: "entrave", label: "Entrave X", symbol: "⛓️",
+    desc: "Paralyse une créature ennemie ciblée pendant X tour(s)",
     applicable_to: ["spell"],
-    spell: { params: [], needsTarget: true, targetType: "enemy_creature" },
+    spell: { params: ["amount"], needsTarget: true, targetType: "enemy_creature" },
   },
   execution: {
     id: "execution", label: "Exécution", symbol: "☠️",

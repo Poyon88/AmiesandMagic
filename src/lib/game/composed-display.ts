@@ -41,6 +41,10 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.destroy": "détruit",
   "content.bounce": "renvoie en main",
   "content.paralyze": "paralyse",
+  // Entrave X : la durée se place APRÈS la cible (« paralyse une unité
+  // ennemie pendant 2 tours »), d'où des fragments à part du verbe.
+  "content.paralyze_turns_one": "pendant {n} tour",
+  "content.paralyze_turns_many": "pendant {n} tours",
   "content.poison": "empoisonne",
   "content.grant_keyword": "confère {ability}",
 
@@ -928,13 +932,23 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),
     ].filter(Boolean).join(" ");
+  const duree = eff.content === "paralyze" ? dureeParalysie(eff, t) : "";
+  const phraseCorps = duree ? `${body} ${duree}` : body;
   const lead = describeEmblemLead(cap, t);
   // Sous un en-tête d'emblème, le corps est une SUBORDONNÉE (« … entre en jeu :
   // soigne 2 PV ») : la capitale irait au milieu de la phrase.
   const phrase = lead
-    ? lead + body
-    : body.charAt(0).toUpperCase() + body.slice(1);
+    ? lead + phraseCorps
+    : phraseCorps.charAt(0).toUpperCase() + phraseCorps.slice(1);
   return phrase + ".";
+}
+
+/** Durée d'une paralysie composée (Entrave X). Magnitude absente ⇒ 1 tour, la
+ *  durée que le moteur applique aux cartes d'avant X. */
+function dureeParalysie(eff: ComposedEffect, t?: SafeT): string {
+  const x = eff.magnitude?.x ?? 1;
+  const n = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
+  return frag(t, x > 1 ? "content.paralyze_turns_many" : "content.paralyze_turns_one", { n });
 }
 
 /** Capacités composées portées par une carte (pour les renderers). */

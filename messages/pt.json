@@ -680,8 +680,8 @@
         "desc": "Causa X de dano a um alvo e cura seu herói na mesma quantidade"
       },
       "entrave": {
-        "label": "Entrave",
-        "desc": "Paralisa uma criatura inimiga alvo"
+        "label": "Entrave X",
+        "desc": "Paralisa uma criatura inimiga selecionada por X turno(s)"
       },
       "execution": {
         "label": "Execução",
@@ -825,6 +825,8 @@
         "destroy": "destrói",
         "bounce": "devolve à mão",
         "paralyze": "paralisa",
+        "paralyze_turns_one": "por {n} turno",
+        "paralyze_turns_many": "por {n} turnos",
         "poison": "envenena",
         "grant_keyword": "concede {ability}",
         "random_range": "1 a {max}",
@@ -895,6 +897,9 @@
         "tactique_one": "transmite ao acaso uma das suas habilidades permanentes",
         "tactique_many": "transmite ao acaso {x} das suas habilidades permanentes",
         "retour_differe": "coloca debaixo do deck de seu dono",
+        "retour_differe_cible": "coloca {target} sob o deck {proprio}",
+        "proprio_one": "do seu proprietário",
+        "proprio_many": "do respectivo proprietário",
         "selection": "revela 3 cartas{filter} (custo {x}) e mantém uma na mão",
         "faveur": "adiciona à mão uma carta{filter} (custo {x}) aleatória",
         "selection_magique": "revela 3 ações{filter} (custo {x}) e mantém uma na mão",
@@ -912,10 +917,7 @@
         "appel_any": "coloca em jogo a 1ª unidade do seu baralho",
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
-        "dechainement_one_any": "joga uma ação aleatória",
-        "retour_differe_cible": "coloca {target} sob o deck {proprio}",
-        "proprio_one": "do seu proprietário",
-        "proprio_many": "do respectivo proprietário"
+        "dechainement_one_any": "joga uma ação aleatória"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2561,7 +2563,7 @@
     "random_min_hint": "Custo mínimo (A): cada custo é sorteado entre {min} e {max}.",
     "cost_optional_hint": "Deixe em branco para qualquer custo.",
     "cost_any_label": "qualquer custo",
-    "cost_any_toggle": "Qualquer custo (clique de novo para voltar a X = 1)",
+    "cost_any_toggle": "Qualquer custo (clique novamente para voltar a X = 1)",
     "random_hint_faveur": "A carta oferecida tem um custo sorteado entre 1 e {max}. Sem a caixa marcada, vale exatamente {max}.",
     "content_appel": "Chamado do baralho",
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",

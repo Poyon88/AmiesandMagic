@@ -680,8 +680,8 @@
         "desc": "対象1体にXダメージを与え、同量だけ自分のヒーローを回復する。"
       },
       "entrave": {
-        "label": "束縛",
-        "desc": "対象の敵クリーチャー1体を麻痺させる。"
+        "label": "束縛X",
+        "desc": "対象の敵クリーチャーをXターンの間麻痺させる"
       },
       "execution": {
         "label": "処刑",
@@ -825,6 +825,8 @@
         "destroy": "破壊する",
         "bounce": "手札に戻す",
         "paralyze": "麻痺させる",
+        "paralyze_turns_one": "{n}ターンの間",
+        "paralyze_turns_many": "{n}ターンの間",
         "poison": "毒を与える",
         "grant_keyword": "{ability}を付与する",
         "random_range": "1から{max}",
@@ -895,6 +897,9 @@
         "tactique_one": "自身の永続能力を1つランダムに授ける",
         "tactique_many": "自身の永続能力を{x}つランダムに授ける",
         "retour_differe": "所有者のデッキの一番下に置く",
+        "retour_differe_cible": "{target}を{proprio}のデッキの下に置く",
+        "proprio_one": "その所有者",
+        "proprio_many": "それぞれの所有者",
         "selection": "3枚のカード{filter}（コスト{x}）を公開し、その中から1枚を手札に加える",
         "faveur": "{filter}カードをランダムに1枚手札に加える（コスト{x}）",
         "selection_magique": "{filter}アクションを3枚公開し（コスト{x}）、1枚を手札に加える",
@@ -912,10 +917,7 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
-        "retour_differe_cible": "{target}を{proprio}のデッキの下に置く",
-        "proprio_one": "その所有者",
-        "proprio_many": "それぞれの所有者"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
       },
       "emblem": {
         "badge": "紋章",
@@ -2561,7 +2563,7 @@
     "random_min_hint": "最小コスト（A）：各コストは{min}から{max}の間でランダムに決定されます。",
     "cost_optional_hint": "空欄のままにすると、コストは問いません。",
     "cost_any_label": "任意のコスト",
-    "cost_any_toggle": "任意のコスト（もう一度クリックで X = 1 に戻す）",
+    "cost_any_toggle": "任意のコスト（再クリックでX = 1に戻す）",
     "random_hint_faveur": "提供されるカードのコストは1から{max}の間で決まります。チェックしない場合、コストは{max}になります。",
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",

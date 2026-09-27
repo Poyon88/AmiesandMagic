@@ -23,7 +23,7 @@ describe("cible soi-même → tournure réfléchie", () => {
   it.each([
     ["bounce", "Se renvoie en main."],
     ["destroy", "Se détruit."],
-    ["paralyze", "Se paralyse."],
+    ["paralyze", "Se paralyse pendant 1 tour."],
     ["deal_damage", "S'inflige 1 dégât."],
     ["heal", "Se soigne de 1 PV."],
   ])("%s → %s", (content, expected) => {
@@ -47,7 +47,7 @@ describe("verbes transitifs directs → pas de préposition", () => {
   it.each([
     ["destroy", "Détruit une unité ennemie au choix."],
     ["bounce", "Renvoie en main une unité ennemie au choix."],
-    ["paralyze", "Paralyse une unité ennemie au choix."],
+    ["paralyze", "Paralyse une unité ennemie au choix pendant 1 tour."],
   ])("%s sur une unité → %s", (content, expected) => {
     expect(describeComposedCap(cap(content, ENEMY_UNIT))).toBe(expected);
   });

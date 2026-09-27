@@ -680,8 +680,8 @@
         "desc": "Infligge X danni a un bersaglio e cura il tuo eroe della stessa quantità"
       },
       "entrave": {
-        "label": "Intralcio",
-        "desc": "Paralizza una creatura nemica bersagliata"
+        "label": "Intralcio X",
+        "desc": "Paralizza una creatura nemica bersaglio per X turno/i"
       },
       "execution": {
         "label": "Esecuzione",
@@ -825,6 +825,8 @@
         "destroy": "distrugge",
         "bounce": "rimanda in mano",
         "paralyze": "paralizza",
+        "paralyze_turns_one": "per {n} turno",
+        "paralyze_turns_many": "per {n} turni",
         "poison": "avvelena",
         "grant_keyword": "conferisce {ability}",
         "random_range": "Da 1 a {max}",
@@ -895,6 +897,9 @@
         "tactique_one": "trasmette a caso una delle sue capacità permanenti",
         "tactique_many": "trasmette a caso {x} delle sue capacità permanenti",
         "retour_differe": "mette sotto il deck del proprietario",
+        "retour_differe_cible": "mette {target} in fondo al mazzo {proprio}",
+        "proprio_one": "del suo proprietario",
+        "proprio_many": "del rispettivo proprietario",
         "selection": "rivela 3 carte{filter} (costo {x}) e ne tiene una in mano",
         "faveur": "aggiunge in mano una carta{filter} (costo {x}) a caso",
         "selection_magique": "rivela 3 azioni{filter} (costo {x}) e ne tiene una in mano",
@@ -912,10 +917,7 @@
         "appel_any": "mette in gioco la prima unità del tuo mazzo",
         "appel_item_any": "mette in gioco il primo oggetto del tuo mazzo",
         "dechainement_any": "gioca {x} azioni casuali",
-        "dechainement_one_any": "gioca un'azione casuale",
-        "retour_differe_cible": "mette {target} in fondo al mazzo {proprio}",
-        "proprio_one": "del suo proprietario",
-        "proprio_many": "del rispettivo proprietario"
+        "dechainement_one_any": "gioca un'azione casuale"
       },
       "emblem": {
         "badge": "Emblema",
@@ -2561,7 +2563,7 @@
     "random_min_hint": "Costo minimo (A): ogni costo viene estratto tra {min} e {max}.",
     "cost_optional_hint": "Lascia vuoto per qualsiasi costo.",
     "cost_any_label": "qualsiasi costo",
-    "cost_any_toggle": "Qualsiasi costo (clicca di nuovo per tornare a X = 1)",
+    "cost_any_toggle": "Qualsiasi costo (ri-clicca per tornare a X = 1)",
     "random_hint_faveur": "La carta offerta ha un costo compreso tra 1 e {max}. Senza la casella, vale esattamente {max}.",
     "content_appel": "Richiamo dal mazzo",
     "content_appel_supreme": "Richiamo Supremo (mazzo → mano, la più costosa)",

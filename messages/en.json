@@ -680,8 +680,8 @@
         "desc": "Deal X damage to a target and heal your hero for the same amount."
       },
       "entrave": {
-        "label": "Shackle",
-        "desc": "Paralyze a targeted enemy creature."
+        "label": "Shackle X",
+        "desc": "Paralyzes a targeted enemy creature for X turn(s)"
       },
       "execution": {
         "label": "Execution",
@@ -825,6 +825,8 @@
         "destroy": "destroys",
         "bounce": "returns to hand",
         "paralyze": "paralyzes",
+        "paralyze_turns_one": "for {n} turn",
+        "paralyze_turns_many": "for {n} turns",
         "poison": "poisons",
         "grant_keyword": "grants {ability}",
         "random_range": "1 to {max}",
@@ -895,6 +897,9 @@
         "tactique_one": "passes on one of its permanent abilities at random",
         "tactique_many": "passes on {x} of its permanent abilities at random",
         "retour_differe": "places under its owner's deck",
+        "retour_differe_cible": "places {target} at the bottom of {proprio}'s deck",
+        "proprio_one": "its owner",
+        "proprio_many": "their respective owner",
         "selection": "reveals 3 cards{filter} (cost {x}) and keeps one in hand",
         "faveur": "adds a random{filter} card (cost {x}) to hand",
         "selection_magique": "reveals 3 Actions{filter} (cost {x}) and keeps one in hand",
@@ -912,10 +917,7 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action",
-        "retour_differe_cible": "places {target} at the bottom of {proprio}'s deck",
-        "proprio_one": "its owner",
-        "proprio_many": "their respective owner"
+        "dechainement_one_any": "plays a random action"
       },
       "emblem": {
         "badge": "Emblem",
@@ -2561,7 +2563,7 @@
     "random_min_hint": "Minimum cost (A): each cost is rolled between {min} and {max}.",
     "cost_optional_hint": "Leave blank for any cost.",
     "cost_any_label": "any cost",
-    "cost_any_toggle": "Any cost (click again to go back to X = 1)",
+    "cost_any_toggle": "Any cost (click again to return to X = 1)",
     "random_hint_faveur": "The offered card's cost is randomly set between 1 and {max}. Without the box checked, it is exactly {max}.",
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
