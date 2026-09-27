@@ -99,6 +99,26 @@ export async function GET() {
   }
 }
 
+/** Genres acceptés par la contrainte `cards_gender_check`. */
+const GENRES = new Set(['homme', 'femme', 'neutre', 'indetermine']);
+
+/** Valide `gender` et `sfx_play_url` d'un patch partiel. Renvoie le message
+ *  d'erreur, ou null. `sfx_play_url` doit pointer DANS le bucket public
+ *  `sfx-tracks` du projet (ou valoir null pour retirer le son) : la route
+ *  n'enregistre pas d'URL arbitraire, jouée ensuite chez tous les joueurs. */
+function validerChampsVoix(patch: Record<string, unknown>): string | null {
+  if ('gender' in patch && patch.gender !== null && !GENRES.has(String(patch.gender))) {
+    return `gender invalide : ${String(patch.gender)} (attendu : ${[...GENRES].join(', ')} ou null)`;
+  }
+  if ('sfx_play_url' in patch && patch.sfx_play_url !== null) {
+    const prefixe = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/sfx-tracks/`;
+    if (typeof patch.sfx_play_url !== 'string' || !patch.sfx_play_url.startsWith(prefixe)) {
+      return `sfx_play_url doit être une URL publique du bucket sfx-tracks (${prefixe}…) ou null`;
+    }
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
@@ -133,14 +153,31 @@ export async function POST(request: Request) {
         // collectionnable ni jouable. Absente de cette liste blanche, la case
         // serait silencieusement ignorée à l'édition.
         'discoverable',
+        // Voix d'entrée en jeu (skill des bruitages) : genre déduit de la carte
+        // et URL du fichier dans `sfx-tracks` (cf. /api/cards/sfx-upload-url).
+        'gender',
+        'sfx_play_url',
       ]);
       const patch: Record<string, unknown> = {};
+      const ignored: string[] = [];
       for (const [k, v] of Object.entries(card ?? {})) {
-        if (allowed.has(k)) patch[k] = v;
+        if (allowed.has(k)) patch[k] = v; else ignored.push(k);
       }
+      // Un champ hors liste blanche était jeté EN SILENCE, et la réponse
+      // « noop: true » passait pour un succès : l'appelant croyait avoir écrit.
+      // Désormais les champs refusés sont nommés, et un patch dont AUCUN champ
+      // n'est accepté est une erreur.
       if (Object.keys(patch).length === 0) {
+        if (ignored.length > 0) {
+          return NextResponse.json(
+            { error: `Aucun champ accepté pour une mise à jour partielle : ${ignored.join(', ')}`, ignored },
+            { status: 400 },
+          );
+        }
         return NextResponse.json({ success: true, updated: true, noop: true });
       }
+      const invalide = validerChampsVoix(patch);
+      if (invalide) return NextResponse.json({ error: invalide }, { status: 400 });
       // Alignement : recalculé dès que la faction OU l'alignement change, pour
       // qu'il reste celui de la faction (choix libre pour les Mercenaires).
       if ('faction' in patch || 'card_alignment' in patch) {
@@ -186,7 +223,7 @@ export async function POST(request: Request) {
           .single();
         if (row) scheduleCardTranslation(supabaseAdmin, row);
       }
-      return NextResponse.json({ success: true, updated: true });
+      return NextResponse.json({ success: true, updated: true, ...(ignored.length ? { ignored } : {}) });
     }
 
     // Entraide: when the keyword is present, the targeted race must be set
