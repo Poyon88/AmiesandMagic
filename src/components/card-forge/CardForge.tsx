@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
+import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
@@ -1791,6 +1792,13 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [keywordMinX, setKeywordMinX] = useState<Record<string, number>>({});
   /** Capacité à COÛT OPTIONNEL (par libellé forge) : son X peut rester vide. */
   const coutOpt = (label: string) => !!COUT_OPTIONNEL[FORGE_TO_GAME_KEYWORD[label] ?? ""];
+  /** Bouton « ∞ » : bascule entre n'importe quel coût (X supprimé) et X = 1. */
+  const basculerCoutLibre = (label: string) => setKeywordXValues(prev => {
+    const next = { ...prev };
+    if (next[label] == null) next[label] = 1;
+    else delete next[label];
+    return next;
+  });
   /** Saisie d'un X : vide ⇒ supprimé (n'importe quel coût) si la capacité le
    *  permet, sinon ramené à 1 comme avant ; borné à [1, 10]. */
   const setX = (label: string, brut: string) => setKeywordXValues(prev => {
@@ -3662,6 +3670,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                     }}
                                     style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                                   />
+                                  {COUT_OPTIONNEL[kw.id] && (
+                                    <BoutonCoutLibre compact libre={kw.amount == null} label={tf('cost_any_label')} title={tf('cost_any_toggle')}
+                                      onToggle={() => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, amount: k.amount == null ? 1 : undefined } : k))} />
+                                  )}
                                 </div>
                               )}
                               {/* SÉLECTION AU HASARD (forme sort) : persistée dans
@@ -3966,6 +3978,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 }}
                               />
                             )}
+                            {xSurPuce && coutOpt(id) && (
+                              <span style={{ marginLeft: 3 }}>
+                                <BoutonCoutLibre compact libre={keywordXValues[id] == null} label={tf('cost_any_label')} title={tf('cost_any_toggle')}
+                                  onToggle={() => basculerCoutLibre(id)} />
+                              </span>
+                            )}
                             {/* SÉLECTION AU HASARD : le X devient un plafond tiré
                                 entre 1 et lui. Même case « ? » que les amplitudes
                                 composées ; inerte sous 2. */}
@@ -4257,6 +4275,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                             style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                           />
+                          <BoutonCoutLibre compact libre={dcY == null} label={tf('cost_any_label')} title={tf('cost_any_toggle')} onToggle={() => setDcY(dcY == null ? 1 : null)} />
                           <label title={tf('random_hint', { max: dcY ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                           <span style={{ fontSize: 8, color: "#888" }}>{tf('spell_count_is_x')}</span>
                         </div>
@@ -4674,6 +4693,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: `1px solid ${fac.color}`, background: `${fac.color}11`, color: fac.color, fontSize: 11, textAlign: "center", fontWeight: 700, fontFamily: "'Cinzel',serif" }}
                                   title={tf('x_value_title')} />
                               )}
+                              {scalable && coutOpt(label) && (
+                                <BoutonCoutLibre libre={keywordXValues[label] == null} label={tf('cost_any_label')} title={tf('cost_any_toggle')}
+                                  onToggle={() => basculerCoutLibre(label)} />
+                              )}
                             </span>
 
                             <span style={labelStyle}>{tf('targets_label2')}</span>
@@ -4773,6 +4796,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontSize: 9, color: "#b3541e" }}>Y</span>
                                 <input type="number" min={1} max={10} value={dcY ?? ""} placeholder="∞" title={tf('cost_optional_hint')} onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
+                                <BoutonCoutLibre compact libre={dcY == null} label={tf('cost_any_label')} title={tf('cost_any_toggle')} onToggle={() => setDcY(dcY == null ? 1 : null)} />
                                 <label title={tf('random_hint', { max: dcY ?? 1 })} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                               </div>
                             </div>

@@ -7,6 +7,7 @@
 
 import { useTranslations } from "next-intl";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
+import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { composedDisplayOrder, positionAfterExisting, spellKeywordDisplayOrder, POWER_ORDER_LAST } from "@/lib/game/composed-position";
@@ -383,13 +384,8 @@ export default function ComposedEffectsEditor({
         <input type="number" min={1} max={20} value={libre ? "" : val} placeholder="∞" title={tr('cost_optional_hint')}
           onChange={(e) => on(e.target.value === "" ? undefined : Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
           style={{ width: 44, padding: "2px 4px", borderRadius: 4, border: cardBorder, fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-        <button type="button" onClick={() => on(libre ? 1 : undefined)} aria-pressed={libre}
-          title={tr('cost_any_toggle')}
-          style={{
-            padding: "1px 7px", borderRadius: 4, fontSize: 11, cursor: "pointer", fontFamily: "'Cinzel',serif",
-            border: `1px solid ${libre ? "#b3541e" : "#e0d4b8"}`,
-            background: libre ? "#b3541e" : "transparent", color: libre ? "#fff" : "#8a6d3b",
-          }}>∞ {tr('cost_any_label')}</button>
+        <BoutonCoutLibre libre={libre} label={tr('cost_any_label')} title={tr('cost_any_toggle')}
+          onToggle={() => on(libre ? 1 : undefined)} />
       </span>
     );
   };

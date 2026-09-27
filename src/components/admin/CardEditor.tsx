@@ -21,6 +21,7 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { COUT_OPTIONNEL, RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
+import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import { invalidateLinkedCardsCatalog } from "@/components/card-forge/LinkedCardsPicker";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
@@ -1549,6 +1550,10 @@ export default function CardEditor() {
                               }}
                               style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #9b59b644", fontSize: 11, textAlign: "center", fontFamily: "'Cinzel',serif" }}
                             />
+                            {COUT_OPTIONNEL[kw.id] && (
+                              <BoutonCoutLibre compact libre={kw.amount == null} label="tout coût" title="N'importe quel coût (re-cliquer pour revenir à X = 1)"
+                                onToggle={() => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, amount: k.amount == null ? 1 : undefined } : k))} />
+                            )}
                           </div>
                         )}
                         {/* SÉLECTION AU HASARD (forme sort) : même case « ? »
@@ -1815,6 +1820,15 @@ export default function CardEditor() {
                             })}
                             style={{ width: 40, padding: "2px 4px", borderRadius: 4, border: "1px solid #d0c8ff", fontSize: 11, textAlign: "center" }}
                           />
+                          {COUT_OPTIONNEL[kw] && (
+                            <BoutonCoutLibre compact libre={keywordXValues[kw] == null} label="tout coût" title="N'importe quel coût (re-cliquer pour revenir à X = 1)"
+                              onToggle={() => setKeywordXValues(prev => {
+                                const next = { ...prev };
+                                if (next[kw] == null) next[kw] = 1;
+                                else delete next[kw];
+                                return next;
+                              })} />
+                          )}
                           {/* SÉLECTION AU HASARD : le X devient un plafond, tiré
                               entre 1 et lui à chaque déclenchement. Inerte sous
                               2 — « entre 1 et 1 » est une constante. */}
@@ -2336,6 +2350,7 @@ export default function CardEditor() {
                     onChange={e => setDcY(e.target.value === "" ? null : Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8cfc0", fontSize: 11, textAlign: "center" }}
                   />
+                  <BoutonCoutLibre compact libre={dcY == null} label="tout coût" title="N'importe quel coût (re-cliquer pour revenir à Y = 1)" onToggle={() => setDcY(dcY == null ? 1 : null)} />
                   <label title={`Coût tiré au hasard entre 1 et ${dcY ?? 1} pour chaque action jouée.`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 9, color: dcRandomY ? "#b3541e" : "#666", cursor: "pointer", fontWeight: dcRandomY ? 700 : 400 }}><input type="checkbox" checked={dcRandomY && dcY != null} disabled={dcY == null} onChange={e => setDcRandomY(e.target.checked)} />?</label>
                 </div>
               </div>
