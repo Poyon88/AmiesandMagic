@@ -21,7 +21,7 @@ export type Keyword =
   | "rappel" | "combustion"
   // Tier 2 — Terrain
   | "terreur" | "armure" | "commandement" | "fureur" | "double_attaque" | "invisible"
-  | "canalisation" | "contresort" | "exclusion" | "maitre_darme" | "transformation" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
+  | "canalisation" | "contresort" | "exclusion" | "maitre_darme" | "neutralisation" | "transformation" | "convocation" | "convocation_simple" | "malediction" | "necrophagie"
   | "paralysie" | "permutation" | "persecution" | "pietinement"
   // Tier 2 — Cimetière / Main / Mixte
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
@@ -1355,6 +1355,18 @@ export interface CardInstance {
    *  sont remis si la carte passe sous le contrôle d'un joueur singleton
    *  (Conquête, Corruption…). Absent = rien de retiré. Cf. lib/game/singulier.ts. */
   singulierStash?: SingulierStash;
+  /** NEUTRALISATION (victime) : capacités retirées de la vue `card` parce
+   *  qu'une Neutralisation adverse en jeu les vise, avec les états armés
+   *  suspendus. Rendus dès qu'aucune porteuse ne les vise plus. Absent = rien
+   *  de neutralisé. Cf. lib/game/neutralisation.ts. */
+  neutralisationStash?: NeutralisationStash;
+  /** NEUTRALISATION (porteuse, mode ciblé) : l'unité ennemie visée. Le lien
+   *  vit sur la porteuse, qui l'emporte en quittant le plateau. */
+  neutralisationTargetId?: string;
+  /** Tour où l'unité est arrivée sur le plateau, estampillé par le recalcul
+   *  d'auras. Sert à savoir si une Traque neutralisée lui retire son attaque
+   *  du tour d'arrivée. Absent hors plateau. */
+  entreeTour?: number;
   // Lycanthropie: has already transformed
   hasTransformedLycanthropie: boolean;
   // Mots-clés accordés runtime par un pouvoir héroïque (mode grant_keyword)
@@ -1714,6 +1726,24 @@ export interface SingulierStash {
   keyword_instances: { item: KeywordInstance; index: number }[];
   capabilities: { item: Capability; index: number }[];
   spell_keywords: { item: SpellKeywordInstance; index: number }[];
+}
+
+/** NEUTRALISATION — ce qu'une victime a perdu, pour le lui rendre au même rang
+ *  (même contrat que SingulierStash), plus les ÉTATS armés suspendus. */
+export interface NeutralisationStash {
+  /** Ids moteur neutralisés, triés (l'état est haché). */
+  ids: string[];
+  keywords: { id: Keyword; index: number }[];
+  keyword_instances: { item: KeywordInstance; index: number }[];
+  capabilities: { item: Capability; index: number }[];
+  /** États suspendus : rendus tels quels à la levée. */
+  etats?: {
+    hasDivineShield?: boolean;
+    contresortCharges?: number;
+    exclusionCharges?: number;
+    /** Traque neutralisée le tour d'arrivée : mal d'invocation imposé. */
+    malImpose?: boolean;
+  };
 }
 
 /** Une carte en attente d'éveil, avec ce qu'il reste à payer. */

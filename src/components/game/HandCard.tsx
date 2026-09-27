@@ -35,6 +35,7 @@ import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -888,7 +889,7 @@ function HandCard({
                 .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords))
                 .map((entry, idx) => {
                   const { kw, x, mode } = entry;
-                  const hasImg = !!iconOverrides[kw];
+                  const hasImg = !!iconOverrides[keywordIconFor(kw, entry.instance).keyword];
                   const modeColor = keywordModeColor(mode);
                   // On a spell, keywords are CONFERRED — "all allies" gets a
                   // visible green chip behind the icon (a glow was clipped by
@@ -910,7 +911,7 @@ function HandCard({
                     }}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0 }}>
                         <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                          <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
+                          <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={20} fill mode={mode} singulier={entry.singulier} />
                           {portee && <AllAlliesMarker size={8} color={modeColor} label={scopeAriaLabel(portee)} />}
                         </span>
                       </span>
@@ -1050,7 +1051,7 @@ function HandCard({
                 return (
                 <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 4 }}>
                   <span style={{ flexShrink: 0, lineHeight: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={9} keyword={kw} mode={mode} singulier={entry.singulier} />
+                    <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={9} mode={mode} singulier={entry.singulier} />
                   </span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>

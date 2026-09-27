@@ -63,6 +63,8 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   corruption: ["all_enemies"],
   domination: ["all_enemies"],
   benediction: ["all_allies"],
+  // Neutralisation : une ennemie ciblée, ou toutes (aura continue).
+  neutralisation: ["all_enemies"],
   tactique: ["all_allies"],
 };
 
@@ -120,6 +122,8 @@ export function spellKwScope(sk: Pick<SpellKeywordInstance, "id" | "targetScope"
 /** Portée « toutes » CIBLÉE d'une instance de mot-clé de créature (sans le don
  *  à tous les alliés de Conférer, dont le texte dit déjà la portée). */
 export function kwTargetScope(inst: Pick<KeywordInstance, "id" | "targetScope"> | null | undefined): TargetScope | undefined {
+  // Neutralisation dit déjà sa portée dans sa description ({neutralise_cible}).
+  if (inst?.id === "neutralisation") return undefined;
   return inst ? porteeValide(inst.targetScope, creatureScopes(inst.id as unknown as string)) : undefined;
 }
 

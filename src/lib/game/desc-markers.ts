@@ -109,6 +109,10 @@ export const MARKERS_FR: Record<string, string> = {
   // resterait littéral à l'écran.
   "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
   "scope_all": "à toutes vos unités",
+  // Neutralisation : chez qui la capacité visée est muette.
+  "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
+  "neutralise_cible_target": "chez une unité ennemie ciblée",
+  "neutralise_cible_all": "chez toutes les unités ennemies",
 };
 
 export function marker(key: string, t?: SafeT): string | undefined {
@@ -181,6 +185,8 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
     const id = ctx.instance?.grantAbilityId;
     return id ? getKeywordDisplayLabel(id as Keyword, t) : null;
   },
+  neutralise_cible: (_kw, ctx, t) =>
+    marker(ctx.instance?.targetScope === "all_enemies" ? "neutralise_cible_all" : "neutralise_cible_target", t) ?? null,
   scope: (_kw, ctx, t) => {
     const sc = ctx.instance?.grantScope;
     if (sc === "all_allies") return marker("scope_all", t) ?? null;

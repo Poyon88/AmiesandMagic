@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
+      "neutralisation": {
+        "label": "Neutralize",
+        "desc": "As long as it is in play, neutralizes {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "to an allied unit",
       "edc_compte": "Gains {n} times +1 ATK or +1 HP at random (1 per creature {clan_de} with Camaraderie already played).",
-      "scope_all": "to all your units"
+      "scope_all": "to all your units",
+      "neutralise_cible": "of a targeted enemy unit (or all)",
+      "neutralise_cible_target": "on a targeted enemy unit",
+      "neutralise_cible_all": "on all enemy units"
     },
     "sets": {
       "1": "Base Set"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "Delayed return (under the deck)",
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
-    "content_selection_magique": "Magic Selection (1 Action out of 3)"
+    "content_selection_magique": "Magic Selection (1 Action out of 3)",
+    "label_neutralised_ability": "NEUTRALIZED ABILITY",
+    "neutralisation_hint": "Silenced on the targeted enemy (or on all, with the \"All enemies\" range) as long as the bearer is in play."
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

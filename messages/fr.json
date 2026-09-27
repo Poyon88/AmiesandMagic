@@ -154,6 +154,10 @@
         "label": "Maître d'arme",
         "desc": "S'équipe gratuitement de tous vos objets en jeu, y compris ceux que portent vos autres créatures."
       },
+      "neutralisation": {
+        "label": "Neutralisation",
+        "desc": "Tant qu'elle est en jeu, neutralise {ability} {neutralise_cible}."
+      },
       "transformation": {
         "label": "Transformation",
         "desc": "Se transforme en la carte désignée. Retrouve sa forme d'origine si elle quitte le plateau."
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "à une unité alliée",
       "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
-      "scope_all": "à toutes vos unités"
+      "scope_all": "à toutes vos unités",
+      "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
+      "neutralise_cible_target": "chez une unité ennemie ciblée",
+      "neutralise_cible_all": "chez toutes les unités ennemies"
     },
     "sets": {
       "1": "Set de Base"
@@ -2102,6 +2109,8 @@
     "emblem_repeat_warning": "Ce déclencheur se répète : l'emblème s'empilera à chaque fois, et un emblème composé à N piles se résout N fois.",
     "label_content": "CONTENU",
     "label_target_scope": "PORTÉE",
+    "label_neutralised_ability": "CAPACITÉ NEUTRALISÉE",
+    "neutralisation_hint": "Muette chez l'ennemie ciblée (ou chez toutes, avec la portée « Toutes ennemies ») tant que la porteuse est en jeu.",
     "target_scope_target": "Cible",
     "target_scope_all_enemies": "Toutes ennemies",
     "target_scope_all_allies": "Toutes alliées",

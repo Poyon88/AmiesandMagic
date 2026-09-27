@@ -72,6 +72,7 @@ import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, kwTargetScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 interface GameCardProps {
   card: Card;
@@ -432,7 +433,7 @@ export default function GameCard({
                 : grantScope === "target" ? " · conférée à la cible"
                 : portee ? ` · ${TARGET_SCOPE_FR[portee]}` : "";
               const displayTitle = baseTitle + grantSuffix;
-              const hasImg = !!iconOverrides[kw];
+              const hasImg = !!iconOverrides[keywordIconFor(kw, entry.instance).keyword];
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} title={displayTitle} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)),
@@ -445,7 +446,7 @@ export default function GameCard({
               }}>
                 <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
-                    <KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={33 * icoS} keyword={kw} fill mode={mode} singulier={entry.singulier} />
+                    <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={33 * icoS} fill mode={mode} singulier={entry.singulier} />
                   </span>
                   {portee && <AllAlliesMarker size={13 * icoS} color={modeColor} label={scopeAriaLabel(portee)} />}
                 </span>
@@ -600,12 +601,13 @@ export default function GameCard({
               const labelColor = grantScope === "all_allies" ? "#2ecc71" : (modeColor ?? "#fff");
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={keywordSymbols[kw] || "✦"} size={18 * s} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon {...keywordIconFor(kw, entry.instance)} size={18 * s} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: grantScope === "all_allies" ? "#2ecc71" : "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
                   {desc && <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
                   {/* Portée « toutes » d'une capacité ciblée de créature. */}
+                  {isCreature && (() => { const n = vocab.targetScopeNote(kwTargetScope(instance)); return n ? <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                   {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
                   {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}

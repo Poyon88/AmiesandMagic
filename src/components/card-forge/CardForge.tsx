@@ -36,6 +36,7 @@ import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
+import NeutralisationPicker from "./NeutralisationPicker";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ interface ForgeCard {
   keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
   keywordTargetScope?: Record<string, TargetScope>;
+  keywordNeutralise?: string;
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
@@ -1836,6 +1838,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Transformation : la carte CIBLE (une seule).
   const [transformationCardIds, setTransformationCardIds] = useState<number[]>([]);
   const [conferAbilityId, setConferAbilityId] = useState<string>("");
+  // Neutralisation : id moteur de la capacité rendue muette chez l'ennemi.
+  const [neutraliseAbilityId, setNeutraliseAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
   // Déclenchement (mot-clé créature paramétrique) : sous-ensemble figé de
@@ -1997,6 +2001,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     },
     keywordGrantScope: !porteStats ? keywordGrantScope : undefined,
     keywordTargetScope: porteStats ? keywordTargetScope : undefined,
+    keywordNeutralise: neutraliseAbilityId || undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
@@ -2366,7 +2371,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2575,6 +2580,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setTuteurCardIds([]);
     setTransformationCardIds([]);
     setConferAbilityId(""); setConferX(1); setConferY(1);
+    setNeutraliseAbilityId("");
     // Jetons et races ciblées
     setConvocationTokenId(null);
     setConvocationTokens([]);
@@ -2719,7 +2725,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         extras: {
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
-          conferAbilityId, conferX, conferY, declenchementTriggers,
+          conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId,
           compagnonsCardIds, tuteurCardIds, transformationCardIds,
         },
       });
@@ -2838,7 +2844,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -4371,6 +4377,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                           })}
                         </div>
                       </div>
+                    )}
+                    {/* Neutralisation — capacité rendue muette chez l'ennemi */}
+                    {manualKeywords.includes("Neutralisation") && (
+                      <NeutralisationPicker value={neutraliseAbilityId} onChange={setNeutraliseAbilityId} />
                     )}
                     {/* Déclenchement — sous-ensemble figé de déclencheurs rejoués */}
                     {manualKeywords.includes("Déclenchement") && (

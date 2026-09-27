@@ -58,8 +58,9 @@ import {
   SEUIL_DECK_THRESHOLD,
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
-import { isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
+import { displayCardOf, isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
 import { creatureScopes, creaturesDePortee, porteeValide, spellScopes } from "./target-scope";
+import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 
 // ============================================================
@@ -83,6 +84,9 @@ let currentTokenTemplates: TokenTemplate[] = [];
 // engine helper (cleanDeadCreatures…) can stamp creatures with their death
 // turn without having to thread state through every signature.
 let currentTurnNumber = 0;
+/** Tour courant pour l'estampille d'arrivée de Neutralisation. Suit la bascule
+ *  de tour EN COURS d'action, contrairement à `currentTurnNumber`. */
+let tourNeutralisation = 0;
 // Id du joueur dont c'est le tour pendant l'action en cours (set dans applyAction).
 // Permet aux déclencheurs (Remontée mort/retour) de savoir si le contrôleur est
 // le joueur actif → ciblage interactif, sinon cible aléatoire.
@@ -1486,6 +1490,9 @@ function levierParalysie(u: CardInstance): void {
 function appliquerSilence(target: CardInstance): void {
   target.card = { ...target.card, keywords: [], keyword_instances: null, capabilities: null };
   delete target.singulierStash;
+  // Rien à rendre : le Silence a tout pris, capacités neutralisées comprises.
+  delete target.neutralisationStash;
+  delete target.neutralisationTargetId;
   target.apprentissageSpell = undefined;
   target.hasDivineShield = false;
   desarmerGardes(target);
@@ -2951,6 +2958,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.isPoisoned = false;
   inst.maledictionTargetId = null;
   delete inst.maledictionExtraIds;
+  delete inst.neutralisationTargetId;
   inst.ombreRevealed = false;
   desarmerGardes(inst);
   inst.fureurActive = false;
@@ -3368,8 +3376,14 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   // qui vient d'entrer chez un joueur non singleton (invocation, jeton, vol)
   // doit avoir perdu ses capacités Singulier avant que les auras ne la lisent —
   // la synchro de fin d'action arriverait trop tard pour cette lecture-ci.
+  //
+  // NEUTRALISATION : levée AVANT Singulier (elle a retiré après lui), puis
+  // reposée une fois Singulier aligné — les auras ci-dessous lisent ainsi des
+  // cartes déjà neutralisées (une Commandement neutralisée ne commande plus).
+  leverNeutralisations(player, opponent, tourNeutralisation);
   syncSingulierPlayer(player);
   syncSingulierPlayer(opponent);
+  poserNeutralisations(player, opponent, tourNeutralisation);
 
   // ── OBJETS : le lien porteur↔objet SE RÉPARE ICI ─────────────────────────
   //
@@ -3822,6 +3836,10 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   }
 
   // Bravoure: double dégâts contre unités à ATK supérieure (handled in combat, no aura needed)
+
+  // NEUTRALISATION, seconde pose : un objet, un emblème ou Totem a pu redonner
+  // pendant ce passage une capacité neutralisée. Idempotente.
+  poserNeutralisations(player, opponent, tourNeutralisation);
 }
 
 // ============================================================
@@ -3838,6 +3856,10 @@ export function startTurn(state: GameState): GameState {
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
   newState.turnNumber++;
+  // Les estampilles d'arrivée (Neutralisation) posées pendant ce début de tour
+  // doivent porter le NOUVEAU numéro. Variable à part : `currentTurnNumber`
+  // sert de graine (Faveur) et ne doit pas bouger en cours d'action.
+  tourNeutralisation = newState.turnNumber;
   // Blessure : la mémoire « déjà blessée par cette source » vaut pour UN tour,
   // de l'un ou l'autre joueur. Vidée ici, à la bascule, AVANT le tick de Poison
   // plus bas (qui appartient au tour qui s'ouvre). Les blessures de la fin du
@@ -5380,6 +5402,18 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "malediction")) for (const tid of ciblesOnPlay(cardInstance, "malediction", action.targetInstanceId, player, opponent)) {
       const cursedTarget = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
       if (cursedTarget) maudire(cardInstance, cursedTarget);
+    }
+
+    // NEUTRALISATION (mode ciblé) : la porteuse MÉMORISE sa cible, rien de plus.
+    // L'effet lui-même — retrait de la capacité, rendu à sa sortie — passe par
+    // le recalcul d'auras (cf. neutralisation.ts). Une cible qui n'a pas (ou
+    // plus) la capacité visée n'est pas retenue.
+    if (hasKwOnPlay(cardInstance, "neutralisation") && !porteeOnPlay(cardInstance.card, "neutralisation")) {
+      const id = idNeutralise(instanceNeutralisation(cardInstance.card)?.grantAbilityId);
+      const cible = id && action.targetInstanceId
+        ? opponent.board.find(c => c.instanceId === action.targetInstanceId && displayCardOf(c).keywords.includes(id as Keyword))
+        : undefined;
+      if (cible) cardInstance.neutralisationTargetId = cible.instanceId;
     }
 
     // Affaiblissement -X/-Y (invocation) : -X ATK / -Y PV à la créature ennemie
@@ -7441,6 +7475,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
             capabilities: null,
           };
           delete target.singulierStash; // même règle que le silence
+          delete target.neutralisationStash;
           target.hasDivineShield = false;
         }
       }
@@ -12111,6 +12146,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Make token templates available to all engine functions
   currentTokenTemplates = state.tokenTemplates ?? [];
   currentTurnNumber = state.turnNumber;
+  tourNeutralisation = state.turnNumber;
   currentPlayerId = state.players[state.currentPlayerIndex].id;
   currentPlayerIds = state.players.map(p => p.id);
   // Vidé ici, repositionné par cloneStateForAction dans chaque handler : jamais
@@ -12237,7 +12273,13 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // contrôle (Conquête, Corruption, Domination) et toute carte créée depuis le
   // dernier recalcul d'auras, pour que l'état publié — hashé, affiché — soit
   // cohérent pour les deux clients.
-  if (result !== state) syncSingulier(result);
+  if (result !== state) {
+    // Même ordre qu'en tête de recalculateAuras : lever, Singulier, poser.
+    const [p0, p1] = result.players;
+    leverNeutralisations(p0, p1, tourNeutralisation);
+    syncSingulier(result);
+    poserNeutralisations(p0, p1, tourNeutralisation);
+  }
   // Rattache les capacités qui ont sonné (bruitage par capacité).
   if (abilitySfxSink.length > 0 && result !== state) {
     result.abilitySfxEvents = [...(result.abilitySfxEvents ?? []), ...abilitySfxSink];
@@ -12580,6 +12622,7 @@ export function needsTarget(card: Card): boolean {
 }
 
 const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
+  "neutralisation",
   "sacrifice", "corruption", "malediction", "affaiblissement", "impact",
   "permutation", "vampirisme", "mimique", "metamorphose",
   "benediction", "tactique", "remontee", "conferer",
@@ -12760,6 +12803,15 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
     // Portée « toutes » : la capacité ne cible pas, elle ne dicte pas le pool.
     if (!cardHasKwOnPlay(card, kw) || porteeOnPlay(card, kw)) continue;
     switch (kw) {
+      case "neutralisation": {
+        // Seules les ennemies qui PORTENT la capacité visée — lue sur la vue
+        // d'affichage, pour compter celle qu'une autre porteuse neutralise déjà.
+        const id = idNeutralise(instanceNeutralisation(card)?.grantAbilityId);
+        if (!id) continue;
+        return filterEnemyTargetable2(opponent.board)
+          .filter(c => displayCardOf(c).keywords.includes(id as Keyword))
+          .map(c => c.instanceId);
+      }
       case "sacrifice":
       case "benediction":
       case "tactique":

@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "Tutore",
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
+      },
+      "neutralisation": {
+        "label": "Neutralizzazione",
+        "desc": "Finché è in gioco, neutralizza {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "a un'unità alleata",
       "edc_compte": "Guadagna {n} volte +1 ATT o +1 PV a caso (1 per ogni creatura {clan_de} con Spirito di corpo già giocata).",
-      "scope_all": "a tutte le vostre unità"
+      "scope_all": "a tutte le vostre unità",
+      "neutralise_cible": "di un'unità nemica bersaglio (o di tutte)",
+      "neutralise_cible_target": "in un'unità nemica bersaglio",
+      "neutralise_cible_all": "in tutte le unità nemiche"
     },
     "sets": {
       "1": "Set Base"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "Ritorno differito (sotto il mazzo)",
     "content_silence": "Silenzio (spoglia il bersaglio)",
     "content_dechainement": "Scatenamento X/Y (azioni casuali)",
-    "content_selection_magique": "Selezione magica (1 azione tra 3)"
+    "content_selection_magique": "Selezione magica (1 azione tra 3)",
+    "label_neutralised_ability": "CAPACITÀ NEUTRALIZZATA",
+    "neutralisation_hint": "Silenziata nella nemica bersaglio (o in tutte, con la portata «Tutte le nemiche») finché la portatrice è in gioco."
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

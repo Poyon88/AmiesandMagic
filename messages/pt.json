@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
+      "neutralisation": {
+        "label": "Neutralização",
+        "desc": "Enquanto estiver em jogo, neutraliza {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "a uma unidade aliada",
       "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
-      "scope_all": "a todas as suas unidades"
+      "scope_all": "a todas as suas unidades",
+      "neutralise_cible": "de uma unidade inimiga alvo (ou de todas)",
+      "neutralise_cible_target": "em uma unidade inimiga alvo",
+      "neutralise_cible_all": "em todas as unidades inimigas"
     },
     "sets": {
       "1": "Set Básico"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "Retorno adiado (sob o baralho)",
     "content_silence": "Silêncio (retira tudo ao alvo)",
     "content_dechainement": "Desencadeamento X/Y (ações aleatórias)",
-    "content_selection_magique": "Seleção mágica (1 ação entre 3)"
+    "content_selection_magique": "Seleção mágica (1 ação entre 3)",
+    "label_neutralised_ability": "HABILIDADE NEUTRALIZADA",
+    "neutralisation_hint": "Silenciada na inimiga alvo (ou em todas, com o alcance \"Todas inimigas\") enquanto a portadora estiver em jogo."
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

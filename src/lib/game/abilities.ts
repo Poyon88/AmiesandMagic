@@ -1501,7 +1501,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { params: ["amount"], needsTarget: false },
   },
+  // NEUTRALISATION : tant que la porteuse est en jeu, la capacité choisie par
+  // l'auteur (`grantAbilityId`) est muette chez l'ennemie ciblée à l'entrée, ou
   // chez toutes les ennemies (portée « toutes », aura continue). Mise en œuvre
+  // par retrait de la vue `card`, cf. lib/game/neutralisation.ts. Son icône est
+  // celle de la capacité visée, barrée.
+  neutralisation: {
+    id: "neutralisation", label: "Neutralisation", symbol: "🚷",
+    desc: "Tant qu'elle est en jeu, neutralise {ability} {neutralise_cible}.",
+    applicable_to: ["creature"],
+    creature: { cost: 12, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
+  },
   conferer: {
     id: "conferer", label: "Conférer", symbol: "✋",
     desc: "Confère {ability} {scope}.",
@@ -1852,6 +1862,8 @@ export const TOKEN_UNSUPPORTED_IDS: ReadonlySet<string> = new Set([
   "lycanthropie", "entraide",
   // 2. annexes d'instance sans champ dans l'éditeur de tokens
   "invocations_multiples", "appel_supreme", "conferer", "declenchement",
+  // Neutralisation : la capacité visée (grantAbilityId) n'a pas de champ non plus.
+  "neutralisation",
   // Compagnons / Tuteur : les cartes liées (linkedCardIds) n'ont pas de champ
   // dans l'éditeur de tokens — le mot-clé y serait un no-op silencieux.
   "compagnons", "tuteur",

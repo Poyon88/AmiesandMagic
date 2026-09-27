@@ -18,6 +18,7 @@
 // n'a plus rien à retirer, une carte déjà restaurée n'a plus de stash.
 
 import type { Card, CardInstance, GameState, Keyword, PlayerState, SingulierStash } from "./types";
+import { displayNeutralisee } from "./neutralisation";
 
 /** Couleur RÉSERVÉE à Singulier dans le système d'icônes (moitié gauche de
  *  l'icône bicolore, texte du badge). À ne réutiliser nulle part ailleurs. */
@@ -159,8 +160,12 @@ export function syncSingulier(state: GameState): void {
 /** Vue d'AFFICHAGE d'une instance : la carte avec ses éléments Singulier remis,
  *  actifs ou non. Une carte se lit toujours pareil des deux côtés de la table —
  *  c'est le badge du héros, pas l'icône, qui dit si la condition est remplie. */
-export function displayCardOf(inst: Pick<CardInstance, "card" | "singulierStash">): Card {
-  return inst.singulierStash ? restoreSingulier(inst.card, inst.singulierStash) : inst.card;
+export function displayCardOf(inst: Pick<CardInstance, "card" | "singulierStash" | "neutralisationStash">): Card {
+  // NEUTRALISATION d'abord : elle a retiré APRÈS Singulier, elle rend avant.
+  // Ses capacités s'affichent (barrées, cf. neutralisedIds) — comme Singulier,
+  // une carte montre ce qu'on lui a pris.
+  const card = displayNeutralisee(inst);
+  return inst.singulierStash ? restoreSingulier(card, inst.singulierStash) : card;
 }
 
 export type { SingulierStash };

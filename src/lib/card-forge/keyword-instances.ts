@@ -46,6 +46,7 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Fureur": "fureur", "Double Attaque": "double_attaque", "Invisible": "invisible",
   "Canalisation": "canalisation", "Contresort X": "contresort", "Exclusion X": "exclusion", "Maître d'arme": "maitre_darme", "Transformation": "transformation",
   "Conférer": "conferer",
+  "Neutralisation": "neutralisation",
   "Déclenchement": "declenchement",
   "Convocation X": "convocation", "Malédiction": "malediction",
   "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Sacrifice démoniaque X": "sacrifice_demoniaque", "Paralysie": "paralysie",
@@ -120,6 +121,8 @@ export interface ForgeKeywordExtras {
   invocCosts?: number[]; invocRace?: string; invocFaction?: string;
   /** Conférer : capacité donnée et son amplitude. */
   conferAbilityId?: string; conferX?: number; conferY?: number;
+  /** Neutralisation : id moteur de la capacité neutralisée (→ grantAbilityId). */
+  neutraliseAbilityId?: string;
   /** Déclenchement : sous-ensemble figé de déclencheurs rejoués. */
   declenchementTriggers?: CapabilityTrigger[];
   /** Compagnons : ids des cartes liées mélangées dans le deck (doublons permis). */
@@ -259,7 +262,11 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
         const xy = XY_ABILITY_IDS.has(extras.conferAbilityId ?? "");
         return { id, ...(mode ? { mode } : {}), ...(extras.conferAbilityId ? { grantAbilityId: extras.conferAbilityId } : {}), x: extras.conferX ?? 0, ...(xy ? { y: extras.conferY ?? 0 } : {}), ...(scope ? { grantScope: scope } : {}) };
       }
+      // Neutralisation (créature) : porte la capacité visée ; toujours émise.
       // La portée « toutes les ennemies » s'ajoute au point commun (targetScope).
+      if (id === "neutralisation" && !isSpellCard) {
+        return { id, ...(mode ? { mode } : {}), ...(extras.neutraliseAbilityId ? { grantAbilityId: extras.neutraliseAbilityId } : {}) };
+      }
       // Déclenchement (créature) : porte le sous-ensemble figé de déclencheurs ; toujours émis.
       if (id === "declenchement" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), ...(extras.declenchementTriggers?.length ? { replayTriggers: extras.declenchementTriggers } : {}) };

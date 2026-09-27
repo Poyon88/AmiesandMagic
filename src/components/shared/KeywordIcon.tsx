@@ -33,8 +33,41 @@ import type { KeywordMode } from "@/lib/game/types";
  * rastérisé par icône, et c'est lui qui pesait sur le thread principal d'un
  * iPad — pas le masque. La teinte de mode est conservée (masque + fond) ; seul
  * le chemin emoji garde son filtre, qui est la teinte elle-même.
+ *
+ * `barred` : icône BARRÉE d'un trait diagonal rouge — une capacité neutralisée
+ * (l'icône de Neutralisation elle-même, et la capacité muette chez sa
+ * victime). Surimpression SVG par-dessus l'icône, quel que soit son chemin de
+ * rendu (image masquée, image, emoji).
  */
-export default function KeywordIcon({
+export default function KeywordIcon(props: {
+  symbol: string;
+  size?: number;
+  keyword?: string;
+  fill?: boolean;
+  mode?: KeywordMode;
+  singulier?: boolean;
+  light?: boolean;
+  barred?: boolean;
+}) {
+  const { barred, ...rest } = props;
+  if (!barred) return <KeywordIconBase {...rest} />;
+  return (
+    <span style={{
+      position: "relative", display: "inline-flex", lineHeight: 0, verticalAlign: "middle",
+      ...(rest.fill ? { width: "100%", height: "100%" } : null),
+    }}>
+      <KeywordIconBase {...rest} />
+      <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}>
+        {/* Contour sombre puis trait rouge : lisible sur fond clair comme foncé. */}
+        <line x1="12" y1="88" x2="88" y2="12" stroke="rgba(0,0,0,0.75)" strokeWidth="16" strokeLinecap="round" />
+        <line x1="12" y1="88" x2="88" y2="12" stroke="#e74c3c" strokeWidth="9" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
+function KeywordIconBase({
   symbol,
   size = 14,
   keyword,

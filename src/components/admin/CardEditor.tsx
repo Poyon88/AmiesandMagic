@@ -30,6 +30,7 @@ import { describeComposedCap } from "@/lib/game/composed-display";
 import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
+import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -169,6 +170,8 @@ export default function CardEditor() {
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
   // Unité : portée « toutes » d'une capacité CIBLÉE (id moteur → portée).
   const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
+  // Neutralisation : capacité rendue muette chez l'ennemi (grantAbilityId).
+  const [neutraliseAbilityId, setNeutraliseAbilityId] = useState<string>("");
 
   // Filters
   const [search, setSearch] = useState("");
@@ -386,6 +389,7 @@ export default function CardEditor() {
     const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     const targetScopes: Record<string, TargetScope> = {};
+    let neutraliseLoaded = "";
     let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invocCostsLoaded: number[] = [];
@@ -401,6 +405,7 @@ export default function CardEditor() {
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.targetScope) targetScopes[inst.id] = inst.targetScope;
+      if (inst.id === "neutralisation") neutraliseLoaded = inst.grantAbilityId ?? "";
       if (inst.id === "renforcement_multiple") {
         rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
       }
@@ -434,6 +439,7 @@ export default function CardEditor() {
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
     setKeywordTargetScope(targetScopes);
+    setNeutraliseAbilityId(neutraliseLoaded);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
 
     // Strip X suffix from effect_text for editing
@@ -640,6 +646,11 @@ export default function CardEditor() {
           // On a spell, a conferred keyword set to "all_allies" must persist
           // its scope even with no mode/X. "target" is the default → no field.
           const grantScope = isSpellCard && keywordGrantScope[id] === "all_allies" ? "all_allies" as const : undefined;
+          // Neutralisation : porte la capacité visée ; toujours émise (sans elle,
+          // un enregistrement ici effacerait le choix fait dans la forge).
+          if (id === "neutralisation" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), ...(neutraliseAbilityId ? { grantAbilityId: neutraliseAbilityId } : {}) };
+          }
           // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
           if (id === "renforcement_multiple" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
@@ -827,7 +838,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1952,6 +1963,13 @@ export default function CardEditor() {
                 </div>
               );
             })()}
+
+            {/* Neutralisation : la capacité rendue muette chez l'ennemi. */}
+            {porteStats && ((editFields.keywords as string[]) || []).includes("neutralisation") && (
+              <div style={{ marginBottom: 8 }}>
+                <NeutralisationPicker value={neutraliseAbilityId} onChange={setNeutraliseAbilityId} />
+              </div>
+            )}
 
             {/* Trigger mode (déclenchement) for curated creature keywords —
                 ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap) / ↩ retour en main.

@@ -31,6 +31,8 @@ import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { composedScope, creatureScopes, kwInstanceScope, porteeValide, scopeAriaLabel } from "@/lib/game/target-scope";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
+import { keywordIconFor } from "@/lib/game/keyword-labels";
+import { neutralisedIds } from "@/lib/game/neutralisation";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -876,7 +878,7 @@ function BoardCreature({
             return buildKeywordDisplayEntries(card).map((entry, idx) => {
               const { kw, mode } = entry;
               const x = entry.x ?? grantedX[kw];
-              const hasImg = !!iconOverrides[kw];
+              const hasImg = !!iconOverrides[keywordIconFor(kw, entry.instance).keyword];
               const modeColor = keywordModeColor(mode);
               const tint = modeColor ?? accentColor;
               return (
@@ -889,8 +891,8 @@ function BoardCreature({
                 fontSize: 8, overflow: "visible",
               }}>
                 <span style={{ display: "inline-flex" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={20} keyword={kw} fill mode={mode} singulier={entry.singulier} />
+                  <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
+                    <KeywordIcon {...keywordIconFor(kw, entry.instance, neutralisedIds(creature))} size={20} fill mode={mode} singulier={entry.singulier} />
                     {/* « A » : capacité ciblée réglée sur « toutes les créatures ». */}
                     {kwInstanceScope(entry.instance) && <AllAlliesMarker size={8} color={modeColor} label={scopeAriaLabel(kwInstanceScope(entry.instance)!)} />}
                   </span>
@@ -1085,7 +1087,7 @@ function BoardCreature({
               const modeColor = keywordModeColor(mode);
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: keywordDisplayOrder(card, kw), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={10} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon {...keywordIconFor(kw, entry.instance, neutralisedIds(creature))} size={10} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}

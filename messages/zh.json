@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "neutralisation": {
+        "label": "中和",
+        "desc": "只要该单位在场，便中和{neutralise_cible}的{ability}。"
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "给一个友方单位",
       "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
-      "scope_all": "给你所有的单位"
+      "scope_all": "给你所有的单位",
+      "neutralise_cible": "一个目标敌方单位（或全部单位）",
+      "neutralise_cible_target": "一个目标敌方单位",
+      "neutralise_cible_all": "所有敌方单位"
     },
     "sets": {
       "1": "基础系列"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "延迟归返（置于牌库底）",
     "content_silence": "沉默（移除目标的一切）",
     "content_dechainement": "释放X/Y（随机行动）",
-    "content_selection_magique": "魔法抉择（从3张中选1张行动）"
+    "content_selection_magique": "魔法抉择（从3张中选1张行动）",
+    "label_neutralised_ability": "已中和能力",
+    "neutralisation_hint": "只要持有者在场，即可使目标敌方单位（或搭配“所有敌方”范围时的全部敌方单位）保持沉默。"
   },
   "game": {
     "error_not_authenticated": "未登录",

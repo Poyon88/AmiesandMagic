@@ -3,6 +3,7 @@ import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X, COUT_OPTIONNEL } from "./abilities";
 import { SINGULIER_COLOR } from "./singulier";
+import { idNeutralise } from "./neutralisation";
 import { badgeAleatoire } from "./random-range";
 
 /** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
@@ -389,7 +390,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
   "terreur", "armure", "commandement", "fureur", "double_attaque", "invisible",
-  "canalisation", "contresort", "exclusion", "maitre_darme", "transformation", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
+  "canalisation", "contresort", "exclusion", "maitre_darme", "neutralisation", "transformation", "convocation", "convocation_simple", "invocation", "invocations_multiples", "malediction", "necrophagie", "richesse", "sacrifice_demoniaque",
   "touche_mortel",
   "paralysie", "permutation", "persecution", "pietinement",
   "catalyse", "ombre_du_passe", "profanation", "prescience", "suprematie", "divination", "savant",
@@ -451,7 +452,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   rappel: "Rappel X", combustion: "Combustion",
   terreur: "Terreur", pauvrete: "Pauvreté X", armure: "Armure",
   commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
-  canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", transformation: "Transformation", convocation: "Convocation X",
+  canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", neutralisation: "Neutralisation", transformation: "Transformation", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",
   malediction: "Malédiction", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
   paralysie: "Paralysie", permutation: "Permutation", persecution: "Persécution X",
@@ -568,7 +569,7 @@ export function keywordBadgeValue(
   // l'amplitude de la capacité CONFÉRÉE, pas la sienne. Les peindre sur son
   // badge afficherait un « Conférer I » trompeur — la valeur appartient au
   // libellé de la capacité donnée, que la description résout déjà.
-  if (kw === "conferer") return null;
+  if (kw === "conferer" || kw === "neutralisation") return null;
   if (NEUTRAL_PAIR_KEYWORDS.has(kw)) {
     // Y (coût) non renseigné : n'importe quel coût, seul le nombre s'affiche.
     if (inst?.y == null && COUT_OPTIONNEL[kw]) return String(x ?? inst?.x ?? 0);
@@ -632,7 +633,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   rappel: "🔄", combustion: "🔥",
   terreur: "👁️", pauvrete: "📉", armure: "/icons/armure.png",
   commandement: "👑", fureur: "💢", double_attaque: "⚔️", invisible: "👻",
-  canalisation: "🔮", contresort: "🚫", exclusion: "⛔", maitre_darme: "🤺", transformation: "🦋", convocation: "📣",
+  canalisation: "🔮", contresort: "🚫", exclusion: "⛔", maitre_darme: "🤺", neutralisation: "🚷", transformation: "🦋", convocation: "📣",
   convocation_simple: "📯", invocation: "📣",
   malediction: "💀", necrophagie: "🦴", richesse: "🤑", sacrifice_demoniaque: "👹",
   paralysie: "⛓️", permutation: "🔀", persecution: "🩻", pietinement: "🐾",
@@ -687,3 +688,22 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   tuteur: "🎓",
 };
 
+
+/** Icône à peindre pour une capacité de créature.
+ *
+ *  NEUTRALISATION n'a pas d'icône propre à l'écran : elle montre celle de la
+ *  capacité qu'elle vise (`grantAbilityId`), BARRÉE. Et une capacité que subit
+ *  une victime (`neutralises`, cf. `neutralisedIds`) se peint barrée elle aussi.
+ *  Point unique pour tous les rendus (carte, main, plateau, vignette). */
+export function keywordIconFor(
+  kw: Keyword | string,
+  instance?: Pick<KeywordInstance, "grantAbilityId"> | null,
+  neutralises?: Set<string>,
+): { symbol: string; keyword: string; barred: boolean } {
+  if (kw === "neutralisation") {
+    const id = idNeutralise(instance?.grantAbilityId);
+    if (id) return { symbol: KEYWORD_SYMBOLS[id as Keyword] || "✦", keyword: id, barred: true };
+    return { symbol: KEYWORD_SYMBOLS.neutralisation, keyword: "neutralisation", barred: false };
+  }
+  return { symbol: KEYWORD_SYMBOLS[kw as Keyword] || "✦", keyword: kw, barred: neutralises?.has(kw) ?? false };
+}

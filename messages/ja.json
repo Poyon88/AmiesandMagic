@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
+      },
+      "neutralisation": {
+        "label": "無力化",
+        "desc": "場に出ている間、{neutralise_cible}の{ability}を無力化する。"
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "味方ユニット1体に",
       "edc_compte": "{n}回、ランダムで+1 ATKまたは+1 HPを得る(既に場に出ている「団結心」持ちの{clan_de}クリーチャー1体につき1回)。",
-      "scope_all": "あなたの全ユニットに"
+      "scope_all": "あなたの全ユニットに",
+      "neutralise_cible": "対象の敵ユニット1体（またはすべて）",
+      "neutralise_cible_target": "対象の敵ユニット1体",
+      "neutralise_cible_all": "敵ユニット全体"
     },
     "sets": {
       "1": "基本セット"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "遅延帰還（デッキの下へ）",
     "content_silence": "沈黙（対象から全て取り除く）",
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
-    "content_selection_magique": "魔法選択（3枚から1つのアクション）"
+    "content_selection_magique": "魔法選択（3枚から1つのアクション）",
+    "label_neutralised_ability": "無力化された能力",
+    "neutralisation_hint": "このカードが場に出ている間、対象の敵ユニット（範囲が「敵全体」の場合はすべての敵ユニット）の能力を沈黙させる。"
   },
   "game": {
     "error_not_authenticated": "未認証",

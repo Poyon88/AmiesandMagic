@@ -24,6 +24,7 @@ import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 import { TARGET_SCOPE_FR, composedScope, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { targetScopeNote } from "@/lib/game/keyword-display";
 import type { TargetScope } from "@/lib/game/types";
+import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 // Reverse of KEYWORD_LABELS: FR label → snake_case engine id. Forge state
 // stores keywords as FR labels, but the keyword-icon store is keyed by the
@@ -175,6 +176,8 @@ interface CardData {
   // Unité : portée « toutes » d'une capacité CIBLÉE (FR-label keyed), cf.
   // lib/game/target-scope.ts. Peint le « A » et la note de portée.
   keywordTargetScope?: Record<string, TargetScope>;
+  /** Neutralisation : id moteur de la capacité visée (icône barrée). */
+  keywordNeutralise?: string;
   ability: string;
   flavorText: string;
   budgetUsed: number;
@@ -227,7 +230,10 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       convocation_tokens: card?.convocationTokens,
       lycanthropie_token_id: card?.lycanthropieTokenId,
     },
-    instance: card?.keywordGrantScope?.[kw]
+    instance: forgeKeywordId(kw) === "neutralisation"
+      // Neutralisation : capacité visée + portée, pour {ability} et {neutralise_cible}.
+      ? ({ grantAbilityId: card?.keywordNeutralise, targetScope: card?.keywordTargetScope?.[kw] } as const)
+      : card?.keywordGrantScope?.[kw]
       ? ({ grantScope: card.keywordGrantScope[kw] } as const)
       : null,
     x: card?.keywordXValues?.[kw] ?? null,
@@ -249,6 +255,13 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     lycanthropie_token_id: card?.lycanthropieTokenId,
   }) as unknown as import("@/lib/game/types").Card;
 
+  // Icône d'une capacité de l'aperçu : Neutralisation montre la capacité
+  // qu'elle vise, barrée (cf. keywordIconFor).
+  const forgeIcon = (kw: string) => {
+    const id = forgeKeywordId(kw);
+    if (id === "neutralisation") return keywordIconFor(id, { grantAbilityId: card?.keywordNeutralise });
+    return { symbol: KEYWORD_SYMBOLS[kw] || "✦", keyword: id, barred: false };
+  };
   const forgeKeyword = (kw: string) => {
     const id = forgeKeywordId(kw);
     const xVal = card?.keywordXValues?.[kw];
@@ -448,7 +461,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   transition: "all 0.2s",
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} keyword={forgeKeywordId(kw)} size={15 * s} fill />
+                    <KeywordIcon {...forgeIcon(kw)} size={15 * s} fill />
                     {portee && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(portee)} />}
                   </span>
                   {badgeText != null && (
@@ -630,10 +643,11 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const detailNote = detailScope === "all_allies" ? t('detail_note_all_allies') : detailScope === "target" ? t('detail_note_target') : "";
               return (
                 <div key={kw} style={{ order: ((card!.type === "Unité" || card!.type === "Objet") ? keywordDisplayOrder({ keywords: card!.keywords as never }, kw) : grantedKeywordDisplayOrder({ keywords: card!.keywords as never, spell_keywords: card!.spellKeywords ?? null }, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={18 * s} keyword={forgeKeywordId(kw)} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon {...forgeIcon(kw)} size={18 * s} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: detailScope === "all_allies" ? "#27ae60" : fac.accent, fontWeight: 700 }}>{displayName}{detailNote}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{displayDesc}</div>
+                    {detailScope == null && forgeKeywordId(kw) !== "neutralisation" && (() => { const n = targetScopeNote(porteeValide(card!.keywordTargetScope?.[kw], creatureScopes(forgeKeywordId(kw)))); return n ? <div style={{ fontSize: 11.5 * s, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{n}</div> : null; })()}
                     {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                     <TokenNames cards={tokenCardsForKeyword(forgeKeywordId(kw), sourceTokens(), tokens, card!.keywordXValues?.[kw])} scale={s} />
                   </div>

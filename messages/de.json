@@ -542,6 +542,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "neutralisation": {
+        "label": "Neutralisierung",
+        "desc": "Solange sie im Spiel ist, neutralisiert sie {ability} {neutralise_cible}."
       }
     },
     "spell_keywords": {
@@ -1727,7 +1731,10 @@
       "rm_scope_all": "",
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
-      "scope_all": "auf alle deine Einheiten"
+      "scope_all": "auf alle deine Einheiten",
+      "neutralise_cible": "einer gezielten gegnerischen Einheit (oder aller)",
+      "neutralise_cible_target": "bei einer gezielten gegnerischen Einheit",
+      "neutralise_cible_all": "bei allen gegnerischen Einheiten"
     },
     "sets": {
       "1": "Basis-Set"
@@ -2586,7 +2593,9 @@
     "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
     "content_silence": "Stille (nimmt dem Ziel alles)",
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
-    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)"
+    "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
+    "label_neutralised_ability": "NEUTRALISIERTE FÄHIGKEIT",
+    "neutralisation_hint": "Stumm bei der gezielten gegnerischen Einheit (oder bei allen, mit der Reichweite „Alle gegnerischen“), solange die Trägereinheit im Spiel ist."
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",
