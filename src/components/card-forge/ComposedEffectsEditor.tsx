@@ -5,7 +5,7 @@
 // Capability portant un `composed`. Le serveur reçoit ces entrées via
 // composed_capabilities et les persiste dans la colonne capabilities.
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -232,6 +232,7 @@ export default function ComposedEffectsEditor({
   onCuratedChange?: (v: SpellKeywordInstance[]) => void;
 }) {
   const tr = useTranslations("forge");
+  const locale = useLocale();
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
   const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }];
@@ -722,7 +723,10 @@ export default function ComposedEffectsEditor({
               )}
 
               <span style={labelStyle}>{tr('label_content')}</span>
-              {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: libelleContenu(o) })), (v) => {
+              {/* Ordre ALPHABÉTIQUE du libellé affiché (dans la langue de l'écran),
+                  la liste dépassant la trentaine de contenus. */}
+              {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: libelleContenu(o) }))
+                .sort((a, b) => a.l.localeCompare(b.l, locale, { sensitivity: "base" })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;
                 const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
                 const scatterOk = scatterAllowed(v, prev.location);
