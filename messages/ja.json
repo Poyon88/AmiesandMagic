@@ -923,6 +923,32 @@
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
         "dechainement_one_any": "ランダムなアクションを1枚プレイする"
       },
+      "self": {
+        "deal_damage_one": "自身に{x}ダメージを与える",
+        "deal_damage_many": "自身に{x}ダメージを与える",
+        "heal": "自身のHPを{x}回復する",
+        "buff": "自身に+{x}/+{y}を付与する",
+        "debuff": "自身に-{x}/-{y}を与える",
+        "destroy": "自身を破壊する",
+        "bounce": "自身を手札に戻す",
+        "paralyze": "自身を麻痺させる",
+        "poison": "自らを毒に冒す",
+        "grant_keyword": "自身に{ability}を付与する"
+      },
+      "choice": {
+        "deal_damage": "ダメージを与える対象を選んでください",
+        "heal": "回復する対象を選んでください",
+        "buff": "強化するクリーチャーを選んでください",
+        "debuff": "弱体化するクリーチャーを選んでください",
+        "destroy": "破壊するクリーチャーを選んでください",
+        "bounce": "手札に戻すクリーチャーを選んでください",
+        "paralyze": "麻痺させるクリーチャーを選んでください",
+        "poison": "毒を与えるクリーチャーを選択してください",
+        "grant_keyword": "能力を付与するクリーチャーを選んでください",
+        "exhumation": "蘇生するクリーチャーを選んでください",
+        "rappel": "手札に戻すカードを1枚選ぶ",
+        "default": "対象を選んでください"
+      },
       "emblem": {
         "badge": "紋章",
         "self": "紋章",
@@ -966,18 +992,6 @@
         "type_creature": "ユニットタイプの",
         "type_spell": "アクションタイプの",
         "type_item": "アイテムタイプの"
-      },
-      "self": {
-        "deal_damage_one": "自身に{x}ダメージを与える",
-        "deal_damage_many": "自身に{x}ダメージを与える",
-        "heal": "自身のHPを{x}回復する",
-        "buff": "自身に+{x}/+{y}を付与する",
-        "debuff": "自身に-{x}/-{y}を与える",
-        "destroy": "自身を破壊する",
-        "bounce": "自身を手札に戻す",
-        "paralyze": "自身を麻痺させる",
-        "poison": "自らを毒に冒す",
-        "grant_keyword": "自身に{ability}を付与する"
       },
       "targetd": {
         "count_all": "すべてのユニット",
@@ -1043,20 +1057,6 @@
         "times": "{x}回、毎回1{unit}を",
         "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
         "target_unit": "ランダムな{side}ユニット1体に"
-      },
-      "choice": {
-        "deal_damage": "ダメージを与える対象を選んでください",
-        "heal": "回復する対象を選んでください",
-        "buff": "強化するクリーチャーを選んでください",
-        "debuff": "弱体化するクリーチャーを選んでください",
-        "destroy": "破壊するクリーチャーを選んでください",
-        "bounce": "手札に戻すクリーチャーを選んでください",
-        "paralyze": "麻痺させるクリーチャーを選んでください",
-        "poison": "毒を与えるクリーチャーを選択してください",
-        "grant_keyword": "能力を付与するクリーチャーを選んでください",
-        "exhumation": "蘇生するクリーチャーを選んでください",
-        "rappel": "手札に戻すカードを1枚選ぶ",
-        "default": "対象を選んでください"
       }
     },
     "factions": {
@@ -1229,7 +1229,8 @@
       "Gobelins": "ゴブリン",
       "Trolls": "トロル",
       "Wargs": "ワーグ",
-      "Guerriers du Chaos": "カオスの戦士"
+      "Guerriers du Chaos": "カオスの戦士",
+      "Bâtiments": "建造物"
     },
     "alignments": {
       "bon": "善",
@@ -1292,6 +1293,11 @@
         "def": "ゴーレム",
         "bare": "ゴーレム",
         "de": "ゴーレム"
+      },
+      "Bâtiments": {
+        "def": "建造物",
+        "bare": "建造物",
+        "de": "建造物の"
       },
       "Gnomes": {
         "def": "ノーム",

@@ -9,7 +9,7 @@ import GameCard from "@/components/cards/GameCard";
 import CardThumb from "@/components/cards/CardThumb";
 import { VirtuosoGrid } from "react-virtuoso";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
+import { getAllRaces, KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
@@ -2166,7 +2166,7 @@ export default function CardEditor() {
                   style={S.select}
                 >
                   <option value="">-- Choisir une race --</option>
-                  {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                  {getAllRaces().sort().map(r => (
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>

@@ -975,7 +975,7 @@ export function getClanNamesForRace(
   if (!groups) return [];
   // Race libre (ex. Aigles Géants) : accède à TOUS les clans de la faction,
   // quelle que soit la contrainte `appliesTo`.
-  if (race && def?.freeRaces?.includes(race)) return getAllClanNames(factionId);
+  if (race && (def?.freeRaces?.includes(race) || RACES_SANS_FACTION.includes(race))) return getAllClanNames(factionId);
   const out = new Set<string>();
   for (const g of groups) {
     if (g.appliesTo === "all" || !g.appliesTo || (race && g.appliesTo === race)) {
@@ -1003,10 +1003,21 @@ export function getRacesForFaction(factionId: string | null | undefined): string
  *  zéro carte, restait invisible). Sans faction, on retombe sur toutes les races. */
 export function getAssignableRaces(factionId: string | null | undefined): string[] {
   const neutral = FACTIONS["Mercenaires"]?.races ?? [];
-  if (!factionId || !FACTIONS[factionId]) {
-    return [...new Set(Object.values(FACTIONS).flatMap((f) => f.races))];
-  }
-  return [...new Set([...(FACTIONS[factionId]?.races ?? []), ...neutral, ...RACES_TRANSVERSES])];
+  if (!factionId || !FACTIONS[factionId]) return getAllRaces();
+  return [...new Set([...(FACTIONS[factionId]?.races ?? []), ...neutral, ...RACES_TRANSVERSES, ...RACES_SANS_FACTION])];
+}
+
+/** Races SANS FACTION d'origine : assignables à une carte de N'IMPORTE quelle
+ *  faction et accueillies par tous ses clans (comme une race libre), mais
+ *  absentes de `FACTIONS[*].races` — le générateur, qui tire dans ces listes,
+ *  ne les produit donc jamais : elles ne s'attribuent qu'à la main (forge,
+ *  éditeur). Bâtiments (2026-09-27) : portes, murailles, tours… */
+export const RACES_SANS_FACTION: readonly string[] = ["Bâtiments"];
+
+/** TOUTES les races connues : celles des factions, plus les races sans faction.
+ *  Source unique des listes « toutes les races » (filtres, sélecteurs). */
+export function getAllRaces(): string[] {
+  return [...new Set([...Object.values(FACTIONS).flatMap((f) => f.races), ...RACES_SANS_FACTION])];
 }
 
 /** Races TRANSVERSES : déclarées dans UNE faction d'origine (profil, clans,

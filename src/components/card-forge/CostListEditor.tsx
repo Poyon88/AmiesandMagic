@@ -12,10 +12,10 @@
 // que les écrans se comportent à l'identique.
 
 import { useTranslations } from "next-intl";
-import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
-const RACE_OPTIONS = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races)))
+const RACE_OPTIONS = getAllRaces()
   .sort((a, b) => a.localeCompare(b, "fr"));
 
 export default function CostListEditor({

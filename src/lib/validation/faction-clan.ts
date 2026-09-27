@@ -1,4 +1,4 @@
-import { getAssignableRaces, FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
+import { getAssignableRaces, getAllRaces, FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 export type FactionClanResult =
   | { ok: true; faction: string | null; clan: string | null }
@@ -52,7 +52,6 @@ export function validateRace(race: unknown, faction: string | null): RaceResult 
     }
     return { ok: true, race };
   }
-  const allRaces = new Set(Object.values(FACTIONS).flatMap((f) => f.races));
-  if (!allRaces.has(race)) return { ok: false, error: 'Race inconnue' };
+  if (!getAllRaces().includes(race)) return { ok: false, error: 'Race inconnue' };
   return { ok: true, race };
 }

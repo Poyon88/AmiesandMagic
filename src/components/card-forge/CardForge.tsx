@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { additionalCostPoints, alignementAEnregistrer, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, additionalCostPoints, alignementAEnregistrer, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -1068,12 +1068,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
 
   const cbFactionDef = cbFaction ? FACTIONS[cbFaction as keyof typeof FACTIONS] : null;
   const cbFactionRaces = cbFactionDef?.races
-    ?? Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort();
+    ?? getAllRaces().sort();
   const cbFactionClans: string[] = getClanNamesForRace(cbFaction, cbRace);
 
   const bdFactionDef = bdFaction ? FACTIONS[bdFaction as keyof typeof FACTIONS] : null;
   const bdFactionRaces = bdFactionDef?.races
-    ?? Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort();
+    ?? getAllRaces().sort();
   const bdFactionClans: string[] = getClanNamesForRace(bdFaction, bdRace);
 
   function generateCardBackPrompt() {
@@ -2032,7 +2032,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Dédoublonné : une même race est déclarée par PLUSIEURS factions (Humains
   // l'est par trois), et la liste brute la répétait autant de fois — options
   // en double à l'écran, et clés React dupliquées.
-  const allRaces = Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort();
+  const allRaces = getAllRaces().sort();
 
   // Capacités à couple +X/+Y dont le Y est réellement persisté quand un SORT les
   // confère (cf. les branches `gloire` / `force_des_ancetres` de saveToGame, les
@@ -3054,7 +3054,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 <Sec title={tf('section_race')}>
                   {[
                     { label: tf('main_races'), list: FACTIONS[faction].races },
-                    { label: tf('all_races'), list: [...new Set(Object.values(FACTIONS).flatMap(f => f.races))].sort() },
+                    { label: tf('all_races'), list: getAllRaces().sort() },
                   ].map(group => (
                     <div key={group.label} style={{ marginBottom: 6 }}>
                       <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1, marginBottom: 3 }}>{group.label}</div>
@@ -3766,7 +3766,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   <select value={kw.race ?? ""} onChange={e => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: e.target.value || undefined } : k))}
                                     style={{ display: "block", marginTop: 2, padding: "3px 6px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
                                     <option value="">{tf('choose_race')}</option>
-                                    {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                                    {getAllRaces().sort().map(r => <option key={r} value={r}>{r}</option>)}
                                   </select>
                                 </div>
                               )}
@@ -4177,7 +4177,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)}
                           style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: "1px solid #10b98144", fontSize: 10, fontFamily: "'Cinzel',serif", background: "#fff" }}>
                           <option value="">{tf('choose_race')}</option>
-                          {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => (
+                          {getAllRaces().sort().map(r => (
                             <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
@@ -4760,7 +4760,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               <div style={{ ...labelStyle, color: "#10b981", marginBottom: 3 }}>🤝 {tf('target_race_label')} {!entraideRace && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</div>
                               <select value={entraideRace} onChange={e => setEntraideRace(e.target.value)} style={{ width: "100%", padding: "4px 8px", borderRadius: 5, border: cardBorder, fontSize: 11, fontFamily: "'Cinzel',serif", background: "#fff" }}>
                                 <option value="">{tf('choose_race')}</option>
-                                {Array.from(new Set(Object.values(FACTIONS).flatMap(f => f.races))).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                                {getAllRaces().sort().map(r => <option key={r} value={r}>{r}</option>)}
                               </select>
                             </div>
                           )}

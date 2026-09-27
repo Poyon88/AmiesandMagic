@@ -923,6 +923,32 @@
         "dechainement_any": "juega {x} acciones aleatorias",
         "dechainement_one_any": "juega una acción aleatoria"
       },
+      "self": {
+        "deal_damage_one": "se inflige {x} punto de daño",
+        "deal_damage_many": "se inflige {x} puntos de daño",
+        "heal": "se cura {x} PV",
+        "buff": "se otorga +{x}/+{y}",
+        "debuff": "se inflige -{x}/-{y}",
+        "destroy": "se destruye",
+        "bounce": "vuelve a la mano",
+        "paralyze": "se paraliza",
+        "poison": "se envenena",
+        "grant_keyword": "se otorga {ability}"
+      },
+      "choice": {
+        "deal_damage": "elige un objetivo al que herir",
+        "heal": "elige un objetivo al que sanar",
+        "buff": "elige una criatura para fortalecer",
+        "debuff": "elige una criatura para debilitar",
+        "destroy": "elige una criatura para destruir",
+        "bounce": "elige una criatura para devolver a la mano",
+        "paralyze": "elige una criatura para paralizar",
+        "poison": "elige una criatura para envenenar",
+        "grant_keyword": "elige una criatura a la que otorgar la habilidad",
+        "exhumation": "elige una criatura para resucitar",
+        "rappel": "elige una carta para recuperar en la mano",
+        "default": "elige un objetivo"
+      },
       "emblem": {
         "badge": "Emblema",
         "self": "Emblema",
@@ -966,18 +992,6 @@
         "type_creature": " de tipo unidad",
         "type_spell": " de tipo acción",
         "type_item": " de tipo objeto"
-      },
-      "self": {
-        "deal_damage_one": "se inflige {x} punto de daño",
-        "deal_damage_many": "se inflige {x} puntos de daño",
-        "heal": "se cura {x} PV",
-        "buff": "se otorga +{x}/+{y}",
-        "debuff": "se inflige -{x}/-{y}",
-        "destroy": "se destruye",
-        "bounce": "vuelve a la mano",
-        "paralyze": "se paraliza",
-        "poison": "se envenena",
-        "grant_keyword": "se otorga {ability}"
       },
       "targetd": {
         "count_all": "todas las unidades",
@@ -1043,20 +1057,6 @@
         "times": "{x} veces 1 {unit}, cada vez",
         "target_both": "a un objetivo {side} aleatorio (unidad o héroe)",
         "target_unit": "a una unidad {side} aleatoria"
-      },
-      "choice": {
-        "deal_damage": "elige un objetivo al que herir",
-        "heal": "elige un objetivo al que sanar",
-        "buff": "elige una criatura para fortalecer",
-        "debuff": "elige una criatura para debilitar",
-        "destroy": "elige una criatura para destruir",
-        "bounce": "elige una criatura para devolver a la mano",
-        "paralyze": "elige una criatura para paralizar",
-        "poison": "elige una criatura para envenenar",
-        "grant_keyword": "elige una criatura a la que otorgar la habilidad",
-        "exhumation": "elige una criatura para resucitar",
-        "rappel": "elige una carta para recuperar en la mano",
-        "default": "elige un objetivo"
       }
     },
     "factions": {
@@ -1229,7 +1229,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trols",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Guerreros del Caos"
+      "Guerriers du Chaos": "Guerreros del Caos",
+      "Bâtiments": "Edificios"
     },
     "alignments": {
       "bon": "Bueno",
@@ -1292,6 +1293,11 @@
         "def": "el Gólem",
         "bare": "Gólem",
         "de": "del Gólem"
+      },
+      "Bâtiments": {
+        "def": "el Edificio",
+        "bare": "Edificio",
+        "de": "de Edificio"
       },
       "Gnomes": {
         "def": "el Gnomo",

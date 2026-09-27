@@ -1,8 +1,8 @@
 "use client";
 
-import { FACTIONS, getFactionForRace, getClanNamesForRace, getAllClanNames, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, FACTIONS, getFactionForRace, getClanNamesForRace, getAllClanNames, getFactionDisplayName } from "@/lib/card-engine/constants";
 
-const ALL_RACES = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort();
+const ALL_RACES = getAllRaces().sort();
 
 /** Tous les clans du jeu, groupés par faction — pour le cas « clan seul ». */
 const CLANS_BY_FACTION: { faction: string; clans: string[] }[] = Object.keys(FACTIONS)

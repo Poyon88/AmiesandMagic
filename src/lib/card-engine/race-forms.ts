@@ -42,6 +42,8 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   "Hommes-Arbres": { def: "l'Homme-Arbre", bare: "Homme-Arbre", de: "de l'Homme-Arbre" },
   "Nains": { def: "le Nain", bare: "Nain", de: "du Nain" },
   "Golems": { def: "le Golem", bare: "Golem", de: "du Golem" },
+  // Race sans faction (cf. RACES_SANS_FACTION) : portes, murailles, tours…
+  "Bâtiments": { def: "le Bâtiment", bare: "Bâtiment", de: "du Bâtiment" },
   "Gnomes": { def: "le Gnome", bare: "Gnome", de: "du Gnome" },
   "Machines": { def: "la Machine", bare: "Machine", de: "de la Machine" },
   "Kobolds": { def: "le Kobold", bare: "Kobold", de: "du Kobold" },

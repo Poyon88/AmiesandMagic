@@ -26,7 +26,7 @@ export { KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 export { DESC_COUT_LIBRE } from "@/lib/game/abilities";
 export { SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 export { COMPOSED_FR } from "@/lib/game/composed-display";
-export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS } from "@/lib/card-engine/constants";
+export { FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS, RACES_SANS_FACTION } from "@/lib/card-engine/constants";
 export { RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR } from "@/lib/card-engine/race-forms";
 export { MARKERS_FR } from "@/lib/game/desc-markers";
 export { SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR } from "@/lib/game/target-scope";
@@ -44,10 +44,10 @@ const built = await esbuild.build({
 
 const tmp = path.join(ROOT, "scripts", ".vocab-bundle.mjs");
 fs.writeFileSync(tmp, built.outputFiles[0].text);
-let DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS;
+let DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS, RACES_SANS_FACTION;
 let RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR, SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR;
 try {
-  ({ DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS,
+  ({ DESC_COUT_LIBRE, KEYWORD_LABELS, SPELL_KEYWORDS, COMPOSED_FR, FACTIONS, RARITIES, KEYWORDS, KEYWORD_DESC_BY_ID, ALIGNMENTS, RACES_SANS_FACTION,
      RACE_FORMS_FR, CLAN_FORMS_FR, FACTION_FORMS_FR, MARKERS_FR, SPELL_SCOPE_DESC_FR, CREATURE_SCOPE_DESC_FR, TARGET_SCOPE_CIBLES_FR } = await import(`file://${tmp}?t=${Date.now()}`));
 } finally {
   fs.rmSync(tmp, { force: true });
@@ -106,6 +106,8 @@ for (const [id, def] of Object.entries(FACTIONS)) {
   // Races déclarées par la faction (identité FR → traduite par le pipeline).
   for (const race of def.races ?? []) vocab.races[race] = race;
 }
+// Races sans faction d'origine (Bâtiments…) : absentes de `def.races`.
+for (const race of RACES_SANS_FACTION ?? []) vocab.races[race] = race;
 
 // Formes fléchies (singulier défini / nu / complément du nom) pour que les
 // descriptions nomment la valeur concrète de la carte — cf. race-forms.ts.

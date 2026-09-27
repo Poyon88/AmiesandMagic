@@ -22,7 +22,7 @@ import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurr
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
 import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
-import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 import { porteeValide, spellScopes } from "@/lib/game/target-scope";
@@ -138,7 +138,7 @@ function scatterIsPointwise(content: ComposedEffectContent): boolean {
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
 
-const RACE_OPTIONS = Array.from(new Set(Object.values(FACTIONS).flatMap((f) => f.races))).sort((a, b) => a.localeCompare(b, "fr"));
+const RACE_OPTIONS = getAllRaces().sort((a, b) => a.localeCompare(b, "fr"));
 
 // Mots-clés utilisables comme filtre « ne propose que les cartes portant … ».
 // Même dérivation d'id que GRANTABLE, mais sans la contrainte `grantable` :

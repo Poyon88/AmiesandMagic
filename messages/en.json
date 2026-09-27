@@ -923,6 +923,32 @@
         "dechainement_any": "plays {x} random actions",
         "dechainement_one_any": "plays a random action"
       },
+      "self": {
+        "deal_damage_one": "deals {x} damage to itself",
+        "deal_damage_many": "deals {x} damage to itself",
+        "heal": "heals itself for {x} HP",
+        "buff": "grants itself +{x}/+{y}",
+        "debuff": "inflicts -{x}/-{y} on itself",
+        "destroy": "destroys itself",
+        "bounce": "returns itself to hand",
+        "paralyze": "paralyzes itself",
+        "poison": "poisons itself",
+        "grant_keyword": "grants itself {ability}"
+      },
+      "choice": {
+        "deal_damage": "choose a target to damage",
+        "heal": "choose a target to heal",
+        "buff": "choose a creature to strengthen",
+        "debuff": "choose a creature to weaken",
+        "destroy": "choose a creature to destroy",
+        "bounce": "choose a creature to return to hand",
+        "paralyze": "choose a creature to paralyze",
+        "poison": "choose a creature to poison",
+        "grant_keyword": "choose a creature to grant the ability to",
+        "exhumation": "choose a creature to resurrect",
+        "rappel": "choose a card to return to hand",
+        "default": "choose a target"
+      },
       "emblem": {
         "badge": "Emblem",
         "self": "Emblem",
@@ -966,18 +992,6 @@
         "type_creature": " of type Unit",
         "type_spell": " of type action",
         "type_item": " of type item"
-      },
-      "self": {
-        "deal_damage_one": "deals {x} damage to itself",
-        "deal_damage_many": "deals {x} damage to itself",
-        "heal": "heals itself for {x} HP",
-        "buff": "grants itself +{x}/+{y}",
-        "debuff": "inflicts -{x}/-{y} on itself",
-        "destroy": "destroys itself",
-        "bounce": "returns itself to hand",
-        "paralyze": "paralyzes itself",
-        "poison": "poisons itself",
-        "grant_keyword": "grants itself {ability}"
       },
       "targetd": {
         "count_all": "all units",
@@ -1043,20 +1057,6 @@
         "times": "{x} times 1 {unit}, each time",
         "target_both": "to a random {side} target (unit or hero)",
         "target_unit": "to a random {side} unit"
-      },
-      "choice": {
-        "deal_damage": "choose a target to damage",
-        "heal": "choose a target to heal",
-        "buff": "choose a creature to strengthen",
-        "debuff": "choose a creature to weaken",
-        "destroy": "choose a creature to destroy",
-        "bounce": "choose a creature to return to hand",
-        "paralyze": "choose a creature to paralyze",
-        "poison": "choose a creature to poison",
-        "grant_keyword": "choose a creature to grant the ability to",
-        "exhumation": "choose a creature to resurrect",
-        "rappel": "choose a card to return to hand",
-        "default": "choose a target"
       }
     },
     "factions": {
@@ -1229,7 +1229,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolls",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaos Warriors"
+      "Guerriers du Chaos": "Chaos Warriors",
+      "Bâtiments": "Buildings"
     },
     "alignments": {
       "bon": "Good",
@@ -1292,6 +1293,11 @@
         "def": "the Golem",
         "bare": "Golem",
         "de": "of the Golem"
+      },
+      "Bâtiments": {
+        "def": "the Building",
+        "bare": "Building",
+        "de": "of the Building"
       },
       "Gnomes": {
         "def": "the Gnome",

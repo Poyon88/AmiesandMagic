@@ -923,6 +923,32 @@
         "dechainement_any": "打出{x}张随机行动牌",
         "dechainement_one_any": "打出一张随机行动牌"
       },
+      "self": {
+        "deal_damage_one": "对自身造成{x}点伤害",
+        "deal_damage_many": "对自身造成{x}点伤害",
+        "heal": "为自身恢复{x}点生命值",
+        "buff": "为自身赋予+{x}/+{y}",
+        "debuff": "对自身造成-{x}/-{y}",
+        "destroy": "自我摧毁",
+        "bounce": "将自身弹回手牌",
+        "paralyze": "使自身麻痹",
+        "poison": "使自己中毒",
+        "grant_keyword": "为自身赋予{ability}"
+      },
+      "choice": {
+        "deal_damage": "选择一个目标造成伤害",
+        "heal": "选择一个治疗目标",
+        "buff": "选择一个强化的生物",
+        "debuff": "选择一个削弱的生物",
+        "destroy": "选择一个消灭的生物",
+        "bounce": "选择一个返回手牌的生物",
+        "paralyze": "选择一个麻痹的生物",
+        "poison": "选择一个要使其中毒的生物",
+        "grant_keyword": "选择一个赋予能力的生物",
+        "exhumation": "选择一个复活的生物",
+        "rappel": "选择一张卡牌收回手牌",
+        "default": "选择一个目标"
+      },
       "emblem": {
         "badge": "纹章",
         "self": "纹章",
@@ -966,18 +992,6 @@
         "type_creature": " 单位类型的",
         "type_spell": " 行动类型的",
         "type_item": " 物品类型的"
-      },
-      "self": {
-        "deal_damage_one": "对自身造成{x}点伤害",
-        "deal_damage_many": "对自身造成{x}点伤害",
-        "heal": "为自身恢复{x}点生命值",
-        "buff": "为自身赋予+{x}/+{y}",
-        "debuff": "对自身造成-{x}/-{y}",
-        "destroy": "自我摧毁",
-        "bounce": "将自身弹回手牌",
-        "paralyze": "使自身麻痹",
-        "poison": "使自己中毒",
-        "grant_keyword": "为自身赋予{ability}"
       },
       "targetd": {
         "count_all": "所有单位",
@@ -1043,20 +1057,6 @@
         "times": "{x} 次，每次 1 点 {unit}，每次随机",
         "target_both": "对一个随机 {side} 目标（单位或英雄）",
         "target_unit": "对一个随机 {side} 单位"
-      },
-      "choice": {
-        "deal_damage": "选择一个目标造成伤害",
-        "heal": "选择一个治疗目标",
-        "buff": "选择一个强化的生物",
-        "debuff": "选择一个削弱的生物",
-        "destroy": "选择一个消灭的生物",
-        "bounce": "选择一个返回手牌的生物",
-        "paralyze": "选择一个麻痹的生物",
-        "poison": "选择一个要使其中毒的生物",
-        "grant_keyword": "选择一个赋予能力的生物",
-        "exhumation": "选择一个复活的生物",
-        "rappel": "选择一张卡牌收回手牌",
-        "default": "选择一个目标"
       }
     },
     "factions": {
@@ -1229,7 +1229,8 @@
       "Gobelins": "哥布林",
       "Trolls": "巨魔",
       "Wargs": "座狼",
-      "Guerriers du Chaos": "混沌战士"
+      "Guerriers du Chaos": "混沌战士",
+      "Bâtiments": "建筑"
     },
     "alignments": {
       "bon": "善良",
@@ -1292,6 +1293,11 @@
         "def": "魔像",
         "bare": "魔像",
         "de": "魔像的"
+      },
+      "Bâtiments": {
+        "def": "建筑",
+        "bare": "建筑",
+        "de": "建筑"
       },
       "Gnomes": {
         "def": "侏儒",

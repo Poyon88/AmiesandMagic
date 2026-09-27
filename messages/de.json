@@ -923,6 +923,32 @@
         "dechainement_any": "spielt {x} zufällige Aktionen",
         "dechainement_one_any": "spielt eine zufällige Aktion"
       },
+      "self": {
+        "deal_damage_one": "fügt sich selbst {x} Schaden zu",
+        "deal_damage_many": "fügt sich selbst {x} Schaden zu",
+        "heal": "heilt sich selbst um {x} LP",
+        "buff": "verleiht sich selbst +{x}/+{y}",
+        "debuff": "fügt sich selbst -{x}/-{y} zu",
+        "destroy": "zerstört sich selbst",
+        "bounce": "kehrt auf die Hand zurück",
+        "paralyze": "paralysiert sich selbst",
+        "poison": "vergiftet sich",
+        "grant_keyword": "verleiht sich selbst {ability}"
+      },
+      "choice": {
+        "deal_damage": "wähle ein Ziel zum Angreifen",
+        "heal": "wähle ein Ziel zum Heilen",
+        "buff": "wähle eine Kreatur zum Stärken",
+        "debuff": "wähle eine Kreatur zum Schwächen",
+        "destroy": "wähle eine Kreatur zum Zerstören",
+        "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
+        "paralyze": "wähle eine Kreatur zum Lähmen",
+        "poison": "Wählt eine Kreatur zum Vergiften",
+        "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
+        "exhumation": "wähle eine Kreatur zum Wiederbeleben",
+        "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
+        "default": "wähle ein Ziel"
+      },
       "emblem": {
         "badge": "Emblem",
         "self": "Emblem",
@@ -966,18 +992,6 @@
         "type_creature": " vom Typ Einheit",
         "type_spell": " vom Typ Aktion",
         "type_item": " vom Typ Gegenstand"
-      },
-      "self": {
-        "deal_damage_one": "fügt sich selbst {x} Schaden zu",
-        "deal_damage_many": "fügt sich selbst {x} Schaden zu",
-        "heal": "heilt sich selbst um {x} LP",
-        "buff": "verleiht sich selbst +{x}/+{y}",
-        "debuff": "fügt sich selbst -{x}/-{y} zu",
-        "destroy": "zerstört sich selbst",
-        "bounce": "kehrt auf die Hand zurück",
-        "paralyze": "paralysiert sich selbst",
-        "poison": "vergiftet sich",
-        "grant_keyword": "verleiht sich selbst {ability}"
       },
       "targetd": {
         "count_all": "alle Einheiten",
@@ -1043,20 +1057,6 @@
         "times": "{x} Mal 1 {unit}, jedes Mal",
         "target_both": "an ein zufälliges {side} Ziel (Einheit oder Held)",
         "target_unit": "an eine zufällige {side} Einheit"
-      },
-      "choice": {
-        "deal_damage": "wähle ein Ziel zum Angreifen",
-        "heal": "wähle ein Ziel zum Heilen",
-        "buff": "wähle eine Kreatur zum Stärken",
-        "debuff": "wähle eine Kreatur zum Schwächen",
-        "destroy": "wähle eine Kreatur zum Zerstören",
-        "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
-        "paralyze": "wähle eine Kreatur zum Lähmen",
-        "poison": "Wählt eine Kreatur zum Vergiften",
-        "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
-        "exhumation": "wähle eine Kreatur zum Wiederbeleben",
-        "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
-        "default": "wähle ein Ziel"
       }
     },
     "factions": {
@@ -1229,7 +1229,8 @@
       "Gobelins": "Goblins",
       "Trolls": "Trolle",
       "Wargs": "Wargs",
-      "Guerriers du Chaos": "Chaoskämpfer"
+      "Guerriers du Chaos": "Chaoskämpfer",
+      "Bâtiments": "Gebäude"
     },
     "alignments": {
       "bon": "Gut",
@@ -1292,6 +1293,11 @@
         "def": "der Golem",
         "bare": "Golem",
         "de": "des Golems"
+      },
+      "Bâtiments": {
+        "def": "das Gebäude",
+        "bare": "Gebäude",
+        "de": "des Gebäudes"
       },
       "Gnomes": {
         "def": "der Gnom",
