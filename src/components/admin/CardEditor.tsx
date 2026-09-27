@@ -32,6 +32,7 @@ import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 import { cardHasAbility } from "@/lib/game/ability-filter";
+import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -169,6 +170,8 @@ export default function CardEditor() {
   // Spell-only: per-conferred-keyword grant scope. Missing entry = "target"
   // (single allied creature); "all_allies" = every allied creature on cast.
   const [keywordGrantScope, setKeywordGrantScope] = useState<Record<string, "all_allies">>({});
+  // Recherche dans la grille des capacités (plus d'une centaine de puces).
+  const [rechercheKw, setRechercheKw] = useState("");
   // Unité : portée « toutes » d'une capacité CIBLÉE (id moteur → portée).
   const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
   // Neutralisation : capacité rendue muette chez l'ennemi (grantAbilityId).
@@ -1746,8 +1749,16 @@ export default function CardEditor() {
                 <div style={S.label}>Mots-clés ({activeCreatureKws.length})</div>
               )}
               {(!isSpell || confereesOuvertes) && (
+              <input
+                type="search" value={rechercheKw} onChange={e => setRechercheKw(e.target.value)}
+                placeholder="🔍 Rechercher une capacité…"
+                style={{ width: "100%", boxSizing: "border-box", margin: "4px 0", padding: "4px 8px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10 }}
+              />
+              )}
+              {(!isSpell || confereesOuvertes) && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 3, position: "relative" }}>
-                {visibleKeywords.map(kw => {
+                {/* Les capacités cochées restent visibles, quelle que soit la recherche. */}
+                {visibleKeywords.filter(kw => ((editFields.keywords as string[]) || []).includes(kw) || correspondRecherche(rechercheKw, KEYWORD_LABELS[kw], kw)).map(kw => {
                   const active = ((editFields.keywords as string[]) || []).includes(kw);
                   const label = KEYWORD_LABELS[kw];
                   // On a spell, an active conferred keyword is tinted green when

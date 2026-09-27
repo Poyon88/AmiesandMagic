@@ -37,6 +37,7 @@ import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFram
 import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "./NeutralisationPicker";
+import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -1821,6 +1822,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Unité : portée « toutes » d'une capacité CIBLÉE (libellé forge → portée).
   // Absente = une cible. Persistée dans keyword_instances[i].targetScope.
   const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
+  // Recherche dans la grille des capacités (plus d'une centaine de puces).
+  const [rechercheKw, setRechercheKw] = useState("");
   // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
   // amplitude. « Conférer » n'a pas de X à lui : les x/y de son instance portent
   // celle de la capacité DONNÉE (Conférer → Résistance 2, → Gloire +2/+1).
@@ -3932,8 +3935,16 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       </button>
                     )}
                     {(porteStats || confereesOuvertes) && (
+                    <input
+                type="search" value={rechercheKw} onChange={e => setRechercheKw(e.target.value)}
+                placeholder="🔍 Rechercher une capacité…"
+                style={{ width: "100%", boxSizing: "border-box", margin: "4px 0", padding: "4px 8px", borderRadius: 5, border: "1px solid #ddd", fontSize: 10 }}
+              />
+                    )}
+                    {(porteStats || confereesOuvertes) && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
-                      {availableManualKeywords.map(([id, kw]) => {
+                      {/* Les capacités cochées restent visibles, quelle que soit la recherche. */}
+                      {availableManualKeywords.filter(([id]) => manualKeywords.includes(id) || correspondRecherche(rechercheKw, id, FORGE_TO_GAME_KEYWORD[id])).map(([id, kw]) => {
                         const selected = manualKeywords.includes(id);
                         const isScalable = kw.scalable;
                         // On a spell, a selected conferred keyword is tinted green
