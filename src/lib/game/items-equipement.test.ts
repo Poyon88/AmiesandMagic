@@ -72,19 +72,23 @@ describe("Équiper", () => {
     expect(unite(next, "Soldat").currentAttack).toBe(1);
   });
 
-  it("une créature ne porte qu'UN objet : le second est refusé", () => {
+  it("une créature porte DEUX objets au plus : le troisième est refusé", () => {
     const epee = objet("Épée", 2, 1);
     const bouclier = objet("Bouclier", 0, 3);
+    const heaume = objet("Heaume", 1, 0);
     const { s, unite: soldat } = table(epee);
-    s.players[0].items = [epee, bouclier];
+    s.players[0].items = [epee, bouclier, heaume];
 
     const apresEpee = equiper(s, epee, soldat);
     const apresBouclier = equiper(apresEpee, bouclier, unite(apresEpee, "Soldat"));
+    const apresHeaume = equiper(apresBouclier, heaume, unite(apresBouclier, "Soldat"));
 
-    // Refusé ⇒ état d'origine rendu : le bouclier n'est pas équipé, et l'épée
-    // n'a surtout pas été remplacée en silence.
-    expect(objetsDe(apresBouclier.players[0]).find(o => o.card.name === "Bouclier")!.equippedToInstanceId).toBeFalsy();
+    // Deux objets : bonus cumulés (1 + 2 ATK).
+    expect(objetsDe(apresBouclier.players[0]).find(o => o.card.name === "Bouclier")!.equippedToInstanceId).toBe(soldat.instanceId);
     expect(unite(apresBouclier, "Soldat").currentAttack).toBe(3);
+    // Le troisième est refusé ⇒ état d'origine rendu, rien remplacé en silence.
+    expect(objetsDe(apresHeaume.players[0]).find(o => o.card.name === "Heaume")!.equippedToInstanceId).toBeFalsy();
+    expect(unite(apresHeaume, "Soldat").currentAttack).toBe(3);
   });
 
   it("rééquiper le MÊME objet sur la même créature est refusé (mana pour rien)", () => {

@@ -152,7 +152,7 @@
       },
       "maitre_darme": {
         "label": "Maestro de armas",
-        "desc": "Se equipa gratuitamente con todos tus objetos en juego, incluidos los que llevan tus otras criaturas."
+        "desc": "Se equipa gratis con 2 de tus Objetos en juego, empezando por los más caros, incluso si los llevan otras de tus criaturas."
       },
       "neutralisation": {
         "label": "Neutralización",

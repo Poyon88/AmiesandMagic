@@ -54,7 +54,8 @@ interface BoardCreatureProps {
   /** OBJET porté par cette créature, s'il y en a un. Passé par le plateau
    *  plutôt que dérivé ici : le lien vit côté objet, et `BoardCreature` n'a pas
    *  accès à la liste des objets du joueur. */
-  equippedItem?: CardInstance | null;
+  /** Objets portés (2 au plus). */
+  equippedItems?: CardInstance[];
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -131,7 +132,7 @@ function BoardCreature({
   onMouseEnter,
   onMouseLeave,
   onAction,
-  equippedItem,
+  equippedItems = [],
 }: BoardCreatureProps) {
   // Vue d'AFFICHAGE (cf. HandCard) : capacités Singulier toujours visibles.
   const card = displayCardOf(creature);
@@ -693,9 +694,9 @@ function BoardCreature({
           bien qu'il sert, mais rien ne disait QUI il servait, et une créature
           soudain à +2/+2 restait inexpliquée. Le survol donne le nom et le
           bonus. */}
-      {equippedItem && (
+      {equippedItems.length > 0 && (
         <div
-          title={`${equippedItem.card.name} — +${equippedItem.card.attack ?? 0}/+${equippedItem.card.health ?? 0}`}
+          title={equippedItems.map(o => `${o.card.name} — +${o.card.attack ?? 0}/+${o.card.health ?? 0}`).join("\n")}
           style={{
             position: "absolute", top: 4, left: 4, zIndex: 3,
             width: 18, height: 18, borderRadius: "50%",
@@ -706,6 +707,12 @@ function BoardCreature({
           }}
         >
           {OBJET_GLYPHE}
+          {/* Deux objets : le compte, collé à la pastille. */}
+          {equippedItems.length > 1 && (
+            <span style={{ position: "absolute", right: -6, bottom: -5, fontSize: 9, fontWeight: 900, color: OBJET_TEINTE, textShadow: "0 0 2px #000, 0 0 2px #000" }}>
+              ×{equippedItems.length}
+            </span>
+          )}
         </div>
       )}
 

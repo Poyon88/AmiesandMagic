@@ -99,25 +99,37 @@ export function uidCapaciteObjet(item: CardInstance, uidOrigine: string): string
   return `obj_${item.instanceId}_${uidOrigine}`;
 }
 
-/** La créature porte-t-elle MAÎTRE D'ARME ? Seule exception à la règle « un
- *  objet par créature » : elle peut en cumuler autant que son contrôleur en
- *  possède. Lu sur `keywords`, où toute capacité curée figure — ce module ne
- *  tire pas le moteur. */
+/** Nombre MAXIMUM d'objets qu'une unité peut porter — Maître d'arme compris
+ *  (règle d'auteur du 2026-09-27 : avant, une unité en portait un seul et un
+ *  Maître d'arme tous ceux de son contrôleur). */
+export const MAX_OBJETS_PAR_UNITE = 2;
+
+/** Objets portés par une créature, dans l'ordre de la table. */
+export function objetsPortesPar(p: PlayerState, creatureInstanceId: string): CardInstance[] {
+  return objetsDe(p).filter(o => o.equippedToInstanceId === creatureInstanceId);
+}
+
+/** La créature porte-t-elle MAÎTRE D'ARME ? Elle s'équipe d'elle-même, sans
+ *  payer, des objets de son contrôleur — dans la limite de MAX_OBJETS_PAR_UNITE,
+ *  les plus chers d'abord. Lu sur `keywords`, où toute capacité curée figure —
+ *  ce module ne tire pas le moteur. */
 export function estMaitreDArme(c: Pick<CardInstance, "card">): boolean {
   return (c.card.keywords as unknown as string[]).includes("maitre_darme");
 }
 
 /** Cette créature peut-elle recevoir `item` (en plus de ce qu'elle porte) ?
  *  Règle UNIQUE pour le moteur (equipItem), le store (cibles d'équipement) et le
- *  plateau (vignette cliquable) : une créature libre, ou un Maître d'arme. Un
- *  objet déjà porté par cette même créature n'a nulle part où aller. */
+ *  plateau (vignette cliquable) : une créature qui porte moins de
+ *  MAX_OBJETS_PAR_UNITE objets — Maître d'arme compris. Pleine, elle n'est plus
+ *  une cible ; rien n'est remplacé. Un objet déjà porté par cette même créature
+ *  n'a nulle part où aller. */
 export function peutRecevoirObjet(p: PlayerState, c: CardInstance, item: CardInstance): boolean {
   if (item.equippedToInstanceId === c.instanceId) return false;
-  return estMaitreDArme(c) || !objetPorteParUnite(p, c.instanceId);
+  return objetsPortesPar(p, c.instanceId).length < MAX_OBJETS_PAR_UNITE;
 }
 
-/** Somme des bonus d'ATK / PV de TOUS les objets portés par une créature. Une
- *  créature ordinaire n'en porte qu'un ; un Maître d'arme les cumule. */
+/** Somme des bonus d'ATK / PV de TOUS les objets portés par une créature
+ *  (MAX_OBJETS_PAR_UNITE au plus). */
 export function bonusDesObjetsPortes(p: PlayerState, creatureInstanceId: string): { atk: number; pv: number } {
   let atk = 0, pv = 0;
   for (const o of objetsDe(p)) {

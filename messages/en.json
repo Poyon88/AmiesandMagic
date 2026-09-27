@@ -152,7 +152,7 @@
       },
       "maitre_darme": {
         "label": "Weapon Master",
-        "desc": "Equips all your items in play for free, including those carried by your other creatures."
+        "desc": "Equips 2 of your Items in play for free, most expensive first, even those worn by your other creatures."
       },
       "neutralisation": {
         "label": "Neutralize",

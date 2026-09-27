@@ -152,7 +152,7 @@
       },
       "maitre_darme": {
         "label": "Maître d'arme",
-        "desc": "S'équipe gratuitement de tous vos objets en jeu, y compris ceux que portent vos autres créatures."
+        "desc": "S'équipe gratuitement de 2 de vos objets en jeu, les plus chers d'abord, même portés par vos autres créatures."
       },
       "neutralisation": {
         "label": "Neutralisation",

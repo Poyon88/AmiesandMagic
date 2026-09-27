@@ -152,7 +152,7 @@
       },
       "maitre_darme": {
         "label": "Waffenmeister",
-        "desc": "Rüstet sich kostenlos mit allen euren im Spiel befindlichen Gegenständen aus, einschließlich derer, die eure anderen Kreaturen tragen."
+        "desc": "Rüstet sich kostenlos mit 2 Ihrer im Spiel befindlichen Gegenstände aus, teuerste zuerst, auch wenn sie von Ihren anderen Kreaturen getragen werden."
       },
       "neutralisation": {
         "label": "Neutralisierung",

@@ -439,7 +439,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
    *  joueur cliquerait sans rien voir se produire.
    *
    *  « Au moins une créature LIBRE » plutôt que « au moins une créature » :
-   *  la règle est un objet par créature, et proposer un ciblage sans cible
+   *  une créature porte 2 objets au plus, et proposer un ciblage sans cible
    *  possible serait une impasse. Un objet déjà porté peut se déplacer, mais
    *  seulement s'il existe une autre créature libre pour l'accueillir. */
   const peutEquiper = useCallback((o: CardInstance) => {
@@ -1324,7 +1324,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   key={creature.instanceId}
                   creature={creature}
                   isOwn={false}
-                  equippedItem={objetsDe(opponent).find(o => o.equippedToInstanceId === creature.instanceId) ?? null}
+                  equippedItems={objetsDe(opponent).filter(o => o.equippedToInstanceId === creature.instanceId)}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
                   boostKind={getBoost(creature.instanceId)}
@@ -1407,7 +1407,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                       key={creature.instanceId}
                       creature={creature}
                       isOwn={true}
-                      equippedItem={mesObjets.find(o => o.equippedToInstanceId === creature.instanceId) ?? null}
+                      equippedItems={mesObjets.filter(o => o.equippedToInstanceId === creature.instanceId)}
                       canAttack={canAtt}
                       isSelected={
                         selectedAttackerInstanceId === creature.instanceId

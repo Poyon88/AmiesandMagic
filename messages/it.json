@@ -152,7 +152,7 @@
       },
       "maitre_darme": {
         "label": "Maestro d'armi",
-        "desc": "Si equipaggia gratuitamente con tutti i vostri oggetti in gioco, compresi quelli indossati dalle vostre altre creature."
+        "desc": "Si equipaggia gratuitamente con 2 dei vostri Oggetti in gioco, prima i più costosi, anche se indossati da altre vostre creature."
       },
       "neutralisation": {
         "label": "Neutralizzazione",

@@ -169,7 +169,7 @@ function getSpellKeywordDescBase(
     card,
     // `costs`/`faction` : Invocations multiples compose sa phrase à partir de la
     // liste saisie — sans eux, la version SORT affichait le repli générique.
-    instance: { race: kw.race, clan: kw.clan, costs: kw.costs, faction: kw.faction },
+    instance: { race: kw.race, clan: kw.clan, costs: kw.costs, faction: kw.faction, minX: kw.minX },
   }, t);
 
   // Replace X/Y from params

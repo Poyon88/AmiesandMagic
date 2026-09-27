@@ -4432,7 +4432,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     const moi = gs.players[gs.currentPlayerIndex];
     const objet = (moi.items ?? []).find(o => o.instanceId === itemInstanceId);
     if (!objet) return;
-    // Cibles = les alliées SANS objet. La règle « un objet par créature » est
+    // Cibles = les alliées qui ont encore une place d'objet. La règle des deux objets par créature est
     // déjà tenue par le moteur, qui refuse l'action ; la refléter ici évite au
     // joueur de viser une créature qui ne peut pas l'accueillir — un refus
     // silencieux du moteur serait illisible.

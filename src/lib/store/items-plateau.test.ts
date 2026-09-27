@@ -65,14 +65,21 @@ describe("Armer l'équipement", () => {
     expect(s.validTargets.sort()).toEqual([a.instanceId, b.instanceId].sort());
   });
 
-  it("une créature DÉJÀ équipée n'est pas proposée", () => {
-    const epee = objet("Épée"), bouclier = objet("Bouclier");
+  it("une créature PLEINE (deux objets) n'est pas proposée ; une qui n'en porte qu'un, si", () => {
+    const epee = objet("Épée"), dague = objet("Dague"), bouclier = objet("Bouclier");
     const a = creature("Soldat"), b = creature("Garde");
     epee.equippedToInstanceId = a.instanceId;
-    poser(table([epee, bouclier], [a, b]));
+    dague.equippedToInstanceId = a.instanceId;
+    poser(table([epee, dague, bouclier], [a, b]));
 
     useGameStore.getState().startEquipItem(bouclier.instanceId);
     expect(useGameStore.getState().validTargets).toEqual([b.instanceId]);
+
+    // Le Soldat ne porte plus que l'Épée : il redevient une cible.
+    dague.equippedToInstanceId = null;
+    poser(table([epee, dague, bouclier], [a, b]));
+    useGameStore.getState().startEquipItem(bouclier.instanceId);
+    expect(useGameStore.getState().validTargets.sort()).toEqual([a.instanceId, b.instanceId].sort());
   });
 
   it("un objet introuvable n'arme rien", () => {

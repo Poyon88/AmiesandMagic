@@ -386,11 +386,12 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   // MAÎTRE D'ARME — la créature s'équipe, gratuitement, de TOUS les objets en
   // jeu de son contrôleur, y compris ceux que portent ses autres créatures.
-  // Seule exception à la règle « un objet par créature » (cf. estMaitreDArme).
+  // S'équipe seule des objets de son contrôleur, 2 au plus (MAX_OBJETS_PAR_UNITE),
+  // les plus chers d'abord (cf. equiperMaitreDArme).
   // Objets EN JEU seulement : ceux de la main se jouent toujours (mana, place).
   maitre_darme: {
     id: "maitre_darme", label: "Maître d'arme", symbol: "🤺",
-    desc: "S'équipe gratuitement de tous vos objets en jeu, y compris ceux que portent vos autres créatures.",
+    desc: "S'équipe gratuitement de 2 de vos objets en jeu, les plus chers d'abord, même portés par vos autres créatures.",
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
   },

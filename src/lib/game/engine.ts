@@ -38,7 +38,7 @@ import type {
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
-import { bonusDesObjetsPortes, estUnObjet, getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
+import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -7999,7 +7999,7 @@ function equipItem(state: GameState, action: import("./types").EquipItemAction):
   const cible = player.board.find(c => c.instanceId === action.targetInstanceId);
   if (!cible) return state;
 
-  // « Un objet par créature » (Maître d'arme excepté) — et pas le même objet
+  // Deux objets par créature au plus (MAX_OBJETS_PAR_UNITE) — et pas le même objet
   // sur le même porteur, simple gaspillage de mana refusé lui aussi.
   if (!peutRecevoirObjet(player, cible, item)) return state;
 
@@ -8166,10 +8166,22 @@ function resolveInvocationObjet(
  *  plus sur le plateau : un déclencheur tardif ne l'équipe pas au cimetière. */
 function equiperMaitreDArme(porteur: CardInstance, owner: PlayerState, opponent: PlayerState): void {
   if (!owner.board.includes(porteur)) return;
+  // Places libres : MAX_OBJETS_PAR_UNITE moins ce qu'il porte déjà. Plein, il ne
+  // prend rien (règle d'auteur : aucun remplacement).
+  let places = MAX_OBJETS_PAR_UNITE - objetsPortesPar(owner, porteur.instanceId).length;
+  if (places <= 0) return;
+  // Les objets les PLUS CHERS d'abord ; à coût égal, au hasard — `rng()` semé,
+  // donc le même tirage sur les deux clients. Un objet pris à une autre créature
+  // la quitte, comme avant.
+  const restants = objetsDe(owner).filter(o => o.equippedToInstanceId !== porteur.instanceId);
   let change = false;
-  for (const o of objetsDe(owner)) {
-    if (o.equippedToInstanceId === porteur.instanceId) continue;
-    o.equippedToInstanceId = porteur.instanceId;
+  while (places > 0 && restants.length > 0) {
+    const coutMax = Math.max(...restants.map(o => o.card.mana_cost));
+    const exaequo = restants.filter(o => o.card.mana_cost === coutMax);
+    const choisi = exaequo.length === 1 ? exaequo[0] : exaequo[Math.floor(rng() * exaequo.length)];
+    choisi.equippedToInstanceId = porteur.instanceId;
+    restants.splice(restants.indexOf(choisi), 1);
+    places--;
     change = true;
   }
   if (change) recalculateAuras(owner, opponent);
