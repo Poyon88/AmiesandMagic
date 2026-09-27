@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
-import { LIMITED_PRINT_COUNTS } from '@/lib/card-engine/constants';
+import { LIMITED_PRINT_COUNTS, alignementAEnregistrer } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
 import type { Capability, Card } from '@/lib/game/types';
@@ -141,6 +141,19 @@ export async function POST(request: Request) {
       if (Object.keys(patch).length === 0) {
         return NextResponse.json({ success: true, updated: true, noop: true });
       }
+      // Alignement : recalculé dès que la faction OU l'alignement change, pour
+      // qu'il reste celui de la faction (choix libre pour les Mercenaires).
+      if ('faction' in patch || 'card_alignment' in patch) {
+        let faction = patch.faction as string | null | undefined;
+        let choisi = patch.card_alignment as string | null | undefined;
+        if (!('faction' in patch) || !('card_alignment' in patch)) {
+          const { data: courante } = await supabaseAdmin
+            .from('cards').select('faction, card_alignment').eq('id', updateId).single();
+          if (!('faction' in patch)) faction = courante?.faction;
+          if (!('card_alignment' in patch)) choisi = courante?.card_alignment;
+        }
+        patch.card_alignment = alignementAEnregistrer(faction, choisi);
+      }
       // Un renommage partiel peut lui aussi créer un homonyme.
       if ('name' in patch && !allowDuplicateName) {
         const clash = await findNameCollision(supabaseAdmin, patch.name, updateId);
@@ -262,7 +275,8 @@ export async function POST(request: Request) {
       card_year: card.card_year || null,
       card_month: card.card_month || null,
       rarity: card.rarity || null,
-      card_alignment: card.card_alignment || null,
+      // Alignement de la faction (choix libre pour les seuls Mercenaires).
+      card_alignment: alignementAEnregistrer(card.faction, card.card_alignment),
       life_cost: card.life_cost ?? null,
       discard_cost: card.discard_cost ?? null,
       sacrifice_cost: card.sacrifice_cost ?? null,

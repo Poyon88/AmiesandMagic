@@ -1189,6 +1189,25 @@ export function getEffectiveAlignment(
   return fac.alignment;
 }
 
+/** Valeur de `card_alignment` à ENREGISTRER. L'alignement suit la faction —
+ *  c'est elle qui fait autorité (cf. getEffectiveAlignment) — sauf pour les
+ *  Mercenaires (faction « spéciale ») où l'auteur le choisit carte par carte,
+ *  `neutre` par défaut. Faction inconnue : le choix est conservé tel quel.
+ *
+ *  Sans cette règle, l'éditeur enregistrait `neutre` par défaut (Elfes et Nains
+ *  « neutres » en base) et la forge `null` (331 cartes vides, corrigées le
+ *  2026-09-27). */
+export function alignementAEnregistrer(
+  faction: string | null | undefined,
+  choisi: string | null | undefined,
+): string | null {
+  const fac = faction ? FACTIONS[faction] : undefined;
+  if (fac && fac.alignment !== "spéciale") return fac.alignment;
+  const valide = choisi === "bon" || choisi === "neutre" || choisi === "maléfique";
+  if (fac) return valide ? choisi! : "neutre";
+  return choisi || null;
+}
+
 // ─── CALIBRATION ─────────────────────────────────────────────────────────────
 
 // 1 SE ≈ 4.5 pts · ATK légèrement plus chère (valeur tempo)

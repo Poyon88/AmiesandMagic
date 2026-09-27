@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { additionalCostPoints, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { additionalCostPoints, alignementAEnregistrer, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -2782,7 +2782,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             faction: forgeCard.faction,
             race: forgeCard.race || null,
             clan: forgeCard.clan || null,
-            card_alignment: forgeCard.cardAlignment || null,
+            // Alignement de la faction (le sélecteur n'existe que pour les Mercenaires).
+            card_alignment: alignementAEnregistrer(forgeCard.faction, forgeCard.cardAlignment),
             convocation_token_id: convocationTokenId,
             convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
             lycanthropie_token_id: lycanthropieTokenId,

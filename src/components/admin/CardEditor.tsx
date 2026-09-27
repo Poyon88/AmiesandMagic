@@ -9,7 +9,7 @@ import GameCard from "@/components/cards/GameCard";
 import CardThumb from "@/components/cards/CardThumb";
 import { VirtuosoGrid } from "react-virtuoso";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
-import { KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
+import { KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
@@ -460,7 +460,8 @@ export default function CardEditor() {
       race: card.race || "",
       clan: card.clan || "",
       rarity: card.rarity || "Commune",
-      card_alignment: card.card_alignment || "neutre",
+      // Alignement de la faction (choix libre pour les seuls Mercenaires).
+      card_alignment: alignementAEnregistrer(card.faction, card.card_alignment) ?? "neutre",
       convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || [],
       lycanthropie_token_id: card.lycanthropie_token_id ?? null,
@@ -770,7 +771,7 @@ export default function CardEditor() {
         race: editFields.race || null,
         clan: editFields.clan || null,
         rarity: editFields.rarity || null,
-        card_alignment: editFields.card_alignment || null,
+        card_alignment: alignementAEnregistrer(editFields.faction as string, editFields.card_alignment as string),
         convocation_token_id: editFields.convocation_token_id ?? null,
         convocation_tokens: (editFields.convocation_tokens as unknown[])?.length ? editFields.convocation_tokens : null,
         lycanthropie_token_id: editFields.lycanthropie_token_id ?? null,
@@ -1434,12 +1435,23 @@ export default function CardEditor() {
               {/* Mêmes ids que le moteur (ALIGNMENTS) : bon / neutre / maléfique.
                   « spéciale » est l'alignement de la faction Mercenaires, jamais
                   celui d'une carte — exclu. Les anciens ids `lumiere` / `tenebres`
-                  ont été migrés en base vers bon / maléfique (2026-09-13). */}
-              <select value={(editFields.card_alignment as string) || "neutre"} onChange={e => updateField("card_alignment", e.target.value)} style={S.select}>
-                {ALIGNMENTS.filter(a => a.id !== "spéciale").map(a => (
-                  <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
-                ))}
-              </select>
+                  ont été migrés en base vers bon / maléfique (2026-09-13).
+                  Hors Mercenaires, l'alignement est CELUI DE LA FACTION : champ
+                  verrouillé, et la route d'enregistrement l'impose de toute façon. */}
+              {(() => {
+                const faction = editFields.faction as string;
+                const libre = FACTIONS[faction]?.alignment === "spéciale";
+                const valeur = alignementAEnregistrer(faction, editFields.card_alignment as string) ?? "neutre";
+                return (<>
+                  <select value={valeur} disabled={!libre} onChange={e => updateField("card_alignment", e.target.value)}
+                    style={{ ...S.select, ...(libre ? {} : { opacity: 0.6, cursor: "not-allowed" }) }}>
+                    {ALIGNMENTS.filter(a => a.id !== "spéciale").map(a => (
+                      <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                    ))}
+                  </select>
+                  {!libre && FACTIONS[faction] && <div style={{ fontSize: 9, color: "#888", marginTop: 2, fontStyle: "italic" }}>Fixé par la faction</div>}
+                </>);
+              })()}
             </div>
 
             {/* Set + Year + Month */}
