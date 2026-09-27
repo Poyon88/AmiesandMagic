@@ -45,6 +45,7 @@ interface CollectionViewProps {
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 import type { SpellKeywordInstance } from "@/lib/game/types";
+import { cardHasAbility } from "@/lib/game/ability-filter";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 // Mots-clés de SORT seuls (non partagés avec une forme créature) : les
 // polymorphes (même id des deux côtés, ex. rassemblement) sont déjà couverts
@@ -170,10 +171,8 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         // Keywords live in two places: `keywords` text[] and `spell_keywords`
         // jsonb[] (id-tagged). Renfort Royal on a spell sits in the latter,
         // so the filter must consider both.
-        const inKeywords = (card.keywords as string[]).includes(keywordFilter);
-        const inSpellKeywords = Array.isArray(card.spell_keywords)
-          && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
-        if (!inKeywords && !inSpellKeywords) return false;
+        // …et les effets COMPOSÉS qui en affichent l'icône (cf. ability-filter.ts).
+        if (!cardHasAbility(card as never, keywordFilter)) return false;
       }
       if (factionFilter !== null && card.faction !== factionFilter)
         return false;

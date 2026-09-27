@@ -31,6 +31,7 @@ import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
+import { cardHasAbility } from "@/lib/game/ability-filter";
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -340,10 +341,8 @@ export default function CardEditor() {
         // and `spell_keywords` jsonb[] (id-tagged spell keywords with
         // metadata). Renfort Royal on a spell sits in the latter, so the
         // filter must consider both lists.
-        const inKeywords = card.keywords.includes(keywordFilter);
-        const inSpellKeywords = Array.isArray(card.spell_keywords)
-          && card.spell_keywords.some((sk) => sk?.id === keywordFilter);
-        if (!inKeywords && !inSpellKeywords) return false;
+        // …et les effets COMPOSÉS qui en affichent l'icône (cf. ability-filter.ts).
+        if (!cardHasAbility(card as never, keywordFilter)) return false;
       }
       if (factionFilter !== null && card.faction !== factionFilter) return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter) return false;
