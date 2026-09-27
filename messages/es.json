@@ -829,6 +829,9 @@
         "destroy": "destruye",
         "bounce": "devuelve a la mano",
         "paralyze": "paraliza",
+        "transformation": "transforma",
+        "transformation_en_one": "en la carta designada",
+        "transformation_en_many": "en una de las {n} cartas designadas, al azar",
         "paralyze_turns_one": "durante {n} turno",
         "paralyze_turns_many": "durante {n} turnos",
         "poison": "envenena",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "juega una acción aleatoria"
       },
       "self": {
+        "transformation": "se transforma",
         "deal_damage_one": "se inflige {x} punto de daño",
         "deal_damage_many": "se inflige {x} puntos de daño",
         "heal": "se cura {x} PV",
@@ -936,6 +940,7 @@
         "grant_keyword": "se otorga {ability}"
       },
       "choice": {
+        "transformation": "elige una criatura para transformar",
         "deal_damage": "elige un objetivo al que herir",
         "heal": "elige un objetivo al que sanar",
         "buff": "elige una criatura para fortalecer",
@@ -2627,6 +2632,8 @@
     "content_appel": "Llamada desde el mazo",
     "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",
     "content_tuteur": "Tutor (cartas designadas → mano)",
+    "content_transformation": "Transformar en carta designada",
+    "transformation_card_hint": "Cada unidad objetivo se convierte en esta carta; con varias cartas, cada una obtiene la suya al azar. Recupera su forma original al abandonar el tablero.",
     "content_epargne": "Ahorro (contador)",
     "content_foi": "Fe (contador)",
     "content_conquete": "Conquista (contador)",

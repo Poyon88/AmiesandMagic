@@ -33,6 +33,6 @@ export function groupDesignatedIds(ids: readonly number[]): { id: number; count:
  *  nommer les cartes dans les volets et les charger au démarrage du match. */
 export function designatedCardIds(composed: ComposedEffect | null | undefined): number[] {
   if (!composed) return [];
-  if (composed.content === "tuteur" || composed.content === "invocation") return tuteurCardIds(composed);
+  if (composed.content === "tuteur" || composed.content === "invocation" || composed.content === "transformation") return tuteurCardIds(composed);
   return [];
 }

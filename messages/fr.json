@@ -829,6 +829,9 @@
         "destroy": "détruit",
         "bounce": "renvoie en main",
         "paralyze": "paralyse",
+        "transformation": "transforme",
+        "transformation_en_one": "en la carte désignée",
+        "transformation_en_many": "en une des {n} cartes désignées, au hasard",
         "paralyze_turns_one": "pendant {n} tour",
         "paralyze_turns_many": "pendant {n} tours",
         "poison": "empoisonne",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "joue une action aléatoire"
       },
       "self": {
+        "transformation": "se transforme",
         "deal_damage_one": "s'inflige {x} dégât",
         "deal_damage_many": "s'inflige {x} dégâts",
         "heal": "se soigne de {x} PV",
@@ -936,6 +940,7 @@
         "grant_keyword": "se confère {ability}"
       },
       "choice": {
+        "transformation": "choisissez une créature à transformer",
         "deal_damage": "choisissez une cible à blesser",
         "heal": "choisissez une cible à soigner",
         "buff": "choisissez une créature à renforcer",
@@ -2627,6 +2632,8 @@
     "content_appel": "Appel depuis le deck",
     "content_appel_supreme": "Appel Suprême (deck → main, la plus chère)",
     "content_tuteur": "Tuteur (cartes désignées → main)",
+    "content_transformation": "Transformer en carte désignée",
+    "transformation_card_hint": "Chaque unité visée devient cette carte ; avec plusieurs cartes, chacune tire la sienne au hasard. Elle reprend sa forme d'origine en quittant le plateau.",
     "content_epargne": "Épargne (compteur)",
     "content_foi": "Foi (compteur)",
     "content_conquete": "Conquête (compteur)",

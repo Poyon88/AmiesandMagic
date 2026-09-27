@@ -829,6 +829,9 @@
         "destroy": "破壊する",
         "bounce": "手札に戻す",
         "paralyze": "麻痺させる",
+        "transformation": "変身させる",
+        "transformation_en_one": "指定されたカードに",
+        "transformation_en_many": "指定された{n}枚のカードのうち、ランダムに1枚に",
         "paralyze_turns_one": "{n}ターンの間",
         "paralyze_turns_many": "{n}ターンの間",
         "poison": "毒を与える",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "ランダムなアクションを1枚プレイする"
       },
       "self": {
+        "transformation": "変身する",
         "deal_damage_one": "自身に{x}ダメージを与える",
         "deal_damage_many": "自身に{x}ダメージを与える",
         "heal": "自身のHPを{x}回復する",
@@ -936,6 +940,7 @@
         "grant_keyword": "自身に{ability}を付与する"
       },
       "choice": {
+        "transformation": "変身させるクリーチャーを選択してください",
         "deal_damage": "ダメージを与える対象を選んでください",
         "heal": "回復する対象を選んでください",
         "buff": "強化するクリーチャーを選んでください",
@@ -2627,6 +2632,8 @@
     "content_appel": "デッキからの招集",
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
     "content_tuteur": "チューター（指定カード→手札）",
+    "content_transformation": "指定されたカードに変身",
+    "transformation_card_hint": "対象となった各ユニットはこのカードに変身します。カードが複数枚指定されている場合、それぞれがランダムに1枚を引きます。盤面を離れると元の姿に戻ります。",
     "content_epargne": "貯蓄（カウンター）",
     "content_foi": "信仰（カウンター）",
     "content_conquete": "征服（カウンター）",

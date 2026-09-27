@@ -829,6 +829,9 @@
         "destroy": "消灭",
         "bounce": "返回手牌",
         "paralyze": "麻痹",
+        "transformation": "变形",
+        "transformation_en_one": "为指定卡牌",
+        "transformation_en_many": "为{n}张指定卡牌中随机一张",
         "paralyze_turns_one": "{n}回合",
         "paralyze_turns_many": "{n}回合",
         "poison": "中毒",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "打出一张随机行动牌"
       },
       "self": {
+        "transformation": "自身变形",
         "deal_damage_one": "对自身造成{x}点伤害",
         "deal_damage_many": "对自身造成{x}点伤害",
         "heal": "为自身恢复{x}点生命值",
@@ -936,6 +940,7 @@
         "grant_keyword": "为自身赋予{ability}"
       },
       "choice": {
+        "transformation": "选择一个要变形的生物",
         "deal_damage": "选择一个目标造成伤害",
         "heal": "选择一个治疗目标",
         "buff": "选择一个强化的生物",
@@ -2627,6 +2632,8 @@
     "content_appel": "自牌库召唤",
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
     "content_tuteur": "导师（指定卡牌→手牌）",
+    "content_transformation": "转变为指定卡牌",
+    "transformation_card_hint": "每个目标单位都会变为该卡牌；若有多张卡牌，每个单位将各自随机抽取一张。当其离开场地时，会恢复原本的形态。",
     "content_epargne": "储蓄（计数）",
     "content_foi": "信仰（计数）",
     "content_conquete": "征服（计数）",

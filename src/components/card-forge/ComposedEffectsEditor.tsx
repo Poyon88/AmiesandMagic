@@ -73,6 +73,9 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // Silence : même corps que la mécanique de sort, mais la cible se déclare —
   // « toutes les unités ennemies », « une au hasard »… deviennent possibles.
   { v: "silence", l: "Silence (retire tout à la cible)", target: "unit" },
+  // Transformation : chaque unité visée devient une des cartes désignées (au
+  // hasard s'il y en a plusieurs) ; forme d'origine rendue hors du plateau.
+  { v: "transformation", l: "Transformer en carte désignée", target: "unit" },
   // Déchainement X/Y : X sorts aléatoires de coût Y (« ? » sur Y = plafond).
   // Aucune cible : les sorts déchainés tirent les leurs au hasard.
   { v: "dechainement", l: "Déchainement X/Y (actions aléatoires)", target: "none", xy: true },
@@ -743,8 +746,8 @@ export default function ComposedEffectsEditor({
                     // Piocher garde son seul réglage de pool : « objets seulement ».
                     : v === "draw_cards" && eff.pool?.cardType === "item" ? { cardType: "item" } : undefined,
                   // Idem pour la carte désignée d'une Invocation.
-                  cardId: v === "invocation" || v === "tuteur" ? eff.cardId : undefined,
-                  cardIds: v === "invocation" || v === "tuteur" ? eff.cardIds : undefined,
+                  cardId: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardId : undefined,
+                  cardIds: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardIds : undefined,
                 });
               })}
 
@@ -780,6 +783,22 @@ export default function ComposedEffectsEditor({
                   </div>
                 </>
               )}
+              {eff.content === "transformation" && (
+                <>
+                  <span style={labelStyle}>{tr('label_designated_card')}</span>
+                  <div>
+                    {/* Une ou plusieurs créatures : avec plusieurs, chaque unité
+                        visée tire la sienne au sort. */}
+                    <LinkedCardsPicker
+                      title={`🦋 ${tr('label_designated_card')}`} required
+                      types={["creature"]}
+                      value={tuteurCardIds(eff)}
+                      onChange={(v) => patchEffect(idx, { cardIds: v, cardId: undefined })}
+                    />
+                    <div style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic", marginTop: 4 }}>{tr('transformation_card_hint')}</div>
+                  </div>
+                </>
+              )}
               {/* Invocation DÉSIGNÉE et Tuteur : ni amplitude ni filtre de pool —
                   la carte est nommée, il n'y a rien à tirer. */}
               {eff.content === "rappel" && (
@@ -789,7 +808,7 @@ export default function ComposedEffectsEditor({
                     (v) => patchTarget(idx, { cardKind: (v || undefined) as TargetSpec["cardKind"] }))}
                 </>
               )}
-              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && (<>
+              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {CONTENUS_COUT_X.has(eff.content)

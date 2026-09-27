@@ -43,6 +43,13 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.paralyze": "paralyse",
   // Entrave X : la durée se place APRÈS la cible (« paralyse une unité
   // ennemie pendant 2 tours »), d'où des fragments à part du verbe.
+  "content.transformation": "transforme",
+  // La carte d'arrivée se place APRÈS la cible (« transforme une unité ennemie
+  // au choix en la carte désignée »), comme la durée d'Entrave.
+  "content.transformation_en_one": "en la carte désignée",
+  "content.transformation_en_many": "en une des {n} cartes désignées, au hasard",
+  "self.transformation": "se transforme",
+  "choice.transformation": "choisissez une créature à transformer",
   "content.paralyze_turns_one": "pendant {n} tour",
   "content.paralyze_turns_many": "pendant {n} tours",
   "content.poison": "empoisonne",
@@ -317,7 +324,7 @@ export function composedValueText(cap: Capability): string | null {
   if (!m) return null;
   // Invocation désignée : X ne compte plus, rien à peindre.
   if (cap.composed!.content === "invocation" && designatedCardIds(cap.composed).length > 0) return null;
-  if (cap.composed!.content === "tuteur") return null;
+  if (cap.composed!.content === "tuteur" || cap.composed!.content === "transformation") return null;
   // Appel Suprême composé : X est un PLAFOND optionnel — 0 = sans, rien à peindre.
   if (cap.composed!.content === "appel_supreme" && !(m.x && m.x > 0)) return null;
   // Couple X/Y : buff/debuff, ou don d'une capacité à couple (Gloire +X/+Y).
@@ -390,6 +397,8 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "appel_supreme": return { symbol: KEYWORD_SYMBOLS.appel_supreme, keyword: "appel_supreme" };
     // Tuteur : icône propre (clé « tuteur » pour une icône importable dans l'admin).
     case "tuteur": return { symbol: "🎓", keyword: "tuteur" };
+    // Transformation : même icône que la capacité de créature homonyme.
+    case "transformation": return { symbol: KEYWORD_SYMBOLS.transformation, keyword: "transformation" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
@@ -617,6 +626,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "destroy": return frag(t, "content.destroy");
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
+    case "transformation": return frag(t, "content.transformation");
     case "poison": return frag(t, "content.poison");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
@@ -732,6 +742,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "destroy": return frag(t, "self.destroy");
     case "bounce": return frag(t, "self.bounce");
     case "paralyze": return frag(t, "self.paralyze");
+    case "transformation": return frag(t, "self.transformation");
     case "poison": return frag(t, "self.poison");
     case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
     default: return null;
@@ -759,7 +770,7 @@ function describeRetourDiffere(target: TargetSpec, t?: SafeT): string {
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence", "transformation"]);
 
 /** Libellé d'une appartenance de cible.
  *
@@ -932,7 +943,8 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),
     ].filter(Boolean).join(" ");
-  const duree = eff.content === "paralyze" ? dureeParalysie(eff, t) : "";
+  const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
+    : eff.content === "transformation" ? carteDArrivee(eff, t) : "";
   const phraseCorps = duree ? `${body} ${duree}` : body;
   const lead = describeEmblemLead(cap, t);
   // Sous un en-tête d'emblème, le corps est une SUBORDONNÉE (« … entre en jeu :
@@ -941,6 +953,12 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
     ? lead + phraseCorps
     : phraseCorps.charAt(0).toUpperCase() + phraseCorps.slice(1);
   return phrase + ".";
+}
+
+/** Carte d'arrivée d'une transformation : une désignée, ou l'une des N au hasard. */
+function carteDArrivee(eff: ComposedEffect, t?: SafeT): string {
+  const n = new Set(tuteurCardIds(eff)).size;
+  return n > 1 ? frag(t, "content.transformation_en_many", { n }) : frag(t, "content.transformation_en_one");
 }
 
 /** Durée d'une paralysie composée (Entrave X). Magnitude absente ⇒ 1 tour, la
@@ -984,7 +1002,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "heal", "buff", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation"].includes(eff.content)
+  const key = ["deal_damage", "heal", "buff", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);

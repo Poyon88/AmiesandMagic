@@ -120,9 +120,17 @@ export const TUTEUR_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "tuteur", cardIds: [] },
 };
 
+/** Entrée « Transformation » COMPOSÉE : chaque unité visée devient une carte
+ *  désignée à la création. Part SANS carte (sélecteur « requis ») et sur une
+ *  unité ennemie au choix ; la cible se règle ensuite (toutes, alliées…). */
+export const TRANSFORMATION_ENTRY: SpellEffectCatalogEntry = {
+  kind: "composed", id: "transformation_compose", label: "Transformation (en carte désignée)", symbol: "🦋",
+  preset: { content: "transformation", cardIds: [], target: board({}) },
+};
+
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

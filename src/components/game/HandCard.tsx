@@ -1105,7 +1105,7 @@ function HandCard({
                       <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
                     <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.16} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : "📣"} scale={d * 0.16} />}
+                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : cap.composed?.content === "transformation" ? "🦋" : "📣"} scale={d * 0.16} />}
                     </div>
                   </div>
                 );

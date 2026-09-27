@@ -829,6 +829,9 @@
         "destroy": "distrugge",
         "bounce": "rimanda in mano",
         "paralyze": "paralizza",
+        "transformation": "trasforma",
+        "transformation_en_one": "nella carta designata",
+        "transformation_en_many": "in una delle {n} carte designate, a caso",
         "paralyze_turns_one": "per {n} turno",
         "paralyze_turns_many": "per {n} turni",
         "poison": "avvelena",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "gioca un'azione casuale"
       },
       "self": {
+        "transformation": "si trasforma",
         "deal_damage_one": "subisce {x} danno",
         "deal_damage_many": "subisce {x} danni",
         "heal": "recupera {x} PV",
@@ -936,6 +940,7 @@
         "grant_keyword": "si conferisce {ability}"
       },
       "choice": {
+        "transformation": "scegli una creatura da trasformare",
         "deal_damage": "scegli un bersaglio da ferire",
         "heal": "scegli un bersaglio da curare",
         "buff": "scegli una creatura da potenziare",
@@ -2627,6 +2632,8 @@
     "content_appel": "Richiamo dal mazzo",
     "content_appel_supreme": "Richiamo Supremo (mazzo → mano, la più costosa)",
     "content_tuteur": "Tutore (carte designate → mano)",
+    "content_transformation": "Trasforma in carta designata",
+    "transformation_card_hint": "Ogni unità bersaglio diventa questa carta; con più carte, ciascuna ne pesca una a caso. Riprende la forma originale quando lascia il campo.",
     "content_epargne": "Risparmio (contatore)",
     "content_foi": "Fede (contatore)",
     "content_conquete": "Conquista (contatore)",

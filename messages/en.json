@@ -829,6 +829,9 @@
         "destroy": "destroys",
         "bounce": "returns to hand",
         "paralyze": "paralyzes",
+        "transformation": "transforms",
+        "transformation_en_one": "into the designated card",
+        "transformation_en_many": "into one of the {n} designated cards, at random",
         "paralyze_turns_one": "for {n} turn",
         "paralyze_turns_many": "for {n} turns",
         "poison": "poisons",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "plays a random action"
       },
       "self": {
+        "transformation": "transforms",
         "deal_damage_one": "deals {x} damage to itself",
         "deal_damage_many": "deals {x} damage to itself",
         "heal": "heals itself for {x} HP",
@@ -936,6 +940,7 @@
         "grant_keyword": "grants itself {ability}"
       },
       "choice": {
+        "transformation": "choose a creature to transform",
         "deal_damage": "choose a target to damage",
         "heal": "choose a target to heal",
         "buff": "choose a creature to strengthen",
@@ -2627,6 +2632,8 @@
     "content_appel": "Call from the deck",
     "content_appel_supreme": "Supreme Call (deck → hand, the costliest)",
     "content_tuteur": "Tutor (named cards → hand)",
+    "content_transformation": "Transform into designated card",
+    "transformation_card_hint": "Each targeted unit becomes this card; with multiple cards, each one draws its own at random. It reverts to its original form when leaving the battlefield.",
     "content_epargne": "Savings (counter)",
     "content_foi": "Faith (counter)",
     "content_conquete": "Conquest (counter)",

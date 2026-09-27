@@ -829,6 +829,9 @@
         "destroy": "destrói",
         "bounce": "devolve à mão",
         "paralyze": "paralisa",
+        "transformation": "transforma",
+        "transformation_en_one": "na carta designada",
+        "transformation_en_many": "em uma das {n} cartas designadas, aleatoriamente",
         "paralyze_turns_one": "por {n} turno",
         "paralyze_turns_many": "por {n} turnos",
         "poison": "envenena",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "joga uma ação aleatória"
       },
       "self": {
+        "transformation": "se transforma",
         "deal_damage_one": "sofre {x} de dano",
         "deal_damage_many": "sofre {x} de dano",
         "heal": "cura-se em {x} PV",
@@ -936,6 +940,7 @@
         "grant_keyword": "concede-se {ability}"
       },
       "choice": {
+        "transformation": "escolha uma criatura para transformar",
         "deal_damage": "escolha um alvo para atacar",
         "heal": "escolha um alvo para curar",
         "buff": "escolha uma criatura para fortalecer",
@@ -2627,6 +2632,8 @@
     "content_appel": "Chamado do baralho",
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",
     "content_tuteur": "Tutor (cartas designadas → mão)",
+    "content_transformation": "Transformar em carta designada",
+    "transformation_card_hint": "Cada unidade visada se torna esta carta; com várias cartas, cada uma sorteia a sua aleatoriamente. Ela recupera sua forma original ao deixar o campo.",
     "content_epargne": "Poupança (contador)",
     "content_foi": "Fé (contador)",
     "content_conquete": "Conquista (contador)",

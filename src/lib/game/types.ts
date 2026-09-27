@@ -604,6 +604,11 @@ export type ComposedEffectContent =
   | "bounce"
   | "paralyze"
   | "grant_keyword"
+  // TRANSFORMATION : chaque unité visée devient une des cartes DÉSIGNÉES
+  // (`cardIds`, tirage par unité s'il y en a plusieurs). Même mécanique que la
+  // capacité de créature Transformation (`transformer`) : la forme d'origine
+  // revient dès que l'unité quitte le plateau.
+  | "transformation"
   // APPEL : met en jeu gratuitement, depuis le DECK du contrôleur, la première
   // unité de coût ≤ X qui satisfait le filtre de pool (race / faction / clan /
   // mot-clé porté). Généralise « Appel du clan », dont le résolveur curé ne sait

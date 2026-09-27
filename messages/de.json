@@ -829,6 +829,9 @@
         "destroy": "vernichtet",
         "bounce": "zurück auf die Hand",
         "paralyze": "lähmt",
+        "transformation": "verwandelt",
+        "transformation_en_one": "in die festgelegte Karte",
+        "transformation_en_many": "zufällig in eine der {n} festgelegten Karten",
         "paralyze_turns_one": "für {n} Runde",
         "paralyze_turns_many": "für {n} Runden",
         "poison": "vergiftet",
@@ -924,6 +927,7 @@
         "dechainement_one_any": "spielt eine zufällige Aktion"
       },
       "self": {
+        "transformation": "verwandelt sich",
         "deal_damage_one": "fügt sich selbst {x} Schaden zu",
         "deal_damage_many": "fügt sich selbst {x} Schaden zu",
         "heal": "heilt sich selbst um {x} LP",
@@ -936,6 +940,7 @@
         "grant_keyword": "verleiht sich selbst {ability}"
       },
       "choice": {
+        "transformation": "Wähle eine zu verwandelnde Kreatur",
         "deal_damage": "wähle ein Ziel zum Angreifen",
         "heal": "wähle ein Ziel zum Heilen",
         "buff": "wähle eine Kreatur zum Stärken",
@@ -2627,6 +2632,8 @@
     "content_appel": "Ruf aus dem Deck",
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
     "content_tuteur": "Tutor (benannte Karten → Hand)",
+    "content_transformation": "In festgelegte Karte verwandeln",
+    "transformation_card_hint": "Jede anvisierte Einheit wird zu dieser Karte; bei mehreren Karten erhält jede zufällig ihre eigene. Sie nimmt ihre ursprüngliche Form wieder an, sobald sie das Spielfeld verlässt.",
     "content_epargne": "Ersparnis (Zähler)",
     "content_foi": "Glaube (Zähler)",
     "content_conquete": "Eroberung (Zähler)",

@@ -1594,6 +1594,21 @@ function applyComposedToUnit(
     // magnitude absente ⇒ 1, la durée des cartes d'avant X.
     case "paralyze": paralyser(u, composed.magnitude?.x == null ? 1 : x); break;
     case "silence": appliquerSilence(u); break;
+    // TRANSFORMATION : l'unité devient une des cartes désignées — tirée au sort
+    // (rng semé, donc identique chez les deux joueurs) quand il y en a
+    // plusieurs, un tirage par unité. `transformer` garde l'identité et l'état
+    // de tour, pose `formeOrigine` : la forme d'origine revient dès que l'unité
+    // quitte le plateau (restaurerFormesDOrigine). Seule une unité EN JEU se
+    // transforme ; son camp est déduit du plateau qui la porte.
+    case "transformation": {
+      const ids = tuteurCardIds(composed);
+      if (ids.length === 0) break;
+      const proprio = owner.board.includes(u) ? owner : opponent.board.includes(u) ? opponent : null;
+      if (!proprio) break;
+      const id = ids.length === 1 ? ids[0] : ids[Math.floor(rng() * ids.length)];
+      transformer(u, proprio, proprio === owner ? opponent : owner, id);
+      break;
+    }
     // ÉTAT empoisonné (1 PV perdu à chaque fin de tour), pas le mot-clé Poison :
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
     // que le mot-clé de sort `poison` (cf. resolveSpellKeywords).

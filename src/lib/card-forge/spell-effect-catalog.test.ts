@@ -13,7 +13,7 @@ const CONTENTS = new Set([
   "deal_damage", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
   "gain_mana", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation",
   "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "poison", "invocation", "epargne", "foi", "conquete", "exploration", "incineration", "devoration", "retour_differe",
-  "appel", "rappel", "tuteur", "appel_supreme", "silence", "dechainement",
+  "appel", "rappel", "tuteur", "appel_supreme", "silence", "dechainement", "transformation",
 ]);
 
 const catalog = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS);
