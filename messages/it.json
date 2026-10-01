@@ -470,6 +470,10 @@
         "label": "Esplorazione X",
         "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)."
       },
+      "invention": {
+        "label": "Invenzione X",
+        "desc": "Aggiunge X al tuo contatore Invenzione (max 8). Spesa: 1 Macchina comune tra 3 di costo ≤ Invenzione, contatore azzerato."
+      },
       "seconde_vie": {
         "label": "Seconda vita X",
         "desc": "Può essere giocata dal vostro cimitero per X mana. Perde quindi Seconda vita."
@@ -752,6 +756,10 @@
         "label": "Esplorazione X",
         "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)"
       },
+      "invention": {
+        "label": "Invenzione X",
+        "desc": "Aggiunge X al tuo contatore Invenzione (max 8). Spesa: 1 Macchina comune tra 3 di costo ≤ Invenzione, contatore azzerato"
+      },
       "inspiration": {
         "label": "Ispirazione X",
         "desc": "Pesca X carte"
@@ -904,6 +912,7 @@
         "foi": "aggiunge {x} al tuo contatore di Fede",
         "conquete": "aggiunge {x} al tuo contatore di Conquista",
         "exploration": "aggiunge {x} al tuo contatore di Esplorazione",
+        "invention": "aggiunge {x} al tuo contatore Invenzione",
         "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
         "occurrences": "{n} volte: ",
         "alternative": "A scelta: ",
@@ -2658,6 +2667,7 @@
     "content_foi": "Fede (contatore)",
     "content_conquete": "Conquista (contatore)",
     "content_exploration": "Esplorazione (contatore, pesca a 3)",
+    "content_invention": "Invenzione (contatore, Macchine)",
     "content_incineration": "Incenerimento (riciclare un cimitero)",
     "content_devoration": "Divorare (distruggere e assorbire)",
     "content_tactique": "Tattica (condivide le sue capacità permanenti)",

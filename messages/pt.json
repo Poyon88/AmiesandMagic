@@ -470,6 +470,10 @@
         "label": "Exploração X",
         "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)."
       },
+      "invention": {
+        "label": "Invenção X",
+        "desc": "Adiciona X ao seu contador de Invenção (máx. 8). Gasto: 1 Máquina comum entre 3 de custo ≤ Invenção, contador zerado."
+      },
       "seconde_vie": {
         "label": "Segunda Vida X",
         "desc": "Pode ser jogada do seu cemitério por X de mana. Ela perde então Segunda Vida."
@@ -752,6 +756,10 @@
         "label": "Exploração X",
         "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)"
       },
+      "invention": {
+        "label": "Invenção X",
+        "desc": "Adiciona X ao seu contador de Invenção (máx. 8). Gasto: 1 Máquina comum entre 3 de custo ≤ Invenção, contador zerado"
+      },
       "inspiration": {
         "label": "Inspiração X",
         "desc": "Compre X cartas"
@@ -904,6 +912,7 @@
         "foi": "adiciona {x} ao seu contador de Fé",
         "conquete": "adiciona {x} ao seu contador de Conquista",
         "exploration": "adiciona {x} ao seu contador de Exploração",
+        "invention": "adiciona {x} ao seu contador de Invenção",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "occurrences": "{n} vezes: ",
         "alternative": "À escolha: ",
@@ -2658,6 +2667,7 @@
     "content_foi": "Fé (contador)",
     "content_conquete": "Conquista (contador)",
     "content_exploration": "Exploração (contador, compra a 3)",
+    "content_invention": "Invenção (contador, Máquinas)",
     "content_incineration": "Incineração (reciclar um cemitério)",
     "content_devoration": "Devoração (destruir e absorver)",
     "content_tactique": "Tática (partilha as suas habilidades permanentes)",

@@ -475,6 +475,10 @@
         "label": "Exploration X",
         "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)."
       },
+      "invention": {
+        "label": "Invention X",
+        "desc": "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé."
+      },
       "seconde_vie": {
         "label": "Seconde vie X",
         "desc": "Peut être jouée depuis votre cimetière pour X mana. Elle perd alors Seconde vie."
@@ -757,6 +761,10 @@
         "label": "Exploration X",
         "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)"
       },
+      "invention": {
+        "label": "Invention X",
+        "desc": "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Piochez X cartes"
@@ -904,6 +912,7 @@
         "foi": "ajoute {x} à votre compteur de Foi",
         "conquete": "ajoute {x} à votre compteur de Conquête",
         "exploration": "ajoute {x} à votre compteur d'Exploration",
+        "invention": "ajoute {x} à votre compteur d'Invention",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
         "occurrences": "{n} fois : ",
         "alternative": "Au choix : ",
@@ -2660,6 +2669,7 @@
     "content_foi": "Foi (compteur)",
     "content_conquete": "Conquête (compteur)",
     "content_exploration": "Exploration (compteur, pioche à 3)",
+    "content_invention": "Invention (compteur, Machines)",
     "content_incineration": "Incinération (recycler un cimetière)",
     "content_devoration": "Dévoration (détruire et absorber)",
     "content_tactique": "Tactique (partage ses capacités permanentes)",

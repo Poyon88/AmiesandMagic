@@ -37,6 +37,12 @@ interface ManaBarProps {
    *  main, deck adverse non vide). */
   canSpendConquete?: boolean;
   onSpendConquete?: () => void;
+  /** Compteur d'Invention — mêmes conventions que `epargne` (null = masqué,
+   *  visible à 0 une fois apparu). */
+  invention?: number | null;
+  /** Invention dépensable MAINTENANT (mon tour, compteur ≥ 1, place en main). */
+  canSpendInvention?: boolean;
+  onSpendInvention?: () => void;
   /** Compteur d'Exploration. Masqué à 0 et à null, comme la Conquête. Purement
    *  INFORMATIF : le palier se règle tout seul dans le moteur (pioche
    *  automatique), il n'y a donc rien à cliquer. */
@@ -57,6 +63,7 @@ export default function ManaBar({
   current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
   foi = null, canSpendFoi = false, onSpendFoi,
   conquete = null, canSpendConquete = false, onSpendConquete,
+  invention = null, canSpendInvention = false, onSpendInvention,
   exploration = null,
   singleton = null,
   contresort = null,
@@ -193,6 +200,35 @@ export default function ManaBar({
         >
           <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold text-red-50 leading-none">
             {conquete}
+          </span>
+        </button>
+      )}
+      {invention !== null && (
+        // Losange cuivré, la teinte des ateliers nains : même forme que
+        // l'Épargne, couleur distincte pour ne pas les confondre côte à côte.
+        <button
+          type="button"
+          data-invention-badge={side}
+          onClick={canSpendInvention ? onSpendInvention : undefined}
+          disabled={!canSpendInvention}
+          aria-label={`Invention : ${invention}`}
+          title={
+            canSpendInvention
+              ? `Invention ${invention} — découvrir 1 Machine parmi 3 (coût ≤ ${invention})`
+              : `Invention ${invention}`
+          }
+          className={`relative w-7 h-7 rotate-45 rounded-[6px] border-2 transition-all ${
+            canSpendInvention
+              ? "cursor-pointer hover:scale-110 shadow-[0_0_8px_#ff9f43]"
+              : "cursor-default opacity-70"
+          }`}
+          style={{
+            borderColor: canSpendInvention ? "#ff9f43" : "#b8733399",
+            background: canSpendInvention ? "#b873334d" : "#b873331a",
+          }}
+        >
+          <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold leading-none" style={{ color: "#ffe2c4" }}>
+            {invention}
           </span>
         </button>
       )}

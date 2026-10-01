@@ -470,6 +470,10 @@
         "label": "Erkundung X",
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)."
       },
+      "invention": {
+        "label": "Erfindung X",
+        "desc": "Fügt X zu deinem Erfindungszähler hinzu (max. 8). Ausgeben: 1 gewöhnliche Maschine aus 3 mit Kosten ≤ Erfindung, Zähler geleert."
+      },
       "seconde_vie": {
         "label": "Zweites Leben X",
         "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
@@ -752,6 +756,10 @@
         "label": "Erkundung X",
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)"
       },
+      "invention": {
+        "label": "Erfindung X",
+        "desc": "Fügt X zu deinem Erfindungszähler hinzu (max. 8). Ausgeben: 1 gewöhnliche Maschine aus 3 mit Kosten ≤ Erfindung, Zähler geleert"
+      },
       "inspiration": {
         "label": "Inspiration X",
         "desc": "Ziehe X Karten."
@@ -904,6 +912,7 @@
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "exploration": "erhöht deinen Erkundungszähler um {x}",
+        "invention": "fügt {x} zu deinem Erfindungszähler hinzu",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "occurrences": "{n}-mal: ",
         "alternative": "Wahlweise: ",
@@ -2658,6 +2667,7 @@
     "content_foi": "Glaube (Zähler)",
     "content_conquete": "Eroberung (Zähler)",
     "content_exploration": "Erkundung (Zähler, Ziehen bei 3)",
+    "content_invention": "Erfindung (Zähler, Maschinen)",
     "content_incineration": "Einäscherung (Friedhof zurückführen)",
     "content_devoration": "Verschlingen (zerstören und aufnehmen)",
     "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",

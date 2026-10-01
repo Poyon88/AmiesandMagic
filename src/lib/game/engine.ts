@@ -30,6 +30,7 @@ import type {
   SpendEpargneAction,
   SpendFoiAction,
   SpendConqueteAction,
+  SpendInventionAction,
   SuspendEveilAction,
   PayEveilAction,
   StackFrame,
@@ -53,6 +54,8 @@ import {
   MAX_EPARGNE,
   MAX_FOI,
   MAX_CONQUETE,
+  MAX_INVENTION,
+  INVENTION_RACE,
   EXPLORATION_PALIER,
   MAX_EVEIL,
   SEUIL_DECK_THRESHOLD,
@@ -1837,6 +1840,7 @@ function resolveComposedEffect(
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
     case "exploration": addExploration(owner, x); return;
+    case "invention": addInvention(owner, x); return;
     // APPEL SUPRÊME composé : la carte la plus chère du deck qui satisfait le
     // filtre de pool et le plafond X (0 = sans plafond) rejoint la main.
     case "appel_supreme": {
@@ -3115,6 +3119,7 @@ export function initializeGame(
     foi: null,
     conquete: null,
     exploration: null,
+    invention: null,
     // SINGULIER : figé ci-dessous, d'après le deck de DÉPART tel que soumis
     // (avant mulligan, avant toute carte générée). Jamais recalculé ensuite.
     singleton: false,
@@ -5123,6 +5128,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       addExploration(player, getKwX(cardInstance, "exploration", undefined, 1));
     }
 
+    // Invention X : même contrat que l'Épargne, compteur distinct.
+    if (hasKwOnPlay(cardInstance, "invention")) {
+      addInvention(player, getKwX(cardInstance, "invention", undefined, 1));
+    }
+
     // Concentration X: remplace chaque sort en main par un sort aléatoire
     // (toutes factions) de coût supérieur de X ; le nouveau sort est marqué
     // d'une réduction permanente de coût égale à X.
@@ -7033,6 +7043,10 @@ function resolveSpellKeywords(
         addExploration(ctx.caster, kw.amount ?? 1);
         break;
       }
+      case "invention": {
+        addInvention(ctx.caster, kw.amount ?? 1);
+        break;
+      }
       case "incineration": {
         resolveIncineration(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
         break;
@@ -8735,6 +8749,13 @@ function addFoi(player: PlayerState, x: number): void {
 function addConquete(player: PlayerState, x: number): void {
   if (x <= 0) return;
   player.conquete = Math.min(MAX_CONQUETE, (player.conquete ?? 0) + x);
+}
+
+/** Alimente le compteur d'Invention, écrêté à MAX_INVENTION. Mêmes règles
+ *  d'apparition et d'unicité d'entrée que `addEpargne`. */
+function addInvention(player: PlayerState, x: number): void {
+  if (x <= 0) return;
+  player.invention = Math.min(MAX_INVENTION, (player.invention ?? 0) + x);
 }
 
 /** Alimente le compteur d'Exploration et RÈGLE ses paliers sur-le-champ.
@@ -10552,6 +10573,10 @@ function resolveCuratedKeywordEffect(
       addExploration(owner, x);
       break;
     }
+    case "invention": {
+      addInvention(owner, x);
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -11410,6 +11435,76 @@ export function spendConquete(state: GameState, action: SpendConqueteAction): Ga
   inst.trueOwnerId = null;
   me.hand.push(inst);
   me.conquete = 0; // le cycle repart ; à 0 l'UI masque le compteur.
+  newState.lastAction = action;
+  return newState;
+}
+
+/** OFFRE de l'Invention : jusqu'à 3 MACHINES communes de la collection, de
+ *  coût ≤ compteur, tirées à chances égales.
+ *
+ *  Contrairement à l'Épargne, aucune contrainte d'alignement : la race suffit.
+ *  Le vivier reste celui des tirages (`factionCardPool`, sets spéciaux et
+ *  cartes non découvrables déjà écartés à la construction) — le chargement du
+ *  match y ajoute les Machines quelle que soit la faction des decks.
+ *
+ *  Tirage semé sur l'état visible, comme `getFoiOffer` : les deux clients
+ *  calculent la même offre sans toucher à la RNG partagée, et le moteur la
+ *  RECALCULE au rejeu pour valider le choix. Sel +5151, distinct des autres
+ *  offres. Vide dès que le compteur est < 1. */
+export function getInventionOffer(state: GameState): Card[] {
+  const player = state.players[state.currentPlayerIndex];
+  const niveau = player.invention ?? 0;
+  if (niveau < 1) return [];
+  const pool = state.factionCardPool;
+  if (!pool || pool.length === 0) return [];
+  // Dédoublonné par id : le pool peut recevoir la même carte par deux chemins
+  // (faction du deck ET complément Machines), et elle ne doit pas peser double.
+  const vus = new Set<number>();
+  const eligibles = pool.filter(c => {
+    if (c.race !== INVENTION_RACE || c.rarity !== "Commune" || c.mana_cost > niveau) return false;
+    if (vus.has(c.id)) return false;
+    vus.add(c.id);
+    return true;
+  });
+  if (eligibles.length === 0) return [];
+
+  const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
+  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 5151;
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const melange = [...eligibles];
+  for (let i = melange.length - 1; i > 0; i--) {
+    const j = Math.floor(pseudoRng() * (i + 1));
+    [melange[i], melange[j]] = [melange[j], melange[i]];
+  }
+  return melange.slice(0, Math.min(SELECTION_OFFER_COUNT, melange.length));
+}
+
+/** Dépense du compteur d'INVENTION : la Machine désignée rejoint la main et le
+ *  compteur est VIDÉ (il reste visible à 0, comme l'Épargne).
+ *
+ *  Mêmes principes que `spendEpargne` : tout est re-validé ici parce que la
+ *  fonction rejoue aussi chez l'adversaire, et chaque refus renvoie `state`
+ *  inchangé — l'Invention n'est jamais consommée sans contrepartie. La garde
+ *  décisive est l'appartenance à l'offre recalculée. */
+export function spendInvention(state: GameState, action: SpendInventionAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  if ((player.invention ?? 0) < 1) return state;
+  // Main pleine : refus AVANT de consommer.
+  if (player.hand.length >= MAX_HAND_SIZE) return state;
+
+  const card = getInventionOffer(state).find(c => c.id === action.selectionCardId);
+  if (!card) return state;
+
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = state.factionCardPool;
+  newState.allSpellsPool = state.allSpellsPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  me.hand.push(createCardInstance(card));
+  me.invention = 0; // reste à 0 (visible), ne redevient jamais null.
   newState.lastAction = action;
   return newState;
 }
@@ -12295,6 +12390,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "spend_epargne": result = spendEpargne(state, action); break;
     case "spend_foi": result = spendFoi(state, action); break;
     case "spend_conquete": result = spendConquete(state, action); break;
+    case "spend_invention": result = spendInvention(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;

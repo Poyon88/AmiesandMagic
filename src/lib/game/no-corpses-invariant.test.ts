@@ -50,6 +50,8 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   spend_foi: "sans dégâts",
   // La Conquête déplace une carte du deck adverse vers la main : aucun PV.
   spend_conquete: "sans dégâts",
+  // L'Invention ajoute une Machine en main, comme l'Épargne : aucun PV.
+  spend_invention: "sans dégâts",
   concede: "sans dégâts",
   // Éveil : mettre en éveil déplace une carte de la main vers une zone hors du
   // jeu, verser un point ne fait que dépenser du mana. Le seul moment où une

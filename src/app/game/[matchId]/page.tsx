@@ -14,6 +14,7 @@ import type { Card, FormatCode, GameAction, GameState, HeroDefinition, HeroPower
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
+import { INVENTION_RACE } from "@/lib/game/constants";
 import { excludeSpecialSets, excludeNonDiscoverable } from "@/lib/game/deck-rules";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { designatedCardIds } from "@/lib/game/tuteur";
@@ -307,7 +308,7 @@ export default function GamePage() {
         // coût 6) n'invoquait jamais rien, sans la moindre erreur. Ordre TOTAL
         // par `id`, exigé par le helper — et c'est aussi ce qui garantit aux
         // deux clients un pool identique.
-        const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes] = await Promise.all([
+        const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes, machinesData] = await Promise.all([
           fetchAllRows<Card>(
             (from, to) => supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).order("id").range(from, to).returns<Card[]>(),
             { label: "Pool des factions du match" },
@@ -326,12 +327,23 @@ export default function GamePage() {
           // les deux requêtes ci-dessus — PostgREST ne sait pas faire un
           // anti-join, et la liste tient en quelques ids.
           supabase.from("sets").select("id").eq("type", "special").returns<{ id: number }[]>(),
+          // INVENTION : la dépense révèle des Machines communes, quelle que soit
+          // la faction des decks. Hors Armées des Montagnes, aucune ne serait
+          // en mémoire et le compteur ne découvrirait jamais rien.
+          fetchAllRows<Card>(
+            (from, to) => supabase.from("cards").select(GAME_CARD_COLUMNS).eq("race", INVENTION_RACE).order("id").range(from, to).returns<Card[]>(),
+            { label: "Pool des Machines (Invention)" },
+          ),
         ]);
         // Les deux clients interrogent la même base au démarrage du match : ils
         // bâtissent donc des pools identiques, condition de la synchro des
         // tirages semés.
         const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
-        const factionCards = excludeNonDiscoverable(excludeSpecialSets(factionCardsData, specialSetIds));
+        const factionCardIds = new Set(factionCardsData.map((c) => c.id));
+        const factionCards = excludeNonDiscoverable(excludeSpecialSets(
+          [...factionCardsData, ...machinesData.filter((c) => !factionCardIds.has(c.id))],
+          specialSetIds,
+        ));
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {

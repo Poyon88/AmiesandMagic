@@ -60,6 +60,10 @@ export const MAX_FOI = 10;
  *  Le compteur s'écrête au palier ; la découverte n'est possible QU'au palier,
  *  et le remet à 0. */
 export const MAX_CONQUETE = 3;
+/** Plafond du compteur d'Invention. Même écrêtage silencieux que l'Épargne. */
+export const MAX_INVENTION = 8;
+/** Race des cartes que révèle la dépense de l'Invention. */
+export const INVENTION_RACE = "Machines";
 /** Palier du compteur d'Exploration : chaque fois qu'il est atteint, le
  *  contrôleur pioche une carte et le palier est RETRANCHÉ (le reste est
  *  conservé). Ce n'est pas un plafond — rien n'est jamais écrêté. */

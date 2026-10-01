@@ -161,6 +161,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearFoiGainEvent,
     conqueteGainEvent,
     clearConqueteGainEvent,
+    inventionGainEvent,
+    clearInventionGainEvent,
     explorationGainEvent,
     clearExplorationGainEvent,
     isAnimating,
@@ -171,6 +173,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     openEpargnePicker,
     openFoiPicker,
     openConquetePicker,
+    openInventionPicker,
     isMyTurn,
     getMyPlayerState,
     getOpponentPlayerState,
@@ -527,6 +530,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const handleSpendConquete = useCallback(() => {
     broadcast(openConquetePicker());
   }, [openConquetePicker, broadcast]);
+  const handleSpendInvention = useCallback(() => {
+    broadcast(openInventionPicker());
+  }, [openInventionPicker, broadcast]);
 
   // Touch devices: the portrait double-tap (non-targeted powers) is unreliable
   // and creatures/hand cards can overlap the small portrait disc, so coarse-
@@ -825,6 +831,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     && (myPlayer.conquete ?? 0) >= MAX_CONQUETE
     && myPlayer.hand.length < MAX_HAND_SIZE
     && opponent.deck.length > 0;
+  // Invention : même affordance que l'Épargne. Une offre vide (aucune Machine
+  // abordable) est gérée au clic : rien ne s'ouvre et le compteur reste.
+  const canSpendInvention = myTurn
+    && (myPlayer.invention ?? 0) >= 1
+    && myPlayer.hand.length < MAX_HAND_SIZE;
 
   // SECONDE VIE : cartes de MON cimetière jouables maintenant — créatures
   // (place sur le plateau) comme sorts (au moins une cible). Le verdict vient
@@ -1224,7 +1235,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             }
           />
           <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} invention={opponent.invention ?? null} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
         </div>
         )}
 
@@ -1255,7 +1266,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} invention={opponent.invention ?? null} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
           </div>
         )}
 
@@ -1558,7 +1569,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} invention={myPlayer.invention ?? null} canSpendInvention={canSpendInvention} onSpendInvention={handleSpendInvention} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
         </div>
         )}
 
@@ -1593,7 +1604,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} invention={myPlayer.invention ?? null} canSpendInvention={canSpendInvention} onSpendInvention={handleSpendInvention} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
           </div>
         )}
 
@@ -2014,6 +2025,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <EpargneGainOverlay kind="foi" event={foiGainEvent} onComplete={clearFoiGainEvent} />
       <EpargneGainOverlay kind="conquete" event={conqueteGainEvent} onComplete={clearConqueteGainEvent} />
       <EpargneGainOverlay kind="exploration" event={explorationGainEvent} onComplete={clearExplorationGainEvent} />
+      <EpargneGainOverlay kind="invention" event={inventionGainEvent} onComplete={clearInventionGainEvent} />
 
       {/* Targeting arrow overlay */}
       <TargetingArrow

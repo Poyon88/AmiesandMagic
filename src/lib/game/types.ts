@@ -104,6 +104,9 @@ export type Keyword =
   // Alimente le compteur d'Exploration ; à chaque palier EXPLORATION_PALIER
   // franchi, le contrôleur PIOCHE une carte et le reste est conservé.
   | "exploration"
+  // Alimente le compteur d'Invention (plafond MAX_INVENTION) ; se dépense en
+  // découvrant 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé.
+  | "invention"
   // Jouable depuis le cimetière pour un coût alternatif
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
@@ -230,6 +233,7 @@ export type SpellKeywordId =
   | "foi"
   | "conquete"
   | "exploration"
+  | "invention"
   | "incineration"
   | "creuser"
   | "presage"
@@ -658,6 +662,9 @@ export type ComposedEffectContent =
   // Alimente le compteur d'Exploration du contrôleur (palier
   // EXPLORATION_PALIER, pioche automatique). Même contrat.
   | "exploration"
+  // Alimente le compteur d'Invention du contrôleur (plafond MAX_INVENTION).
+  // Même contrat : aucune cible, `magnitude.x` porte le montant.
+  | "invention"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
   | "incineration"
@@ -1662,6 +1669,14 @@ export interface PlayerState {
    *  et le palier est retranché (le reste est conservé). Il ne vaut donc jamais
    *  EXPLORATION_PALIER ou plus dans un état observable. */
   exploration: number | null;
+  /** Compteur d'Invention, plafonné à MAX_INVENTION. Mêmes conventions que
+   *  `epargne` (`null` = jamais alimenté ⇒ masqué ; reste visible à 0 après
+   *  une dépense). Dépense : 1 carte parmi 3 MACHINES communes de coût ≤
+   *  compteur, et le compteur est vidé.
+   *
+   *  Optionnel : absent vaut `null` — les états sérialisés avant la capacité
+   *  (snapshots de parties en cours) restent valides sans migration. */
+  invention?: number | null;
   /** SINGULIER : le deck de DÉPART de ce joueur ne contenait aucune carte en
    *  double. Calculé UNE FOIS à l'initialisation, jamais modifié ensuite (cartes
    *  volées, jetons, copies n'y changent rien). Conditionne les capacités
@@ -2279,6 +2294,18 @@ export interface SpendConqueteAction {
   cardInstanceId: string;
 }
 
+/** Dépense du compteur d'INVENTION : le joueur a choisi une carte parmi les 3
+ *  Machines que `getInventionOffer` a révélées.
+ *
+ *  Même contrat que l'Épargne : une seule action, joueur =
+ *  `players[currentPlayerIndex]`, offre recalculée par le moteur (tirage semé
+ *  sur l'état) — la carte doit en faire partie, sinon la demande est ignorée. */
+export interface SpendInventionAction {
+  type: "spend_invention";
+  /** Id de la carte choisie (une carte de collection, pas une instance). */
+  selectionCardId: number;
+}
+
 /** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
  *  autant de points que son `eveil_cost`. Ne coûte aucun mana : ce qu'on engage
  *  ici, c'est la carte elle-même et une place sous le plafond `MAX_EVEIL`. */
@@ -2328,7 +2355,7 @@ export interface SacrificeItemAction {
   itemInstanceId: string;
 }
 
-export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SuspendEveilAction | PayEveilAction;
+export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SpendInventionAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
