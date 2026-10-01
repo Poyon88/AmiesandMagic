@@ -471,8 +471,8 @@
         "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)."
       },
       "invention": {
-        "label": "Invenzione X",
-        "desc": "Aggiunge X al tuo contatore Invenzione (max 8). Spesa: 1 Macchina comune tra 3 di costo ≤ Invenzione, contatore azzerato."
+        "label": "Invenzione +X/+Y",
+        "desc": "Aggiunge +X/+Y{machine_part} alla tua macchina (0/1 all'inizio, 1 mana per Invenzione, massimo 6)."
       },
       "seconde_vie": {
         "label": "Seconda vita X",
@@ -757,8 +757,8 @@
         "desc": "Aggiunge X alla tua Esplorazione. Ogni volta che arriva a 3: pesca una carta e togli 3 (il resto è conservato)"
       },
       "invention": {
-        "label": "Invenzione X",
-        "desc": "Aggiunge X al tuo contatore Invenzione (max 8). Spesa: 1 Macchina comune tra 3 di costo ≤ Invenzione, contatore azzerato"
+        "label": "Invenzione +X/+Y",
+        "desc": "Aggiunge +X/+Y{machine_part} alla tua macchina (0/1 all'inizio, 1 mana per Invenzione, massimo 6)"
       },
       "inspiration": {
         "label": "Ispirazione X",
@@ -912,7 +912,6 @@
         "foi": "aggiunge {x} al tuo contatore di Fede",
         "conquete": "aggiunge {x} al tuo contatore di Conquista",
         "exploration": "aggiunge {x} al tuo contatore di Esplorazione",
-        "invention": "aggiunge {x} al tuo contatore Invenzione",
         "incineration": "rimette {x} carte dal cimitero bersaglio sotto il suo deck",
         "occurrences": "{n} volte: ",
         "alternative": "A scelta: ",
@@ -1766,6 +1765,9 @@
       "scope_target": "a un'unità alleata",
       "edc_compte": "Guadagna {n} volte +1 ATT o +1 PV a caso (1 per ogni creatura {clan_de} con Spirito di corpo già giocata).",
       "scope_all": "a tutte le vostre unità",
+      "machine_part": " e {ability}",
+      "machine_part_timed": " e {ability} ({timing})",
+      "machine_name": "Macchina",
       "neutralise_cible": "di un'unità nemica bersaglio (o di tutte)",
       "neutralise_cible_target": "in un'unità nemica bersaglio",
       "neutralise_cible_all": "in tutte le unità nemiche",
@@ -2667,7 +2669,6 @@
     "content_foi": "Fede (contatore)",
     "content_conquete": "Conquista (contatore)",
     "content_exploration": "Esplorazione (contatore, pesca a 3)",
-    "content_invention": "Invenzione (contatore, Macchine)",
     "content_incineration": "Incenerimento (riciclare un cimitero)",
     "content_devoration": "Divorare (distruggere e assorbire)",
     "content_tactique": "Tattica (condivide le sue capacità permanenti)",

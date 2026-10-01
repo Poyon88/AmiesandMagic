@@ -51,7 +51,6 @@ import {
   getSelectionCards,
   getFoiOffer,
   getConqueteOffer,
-  getInventionOffer,
   getRenfortRoyalCards,
   selectionCardsForKeyword,
   getMagicalSelectionCards,
@@ -486,7 +485,8 @@ export interface FoiGainEvent {
 /** Gain de compteur de Conquête à animer : même contrat, troisième compteur. */
 export type ConqueteGainEvent = FoiGainEvent;
 
-/** Gain de compteur d'Invention à animer : même contrat que l'Épargne. */
+/** Invention appliquée à une machine, à animer : même contrat que l'Épargne
+ *  (le « +N » compte les Inventions, c'est-à-dire le coût gagné). */
 export type InventionGainEvent = FoiGainEvent;
 
 /** Gain de compteur d'Exploration à animer : même contrat, quatrième compteur.
@@ -614,9 +614,6 @@ interface GameStore {
   /** Le picker « 1 parmi 3 » ouvert est celui du compteur d'Épargne : le
    *  dispatch à venir est un `spend_epargne`, pas un play_card. */
   pendingEpargneSelection: boolean;
-  /** Le picker « 1 parmi 3 » ouvert est celui du compteur d'Invention : le
-   *  dispatch à venir est un `spend_invention`. */
-  pendingInventionSelection: boolean;
   /** La modale de deck ouverte (mode `divination`) est celle du compteur de
    *  Foi : le dispatch à venir est un `spend_foi`. */
   pendingFoiSelection: boolean;
@@ -852,10 +849,9 @@ interface GameStore {
   /** Clic sur le compteur de Conquête AU PALIER : ouvre la modale de deck (3
    *  cartes du deck adverse). Renvoie toujours null, comme openFoiPicker. */
   openConquetePicker: () => GameAction | null;
-  /** Clic sur le compteur d'Invention : ouvre le picker « 1 parmi 3 » (Machines
-   *  communes de coût ≤ Invention). Renvoie toujours null, comme
-   *  openEpargnePicker. */
-  openInventionPicker: () => GameAction | null;
+  /** Clic sur le compteur d'Invention : met la MACHINE en main (aucun
+   *  picker). Renvoie l'action dispatchée, à diffuser, ou null si refusée. */
+  takeMachine: () => GameAction | null;
   /** APPRENTISSAGE — lance le sort mémorisé par cette créature (coûts et
    *  ciblage passent par la chaîne habituelle des sorts). */
   activateLearnedSpell: (creatureInstanceId: string) => GameAction | null;
@@ -1746,7 +1742,6 @@ export const useGameStore = create<GameStore>((set, get) => {
   selectedTopdeckIds: [],
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
-  pendingInventionSelection: false,
   pendingFoiSelection: false,
   pendingConqueteSelection: false,
   pendingBoardPosition: null,
@@ -2816,13 +2811,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
-    // Invention : même DIFF d'état que l'Épargne. Une dépense (retour à 0)
-    // donne un delta négatif, ignoré.
+    // Invention : DIFF du nombre d'Inventions de la machine. Une prise en main
+    // (retour à 0) donne un delta négatif, ignoré.
     let inventionGainEvent: InventionGainEvent | null = null;
     {
       const bySide: Partial<Record<"mine" | "theirs", number>> = {};
       for (let i = 0; i < 2; i++) {
-        const delta = (newState.players[i].invention ?? 0) - (gameState.players[i].invention ?? 0);
+        const delta = (newState.players[i].machine?.inventions ?? 0) - (gameState.players[i].machine?.inventions ?? 0);
         if (delta > 0) bySide[newState.players[i].id === localPlayerId ? "mine" : "theirs"] = delta;
       }
       if (Object.keys(bySide).length > 0) {
@@ -3287,7 +3282,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectedTopdeckIds: [],
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
-  pendingInventionSelection: false,
   pendingFoiSelection: false,
   pendingConqueteSelection: false,
         pendingTapSourceId: null,
@@ -3323,7 +3317,6 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
-  pendingInventionSelection: false,
   pendingFoiSelection: false,
   pendingConqueteSelection: false,
       pendingTapSourceId: null,
@@ -4949,10 +4942,6 @@ export const useGameStore = create<GameStore>((set, get) => {
       // la carte et remet le compteur à zéro.
       const cardId = parseInt(targetId) || 0;
       return get().dispatchAction({ type: "spend_epargne", selectionCardId: cardId });
-    } else if (targetingMode === "selection" && get().pendingInventionSelection) {
-      // Picker d'Invention : même contrat que l'Épargne.
-      const cardId = parseInt(targetId) || 0;
-      return get().dispatchAction({ type: "spend_invention", selectionCardId: cardId });
     } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
       // Hero power picker — dispatch a hero_power action with the chosen
       // card id ; engine.ts mirrors it into targetMap for the selection /
@@ -5157,7 +5146,6 @@ export const useGameStore = create<GameStore>((set, get) => {
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
-  pendingInventionSelection: false,
   pendingFoiSelection: false,
   pendingConqueteSelection: false,
     });
@@ -5496,38 +5484,21 @@ export const useGameStore = create<GameStore>((set, get) => {
       targetingMode: "selection",
       selectionCards: choices,
       pendingEpargneSelection: true,
-      pendingInventionSelection: false,
     });
     return null;
   },
 
-  openInventionPicker: () => {
+  takeMachine: () => {
     const { gameState, targetingMode, isAnimating } = get();
     if (!gameState || isAnimating) return null;
-    // Anti-réentrance : même garde que l'Épargne.
-    if (targetingMode === "selection" || targetingMode === "divination") return null;
+    // Pas au milieu d'un choix en cours (ciblage, picker) : la main bougerait
+    // sous les pieds du joueur.
+    if (targetingMode !== "none") return null;
     if (!get().isMyTurn()) return null;
-
     const me = gameState.players[gameState.currentPlayerIndex];
-    if ((me.invention ?? 0) < 1) return null;
+    if ((me.machine?.inventions ?? 0) < 1) return null;
     if (me.hand.length >= MAX_HAND_SIZE) return null;
-
-    // L'offre vient du moteur (tirage semé sur l'état) : c'est la MÊME que
-    // celle qu'il recalculera pour valider le choix.
-    const choices = getInventionOffer(gameState);
-    // Aucune Machine abordable : le clic ne fait rien, l'Invention reste.
-    if (choices.length === 0) return null;
-
-    set({
-      selectedCardInstanceId: null,
-      selectedAttackerInstanceId: null,
-      validTargets: [],
-      targetingMode: "selection",
-      selectionCards: choices,
-      pendingEpargneSelection: false,
-      pendingInventionSelection: true,
-    });
-    return null;
+    return get().dispatchAction({ type: "take_machine" });
   },
 
   openFoiPicker: () => {
@@ -5750,7 +5721,6 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingTapInstanceIdx: instanceIdx,
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
-  pendingInventionSelection: false,
   pendingFoiSelection: false,
   pendingConqueteSelection: false,
         pendingTriggerId: null,

@@ -471,8 +471,8 @@
         "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)."
       },
       "invention": {
-        "label": "Invenção X",
-        "desc": "Adiciona X ao seu contador de Invenção (máx. 8). Gasto: 1 Máquina comum entre 3 de custo ≤ Invenção, contador zerado."
+        "label": "Invenção +X/+Y",
+        "desc": "Adiciona +X/+Y{machine_part} à sua máquina (0/1 no início, 1 mana por Invenção, no máximo 6)."
       },
       "seconde_vie": {
         "label": "Segunda Vida X",
@@ -757,8 +757,8 @@
         "desc": "Adiciona X à sua Exploração. Sempre que chegar a 3: compre uma carta e retire 3 (o resto é mantido)"
       },
       "invention": {
-        "label": "Invenção X",
-        "desc": "Adiciona X ao seu contador de Invenção (máx. 8). Gasto: 1 Máquina comum entre 3 de custo ≤ Invenção, contador zerado"
+        "label": "Invenção +X/+Y",
+        "desc": "Adiciona +X/+Y{machine_part} à sua máquina (0/1 no início, 1 mana por Invenção, no máximo 6)"
       },
       "inspiration": {
         "label": "Inspiração X",
@@ -912,7 +912,6 @@
         "foi": "adiciona {x} ao seu contador de Fé",
         "conquete": "adiciona {x} ao seu contador de Conquista",
         "exploration": "adiciona {x} ao seu contador de Exploração",
-        "invention": "adiciona {x} ao seu contador de Invenção",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
         "occurrences": "{n} vezes: ",
         "alternative": "À escolha: ",
@@ -1766,6 +1765,9 @@
       "scope_target": "a uma unidade aliada",
       "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
       "scope_all": "a todas as suas unidades",
+      "machine_part": " e {ability}",
+      "machine_part_timed": " e {ability} ({timing})",
+      "machine_name": "Máquina",
       "neutralise_cible": "de uma unidade inimiga alvo (ou de todas)",
       "neutralise_cible_target": "em uma unidade inimiga alvo",
       "neutralise_cible_all": "em todas as unidades inimigas",
@@ -2667,7 +2669,6 @@
     "content_foi": "Fé (contador)",
     "content_conquete": "Conquista (contador)",
     "content_exploration": "Exploração (contador, compra a 3)",
-    "content_invention": "Invenção (contador, Máquinas)",
     "content_incineration": "Incineração (reciclar um cemitério)",
     "content_devoration": "Devoração (destruir e absorver)",
     "content_tactique": "Tática (partilha as suas habilidades permanentes)",

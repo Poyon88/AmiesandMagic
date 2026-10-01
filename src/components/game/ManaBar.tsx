@@ -1,6 +1,12 @@
 "use client";
 
-import { EXPLORATION_PALIER } from "@/lib/game/constants";
+import { useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { EXPLORATION_PALIER, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
+import { buildMachineCard } from "@/lib/game/machine";
+import { overlayRect } from "@/lib/fx/overlayMotion";
+import GameCard from "@/components/cards/GameCard";
+import type { MachineState } from "@/lib/game/types";
 
 interface ManaBarProps {
   current: number;
@@ -37,12 +43,14 @@ interface ManaBarProps {
    *  main, deck adverse non vide). */
   canSpendConquete?: boolean;
   onSpendConquete?: () => void;
-  /** Compteur d'Invention — mêmes conventions que `epargne` (null = masqué,
-   *  visible à 0 une fois apparu). */
-  invention?: number | null;
-  /** Invention dépensable MAINTENANT (mon tour, compteur ≥ 1, place en main). */
-  canSpendInvention?: boolean;
-  onSpendInvention?: () => void;
+  /** MACHINE en construction (Invention). `null` = jamais alimentée → losange
+   *  masqué ; une fois apparue elle reste visible, même vierge. */
+  machine?: MachineState | null;
+  /** Faction du héros de ce camp : celle que portera la carte machine. */
+  machineFaction?: string | null;
+  /** Machine prenable MAINTENANT (mon tour, ≥ 1 Invention, place en main). */
+  canTakeMachine?: boolean;
+  onTakeMachine?: () => void;
   /** Compteur d'Exploration. Masqué à 0 et à null, comme la Conquête. Purement
    *  INFORMATIF : le palier se règle tout seul dans le moteur (pioche
    *  automatique), il n'y a donc rien à cliquer. */
@@ -63,13 +71,23 @@ export default function ManaBar({
   current, max, reserved = 0, epargne = null, canSpendEpargne = false, onSpendEpargne, side,
   foi = null, canSpendFoi = false, onSpendFoi,
   conquete = null, canSpendConquete = false, onSpendConquete,
-  invention = null, canSpendInvention = false, onSpendInvention,
+  machine = null, machineFaction = null, canTakeMachine = false, onTakeMachine,
   exploration = null,
   singleton = null,
   contresort = null,
   exclusion = null,
 }: ManaBarProps) {
   const held = Math.max(0, Math.min(reserved, current));
+  // Aperçu de la machine au survol du losange : la MÊME carte que le moteur
+  // mettra en main (buildMachineCard est pur, sans RNG).
+  const machineCard = useMemo(() => (machine ? buildMachineCard(machine, machineFaction) : null), [machine, machineFaction]);
+  const machineRef = useRef<HTMLButtonElement>(null);
+  const [apercu, setApercu] = useState<{ x: number; top: number; bottom: number } | null>(null);
+  const montrerMachine = () => {
+    if (!machineRef.current) return;
+    const r = overlayRect(machineRef.current);
+    setApercu({ x: r.left + r.width / 2, top: r.top, bottom: r.top + r.height });
+  };
   const available = current - held;
 
   return (
@@ -203,34 +221,55 @@ export default function ManaBar({
           </span>
         </button>
       )}
-      {invention !== null && (
-        // Losange cuivré, la teinte des ateliers nains : même forme que
-        // l'Épargne, couleur distincte pour ne pas les confondre côte à côte.
+      {machine && machineCard && (
+        // Losange cuivré, la teinte des ateliers nains. Le chiffre est le
+        // nombre d'Inventions, c'est-à-dire le coût de la machine.
         <button
+          ref={machineRef}
           type="button"
           data-invention-badge={side}
-          onClick={canSpendInvention ? onSpendInvention : undefined}
-          disabled={!canSpendInvention}
-          aria-label={`Invention : ${invention}`}
+          onClick={canTakeMachine ? onTakeMachine : undefined}
+          onMouseEnter={montrerMachine}
+          onMouseLeave={() => setApercu(null)}
+          disabled={!canTakeMachine}
+          aria-label={`Machine : ${machine.attack}/${machine.health}, ${machine.inventions} Invention(s)`}
           title={
-            canSpendInvention
-              ? `Invention ${invention} — découvrir 1 Machine parmi 3 (coût ≤ ${invention})`
-              : `Invention ${invention}`
+            canTakeMachine
+              ? `Machine ${machine.attack}/${machine.health} (${machine.inventions}/${MAX_INVENTIONS_MACHINE} Inventions) — cliquer pour la prendre en main`
+              : `Machine ${machine.attack}/${machine.health} (${machine.inventions}/${MAX_INVENTIONS_MACHINE} Inventions)`
           }
           className={`relative w-7 h-7 rotate-45 rounded-[6px] border-2 transition-all ${
-            canSpendInvention
+            canTakeMachine
               ? "cursor-pointer hover:scale-110 shadow-[0_0_8px_#ff9f43]"
-              : "cursor-default opacity-70"
+              : "cursor-help opacity-70"
           }`}
           style={{
-            borderColor: canSpendInvention ? "#ff9f43" : "#b8733399",
-            background: canSpendInvention ? "#b873334d" : "#b873331a",
+            borderColor: canTakeMachine ? "#ff9f43" : "#b8733399",
+            background: canTakeMachine ? "#b873334d" : "#b873331a",
           }}
         >
           <span className="absolute inset-0 -rotate-45 flex items-center justify-center text-[13px] font-bold leading-none" style={{ color: "#ffe2c4" }}>
-            {invention}
+            {machine.inventions}
           </span>
         </button>
+      )}
+      {apercu && machineCard && typeof document !== "undefined" && createPortal(
+        // Au-dessus du losange pour MA barre (en bas d'écran), en dessous pour
+        // celle de l'adversaire (en haut) — sinon l'aperçu sortirait de l'écran.
+        <div
+          style={{
+            position: "fixed",
+            left: apercu.x,
+            top: side === "theirs" ? apercu.bottom + 8 : apercu.top - 8,
+            transform: side === "theirs" ? "translate(-50%, 0)" : "translate(-50%, -100%)",
+            zIndex: 200,
+            pointerEvents: "none",
+            filter: "drop-shadow(0 10px 26px rgba(0,0,0,0.75))",
+          }}
+        >
+          <GameCard card={machineCard} size="md" showDetails disableHoverZoom forceRarityFrame />
+        </div>,
+        document.body,
       )}
       {(exploration ?? 0) >= 1 && (
         // Losange vert tendre : le seul compteur qui ne se CLIQUE pas. Au

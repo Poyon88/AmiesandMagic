@@ -471,8 +471,8 @@
         "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）。"
       },
       "invention": {
-        "label": "发明X",
-        "desc": "为你的发明计数器增加X点（上限8点）。消耗：从3张费用≤发明的普通机械中选1张，计数器清零."
+        "label": "发明 +X/+Y",
+        "desc": "为你的机械增加+X/+Y{machine_part}（初始为0/1，每次发明1点法力，最多6次）。"
       },
       "seconde_vie": {
         "label": "二次生命 X",
@@ -757,8 +757,8 @@
         "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）"
       },
       "invention": {
-        "label": "发明X",
-        "desc": "为你的发明计数器增加X点（上限8点）。消耗：从3张费用≤发明的普通机械中选1张，计数器清零"
+        "label": "发明 +X/+Y",
+        "desc": "为你的机械增加+X/+Y{machine_part}（初始为0/1，每次发明1点法力，最多6次）"
       },
       "inspiration": {
         "label": "启示 X",
@@ -912,7 +912,6 @@
         "foi": "为你的信仰计数器增加{x}点",
         "conquete": "为你的征服计数器增加{x}",
         "exploration": "为你的探索计数器增加{x}",
-        "invention": "为你的发明计数器增加{x}点",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
         "occurrences": "{n} 次：",
         "alternative": "择一：",
@@ -1766,6 +1765,9 @@
       "scope_target": "给一个友方单位",
       "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
       "scope_all": "给你所有的单位",
+      "machine_part": "及{ability}",
+      "machine_part_timed": "及{ability}（{timing}）",
+      "machine_name": "机械",
       "neutralise_cible": "一个目标敌方单位（或全部单位）",
       "neutralise_cible_target": "一个目标敌方单位",
       "neutralise_cible_all": "所有敌方单位",
@@ -2667,7 +2669,6 @@
     "content_foi": "信仰（计数）",
     "content_conquete": "征服（计数）",
     "content_exploration": "探索（计数，满3抽卡）",
-    "content_invention": "发明（计数，机械）",
     "content_incineration": "焚化（回收墓地）",
     "content_devoration": "吞噬（消灭并吸收）",
     "content_tactique": "战术（分享自身永久技能）",

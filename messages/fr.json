@@ -476,8 +476,8 @@
         "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)."
       },
       "invention": {
-        "label": "Invention X",
-        "desc": "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé."
+        "label": "Invention +X/+Y",
+        "desc": "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus)."
       },
       "seconde_vie": {
         "label": "Seconde vie X",
@@ -762,8 +762,8 @@
         "desc": "Ajoute X à votre Exploration. Chaque fois qu'elle atteint 3 : piochez une carte et retirez 3 (le reste est conservé)"
       },
       "invention": {
-        "label": "Invention X",
-        "desc": "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé"
+        "label": "Invention +X/+Y",
+        "desc": "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -912,7 +912,6 @@
         "foi": "ajoute {x} à votre compteur de Foi",
         "conquete": "ajoute {x} à votre compteur de Conquête",
         "exploration": "ajoute {x} à votre compteur d'Exploration",
-        "invention": "ajoute {x} à votre compteur d'Invention",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
         "occurrences": "{n} fois : ",
         "alternative": "Au choix : ",
@@ -1766,6 +1765,9 @@
       "scope_target": "à une unité alliée",
       "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
       "scope_all": "à toutes vos unités",
+      "machine_part": " et {ability}",
+      "machine_part_timed": " et {ability} ({timing})",
+      "machine_name": "Machine",
       "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
       "neutralise_cible_target": "chez une unité ennemie ciblée",
       "neutralise_cible_all": "chez toutes les unités ennemies",
@@ -2669,7 +2671,6 @@
     "content_foi": "Foi (compteur)",
     "content_conquete": "Conquête (compteur)",
     "content_exploration": "Exploration (compteur, pioche à 3)",
-    "content_invention": "Invention (compteur, Machines)",
     "content_incineration": "Incinération (recycler un cimetière)",
     "content_devoration": "Dévoration (détruire et absorber)",
     "content_tactique": "Tactique (partage ses capacités permanentes)",

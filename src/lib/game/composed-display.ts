@@ -168,7 +168,6 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
   "content.exploration": "ajoute {x} à votre compteur d'Exploration",
-  "content.invention": "ajoute {x} à votre compteur d'Invention",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
   "content.occurrences": "{n} fois : ",
   "content.alternative": "Au choix : ",
@@ -409,7 +408,6 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
     case "exploration": return { symbol: KEYWORD_SYMBOLS.exploration, keyword: "exploration" };
-    case "invention": return { symbol: KEYWORD_SYMBOLS.invention, keyword: "invention" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
     // Silence n'existe QUE côté sort : sa clé prend le préfixe `spell_`, comme
@@ -672,7 +670,6 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "foi": return frag(t, "content.foi", { x: xAff });
     case "conquete": return frag(t, "content.conquete", { x: xAff });
     case "exploration": return frag(t, "content.exploration", { x: xAff });
-    case "invention": return frag(t, "content.invention", { x: xAff });
     case "incineration": return frag(t, "content.incineration", { x: xAff });
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");

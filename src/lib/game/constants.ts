@@ -60,10 +60,14 @@ export const MAX_FOI = 10;
  *  Le compteur s'écrête au palier ; la découverte n'est possible QU'au palier,
  *  et le remet à 0. */
 export const MAX_CONQUETE = 3;
-/** Plafond du compteur d'Invention. Même écrêtage silencieux que l'Épargne. */
-export const MAX_INVENTION = 8;
-/** Race des cartes que révèle la dépense de l'Invention. */
-export const INVENTION_RACE = "Machines";
+/** Nombre maximal d'Inventions appliquées à une même machine. Au-delà,
+ *  l'Invention est ignorée EN ENTIER (stats comprises) : la machine est
+ *  complète, il faut la prendre en main pour en recommencer une. C'est aussi le
+ *  coût maximal de la machine (1 mana par Invention). */
+export const MAX_INVENTIONS_MACHINE = 6;
+/** Caractéristiques de départ d'une machine vierge. */
+export const MACHINE_BASE_ATTACK = 0;
+export const MACHINE_BASE_HEALTH = 1;
 /** Palier du compteur d'Exploration : chaque fois qu'il est atteint, le
  *  contrôleur pioche une carte et le palier est RETRANCHÉ (le reste est
  *  conservé). Ce n'est pas un plafond — rien n'est jamais écrêté. */

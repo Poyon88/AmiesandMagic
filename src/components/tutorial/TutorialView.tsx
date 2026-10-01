@@ -29,7 +29,7 @@ import {
   MAX_EPARGNE,
   MAX_FOI,
   MAX_CONQUETE,
-  MAX_INVENTION,
+  MAX_INVENTIONS_MACHINE,
   EXPLORATION_PALIER,
   MAX_EVEIL,
 } from "@/lib/game/constants";
@@ -296,15 +296,16 @@ function BeginnerGuide() {
 
       <Section title={tt('counters_title')}>
         <P>
-          Cinq capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
-          dépensent pas en mana : tous sauf l'Exploration ouvrent, d'un clic sur le compteur, une <Hi>découverte</Hi> —
-          vous voyez trois cartes et en prenez une en main. L'Exploration, elle, se règle toute seule.
+          Plusieurs capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
+          dépensent pas en mana : l'Épargne, la Foi et la Conquête ouvrent, d'un clic sur le compteur, une
+          <Hi>découverte</Hi> — vous voyez trois cartes et en prenez une en main. L'Exploration se règle toute seule, et
+          l'Invention construit une machine.
         </P>
         <Bullets items={[
           <><Hi>Épargne</Hi> (maximum {MAX_EPARGNE}) : dépensez tout le compteur pour choisir 1 carte parmi 3 tirées au hasard dans le jeu, de coût inférieur ou égal à votre Épargne. Le compteur repart à 0.</>,
           <><Hi>Foi</Hi> (maximum {MAX_FOI}) : choisissez 1 carte parmi 3 tirées de <Hi>votre propre deck</Hi>, de coût inférieur ou égal à votre Foi. Seul le coût de la carte prise est retiré, le reste est conservé pour une prochaine découverte.</>,
           <><Hi>Conquête</Hi> (palier {MAX_CONQUETE}) : quand le compteur atteint {MAX_CONQUETE}, choisissez 1 carte parmi 3 tirées du <Hi>deck adverse</Hi>. Elle est à vous pour le reste de la partie, jouable sans contrainte de faction, et l'adversaire ne la piochera jamais. Le compteur repart à 0 et disparaît tant qu'il est vide.</>,
-          <><Hi>Invention</Hi> (maximum {MAX_INVENTION}) : dépensez tout le compteur pour choisir 1 <Hi>Machine</Hi> commune parmi 3 tirées au hasard, de coût inférieur ou égal à votre Invention. Le compteur repart à 0.</>,
+          <><Hi>Invention +X/+Y</Hi> : chaque Invention ajoute +X/+Y à <Hi>votre machine</Hi> (0/1 au départ), et parfois une capacité avec son déclencheur — deux fois la même capacité au même déclencheur additionnent leurs valeurs. La machine coûte 1 mana par Invention, {MAX_INVENTIONS_MACHINE} au plus. Survolez le compteur ⚙️ pour la voir, cliquez-le pour la prendre en main : la suivante repart de zéro.</>,
           <><Hi>Exploration</Hi> (palier {EXPLORATION_PALIER}) : le seul compteur qui ne se clique pas. Chaque fois qu'il atteint {EXPLORATION_PALIER}, vous <Hi>piochez une carte</Hi> aussitôt et {EXPLORATION_PALIER} points sont retirés — le reste est conservé, si bien qu'un gros gain peut faire piocher deux cartes. Il disparaît tant qu'il est vide.</>,
         ]} />
       </Section>
@@ -400,7 +401,7 @@ function TcgGuide() {
         <Bullets items={[
           <>Pouvoir de héros : <Hi>1× / tour</Hi>, coût en mana. 3 modes : conférer un mot-clé, déclencher un effet d'action, ou activer une <Hi>aura</Hi> empilable.</>,
           <>Coûts additionnels (cumulatifs, non réductibles) : <Hi>PV</Hi>, <Hi>défausse</Hi>, <Hi>sacrifice</Hi>, <Hi>exil</Hi> (dessus du deck), <Hi>repli</Hi> (main → dessus du deck, ordre choisi). <Hi>Éveil</Hi> = coût alternatif au mana, 1 point / mana / tour, {MAX_EVEIL} cartes en éveil max.</>,
-          <>Compteurs (clic = découverte 1 parmi 3) : <Hi>Épargne</Hi> (≤ {MAX_EPARGNE}, vidée, cartes du jeu de coût ≤ compteur), <Hi>Foi</Hi> (≤ {MAX_FOI}, cartes de SON deck, seul le coût pris est défalqué), <Hi>Conquête</Hi> (palier {MAX_CONQUETE}, carte du deck ADVERSE volée pour la partie), <Hi>Invention</Hi> (≤ {MAX_INVENTION}, vidée, Machines communes de coût ≤ compteur).</>,
+          <>Compteurs (clic = découverte 1 parmi 3) : <Hi>Épargne</Hi> (≤ {MAX_EPARGNE}, vidée, cartes du jeu de coût ≤ compteur), <Hi>Foi</Hi> (≤ {MAX_FOI}, cartes de SON deck, seul le coût pris est défalqué), <Hi>Conquête</Hi> (palier {MAX_CONQUETE}, carte du deck ADVERSE volée pour la partie), <Hi>Invention</Hi> (machine 0/1 améliorée pièce par pièce, 1 mana par Invention, {MAX_INVENTIONS_MACHINE} au plus, clic = en main).</>,
           <><Hi>Singulier</Hi> : condition sur une capacité — active seulement si le deck de départ n'a aucun doublon (figé au lancement). <Hi>Emblème</Hi> : effet permanent posé sur un joueur, survit à sa source.</>,
           <>Réductions de coût : <Hi>Canalisation</Hi> (actions, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
           <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible (blanc) ou à tous les alliés (vert).</>,

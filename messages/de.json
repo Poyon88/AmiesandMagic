@@ -471,8 +471,8 @@
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)."
       },
       "invention": {
-        "label": "Erfindung X",
-        "desc": "Fügt X zu deinem Erfindungszähler hinzu (max. 8). Ausgeben: 1 gewöhnliche Maschine aus 3 mit Kosten ≤ Erfindung, Zähler geleert."
+        "label": "Erfindung +X/+Y",
+        "desc": "Fügt deiner Maschine +X/+Y{machine_part} hinzu (anfangs 0/1, 1 Mana pro Erfindung, höchstens 6)."
       },
       "seconde_vie": {
         "label": "Zweites Leben X",
@@ -757,8 +757,8 @@
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)"
       },
       "invention": {
-        "label": "Erfindung X",
-        "desc": "Fügt X zu deinem Erfindungszähler hinzu (max. 8). Ausgeben: 1 gewöhnliche Maschine aus 3 mit Kosten ≤ Erfindung, Zähler geleert"
+        "label": "Erfindung +X/+Y",
+        "desc": "Fügt deiner Maschine +X/+Y{machine_part} hinzu (anfangs 0/1, 1 Mana pro Erfindung, höchstens 6)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -912,7 +912,6 @@
         "foi": "fügt deinem Glaubenszähler {x} hinzu",
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "exploration": "erhöht deinen Erkundungszähler um {x}",
-        "invention": "fügt {x} zu deinem Erfindungszähler hinzu",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
         "occurrences": "{n}-mal: ",
         "alternative": "Wahlweise: ",
@@ -1766,6 +1765,9 @@
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
       "scope_all": "auf alle deine Einheiten",
+      "machine_part": " und {ability}",
+      "machine_part_timed": " und {ability} ({timing})",
+      "machine_name": "Maschine",
       "neutralise_cible": "einer gezielten gegnerischen Einheit (oder aller)",
       "neutralise_cible_target": "bei einer gezielten gegnerischen Einheit",
       "neutralise_cible_all": "bei allen gegnerischen Einheiten",
@@ -2667,7 +2669,6 @@
     "content_foi": "Glaube (Zähler)",
     "content_conquete": "Eroberung (Zähler)",
     "content_exploration": "Erkundung (Zähler, Ziehen bei 3)",
-    "content_invention": "Erfindung (Zähler, Maschinen)",
     "content_incineration": "Einäscherung (Friedhof zurückführen)",
     "content_devoration": "Verschlingen (zerstören und aufnehmen)",
     "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",

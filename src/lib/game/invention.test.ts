@@ -1,177 +1,200 @@
-// Invention : compteur par joueur alimenté par la capacité (créature, sort,
-// effet composé), dépensé en révélant 3 MACHINES communes de coût ≤ compteur,
-// quelle que soit leur faction. Le compteur est vidé à la dépense.
+// Invention +X/+Y : chaque Invention ajoute +X/+Y et, au choix, une capacité
+// (avec son déclencheur) à la MACHINE du contrôleur. Un clic la met en main ;
+// la construction suivante repart d'une machine vierge 0/1.
 import { describe, expect, it } from "vitest";
-import { applyAction, getInventionOffer, spendInvention } from "./engine";
+import { applyAction, takeMachine } from "./engine";
+import { appliquerInvention, buildMachineCard, machineVierge, type InventionPart } from "./machine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
-import { MAX_INVENTION } from "./constants";
-import type { Capability, Card, CardInstance, GameState } from "./types";
+import { MAX_HAND_SIZE, MAX_INVENTIONS_MACHINE } from "./constants";
+import { getCapabilities } from "./capability-adapter";
+import type { CardInstance, GameState, KeywordInstance, KeywordMode, MachineState } from "./types";
 
-function creatureInvention(x: number, trigger?: string): CardInstance {
+/** Unité dont l'arrivée en jeu ajoute une pièce à la machine. */
+function inventeur(part: Partial<InventionPart>, mode?: KeywordMode): CardInstance {
+  const inst: KeywordInstance = {
+    id: "invention", ...(mode ? { mode } : {}), x: part.attack ?? 0, y: part.health ?? 0,
+    ...(part.grantAbilityId ? { grantAbilityId: part.grantAbilityId } : {}),
+    ...(part.grantX != null ? { grantX: part.grantX } : {}),
+    ...(part.grantY != null ? { grantY: part.grantY } : {}),
+    ...(part.grantMode ? { grantMode: part.grantMode } : {}),
+  };
   return mkInstance(mkCard({
-    name: "Inventeur gnome", mana_cost: 2, attack: 1, health: 2,
-    keywords: ["invention"], keyword_instances: [{ id: "invention", x, ...(trigger ? { trigger } : {}) }] as never,
-    effect_text: `[Invention ${x}]`,
+    name: "Inventeur gnome", mana_cost: 1, attack: 1, health: 1,
+    keywords: ["invention"], keyword_instances: [inst],
   }));
 }
 
-function spellInvention(x: number): CardInstance {
+/** Sort qui ajoute une pièce à la machine. */
+function planDAtelier(part: Partial<InventionPart>): CardInstance {
   return mkInstance(mkCard({
     name: "Plan d'atelier", card_type: "spell", attack: null, health: null, mana_cost: 1,
-    spell_keywords: [{ id: "invention", amount: x }] as never,
+    spell_keywords: [{ id: "invention", attack: part.attack ?? 0, health: part.health ?? 0,
+      grantAbilityId: part.grantAbilityId, grantX: part.grantX, grantY: part.grantY, grantMode: part.grantMode }],
   }));
 }
 
-function play(s: GameState, inst: CardInstance): GameState {
+function jouer(s: GameState, inst: CardInstance, targetInstanceId?: string): GameState {
   s.players[0].hand.push(inst);
-  return applyAction(s, { type: "play_card", cardInstanceId: inst.instanceId });
+  return applyAction(s, { type: "play_card", cardInstanceId: inst.instanceId, ...(targetInstanceId ? { targetInstanceId } : {}) });
 }
 
-const compteur = (s: GameState) => s.players[0].invention ?? null;
+const machine = (s: GameState): MachineState | null => s.players[0].machine ?? null;
+const instancesDe = (m: MachineState | null, id: string) => (m?.keyword_instances ?? []).filter((k) => k.id === id);
 
-const machine = (id: number, cost: number, extra: Partial<Card> = {}): Card => mkCard({
-  id, name: `Machine ${id}`, mana_cost: cost, attack: 2, health: 2,
-  race: "Machines", rarity: "Commune", faction: "Nains", card_alignment: "bon", ...extra,
-} as Partial<Card>);
-
-/** Compteur chargé, pool mêlant Machines et intrus (autre race, rareté). */
-function stateAvecInvention(niveau: number | null): GameState {
-  const s = mkState();
-  s.players[0].invention = niveau;
-  s.factionCardPool = [
-    machine(101, 1), machine(102, 2), machine(103, 3), machine(104, 3), machine(105, 6),
-    // Hors vivier : mauvaise race, mauvaise rareté.
-    mkCard({ id: 201, name: "Golem", mana_cost: 2, race: "Golems", rarity: "Commune", faction: "Nains" } as Partial<Card>),
-    machine(202, 2, { rarity: "Rare" }),
-    // Machine d'une faction maléfique : la race suffit, l'alignement n'est pas filtré.
-    machine(203, 1, { faction: "Morts-Vivants", card_alignment: "maléfique" }),
-  ];
-  return s;
-}
-
-describe("Invention — alimentation du compteur", () => {
-  it("est MASQUÉE tant que la capacité ne s'est jamais déclenchée", () => {
-    expect(compteur(mkState())).toBeNull();
+describe("Invention — construction de la machine", () => {
+  it("n'existe pas tant qu'aucune Invention n'a été jouée", () => {
+    expect(machine(mkState())).toBeNull();
   });
 
-  it("apparaît à l'entrée en jeu d'une créature", () => {
-    expect(compteur(play(mkState(), creatureInvention(3)))).toBe(3);
+  it("part d'une 0/1 : +2/+1 avec Impact 1 donne une 2/2 Impact 1, coût 1", () => {
+    const s = jouer(mkState(), inventeur({ attack: 2, health: 1, grantAbilityId: "impact", grantX: 1 }));
+    const m = machine(s)!;
+    expect([m.attack, m.health, m.inventions]).toEqual([2, 2, 1]);
+    expect(m.keywords).toEqual(["impact"]);
+    expect(instancesDe(m, "impact")).toEqual([{ id: "impact", x: 1 }]);
+  });
+
+  it("l'exemple de Fab : +2/+1 Impact 1 puis +1/+0 Vol donne une 3/2 Vol, Impact 1, coût 2", () => {
+    let s = jouer(mkState(), inventeur({ attack: 2, health: 1, grantAbilityId: "impact", grantX: 1 }));
+    s = jouer(s, inventeur({ attack: 1, health: 0, grantAbilityId: "ranged" }));
+    const m = machine(s)!;
+    expect([m.attack, m.health]).toEqual([3, 2]);
+    expect(m.keywords.sort()).toEqual(["impact", "ranged"]);
+    expect(buildMachineCard(m, null).mana_cost).toBe(2);
+  });
+
+  it("additionne les X d'une même capacité au même déclencheur (Impact 1 + 1 = Impact 2)", () => {
+    let m = appliquerInvention(null, { attack: 0, health: 0, grantAbilityId: "impact", grantX: 1 });
+    m = appliquerInvention(m, { attack: 0, health: 0, grantAbilityId: "impact", grantX: 1 });
+    expect(instancesDe(m, "impact")).toEqual([{ id: "impact", x: 2 }]);
+  });
+
+  it("additionne aussi les Y d'une capacité à couple", () => {
+    let m = appliquerInvention(null, { attack: 0, health: 0, grantAbilityId: "renforcement", grantX: 1, grantY: 2, grantMode: "end_of_turn" });
+    m = appliquerInvention(m, { attack: 0, health: 0, grantAbilityId: "renforcement", grantX: 2, grantY: 1, grantMode: "end_of_turn" });
+    expect(instancesDe(m, "renforcement")).toEqual([{ id: "renforcement", mode: "end_of_turn", x: 3, y: 3 }]);
+  });
+
+  it("garde deux capacités distinctes pour deux déclencheurs différents", () => {
+    let m = appliquerInvention(null, { attack: 0, health: 0, grantAbilityId: "impact", grantX: 1 });
+    m = appliquerInvention(m, { attack: 0, health: 0, grantAbilityId: "impact", grantX: 2, grantMode: "death" });
+    expect(instancesDe(m, "impact")).toEqual([{ id: "impact", x: 1 }, { id: "impact", mode: "death", x: 2 }]);
+    expect(m.keywords).toEqual(["impact"]);
+  });
+
+  it("ne double jamais une capacité permanente sans X (Vol + Vol = Vol)", () => {
+    let m = appliquerInvention(null, { attack: 1, health: 0, grantAbilityId: "ranged", grantX: 1 });
+    m = appliquerInvention(m, { attack: 1, health: 0, grantAbilityId: "ranged", grantMode: "death" });
+    expect(m.keywords).toEqual(["ranged"]);
+    expect(m.keyword_instances).toEqual([]);
+    expect(m.attack).toBe(2);
+  });
+
+  it("accepte une Invention sans capacité (stats seules)", () => {
+    const m = appliquerInvention(null, { attack: 1, health: 1 });
+    expect([m.attack, m.health, m.inventions]).toEqual([1, 2, 1]);
+    expect(m.keywords).toEqual([]);
+  });
+
+  it(`ignore EN ENTIER la ${MAX_INVENTIONS_MACHINE + 1}e Invention (machine complète)`, () => {
+    let m: MachineState | null = null;
+    for (let i = 0; i < MAX_INVENTIONS_MACHINE; i++) m = appliquerInvention(m, { attack: 1, health: 1 });
+    const pleine = m!;
+    const apres = appliquerInvention(pleine, { attack: 5, health: 5, grantAbilityId: "ranged" });
+    expect(apres).toEqual(pleine);
+    expect(buildMachineCard(apres, null).mana_cost).toBe(MAX_INVENTIONS_MACHINE);
+  });
+
+  it("ne modifie pas la machine reçue (aucune mutation)", () => {
+    const avant = appliquerInvention(null, { attack: 1, health: 0, grantAbilityId: "impact", grantX: 1 });
+    const copie = JSON.parse(JSON.stringify(avant));
+    appliquerInvention(avant, { attack: 1, health: 1, grantAbilityId: "impact", grantX: 1 });
+    expect(avant).toEqual(copie);
   });
 
   it("est alimentée par un SORT", () => {
-    expect(compteur(play(mkState(), spellInvention(2)))).toBe(2);
+    const s = jouer(mkState(), planDAtelier({ attack: 1, health: 2, grantAbilityId: "ranged" }));
+    const m = machine(s)!;
+    expect([m.attack, m.health, m.inventions]).toEqual([1, 3, 1]);
+    expect(m.keywords).toEqual(["ranged"]);
   });
 
-  it("cumule puis s'écrête au plafond", () => {
+  it("se déclenche aussi à la MORT de l'inventeur", () => {
     let s = mkState();
-    for (let i = 0; i < 5; i++) s = play(s, creatureInvention(3));
-    expect(compteur(s)).toBe(MAX_INVENTION);
-  });
-
-  it("n'alimente QUE le joueur qui déclenche, et pas l'Épargne", () => {
-    const next = play(mkState(), creatureInvention(3));
-    expect(next.players[1].invention ?? null).toBeNull();
-    expect(next.players[0].epargne).toBeNull();
-  });
-
-  it("est alimentée par la forme COMPOSÉE", () => {
-    const porteur = mkInstance(mkCard({
-      name: "Brevet", card_type: "spell", attack: null, health: null, mana_cost: 1,
-      capabilities: [{
-        uid: "cx_0", abilityId: "_composed", effectKind: "immediate",
-        trigger: "spell_resolution",
-        composed: { content: "invention", magnitude: { x: 4 } },
-      }] as unknown as Capability[],
+    const insecte = inventeur({ attack: 1, health: 1 }, "death");
+    insecte.currentHealth = 1;
+    s.players[0].board.push(insecte);
+    const tueur = mkInstance(mkCard({
+      name: "Éclair", card_type: "spell", attack: null, health: null, mana_cost: 1,
+      spell_keywords: [{ id: "impact", amount: 3 }],
     }));
-    expect(compteur(play(mkState(), porteur))).toBe(4);
+    s = jouer(s, tueur, insecte.instanceId);
+    expect(machine(s)?.inventions).toBe(1);
+  });
+
+  it("n'alimente que la machine du joueur qui déclenche", () => {
+    const s = jouer(mkState(), inventeur({ attack: 1, health: 1 }));
+    expect(s.players[1].machine ?? null).toBeNull();
   });
 });
 
-describe("Invention — offre", () => {
-  it("ne propose que des Machines communes de coût ≤ compteur, toutes factions", () => {
-    const offre = getInventionOffer(stateAvecInvention(3));
-    expect(offre).toHaveLength(3);
-    for (const c of offre) {
-      expect(c.race).toBe("Machines");
-      expect(c.rarity).toBe("Commune");
-      expect(c.mana_cost).toBeLessThanOrEqual(3);
-    }
+describe("Invention — prise en main", () => {
+  const avecMachine = (): GameState => {
+    let s = jouer(mkState(), inventeur({ attack: 2, health: 1, grantAbilityId: "impact", grantX: 1 }));
+    s = jouer(s, inventeur({ attack: 1, health: 0, grantAbilityId: "ranged" }));
+    return s;
+  };
+
+  it("met la machine en main et repart d'une machine vierge, compteur visible", () => {
+    const s = avecMachine();
+    const next = applyAction(s, { type: "take_machine" });
+    const carte = next.players[0].hand.at(-1)!.card;
+    expect(carte.machine).toBe(true);
+    expect([carte.attack, carte.health, carte.mana_cost]).toEqual([3, 2, 2]);
+    expect(next.players[0].machine).toEqual(machineVierge());
   });
 
-  it("couvre exactement le vivier attendu sur plusieurs états", () => {
-    const vus = new Set<number>();
-    for (let main = 0; main < 30; main++) {
-      const s = stateAvecInvention(3);
-      for (let i = 0; i < main % 7; i++) s.players[0].hand.push(mkInstance(mkCard({})));
-      s.turnNumber = main;
-      for (const c of getInventionOffer(s)) vus.add(c.id);
-    }
-    expect([...vus].sort((a, b) => a - b)).toEqual([101, 102, 103, 104, 203]);
+  it("la carte reçue porte ses capacités : Vol permanent, Impact à l'arrivée", () => {
+    const next = applyAction(avecMachine(), { type: "take_machine" });
+    const caps = getCapabilities(next.players[0].hand.at(-1)!.card);
+    expect(caps.find((c) => c.abilityId === "ranged")?.trigger).toBe("automatic");
+    const impact = caps.find((c) => c.abilityId === "impact");
+    expect(impact?.trigger).toBe("on_play");
+    expect(impact?.params?.x).toBe(1);
   });
 
-  it("est vide à 0, à null, ou sans Machine abordable", () => {
-    expect(getInventionOffer(stateAvecInvention(0))).toEqual([]);
-    expect(getInventionOffer(stateAvecInvention(null))).toEqual([]);
-    const s = stateAvecInvention(3);
-    s.factionCardPool = [machine(301, 5)];
-    expect(getInventionOffer(s)).toEqual([]);
-  });
-
-  it("est déterministe et ne consomme pas la RNG partagée", () => {
-    const s = stateAvecInvention(6);
-    const avant = s.rngState;
-    const a = getInventionOffer(s).map((c) => c.id);
-    const b = getInventionOffer(s).map((c) => c.id);
-    expect(a).toEqual(b);
-    expect(s.rngState).toBe(avant);
-  });
-
-  it("ne compte pas deux fois une carte présente en double dans le pool", () => {
-    const s = stateAvecInvention(1);
-    s.factionCardPool = [machine(401, 1), machine(401, 1)];
-    expect(getInventionOffer(s).map((c) => c.id)).toEqual([401]);
-  });
-});
-
-describe("Invention — dépense", () => {
-  it("met la Machine choisie en main et VIDE le compteur (visible à 0)", () => {
-    const s = stateAvecInvention(3);
-    const choisie = getInventionOffer(s)[0];
-    const next = applyAction(s, { type: "spend_invention", selectionCardId: choisie.id });
-    expect(next.players[0].hand.map((c) => c.card.id)).toContain(choisie.id);
-    expect(next.players[0].invention).toBe(0);
+  it("jouée, la machine résout son Impact 1 et garde Vol sur le plateau", () => {
+    let s = applyAction(avecMachine(), { type: "take_machine" });
+    const cible = mkInstance(mkCard({ name: "Cible", attack: 0, health: 3 }));
+    s.players[1].board.push(cible);
+    const carte = s.players[0].hand.at(-1)!;
+    s.players[0].mana = 10;
+    s = applyAction(s, { type: "play_card", cardInstanceId: carte.instanceId, targetInstanceId: cible.instanceId });
+    expect(s.players[1].board.find((c) => c.instanceId === cible.instanceId)?.currentHealth).toBe(2);
+    const posee = s.players[0].board.find((c) => c.card.machine);
+    expect(posee?.card.keywords).toContain("ranged");
+    expect([posee?.currentAttack, posee?.currentHealth]).toEqual([3, 2]);
   });
 
   describe("gardes (le moteur rejoue chez l'adversaire)", () => {
-    const rejete = (s: GameState, cardId: number) => {
-      const next = spendInvention(s, { type: "spend_invention", selectionCardId: cardId });
-      expect(next).toBe(s);
-    };
-
-    it("refuse une carte hors de l'offre", () => {
-      const s = stateAvecInvention(3);
-      const offre = new Set(getInventionOffer(s).map((c) => c.id));
-      const horsOffre = [101, 102, 103, 104, 203].find((id) => !offre.has(id))!;
-      rejete(s, horsOffre);
+    it("refuse sans machine, ou machine vierge", () => {
+      const s = mkState();
+      expect(takeMachine(s, { type: "take_machine" })).toBe(s);
+      s.players[0].machine = machineVierge();
+      expect(takeMachine(s, { type: "take_machine" })).toBe(s);
     });
 
-    it("refuse une Machine trop chère, une autre race ou une non Commune", () => {
-      const s = stateAvecInvention(3);
-      rejete(s, 105);
-      rejete(s, 201);
-      rejete(s, 202);
+    it("refuse main pleine SANS perdre la machine", () => {
+      const s = avecMachine();
+      while (s.players[0].hand.length < MAX_HAND_SIZE) s.players[0].hand.push(mkInstance(mkCard({})));
+      expect(takeMachine(s, { type: "take_machine" })).toBe(s);
+      expect(s.players[0].machine?.inventions).toBe(2);
     });
+  });
 
-    it("refuse à zéro ou jamais déclenchée", () => {
-      rejete(stateAvecInvention(0), 101);
-      rejete(stateAvecInvention(null), 101);
-    });
-
-    it("refuse main pleine SANS consommer le compteur", () => {
-      const s = stateAvecInvention(3);
-      const id = getInventionOffer(s)[0].id;
-      for (let i = 0; i < 8; i++) s.players[0].hand.push(mkInstance(mkCard({ name: `Carte${i}` })));
-      rejete(s, id);
-    });
+  it("est déterministe : même état, même instance en main", () => {
+    const a = applyAction(avecMachine(), { type: "take_machine" });
+    const b = applyAction(avecMachine(), { type: "take_machine" });
+    expect(a.players[0].hand.at(-1)!.card).toEqual(b.players[0].hand.at(-1)!.card);
   });
 });

@@ -1370,19 +1370,21 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
-  // Compteur jumeau de l'Épargne, restreint aux MACHINES mais en coût ≤
-  // compteur (et non exact) : même barème que l'Épargne.
+  // INVENTION : construit pièce par pièce une MACHINE propre au joueur
+  // (cf. machine.ts). X/Y = +ATQ/+PV ; la capacité ajoutée vit dans les
+  // champs grant* de l'instance. Barème calé sur Renforcement +X/+Y — la
+  // valeur est différée (il faut encore prendre puis jouer la machine).
   invention: {
-    id: "invention", label: "Invention X", symbol: "⚙️",
-    desc: "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé.",
+    id: "invention", label: "Invention +X/+Y", symbol: "⚙️",
+    desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus).",
     applicable_to: ["creature", "spell"],
     creature: {
-      cost: 7, costPerX: 4, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé.",
+      cost: 6, costPerX: 3, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus).",
     },
     spell: {
-      desc: "Ajoute X à votre Invention (max. 8). Dépense : 1 Machine commune parmi 3 de coût ≤ Invention, compteur vidé",
-      params: ["amount"], needsTarget: false,
+      desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus)",
+      params: ["attack", "health"], needsTarget: false,
     },
   },
   inspiration: {
