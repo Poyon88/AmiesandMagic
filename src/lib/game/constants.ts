@@ -66,6 +66,9 @@ export const MAX_CONQUETE = 3;
  *  coût maximal de la machine (1 mana par Invention). */
 export const MAX_INVENTIONS_MACHINE = 6;
 /** Caractéristiques de départ d'une machine vierge. */
+/** Nom du set (spécial) qui porte les MODÈLES de machine — une carte par coût
+ *  de 1 à MAX_INVENTIONS_MACHINE, dont la machine reprend nom, race et visuel. */
+export const INVENTION_SET_NAME = "Inventions";
 export const MACHINE_BASE_ATTACK = 0;
 export const MACHINE_BASE_HEALTH = 1;
 /** Palier du compteur d'Exploration : chaque fois qu'il est atteint, le

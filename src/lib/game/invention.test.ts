@@ -198,3 +198,34 @@ describe("Invention — prise en main", () => {
     expect(a.players[0].hand.at(-1)!.card).toEqual(b.players[0].hand.at(-1)!.card);
   });
 });
+
+describe("Invention — modèles du set « Inventions »", () => {
+  const modele = (id: number, cout: number, nom: string) => mkCard({
+    id, name: nom, mana_cost: cout, attack: 9, health: 9, race: "Automates", rarity: "Rare",
+    image_url: `https://img/${nom}.png`, set_id: 77, keywords: ["vol" as never],
+  });
+  const modeles = [modele(10, 1, "Invention 1"), modele(12, 2, "Invention 2"), modele(11, 2, "Doublon")];
+
+  it("l'habillage vient du modèle du coût ; stats et capacités viennent des Inventions", () => {
+    let m = appliquerInvention(null, { attack: 2, health: 1, grantAbilityId: "impact", grantX: 1 });
+    m = appliquerInvention(m, { attack: 1, health: 0 });
+    const c = buildMachineCard(m, "Mercenaires", modeles);
+    // Deux modèles au coût 2 : le plus ancien (id 11).
+    expect([c.name, c.race, c.image_url, c.rarity, c.set_id, c.machineTemplateId]).toEqual(["Doublon", "Automates", "https://img/Doublon.png", "Rare", 77, 11]);
+    expect([c.id, c.mana_cost, c.attack, c.health, c.faction]).toEqual([-1, 2, 3, 2, "Mercenaires"]);
+    expect(c.keywords).toEqual(["impact"]);
+  });
+
+  it("sans modèle au bon coût : la machine générique d'avant", () => {
+    const m = appliquerInvention(appliquerInvention(appliquerInvention(null, { attack: 1, health: 1 }), { attack: 1, health: 1 }), { attack: 1, health: 1 });
+    const c = buildMachineCard(m, null, modeles);
+    expect([c.name, c.image_url, c.race, c.machineTemplateId]).toEqual(["Machine", null, "Machines", undefined]);
+  });
+
+  it("la prise en main en partie utilise les modèles de l'état", () => {
+    const s = jouer(mkState(), inventeur({ attack: 1, health: 1 }));
+    s.machineTemplates = modeles;
+    const carte = applyAction(s, { type: "take_machine" }).players[0].hand.at(-1)!.card;
+    expect([carte.name, carte.image_url, carte.machine]).toEqual(["Invention 1", "https://img/Invention 1.png", true]);
+  });
+});

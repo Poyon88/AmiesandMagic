@@ -705,6 +705,7 @@ interface GameStore {
     boardPosition?: number | null;
   } | null;
   tokenTemplates: TokenTemplate[];
+  machineTemplates: Card[];
   effectLog: { id: string; text: string; timestamp: number }[];
   // Bande latérale d'historique — les ACTION_HISTORY_MAX dernières entrées,
   // plus ancienne en tête (le composant inverse pour l'affichage).
@@ -774,6 +775,7 @@ interface GameStore {
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
+  setMachineTemplates: (templates: Card[]) => void;
   setBoardImageUrl: (url: string | null) => void;
   setBoardLayout: (layout: string) => void;
   setBoardGraveyardImageUrl: (url: string | null) => void;
@@ -1772,6 +1774,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   attackPowerCollected: [],
   pendingCreatureChain: null,
   tokenTemplates: [],
+  machineTemplates: [],
   effectLog: [],
   actionHistory: [],
   damageEvents: [],
@@ -1826,12 +1829,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;
+    state.machineTemplates = get().machineTemplates;
     set({ gameState: state });
   },
 
   setGameState: (state) => set({ gameState: state, ...pendingTriggerOverlay(state, get().localPlayerId) }),
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
+  setMachineTemplates: (templates) => set({ machineTemplates: templates }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
   setBoardLayout: (layout) => set({ boardLayout: layout }),
   setBoardGraveyardImageUrl: (url) => set({ boardGraveyardImageUrl: url }),

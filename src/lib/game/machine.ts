@@ -91,30 +91,55 @@ export function appliquerInvention(actuelle: MachineState | null | undefined, pa
   return m;
 }
 
+/** MODÈLE d'une machine de coût `cout` : la carte du set « Inventions » à ce
+ *  coût (la plus ancienne si plusieurs). `null` sans modèle — la machine garde
+ *  alors son habillage par défaut. */
+export function modeleDeMachine(modeles: readonly Card[] | null | undefined, cout: number): Card | null {
+  let choisi: Card | null = null;
+  for (const c of modeles ?? []) {
+    if (c.mana_cost === cout && (!choisi || c.id < choisi.id)) choisi = c;
+  }
+  return choisi;
+}
+
 /** La CARTE correspondant à une machine : ce que le joueur reçoit en main, et
  *  ce que l'UI montre au survol du compteur. Toujours un objet NEUF —
  *  `getCapabilities` met en cache par objet carte.
  *
  *  `capabilities: null` : tout est dérivé de `keywords` + `keyword_instances`,
- *  exactement comme pour une carte de la forge sans effet composé. */
-export function buildMachineCard(machine: MachineState, faction: string | null): Card {
+ *  exactement comme pour une carte de la forge sans effet composé.
+ *
+ *  MODÈLE (set « Inventions », un par coût) : il fixe l'HABILLAGE — nom, race,
+ *  visuel, texte d'ambiance, icône de set, rareté, bruitages. Stats et
+ *  capacités restent celles construites par les Inventions : celles du modèle
+ *  sont ignorées. L'id reste -1 (la machine n'est pas une carte du catalogue) ;
+ *  `machineTemplateId` sert à traduire le nom du modèle. */
+export function buildMachineCard(machine: MachineState, faction: string | null, modeles?: readonly Card[] | null): Card {
+  const modele = modeleDeMachine(modeles, machine.inventions);
   return {
     id: -1,
-    name: "Machine",
+    name: modele?.name ?? "Machine",
     mana_cost: machine.inventions,
     card_type: "creature",
     attack: machine.attack,
     health: machine.health,
     effect_text: "",
+    flavor_text: modele?.flavor_text ?? null,
     keywords: [...machine.keywords],
     keyword_instances: machine.keyword_instances.map((k) => ({ ...k })),
     spell_keywords: null,
     spell_effects: null,
     capabilities: null,
-    image_url: null,
-    race: "Machines",
-    rarity: "Commune",
+    image_url: modele?.image_url ?? null,
+    race: modele?.race ?? "Machines",
+    rarity: modele?.rarity ?? "Commune",
     faction,
     machine: true,
+    ...(modele ? {
+      machineTemplateId: modele.id,
+      set_id: modele.set_id ?? null,
+      sfx_play_url: modele.sfx_play_url ?? null,
+      sfx_death_url: modele.sfx_death_url ?? null,
+    } : {}),
   } as Card;
 }

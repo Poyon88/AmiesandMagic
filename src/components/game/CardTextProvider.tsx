@@ -22,6 +22,7 @@ interface CardLike {
   token_id?: number | null;
   // Machine d'Invention : id -1 elle aussi, nom traduit par `vocab.markers.machine_name`.
   machine?: boolean;
+  machineTemplateId?: number;
 }
 
 interface CardTextCtx {
@@ -83,11 +84,16 @@ export default function CardTextProvider({ children }: { children: React.ReactNo
       const key = `vocab.tokens.${c.token_id}`;
       return t.has(key) ? (t.raw(key) as string) : null;
     };
-    const machineName = (c: CardLike): string | null =>
-      c.machine && t.has("vocab.markers.machine_name") ? (t.raw("vocab.markers.machine_name") as string) : null;
+    // Machine habillée par un modèle : le nom TRADUIT du modèle ; sinon le nom
+    // générique « Machine ».
+    const machineName = (c: CardLike): string | null => {
+      if (!c.machine) return null;
+      if (c.machineTemplateId != null) return map.get(c.machineTemplateId)?.name ?? null;
+      return t.has("vocab.markers.machine_name") ? (t.raw("vocab.markers.machine_name") as string) : null;
+    };
     return {
       localizeName: (c) => machineName(c) ?? tokenName(c) ?? map.get(c.id)?.name ?? c.name ?? "",
-      localizeFlavor: (c) => map.get(c.id)?.flavor_text ?? c.flavor_text ?? null,
+      localizeFlavor: (c) => map.get(c.machineTemplateId ?? c.id)?.flavor_text ?? c.flavor_text ?? null,
     };
   }, [map, t]);
 

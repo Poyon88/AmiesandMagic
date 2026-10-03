@@ -11478,7 +11478,7 @@ export function takeMachine(state: GameState, action: TakeMachineAction): GameSt
   newState.allSpellsPool = state.allSpellsPool;
 
   const me = newState.players[newState.currentPlayerIndex];
-  const carte = buildMachineCard(me.machine!, me.hero.heroDefinition?.faction ?? null);
+  const carte = buildMachineCard(me.machine!, me.hero.heroDefinition?.faction ?? null, newState.machineTemplates);
   me.hand.push(createCardInstance(carte));
   me.machine = machineVierge();
   newState.lastAction = action;

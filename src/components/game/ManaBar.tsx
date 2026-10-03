@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { EXPLORATION_PALIER, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
 import { buildMachineCard } from "@/lib/game/machine";
+import { useGameStore } from "@/lib/store/gameStore";
 import { overlayRect } from "@/lib/fx/overlayMotion";
 import GameCard from "@/components/cards/GameCard";
 import type { MachineState } from "@/lib/game/types";
@@ -80,7 +81,8 @@ export default function ManaBar({
   const held = Math.max(0, Math.min(reserved, current));
   // Aperçu de la machine au survol du losange : la MÊME carte que le moteur
   // mettra en main (buildMachineCard est pur, sans RNG).
-  const machineCard = useMemo(() => (machine ? buildMachineCard(machine, machineFaction) : null), [machine, machineFaction]);
+  const machineTemplates = useGameStore((s) => s.machineTemplates);
+  const machineCard = useMemo(() => (machine ? buildMachineCard(machine, machineFaction, machineTemplates) : null), [machine, machineFaction, machineTemplates]);
   const machineRef = useRef<HTMLButtonElement>(null);
   const [apercu, setApercu] = useState<{ x: number; top: number; bottom: number } | null>(null);
   const montrerMachine = () => {

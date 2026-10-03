@@ -1030,6 +1030,9 @@ export interface Card {
   /** Vrai sur la carte MACHINE construite par Invention (id -1, aucune ligne
    *  en base) : le rendu en tire son nom traduit. */
   machine?: boolean;
+  /** Machine habillée par un modèle du set « Inventions » : id du modèle, pour
+   *  en traduire le nom (la machine elle-même garde l'id -1). */
+  machineTemplateId?: number;
   set_id?: number | null;
   /** Carte proposée par les TIRAGES (Sélection, Invocation X, Concentration…) ?
    *  `false` l'en écarte, sans cesser d'être collectionnable, deck-able,
@@ -1844,6 +1847,10 @@ export interface GameState {
   // contrôleur de pendingTriggers[0] choisisse une cible (resolve_pending_trigger).
   pendingTriggers?: PendingTrigger[];
   tokenTemplates?: TokenTemplate[];
+  /** MODÈLES de machine (set « Inventions », un par coût) : habillage de la
+   *  carte que fabrique la prise en main d'une machine (cf. buildMachineCard).
+   *  Statique, chargé au démarrage du match comme les viviers. */
+  machineTemplates?: Card[];
   factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
   // Global pool of all spell cards (every faction, every set). Loaded once
   // at match start and used by Concentration X to draw a random replacement
