@@ -19,9 +19,12 @@ import { CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "./constants";
  *  conférant Vol pour contourner un plafond que dix créatures n'auraient pas eu
  *  le droit de franchir.
  *
- *  Retourne un tableau vide pour les sorts, qui n'en portent pas. */
+ *  Les ACTIONS comptent aussi : leurs pouvoirs (`spell_keywords`) portent le
+ *  même id que la capacité d'unité (Invention, Rappel, Impact…) et
+ *  `getCapabilities` les rend comme tels. Les en exempter laissait dépasser le
+ *  plafond sans limite — 12 unités Invention + autant d'actions Invention
+ *  qu'on voulait, le badge n'en affichant que 12. */
 export function namedCreatureCapabilityIds(card: Card): string[] {
-  if (card.card_type !== "creature" && card.card_type !== "item") return [];
   const ids = new Set<string>();
   for (const cap of getCapabilities(card)) {
     if (ABILITIES[cap.abilityId]) ids.add(cap.abilityId);

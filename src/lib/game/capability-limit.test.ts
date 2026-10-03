@@ -16,7 +16,7 @@ import {
   CAPABILITY_LIMIT_EXEMPT,
   capabilityLimitFor,
 } from "./constants";
-import { capabilityLimitViolations, namedCreatureCapabilityIds } from "./deck-rules";
+import { capabilityLimitViolations, creatureCapabilityCounts, namedCreatureCapabilityIds } from "./deck-rules";
 import { ABILITIES } from "./abilities";
 import { mkCard } from "./test-harness";
 
@@ -60,8 +60,8 @@ describe("les violations citent le plafond RÉELLEMENT appliqué", () => {
   });
 });
 
-describe("périmètre du décompte — inchangé", () => {
-  it("seules les CRÉATURES comptent : un sort Chant n'entame pas le quota", () => {
+describe("périmètre du décompte — unités, objets ET actions", () => {
+  it("une action Chant entame le quota comme une créature Chant", () => {
     const creature = mkCard({
       name: "Chanteuse", card_type: "creature", attack: 1, health: 1,
       keywords: ["chant"] as never,
@@ -72,6 +72,7 @@ describe("périmètre du décompte — inchangé", () => {
     });
 
     expect(namedCreatureCapabilityIds(creature)).toContain("chant");
-    expect(namedCreatureCapabilityIds(sort)).toEqual([]);
+    expect(namedCreatureCapabilityIds(sort)).toEqual(["chant"]);
+    expect(creatureCapabilityCounts([{ card: creature, quantity: 12 }, { card: sort, quantity: 13 }]).get("chant")).toBe(25);
   });
 });

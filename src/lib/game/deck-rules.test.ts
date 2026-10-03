@@ -30,8 +30,8 @@ describe("namedCreatureCapabilityIds", () => {
       composed: { content: "deal_damage", magnitude: { x: 1 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "random" } } };
     expect(namedCreatureCapabilityIds(mkCard({ capabilities: [composed] }))).toEqual([]);
   });
-  it("retourne [] pour un sort", () => {
-    expect(namedCreatureCapabilityIds(mkCard({ card_type: "spell", attack: null, health: null, keywords: ["gloire"] as unknown as Card["keywords"] }))).toEqual([]);
+  it("compte aussi les pouvoirs d'une action", () => {
+    expect(namedCreatureCapabilityIds(mkCard({ card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "invention" }] as never }))).toEqual(["invention"]);
   });
 });
 
