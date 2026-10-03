@@ -131,6 +131,9 @@ export interface ForgeKeywordExtras {
   tuteurCardIds?: number[];
   /** Transformation (créature) : la carte CIBLE — une seule, la première. */
   transformationCardIds?: number[];
+  /** Invention : capacité ajoutée à la machine (optionnelle), son X/Y et son
+   *  déclencheur sur la machine. Les +ATQ/+PV restent le X/Y du mot-clé. */
+  inventionPart?: Pick<KeywordInstance, "grantAbilityId" | "grantX" | "grantY" | "grantMode">;
 }
 
 /** Couples X/Y traités par une branche DÉDIÉE ci-dessous (leur second membre
@@ -144,7 +147,7 @@ export interface ForgeKeywordExtras {
  *  Sacrificiel ont vécu ainsi). */
 const XY_IDS_A_BRANCHE_DEDIEE: ReadonlySet<string> = new Set([
   "renforcement_multiple", "affaiblissement", "renforcement",
-  "dechainement", "gloire", "force_des_ancetres",
+  "dechainement", "gloire", "force_des_ancetres", "invention",
 ]);
 
 export interface BuildKeywordInstancesInput {
@@ -261,6 +264,18 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
         // porte un couple, sinon l'instance stockerait un Y sans sens).
         const xy = XY_ABILITY_IDS.has(extras.conferAbilityId ?? "");
         return { id, ...(mode ? { mode } : {}), ...(extras.conferAbilityId ? { grantAbilityId: extras.conferAbilityId } : {}), x: extras.conferX ?? 0, ...(xy ? { y: extras.conferY ?? 0 } : {}), ...(scope ? { grantScope: scope } : {}) };
+      }
+      // Invention (créature) : +ATQ/+PV dans x/y, et la pièce de machine dans
+      // les champs grant* ; toujours émise.
+      if (id === "invention" && !isSpellCard) {
+        const p = extras.inventionPart ?? {};
+        return {
+          id, ...(mode ? { mode } : {}), x: x ?? 1, y: yValues[label] ?? 1,
+          ...(p.grantAbilityId ? { grantAbilityId: p.grantAbilityId } : {}),
+          ...(p.grantAbilityId && p.grantX != null ? { grantX: p.grantX } : {}),
+          ...(p.grantAbilityId && p.grantY != null ? { grantY: p.grantY } : {}),
+          ...(p.grantAbilityId && p.grantMode ? { grantMode: p.grantMode } : {}),
+        };
       }
       // Neutralisation (créature) : porte la capacité visée ; toujours émise.
       // La portée « toutes les ennemies » s'ajoute au point commun (targetScope).

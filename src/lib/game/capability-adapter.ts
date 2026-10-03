@@ -198,6 +198,8 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       faction: sk.faction,
       // compagnons : cartes liées mélangées dans le deck du lanceur.
       linkedCardIds: sk.linkedCardIds,
+      // invention : la capacité ajoutée à la machine.
+      ...(sk.grantAbilityId ? { machinePart: { grantAbilityId: sk.grantAbilityId, grantX: sk.grantX, grantY: sk.grantY, grantMode: sk.grantMode } } : {}),
       tokenId: sk.token_id ?? undefined,
       targets,
       ...(scope ? { targetScope: scope } : {}),

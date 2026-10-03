@@ -30,6 +30,7 @@ import type {
   SpendEpargneAction,
   SpendFoiAction,
   SpendConqueteAction,
+  TakeMachineAction,
   SuspendEveilAction,
   PayEveilAction,
   StackFrame,
@@ -44,6 +45,7 @@ import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capa
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
 import { KEYWORD_LABELS, isPermanentKeyword, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { nombreDOccurrences } from "./composed-occurrences";
+import { appliquerInvention, buildMachineCard, machineVierge, type InventionPart } from "./machine";
 import {
   HERO_MAX_HP,
   startingHandSizeFor,
@@ -3115,6 +3117,7 @@ export function initializeGame(
     foi: null,
     conquete: null,
     exploration: null,
+    machine: null,
     // SINGULIER : figé ci-dessous, d'après le deck de DÉPART tel que soumis
     // (avant mulligan, avant toute carte générée). Jamais recalculé ensuite.
     singleton: false,
@@ -5123,6 +5126,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       addExploration(player, getKwX(cardInstance, "exploration", undefined, 1));
     }
 
+    // Invention +X/+Y : chaque instance « à l'invocation » ajoute sa pièce à la
+    // machine du contrôleur. Les autres modes passent par
+    // resolveCuratedKeywordEffect.
+    if (hasKwOnPlay(cardInstance, "invention")) {
+      const insts = (cardInstance.card.keyword_instances ?? []).filter(k => k.id === "invention" && !k.mode);
+      for (const inst of insts.length > 0 ? insts : [{ id: "invention" as Keyword, x: getKwX(cardInstance, "invention", undefined, 1) }]) {
+        addInvention(player, partDInstance(inst));
+      }
+    }
+
     // Concentration X: remplace chaque sort en main par un sort aléatoire
     // (toutes factions) de coût supérieur de X ; le nouveau sort est marqué
     // d'une réduction permanente de coût égale à X.
@@ -6383,6 +6396,8 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
       ...(c.params?.minX != null ? { minX: c.params.minX } : {}),
       // Portée « toutes » (déjà validée par l'adaptateur).
       ...(c.targetScope ? { targetScope: c.targetScope } : {}),
+      // Invention : la capacité ajoutée à la machine.
+      ...(c.machinePart ?? {}),
     }));
 }
 
@@ -7031,6 +7046,13 @@ function resolveSpellKeywords(
       }
       case "exploration": {
         addExploration(ctx.caster, kw.amount ?? 1);
+        break;
+      }
+      case "invention": {
+        addInvention(ctx.caster, {
+          attack: kw.attack ?? 0, health: kw.health ?? 0,
+          grantAbilityId: kw.grantAbilityId, grantX: kw.grantX, grantY: kw.grantY, grantMode: kw.grantMode,
+        });
         break;
       }
       case "incineration": {
@@ -8735,6 +8757,23 @@ function addFoi(player: PlayerState, x: number): void {
 function addConquete(player: PlayerState, x: number): void {
   if (x <= 0) return;
   player.conquete = Math.min(MAX_CONQUETE, (player.conquete ?? 0) + x);
+}
+
+/** INVENTION : ajoute une pièce à la machine du joueur (cf. machine.ts).
+ *  Point d'entrée UNIQUE des trois chemins (mot-clé de créature à l'invocation,
+ *  mot-clé de sort, déclencheurs curés). La machine apparaît à la première
+ *  Invention et ne redevient jamais `null`. */
+function addInvention(player: PlayerState, part: InventionPart): void {
+  player.machine = appliquerInvention(player.machine, part);
+}
+
+/** Pièce de machine portée par une instance de mot-clé Invention (forme
+ *  créature) : `x`/`y` = +ATQ/+PV, `grant*` = capacité ajoutée. */
+function partDInstance(inst: KeywordInstance): InventionPart {
+  return {
+    attack: inst.x ?? 0, health: inst.y ?? 0,
+    grantAbilityId: inst.grantAbilityId, grantX: inst.grantX, grantY: inst.grantY, grantMode: inst.grantMode,
+  };
 }
 
 /** Alimente le compteur d'Exploration et RÈGLE ses paliers sur-le-champ.
@@ -10552,6 +10591,11 @@ function resolveCuratedKeywordEffect(
       addExploration(owner, x);
       break;
     }
+    case "invention": {
+      // `owner` = contrôleur de la source, quel que soit le déclencheur.
+      addInvention(owner, partDInstance(inst ?? { id: "invention", x }));
+      break;
+    }
     case "pillage": {
       for (let i = 0; i < x && opponent.hand.length > 0; i++) {
         discardFromHand(opponent, Math.floor(rng() * opponent.hand.length), [owner, opponent]);
@@ -11410,6 +11454,31 @@ export function spendConquete(state: GameState, action: SpendConqueteAction): Ga
   inst.trueOwnerId = null;
   me.hand.push(inst);
   me.conquete = 0; // le cycle repart ; à 0 l'UI masque le compteur.
+  newState.lastAction = action;
+  return newState;
+}
+
+/** PRISE EN MAIN de la machine : la carte est fabriquée à partir de l'état
+ *  (`buildMachineCard`), poussée en main, et la construction repart d'une
+ *  machine vierge (le compteur reste visible, à 0).
+ *
+ *  Re-validé ici (la fonction rejoue chez l'adversaire) ; chaque refus renvoie
+ *  `state` inchangé — la machine n'est jamais perdue sans contrepartie. Le
+ *  joueur concerné est `players[currentPlayerIndex]` : « seulement à son tour »
+ *  découle de la structure. */
+export function takeMachine(state: GameState, action: TakeMachineAction): GameState {
+  const player = state.players[state.currentPlayerIndex];
+  if (!player.machine || player.machine.inventions < 1) return state;
+  if (player.hand.length >= MAX_HAND_SIZE) return state;
+
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = state.factionCardPool;
+  newState.allSpellsPool = state.allSpellsPool;
+
+  const me = newState.players[newState.currentPlayerIndex];
+  const carte = buildMachineCard(me.machine!, me.hero.heroDefinition?.faction ?? null);
+  me.hand.push(createCardInstance(carte));
+  me.machine = machineVierge();
   newState.lastAction = action;
   return newState;
 }
@@ -12295,6 +12364,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "spend_epargne": result = spendEpargne(state, action); break;
     case "spend_foi": result = spendFoi(state, action); break;
     case "spend_conquete": result = spendConquete(state, action); break;
+    case "take_machine": result = takeMachine(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;

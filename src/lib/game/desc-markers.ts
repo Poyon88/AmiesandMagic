@@ -4,7 +4,7 @@ import type { SafeT } from "@/i18n/config";
 import { getAlignmentLabel, getClanName, getEffectiveAlignment } from "@/lib/card-engine/constants";
 import { getClanForm, getFactionForm, getRaceForm } from "@/lib/card-engine/race-forms";
 import { getKeywordDisplayLabel } from "./keyword-labels";
-import { KEYWORD_DEFAULT_X } from "./abilities";
+import { AUTOMATIC_ABILITY_IDS, KEYWORD_DEFAULT_X } from "./abilities";
 
 // Marqueurs de description partagés par les DEUX registres : mots-clés créature
 // (keyword-display.ts) et mots-clés de sort (spell-keywords.ts). Une capacité
@@ -23,7 +23,7 @@ export interface MarkerCtx {
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
-  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "targetScope" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY" | "minX"> | null;
+  instance?: Pick<KeywordInstance, "race" | "clan" | "grantScope" | "grantAbilityId" | "grantX" | "grantY" | "grantMode" | "targetScope" | "y" | "costs" | "faction" | "mode" | "singulier" | "randomX" | "randomY" | "minX"> | null;
   /** Esprit de corps : combien de points cette carte gagnerait si elle
    *  déclenchait maintenant (cf. `espritDeCorpsPoints`). Le SEUL champ de ce
    *  contexte qui dépende de l'état de la PARTIE et non de la carte — il n'est
@@ -109,6 +109,13 @@ export const MARKERS_FR: Record<string, string> = {
   // resterait littéral à l'écran.
   "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
   "scope_all": "à toutes vos unités",
+  // Invention : la capacité que la pièce ajoute à la machine, avec son
+  // déclencheur SUR LA MACHINE. Vide quand l'Invention n'apporte que des stats.
+  "machine_part": " et {ability}",
+  "machine_part_timed": " et {ability} ({timing})",
+  // Nom de la carte MACHINE (id -1, aucune ligne en base) : lu par
+  // CardTextProvider pour l'afficher dans la langue du joueur.
+  "machine_name": "Machine",
   // Neutralisation : chez qui la capacité visée est muette.
   "neutralise_cible": "d'une unité ennemie ciblée (ou de toutes)",
   "neutralise_cible_target": "chez une unité ennemie ciblée",
@@ -195,6 +202,18 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
   ability: (_kw, ctx, t) => {
     const id = ctx.instance?.grantAbilityId;
     return id ? getKeywordDisplayLabel(id as Keyword, t) : null;
+  },
+  machine_part: (_kw, ctx, t) => {
+    const id = ctx.instance?.grantAbilityId;
+    if (!id) return "";
+    const label = getKeywordDisplayLabel(id as Keyword, t)
+      .replace(/X/g, String(ctx.instance?.grantX ?? 1))
+      .replace(/Y/g, String(ctx.instance?.grantY ?? 0));
+    if (AUTOMATIC_ABILITY_IDS.has(id)) return (marker("machine_part", t) ?? "").replace("{ability}", label);
+    const mode = ctx.instance?.grantMode ?? "entry";
+    const timing = (t?.(`vocab.singulier.timing.${mode}`) ?? SINGULIER_TIMING_FR[mode] ?? mode)
+      .replace("{n}", String(LOW_HP_TRIGGER_THRESHOLD));
+    return (marker("machine_part_timed", t) ?? "").replace("{ability}", label).replace("{timing}", timing);
   },
   forge_align: (_kw, ctx, t) => {
     const a = ctx.card ? getEffectiveAlignment(ctx.card) : null;

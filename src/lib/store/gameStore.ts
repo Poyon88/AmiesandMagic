@@ -485,6 +485,10 @@ export interface FoiGainEvent {
 /** Gain de compteur de Conquête à animer : même contrat, troisième compteur. */
 export type ConqueteGainEvent = FoiGainEvent;
 
+/** Invention appliquée à une machine, à animer : même contrat que l'Épargne
+ *  (le « +N » compte les Inventions, c'est-à-dire le coût gagné). */
+export type InventionGainEvent = FoiGainEvent;
+
 /** Gain de compteur d'Exploration à animer : même contrat, quatrième compteur.
  *  Seul des quatre à venir d'un registre MOTEUR (`explorationEvents`) plutôt
  *  que d'un diff d'état — cf. le calcul dans `dispatchAction`. */
@@ -727,6 +731,7 @@ interface GameStore {
   epargneGainEvent: EpargneGainEvent | null;
   foiGainEvent: FoiGainEvent | null;
   conqueteGainEvent: ConqueteGainEvent | null;
+  inventionGainEvent: InventionGainEvent | null;
   explorationGainEvent: ExplorationGainEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
@@ -824,6 +829,7 @@ interface GameStore {
   clearEpargneGainEvent: () => void;
   clearFoiGainEvent: () => void;
   clearConqueteGainEvent: () => void;
+  clearInventionGainEvent: () => void;
   clearExplorationGainEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
@@ -843,6 +849,9 @@ interface GameStore {
   /** Clic sur le compteur de Conquête AU PALIER : ouvre la modale de deck (3
    *  cartes du deck adverse). Renvoie toujours null, comme openFoiPicker. */
   openConquetePicker: () => GameAction | null;
+  /** Clic sur le compteur d'Invention : met la MACHINE en main (aucun
+   *  picker). Renvoie l'action dispatchée, à diffuser, ou null si refusée. */
+  takeMachine: () => GameAction | null;
   /** APPRENTISSAGE — lance le sort mémorisé par cette créature (coûts et
    *  ciblage passent par la chaîne habituelle des sorts). */
   activateLearnedSpell: (creatureInstanceId: string) => GameAction | null;
@@ -1783,6 +1792,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   epargneGainEvent: null,
   foiGainEvent: null,
   conqueteGainEvent: null,
+  inventionGainEvent: null,
   explorationGainEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
@@ -1869,6 +1879,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         epargneGainEvent: null,
   foiGainEvent: null,
   conqueteGainEvent: null,
+  inventionGainEvent: null,
   explorationGainEvent: null,
       });
       return action;
@@ -2800,6 +2811,21 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Invention : DIFF du nombre d'Inventions de la machine. Une prise en main
+    // (retour à 0) donne un delta négatif, ignoré.
+    let inventionGainEvent: InventionGainEvent | null = null;
+    {
+      const bySide: Partial<Record<"mine" | "theirs", number>> = {};
+      for (let i = 0; i < 2; i++) {
+        const delta = (newState.players[i].machine?.inventions ?? 0) - (gameState.players[i].machine?.inventions ?? 0);
+        if (delta > 0) bySide[newState.players[i].id === localPlayerId ? "mine" : "theirs"] = delta;
+      }
+      if (Object.keys(bySide).length > 0) {
+        inventionGainEvent = { bySide, timestamp: Date.now() };
+        if (!sfxEvents.some(e => e.type === "buff")) sfxEvents.push({ type: "buff" });
+      }
+    }
+
     // Exploration : PAS un diff d'état, contrairement aux trois autres. Le
     // palier fait piocher et retranche 3 dans la même action : 2 + 2 laisse le
     // compteur à 1, un diff y lirait −1 et n'animerait rien. Le moteur publie
@@ -3114,7 +3140,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!explorationGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3643,6 +3669,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(epargneGainEvent ? { epargneGainEvent } : {}),
         ...(foiGainEvent ? { foiGainEvent } : {}),
         ...(conqueteGainEvent ? { conqueteGainEvent } : {}),
+        ...(inventionGainEvent ? { inventionGainEvent } : {}),
         ...(explorationGainEvent ? { explorationGainEvent } : {}),
       });
       playSfxBatch(impactSfx);
@@ -5184,6 +5211,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({ conqueteGainEvent: null });
   },
 
+  clearInventionGainEvent: () => {
+    set({ inventionGainEvent: null });
+  },
+
   clearExplorationGainEvent: () => {
     set({ explorationGainEvent: null });
   },
@@ -5455,6 +5486,19 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingEpargneSelection: true,
     });
     return null;
+  },
+
+  takeMachine: () => {
+    const { gameState, targetingMode, isAnimating } = get();
+    if (!gameState || isAnimating) return null;
+    // Pas au milieu d'un choix en cours (ciblage, picker) : la main bougerait
+    // sous les pieds du joueur.
+    if (targetingMode !== "none") return null;
+    if (!get().isMyTurn()) return null;
+    const me = gameState.players[gameState.currentPlayerIndex];
+    if ((me.machine?.inventions ?? 0) < 1) return null;
+    if (me.hand.length >= MAX_HAND_SIZE) return null;
+    return get().dispatchAction({ type: "take_machine" });
   },
 
   openFoiPicker: () => {

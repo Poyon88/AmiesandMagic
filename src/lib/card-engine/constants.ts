@@ -126,6 +126,9 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // Exploration : même contrat. C'est le déclencheur d'ATTAQUE qui lui donne
   // son sens — un point par assaut, une carte tous les trois.
   "Exploration X": ALL_MODES,
+  // Invention : pièce ajoutée à la machine du contrôleur, sans cible ni source
+  // en jeu requise → tous les déclencheurs.
+  "Invention +X/+Y": ALL_MODES,
   "Incinération X": ALL_MODES,
   "Creuser X": ALL_MODES,
   "Retour différé": ALL_MODES,

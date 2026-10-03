@@ -470,6 +470,10 @@
         "label": "探索 X",
         "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）。"
       },
+      "invention": {
+        "label": "发明 +X/+Y",
+        "desc": "为你的机械增加+X/+Y{machine_part}（初始为0/1，每次发明1点法力，最多6次）。"
+      },
       "seconde_vie": {
         "label": "二次生命 X",
         "desc": "可从你的墓地中支付X点法力值打出。此后失去二次生命。"
@@ -751,6 +755,10 @@
       "exploration": {
         "label": "探索 X",
         "desc": "为你的探索计数器增加X。每当达到3：抽一张卡并减去3（余数保留）"
+      },
+      "invention": {
+        "label": "发明 +X/+Y",
+        "desc": "为你的机械增加+X/+Y{machine_part}（初始为0/1，每次发明1点法力，最多6次）"
       },
       "inspiration": {
         "label": "启示 X",
@@ -1757,6 +1765,9 @@
       "scope_target": "给一个友方单位",
       "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
       "scope_all": "给你所有的单位",
+      "machine_part": "及{ability}",
+      "machine_part_timed": "及{ability}（{timing}）",
+      "machine_name": "机械",
       "neutralise_cible": "一个目标敌方单位（或全部单位）",
       "neutralise_cible_target": "一个目标敌方单位",
       "neutralise_cible_all": "所有敌方单位",

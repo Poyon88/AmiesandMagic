@@ -27,6 +27,7 @@ import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
 import { porteeValide, spellScopes } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
+import MachinePartEditor from "./MachinePartEditor";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -527,6 +528,12 @@ export default function ComposedEffectsEditor({
                     onChange={(v) => patchCurated(idx, { targetScope: v })}
                     tr={tr}
                   />
+                </>
+              )}
+              {kw.id === "invention" && (
+                <>
+                  <span style={labelStyle}>⚙️</span>
+                  <MachinePartEditor value={kw} onChange={(p) => patchCurated(idx, p)} />
                 </>
               )}
               {kw.id === "renforcement_multiple" && (

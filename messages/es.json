@@ -470,6 +470,10 @@
         "label": "Exploración X",
         "desc": "Añade X a tu Exploración. Cada vez que llega a 3: roba una carta y resta 3 (el resto se conserva)."
       },
+      "invention": {
+        "label": "Invención +X/+Y",
+        "desc": "Añade +X/+Y{machine_part} a tu máquina (0/1 al inicio, 1 maná por Invención, 6 como máximo)."
+      },
       "seconde_vie": {
         "label": "Segunda vida X",
         "desc": "Puede jugarse desde tu cementerio por X de maná. Entonces pierde Segunda vida."
@@ -751,6 +755,10 @@
       "exploration": {
         "label": "Exploración X",
         "desc": "Añade X a tu Exploración. Cada vez que llega a 3: roba una carta y resta 3 (el resto se conserva)"
+      },
+      "invention": {
+        "label": "Invención +X/+Y",
+        "desc": "Añade +X/+Y{machine_part} a tu máquina (0/1 al inicio, 1 maná por Invención, 6 como máximo)"
       },
       "inspiration": {
         "label": "Inspiración X",
@@ -1757,6 +1765,9 @@
       "scope_target": "a una unidad aliada",
       "edc_compte": "Gana {n} veces +1 ATQ o +1 PV al azar (1 por cada criatura {clan_de} con Espíritu de cuerpo ya jugada).",
       "scope_all": "a todas tus unidades",
+      "machine_part": " y {ability}",
+      "machine_part_timed": " y {ability} ({timing})",
+      "machine_name": "Máquina",
       "neutralise_cible": "de una unidad enemiga objetivo (o de todas)",
       "neutralise_cible_target": "en una unidad enemiga objetivo",
       "neutralise_cible_all": "en todas las unidades enemigas",

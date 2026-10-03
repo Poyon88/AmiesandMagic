@@ -475,6 +475,10 @@
         "label": "Exploration X",
         "desc": "Adds X to your Exploration. Each time it reaches 3: draw a card and remove 3 (the remainder is kept)."
       },
+      "invention": {
+        "label": "Invention +X/+Y",
+        "desc": "Adds +X/+Y{machine_part} to your machine (0/1 at start, 1 mana per Invention, 6 at most)."
+      },
       "seconde_vie": {
         "label": "Second Life X",
         "desc": "Can be played from your graveyard for X mana. It then loses Second Life."
@@ -756,6 +760,10 @@
       "exploration": {
         "label": "Exploration X",
         "desc": "Adds X to your Exploration. Each time it reaches 3: draw a card and remove 3 (the remainder is kept)"
+      },
+      "invention": {
+        "label": "Invention +X/+Y",
+        "desc": "Adds +X/+Y{machine_part} to your machine (0/1 at start, 1 mana per Invention, 6 at most)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -1757,6 +1765,9 @@
       "scope_target": "to an allied unit",
       "edc_compte": "Gains {n} times +1 ATK or +1 HP at random (1 per creature {clan_de} with Camaraderie already played).",
       "scope_all": "to all your units",
+      "machine_part": " and {ability}",
+      "machine_part_timed": " and {ability} ({timing})",
+      "machine_name": "Machine",
       "neutralise_cible": "of a targeted enemy unit (or all)",
       "neutralise_cible_target": "on a targeted enemy unit",
       "neutralise_cible_all": "on all enemy units",

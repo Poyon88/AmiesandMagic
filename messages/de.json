@@ -470,6 +470,10 @@
         "label": "Erkundung X",
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)."
       },
+      "invention": {
+        "label": "Erfindung +X/+Y",
+        "desc": "Fügt deiner Maschine +X/+Y{machine_part} hinzu (anfangs 0/1, 1 Mana pro Erfindung, höchstens 6)."
+      },
       "seconde_vie": {
         "label": "Zweites Leben X",
         "desc": "Kann für X Mana aus deinem Friedhof gespielt werden. Sie verliert danach Zweites Leben."
@@ -751,6 +755,10 @@
       "exploration": {
         "label": "Erkundung X",
         "desc": "Erhöht deine Erkundung um X. Jedes Mal, wenn sie 3 erreicht: Ziehe eine Karte und ziehe 3 ab (der Rest bleibt)"
+      },
+      "invention": {
+        "label": "Erfindung +X/+Y",
+        "desc": "Fügt deiner Maschine +X/+Y{machine_part} hinzu (anfangs 0/1, 1 Mana pro Erfindung, höchstens 6)"
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -1757,6 +1765,9 @@
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
       "scope_all": "auf alle deine Einheiten",
+      "machine_part": " und {ability}",
+      "machine_part_timed": " und {ability} ({timing})",
+      "machine_name": "Maschine",
       "neutralise_cible": "einer gezielten gegnerischen Einheit (oder aller)",
       "neutralise_cible_target": "bei einer gezielten gegnerischen Einheit",
       "neutralise_cible_all": "bei allen gegnerischen Einheiten",
