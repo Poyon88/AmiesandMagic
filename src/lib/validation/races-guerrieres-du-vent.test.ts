@@ -162,8 +162,8 @@ describe("génération et formes", () => {
   });
 
   it("sont déclinées en français", () => {
-    expect(RACE_FORMS_FR["Pégases"]).toEqual({ def: "le Pégase", bare: "Pégase", de: "du Pégase" });
+    expect(RACE_FORMS_FR["Pégases"]).toMatchObject({ def: "le Pégase", bare: "Pégase", de: "du Pégase" });
     // Invariable : pas de « Sphin ».
-    expect(RACE_FORMS_FR["Sphinx"]).toEqual({ def: "le Sphinx", bare: "Sphinx", de: "du Sphinx" });
+    expect(RACE_FORMS_FR["Sphinx"]).toMatchObject({ def: "le Sphinx", bare: "Sphinx", de: "du Sphinx" });
   });
 });

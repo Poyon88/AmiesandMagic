@@ -208,16 +208,16 @@ describe("génération", () => {
 
 describe("formes fléchies françaises", () => {
   it("les quatre races sont déclinées", () => {
-    expect(RACE_FORMS_FR["Homuncules de Sang"]).toEqual({
+    expect(RACE_FORMS_FR["Homuncules de Sang"]).toMatchObject({
       def: "l'Homuncule de Sang", bare: "Homuncule de Sang", de: "de l'Homuncule de Sang",
     });
-    expect(RACE_FORMS_FR["Gargouilles"]).toEqual({
+    expect(RACE_FORMS_FR["Gargouilles"]).toMatchObject({
       def: "la Gargouille", bare: "Gargouille", de: "de la Gargouille",
     });
-    expect(RACE_FORMS_FR["Dhampirs"]).toEqual({
+    expect(RACE_FORMS_FR["Dhampirs"]).toMatchObject({
       def: "le Dhampir", bare: "Dhampir", de: "du Dhampir",
     });
-    expect(RACE_FORMS_FR["Chiroptères"]).toEqual({
+    expect(RACE_FORMS_FR["Chiroptères"]).toMatchObject({
       def: "le Chiroptère", bare: "Chiroptère", de: "du Chiroptère",
     });
   });

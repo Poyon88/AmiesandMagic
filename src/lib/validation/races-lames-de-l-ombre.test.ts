@@ -162,7 +162,7 @@ describe("génération et formes", () => {
   });
 
   it("sont déclinées en français — mots japonais, invariables, et l'Oni s'élide", () => {
-    expect(RACE_FORMS_FR["Tengu"]).toEqual({ def: "le Tengu", bare: "Tengu", de: "du Tengu" });
-    expect(RACE_FORMS_FR["Oni"]).toEqual({ def: "l'Oni", bare: "Oni", de: "de l'Oni" });
+    expect(RACE_FORMS_FR["Tengu"]).toMatchObject({ def: "le Tengu", bare: "Tengu", de: "du Tengu" });
+    expect(RACE_FORMS_FR["Oni"]).toMatchObject({ def: "l'Oni", bare: "Oni", de: "de l'Oni" });
   });
 });

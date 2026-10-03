@@ -149,7 +149,7 @@ describe("génération et formes", () => {
   });
 
   it("est déclinée en français — masculine, AVEC élision", () => {
-    expect(RACE_FORMS_FR["Insectes"]).toEqual({
+    expect(RACE_FORMS_FR["Insectes"]).toMatchObject({
       def: "l'Insecte", bare: "Insecte", de: "de l'Insecte",
     });
   });

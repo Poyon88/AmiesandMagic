@@ -313,6 +313,7 @@ describe("race Nagas — profil « gardiens des temples »", () => {
   it("dispose de ses formes grammaticales françaises", () => {
     expect(RACE_FORMS_FR["Nagas"]).toEqual({
       def: "le Naga", bare: "Naga", de: "du Naga",
+      one: "un Naga", all: "tous les Nagas", upto: "jusqu'à {n} Nagas",
     });
   });
 });

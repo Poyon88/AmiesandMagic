@@ -129,6 +129,6 @@ describe("génération et formes", () => {
   });
 
   it("est décliné en français", () => {
-    expect(RACE_FORMS_FR["Qilins"]).toEqual({ def: "le Qilin", bare: "Qilin", de: "du Qilin" });
+    expect(RACE_FORMS_FR["Qilins"]).toMatchObject({ def: "le Qilin", bare: "Qilin", de: "du Qilin" });
   });
 });

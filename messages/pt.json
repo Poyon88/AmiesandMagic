@@ -1275,418 +1275,667 @@
       "Elfes": {
         "def": "o Elfo",
         "bare": "Elfo",
-        "de": "do Elfo"
+        "de": "do Elfo",
+        "one": "um Elfo",
+        "all": "todos os Elfos",
+        "upto": "até {n} Elfos"
       },
       "Fées": {
         "def": "a Fada",
         "bare": "Fada",
-        "de": "da Fada"
+        "de": "da Fada",
+        "one": "uma Fada",
+        "all": "todas as Fadas",
+        "upto": "até {n} Fadas"
       },
       "Farfadets": {
         "def": "o Duende",
         "bare": "Duende",
-        "de": "do Duende"
+        "de": "do Duende",
+        "one": "um Duende",
+        "all": "todos os Duendes",
+        "upto": "até {n} Duendes"
       },
       "Korrigans": {
         "def": "o Korrigan",
         "bare": "Korrigan",
-        "de": "do Korrigan"
+        "de": "do Korrigan",
+        "one": "um Korrigan",
+        "all": "todos os Korrigans",
+        "upto": "até {n} Korrigans"
       },
       "Faunes": {
         "def": "o Fauno",
         "bare": "Fauno",
-        "de": "do Fauno"
+        "de": "do Fauno",
+        "one": "um Fauno",
+        "all": "todos os Faunos",
+        "upto": "até {n} Faunos"
       },
       "Dryades": {
         "def": "a Dríade",
         "bare": "Dríade",
-        "de": "da Dríade"
+        "de": "da Dríade",
+        "one": "uma Dríade",
+        "all": "todas as Dríades",
+        "upto": "até {n} Dríades"
       },
       "Aigles Géants": {
         "def": "a Águia Gigante",
         "bare": "Águia Gigante",
-        "de": "da Águia Gigante"
+        "de": "da Águia Gigante",
+        "one": "uma Águia Gigante",
+        "all": "todas as Águias Gigantes",
+        "upto": "até {n} Águias Gigantes"
       },
       "Hobbits": {
         "def": "o Hobbit",
         "bare": "Hobbit",
-        "de": "do Hobbit"
+        "de": "do Hobbit",
+        "one": "um Hobbit",
+        "all": "todos os Hobbits",
+        "upto": "até {n} Hobbits"
       },
       "Hommes-Arbres": {
         "def": "o Homem-Árvore",
         "bare": "Homem-Árvore",
-        "de": "do Homem-Árvore"
+        "de": "do Homem-Árvore",
+        "one": "um Homem-Árvore",
+        "all": "todos os Homens-Árvore",
+        "upto": "até {n} Homens-Árvore"
       },
       "Nains": {
         "def": "o Anão",
         "bare": "Anão",
-        "de": "do Anão"
+        "de": "do Anão",
+        "one": "um Anão",
+        "all": "todos os Anões",
+        "upto": "até {n} Anões"
       },
       "Golems": {
         "def": "o Golem",
         "bare": "Golem",
-        "de": "do Golem"
+        "de": "do Golem",
+        "one": "um Golem",
+        "all": "todos os Golens",
+        "upto": "até {n} Golens"
       },
       "Bâtiments": {
         "def": "a Construção",
         "bare": "Construção",
-        "de": "da Construção"
+        "de": "da Construção",
+        "one": "uma Construção",
+        "all": "todas as Construções",
+        "upto": "até {n} Construções"
       },
       "Gnomes": {
         "def": "o Gnomo",
         "bare": "Gnomo",
-        "de": "do Gnomo"
+        "de": "do Gnomo",
+        "one": "um Gnomo",
+        "all": "todos os Gnomos",
+        "upto": "até {n} Gnomos"
       },
       "Machines": {
         "def": "a Máquina",
         "bare": "Máquina",
-        "de": "da Máquina"
+        "de": "da Máquina",
+        "one": "uma Máquina",
+        "all": "todas as Máquinas",
+        "upto": "até {n} Máquinas"
       },
       "Kobolds": {
         "def": "o Kobold",
         "bare": "Kobold",
-        "de": "do Kobold"
+        "de": "do Kobold",
+        "one": "um Kobold",
+        "all": "todos os Kobolds",
+        "upto": "até {n} Kobolds"
       },
       "Humains": {
         "def": "o Humano",
         "bare": "Humano",
-        "de": "do Humano"
+        "de": "do Humano",
+        "one": "um Humano",
+        "all": "todos os Humanos",
+        "upto": "até {n} Humanos"
       },
       "Esprits": {
         "def": "o Espírito",
         "bare": "Espírito",
-        "de": "do Espírito"
+        "de": "do Espírito",
+        "one": "um Espírito",
+        "all": "todos os Espíritos",
+        "upto": "até {n} Espíritos"
       },
       "Nagas": {
         "def": "o Naga",
         "bare": "Naga",
-        "de": "do Naga"
+        "de": "do Naga",
+        "one": "um Naga",
+        "all": "todos os Nagas",
+        "upto": "até {n} Nagas"
       },
       "Tengu": {
         "def": "o Tengu",
         "bare": "Tengu",
-        "de": "do Tengu"
+        "de": "do Tengu",
+        "one": "um Tengu",
+        "all": "todos os Tengu",
+        "upto": "até {n} Tengu"
       },
       "Oni": {
         "def": "o Oni",
         "bare": "Oni",
-        "de": "do Oni"
+        "de": "do Oni",
+        "one": "um Oni",
+        "all": "todos os Oni",
+        "upto": "até {n} Oni"
       },
       "Qilins": {
         "def": "o Qilin",
         "bare": "Qilin",
-        "de": "do Qilin"
+        "de": "do Qilin",
+        "one": "um Qilin",
+        "all": "todos os Qilins",
+        "upto": "até {n} Qilins"
       },
       "Griffons": {
         "def": "o Grifo",
         "bare": "Grifo",
-        "de": "do Grifo"
+        "de": "do Grifo",
+        "one": "um Grifo",
+        "all": "todos os Grifos",
+        "upto": "até {n} Grifos"
       },
       "Faucons": {
         "def": "o Falcão",
         "bare": "Falcão",
-        "de": "do Falcão"
+        "de": "do Falcão",
+        "one": "um Falcão",
+        "all": "todos os Falcões",
+        "upto": "até {n} Falcões"
       },
       "Pégases": {
         "def": "o Pégaso",
         "bare": "Pégaso",
-        "de": "do Pégaso"
+        "de": "do Pégaso",
+        "one": "um Pégaso",
+        "all": "todos os Pégasos",
+        "upto": "até {n} Pégasos"
       },
       "Sphinx": {
         "def": "a Esfinge",
         "bare": "Esfinge",
-        "de": "da Esfinge"
+        "de": "da Esfinge",
+        "one": "uma Esfinge",
+        "all": "todas as Esfinges",
+        "upto": "até {n} Esfinges"
       },
       "Hommes-Loups": {
         "def": "o Homem-Lobo",
         "bare": "Homem-Lobo",
-        "de": "do Homem-Lobo"
+        "de": "do Homem-Lobo",
+        "one": "um Homem-Lobo",
+        "all": "todos os Homens-Lobos",
+        "upto": "até {n} Homens-Lobos"
       },
       "Hommes-Ours": {
         "def": "o Homem-Urso",
         "bare": "Homem-Urso",
-        "de": "do Homem-Urso"
+        "de": "do Homem-Urso",
+        "one": "um Homem-Urso",
+        "all": "todos os Homens-Ursos",
+        "upto": "até {n} Homens-Ursos"
       },
       "Hommes-Félins": {
         "def": "o Homem-Felino",
         "bare": "Homem-Felino",
-        "de": "do Homem-Felino"
+        "de": "do Homem-Felino",
+        "one": "um Homem-Felino",
+        "all": "todos os Homens-Felinos",
+        "upto": "até {n} Homens-Felinos"
       },
       "Centaures": {
         "def": "o Centauro",
         "bare": "Centauro",
-        "de": "do Centauro"
+        "de": "do Centauro",
+        "one": "um Centauro",
+        "all": "todos os Centauros",
+        "upto": "até {n} Centauros"
       },
       "Mimis": {
         "def": "o Mimi",
         "bare": "Mimi",
-        "de": "do Mimi"
+        "de": "do Mimi",
+        "one": "um Mimi",
+        "all": "todos os Mimis",
+        "upto": "até {n} Mimis"
       },
       "Hommes-Chiens": {
         "def": "o Homem-Cão",
         "bare": "Homem-Cão",
-        "de": "do Homem-Cão"
+        "de": "do Homem-Cão",
+        "one": "um Homem-Cão",
+        "all": "todos os Homens-Cães",
+        "upto": "até {n} Homens-Cães"
       },
       "Hommes-Renards": {
         "def": "o Homem-Raposa",
         "bare": "Homem-Raposa",
-        "de": "do Homem-Raposa"
+        "de": "do Homem-Raposa",
+        "one": "um Homem-Raposa",
+        "all": "todos os Homens-Raposas",
+        "upto": "até {n} Homens-Raposas"
       },
       "Hommes-Cerfs": {
         "def": "o Homem-Veado",
         "bare": "Homem-Cervo",
-        "de": "do Homem-Cervo"
+        "de": "do Homem-Cervo",
+        "one": "um Homem-Cervo",
+        "all": "todos os Homens-Cervos",
+        "upto": "até {n} Homens-Cervos"
       },
       "Insectes": {
         "def": "o Inseto",
         "bare": "Inseto",
-        "de": "do Inseto"
+        "de": "do Inseto",
+        "one": "um Inseto",
+        "all": "todos os Insetos",
+        "upto": "até {n} Insetos"
       },
       "Hommes-Singes": {
         "def": "o Homem-Macaco",
         "bare": "Homem-Macaco",
-        "de": "do Homem-Macaco"
+        "de": "do Homem-Macaco",
+        "one": "um Homem-Macaco",
+        "all": "todos os Homens-Macaco",
+        "upto": "até {n} Homens-Macaco"
       },
       "Hommes-Poissons": {
         "def": "o Homem-Peixe",
         "bare": "Homem-Peixe",
-        "de": "do Homem-Peixe"
+        "de": "do Homem-Peixe",
+        "one": "um Homem-Peixe",
+        "all": "todos os Homens-Peixe",
+        "upto": "até {n} Homens-Peixe"
       },
       "Hommes-Oiseaux": {
         "def": "o Homem-Pássaro",
         "bare": "Homem-Pássaro",
-        "de": "do Homem-Pássaro"
+        "de": "do Homem-Pássaro",
+        "one": "um Homem-Pássaro",
+        "all": "todos os Homens-Pássaro",
+        "upto": "até {n} Homens-Pássaro"
       },
       "Élémentaire": {
         "def": "o Elemental",
         "bare": "Elemental",
         "de": "do Elemental",
-        "pl": "Elementais"
+        "pl": "Elementais",
+        "one": "um Elemental",
+        "all": "todos os Elementais",
+        "upto": "até {n} Elementais"
       },
       "Géants": {
         "def": "o Gigante",
         "bare": "Gigante",
-        "de": "do Gigante"
+        "de": "do Gigante",
+        "one": "um Gigante",
+        "all": "todos os Gigantes",
+        "upto": "até {n} Gigantes"
       },
       "Mammouths": {
         "def": "o Mamute",
         "bare": "Mamute",
-        "de": "do Mamute"
+        "de": "do Mamute",
+        "one": "um Mamute",
+        "all": "todos os Mamutes",
+        "upto": "até {n} Mamutes"
       },
       "Ogres": {
         "def": "o Ogro",
         "bare": "Ogro",
-        "de": "do Ogro"
+        "de": "do Ogro",
+        "one": "um Ogro",
+        "all": "todos os Ogros",
+        "upto": "até {n} Ogros"
       },
       "Dragons": {
         "def": "o Dragão",
         "bare": "Dragão",
-        "de": "do Dragão"
+        "de": "do Dragão",
+        "one": "um Dragão",
+        "all": "todos os Dragões",
+        "upto": "até {n} Dragões"
       },
       "Éléphants": {
         "def": "o Elefante",
         "bare": "Elefante",
-        "de": "do Elefante"
+        "de": "do Elefante",
+        "one": "um Elefante",
+        "all": "todos os Elefantes",
+        "upto": "até {n} Elefantes"
       },
       "Chiens": {
         "def": "o Cão",
         "bare": "Cão",
-        "de": "do Cão"
+        "de": "do Cão",
+        "one": "um Cão",
+        "all": "todos os Cães",
+        "upto": "até {n} Cães"
       },
       "Phoenix": {
         "def": "a Fênix",
         "bare": "Fênix",
-        "de": "da Fênix"
+        "de": "da Fênix",
+        "one": "uma Fênix",
+        "all": "todas as Fênix",
+        "upto": "até {n} Fênix"
       },
       "Anges": {
         "def": "o Anjo",
         "bare": "Anjo",
-        "de": "do Anjo"
+        "de": "do Anjo",
+        "one": "um Anjo",
+        "all": "todos os Anjos",
+        "upto": "até {n} Anjos"
       },
       "Ours": {
         "def": "o Urso",
         "bare": "Urso",
-        "de": "do Urso"
+        "de": "do Urso",
+        "one": "um Urso",
+        "all": "todos os Ursos",
+        "upto": "até {n} Ursos"
       },
       "Loups": {
         "def": "o Lobo",
         "bare": "Lobo",
-        "de": "do Lobo"
+        "de": "do Lobo",
+        "one": "um Lobo",
+        "all": "todos os Lobos",
+        "upto": "até {n} Lobos"
       },
       "Fauves": {
         "def": "a Fera",
         "bare": "Fera",
-        "de": "da Fera"
+        "de": "da Fera",
+        "one": "uma Fera",
+        "all": "todas as Feras",
+        "upto": "até {n} Feras"
       },
       "Squelettes": {
         "def": "o Esqueleto",
         "bare": "Esqueleto",
-        "de": "do Esqueleto"
+        "de": "do Esqueleto",
+        "one": "um Esqueleto",
+        "all": "todos os Esqueletos",
+        "upto": "até {n} Esqueletos"
       },
       "Zombies": {
         "def": "o Zumbi",
         "bare": "Zumbi",
-        "de": "do Zumbi"
+        "de": "do Zumbi",
+        "one": "um Zumbi",
+        "all": "todos os Zumbis",
+        "upto": "até {n} Zumbis"
       },
       "Ghoules": {
         "def": "o Carniçal",
         "bare": "Carniçal",
-        "de": "do Carniçal"
+        "de": "do Carniçal",
+        "one": "um Carniçal",
+        "all": "todos os Carniçais",
+        "upto": "até {n} Carniçais"
       },
       "Spectres": {
         "def": "o Espectro",
         "bare": "Espectro",
-        "de": "do Espectro"
+        "de": "do Espectro",
+        "one": "um Espectro",
+        "all": "todos os Espectros",
+        "upto": "até {n} Espectros"
       },
       "Vampires": {
         "def": "o Vampiro",
         "bare": "Vampiro",
-        "de": "do Vampiro"
+        "de": "do Vampiro",
+        "one": "um Vampiro",
+        "all": "todos os Vampiros",
+        "upto": "até {n} Vampiros"
       },
       "Lich": {
         "def": "a Lich",
         "bare": "Lich",
-        "de": "da Lich"
+        "de": "da Lich",
+        "one": "uma Lich",
+        "all": "todas as Lich",
+        "upto": "até {n} Lich"
       },
       "Momies": {
         "def": "a Múmia",
         "bare": "Múmia",
-        "de": "da Múmia"
+        "de": "da Múmia",
+        "one": "uma Múmia",
+        "all": "todas as Múmias",
+        "upto": "até {n} Múmias"
       },
       "Chimères nécrotiques": {
         "def": "a Quimera Necrótica",
         "bare": "Quimera Necrótica",
-        "de": "da Quimera Necrótica"
+        "de": "da Quimera Necrótica",
+        "one": "uma Quimera Necrótica",
+        "all": "todas as Quimeras Necróticas",
+        "upto": "até {n} Quimeras Necróticas"
       },
       "Vermines mortuaires": {
         "def": "o Verme Mortuário",
         "bare": "Verme Mortuário",
-        "de": "do Verme Mortuário"
+        "de": "do Verme Mortuário",
+        "one": "um Verme Mortuário",
+        "all": "todos os Vermes Mortuários",
+        "upto": "até {n} Vermes Mortuários"
       },
       "Poltergeists": {
         "def": "o Poltergeist",
         "bare": "Poltergeist",
-        "de": "do Poltergeist"
+        "de": "do Poltergeist",
+        "one": "um Poltergeist",
+        "all": "todos os Poltergeists",
+        "upto": "até {n} Poltergeists"
       },
       "Dullahans": {
         "def": "o Dullahan",
         "bare": "Dullahan",
-        "de": "do Dullahan"
+        "de": "do Dullahan",
+        "one": "um Dullahan",
+        "all": "todos os Dullahans",
+        "upto": "até {n} Dullahans"
       },
       "Sluaghs": {
         "def": "o Sluagh",
         "bare": "Sluagh",
-        "de": "do Sluagh"
+        "de": "do Sluagh",
+        "one": "um Sluagh",
+        "all": "todos os Sluaghs",
+        "upto": "até {n} Sluaghs"
       },
       "Ondins": {
         "def": "o Ondino",
         "bare": "Ondino",
-        "de": "do Ondino"
+        "de": "do Ondino",
+        "one": "um Ondino",
+        "all": "todos os Ondinos",
+        "upto": "até {n} Ondinos"
       },
       "Sirènes": {
         "def": "a Sereia",
         "bare": "Sereia",
-        "de": "da Sereia"
+        "de": "da Sereia",
+        "one": "uma Sereia",
+        "all": "todas as Sereias",
+        "upto": "até {n} Sereias"
       },
       "Léviathans": {
         "def": "o Leviatã",
         "bare": "Leviatã",
-        "de": "do Leviatã"
+        "de": "do Leviatã",
+        "one": "um Leviatã",
+        "all": "todos os Leviatãs",
+        "upto": "até {n} Leviatãs"
       },
       "Cristallins": {
         "def": "o Cristalino",
         "bare": "Cristalino",
-        "de": "do Cristalino"
+        "de": "do Cristalino",
+        "one": "um Cristalino",
+        "all": "todos os Cristalinos",
+        "upto": "até {n} Cristalinos"
       },
       "Troglodytes": {
         "def": "o Troglodita",
         "bare": "Troglodita",
-        "de": "do Troglodita"
+        "de": "do Troglodita",
+        "one": "um Troglodita",
+        "all": "todos os Trogloditas",
+        "upto": "até {n} Trogloditas"
       },
       "Bêtes Chtoniennes": {
         "def": "a Besta Ctônica",
         "bare": "Besta Ctônica",
-        "de": "da Besta Ctônica"
+        "de": "da Besta Ctônica",
+        "one": "uma Besta Ctônica",
+        "all": "todas as Bestas Ctônicas",
+        "upto": "até {n} Bestas Ctônicas"
       },
       "Salamandres": {
         "def": "a Salamandra",
         "bare": "Salamandra",
-        "de": "da Salamandra"
+        "de": "da Salamandra",
+        "one": "uma Salamandra",
+        "all": "todas as Salamandras",
+        "upto": "até {n} Salamandras"
       },
       "Sylphes": {
         "def": "o Silfo",
         "bare": "Silfo",
-        "de": "do Silfo"
+        "de": "do Silfo",
+        "one": "um Silfo",
+        "all": "todos os Silfos",
+        "upto": "até {n} Silfos"
       },
       "Néphélides": {
         "def": "a Nefélide",
         "bare": "Nefélide",
-        "de": "da Nefélide"
+        "de": "da Nefélide",
+        "one": "uma Nefélide",
+        "all": "todas as Nefélides",
+        "upto": "até {n} Nefélides"
       },
       "Banshees": {
         "def": "a Banshee",
         "bare": "Banshee",
-        "de": "da Banshee"
+        "de": "da Banshee",
+        "one": "uma Banshee",
+        "all": "todas as Banshees",
+        "upto": "até {n} Banshees"
       },
       "Homuncules de Sang": {
         "def": "o Homúnculo de Sangue",
         "bare": "Homúnculo de Sangue",
-        "de": "do Homúnculo de Sangue"
+        "de": "do Homúnculo de Sangue",
+        "one": "um Homúnculo de Sangue",
+        "all": "todos os Homúnculos de Sangue",
+        "upto": "até {n} Homúnculos de Sangue"
       },
       "Gargouilles": {
         "def": "a Gárgula",
         "bare": "Gárgula",
-        "de": "da Gárgula"
+        "de": "da Gárgula",
+        "one": "uma Gárgula",
+        "all": "todas as Gárgulas",
+        "upto": "até {n} Gárgulas"
       },
       "Dhampirs": {
         "def": "o Dhampiro",
         "bare": "Dhampiro",
-        "de": "do Dhampiro"
+        "de": "do Dhampiro",
+        "one": "um Dhampiro",
+        "all": "todos os Dhampiros",
+        "upto": "até {n} Dhampiros"
       },
       "Chiroptères": {
         "def": "o Quiróptero",
         "bare": "Quiróptero",
-        "de": "do Quiróptero"
+        "de": "do Quiróptero",
+        "one": "um Quiróptero",
+        "all": "todos os Quirópteros",
+        "upto": "até {n} Quirópteros"
       },
       "Elfes Corrompus": {
         "def": "o Elfo Corrompido",
         "bare": "Elfo Corrompido",
-        "de": "do Elfo Corrompido"
+        "de": "do Elfo Corrompido",
+        "one": "um Elfo Corrompido",
+        "all": "todos os Elfos Corrompidos",
+        "upto": "até {n} Elfos Corrompidos"
       },
       "Araignées Géantes": {
         "def": "a Aranha Gigante",
         "bare": "Aranha Gigante",
-        "de": "da Aranha Gigante"
+        "de": "da Aranha Gigante",
+        "one": "uma Aranha Gigante",
+        "all": "todas as Aranhas Gigantes",
+        "upto": "até {n} Aranhas Gigantes"
       },
       "Démons": {
         "def": "o Demônio",
         "bare": "Demônio",
-        "de": "do Demônio"
+        "de": "do Demônio",
+        "one": "um Demônio",
+        "all": "todos os Demônios",
+        "upto": "até {n} Demônios"
       },
       "Orcs": {
         "def": "o Orc",
         "bare": "Orc",
-        "de": "do Orc"
+        "de": "do Orc",
+        "one": "um Orc",
+        "all": "todos os Orcs",
+        "upto": "até {n} Orcs"
       },
       "Gobelins": {
         "def": "o Goblin",
         "bare": "Goblin",
-        "de": "do Goblin"
+        "de": "do Goblin",
+        "one": "um Goblin",
+        "all": "todos os Goblins",
+        "upto": "até {n} Goblins"
       },
       "Trolls": {
         "def": "o Troll",
         "bare": "Troll",
-        "de": "do Troll"
+        "de": "do Troll",
+        "one": "um Troll",
+        "all": "todos os Trolls",
+        "upto": "até {n} Trolls"
       },
       "Wargs": {
         "def": "o Warg",
         "bare": "Warg",
-        "de": "do Warg"
+        "de": "do Warg",
+        "one": "um Warg",
+        "all": "todos os Wargs",
+        "upto": "até {n} Wargs"
       },
       "Guerriers du Chaos": {
         "def": "o Guerreiro do Caos",
         "bare": "Guerreiro do Caos",
-        "de": "do Guerreiro do Caos"
+        "de": "do Guerreiro do Caos",
+        "one": "um Guerreiro do Caos",
+        "all": "todos os Guerreiros do Caos",
+        "upto": "até {n} Guerreiros do Caos"
       }
     },
     "clans_forms": {

@@ -78,7 +78,7 @@ describe("race Machines — profil et rendu", () => {
   });
 
   it("dispose de ses formes grammaticales françaises", () => {
-    expect(RACE_FORMS_FR["Machines"]).toEqual({
+    expect(RACE_FORMS_FR["Machines"]).toMatchObject({
       def: "la Machine", bare: "Machine", de: "de la Machine",
     });
   });
@@ -127,7 +127,7 @@ describe("race Kobolds — profil", () => {
   });
 
   it("dispose de ses formes grammaticales françaises", () => {
-    expect(RACE_FORMS_FR["Kobolds"]).toEqual({
+    expect(RACE_FORMS_FR["Kobolds"]).toMatchObject({
       def: "le Kobold", bare: "Kobold", de: "du Kobold",
     });
   });
@@ -269,7 +269,7 @@ describe("race Mammouths — profil « charge lourde »", () => {
   });
 
   it("dispose de ses formes grammaticales françaises", () => {
-    expect(RACE_FORMS_FR["Mammouths"]).toEqual({
+    expect(RACE_FORMS_FR["Mammouths"]).toMatchObject({
       def: "le Mammouth", bare: "Mammouth", de: "du Mammouth",
     });
   });

@@ -12,6 +12,7 @@ import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywo
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { getClanName, getFactionDisplayName, getRaceName } from "@/lib/card-engine/constants";
+import { getRaceCountForm } from "@/lib/card-engine/race-forms";
 import { triggerBadge, type TriggerBadge } from "./keyword-display";
 import { singulierHelp, singulierLabel } from "./desc-markers";
 import { SINGULIER_COLOR } from "./singulier";
@@ -131,6 +132,13 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.rappel_one_item": "un objet",
   "content.rappel_all_item": "tous les objets",
   "content.rappel_upto_item": "jusqu'à {n} objets",
+  // Unité ou objet / action ou objet (entité unit_or_item + nature).
+  "content.rappel_one_creature_item": "une unité ou un objet",
+  "content.rappel_all_creature_item": "toutes les unités et tous les objets",
+  "content.rappel_upto_creature_item": "jusqu'à {n} unités ou objets",
+  "content.rappel_one_spell_item": "une action ou un objet",
+  "content.rappel_all_spell_item": "toutes les actions et tous les objets",
+  "content.rappel_upto_spell_item": "jusqu'à {n} actions ou objets",
   "content.draw_items_one": "piochez {x} objet de votre deck",
   "content.draw_items_many": "piochez {x} objets de votre deck",
   "content.invocation_item": "pose un objet aléatoire de coût {x}{filter}",
@@ -688,9 +696,10 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       const n = eff.target?.count;
       const ent = eff.target?.entity;
       const q = ent === "item" ? "exhum_item_" : ent === "unit_or_item" ? "exhum_uoi_" : "exhum_";
-      const who = typeof n === "number" && n > 1 ? frag(t, `content.${q}upto`, { n })
-        : n === "all" ? frag(t, `content.${q}all`)
-        : frag(t, `content.${q}one`);
+      const who = (ent === "unit" ? nomCompteDeRace(eff.target, t) : null)
+        ?? (typeof n === "number" && n > 1 ? frag(t, `content.${q}upto`, { n })
+          : n === "all" ? frag(t, `content.${q}all`)
+          : frag(t, `content.${q}one`)) + appartenance(eff.target, t);
       return frag(t, libre(ent === "item" || ent === "unit_or_item" ? "content.exhumation_item" : "content.exhumation"), { who, x });
     }
     case "rappel": {
@@ -701,9 +710,10 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       const kind = ent === "item" ? "item"
         : ent === "unit_or_item" ? (nature ? `${nature}_item` : "any")
         : nature ?? "any";
-      const who = typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
-        : n === "all" ? frag(t, `content.rappel_all_${kind}`)
-        : frag(t, `content.rappel_one_${kind}`);
+      const who = (kind === "any" || kind === "creature" ? nomCompteDeRace(eff.target, t) : null)
+        ?? (typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
+          : n === "all" ? frag(t, `content.rappel_all_${kind}`)
+          : frag(t, `content.rappel_one_${kind}`)) + appartenance(eff.target, t);
       const cost = eff.target?.maxCost != null ? frag(t, "content.rappel_cost", { max: eff.target.maxCost }) : "";
       return frag(t, "content.rappel", { who, cost });
     }
@@ -812,6 +822,26 @@ function membershipLabel(
     (memb.faction ?? []).map((v) => getFactionDisplayName(v, tr)),
   ];
   return categories.filter((c) => c.length > 0).map((c) => c.join("/")).join(" + ");
+}
+
+/** « (Machines) » — appartenance accolée au complément d'Exhumation et de
+ *  Rappel, qui ne passent pas par describeTarget (cf. skipTarget) : sans elle,
+ *  « ressuscite une créature » taisait le filtre de race/clan/faction. */
+function appartenance(t: TargetSpec | undefined, tr?: SafeT): string {
+  const m = membershipLabel(t?.membership, tr);
+  return m ? ` (${m})` : "";
+}
+
+/** « une Machine » / « toutes les Machines » / « jusqu'à 2 Machines » quand
+ *  le filtre se réduit à UNE race et que la langue en a la forme ; sinon null
+ *  (→ « une créature (Machines) »). Plusieurs races, un clan ou une faction en
+ *  plus ne se disent pas en un nom : la parenthèse reste. */
+function nomCompteDeRace(t: TargetSpec | undefined, tr?: SafeT): string | null {
+  const m = t?.membership;
+  if (m?.race?.length !== 1 || m.clan?.length || m.faction?.length) return null;
+  const n = t!.count;
+  const form = n === "all" ? "all" : typeof n === "number" && n > 1 ? "upto" : "one";
+  return getRaceCountForm(m.race[0], form, tr)?.replace(/\{n\}/g, String(n)) ?? null;
 }
 
 function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): string {

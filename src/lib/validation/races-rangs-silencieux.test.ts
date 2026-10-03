@@ -150,7 +150,7 @@ describe("génération et formes", () => {
   it("est déclinée en français — féminine, sans élision", () => {
     // « la Ghoule », pas « l'Ghoule » : l'élision ne se dérive pas de la
     // première lettre, d'où des formes explicites.
-    expect(RACE_FORMS_FR["Ghoules"]).toEqual({
+    expect(RACE_FORMS_FR["Ghoules"]).toMatchObject({
       def: "la Ghoule", bare: "Ghoule", de: "de la Ghoule",
     });
   });
