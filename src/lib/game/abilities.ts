@@ -1370,6 +1370,23 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["amount"], needsTarget: false,
     },
   },
+  // INVENTION : construit pièce par pièce une MACHINE propre au joueur
+  // (cf. machine.ts). X/Y = +ATQ/+PV ; la capacité ajoutée vit dans les
+  // champs grant* de l'instance. Barème calé sur Renforcement +X/+Y — la
+  // valeur est différée (il faut encore prendre puis jouer la machine).
+  invention: {
+    id: "invention", label: "Invention +X/+Y", symbol: "⚙️",
+    desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 6, costPerX: 3, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus).",
+    },
+    spell: {
+      desc: "Ajoute +X/+Y{machine_part} à votre machine (0/1 au départ, 1 mana par Invention, 6 au plus)",
+      params: ["attack", "health"], needsTarget: false,
+    },
+  },
   inspiration: {
     id: "inspiration", label: "Inspiration X", symbol: "📖",
     desc: "Piochez X cartes.",
@@ -1830,7 +1847,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "forge",
-  "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration",
+  "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration", "invention",
   "incineration", "creuser", "retour_differe", "devoration",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.

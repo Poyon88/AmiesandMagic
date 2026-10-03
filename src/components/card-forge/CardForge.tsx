@@ -19,6 +19,7 @@ import BalanceEditor from "./BalanceEditor";
 import { applyBalanceOverrides, type BalanceOverrides } from "@/lib/card-engine/balance";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker, { invalidateLinkedCardsCatalog } from "./LinkedCardsPicker";
+import MachinePartEditor, { type MachinePartValue } from "./MachinePartEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
@@ -1845,6 +1846,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [neutraliseAbilityId, setNeutraliseAbilityId] = useState<string>("");
   const [conferX, setConferX] = useState(1);
   const [conferY, setConferY] = useState(1);
+  // Invention : capacité ajoutée à la machine (optionnelle) — les +ATQ/+PV
+  // passent par le panneau générique des couples X/Y.
+  const [inventionPart, setInventionPart] = useState<MachinePartValue>({});
   // Déclenchement (mot-clé créature paramétrique) : sous-ensemble figé de
   // déclencheurs dont les effets composés des autres alliés sont rejoués.
   const [declenchementTriggers, setDeclenchementTriggers] = useState<CapabilityTrigger[]>([]);
@@ -2374,7 +2378,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2583,6 +2587,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setTuteurCardIds([]);
     setTransformationCardIds([]);
     setConferAbilityId(""); setConferX(1); setConferY(1);
+    setInventionPart({});
     setNeutraliseAbilityId("");
     // Jetons et races ciblées
     setConvocationTokenId(null);
@@ -2729,7 +2734,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
           conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId,
-          compagnonsCardIds, tuteurCardIds, transformationCardIds,
+          compagnonsCardIds, tuteurCardIds, transformationCardIds, inventionPart,
         },
       });
 
@@ -2848,7 +2853,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3760,6 +3765,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               {kw.id === "invocation_multiple" && (
                                 <div style={{ fontSize: 8, color: "#9b59b6", marginTop: 2 }}>{tf('config_below_tokens')}</div>
                               )}
+                              {kw.id === "invention" && (
+                                <div style={{ flexBasis: "100%" }}>
+                                  <MachinePartEditor value={kw} onChange={p => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, ...p } : k))} />
+                                </div>
+                              )}
                               {kw.id === "renforcement_multiple" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
                                   <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('targeted_race_clan')}</label>
@@ -4324,6 +4334,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                           </div>
                           {KEYWORDS[label]?.desc && (
                             <div style={{ fontSize: 8, color: "#888", marginTop: 3 }}>{KEYWORDS[label].desc}</div>
+                          )}
+                          {engineId === "invention" && (
+                            <MachinePartEditor value={inventionPart} onChange={p => setInventionPart(prev => ({ ...prev, ...p }))} />
                           )}
                         </div>
                       );

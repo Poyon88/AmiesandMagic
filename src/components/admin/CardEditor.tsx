@@ -33,6 +33,7 @@ import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 import { cardHasAbility } from "@/lib/game/ability-filter";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
+import MachinePartEditor, { type MachinePartValue } from "@/components/card-forge/MachinePartEditor";
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -256,6 +257,9 @@ export default function CardEditor() {
   const [ssY, setSsY] = useState<number>(1);
   // Pureté +X/+Y — miroir de Force des ancêtres (cimetière VIDE).
   const [purY, setPurY] = useState<number>(1);
+  // Invention : +PV (Y) de la pièce, et capacité ajoutée à la machine.
+  const [invY, setInvY] = useState<number>(1);
+  const [inventionPart, setInventionPart] = useState<MachinePartValue>({});
   // Fortifier +X/+Y (créature) : le +PV (Y) dédié — buff de la 1re créature du
   // deck. Le +ATK (X) réutilise keywordXValues ; sérialisé dans keyword_instances.
   const [foY, setFoY] = useState<number>(1);
@@ -394,6 +398,8 @@ export default function CardEditor() {
     let neutraliseLoaded = "";
     let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
+    let invYLoaded = 1;
+    let inventionLoaded: MachinePartValue = {};
     let invocCostsLoaded: number[] = [];
     let invocRaceLoaded = "", invocFactionLoaded = "";
     let compagnonsLoaded: number[] = [];
@@ -420,6 +426,10 @@ export default function CardEditor() {
       if (inst.id === "force_des_ancetres") fdaYLoaded = inst.y ?? 1;
       if (inst.id === "seuil_sacrificiel") ssYLoaded = inst.y ?? 1;
       if (inst.id === "purete") purYLoaded = inst.y ?? 1;
+      if (inst.id === "invention") {
+        invYLoaded = inst.y ?? 1;
+        inventionLoaded = { grantAbilityId: inst.grantAbilityId, grantX: inst.grantX, grantY: inst.grantY, grantMode: inst.grantMode };
+      }
       if (inst.id === "fortifier") foYLoaded = inst.y ?? 1;
       if (inst.id === "invocations_multiples") {
         invocCostsLoaded = inst.costs ?? [];
@@ -430,7 +440,7 @@ export default function CardEditor() {
       if (inst.id === "tuteur") tuteurLoaded = inst.linkedCardIds ?? [];
       if (inst.id === "transformation") transformationLoaded = (inst.linkedCardIds ?? []).slice(0, 1);
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded);
+    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded); setInvY(invYLoaded); setInventionPart(inventionLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setTuteurCardIds(tuteurLoaded);
@@ -650,6 +660,19 @@ export default function CardEditor() {
           // On a spell, a conferred keyword set to "all_allies" must persist
           // its scope even with no mode/X. "target" is the default → no field.
           const grantScope = isSpellCard && keywordGrantScope[id] === "all_allies" ? "all_allies" as const : undefined;
+          // Invention (créature) : +ATQ/+PV et la pièce de machine ; toujours
+          // émise — sans cette branche, un enregistrement ici effacerait la
+          // capacité choisie dans la forge.
+          if (id === "invention" && !isSpellCard) {
+            const p = inventionPart;
+            return {
+              id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 1, y: invY,
+              ...(p.grantAbilityId ? { grantAbilityId: p.grantAbilityId } : {}),
+              ...(p.grantAbilityId && p.grantX != null ? { grantX: p.grantX } : {}),
+              ...(p.grantAbilityId && p.grantY != null ? { grantY: p.grantY } : {}),
+              ...(p.grantAbilityId && p.grantMode ? { grantMode: p.grantMode } : {}),
+            };
+          }
           // Neutralisation : porte la capacité visée ; toujours émise (sans elle,
           // un enregistrement ici effacerait le choix fait dans la forge).
           if (id === "neutralisation" && !isSpellCard) {
@@ -845,7 +868,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1665,6 +1688,11 @@ export default function CardEditor() {
                         {kw.id === "invocation_multiple" && (
                           <div style={{ fontSize: 8, color: "#9b59b6" }}>Config dans &quot;Tokens à invoquer&quot; ci-dessous</div>
                         )}
+                        {kw.id === "invention" && (
+                          <div style={{ flexBasis: "100%" }}>
+                            <MachinePartEditor value={kw} onChange={p => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, ...p } : k))} />
+                          </div>
+                        )}
                         {kw.id === "renforcement_multiple" && (
                           <div style={{ flexBasis: "100%", marginTop: 2 }}>
                             <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
@@ -2433,6 +2461,28 @@ export default function CardEditor() {
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #d9cfe8", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Invention (créature) — +ATQ/+PV de la pièce et capacité ajoutée à la machine. */}
+            {((editFields.keywords as string[]) || []).includes("invention") && porteStats && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #e8d2bd", background: "#fffaf3" }}>
+                <div style={{ ...S.label, color: "#b87333", marginBottom: 6 }}>⚙️ INVENTION (pièce de machine)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#b87333" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["invention"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["invention"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8d2bd", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#b87333" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={invY}
+                    onChange={e => setInvY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e8d2bd", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+                <MachinePartEditor value={inventionPart} onChange={p => setInventionPart(prev => ({ ...prev, ...p }))} />
               </div>
             )}
 

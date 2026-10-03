@@ -470,6 +470,10 @@
         "label": "探索 X",
         "desc": "探索カウンターにXを加える。3に達するたびにカードを1枚引き、3を引く（余りは残る）。"
       },
+      "invention": {
+        "label": "発明 +X/+Y",
+        "desc": "あなたの機械に+X/+Y{machine_part}を加えます（初期値0/1、発明1回につき1マナ、最大6）。"
+      },
       "seconde_vie": {
         "label": "セカンドライフX",
         "desc": "墓地からX魔力で使用できる。使用後、セカンドライフを失う。"
@@ -751,6 +755,10 @@
       "exploration": {
         "label": "探索 X",
         "desc": "探索カウンターにXを加える。3に達するたびにカードを1枚引き、3を引く（余りは残る）"
+      },
+      "invention": {
+        "label": "発明 +X/+Y",
+        "desc": "あなたの機械に+X/+Y{machine_part}を加えます（初期値0/1、発明1回につき1マナ、最大6）"
       },
       "inspiration": {
         "label": "鼓舞 X",
@@ -1763,6 +1771,9 @@
       "scope_target": "味方ユニット1体に",
       "edc_compte": "{n}回、ランダムで+1 ATKまたは+1 HPを得る(既に場に出ている「団結心」持ちの{clan_de}クリーチャー1体につき1回)。",
       "scope_all": "あなたの全ユニットに",
+      "machine_part": "と{ability}",
+      "machine_part_timed": "と{ability}（{timing}）",
+      "machine_name": "機械",
       "neutralise_cible": "対象の敵ユニット1体（またはすべて）",
       "neutralise_cible_target": "対象の敵ユニット1体",
       "neutralise_cible_all": "敵ユニット全体",

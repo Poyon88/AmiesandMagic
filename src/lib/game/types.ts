@@ -104,6 +104,9 @@ export type Keyword =
   // Alimente le compteur d'Exploration ; à chaque palier EXPLORATION_PALIER
   // franchi, le contrôleur PIOCHE une carte et le reste est conservé.
   | "exploration"
+  // Ajoute +X/+Y et, au choix, une capacité (avec son déclencheur) à la
+  // MACHINE en construction du contrôleur (cf. PlayerState.machine).
+  | "invention"
   // Jouable depuis le cimetière pour un coût alternatif
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
@@ -230,6 +233,7 @@ export type SpellKeywordId =
   | "foi"
   | "conquete"
   | "exploration"
+  | "invention"
   | "incineration"
   | "creuser"
   | "presage"
@@ -330,8 +334,17 @@ export interface KeywordInstance {
   /** Capacité CIBLÉE d'une créature (Impact, Affaiblissement…) : portée
    *  « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
   targetScope?: TargetScope;
-  /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s). */
+  /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s).
+   *  Mot-clé "invention" : capacité ajoutée à la MACHINE (optionnelle). */
   grantAbilityId?: string;
+  /** INVENTION : amplitude (X, et Y pour un couple) de la capacité ajoutée à la
+   *  machine. `x`/`y` de l'instance portent, eux, les +ATQ/+PV. */
+  grantX?: number;
+  grantY?: number;
+  /** INVENTION : déclencheur de la capacité ajoutée, UNE FOIS SUR LA MACHINE.
+   *  Absent = à l'arrivée en jeu (ou permanente, pour un mot-clé passif). Ne pas
+   *  confondre avec `mode`, le déclencheur de l'Invention elle-même. */
+  grantMode?: KeywordMode;
   /** Mot-clé "invocations_multiples" : coût en mana de CHAQUE invocation, dans
    *  l'ordre (ex. [3, 5] = une créature à 3 puis une à 5). Stocké dans la
    *  colonne JSONB existante — aucune migration. */
@@ -386,6 +399,13 @@ export interface SpellKeywordInstance {
   minX?: number;
   /** DÉCHAINEMENT : même contrat que `KeywordInstance.randomY`. */
   randomY?: boolean;
+  /** INVENTION (sort) : `attack`/`health` portent les +ATQ/+PV, ces trois
+   *  champs la capacité ajoutée à la machine — même contrat que
+   *  `KeywordInstance.grantAbilityId/grantX/grantY/grantMode`. */
+  grantAbilityId?: string;
+  grantX?: number;
+  grantY?: number;
+  grantMode?: KeywordMode;
 }
 
 // --- Convocation tokens config ---
@@ -573,6 +593,9 @@ export interface Capability {
   /** Mot-clé "compagnons" uniquement : ids des cartes liées mélangées dans le
    *  deck du contrôleur (cf. KeywordInstance.linkedCardIds). */
   linkedCardIds?: number[];
+  /** Mot-clé de sort "invention" uniquement : capacité ajoutée à la machine
+   *  (cf. SpellKeywordInstance.grantAbilityId/grantX/grantY/grantMode). */
+  machinePart?: Pick<SpellKeywordInstance, "grantAbilityId" | "grantX" | "grantY" | "grantMode">;
   /** EMBLÈME uniquement (`effectKind: "emblem"`) : chez QUEL joueur l'emblème
    *  est rangé — et donc, puisque le camp est implicite, sur quel plateau il
    *  agit. `opponent` fait une malédiction. Défaut : `self`. */
@@ -1004,6 +1027,9 @@ export interface Card {
   // points to the originating token_template so renderers can fetch the
   // visual / name without guessing by race.
   token_id?: number | null;
+  /** Vrai sur la carte MACHINE construite par Invention (id -1, aucune ligne
+   *  en base) : le rendu en tire son nom traduit. */
+  machine?: boolean;
   set_id?: number | null;
   /** Carte proposée par les TIRAGES (Sélection, Invocation X, Concentration…) ?
    *  `false` l'en écarte, sans cesser d'être collectionnable, deck-able,
@@ -1662,6 +1688,12 @@ export interface PlayerState {
    *  et le palier est retranché (le reste est conservé). Il ne vaut donc jamais
    *  EXPLORATION_PALIER ou plus dans un état observable. */
   exploration: number | null;
+  /** MACHINE en construction, alimentée par la capacité Invention.
+   *
+   *  `null`/absent = jamais alimentée ⇒ compteur masqué. Dès la première
+   *  Invention elle existe et le reste, y compris remise à zéro après avoir été
+   *  prise en main. Optionnel : les snapshots antérieurs restent valides. */
+  machine?: MachineState | null;
   /** SINGULIER : le deck de DÉPART de ce joueur ne contenait aucune carte en
    *  double. Calculé UNE FOIS à l'initialisation, jamais modifié ensuite (cartes
    *  volées, jetons, copies n'y changent rien). Conditionne les capacités
@@ -2279,6 +2311,28 @@ export interface SpendConqueteAction {
   cardInstanceId: string;
 }
 
+/** MACHINE en construction (cf. `PlayerState.machine`). Ce n'est PAS une
+ *  carte : la carte est fabriquée à la prise en main (`buildMachineCard`), si
+ *  bien que l'état ne transporte que ce qui varie.
+ *
+ *  `keywords` / `keyword_instances` suivent exactement le format d'une carte
+ *  de la forge : une capacité par couple (id, mode), X/Y cumulés. */
+export interface MachineState {
+  attack: number;
+  health: number;
+  /** Inventions appliquées depuis la dernière prise en main. C'est aussi le
+   *  coût en mana de la machine, et il est plafonné à MAX_INVENTIONS_MACHINE. */
+  inventions: number;
+  keywords: Keyword[];
+  keyword_instances: KeywordInstance[];
+}
+
+/** PRISE EN MAIN de la machine : le joueur courant clique son compteur
+ *  d'Invention. Aucune donnée — tout est dans l'état ; le moteur re-valide. */
+export interface TakeMachineAction {
+  type: "take_machine";
+}
+
 /** ÉVEIL — mise en éveil : la carte quitte la MAIN pour la zone d'éveil, avec
  *  autant de points que son `eveil_cost`. Ne coûte aucun mana : ce qu'on engage
  *  ici, c'est la carte elle-même et une place sous le plafond `MAX_EVEIL`. */
@@ -2328,7 +2382,7 @@ export interface SacrificeItemAction {
   itemInstanceId: string;
 }
 
-export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | SuspendEveilAction | PayEveilAction;
+export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | TakeMachineAction | SuspendEveilAction | PayEveilAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
