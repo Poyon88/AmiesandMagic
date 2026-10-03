@@ -2,7 +2,7 @@
 // (`target.cardKind` : unités / sorts) ; (2) forme SORT du mot-clé ouverte aux
 // sorts du cimetière (elle ne proposait et ne rendait que des créatures).
 import { describe, expect, it } from "vitest";
-import { applyAction, getComposedGraveyardTargets, getSpellTargets, initRNG } from "./engine";
+import { applyAction, getComposedGraveyardTargets, getSpellSlotTargets, getSpellTargetSlots, getSpellTargets, initRNG } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, CardInstance, GameState, SpellKeywordInstance, TargetSpec } from "./types";
 
@@ -80,5 +80,23 @@ describe("Rappel — forme SORT du mot-clé, ouverte aux sorts", () => {
     initRNG(1);
     const next = applyAction(s, { type: "play_card", cardInstanceId: ci.instanceId, targetMap: { kw_0: eclair.instanceId } });
     expect(main(next)).toEqual(["Éclair"]);
+  });
+});
+
+describe("Rappel composé sur une ACTION — le sélecteur propose les actions", () => {
+  function carteAction(target: Partial<TargetSpec> = {}) { return sortRappelCompose(target).card; }
+  it("sans nature : unités ET actions ; « actions seulement » : les actions", () => {
+    const s = cimetiere(mkState(), unite("Garde"), sort("Éclair"));
+    const c = carteAction();
+    const [slot] = getSpellTargetSlots(c);
+    expect(noms(s, getSpellSlotTargets(s, c, slot))).toEqual(["Garde", "Éclair"].sort());
+    const a = carteAction({ cardKind: "spell" });
+    expect(noms(s, getSpellSlotTargets(s, a, getSpellTargetSlots(a)[0]))).toEqual(["Éclair"]);
+  });
+  it("action OU objet : la nature ne retire pas les objets", () => {
+    const objet = mkInstance(mkCard({ name: "Lame", card_type: "item", attack: 1, health: 0 }));
+    const s = cimetiere(mkState(), unite("Garde"), sort("Éclair"), objet);
+    const c = carteAction({ entity: "unit_or_item", cardKind: "spell" });
+    expect(noms(s, getSpellSlotTargets(s, c, getSpellTargetSlots(c)[0]))).toEqual(["Lame", "Éclair"].sort());
   });
 });

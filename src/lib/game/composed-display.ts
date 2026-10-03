@@ -695,7 +695,12 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     }
     case "rappel": {
       const n = eff.target?.count;
-      const kind = eff.target?.entity === "item" ? "item" : eff.target?.cardKind ?? "any";
+      // Unité ou objet / action ou objet : entité unit_or_item + nature.
+      const ent = eff.target?.entity;
+      const nature = eff.target?.cardKind;
+      const kind = ent === "item" ? "item"
+        : ent === "unit_or_item" ? (nature ? `${nature}_item` : "any")
+        : nature ?? "any";
       const who = typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
         : n === "all" ? frag(t, `content.rappel_all_${kind}`)
         : frag(t, `content.rappel_one_${kind}`);

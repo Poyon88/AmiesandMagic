@@ -1393,10 +1393,12 @@ function composedTargetPool(
     const plafond = spec.maxCost;
     pool = pool.filter((c) => (c.card.mana_cost ?? 0) <= plafond);
   }
-  // NATURE de carte (unités / sorts) — cf. TargetSpec.cardKind.
+  // NATURE de carte (unités / sorts) — cf. TargetSpec.cardKind. Ne trie que
+  // les non-objets : les objets relèvent de l'entité (« action ou objet » =
+  // entité unit_or_item + nature spell).
   if (spec.cardKind) {
     const kind = spec.cardKind;
-    pool = pool.filter((c) => c.card.card_type === kind);
+    pool = pool.filter((c) => c.card.card_type === "item" || c.card.card_type === kind);
   }
   return pool;
 }
@@ -14132,7 +14134,15 @@ function restreindreCreneauCompose(
  *  naturel (cf. `incinerationVictim`, qui en déduit le camp). Les héros et les
  *  unités restent proposés — les deux gestes mènent au même résultat. */
 export function getSpellSlotTargets(state: GameState, card: Card, slot: SpellTargetSlot): string[] {
-  const base = restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
+  // RAPPEL composé : son créneau est typé « cimetière → plateau », qui ne
+  // propose que des créatures — les actions du cimetière n'étaient jamais
+  // désignables, même en « actions seulement ». Le pool du TargetSpec fait foi,
+  // comme pour la forme créature.
+  const uid = /^(.+)#\d+$/.exec(slot.slot)?.[1];
+  if (uid && getCapabilities(card).find((c) => c.uid === uid)?.composed?.content === "rappel") {
+    return getComposedGraveyardTargets(state, card, uid);
+  }
+  const base =restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
   if (!isIncinerationSlot(card, slot)) return base;
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];

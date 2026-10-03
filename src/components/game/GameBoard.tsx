@@ -8,7 +8,7 @@ import { getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupe
 import { canPlayFromGraveyard, hasSecondeVie } from "@/lib/game/engine";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
+import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import EmblemStrip from "./EmblemStrip";
 import Hero3DViewer from "./Hero3DViewer";
@@ -780,7 +780,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       const prevMap = { ...useGameStore.getState().collectedTargetMap };
       delete prevMap[prevSlot.slot];
       const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
-      const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
+      const prevTargets = card && gameState ? getSpellSlotTargets(gameState, card.card, prevSlot) : [];
       useGameStore.setState({
         currentTargetSlotIndex: currentTargetSlotIndex - 1,
         collectedTargetMap: prevMap,
@@ -1042,7 +1042,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           const prevMap = { ...useGameStore.getState().collectedTargetMap };
           delete prevMap[prevSlot.slot];
           const card = gameState?.players[gameState.currentPlayerIndex].hand.find(c => c.instanceId === selectedCardInstanceId);
-          const prevTargets = card && gameState ? getSpellTargets(gameState, card.card, prevSlot.type) : [];
+          const prevTargets = card && gameState ? getSpellSlotTargets(gameState, card.card, prevSlot) : [];
           useGameStore.setState({
             currentTargetSlotIndex: currentTargetSlotIndex - 1,
             collectedTargetMap: prevMap,

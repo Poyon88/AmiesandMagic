@@ -15,6 +15,7 @@ import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import CostListEditor from "./CostListEditor";
 import LinkedCardsPicker from "./LinkedCardsPicker";
+import { ACTION_TARGET_CONTENTS, basculerType, cibleDesTypes, typesCoches, type TypeCible } from "./composed-target-types";
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
 import { ABILITIES, creatureEngineId, getCapabilityTriggers, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
@@ -108,6 +109,7 @@ const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "re
 const CONTENUS_COUT_X = new Set<ComposedEffectContent>(["selection", "selection_magique", "renfort_royal", "tresor", "faveur", "invocation", "exhumation", "appel", "appel_supreme", "forge"]);
 
 const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "retour_differe", "silence", "exhumation", "rappel"]);
+
 
 /** Contenus où le type de carte n'offre que « Unités » (défaut) ou « Objets » :
  *  ils mettent quelque chose EN JEU, et une action ne s'y pose pas. */
@@ -738,10 +740,14 @@ export default function ComposedEffectsEditor({
                     : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
                 // Un type « Objet » ne survit pas à un contenu qui ne sait pas
                 // agir sur un objet : il ciblerait des objets pour ne rien faire.
-                const cibleAjustee = nextTarget && (nextTarget.entity === "item" || nextTarget.entity === "unit_or_item")
+                const sansObjet = nextTarget && (nextTarget.entity === "item" || nextTarget.entity === "unit_or_item")
                   && !ITEM_TARGET_CONTENTS.has(v)
                   ? { ...nextTarget, entity: "unit" as const }
                   : nextTarget;
+                // Idem pour la nature (Unité / Action) : seul le Rappel la lit.
+                const cibleAjustee = sansObjet?.cardKind && !ACTION_TARGET_CONTENTS.has(v)
+                  ? { ...sansObjet, cardKind: undefined }
+                  : sansObjet;
                 patchEffect(idx, {
                   content: v, target: cibleAjustee,
                   grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
@@ -812,13 +818,6 @@ export default function ComposedEffectsEditor({
               )}
               {/* Invocation DÉSIGNÉE et Tuteur : ni amplitude ni filtre de pool —
                   la carte est nommée, il n'y a rien à tirer. */}
-              {eff.content === "rappel" && (
-                <>
-                  <span style={labelStyle}>{tr('label_card_kind')}</span>
-                  {sel(t.cardKind ?? "", [{ v: "", l: tr('card_kind_all') }, { v: "creature", l: tr('card_kind_creature') }, { v: "spell", l: tr('card_kind_spell') }],
-                    (v) => patchTarget(idx, { cardKind: (v || undefined) as TargetSpec["cardKind"] }))}
-                </>
-              )}
               {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -953,31 +952,40 @@ export default function ComposedEffectsEditor({
                 <div style={{ ...labelStyle, marginBottom: 6 }}>{tr('label_targets')}</div>
                 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "center" }}>
                   <span style={labelStyle}>{tr('label_type')}</span>
-                  {sel(
-                    t.entity,
-                    [
-                      ...(meta.target === "unit_or_hero"
-                        ? [{ v: "unit", l: tr('entity_unit') }, { v: "hero", l: tr('entity_hero') }, { v: "both", l: tr('entity_both') }, { v: "self", l: tr('entity_self') }]
-                        : [{ v: "unit", l: tr('entity_unit') }, { v: "self", l: tr('entity_self') }]),
-                      // OBJETS : seulement pour les contenus qui savent agir sur un objet.
-                      ...(ITEM_TARGET_CONTENTS.has(eff.content)
-                        ? [{ v: "item", l: tr('entity_item') }, { v: "unit_or_item", l: tr('entity_unit_or_item') }]
-                        : []),
+                  {/* TYPES CUMULABLES : cocher Unité + Action + Objet… Le
+                      couple (entité, nature) stocké en base est déduit des cases
+                      (cf. typesCoches / cibleDesTypes) — aucun champ nouveau. */}
+                  {(() => {
+                    const offerts: TypeCible[] = [
+                      "unit",
+                      ...(ACTION_TARGET_CONTENTS.has(eff.content) ? ["spell" as const] : []),
+                      ...(ITEM_TARGET_CONTENTS.has(eff.content) ? ["item" as const] : []),
+                      ...(meta.target === "unit_or_hero" ? ["hero" as const] : []),
+                      "self",
                       // Propre au déclencheur Blessure : ce qui vient de blesser la porteuse.
-                      ...(cap.trigger === "on_wound" ? [{ v: "damage_source", l: tr('entity_damage_source') }] : []),
-                    ],
-                    (v) => {
-                      const entity = v as TargetSpec["entity"];
-                      // "self" vise la source : il doit se résoudre
-                      // automatiquement. On force designation:"automatic"
-                      // (et count:1), sinon le "choice" par défaut resterait
-                      // stocké et casserait la résolution (le déclencheur
-                      // serait perdu — cf. Ours Maudit fin de tour).
-                      patchTarget(idx, entity === "self" || entity === "damage_source"
-                        ? { entity, designation: "automatic", count: 1 }
-                        : { entity });
-                    },
-                  )}
+                      ...(cap.trigger === "on_wound" ? ["damage_source" as const] : []),
+                    ];
+                    const coches = typesCoches(t, ACTION_TARGET_CONTENTS.has(eff.content));
+                    const libelle: Record<TypeCible, string> = {
+                      unit: tr('entity_unit'), spell: tr('entity_spell'), item: tr('entity_item'),
+                      hero: tr('entity_hero'), self: tr('entity_self'), damage_source: tr('entity_damage_source'),
+                    };
+                    return (
+                      <span style={{ display: "inline-flex", gap: "4px 12px", alignItems: "center", flexWrap: "wrap" }}>
+                        {offerts.map((ty) => (
+                          <label key={ty} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, cursor: "pointer" }}>
+                            <input type="checkbox" checked={coches.has(ty)}
+                              onChange={() => {
+                                const suivant = basculerType(coches, ty);
+                                if (!suivant) return; // au moins un type reste coché
+                                patchTarget(idx, cibleDesTypes(suivant, ACTION_TARGET_CONTENTS.has(eff.content)));
+                              }} />
+                            {libelle[ty]}
+                          </label>
+                        ))}
+                      </span>
+                    );
+                  })()}
 
                   {/* "self" = la source : ni bord, ni nombre, ni choix. */}
                   {t.entity !== "self" && t.entity !== "damage_source" && (<>
