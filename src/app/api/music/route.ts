@@ -74,12 +74,16 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(audioBase64, "base64");
-    const ext = audioMimeType.split("/")[1]?.replace("mpeg", "mp3") || "mp3";
+    // M4A (AAC) : macOS l'annonce en `audio/x-m4a`, type non standard — servi
+    // sous le type officiel `audio/mp4`, avec l'extension usuelle `.m4a`.
+    const m4a = audioMimeType === "audio/x-m4a" || audioMimeType === "audio/m4a" || audioMimeType === "audio/mp4";
+    const contentType = m4a ? "audio/mp4" : audioMimeType;
+    const ext = m4a ? "m4a" : audioMimeType.split("/")[1]?.replace("mpeg", "mp3") || "mp3";
     const filePath = `track_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from("music-tracks")
-      .upload(filePath, buffer, { upsert: true, contentType: audioMimeType, cacheControl: "31536000" });
+      .upload(filePath, buffer, { upsert: true, contentType, cacheControl: "31536000" });
     if (uploadErr) throw new Error(`Upload: ${uploadErr.message}`);
 
     const { data: urlData } = supabase.storage.from("music-tracks").getPublicUrl(filePath);
