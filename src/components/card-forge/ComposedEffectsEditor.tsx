@@ -94,13 +94,13 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge"]);
 
 /** Sous-ensemble dont le pool peut être restreint par type de carte.
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
  *  en jeu) ; Invocation n'invoque que des unités et Sélection magique ne
  *  propose que des sorts : le filtre n'y aurait aucun sens. */
-const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation"]);
+const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation"]);
 
 /** Contenus capables de viser un OBJET (types de cible « Objet » et « Unité ou
  *  objet ») : l'objet reçoit le buff, part en main / sous le deck, perd ses
@@ -152,6 +152,13 @@ const RACE_OPTIONS = getAllRaces().sort((a, b) => a.localeCompare(b, "fr"));
 // Mots-clés utilisables comme filtre « ne propose que les cartes portant … ».
 // Même dérivation d'id que GRANTABLE, mais sans la contrainte `grantable` :
 // on ne confère rien ici, on filtre sur la présence de la capacité.
+/** Filtre « mot-clé porté » des CIBLES : toutes les capacités nommées, unités
+ *  ET actions (une cible peut être une action du cimetière), sous l'id du
+ *  registre — le moteur accepte aussi son alias (cf. porteMotCle). */
+const TARGET_KEYWORDS = Object.values(ABILITIES)
+  .map((a) => ({ id: a.id, label: (a.creature?.label ?? a.label).replace(/\s*[-+]?X.*$/, "").trim() }))
+  .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+
 const POOL_KEYWORDS = Object.values(ABILITIES)
   .filter((a) => a.applicable_to.includes("creature"))
   .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
@@ -767,8 +774,7 @@ export default function ComposedEffectsEditor({
                   // proposent : « Objets » passé à une Invocation viderait son
                   // pool en silence, sans case à l'écran pour s'en apercevoir.
                   pool: POOL_CONTENTS.has(v) ? poolSansTypeHorsPerimetre(eff.pool, v)
-                    // Piocher garde son seul réglage de pool : « objets seulement ».
-                    : v === "draw_cards" && eff.pool?.cardType === "item" ? { cardType: "item" } : undefined,
+                    : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardId : undefined,
                   cardIds: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardIds : undefined,
@@ -898,15 +904,6 @@ export default function ComposedEffectsEditor({
                 );
               })()}
               {/* Piocher : toutes cartes (défaut) ou seulement les objets du deck. */}
-              {eff.content === "draw_cards" && (
-                <>
-                  <span style={labelStyle}>{tr('label_pool_card_type')}</span>
-                  {sel(eff.pool?.cardType === "item" ? "item" : "", [
-                    { v: "", l: tr('pool_any') },
-                    { v: "item", l: tr('draw_items_only') },
-                  ], (v) => patchEffect(idx, { pool: v === "item" ? { cardType: "item" } : undefined }))}
-                </>
-              )}
               {eff.content === "summon_token" && (
                 <>
                   <span style={labelStyle}>{tr('label_token')}</span>
@@ -948,7 +945,7 @@ export default function ComposedEffectsEditor({
 
                   <span style={labelStyle} />
                   <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
-                    {tr(eff.content === "invocation" ? 'pool_hint_invocation' : 'pool_hint')}
+                    {tr(eff.content === "invocation" ? 'pool_hint_invocation' : eff.content === "draw_cards" ? 'pool_hint_draw' : 'pool_hint')}
                   </span>
                 </>
               )}
@@ -1046,6 +1043,14 @@ export default function ComposedEffectsEditor({
                         clan={t.membership?.clan?.[0] ?? ""}
                         onChange={(r, c) => patchTarget(idx, { membership: (r || c) ? { ...(r ? { race: [r] } : {}), ...(c ? { clan: [c] } : {}) } : undefined })}
                       />
+
+                      {/* Mot-clé porté, cumulatif avec l'appartenance et le coût. */}
+                      <span style={labelStyle}>{tr('label_target_keyword')}</span>
+                      {sel(
+                        t.keywordId ?? "",
+                        [{ v: "", l: tr('max_cost_any') }, ...TARGET_KEYWORDS.map((k) => ({ v: k.id, l: k.label }))],
+                        (v) => patchTarget(idx, { keywordId: v || undefined }),
+                      )}
 
                       {/* Plafond de coût, cumulatif avec l'appartenance. L'option
                           vide vaut « aucun plafond » et se distingue de 0, qui est

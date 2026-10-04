@@ -768,6 +768,10 @@ export interface TargetSpec {
    *  deck), où sorts et unités cohabitent ; sur le plateau il n'y a que des
    *  unités et le filtre est sans effet. Cumulatif avec le reste (ET logique). */
   cardKind?: "creature" | "spell";
+  /** MOT-CLÉ porté : ne garde que les cartes qui ont cette capacité (id du
+   *  registre ABILITIES — une unité, une action ou un objet la portent sous le
+   *  même id). Absent ⇒ aucun filtre. Cumulatif avec le reste (ET logique). */
+  keywordId?: string;
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
   /** Désignation :

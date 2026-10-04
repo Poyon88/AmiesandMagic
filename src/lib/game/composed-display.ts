@@ -141,6 +141,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.rappel_upto_spell_item": "jusqu'à {n} actions ou objets",
   "content.draw_items_one": "piochez {x} objet de votre deck",
   "content.draw_items_many": "piochez {x} objets de votre deck",
+  "content.draw_filtered_one": "piochez {x} carte{filter} de votre deck",
+  "content.draw_filtered_many": "piochez {x} cartes{filter} de votre deck",
   "content.invocation_item": "pose un objet aléatoire de coût {x}{filter}",
   // Rappel composé : {who} = « une carte / une unité / une action », etc.
   "content.rappel": "renvoie {who} de votre cimetière dans votre main{cost}",
@@ -565,6 +567,17 @@ function describeGrantTrigger(eff: ComposedEffect, t?: SafeT): string {
  *  (« Elfes ») mais n'est pas ce que le joueur lit (« L'Alliance Céleste »).
  *  Race et clan ont un id identique à leur libellé FR — rien ne bouge en
  *  français, les autres langues cessent de recevoir la valeur brute. */
+/** Nom d'une capacité sans son amplitude (« Invention », pas « Invention +X/+Y »),
+ *  traduit. Accepte l'id du registre comme son alias moteur. */
+function libelleMotCle(id: string, t?: SafeT): string {
+  const a = ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id);
+  const label = t?.(`vocab.keywords.${id}.label`)
+    ?? a?.label
+    ?? KEYWORD_LABELS[id as keyof typeof KEYWORD_LABELS]
+    ?? id;
+  return label.replace(/\s*[-+]?X.*$/, "").trim();
+}
+
 function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   const p = eff.pool;
   if (!p) return "";
@@ -581,15 +594,7 @@ function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   if (p.faction) parts.push(frag(t, "pool.faction", { v: getFactionDisplayName(p.faction, t) }));
   if (p.clan) parts.push(frag(t, "pool.clan", { v: getClanName(p.clan, t) }));
   if (p.cardType) parts.push(frag(t, `pool.type_${p.cardType}`));
-  if (p.keywordId) {
-    const id = p.keywordId;
-    const a = ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id);
-    const label = t?.(`vocab.keywords.${id}.label`)
-      ?? a?.label
-      ?? KEYWORD_LABELS[id as keyof typeof KEYWORD_LABELS]
-      ?? id;
-    parts.push(frag(t, "pool.keyword", { v: label.replace(/\s*[-+]?X.*$/, "").trim() }));
-  }
+  if (p.keywordId) parts.push(frag(t, "pool.keyword", { v: libelleMotCle(p.keywordId, t) }));
   return parts.join("");
 }
 
@@ -659,7 +664,15 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
         cost: x > 0 ? frag(t, "content.appel_supreme_cost", { max: xAff }) : "",
       });
     case "draw_cards":
-      if (eff.pool?.cardType === "item") return frag(t, x > 1 ? "content.draw_items_many" : "content.draw_items_one", { x: xAff });
+    {
+      // Objets seuls : tournure dédiée (« piochez 1 objet de votre deck ») ;
+      // tout autre filtre s'énonce à la suite du nom (« … carte de race Elfes
+      // portant Invention de votre deck »).
+      const { cardType, ...reste } = eff.pool ?? {};
+      const autres = Object.values(reste).some(Boolean);
+      if (cardType === "item" && !autres) return frag(t, x > 1 ? "content.draw_items_many" : "content.draw_items_one", { x: xAff });
+      if (cardType || autres) return frag(t, x > 1 ? "content.draw_filtered_many" : "content.draw_filtered_one", { x: xAff, filter: describePoolFilter(eff, t) });
+    }
       return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
     case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
     case "summon_token": {
@@ -828,8 +841,15 @@ function membershipLabel(
  *  Rappel, qui ne passent pas par describeTarget (cf. skipTarget) : sans elle,
  *  « ressuscite une créature » taisait le filtre de race/clan/faction. */
 function appartenance(t: TargetSpec | undefined, tr?: SafeT): string {
-  const m = membershipLabel(t?.membership, tr);
+  const m = filtreLabel(t, tr);
   return m ? ` (${m})` : "";
+}
+
+/** Filtres de la cible tels qu'affichés entre parenthèses : appartenance puis
+ *  mot-clé porté, cumulés par « + » (« Machines + Invention »). */
+function filtreLabel(t: TargetSpec | undefined, tr?: SafeT): string {
+  return [membershipLabel(t?.membership, tr), t?.keywordId ? libelleMotCle(t.keywordId, tr) : ""]
+    .filter(Boolean).join(" + ");
 }
 
 /** « une Machine » / « toutes les Machines » / « jusqu'à 2 Machines » quand
@@ -838,7 +858,7 @@ function appartenance(t: TargetSpec | undefined, tr?: SafeT): string {
  *  plus ne se disent pas en un nom : la parenthèse reste. */
 function nomCompteDeRace(t: TargetSpec | undefined, tr?: SafeT): string | null {
   const m = t?.membership;
-  if (m?.race?.length !== 1 || m.clan?.length || m.faction?.length) return null;
+  if (m?.race?.length !== 1 || m.clan?.length || m.faction?.length || t?.keywordId) return null;
   const n = t!.count;
   const form = n === "all" ? "all" : typeof n === "number" && n > 1 ? "upto" : "one";
   return getRaceCountForm(m.race[0], form, tr)?.replace(/\{n\}/g, String(n)) ?? null;
@@ -870,7 +890,7 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
     : t.count === 1 ? frag(tr, `${q}count_one`)
     : frag(tr, `${q}count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many, t.entity === "item" || t.entity === "unit_or_item");
-  const mtxt = membershipLabel(t.membership, tr);
+  const mtxt = filtreLabel(t, tr);
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
@@ -894,7 +914,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const action = eff.content === "deal_damage" ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
   const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);
-  const mtxt = membershipLabel(tg.membership, t);
+  const mtxt = filtreLabel(tg, t);
   const targetTxt = tg.entity === "both"
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });

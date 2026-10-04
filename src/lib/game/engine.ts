@@ -38,7 +38,7 @@ import type {
 } from "./types";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
+import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
@@ -1340,6 +1340,15 @@ function visesObjets(e: import("./types").TargetSpec["entity"]): boolean {
   return e === "item" || e === "unit_or_item";
 }
 
+/** La carte porte-t-elle la capacité `id` ? Accepte l'id du registre comme son
+ *  alias moteur (Vol ⇄ ranged) : les pouvoirs d'une action portent le premier,
+ *  ceux d'une unité parfois le second. */
+function porteMotCle(c: CardInstance, id: string): boolean {
+  const def = ABILITIES[id];
+  const alias = def ? creatureEngineId(def) : id;
+  return getCapabilities(c.card).some((cap) => cap.abilityId === id || cap.abilityId === alias);
+}
+
 function composedTargetPool(
   spec: import("./types").TargetSpec,
   owner: PlayerState,
@@ -1401,6 +1410,11 @@ function composedTargetPool(
   if (spec.cardKind) {
     const kind = spec.cardKind;
     pool = pool.filter((c) => c.card.card_type === "item" || c.card.card_type === kind);
+  }
+  // MOT-CLÉ porté — cf. TargetSpec.keywordId.
+  if (spec.keywordId) {
+    const kw = spec.keywordId;
+    pool = pool.filter((c) => porteMotCle(c, kw));
   }
   return pool;
 }
@@ -1805,21 +1819,27 @@ function resolveComposedEffect(
 
   // Effets sur le contrôleur (sans ciblage d'entité)
   switch (composed.content) {
-    case "draw_cards":
-      // « Objets seulement » (pool.cardType « item ») : les X PREMIERS objets du
-      // deck, dans l'ordre, rejoignent la main — les autres cartes restent en
-      // place. Rarement plus d'un : les decks n'en contiennent qu'apportés en
-      // cours de partie (Compagnons).
-      if (composed.pool?.cardType === "item") {
-        for (let i = 0; i < x && owner.hand.length < MAX_HAND_SIZE; i++) {
-          const idx = owner.deck.findIndex(c => c.card.card_type === "item");
+    case "draw_cards": {
+      // PIOCHE FILTRÉE (type, race, faction, clan, mot-clé — cf.
+      // matchesPoolFilter) : les X PREMIÈRES cartes du deck qui correspondent,
+      // dans l'ordre du deck ; les autres restent en place. Chacune est
+      // remontée au sommet puis piochée par `drawCard`, pour en garder toute la
+      // sémantique : déclencheur « à la pioche », main pleine (carte brûlée),
+      // Cycle éternel. Plus de carte qui corresponde : on s'arrête, sans fatigue
+      // — ce n'est pas le deck qui est vide.
+      const p = composed.pool;
+      if (p && (p.cardType || p.race || p.faction || p.clan || p.keywordId)) {
+        for (let i = 0; i < x; i++) {
+          const idx = owner.deck.findIndex(c => matchesPoolFilter(c.card, p));
           if (idx < 0) break;
-          owner.hand.push(owner.deck.splice(idx, 1)[0]);
+          owner.deck.unshift(owner.deck.splice(idx, 1)[0]);
+          drawCard(owner);
         }
         return;
       }
       for (let i = 0; i < x; i++) drawCard(owner);
       return;
+    }
     case "gain_mana": owner.mana += x; return;
     // Épargne : alimente le compteur du contrôleur. Aucune cible, donc aucun
     // besoin de `source` — un sort comme une créature y accèdent pareillement.
@@ -14187,7 +14207,7 @@ function restreindreCreneauCompose(
   const t = getCapabilities(card).find((c) => c.uid === m[1] && c.composed)?.composed?.target;
   if (!t) return base;
   const memb = t.membership;
-  const restreint = t.maxCost != null || visesObjets(t.entity)
+  const restreint = t.maxCost != null || visesObjets(t.entity) || !!t.keywordId
     || !!(memb && (memb.faction?.length || memb.race?.length || memb.clan?.length));
   if (!restreint) return base;
   const player = state.players[state.currentPlayerIndex];

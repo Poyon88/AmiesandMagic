@@ -100,3 +100,19 @@ describe("Rappel composé sur une ACTION — le sélecteur propose les actions",
     expect(noms(s, getSpellSlotTargets(s, c, getSpellTargetSlots(c)[0]))).toEqual(["Lame", "Éclair"].sort());
   });
 });
+
+describe("Filtre « mot-clé porté » des cibles", () => {
+  const inventeur = (name: string) => mkInstance(mkCard({ name, mana_cost: 1, attack: 1, health: 1, keywords: ["invention"] as never }));
+  const planInvention = (name: string) => mkInstance(mkCard({ name, mana_cost: 1, card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "invention" }] as never }));
+  it("Rappel : seules les cartes portant Invention, unités ET actions", () => {
+    const s = cimetiere(mkState(), unite("Garde"), inventeur("Gnome"), planInvention("Plan"), sort("Éclair"));
+    const c = sortRappelCompose({ keywordId: "invention" }).card;
+    expect(noms(s, getSpellSlotTargets(s, c, getSpellTargetSlots(c)[0]))).toEqual(["Gnome", "Plan"].sort());
+  });
+  it("Vol : l'alias moteur « ranged » est reconnu", () => {
+    const volant = mkInstance(mkCard({ name: "Aigle", mana_cost: 1, attack: 1, health: 1, keywords: ["ranged"] as never }));
+    const s = cimetiere(mkState(), unite("Garde"), volant);
+    const c = sortRappelCompose({ keywordId: "vol" }).card;
+    expect(noms(s, getSpellSlotTargets(s, c, getSpellTargetSlots(c)[0]))).toEqual(["Aigle"]);
+  });
+});
