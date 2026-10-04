@@ -4388,55 +4388,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Spells with BOTH a needs-target keyword AND a picker route here via
     // selectTarget once targeting is done, carrying the collected map.
 
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection")) {
-      const selKw = card.card.spell_keywords!.find(kw => kw.id === "selection")!;
-      const x = selKw.amount ?? 0;
-      const choices = getSelectionCards(gameState, x, card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "selection_magique")) {
-      const smKw = card.card.spell_keywords!.find(kw => kw.id === "selection_magique")!;
-      const x = smKw.amount ?? 0;
-      const choices = getMagicalSelectionCards(gameState, x, card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
-    }
-
-    if (card.card.card_type === "spell" && card.card.spell_keywords?.some(kw => kw.id === "renfort_royal")) {
-      const rrKw = card.card.spell_keywords!.find(kw => kw.id === "renfort_royal")!;
-      const x = rrKw.amount ?? 0;
-      const choices = getRenfortRoyalCards(gameState, x, card.card);
-      if (choices.length > 0) {
-        set({
-          selectedCardInstanceId: instanceId,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingBoardPosition: null,
-        });
-        return null;
-      }
+    // Même aiguillage qu'après un ciblage (openSelectionPickerIfNeeded) : les
+    // QUATRE capacités à choix (Sélection, Sélection magique, Renfort royal,
+    // Trésor), coût « ? » / plancher A et bonus d'amplification compris. Ce
+    // chemin-ci recopiait les trois premières, sans Trésor : une action Trésor
+    // partait sans choix, et le moteur n'avait aucune carte à mettre en main.
+    if (openSelectionPickerIfNeeded(gameState, instanceId, {})) {
+      set({ selectedCardInstanceId: instanceId, selectedAttackerInstanceId: null, pendingBoardPosition: null });
+      return null;
     }
 
     // Play immediately (no targeting needed)
