@@ -65,12 +65,19 @@ export default function EmblemStrip({
                 boxShadow: "0 0 6px rgba(212,168,0,0.25)",
               }}
             >
-              <KeywordIcon
-                symbol={(e.abilityId && KEYWORD_SYMBOLS[e.abilityId as keyof typeof KEYWORD_SYMBOLS]) || "🏵️"}
-                size={16}
-                keyword={e.abilityId}
-                fill
-              />
+              {/* Boîte FIXE de 20 px, comme les icônes des unités (BoardCreature) :
+                  `fill` remplit le parent, et la pastille n'avait pas de taille
+                  propre — une icône IMPORTÉE (Commandement) s'affichait à sa
+                  taille native, un carré géant sous le portrait. Les emojis,
+                  eux, n'étaient pas concernés. */}
+              <div style={{ width: 20, height: 20, flexShrink: 0 }}>
+                <KeywordIcon
+                  symbol={(e.abilityId && KEYWORD_SYMBOLS[e.abilityId as keyof typeof KEYWORD_SYMBOLS]) || "🏵️"}
+                  size={20}
+                  keyword={e.abilityId}
+                  fill
+                />
+              </div>
               {montant != null && (
                 <span style={{ fontSize: 11, fontWeight: 900, color: "#d4a800", fontFamily: "'Cinzel',serif" }}>
                   {montant}
