@@ -1594,6 +1594,12 @@ export interface Emblem {
    *  celle du tour 1, ou expirerait avec elle — dans les deux cas une des deux
    *  poses serait faussée. */
   duration?: number;
+  /** Emblème « début de tour » posé PENDANT LE TOUR DE SON PORTEUR : numéro de
+   *  ce tour. Son début de tour est déjà passé, il n'a donc pas pu agir — ce
+   *  tour-là ne compte pas dans sa durée (cf. finishEndTurn). Sans ça, un
+   *  emblème « 2 tours » n'agissait qu'une fois. Absent dans tous les autres
+   *  cas. Fait partie de l'identité de cumul, comme la durée restante. */
+  poseAuTour?: number;
   /** Pour l'infobulle : d'où il vient, une fois la source disparue. */
   sourceCardId?: number;
   sourceName?: string;

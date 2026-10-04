@@ -3297,7 +3297,8 @@ function placeEmblem(target: PlayerState, emblem: import("./types").Emblem): voi
     && memeComposé(e.composed, emblem.composed)
     // La durée RESTANTE fait partie de l'identité : fusionner un emblème à 1
     // tour avec un autre à 3 en ferait expirer un trop tôt et l'autre trop tard.
-    && e.duration === emblem.duration);
+    && e.duration === emblem.duration
+    && e.poseAuTour === emblem.poseAuTour);
   if (existant) {
     existant.stacks += emblem.stacks;
     return;
@@ -3356,12 +3357,18 @@ function placeEmblemsForCard(
     // les cartes DÉJÀ enregistrées avec la cadence morte : elles se remettent à
     // parler sans qu'il faille les rouvrir.
     const quand = { trigger: isEmblemCadence(cap.trigger) ? cap.trigger : undefined };
+    // « Début de tour » posé chez le joueur ACTIF : son début de tour est
+    // passé, ce tour ne doit pas entamer sa durée (cf. Emblem.poseAuTour).
+    const live = currentActionState;
+    const tourPerdu = duree.duration != null && quand.trigger === "on_start_of_turn"
+      && live != null && live.players[live.currentPlayerIndex] === cible
+      ? { poseAuTour: live.turnNumber } : {};
     // Provenance figée à la pose : c'est le dernier instant où la carte est
     // encore là. Sans elle, une Sélection portée par un emblème abandonne en
     // silence (cf. `selCard` dans resolveComposedEffect).
     const provenance = { sourceFaction: card.faction ?? null, sourceAlignment: card.card_alignment ?? null };
     if (cap.composed) {
-      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, ...provenance, sourceCardId: card.id, sourceName: card.name });
+      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, ...tourPerdu, ...provenance, sourceCardId: card.id, sourceName: card.name });
       continue;
     }
     // `params` n'est garni que s'il porte quelque chose : un objet de champs
@@ -4648,6 +4655,8 @@ function finishEndTurn(newState: GameState): GameState {
     const sortant = newState.players[newState.currentPlayerIndex];
     if (sortant.emblems?.length) {
       for (const e of sortant.emblems) {
+        // Posé ce tour-ci, après son propre début de tour : ce tour ne compte pas.
+        if (e.poseAuTour === newState.turnNumber) continue;
         if (e.duration != null) e.duration -= 1;
       }
       sortant.emblems = sortant.emblems.filter(e => e.duration == null || e.duration > 0);
