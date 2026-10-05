@@ -25,7 +25,7 @@ export interface CardText {
   flavor_text: string | null;
 }
 
-const ANTHROPIC_MODEL = "claude-sonnet-4-6";
+const ANTHROPIC_MODEL = "claude-sonnet-5-5";
 
 function buildPrompt(cards: CardText[], locale: CardTargetLocale): string {
   const lang = LANG_NAMES[locale];
@@ -96,16 +96,22 @@ export async function translateCardBatch(
           "Content-Type": "application/json",
           "x-api-key": process.env.ANTHROPIC_API_KEY!,
           "anthropic-version": "2023-06-01",
+          "anthropic-beta": "server-side-fallback-2026-07-01",
         },
         body: JSON.stringify({
           model: ANTHROPIC_MODEL,
           // 8000 : marge confortable pour 20 cartes name+flavor dans toute langue.
           max_tokens: 8000,
+          output_config: { effort: "low" },
+          fallbacks: "default",
           messages: [{ role: "user", content: prompt }],
         }),
       });
 
       const data = await response.json();
+      if (response.ok && data.stop_reason === "refusal") {
+        throw new Error(`Anthropic refusal (${data.stop_details?.category ?? "unknown"})`);
+      }
 
       if (response.status === 529 || data.error?.type === "overloaded_error") {
         lastErr = `overloaded (${response.status})`;

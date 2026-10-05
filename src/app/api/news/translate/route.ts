@@ -10,7 +10,7 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { NEWS_TARGET_LOCALES, type NewsTranslation } from '@/lib/news/types';
 import { isLocale, type Locale } from '@/i18n/config';
 
-const MODEL = 'claude-opus-5';
+const MODEL = 'claude-sonnet-5-5';
 const MAX_TOKENS = 8000;
 
 const LANG_NAMES: Record<string, string> = {
@@ -69,14 +69,20 @@ async function callModel(apiKey: string, prompt: string): Promise<string> {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'server-side-fallback-2026-07-01',
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: MAX_TOKENS,
+        output_config: { effort: 'low' },
+        fallbacks: 'default',
         messages: [{ role: 'user', content: prompt }],
       }),
     });
     const data = await response.json();
+    if (response.ok && data.stop_reason === 'refusal') {
+      throw new Error(`refus du modèle (${data.stop_details?.category ?? 'catégorie inconnue'})`);
+    }
     if (response.ok) {
       const text = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text;
       if (typeof text === 'string' && text.trim()) return text;

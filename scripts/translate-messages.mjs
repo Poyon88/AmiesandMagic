@@ -23,7 +23,7 @@ const HASH_FILE = path.join(ROOT, ".i18n-hashes.json");
 const SOURCE_LOCALE = "fr";
 const TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh"];
 const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
-const MODEL = "claude-sonnet-5";
+const MODEL = "claude-sonnet-5-5";
 
 const args = process.argv.slice(2);
 const only = (args.find((a) => a.startsWith("--only=")) || "").split("=")[1];
@@ -129,8 +129,9 @@ async function translateBatch(entries, locale) {
         "Content-Type": "application/json",
         "x-api-key": ANTHROPIC_KEY,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "server-side-fallback-2026-07-01",
       },
-      body: JSON.stringify({ model: MODEL, max_tokens: 8000, messages: [{ role: "user", content: buildPrompt(entries, locale) }] }),
+      body: JSON.stringify({ model: MODEL, max_tokens: 8000, output_config: { effort: "low" }, fallbacks: "default", messages: [{ role: "user", content: buildPrompt(entries, locale) }] }),
     });
     const data = await res.json();
     if (res.status === 529 || data.error?.type === "overloaded_error") {
@@ -138,6 +139,7 @@ async function translateBatch(entries, locale) {
       continue;
     }
     if (!res.ok) throw new Error(data.error?.message || `Anthropic ${res.status}`);
+    if (data.stop_reason === "refusal") throw new Error(`Anthropic refusal (${data.stop_details?.category ?? "unknown"})`);
     const text = data.content?.find((b) => b.type === "text")?.text || "";
     const map = parseTsv(text);
     if (map.size === 0) throw new Error("aucune ligne TSV parsée");

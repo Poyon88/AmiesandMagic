@@ -201,10 +201,15 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           'Content-Type': 'application/json',
           'x-api-key': process.env.ANTHROPIC_API_KEY!,
           'anthropic-version': '2023-06-01',
+          'anthropic-beta': 'server-side-fallback-2026-07-01',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 800,
+          model: 'claude-sonnet-5-5',
+          // Sonnet 5.5 réfléchit par défaut et la réflexion compte dans
+          // max_tokens : effort bas + marge pour ne pas tronquer le JSON.
+          max_tokens: 2000,
+          output_config: { effort: 'low' },
+          fallbacks: 'default',
           messages: [{ role: 'user', content: prompt }],
         }),
       });
@@ -223,6 +228,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
         const errMsg = data.error?.message || JSON.stringify(data);
         console.error('[card-forge] API error:', response.status, errMsg);
         return NextResponse.json({ error: `Anthropic ${response.status}: ${errMsg}` }, { status: 502 });
+      }
+
+      if (data.stop_reason === 'refusal') {
+        console.error('[card-forge] refusal:', data.stop_details);
+        return NextResponse.json({ error: `Anthropic refusal: ${data.stop_details?.category ?? 'inconnue'}` }, { status: 502 });
       }
 
       const raw = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text || '{}';

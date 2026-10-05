@@ -35,7 +35,7 @@ if (!SUPA_URL || !SUPA_KEY) throw new Error("SUPABASE URL / service role manquan
 
 const TARGETS = ["en", "es", "de", "it", "pt", "ja", "zh"];
 const LANG = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-sonnet-5-5";
 
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
 const locales = onlyArg ? onlyArg.slice(7).split(",").map((s) => s.trim()).filter((l) => TARGETS.includes(l)) : TARGETS;
@@ -77,8 +77,8 @@ ${JSON.stringify(payload)}`;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: MODEL, max_tokens: 8000, messages: [{ role: "user", content: prompt }] }),
+        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "anthropic-beta": "server-side-fallback-2026-07-01" },
+        body: JSON.stringify({ model: MODEL, output_config: { effort: "low" }, fallbacks: "default", max_tokens: 8000, messages: [{ role: "user", content: prompt }] }),
       });
       const data = await res.json();
       if (res.status === 529 || data.error?.type === "overloaded_error") {
@@ -86,6 +86,7 @@ ${JSON.stringify(payload)}`;
         continue;
       }
       if (!res.ok) throw new Error(data.error?.message || `Anthropic ${res.status}`);
+      if (data.stop_reason === "refusal") throw new Error(`Anthropic refusal (${data.stop_details?.category ?? "unknown"})`);
       const text = data.content?.find((b) => b.type === "text")?.text || "";
       const out = new Map();
       for (const line of text.split("\n")) {

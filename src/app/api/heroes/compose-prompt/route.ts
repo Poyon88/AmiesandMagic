@@ -57,16 +57,25 @@ async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'server-side-fallback-2026-07-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
+        model: 'claude-sonnet-5-5',
+        // Sonnet 5.5 réfléchit par défaut et la réflexion compte dans
+        // max_tokens : effort bas + marge pour ne pas tronquer le prompt.
+        max_tokens: 2000,
+        output_config: { effort: 'low' },
+        fallbacks: 'default',
         messages: [{ role: 'user', content: userMessage }],
       }),
     });
     const data = await response.json();
     if (!response.ok) {
       console.error('[compose-prompt] Anthropic error:', data.error?.message || data);
+      return basePrompt;
+    }
+    if (data.stop_reason === 'refusal' || data.stop_reason === 'max_tokens') {
+      console.error('[compose-prompt] Anthropic stop_reason:', data.stop_reason, data.stop_details ?? '');
       return basePrompt;
     }
     const text = data.content?.find((b: { type: string; text?: string }) => b.type === 'text')?.text;

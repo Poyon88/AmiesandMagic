@@ -21,7 +21,7 @@ const env = Object.fromEntries(
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
 const ANTHROPIC_KEY = env.ANTHROPIC_API_KEY;
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-sonnet-5-5";
 
 const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
 
@@ -133,11 +133,14 @@ async function translateBatch(cards, locale) {
         "Content-Type": "application/json",
         "x-api-key": ANTHROPIC_KEY,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "server-side-fallback-2026-07-01",
       },
       // 8000 : marge confortable pour 20 cartes name+flavor dans toute langue.
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 8000,
+        output_config: { effort: "low" },
+        fallbacks: "default",
         messages: [{ role: "user", content: buildPrompt(cards, locale) }],
       }),
     });
@@ -147,6 +150,7 @@ async function translateBatch(cards, locale) {
       continue;
     }
     if (!res.ok) throw new Error(data.error?.message || `Anthropic ${res.status}`);
+    if (data.stop_reason === "refusal") throw new Error(`Anthropic refusal (${data.stop_details?.category ?? "unknown"})`);
     const text = data.content?.find((b) => b.type === "text")?.text || "";
     const rows = parseTsv(text);
     if (rows.length === 0) throw new Error("aucune ligne TSV parsée");
