@@ -5,12 +5,13 @@ import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS, alignementAEnregistrer } from '@/lib/card-engine/constants';
 import { validateRace } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
-import type { Capability, Card } from '@/lib/game/types';
+import type { Capability, Card, CardStatus } from '@/lib/game/types';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { upsertCardTranslations } from '@/lib/cards/cardTranslations';
 import { findNameCollision } from '@/lib/cards/nameCollision';
 import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
 import { sanitizeComposed } from '@/lib/cards/composedCapabilities';
+import { estStatutValide, refusTransition } from '@/lib/cards/cardStatusServer';
 
 // Planifie (hors du chemin de réponse, via `after`) la (re)traduction nom +
 // ambiance d'une carte vers les 5 langues. i18n : seuls nom/ambiance sont
@@ -79,7 +80,11 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   const supabaseAdmin = getAdminClient();
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable';
+  // Route service role : la RLS de `cards` ne s'applique pas, on écarte donc
+  // nous-mêmes les BROUILLONS pour qui n'est ni admin ni testeur.
+  const { data: profil } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).maybeSingle();
+  const voitBrouillons = profil?.role === 'admin' || profil?.role === 'testeur';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
@@ -89,8 +94,11 @@ export async function GET() {
   // peuvent se recouvrir ou sauter une ligne.
   try {
     const data = await fetchAllRows(
-      (from, to) =>
-        supabaseAdmin.from('cards').select(COLONNES).order('name').order('id').range(from, to),
+      (from, to) => {
+        let q = supabaseAdmin.from('cards').select(COLONNES);
+        if (!voitBrouillons) q = q.neq('status', 'draft');
+        return q.order('name').order('id').range(from, to);
+      },
       { label: 'Lecture du catalogue (éditeur)' },
     );
     return NextResponse.json(data);
@@ -153,6 +161,9 @@ export async function POST(request: Request) {
         // collectionnable ni jouable. Absente de cette liste blanche, la case
         // serait silencieusement ignorée à l'édition.
         'discoverable',
+        // Cycle de vie (brouillon / jouable / retirée / exclue) et son motif.
+        'status',
+        'status_reason',
         // Voix d'entrée en jeu (skill des bruitages) : genre déduit de la carte
         // et URL du fichier dans `sfx-tracks` (cf. /api/cards/sfx-upload-url).
         'gender',
@@ -178,6 +189,13 @@ export async function POST(request: Request) {
       }
       const invalide = validerChampsVoix(patch);
       if (invalide) return NextResponse.json({ error: invalide }, { status: 400 });
+      if ('status' in patch) {
+        if (!estStatutValide(patch.status)) {
+          return NextResponse.json({ error: `status invalide : ${String(patch.status)}` }, { status: 400 });
+        }
+        const refus = await refusTransition(supabaseAdmin, updateId, patch.status);
+        if (refus) return NextResponse.json({ error: refus }, { status: 409 });
+      }
       // Alignement : recalculé dès que la faction OU l'alignement change, pour
       // qu'il reste celui de la faction (choix libre pour les Mercenaires).
       if ('faction' in patch || 'card_alignment' in patch) {
@@ -322,6 +340,21 @@ export async function POST(request: Request) {
       eveil_cost: card.eveil_cost ?? null,
       equip_cost: card.equip_cost ?? null,
     };
+    // Statut : recopié s'il est fourni ; à la CRÉATION, défaut brouillon (une
+    // carte se publie explicitement). À l'édition, l'absence le laisse intact.
+    if (card.status !== undefined) {
+      if (!estStatutValide(card.status)) {
+        return NextResponse.json({ error: `status invalide : ${String(card.status)}` }, { status: 400 });
+      }
+      cardData.status = card.status;
+    } else if (!updateId) {
+      cardData.status = 'draft';
+    }
+    if (card.status_reason !== undefined) cardData.status_reason = card.status_reason || null;
+    if (updateId && cardData.status) {
+      const refus = await refusTransition(supabaseAdmin, updateId, cardData.status as CardStatus);
+      if (refus) return NextResponse.json({ error: refus }, { status: 409 });
+    }
     // Dual-write du modèle unifié : dérivé de la carte sauvegardée (l'adaptateur
     // reproduit fidèlement la sémantique legacy). Source de vérité côté moteur
     // une fois lue (getCapabilities) ; sinon repli adaptateur.

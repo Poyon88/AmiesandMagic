@@ -3366,5 +3366,14 @@
     "badge_starter": "START",
     "badge_owned": "ERWORBEN",
     "bundle_hint": "Oder holen Sie sich die fehlenden {count} Fraktionen für {price} Gold →"
+  },
+  "cardStatus": {
+    "draft": "Entwurf",
+    "playable": "Spielbar",
+    "retired": "Zurückgezogen",
+    "excluded": "Ausgeschlossen",
+    "deck_unavailable": "{count, plural, one {# nicht verfügbare Karte} other {# nicht verfügbare Karten}}",
+    "cannot_add": "Nicht verfügbare Karte: Sie kann keinem Deck hinzugefügt werden",
+    "reason": "Grund: {reason}"
   }
 }

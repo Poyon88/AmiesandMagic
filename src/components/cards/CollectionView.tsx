@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { CardStatusBadge } from "@/components/cards/CardStatusBadge";
+import { cardStatusOf, estIndisponible } from "@/lib/game/deck-rules";
 import { OBJET_RGB, OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { useRouter } from "next/navigation";
 import type { Card, Keyword, CardSet, GameFormat } from "@/lib/game/types";
@@ -632,6 +634,23 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                       >
                         🔒 {t("locked_badge")}
                       </span>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Carte Retirée/Exclue : toujours visible (le joueur comprend
+              // pourquoi son deck est invalide), grisée, avec sa pastille et son
+              // motif en infobulle. Le brouillon n'apparaît qu'aux admin/testeur.
+              if (cardStatusOf(item.card) !== "playable") {
+                return (
+                  <div key={item.key} {...animProps}>
+                    <div className="relative">
+                      <div className={estIndisponible(item.card) ? "opacity-50 grayscale" : undefined}>{inner}</div>
+                      <CardStatusBadge
+                        card={item.card}
+                        style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", zIndex: 5, fontSize: 10 }}
+                      />
                     </div>
                   </div>
                 );

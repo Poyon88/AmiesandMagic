@@ -2,7 +2,7 @@
 // Helpers purs (sans React) partagés par la validation live (canAddCard) et la
 // validation de sauvegarde (deckStats.violations) du DeckBuilder.
 
-import type { Card } from "./types";
+import type { Card, CardStatus } from "./types";
 import { ABILITIES } from "./abilities";
 import { getCapabilities } from "./capability-adapter";
 import { CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "./constants";
@@ -123,5 +123,50 @@ export function objetsDansLeDeck(
 ): number {
   let n = 0;
   for (const { card, quantity } of entries) if (!estAjoutableAuDeck(card)) n += quantity;
+  return n;
+}
+
+/** Statut effectif d'une carte : `undefined`/`null` vaut JOUABLE (cf. `Card.status`). */
+export function cardStatusOf(card: { status?: CardStatus | null }): CardStatus {
+  return card.status ?? "playable";
+}
+
+/** Carte retirée ou exclue : injouable pour TOUS, y compris admin/testeur. */
+export function estIndisponible(card: { status?: CardStatus | null }): boolean {
+  const s = cardStatusOf(card);
+  return s === "retired" || s === "excluded";
+}
+
+/** Écarte des POOLS DE TIRAGE toute carte non jouable (brouillon, retirée,
+ *  exclue). Même point de passage que `excludeSpecialSets` /
+ *  `excludeNonDiscoverable` : la CONSTRUCTION des pools. Les cartes LIÉES
+ *  explicitement (jetons, Compagnons, Tuteur, Transformation, Invocation
+ *  désignée) ne passent PAS par ce filtre : elles suivent leur carte mère. */
+export function onlyPlayable<T extends { status?: CardStatus | null }>(cards: T[]): T[] {
+  return cards.filter((c) => cardStatusOf(c) === "playable");
+}
+
+/** Le statut autorise-t-il cette carte dans un deck ? Retirée/Exclue : jamais ;
+ *  Brouillon : comptes admin/testeur seulement. Miroir client du déclencheur
+ *  `deck_cards_refuse_indisponibles` (supabase-migration-card-status.sql). */
+export function statutPermetLeDeck(
+  card: { status?: CardStatus | null },
+  isAdminOrTester: boolean,
+): boolean {
+  const s = cardStatusOf(card);
+  if (s === "playable") return true;
+  if (s === "draft") return isAdminOrTester;
+  return false;
+}
+
+/** Nombre d'exemplaires d'un deck que le statut interdit (quantités comprises).
+ *  Un deck qui en contient est INVALIDE, mais reste intact en base : il redevient
+ *  valide tout seul si la carte redevient jouable. */
+export function cartesIndisponiblesDansLeDeck(
+  entries: Iterable<{ card: { status?: CardStatus | null }; quantity: number }>,
+  isAdminOrTester: boolean,
+): number {
+  let n = 0;
+  for (const { card, quantity } of entries) if (!statutPermetLeDeck(card, isAdminOrTester)) n += quantity;
   return n;
 }

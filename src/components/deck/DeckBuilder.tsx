@@ -9,7 +9,8 @@ import { getFormatFilter, parseFormatCode } from "@/lib/game/format-legality";
 import { isCardOwned, type Entitlements, type OwnershipContext } from "@/lib/game/collection";
 import { DECK_SIZE, CAPABILITY_LIMIT_EXEMPT, capabilityLimitFor } from "@/lib/game/constants";
 import { ABILITIES } from "@/lib/game/abilities";
-import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations, estAjoutableAuDeck, objetsDansLeDeck } from "@/lib/game/deck-rules";
+import { namedCreatureCapabilityIds, creatureCapabilityCounts, capabilityLimitViolations, estAjoutableAuDeck, objetsDansLeDeck, statutPermetLeDeck, cartesIndisponiblesDansLeDeck } from "@/lib/game/deck-rules";
+import { CardStatusBadge } from "@/components/cards/CardStatusBadge";
 import { FACTIONS, ALIGNMENTS, getFactionForRace } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
@@ -88,6 +89,9 @@ interface DeckBuilderProps {
   formats: GameFormat[];
   collectedCardIds: number[];
   isTester: boolean;
+  /** Admin ou testeur : seuls ces comptes peuvent mettre un BROUILLON en deck
+   *  (les joueurs ne les voient même pas — RLS). */
+  canUseDrafts?: boolean;
   /** Droits issus de `profiles` : socle de faction et option payante. */
   entitlements: Entitlements;
   boards: BoardRow[];
@@ -186,6 +190,7 @@ export default function DeckBuilder({
   formats,
   collectedCardIds,
   isTester,
+  canUseDrafts = false,
   entitlements,
   boards,
   ownedBoardPrints,
@@ -202,6 +207,7 @@ export default function DeckBuilder({
   const vocab = useVocab();
   const heroText = useHeroText();
   const t = useTranslations("deck");
+  const tStatus = useTranslations("cardStatus");
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
   const [selectedHeroId, setSelectedHeroId] = useState<number | null>(
@@ -515,6 +521,10 @@ export default function DeckBuilder({
     // le deck, donc retirables).
     const objets = objetsDansLeDeck(deckCards.values());
     if (objets > 0) violations.push(t("no_items_in_deck_current", { count: objets }));
+    // Carte passée Retirée/Exclue après coup : le deck est gardé tel quel mais
+    // invalide jusqu'à ce que le joueur la remplace.
+    const indisponibles = cartesIndisponiblesDansLeDeck(deckCards.values(), canUseDrafts);
+    if (indisponibles > 0) violations.push(tStatus("deck_unavailable", { count: indisponibles }));
     if (mercenairesCount > maxMercenaires) violations.push(t("max_mercenaires_current", { max: maxMercenaires, current: mercenairesCount }));
     // Limite par capacité nommée (Vol exempté). Le plafond n'est plus unique :
     // certaines capacités ont une dérogation (cf. capabilityLimitFor), d'où le
@@ -525,7 +535,7 @@ export default function DeckBuilder({
     }
 
     return { factions: factionSet, allFactions, clans: clanSet, alignments: alignmentSet, violations, alignmentConflict, mercenairesCount, maxMercenaires, capabilityCounts };
-  }, [deckCards]);
+  }, [deckCards, canUseDrafts, tStatus]);
 
   // Récap des mots-clés (capacités nommées) du deck, trié pour un affichage
   // stable : du plus fréquent au plus rare, puis par libellé. Chaque entrée
@@ -605,6 +615,7 @@ export default function DeckBuilder({
 
   function canAddCard(card: Card): string | null {
     if (!estAjoutableAuDeck(card)) return t("no_items_in_deck");
+    if (!statutPermetLeDeck(card, canUseDrafts)) return tStatus("cannot_add");
     if (!isCardOwned(card, ownership)) return t("card_not_owned");
     if (totalCards >= DECK_SIZE) return t("deck_full");
     const existing = deckCards.get(card.id);
@@ -989,15 +1000,17 @@ export default function DeckBuilder({
             // exemplaire. Sinon, désactivée si elle ne peut pas être ajoutée.
             const disabled = !atMax && !!canAddCard(card);
             return (
-              <GameCard
-                key={card.id}
-                card={card}
-                size="md"
-                onClick={() => onGridCardClick(card)}
-                disabled={disabled}
-                dimmed={atMax}
-                count={inDeck?.quantity}
-              />
+              <div key={card.id} className="relative">
+                <GameCard
+                  card={card}
+                  size="md"
+                  onClick={() => onGridCardClick(card)}
+                  disabled={disabled}
+                  dimmed={atMax}
+                  count={inDeck?.quantity}
+                />
+                <CardStatusBadge card={card} style={{ position: "absolute", top: 6, left: 6, zIndex: 2, pointerEvents: "auto" }} />
+              </div>
             );
           })}
         </div>
@@ -1332,8 +1345,9 @@ export default function DeckBuilder({
                 {/* Cards in this slot */}
                 <div className="px-2 py-1">
                   {entries.map(entry => (
+                    <div key={entry.card.id} className="relative">
+                    <CardStatusBadge card={entry.card} style={{ position: "absolute", top: 2, right: 28, zIndex: 2 }} />
                     <DeckCardRow
-                      key={entry.card.id}
                       card={entry.card}
                       quantity={entry.quantity}
                       substituted={entry.substituted}
@@ -1344,6 +1358,7 @@ export default function DeckBuilder({
                       onPreviewLong={openTouchPreview}
                       onPreviewContext={togglePreviewDetails}
                     />
+                    </div>
                   ))}
 
                   {/* Empty slot indicators (only for non-Commune rarities) */}

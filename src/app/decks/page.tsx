@@ -5,6 +5,7 @@ import { entitlementsFromProfile } from "@/lib/game/collection";
 import { readFactionUnlocks } from "@/lib/game/factionUnlocks";
 import { deckPlayability } from "@/lib/game/deckPlayability";
 import { objetsParDeck } from "@/lib/decks/objetsParDeck";
+import { indisponiblesParDeck } from "@/lib/decks/indisponiblesParDeck";
 
 export const dynamic = "force-dynamic";
 
@@ -122,10 +123,12 @@ export default async function DecksPage() {
   }
 
   // Decks enregistrés avant la règle « pas d'objets » : signalés, pas modifiés.
-  const objetsDesDecks = await objetsParDeck(
-    supabase,
-    (decks ?? []) as { id: number; deck_cards: { card_id: number; quantity: number }[] }[],
-  );
+  // Et ceux qui contiennent une carte passée Retirée/Exclue depuis.
+  const deckRows = (decks ?? []) as { id: number; deck_cards: { card_id: number; quantity: number }[] }[];
+  const [objetsDesDecks, indisponiblesDesDecks] = await Promise.all([
+    objetsParDeck(supabase, deckRows),
+    indisponiblesParDeck(supabase, deckRows),
+  ]);
 
   const decksWithCount = (decks ?? []).map((deck) => {
     const formatId = (deck.format_id as number | null) ?? null;
@@ -145,6 +148,7 @@ export default async function DecksPage() {
       missingFactions: playabilityByDeck.get(deck.id as number)?.missingFactions ?? [],
       missingCount: playabilityByDeck.get(deck.id as number)?.missingCount ?? 0,
       itemCount: objetsDesDecks.get(deck.id as number) ?? 0,
+      unavailableCount: indisponiblesDesDecks.get(deck.id as number) ?? 0,
     };
   });
 

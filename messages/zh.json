@@ -3366,5 +3366,14 @@
     "badge_starter": "初始",
     "badge_owned": "已拥有",
     "bundle_hint": "或以{price}金币获取您尚缺的{count}个阵营 →"
+  },
+  "cardStatus": {
+    "draft": "草稿",
+    "playable": "可用",
+    "retired": "暂停使用",
+    "excluded": "禁用",
+    "deck_unavailable": "{count} 张不可用的卡牌",
+    "cannot_add": "不可用的卡牌：无法加入卡组",
+    "reason": "原因：{reason}"
   }
 }

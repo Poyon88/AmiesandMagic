@@ -66,6 +66,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     // Une carte écartée des tirages ne s'obtient pas : l'annoncer sur la page
     // qui promet « tout le commun de la faction » serait mentir.
     .eq("discoverable", true)
+    .eq("status", "playable")
     .order("mana_cost")
     .order("name"),
     supabase

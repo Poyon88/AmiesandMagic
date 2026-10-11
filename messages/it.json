@@ -3366,5 +3366,14 @@
     "badge_starter": "INIZIALE",
     "badge_owned": "ACQUISITA",
     "bundle_hint": "Oppure prendi le {count} fazioni che ti mancano per {price} oro →"
+  },
+  "cardStatus": {
+    "draft": "Bozza",
+    "playable": "Giocabile",
+    "retired": "Ritirata",
+    "excluded": "Esclusa",
+    "deck_unavailable": "{count, plural, one {# carta non disponibile} other {# carte non disponibili}}",
+    "cannot_add": "Carta non disponibile: non può essere aggiunta a un mazzo",
+    "reason": "Motivo: {reason}"
   }
 }

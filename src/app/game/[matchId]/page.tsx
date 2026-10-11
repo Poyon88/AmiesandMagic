@@ -15,7 +15,7 @@ import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { INVENTION_SET_NAME } from "@/lib/game/constants";
-import { excludeSpecialSets, excludeNonDiscoverable } from "@/lib/game/deck-rules";
+import { excludeSpecialSets, excludeNonDiscoverable, onlyPlayable } from "@/lib/game/deck-rules";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import { useTranslations } from "next-intl";
@@ -30,7 +30,7 @@ const GAME_CARD_COLUMNS =
   "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
   "image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, " +
   "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
-  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable";
+  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status";
 
 interface HeroRow {
   id: number;
@@ -341,7 +341,7 @@ export default function GamePage() {
         // bâtissent donc des pools identiques, condition de la synchro des
         // tirages semés.
         const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
-        const factionCards = excludeNonDiscoverable(excludeSpecialSets(factionCardsData, specialSetIds));
+        const factionCards = onlyPlayable(excludeNonDiscoverable(excludeSpecialSets(factionCardsData, specialSetIds)));
         // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
         if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
@@ -354,7 +354,7 @@ export default function GamePage() {
             "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
           );
         }
-        const allSpells = excludeNonDiscoverable(excludeSpecialSets(allSpellsData, specialSetIds));
+        const allSpells = onlyPlayable(excludeNonDiscoverable(excludeSpecialSets(allSpellsData, specialSetIds)));
 
         // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
         // par id au déclenchement, or elles peuvent tomber hors des pools déjà
@@ -394,17 +394,21 @@ export default function GamePage() {
           .filter((id) => !loadedCardIds.has(id))
           .sort((a, b) => a - b);
         if (missingLinkedIds.length > 0) {
-          const { data: linkedRows, error: linkedErr } = await supabase
-            .from("cards")
-            .select(GAME_CARD_COLUMNS)
-            .in("id", missingLinkedIds)
-            .order("id")
-            .returns<Card[]>();
-          if (linkedErr) console.warn("[match] Compagnons : chargement des cartes liées en échec :", linkedErr);
-          // Pas d'excludeSpecialSets ici : une carte liée est une désignation
-          // EXPLICITE de l'auteur, pas un tirage — elle doit se résoudre même
-          // hors des pools aléatoires.
-          factionCards.push(...(linkedRows ?? []));
+          // Route service role, par lots de 50 (sa limite) : une carte liée
+          // suit sa mère QUEL QUE SOIT SON STATUT, or la RLS cacherait au
+          // joueur un jeton resté en brouillon.
+          const linkedRows: Card[] = [];
+          for (let i = 0; i < missingLinkedIds.length; i += 50) {
+            const lot = missingLinkedIds.slice(i, i + 50);
+            const res = await fetch(`/api/cards/by-ids?ids=${lot.join(",")}`);
+            if (res.ok) linkedRows.push(...((await res.json()) as Card[]));
+            else console.warn("[match] Compagnons : chargement des cartes liées en échec :", res.status);
+          }
+          linkedRows.sort((a, b) => a.id - b.id);
+          // Pas d'excludeSpecialSets ni d'onlyPlayable ici : une carte liée est
+          // une désignation EXPLICITE de l'auteur, pas un tirage — elle doit se
+          // résoudre même hors des pools aléatoires.
+          factionCards.push(...linkedRows);
         }
 
         // Determine which board the match uses: the second player's deck board,

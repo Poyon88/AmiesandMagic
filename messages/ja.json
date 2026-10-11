@@ -3366,5 +3366,14 @@
     "badge_starter": "初期",
     "badge_owned": "取得済み",
     "bundle_hint": "または、不足している{count}陣営をまとめて{price}ゴールドで入手→"
+  },
+  "cardStatus": {
+    "draft": "下書き",
+    "playable": "使用可能",
+    "retired": "一時停止",
+    "excluded": "禁止",
+    "deck_unavailable": "使用できないカード {count} 枚",
+    "cannot_add": "使用できないカードです。デッキに追加できません",
+    "reason": "理由：{reason}"
   }
 }

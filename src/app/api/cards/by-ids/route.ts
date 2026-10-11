@@ -6,10 +6,11 @@
 // cartes avec toutes leurs colonnes) : une carte cite deux ou trois compagnons,
 // charger la base entière pour ça serait disproportionné hors de la forge.
 //
-// En PARTIE, rien n'appelle cette route : les cartes liées sont déjà dans les
-// pools du match, que la page de match complète exprès pour que le moteur puisse
-// les résoudre. Elle ne sert que hors partie — collection, constructeur de deck,
-// aperçu de la forge.
+// En PARTIE, la page de match l'appelle pour compléter ses pools avec les cartes
+// liées absentes. Passer par le service role est voulu : une carte liée suit sa
+// carte mère QUEL QUE SOIT SON STATUT — un jeton en brouillon, invisible au
+// joueur par la RLS de `cards`, doit quand même se résoudre en jeu. Hors partie
+// elle sert à la collection, au constructeur de deck et à l'aperçu de la forge.
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
@@ -22,7 +23,8 @@ const CARD_COLUMNS =
   'keywords, keyword_instances, spell_keywords, spell_effects, capabilities, ' +
   'image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, ' +
   'convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, ' +
-  'card_month, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost';
+  'card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, ' +
+  'topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason';
 
 /** Garde-fou de volume : au-delà, l'appelant se trompe de route (qu'il prenne le
  *  catalogue). Une carte ne cite jamais 50 compagnons. */
