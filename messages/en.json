@@ -3366,5 +3366,14 @@
     "badge_starter": "STARTER",
     "badge_owned": "ACQUIRED",
     "bundle_hint": "Or get the {count} factions you're missing for {price} gold →"
+  },
+  "cardStatus": {
+    "draft": "Draft",
+    "playable": "Playable",
+    "retired": "Retired",
+    "excluded": "Banned",
+    "deck_unavailable": "{count, plural, one {# unavailable card} other {# unavailable cards}}",
+    "cannot_add": "Unavailable card: it cannot be added to a deck",
+    "reason": "Reason: {reason}"
   }
 }

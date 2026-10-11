@@ -3366,5 +3366,14 @@
     "badge_starter": "DÉPART",
     "badge_owned": "ACQUISE",
     "bundle_hint": "Ou prenez les {count} factions qu’il vous manque pour {price} or →"
+  },
+  "cardStatus": {
+    "draft": "Brouillon",
+    "playable": "Jouable",
+    "retired": "Retirée",
+    "excluded": "Exclue",
+    "deck_unavailable": "{count, plural, one {# carte indisponible} other {# cartes indisponibles}}",
+    "cannot_add": "Carte indisponible : elle ne peut pas entrer dans un deck",
+    "reason": "Motif : {reason}"
   }
 }

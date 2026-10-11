@@ -274,7 +274,17 @@ export async function POST(request: Request) {
   const cardIds = items.map((i) => i.card_id).filter((id): id is number => id != null);
   if (cardIds.length > 0) {
     const { data: rarityRows } = await supabase
-      .from('cards').select('id, rarity').in('id', cardIds);
+      .from('cards').select('id, rarity, status').in('id', cardIds);
+    // Statut : une carte EXCLUE ne reviendra jamais, on ne vend pas une carte
+    // morte ; un BROUILLON n'est pas encore public. Une RETIRÉE reste vendable
+    // (elle reviendra). Les enchères déjà ouvertes vont à leur terme.
+    const bloquees = (rarityRows ?? []).filter((r) => r.status === 'excluded' || r.status === 'draft');
+    if (bloquees.length > 0) {
+      return NextResponse.json(
+        { error: 'Une carte exclue du jeu ou en brouillon ne peut pas être mise aux enchères.' },
+        { status: 400 },
+      );
+    }
     const byId = new Map((rarityRows ?? []).map((r) => [r.id as number, r.rarity as string | null]));
     // Une carte introuvable ressort en `undefined` et sera donc refusée : mieux
     // vaut bloquer une vente douteuse que lui inventer un plancher.

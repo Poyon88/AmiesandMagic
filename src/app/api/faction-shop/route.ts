@@ -78,7 +78,10 @@ export async function GET() {
         .select("id", { count: "exact", head: true })
         .eq("rarity", FREE_RARITY)
         .eq("faction", id)
-        .not("set_id", "is", null);
+        .not("set_id", "is", null)
+        // Seules les cartes JOUABLES s'achètent réellement : un brouillon ou une
+        // carte retirée/exclue gonflerait le nombre affiché avant paiement.
+        .eq("status", "playable");
       if (error) console.warn(`[faction-shop] comptage des communes de ${id} en échec :`, error.message);
       return [id, count ?? 0] as const;
     }),

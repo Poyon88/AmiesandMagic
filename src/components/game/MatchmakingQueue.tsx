@@ -37,6 +37,7 @@ export default function MatchmakingQueue({
   formats: GameFormat[];
 }) {
   const t = useTranslations("game");
+  const tStatus = useTranslations("cardStatus");
   const vocab = useVocab();
   const router = useRouter();
   const supabase = createClient();
@@ -123,6 +124,16 @@ export default function MatchmakingQueue({
         });
         if (rpcError) {
           console.error("[matchmaking] rpc error", rpcError);
+          // check_violation : une carte du deck est devenue indisponible
+          // pendant l'attente — le RPC nous a retirés de la file, on le dit
+          // au lieu de laisser le joueur attendre un adversaire pour rien.
+          if (rpcError.code === "23514") {
+            setError(tStatus("cannot_add"));
+            setInQueue(false);
+            inQueueRef.current = false;
+            cleanupTimers();
+            cleanupChannel();
+          }
           return;
         }
         if (data) {
@@ -132,7 +143,7 @@ export default function MatchmakingQueue({
         console.error("[matchmaking] poll exception", err);
       }
     },
-    [userId, supabase, navigateToMatch]
+    [userId, supabase, navigateToMatch, tStatus, cleanupTimers, cleanupChannel]
   );
 
   const schedulePoll = useCallback(
@@ -199,7 +210,7 @@ export default function MatchmakingQueue({
         p_format_id: selectedFormatId,
       });
       if (rpcError) {
-        setError(rpcError.message);
+        setError(rpcError.code === "23514" ? tStatus("cannot_add") : rpcError.message);
         setInQueue(false);
         inQueueRef.current = false;
         cleanupTimers();

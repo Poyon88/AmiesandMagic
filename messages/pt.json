@@ -3366,5 +3366,14 @@
     "badge_starter": "INICIAL",
     "badge_owned": "ADQUIRIDA",
     "bundle_hint": "Ou pegue as {count} facções que faltam por {price} ouro →"
+  },
+  "cardStatus": {
+    "draft": "Rascunho",
+    "playable": "Jogável",
+    "retired": "Retirada",
+    "excluded": "Excluída",
+    "deck_unavailable": "{count, plural, one {# carta indisponível} other {# cartas indisponíveis}}",
+    "cannot_add": "Carta indisponível: não pode ser adicionada a um deck",
+    "reason": "Motivo: {reason}"
   }
 }

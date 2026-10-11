@@ -34,6 +34,19 @@ import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 import { cardHasAbility } from "@/lib/game/ability-filter";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
 import MachinePartEditor, { type MachinePartValue } from "@/components/card-forge/MachinePartEditor";
+import { CARD_STATUSES, type CardStatus } from "@/lib/game/types";
+import { cardStatusOf } from "@/lib/game/deck-rules";
+import { designatedCardIds } from "@/lib/game/tuteur";
+import { CardStatusBadge, CARD_STATUS_COLORS } from "@/components/cards/CardStatusBadge";
+
+/** Libellés ADMIN du statut (la forge est en français ; côté joueur, cf.
+ *  l'espace i18n `cardStatus`). */
+const STATUS_LABELS: Record<CardStatus, string> = {
+  draft: "Brouillon",
+  playable: "Jouable",
+  retired: "Retirée",
+  excluded: "Exclue",
+};
 
 /** Libellé d'un `card_type`. Table plutôt que ternaire : l'ancien
  *  « creature ? Unité : Sort » rangeait d'office tout troisième type parmi les
@@ -80,6 +93,9 @@ interface DbCard {
   entraide_race: string | null;
   set_id: number | null;
   discoverable?: boolean | null;
+  status?: CardStatus | null;
+  status_reason?: string | null;
+  status_changed_at?: string | null;
   card_year: number | null;
   card_month: number | null;
   life_cost: number | null;
@@ -193,6 +209,13 @@ export default function CardEditor() {
   const [filterSet, setFilterSet] = useState("");
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
+  const [statusFilter, setStatusFilter] = useState<CardStatus | null>(null);
+  // Bloc Statut : enregistré À PART de la sauvegarde complète (mise à jour
+  // partielle), pour qu'une exclusion passe toujours par sa confirmation.
+  const [statusDraft, setStatusDraft] = useState<CardStatus>("draft");
+  const [statusReasonDraft, setStatusReasonDraft] = useState("");
+  const [statusImpact, setStatusImpact] = useState<{ decks: number; exemplairesDetenus: number; dons: number } | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
 
   // View
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -360,13 +383,17 @@ export default function CardEditor() {
       if (filterSet && card.set_id !== parseInt(filterSet)) return false;
       if (filterYear && String(card.card_year) !== filterYear) return false;
       if (filterMonth && String(card.card_month) !== filterMonth) return false;
+      if (statusFilter !== null && cardStatusOf(card) !== statusFilter) return false;
       return true;
     }).sort((a, b) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr"));
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter]);
 
   // Select card for editing
   const selectCard = useCallback((card: DbCard) => {
     setSelectedCard(card);
+    setStatusDraft(cardStatusOf(card));
+    setStatusReasonDraft(card.status_reason ?? "");
+    setStatusImpact(null);
 
     // Parse X values from effect_text suffix like [Riposte 2, Carnage 3]
     const xMatch = (card.effect_text || "").match(/\[([^\]]+)\]$/);
@@ -1070,8 +1097,60 @@ export default function CardEditor() {
     setSearch(""); setManaCostFilter(null); setTypeFilter(null); setKeywordFilter(null);
     setFactionFilter(null); setRarityFilter(null); setRaceFilter(null); setClanFilter(null);
     setAlignmentFilter(null);
-    setFilterSet(""); setFilterYear(""); setFilterMonth("");
+    setFilterSet(""); setFilterYear(""); setFilterMonth(""); setStatusFilter(null);
   };
+
+  // Applique le statut choisi. Une EXCLUSION demande une confirmation qui
+  // affiche ce qu'elle touche (1er clic : comptage, 2e clic : application).
+  const applyStatus = async (confirmed = false) => {
+    if (!selectedCard) return;
+    setStatusSaving(true);
+    try {
+      if (statusDraft === "excluded" && cardStatusOf(selectedCard) !== "excluded" && !confirmed) {
+        const r = await fetch(`/api/cards/status-impact?id=${selectedCard.id}`);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        setStatusImpact(d);
+        return;
+      }
+      const res = await fetch("/api/cards/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          card: { status: statusDraft, status_reason: statusReasonDraft.trim() || null },
+          updateId: selectedCard.id,
+          partial: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const maj = { ...selectedCard, status: statusDraft, status_reason: statusReasonDraft.trim() || null };
+      setSelectedCard(maj);
+      setCards(prev => prev.map(c => (c.id === maj.id ? maj : c)));
+      setStatusImpact(null);
+      setSaveResult({ ok: true, msg: `Statut : ${STATUS_LABELS[statusDraft]}` });
+    } catch (err) {
+      setSaveResult({ ok: false, msg: err instanceof Error ? err.message : "Erreur statut" });
+    } finally {
+      setStatusSaving(false);
+    }
+  };
+
+  // Cartes LIÉES (Compagnons, Tuteur, Transformation, Invocation désignée)
+  // encore en brouillon : elles fonctionneront en jeu (elles suivent leur
+  // mère), mais une carte publiée qui pointe vers un brouillon est le plus
+  // souvent un oubli de publication.
+  const linkedDrafts = useMemo(() => {
+    if (!selectedCard) return [];
+    const ids = new Set<number>();
+    for (const inst of selectedCard.keyword_instances ?? []) for (const id of inst.linkedCardIds ?? []) ids.add(id);
+    for (const sk of (selectedCard.spell_keywords ?? []) as SpellKeywordInstance[]) for (const id of sk.linkedCardIds ?? []) ids.add(id);
+    for (const cap of (selectedCard.capabilities ?? []) as Capability[]) {
+      for (const id of cap.linkedCardIds ?? []) ids.add(id);
+      for (const id of designatedCardIds(cap.composed)) ids.add(id);
+    }
+    return cards.filter(c => ids.has(c.id) && cardStatusOf(c) === "draft");
+  }, [selectedCard, cards]);
 
   if (loading) {
     return <div style={{ padding: 40, textAlign: "center", color: "#888", fontFamily: "'Cinzel',serif" }}>Chargement...</div>;
@@ -1134,6 +1213,12 @@ export default function CardEditor() {
         <select value={alignmentFilter || ""} onChange={e => setAlignmentFilter(e.target.value || null)} style={{ ...S.select, width: 110 }}>
           <option value="">Alignement...</option>
           {ALIGNMENT_FILTERS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+        </select>
+
+        {/* Statut de cycle de vie */}
+        <select value={statusFilter || ""} onChange={e => setStatusFilter((e.target.value || null) as CardStatus | null)} style={{ ...S.select, width: 110 }}>
+          <option value="">Statut...</option>
+          {CARD_STATUSES.map(st => <option key={st} value={st}>{STATUS_LABELS[st]}</option>)}
         </select>
 
         {/* Set */}
@@ -1205,7 +1290,11 @@ export default function CardEditor() {
               listClassName="am-forge-grid"
               itemClassName="am-forge-grid-item"
               itemContent={(_, card) => (
-                selectedCard?.id === card.id ? (
+                <div style={{ position: "relative" }}>
+                {cardStatusOf(card) !== "playable" && (
+                  <CardStatusBadge card={card} style={{ position: "absolute", top: 4, left: 4, zIndex: 2 }} />
+                )}
+                {selectedCard?.id === card.id ? (
                   <div onClick={() => selectCard(card)} style={{ cursor: "pointer" }}>
                     <GameCard
                       card={card as unknown as Card}
@@ -1216,7 +1305,8 @@ export default function CardEditor() {
                   </div>
                 ) : (
                   <CardThumb card={card as unknown as Card} onClick={() => selectCard(card)} />
-                )
+                )}
+                </div>
               )}
             />
           ) : (
@@ -1246,7 +1336,7 @@ export default function CardEditor() {
                     onMouseEnter={e => { if (selectedCard?.id !== card.id) (e.currentTarget.style.background = "#fafafa"); }}
                     onMouseLeave={e => { if (selectedCard?.id !== card.id) (e.currentTarget.style.background = "transparent"); }}
                   >
-                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{card.name}</td>
+                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{card.name} <CardStatusBadge card={card} /></td>
                     <td style={{ padding: "6px 8px", color: "#4a90d9" }}>{card.mana_cost}</td>
                     <td style={{ padding: "6px 8px" }}>{LIBELLE_TYPE[card.card_type] ?? card.card_type}</td>
                     <td style={{ padding: "6px 8px" }}>{card.card_type === "spell" ? "—" : card.card_type === "item" ? `+${card.attack ?? 0}/+${card.health ?? 0}` : `${card.attack}/${card.health}`}</td>
@@ -1500,6 +1590,70 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label}>Mois</div>
                 <input type="number" min={1} max={12} value={(editFields.card_month as number) || ""} onChange={e => updateField("card_month", e.target.value ? parseInt(e.target.value) : null)} style={S.input} />
+              </div>
+            </div>
+
+            {/* Statut de cycle de vie — enregistré à part (mise à jour partielle),
+                pour que l'exclusion passe toujours par sa confirmation. */}
+            <div style={{ marginBottom: 10, padding: 8, border: `1px solid ${CARD_STATUS_COLORS[cardStatusOf(selectedCard)]}`, borderRadius: 6, background: "#fff" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <div style={S.label}>Statut</div>
+                <span style={{ fontSize: 9, color: "#888" }}>
+                  actuel : <b style={{ color: CARD_STATUS_COLORS[cardStatusOf(selectedCard)] }}>{STATUS_LABELS[cardStatusOf(selectedCard)]}</b>
+                  {selectedCard.status_changed_at && ` · depuis le ${new Date(selectedCard.status_changed_at).toLocaleDateString("fr-FR")}`}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+                {CARD_STATUSES.map(st => (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => { setStatusDraft(st); setStatusImpact(null); }}
+                    style={{
+                      ...S.filterBtn(statusDraft === st),
+                      ...(statusDraft === st ? { background: CARD_STATUS_COLORS[st], borderColor: CARD_STATUS_COLORS[st], color: "#fff" } : {}),
+                    }}
+                  >
+                    {STATUS_LABELS[st]}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={statusReasonDraft}
+                onChange={e => setStatusReasonDraft(e.target.value)}
+                placeholder="Motif (affiché aux joueurs sur la pastille)"
+                style={{ ...S.input, marginBottom: 6 }}
+              />
+              {statusImpact ? (
+                <div style={{ fontSize: 10, color: "#c0392b", lineHeight: 1.5 }}>
+                  Exclure définitivement cette carte ? {statusImpact.decks} deck(s) deviendront invalides ;
+                  {" "}{statusImpact.exemplairesDetenus} exemplaire(s) numéroté(s) et {statusImpact.dons} don(s) sont détenus par des joueurs.
+                  <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                    <button type="button" disabled={statusSaving} onClick={() => applyStatus(true)} style={{ ...S.filterBtn(true), background: "#c0392b", borderColor: "#c0392b", color: "#fff" }}>Confirmer l&apos;exclusion</button>
+                    <button type="button" onClick={() => setStatusImpact(null)} style={S.filterBtn(false)}>Annuler</button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={statusSaving || (statusDraft === cardStatusOf(selectedCard) && statusReasonDraft.trim() === (selectedCard.status_reason ?? ""))}
+                  onClick={() => applyStatus()}
+                  style={S.filterBtn(false)}
+                >
+                  {statusSaving ? "…" : "Appliquer le statut"}
+                </button>
+              )}
+              {cardStatusOf(selectedCard) !== "draft" && linkedDrafts.length > 0 && (
+                <div style={{ fontSize: 9, color: "#e08a00", marginTop: 6, lineHeight: 1.5 }}>
+                  ⚠ Carte(s) liée(s) encore en brouillon : {linkedDrafts.map(c => c.name).join(", ")}.
+                  Elles fonctionneront en jeu, mais restent invisibles des joueurs.
+                </div>
+              )}
+              <div style={{ fontSize: 8, color: "#888", marginTop: 4, lineHeight: 1.5 }}>
+                Brouillon : invisible des joueurs, jouable par admin/testeur entre eux.
+                Retirée (provisoire) et Exclue (définitive) : visibles grisées, injouables,
+                les decks qui les contiennent deviennent invalides.
               </div>
             </div>
 

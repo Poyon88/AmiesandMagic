@@ -986,6 +986,15 @@ export interface SpellResolutionContext {
   realManaCost: number;
 }
 
+/** Cycle de vie d'une carte (supabase-migration-card-status.sql).
+ *  - `draft`    brouillon : invisible aux joueurs (RLS), réservé admin/testeur ;
+ *  - `playable` publiée, active ;
+ *  - `retired`  retirée provisoirement — visible grisée, injouable ;
+ *  - `excluded` exclue définitivement — même effet que `retired`. */
+export type CardStatus = "draft" | "playable" | "retired" | "excluded";
+
+export const CARD_STATUSES: readonly CardStatus[] = ["draft", "playable", "retired", "excluded"];
+
 export interface Card {
   id: number;
   name: string;
@@ -1044,6 +1053,13 @@ export interface Card {
    *  découvrable : un chemin qui ne sélectionne pas la colonne ne doit pas faire
    *  disparaître la carte des pools en silence. */
   discoverable?: boolean | null;
+  /** Cycle de vie (colonne `status`) — cf. `CardStatus`. `undefined` vaut
+   *  JOUABLE : un chemin qui ne sélectionne pas la colonne ne doit pas rendre
+   *  une carte injouable en silence. */
+  status?: CardStatus | null;
+  /** Motif du dernier changement de statut, affiché sur le badge. */
+  status_reason?: string | null;
+  status_changed_at?: string | null;
   card_year?: number | null;
   card_month?: number | null;
   sfx_play_url?: string | null;

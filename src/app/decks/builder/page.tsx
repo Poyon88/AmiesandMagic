@@ -133,6 +133,7 @@ export default async function DeckBuilderPage({
       formats={formats ?? []}
       collectedCardIds={collectedCardIds}
       isTester={isTester}
+      canUseDrafts={profile?.role === "admin" || profile?.role === "testeur"}
       entitlements={entitlementsFromProfile(profile, factionUnlocks)}
       boards={allBoards ?? []}
       ownedBoardPrints={ownedBoardPrints ?? []}

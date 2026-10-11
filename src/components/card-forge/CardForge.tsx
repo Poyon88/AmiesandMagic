@@ -3206,6 +3206,18 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 </div>
               </Sec>
 
+              {/* Statut : toute carte forgée naît BROUILLON (invisible des
+                  joueurs) et se publie dans l'éditeur, bloc « Statut ». */}
+              <Sec title="Statut">
+                <div style={{ fontSize: 9, color: "#7b61ff", fontFamily: "'Cinzel',serif", fontWeight: 700 }}>
+                  Brouillon à la création
+                </div>
+                <div style={{ fontSize: 8, color: "#888", marginTop: 4, lineHeight: 1.5 }}>
+                  Invisible des joueurs, jouable par les comptes admin/testeur entre eux.
+                  Passez-la « Jouable » dans l&apos;éditeur pour la publier.
+                </div>
+              </Sec>
+
               <Sec title={tf('section_mode')}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
                   {(["auto", "manuel"] as const).map(m => (
