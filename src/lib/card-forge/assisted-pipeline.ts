@@ -63,7 +63,7 @@ async function compresser(base64: string, mime: string): Promise<string> {
   return canvas.toDataURL("image/webp", 0.85).split(",")[1];
 }
 
-export interface CarteCreee { id: number | null; name: string; nameAdjusted?: boolean; imageOk: boolean }
+export interface CarteCreee { id: number | null; name: string; nameAdjusted?: boolean; imageOk: boolean; imageErreur?: string }
 
 /** Ce que le planificateur de concepts doit savoir d'une carte du lot. */
 export function cartepourConcept(b: BalancedCard) {
@@ -76,6 +76,7 @@ export function cartepourConcept(b: BalancedCard) {
 export async function creerCarte(
   b: BalancedCard, brief: CardBrief, pris: string[], signal?: AbortSignal,
   concept?: { concept: CardConcept; lexique: string[] } | null,
+  imageModel?: string,
 ): Promise<CarteCreee> {
   const p = b.plan;
   const isSpell = b.cardType === "spell";
@@ -97,15 +98,17 @@ export async function creerCarte(
 
   // Illustration : un échec n'empêche pas la carte (Brouillon, image à refaire).
   let imageBase64: string | null = null;
+  let imageErreur: string | undefined;
   if (texte.illustrationPrompt) {
     try {
       const img = await json(await fetch("/api/cards/generate-image", {
         method: "POST", headers: { "Content-Type": "application/json" }, signal,
-        body: JSON.stringify({ prompt: texte.illustrationPrompt, highRes: true, aspectRatio: "3:4" }),
+        body: JSON.stringify({ prompt: texte.illustrationPrompt, highRes: true, aspectRatio: "3:4", ...(imageModel ? { model: imageModel } : {}) }),
       }));
       imageBase64 = await compresser(img.imageBase64, img.mimeType);
     } catch (e) {
       if (signal?.aborted) throw e;
+      imageErreur = e instanceof Error ? e.message : "Illustration non générée";
     }
   }
 
@@ -138,5 +141,5 @@ export async function creerCarte(
       imageMimeType: imageBase64 ? "image/webp" : null,
     }),
   }));
-  return { id: saved.id ?? null, name: texte.name, nameAdjusted: texte.nameAdjusted, imageOk: !!imageBase64 };
+  return { id: saved.id ?? null, name: texte.name, nameAdjusted: texte.nameAdjusted, imageOk: !!imageBase64, imageErreur };
 }

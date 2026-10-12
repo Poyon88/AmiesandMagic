@@ -22,6 +22,7 @@ import {
 import { equilibrer, planBatch, seededRng, type BalancedCard, type BatchPlan } from "@/lib/card-engine/brief-generator";
 import { getBareme } from "@/lib/card-engine/bareme";
 import { cartepourConcept, creerCarte } from "@/lib/card-forge/assisted-pipeline";
+import { BULK_IMAGE_MODELS, type BulkImageModel } from "@/lib/ai/image-models";
 import { SUBJECT_KINDS, SUBJECT_KINDS_UNITE, SUBJECT_KIND_LABELS, type CardConcept, type ConceptPlan } from "@/lib/ai/card-concepts";
 
 interface Msg { role: "user" | "assistant"; content: string }
@@ -118,6 +119,17 @@ export default function AssistedForge() {
   const [plan, setPlan] = useState<ConceptPlan | null>(null);
   const [conceptsAttente, setConceptsAttente] = useState<number | "tout" | null>(null);
   const [consigne, setConsigne] = useState("");
+  const [modeleImage, setModeleImage] = useState<BulkImageModel>(BULK_IMAGE_MODELS[0].id);
+  useEffect(() => {
+    try {
+      const m = localStorage.getItem("assist.modeleImage");
+      if (m && BULK_IMAGE_MODELS.some((x) => x.id === m)) setModeleImage(m as BulkImageModel);
+    } catch { /* stockage indisponible : défaut */ }
+  }, []);
+  const choisirModeleImage = (m: BulkImageModel) => {
+    setModeleImage(m);
+    try { localStorage.setItem("assist.modeleImage", m); } catch { /* sans effet */ }
+  };
   const restantsRef = useRef<{ runId: string; cartes: BalancedCard[]; concepts: (CardConcept | null)[]; lexique: string[]; pris: string[] } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const finRef = useRef<HTMLDivElement | null>(null);
@@ -206,10 +218,10 @@ export default function AssistedForge() {
       let item: { position: number; card_id: number | null; status: string; error: string | null };
       try {
         const c = concepts[i];
-        const r = await creerCarte(cartes[i], brief, pris, ctrl.signal, c ? { concept: c, lexique } : null);
+        const r = await creerCarte(cartes[i], brief, pris, ctrl.signal, c ? { concept: c, lexique } : null, modeleImage);
         pris.push(r.name);
-        setSuivi((s) => s.map((x) => x.position === pos ? { ...x, statut: "ok", nom: r.name, id: r.id, image: r.imageOk } : x));
-        item = { position: pos, card_id: r.id, status: "created", error: r.imageOk ? null : "Illustration non générée" };
+        setSuivi((s) => s.map((x) => x.position === pos ? { ...x, statut: "ok", nom: r.name, id: r.id, image: r.imageOk, erreur: r.imageErreur } : x));
+        item = { position: pos, card_id: r.id, status: "created", error: r.imageOk ? null : (r.imageErreur ?? "Illustration non générée") };
       } catch (e) {
         if (ctrl.signal.aborted) {
           setSuivi((s) => s.map((x) => x.position === pos ? { ...x, statut: "attente" } : x));
@@ -361,6 +373,13 @@ export default function AssistedForge() {
           <button onClick={lancer} disabled={!done || enCours || !brief.faction || !!conceptsAttente} style={plan ? S.bouton(done && !enCours && !!brief.faction && !conceptsAttente) : S.secondaire}>
             Lancer {brief.count} carte{brief.count > 1 ? "s" : ""}{plan ? "" : " sans concepts"}
           </button>
+          <label style={{ fontSize: 10, color: "#555", display: "flex", alignItems: "center", gap: 4 }}>
+            Image
+            <select value={modeleImage} onChange={(e) => choisirModeleImage(e.target.value as BulkImageModel)} disabled={enCours}
+              style={{ fontSize: 11, padding: "4px 6px", borderRadius: 6, border: "1px solid #ddd" }}>
+              {BULK_IMAGE_MODELS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+            </select>
+          </label>
           {enCours && <button onClick={() => abortRef.current?.abort()} style={{ ...S.secondaire, color: "#c0392b", borderColor: "#e6b0aa" }}>Arrêter</button>}
           {!enCours && restantsRef.current && <button onClick={reprendre} style={S.secondaire}>Reprendre ({restantsRef.current.cartes.length})</button>}
         </div>
@@ -389,7 +408,7 @@ export default function AssistedForge() {
                 <span style={{ width: 20, color: "#aaa" }}>{s.position + 1}</span>
                 <span style={{ width: 16 }}>{s.statut === "ok" ? "✅" : s.statut === "erreur" ? "❌" : s.statut === "encours" ? "⏳" : "·"}</span>
                 <span style={{ flex: 1, color: "#333", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={s.erreur ?? s.sujet}>
-                  {s.nom ?? (s.statut === "erreur" ? s.erreur : s.sujet ? <span style={{ color: "#999" }}>{s.sujet}</span> : "")}{s.statut === "ok" && s.image === false ? " (sans image)" : ""}
+                  {s.nom ?? (s.statut === "erreur" ? s.erreur : s.sujet ? <span style={{ color: "#999" }}>{s.sujet}</span> : "")}{s.statut === "ok" && s.image === false ? <span title={s.erreur ?? undefined} style={{ color: "#e08a00" }}> (sans image)</span> : ""}
                 </span>
                 {s.ratio != null && <span style={{ color: Math.abs(s.ratio - 1) <= 0.05 ? "#27ae60" : "#e08a00" }}>{Math.round(s.ratio * 100)} %</span>}
               </div>
