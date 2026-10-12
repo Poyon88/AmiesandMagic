@@ -8,6 +8,9 @@ import {
   getBalanceOverrides, loadBrowserOverrides, mergeBalanceOverrides,
   saveBalanceOverridesToDb, type BalanceOverrides,
 } from "@/lib/card-engine/balance";
+import { BAREME_CALIBRE, getBareme, type Bareme, type BaremeOverrides, type CoutLineaire } from "@/lib/card-engine/bareme";
+import { libelleDeclencheur } from "@/lib/card-engine/card-points";
+import { ABILITIES } from "@/lib/game/abilities";
 
 /** BARÈME — le modèle de coût complet, consultable et réglable.
  *
@@ -37,6 +40,27 @@ const COUTS_ADD: { k: keyof typeof ADDITIONAL_COST_POINTS; nom: string; unite: s
   { k: "sacrifice", nom: "Sacrifice", unite: "par allié", note: "Une unité déjà en jeu" },
   { k: "equip", nom: "Équipement", unite: "par mana", note: "Objets : second coût, repayé à chaque déplacement" },
 ];
+
+/** Lit une valeur du barème par chemin (« declencheur.on_attack »). */
+function lire(b: unknown, chemin: string[]): number {
+  let o: unknown = b;
+  for (const k of chemin) o = (o as Record<string, unknown> | undefined)?.[k];
+  return typeof o === "number" ? o : 0;
+}
+
+/** Copie de `ov` où la feuille `chemin` vaut `n` (les branches sont recopiées). */
+function poser(ov: BaremeOverrides | undefined, chemin: string[], n: number): BaremeOverrides {
+  const racine: Record<string, unknown> = { ...(ov as Record<string, unknown> | undefined) };
+  let o = racine;
+  chemin.forEach((k, i) => {
+    if (i === chemin.length - 1) { o[k] = n; return; }
+    o[k] = { ...(o[k] as Record<string, unknown> | undefined) };
+    o = o[k] as Record<string, unknown>;
+  });
+  return racine as BaremeOverrides;
+}
+
+const SEUIL_PEU_DE_DONNEES = 8;
 
 const ETIQ: React.CSSProperties = { fontSize: 9, color: "#999", letterSpacing: 1.2 };
 const CHAMP: React.CSSProperties = {
@@ -125,6 +149,26 @@ export default function BalanceEditor() {
     if (minuteur.current) clearTimeout(minuteur.current);
     void envoyer();
   }, [envoyer]);
+
+  const b = getBareme();
+  /** Champ d'un paramètre du BARÈME calibré, par chemin. Fonction de rendu et
+   *  non composant : un composant déclaré ici serait recréé à chaque frappe et
+   *  le champ perdrait le focus. */
+  const champB = (chemin: string[], pas = 0.05) => (
+    <Champ key={chemin.join(".")}
+      valeur={lire(b, chemin)} defaut={lire(BAREME_CALIBRE, chemin)} pas={pas}
+      onChange={(n) => maj({ ...ov, bareme: poser(ov.bareme, chemin, n) })}
+    />
+  );
+  const [filtreB, setFiltreB] = useState("");
+  const lignesCouts = (fam: "capacites" | "composes") => {
+    const t = filtreB.trim().toLowerCase();
+    const map = (b[fam] ?? {}) as Record<string, CoutLineaire>;
+    return Object.entries(map)
+      .map(([id, c]) => ({ id, c, nom: fam === "capacites" ? (ABILITIES[id]?.creature?.label ?? ABILITIES[id]?.label ?? id) : id }))
+      .filter((l) => !t || l.nom.toLowerCase().includes(t) || l.id.includes(t))
+      .sort((x, y) => (y.c.n ?? 0) - (x.c.n ?? 0) || x.nom.localeCompare(y.nom, "fr"));
+  };
 
   const majKw = (label: string, champ: "cost" | "costPerX", n: number) =>
     maj({ ...ov, keywords: { ...ov.keywords, [label]: { ...ov.keywords?.[label], [champ]: n } } });
@@ -217,6 +261,15 @@ export default function BalanceEditor() {
         </div>
       )}
 
+      <SectionsBareme b={b} champB={champB} filtre={filtreB} setFiltre={setFiltreB} lignesCouts={lignesCouts} />
+
+      <details style={{ background: "#fafafa", border: "1px solid #e0e0e0", borderRadius: 8, padding: "10px 18px" }}>
+        <summary style={{ ...ETIQ, cursor: "pointer" }}>GÉNÉRATEUR AUTOMATIQUE — ancien barème plat (ne note plus les cartes)</summary>
+        <p style={{ fontSize: 10, color: "#999", margin: "10px 0" }}>
+          Ces valeurs ne servent plus qu&apos;au générateur de cartes aléatoires. Les coûts des capacités y sont
+          initialisés depuis le barème calibré (arrondis) ; la jauge, elle, suit le barème ci-dessus.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18 }}>
         <div style={{ ...ETIQ, marginBottom: 12 }}>BUDGET — mana × base × multiplicateur de rareté</div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
@@ -341,6 +394,125 @@ export default function BalanceEditor() {
           </table>
         </div>
       </div>
+        </div>
+      </details>
     </div>
+  );
+}
+
+const CARTE: React.CSSProperties = { background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: 18 };
+const CELL: React.CSSProperties = { padding: "3px 14px 3px 0", fontSize: 11, color: "#555", whiteSpace: "nowrap" };
+
+function SectionsBareme({ b, champB, filtre, setFiltre, lignesCouts }: {
+  b: Bareme;
+  champB: (chemin: string[], pas?: number) => React.ReactElement;
+  filtre: string;
+  setFiltre: (v: string) => void;
+  lignesCouts: (fam: "capacites" | "composes") => { id: string; c: CoutLineaire; nom: string }[];
+}) {
+  const q = b.qualite;
+  const ligne = (nom: string, chemin: string[], note?: string, pas?: number) => (
+    <tr key={chemin.join(".")}>
+      <td style={{ ...CELL, fontWeight: 600, color: "#444" }}>{nom}</td>
+      <td style={CELL}>{champB(chemin, pas)}</td>
+      <td style={{ ...CELL, color: "#aaa", fontSize: 10, whiteSpace: "normal" }}>{note}</td>
+    </tr>
+  );
+  const tableCouts = (fam: "capacites" | "composes") => (
+    <div style={{ overflowX: "auto", maxHeight: 460, overflowY: "auto" }}>
+      <table style={{ borderCollapse: "collapse", fontSize: 11, width: "100%" }}>
+        <thead style={{ position: "sticky", top: 0, background: "#fafafa" }}>
+          <tr>
+            {["NOM", "BASE", "PAR X", "PAR Y", "CARTES"].map((h) => (
+              <th key={h} style={{ ...ETIQ, textAlign: "left", padding: "6px 14px 6px 0" }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {lignesCouts(fam).map(({ id, c, nom }) => (
+            <tr key={id} style={{ borderTop: "1px solid #f2f2f2" }}>
+              <td style={{ ...CELL, fontWeight: 600, color: "#444" }}>{nom}</td>
+              <td style={CELL}>{champB([fam, id, "base"], 0.5)}</td>
+              <td style={CELL}>{champB([fam, id, "perX"], 0.5)}</td>
+              <td style={CELL}>{champB([fam, id, "perY"], 0.5)}</td>
+              <td style={{ ...CELL, color: (c.n ?? 0) < SEUIL_PEU_DE_DONNEES ? "#e08a00" : "#888" }}
+                title={(c.n ?? 0) < SEUIL_PEU_DE_DONNEES ? "Peu de données : estimation rétrécie vers l'ancien coût" : undefined}>
+                {c.n ?? 0}{(c.n ?? 0) < SEUIL_PEU_DE_DONNEES ? " ⚠" : ""}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+  return (
+    <>
+      <div style={CARTE}>
+        <div style={{ ...ETIQ, marginBottom: 8 }}>BARÈME CALIBRÉ — la norme qui note toutes les cartes</div>
+        <p style={{ fontSize: 10, color: "#888", margin: "0 0 12px", lineHeight: 1.6, maxWidth: 760 }}>
+          Points d&apos;une capacité = (base + par X × (X − 1) + par Y × (Y − 1)) × déclencheur × portée × filtre × hasard × Singulier.
+          Budget = (mana + éveil × points d&apos;éveil) × points par mana × rareté × type.
+          {q && <> Calibré le {q.date} sur <b>{q.cartes}</b> cartes Jouables : R² <b>{q.r2}</b>, erreur médiane <b>{q.erreurMedianeMana} mana</b>.</>}
+        </p>
+        <table style={{ borderCollapse: "collapse" }}><tbody>
+          {ligne("⚔️ Attaque (par point)", ["stat", "atk"], undefined, 0.1)}
+          {ligne("🛡️ Points de vie (par point)", ["stat", "def"], undefined, 0.1)}
+          {ligne("Socle unité", ["socle", "creature"], "Points fixes du « corps » (négatif = budget offert)", 0.5)}
+          {ligne("Socle action", ["socle", "spell"], undefined, 0.5)}
+          {ligne("Socle objet", ["socle", "item"], undefined, 0.5)}
+          {ligne("Type objet (× budget)", ["type", "item"])}
+          {Object.keys(b.rarete).map((r) => ligne(`Rareté ${r} (× budget)`, ["rarete", r]))}
+          {ligne("Éveil (mana par point d'éveil)", ["eveil"])}
+          {ligne("Plafond du rabais additionnel", ["plafondAdditionnel"], "Part du budget, ex. 0,4 = 40 %")}
+          {ligne("Coût en vie (par PV)", ["additionnel", "life"], undefined, 0.5)}
+          {ligne("Défausse (par carte)", ["additionnel", "discard"], undefined, 0.5)}
+          {ligne("Sacrifice (par allié)", ["additionnel", "sacrifice"], undefined, 0.5)}
+          {ligne("Exil (par carte)", ["additionnel", "exile"], undefined, 0.5)}
+          {ligne("Repli (par carte)", ["additionnel", "topdeck"], undefined, 0.5)}
+          {ligne("Équipement (par mana)", ["additionnel", "equip"], undefined, 0.5)}
+        </tbody></table>
+      </div>
+
+      <div style={{ ...CARTE, display: "flex", gap: 40, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ ...ETIQ, marginBottom: 10 }}>DÉCLENCHEURS — × coût de la capacité</div>
+          <table style={{ borderCollapse: "collapse" }}><tbody>
+            {Object.keys(b.declencheur).sort((x, y) => (b.declencheur[y as never] ?? 1) - (b.declencheur[x as never] ?? 1)).map((t) =>
+              ligne(libelleDeclencheur(t), ["declencheur", t]))}
+          </tbody></table>
+        </div>
+        <div>
+          <div style={{ ...ETIQ, marginBottom: 10 }}>LIMITATIONS — multiplicateurs</div>
+          <table style={{ borderCollapse: "collapse" }}><tbody>
+            {ligne("Toutes les ennemies", ["portee", "all_enemies"])}
+            {ligne("Toutes les alliées", ["portee", "all_allies"])}
+            {ligne("Toutes (les deux camps)", ["portee", "all"])}
+            {ligne("Cible : héros seul", ["cible", "hero"])}
+            {ligne("Cible : héros + unités", ["cible", "both"])}
+            {ligne("Cible : la source elle-même", ["cible", "self"])}
+            {ligne("Par cible supplémentaire", ["cible", "parCible"], "count = n ⇒ 1 + valeur × (n − 1)")}
+            {ligne("Filtre : valeur résiduelle", ["filtre", "a"], "a + (1 − a) × part du catalogue visée (race, clan, faction, mot-clé, coût)")}
+            {ligne("Hasard", ["hasard"], "X « ? » (valorisé à la moyenne), désignation au hasard, répartition")}
+            {ligne("Singulier", ["singulier"])}
+            {ligne("Don d'une capacité", ["don"], "Part de la capacité conférée qui compte (Conférer composé)")}
+          </tbody></table>
+        </div>
+      </div>
+
+      <div style={CARTE}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+          <div style={ETIQ}>CAPACITÉS NOMMÉES</div>
+          <div style={{ flex: 1 }} />
+          <input value={filtre} onChange={(e) => setFiltre(e.target.value)} placeholder="Filtrer…"
+            style={{ padding: "5px 10px", borderRadius: 5, border: "1px solid #ddd", fontSize: 11, width: 200 }} />
+        </div>
+        {tableCouts("capacites")}
+      </div>
+
+      <div style={CARTE}>
+        <div style={{ ...ETIQ, marginBottom: 12 }}>CONTENUS D&apos;EFFETS COMPOSÉS</div>
+        {tableCouts("composes")}
+      </div>
+    </>
   );
 }
