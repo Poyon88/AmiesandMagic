@@ -368,6 +368,22 @@ export const CLAN_ACCENTS: Record<string, string> = {
     'soot-grey hood, cracked-ash skin texture, ember-red gem set in the brow',
 };
 
+/** Accent de clan tiré de la charte graphique (costume seulement), ou null. */
+function clanStyleText(
+  clan: string | null | undefined,
+  sg: { palette?: string | null; materials?: string | null; motifs?: string | null; avoid?: string | null } | null | undefined,
+): string | null {
+  if (!clan || !sg) return null;
+  const morceaux = [
+    sg.palette?.trim() && `palette ${sg.palette.trim()}`,
+    sg.materials?.trim() && `costume and gear: ${sg.materials.trim()}`,
+    sg.motifs?.trim() && `motifs: ${sg.motifs.trim()}`,
+    sg.avoid?.trim() && `avoid: ${sg.avoid.trim()}`,
+  ].filter(Boolean);
+  if (morceaux.length === 0) return null;
+  return `Clan art direction (${clan}, house style guide written in French — apply to costume and accents only, keep the plain background): ${morceaux.join('; ')}. `;
+}
+
 export function buildHeroPortraitPrompt(input: {
   name?: string | null;
   // Accepts both legacy simplified IDs ("humans", "elves", …) and the
@@ -375,6 +391,10 @@ export function buildHeroPortraitPrompt(input: {
   race: string;
   faction?: string | null;
   clan?: string | null;
+  /** Charte graphique du clan (style_guides). Seule la partie COSTUME est
+   *  retenue — palette, matériaux, motifs, interdits : le portrait est détouré
+   *  sur fond uni, décor et lumière de la charte le casseraient. */
+  clanStyle?: { palette?: string | null; materials?: string | null; motifs?: string | null; avoid?: string | null } | null;
   extraContext?: string | null;
 }): string {
   // Lookup order:
@@ -409,7 +429,8 @@ export function buildHeroPortraitPrompt(input: {
   const factionPart =
     `Faction look: ${fd.mood}, color palette of ${fd.palette}. ` +
     `Wearing ${fd.armor}. ` +
-    (clanAccent ? `Clan accent (${input.clan}): ${clanAccent}. ` : '') +
+    (clanStyleText(input.clan, input.clanStyle)
+      ?? (clanAccent ? `Clan accent (${input.clan}): ${clanAccent}. ` : '')) +
     `The bottom medallion of the frame must clearly display ${fd.emblem}.`;
 
   const extraPart = input.extraContext && input.extraContext.trim()

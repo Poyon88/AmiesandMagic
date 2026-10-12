@@ -2937,7 +2937,8 @@
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
     "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
     "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
-    "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten."
+    "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten.",
+    "tab_style_guides": "Stilrichtlinien"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

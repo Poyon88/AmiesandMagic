@@ -2937,7 +2937,8 @@
     "content_retour_differe": "Delayed return (under the deck)",
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
-    "content_selection_magique": "Magic Selection (1 Action out of 3)"
+    "content_selection_magique": "Magic Selection (1 Action out of 3)",
+    "tab_style_guides": "Style guides"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

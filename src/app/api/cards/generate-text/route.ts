@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { FACTIONS } from '@/lib/card-engine/constants';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
+import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide';
 
 export async function POST(request: Request) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
 
   const body = await request.json();
-  const { factionId, type, rarityId, stats, existingName, existingAbility, clanId, extraContext } = body;
+  const { factionId, type, rarityId, stats, existingName, existingAbility, clanId, extraContext, styleGuideId } = body;
   const extra = typeof extraContext === 'string' ? extraContext.trim() : '';
   // raceId can arrive as "undefined" string from JSON — normalize to real undefined
   const raceId = body.raceId && body.raceId !== 'undefined' ? body.raceId : undefined;
@@ -142,7 +143,18 @@ export async function POST(request: Request) {
   const raceVisual = visualKey && raceVisualDescriptions[visualKey] ? ` Visual: ${raceVisualDescriptions[visualKey]}.` : '';
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- feature en attente : à injecter dans le prompt (indice de race pour la génération)
   const raceHint = raceId ? `\n- Race: ${raceId}. La créature DOIT correspondre visuellement à cette race.${raceVisual}` : '';
-  const clanHint = clanId ? `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.` : '';
+  // CHARTE GRAPHIQUE du clan : celle demandée, sinon la charte par défaut.
+  // Elle fixe l'UNIVERS (palette, lumière, décors, matériaux, motifs,
+  // interdits) ; la race, plus bas, reste le sujet. Sans charte, l'ancienne
+  // consigne générique.
+  const charte = clanId
+    ? await loadStyleGuide(auth.supabase, { id: typeof styleGuideId === 'number' ? styleGuideId : null, clan: clanId })
+    : null;
+  const blocCharte = formatStyleGuideForPrompt(charte);
+  const clanHint = !clanId ? ''
+    : blocCharte
+      ? `\n- Clan: ${clanId}. Respecte STRICTEMENT la charte graphique du clan ci-dessous : le champ "illustrationPrompt" doit en intégrer la palette, la lumière, le style, un décor, les matériaux et au moins un motif, et ne jamais contenir ce qu'elle interdit.\n${blocCharte}`
+      : `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.`;
 
   // Build context from existing card data if provided
   const existingHint = existingName || existingAbility
@@ -157,6 +169,10 @@ export async function POST(request: Request) {
     : '';
 
   const raceVisualDesc = raceId ? (raceVisualDescriptions[visualKey ?? raceId] || raceId) : '';
+  // Quand la race a une description, le post-traitement la place lui-même en
+  // tête de l'illustrationPrompt : Claude ne doit pas la réécrire, sinon le
+  // prompt la contient deux fois.
+  const racePrefixee = !!(visualKey && raceVisualDescriptions[visualKey]);
 
   // Build prompt with race as the PRIMARY subject when specified
   const creatureSubject = raceId
@@ -175,7 +191,8 @@ ${existingAbility ? `La capacité est déjà définie — garde-la telle quelle.
 Pour le champ "illustrationPrompt" :
 ${raceId ? `- Le sujet de l'illustration est un(e) ${raceId} : ${raceVisualDesc}. C'est NON NÉGOCIABLE.
 - Ne dessine JAMAIS un membre d'une autre race (par ex. pas de hobbit si la race est Hommes-Arbres, pas d'elfe si la race est Aigles Géants).
-- Le nom, les capacités et la faction influencent le STYLE et l'AMBIANCE, mais le SUJET PHYSIQUE reste un(e) ${raceId}.` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
+- Le nom, les capacités et la faction influencent le STYLE et l'AMBIANCE, mais le SUJET PHYSIQUE reste un(e) ${raceId}.${racePrefixee ? `
+- NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par la pose, l'action et la scène.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
 - Ajoute des détails visuels semi-aléatoires (pose, environnement, éclairage, style d'armure/vêtements, éléments de background) pour rendre l'illustration unique.
 
 Réponds UNIQUEMENT en JSON valide sans backticks :
@@ -183,7 +200,11 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
   "name": "${existingName || 'Nom épique (2-4 mots, français, cohérent avec la race et la faction)'}",
   "ability": "${existingAbility || 'Texte de capacité (1-2 phrases, clair, cohérent avec les mots-clés listés)'}",
   "flavorText": "Citation narrative immersive (1 phrase courte, style lore épique)",
-  "illustrationPrompt": "${raceId ? `A ${raceVisualDesc} — this is a ${raceId}, NOT a ${fac?.races?.[0] || factionId}. Cinematic dark fantasy, detailed, no text in image.` : 'Midjourney prompt (English, cinematic dark fantasy, detailed, no text in image)'}"
+  "illustrationPrompt": "${racePrefixee
+    ? `Pose, action, scene, lighting… (English, cinematic dark fantasy, detailed, no text in image; do NOT restate the race's appearance)`
+    : raceId
+      ? `A ${raceVisualDesc} — this is a ${raceId}, NOT a ${fac?.races?.[0] || factionId}. Cinematic dark fantasy, detailed, no text in image.`
+      : 'Midjourney prompt (English, cinematic dark fantasy, detailed, no text in image)'}"
 }`;
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -343,11 +364,17 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'gi');
           fixedPrompt = fixedPrompt.replace(regex, visualKey);
         }
-        // Always prepend the authoritative race description
-        parsed.illustrationPrompt = `${raceDesc}. ${fixedPrompt}`;
+        // Prepend the authoritative race description — unless Claude already
+        // opened with it verbatim (« A <desc> » ou « <desc> »).
+        const tete = fixedPrompt.trim().replace(/^an?\s+/i, '').toLowerCase();
+        if (!tete.startsWith(raceDesc.toLowerCase())) {
+          parsed.illustrationPrompt = `${raceDesc}. ${fixedPrompt}`;
+        } else {
+          parsed.illustrationPrompt = fixedPrompt;
+        }
       }
 
-      return NextResponse.json(parsed);
+      return NextResponse.json({ ...parsed, styleGuideId: charte?.id ?? null });
     } catch (err) {
       lastErrorMessage = err instanceof Error ? err.message : String(err);
       console.error(`[card-forge] generateText error (attempt ${attempt + 1}):`, err);

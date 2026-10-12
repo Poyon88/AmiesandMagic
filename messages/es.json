@@ -2937,7 +2937,8 @@
     "content_dechainement": "Desenfreno X/Y (acciones aleatorias)",
     "content_selection_magique": "Selección mágica (1 acción de entre 3)",
     "content_forge": "Forja (1 objeto mezclado en el mazo)",
-    "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste."
+    "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste.",
+    "tab_style_guides": "Guías de estilo"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

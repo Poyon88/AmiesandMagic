@@ -2937,7 +2937,8 @@
     "content_dechainement": "释放X/Y（随机行动）",
     "content_selection_magique": "魔法抉择（从3张中选1张行动）",
     "content_forge": "熔铸（1件物品混入牌堆）",
-    "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。"
+    "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。",
+    "tab_style_guides": "风格指南"
   },
   "game": {
     "error_not_authenticated": "未登录",

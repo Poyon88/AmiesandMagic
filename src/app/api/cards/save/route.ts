@@ -84,7 +84,7 @@ export async function GET() {
   // nous-mêmes les BROUILLONS pour qui n'est ni admin ni testeur.
   const { data: profil } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).maybeSingle();
   const voitBrouillons = profil?.role === 'admin' || profil?.role === 'testeur';
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
@@ -164,6 +164,8 @@ export async function POST(request: Request) {
         // Cycle de vie (brouillon / jouable / retirée / exclue) et son motif.
         'status',
         'status_reason',
+        // Charte graphique ayant servi au prompt d'illustration (traçabilité).
+        'style_guide_id',
         // Voix d'entrée en jeu (skill des bruitages) : genre déduit de la carte
         // et URL du fichier dans `sfx-tracks` (cf. /api/cards/sfx-upload-url).
         'gender',
@@ -351,6 +353,8 @@ export async function POST(request: Request) {
       cardData.status = 'draft';
     }
     if (card.status_reason !== undefined) cardData.status_reason = card.status_reason || null;
+    // Charte graphique du prompt : recopiée si fournie, laissée intacte sinon.
+    if (card.style_guide_id !== undefined) cardData.style_guide_id = Number.isInteger(card.style_guide_id) ? card.style_guide_id : null;
     if (updateId && cardData.status) {
       const refus = await refusTransition(supabaseAdmin, updateId, cardData.status as CardStatus);
       if (refus) return NextResponse.json({ error: refus }, { status: 409 });
