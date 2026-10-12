@@ -1,9 +1,10 @@
 'use client';
 
+import AssistedForge from "@/components/card-forge/AssistedForge";
 import StyleGuidesForge from "@/components/card-forge/StyleGuidesForge";
 import StyleGuidePicker, { useStyleGuides } from "@/components/card-forge/StyleGuidePicker";
 import { formatStyleGuideForPrompt } from "@/lib/ai/style-guide";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import ExileGlyph from "@/components/cards/ExileGlyph";
@@ -14,8 +15,8 @@ import { SELECTABLE_IMAGE_MODELS } from "@/lib/ai/image-models";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { generateCardStats, buildId } from "@/lib/card-engine/generator";
+import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -67,8 +68,6 @@ async function generateCardText(factionId: string, type: string, rarityId: strin
   if (!response.ok) return { name: 'Inconnu', ability: '—', flavorText: '', illustrationPrompt: '' };
   return response.json();
 }
-
-function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
 // Décode du base64 en octets de façon robuste cross-navigateur. Safari/WebKit
 // rejette tout caractère hors-alphabet (espaces, retours-ligne insérés par
@@ -291,7 +290,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [card, setCard] = useState<ForgeCard | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<ForgeCard[]>([]);
-  const [bulkCount, setBulkCount] = useState(20);
   // Token templates
   const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
   const [tokenRace, setTokenRace] = useState("");
@@ -326,11 +324,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [tokenPrompt, setTokenPrompt] = useState("");
   const [tokenGenerating, setTokenGenerating] = useState(false);
   const [tokenMessage, setTokenMessage] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
-  const [bulkCards, setBulkCards] = useState<ForgeCard[]>([]);
   const [tab, setTab] = useState("forge");
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
-  const abortRef = useRef(false);
 
   // ─── CARD BACKS (dos de cartes) ───────────────────────────────────────────
   const [cbName, setCbName] = useState("");
@@ -2515,42 +2510,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     return newCard;
   }, [faction, type, rarity, race, clan, manualMana, manualName, manualAbility, manualKeywords, manualStyleGuideId]);
 
-  const startBulk = useCallback(async () => {
-    abortRef.current = false;
-    setBulkProgress({ done: 0, total: bulkCount });
-    setBulkCards([]);
-    const results: ForgeCard[] = [];
-    for (let i = 0; i < bulkCount; i++) {
-      if (abortRef.current) break;
-      // Use selected values if set, otherwise randomize
-      const f = faction || pick(Object.keys(FACTIONS));
-      const t = type || pick(TYPES_ALEATOIRES);
-      const r = rarity || pickRarity();
-      const facData = FACTIONS[f];
-      const bulkRace = race || (facData?.races ? pick(facData.races) : "");
-      const bulkRaceClans = getClanNamesForRace(f, bulkRace);
-      const bulkClan = clan || (bulkRaceClans.length ? pick(bulkRaceClans) : "");
-      const stats = generateCardStats(f, t, r, null, bulkRace || undefined, bulkClan || undefined);
-      let text: CardText = { name: "Inconnu", ability: "—", flavorText: "", illustrationPrompt: "" };
-      try { text = await generateCardText(f, t, r, stats, bulkRace || undefined, bulkClan || undefined); } catch { /* fallback above */ }
-      const c: ForgeCard = {
-        id: buildId(), name: text.name || "Sans nom",
-        faction: f, clan: bulkClan, cardAlignment: facData?.alignment === "spéciale" ? pick(["bon","neutre","maléfique"]) : (facData?.alignment || "neutre"),
-        type: t, rarity: r, ...stats,
-        // La race dérivée du mana (clans à sous-races) prime ; sinon la race tirée.
-        race: stats.race ?? bulkRace,
-        ability: text.ability || "—", flavorText: text.flavorText || "",
-        illustrationPrompt: text.illustrationPrompt || "",
-        styleGuideId: text.styleGuideId ?? null,
-        generatedAt: new Date().toISOString(),
-      };
-      results.push(c);
-      setBulkCards([...results]);
-      setBulkProgress({ done: i + 1, total: bulkCount });
-    }
-    setBulkProgress(null);
-  }, [bulkCount, faction, type, rarity, race, clan]);
-
   const exportJSON = (cards: ForgeCard[]) => {
     const blob = new Blob([JSON.stringify(cards, null, 2)], { type: "application/json" });
     const a = Object.assign(document.createElement("a"), {
@@ -3045,7 +3004,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`], ["chartes", `🎨 ${tf('tab_style_guides')}`]] as const).map(([t, l]) => (
+            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `🤖 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`], ["chartes", `🎨 ${tf('tab_style_guides')}`]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -6577,70 +6536,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           </div>
         )}
 
-        {/* ── BULK ── */}
+        {/* ── CRÉATION ASSISTÉE (ex-« Masse ») ── */}
         {tab === "bulk" && (
-          <div style={{ flex: 1, padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0" }}>
-              <span style={{ fontSize: 10, color: "#888", letterSpacing: 1 }}>{tf('label_count')}</span>
-              <input type="number" value={bulkCount} min={1} max={500}
-                onChange={e => setBulkCount(Math.max(1, Math.min(500, parseInt(e.target.value) || 1)))}
-                style={{ width: 60, padding: "4px 8px", background: "#f8f8f8", border: "1px solid #e0e0e0", borderRadius: 6, color: "#333", fontFamily: "'Cinzel',serif", fontSize: 13, textAlign: "center" }}
-              />
-              <span style={{ fontSize: 9, color: "#aaa" }}>{tf('all_random')}</span>
-              <div style={{ flex: 1 }} />
-              {bulkProgress
-                ? <Btn onClick={() => { abortRef.current = true; setBulkProgress(null); }} label={`✕ ${tf('cancel')}`} color="#ff6b6b" />
-                : <Btn onClick={startBulk} label={`▶ ${tf('launch')}`} color="#ffd54f" />
-              }
-              {bulkCards.length > 0 && !bulkProgress && (
-                <Btn onClick={() => exportJSON(bulkCards)} label={`📤 JSON (${bulkCards.length})`} color="#55efc4" />
-              )}
-            </div>
-
-            {bulkProgress && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ flex: 1, height: 3, background: "#e8e8e8", borderRadius: 2, overflow: "hidden" }}>
-                  <div style={{ height: "100%", background: "linear-gradient(90deg,#6c5ce7,#a29bfe)", borderRadius: 2, width: `${(bulkProgress.done / bulkProgress.total) * 100}%`, transition: "width 0.2s" }} />
-                </div>
-                <span style={{ fontSize: 10, color: "#6c5ce7", fontWeight: 700, whiteSpace: "nowrap" }}>{bulkProgress.done}/{bulkProgress.total}</span>
-              </div>
-            )}
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(185px,1fr))", gap: 7, overflowY: "auto", flex: 1 }}>
-              {bulkCards.map(c => {
-                const f = FACTIONS[c.faction] || FACTIONS.Humains;
-                const r = RARITY_MAP[c.rarity];
-                return (
-                  <div key={c.id} className="bulk-row" style={{
-                    padding: "8px 10px", borderRadius: 6,
-                    background: `${f.color}08`, border: `1px solid ${r.color}22`,
-                    animation: "fadeIn 0.2s ease", transition: "border-color 0.2s",
-                  }}>
-                    <div style={{ fontSize: 9.5, color: f.accent, fontWeight: 700, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.name}</div>
-                    <div style={{ fontSize: 8, color: "#444", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span>{f.displayName} · {c.type}</span>
-                      <span style={{ color: r.color }}>{c.rarity}</span>
-                    </div>
-                    <div style={{ fontSize: 8.5, color: "#3a3a5a", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>
-                      {c.ability?.slice(0, 85)}{c.ability?.length > 85 ? "…" : ""}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, marginTop: 5, flexWrap: "wrap", alignItems: "center" }}>
-                      <span style={{ fontSize: 7.5, color: "#74b9ff" }}>💧{c.mana}</span>
-                      {c.attack != null && <><span style={{ fontSize: 7.5, color: "#ff6b6b" }}>⚔{c.attack}</span><span style={{ fontSize: 7.5, color: "#74b9ff" }}>🛡{c.defense}</span></>}
-                      {c.power != null && <span style={{ fontSize: 7.5, color: f.accent }}>✨{c.power}</span>}
-                      <span style={{ fontSize: 7, color: "#222", marginLeft: "auto" }}>{c.budgetUsed}/{c.budgetTotal}pt</span>
-                    </div>
-                    {c.keywords?.length > 0 && (
-                      <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 3 }}>
-                        {c.keywords.map(kw => (
-                          <span key={kw} style={{ fontSize: 6.5, padding: "1px 4px", borderRadius: 3, background: `${f.color}18`, color: f.accent, border: `1px solid ${f.color}44` }}>{kw}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+          <div style={{ flex: 1, padding: 18 }}>
+            <AssistedForge />
           </div>
         )}
 

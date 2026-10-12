@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { FACTIONS } from '@/lib/card-engine/constants';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide';
+import { findNameCollision, normalizeCardName } from '@/lib/cards/nameCollision';
+import { RACE_TYPICAL_GEAR, RACE_VISUALS, physiquePourGenre } from '@/lib/ai/race-visuals';
+import {
+  FLAVOR_FORMS, FLAVOR_TONES, ancrageRace, chargerCatalogue, conceptPourPrompt, nameRuleText, premierMot, sanitizeConcept,
+} from '@/lib/ai/card-concepts';
 
 export async function POST(request: Request) {
   const auth = await requireAdmin();
@@ -36,113 +41,10 @@ export async function POST(request: Request) {
 
   const hasVol = stats.keywords?.includes('Vol');
   const volHint = hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la race)' : '';
-  const raceVisualDescriptions: Record<string, string> = {
-    // Elfes
-    "Elfes": "tall, slender elven figure with pointed ears, elegant features, flowing hair, light armor with nature motifs",
-    "Aigles Géants": "massive giant eagle with piercing eyes, powerful wingspan, golden-brown plumage, talons like swords",
-    "Fées": "tiny luminous fairy with translucent butterfly/dragonfly wings, glowing aura, ethereal and delicate",
-    // Alliance Céleste (La Forêt d'Émeraude)
-    "Farfadets": "small mischievous leprechaun, weathered red-cheeked face under a wide green felt hat, buckled shoes and a worn waistcoat, clay pipe, gold coins spilling from a hidden pouch, sly knowing grin",
-    "Korrigans": "stunted korrigan sprite of Breton legend, gnarled bark-like skin and oversized ears, tangled mossy hair strung with dolmen charms, squat and stubborn, crouched on a standing stone under moonlight",
-    "Faunes": "woodland faun, human torso above shaggy goat legs and cloven hooves, curling ram horns, pointed ears, reed panpipes at the lips, ivy in the hair, mid-dance in a sunlit glade",
-    "Dryades": "woodland dryad, feminine figure whose skin is smooth living bark streaked with sap, hair of leaves and blossom shifting with the season, roots trailing from the feet into the soil, serene and unhurried, half-emerged from an ancient oak",
-    // Nains
-    "Nains": "stout dwarven warrior with thick beard, heavy plate armor, runes engraved on equipment, stocky and muscular",
-    "Golems": "massive stone or metal construct, glowing runes carved into body, hulking and mechanical, no organic features",
-    "Machines": "articulated clockwork automaton of brass and iron, exposed gears and pistons, steam vents, riveted plating, glowing forge-lit core, engineered rather than sculpted",
-    "Kobolds": "small scaly reptilian humanoid, snout and short horns, lantern-lit eyes adapted to deep tunnels, scavenged mismatched armour, crude pickaxe or trap, wiry and quick, waist-high to a dwarf",
-    // Hobbits
-    "Hobbits": "small halfling with bare hairy feet, round cheerful face, simple rustic clothing, shorter than a dwarf",
-    "Hommes-Arbres": "towering treant/ent creature made of living wood, bark skin, branch limbs, leaves as hair, mossy and ancient",
-    // Humains (Royaumes Libres)
-    "Humains": "human warrior/mage in medieval armor or robes, realistic proportions, heraldic symbols",
-    "Griffons": "majestic griffin with eagle head and front talons, powerful lion hindquarters, broad feathered wings, regal bearing, heraldic harness",
-    "Faucons": "swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings folded in a dive or spread mid-flight",
-    // Royaumes Libres (Guerrières du Vent)
-    "Pégases": "majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, powerful legs mid-gallop across the clouds, noble and untamed",
-    "Sphinx": "Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, seated upright on a rocky outcrop above a mountain road, inscrutable knowing gaze",
-    // Hommes-Bêtes
-    "Hommes-Loups": "werewolf-like humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
-    "Hommes-Ours": "werebear-like humanoid, massive bear-headed figure, thick fur, enormous claws, towering and powerful",
-    "Hommes-Félins": "feline humanoid with cat/panther features, lithe and agile body, whiskers, slit pupils, sleek fur",
-    "Centaures": "centaur with human torso on horse body, wielding spear or bow, wild mane, tribal markings",
-    "Mimis": "small adorable beast-folk creature, fluffy oversized fur, big innocent eyes, tiny paws, cute and harmless-looking yet brave",
-    // Élémentaires
-    "La Colère des Flammes": "fire elemental, body made of living flames, molten core, embers floating around, intense heat haze",
-    "Le Socle du Monde": "earth elemental, body of rock and stone, crystal growths, moss patches, heavy and immovable",
-    "La Vague Sans Fin": "water elemental, body of flowing translucent water, whirlpool core, droplets suspended in air",
-    "Le Souffle des Cimes": "storm elemental, body of swirling wind and lightning, crackling electricity, semi-transparent and volatile",
-    // Mercenaires
-    "Géants": "towering giant humanoid, crude armor, massive club or weapon, standing several stories tall",
-    "Ogres": "large brutish ogre, ugly face, thick skin, crude leather armor, heavy gut, wielding a club",
-    "Dragons": "magnificent dragon with scales, massive wings, long tail, breathing fire/ice/lightning, serpentine neck",
-    "Chiens": "large war hound or mastiff, battle-scarred, armored barding, fierce and loyal",
-    "Phoenix": "majestic phoenix bird engulfed in sacred flames, radiant feathers of gold and crimson, rebirth aura",
-    "Anges": "celestial angelic being with luminous feathered wings, divine armor, halo of light, ethereal beauty",
-    "Ours": "massive armored bear, war-trained, thick fur, powerful claws, intimidating presence",
-    "Loups": "fierce dire wolf, larger than normal, piercing eyes, thick fur, pack hunter",
-    // Orcs
-    "Orcs": "green-skinned muscular orc, tusks, brutal heavy armor, scarred face, savage and menacing",
-    "Gobelins": "small green goblin, pointy ears, sharp teeth, ragged clothing, sneaky and mischievous",
-    "Trolls": "huge troll with regenerating flesh, long arms, hunched posture, warty skin, dim-witted but dangerous",
-    "Wargs": "giant wolf-like warg beast, dark matted fur, red eyes, razor fangs, used as mount by orcs",
-    // Morts-Vivants
-    "Squelettes": "animated skeleton warrior, hollow eye sockets with ghostly glow, rusted ancient armor, bones and decay",
-    "Zombies": "shambling undead corpse, rotting flesh, torn clothing, mindless hunger, decayed and horrifying",
-    "Spectres": "ghostly translucent specter, floating ethereal form, glowing eyes, trailing wisps of ectoplasm",
-    "Vampires": "elegant vampire lord, pale skin, red eyes, aristocratic dark clothing, fangs, nocturnal predator",
-    "Lich": "skeletal undead sorcerer in ornate robes, glowing phylactery, crown of dark magic, necromantic aura",
-    "Banshees": "wailing ghostly female spirit, flowing spectral hair, mouth open in eternal scream, translucent and terrifying",
-    // Elfes Noirs
-    "Elfes Corrompus": "dark elf with ashen/obsidian skin, white hair, cruel features, spiked dark armor, malevolent aura",
-    "Araignées Géantes": "enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs, web-covered",
-    "Démons": "demonic creature with horns, bat-like wings, cloven hooves, infernal flames, corrupted and terrifying",
-    // Nains (Guilde des Ingénieurs)
-    "Gnomes": "small tinker gnome with goggles, bushy beard, leather apron, clockwork gadgets and mechanical contraptions",
-    // Légions du Chaos (Garde Noire)
-    "Guerriers du Chaos": "towering chaos warrior in blackened spiked plate armor, corrupted heavy weapon, malevolent glowing runes, imposing and grim",
-    // Empire du Milieu (Défenseurs d'Ivoire)
-    "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
-    // Empire du Milieu (Lames de l'Ombre)
-    "Tengu": "crow-spirit swordmaster of the Japanese mountains, large black feathered wings, crimson long-nosed face or corvid beak, yamabushi ascetic robes and small black tokin cap, feather fan and katana, perched among misty cedar peaks",
-    "Oni": "hulking Japanese ogre-demon, red or deep blue skin, two short horns, wild black mane, tusked jaw, tiger-skin loincloth, iron bracelets, huge studded iron kanabo club, brutal and menacing",
-    // Empire du Milieu (Empire de Jade)
-    "Qilins": "Chinese qilin, auspicious celestial chimera with a dragon-like head and a single branching antler, deer body covered in shimmering jade-green and gold scales, ox tail, cloven hooves wreathed in soft flame and mist, stepping without bending the grass, serene and benevolent",
-    // Nécropole (Rangs Silencieux)
-    "Ghoules": "hunched flesh-eating ghoul, grey mottled skin stretched over a gaunt frame, long clawed fingers, jaw distended too wide, sunken eyes, crouched low over gnawed bones",
-    // Nécropole (Cour Écarlate)
-    "Homuncules de Sang": "small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and pitiful, dripping",
-    "Gargouilles": "winged stone gargoyle perched on a gothic cornice, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
-    "Dhampirs": "half-vampire hunter, pale human features with faint fangs, dark leather duster and buckled straps, silvered blades, cold restrained stare",
-    "Chiroptères": "gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur, clinging upside down, swarm of smaller bats behind",
-    // Nécropole (Cénacle Nécromant)
-    "Momies": "bandaged undead mummy, ancient linen wrappings blackened with resin and grave dust, gilded funerary mask and jewelled pectoral, dry withered limbs, hollow sockets lit from within, slow and inexorable",
-    "Chimères nécrotiques": "necrotic chimera stitched from several corpses, mismatched animal heads on one bloated carcass, crude iron sutures and exposed ribs, mottled dead flesh, ichor dripping from the seams, hulking and brutal",
-    "Vermines mortuaires": "seething swarm of charnel vermin, grave rats and carrion beetles pouring from a burst coffin, matted fur and glossy chitin, countless red pinprick eyes, a single writhing mass rather than one creature",
-    // Nécropole (Voile Hurlant)
-    "Poltergeists": "poltergeist manifestation, a half-seen twisted face forming in a whirl of hurled furniture and shattered crockery, translucent grasping limbs, objects frozen mid-flight, cold blue glow, no solid body",
-    "Dullahans": "headless horseman dullahan, black plate armour on a rotting skeletal steed, severed grinning head carried under one arm, whip of human spine, green corpse-light in the eyes of the held head",
-    "Sluaghs": "sluagh host of the restless dead, a dense flock of gaunt winged spirits pouring across a night sky, ragged membranous wings and clawed hands, hollow wailing faces, a single dark tide of souls",
-    // Primordiaux (La Vague Sans Fin)
-    "Ondins": "undine reef warrior, blue-green scaled humanoid with finned forearms and a crested head, coral-plated armour, long barbed trident, calm luminous eyes, water streaming from the shoulders",
-    "Sirènes": "siren enchantress, humanoid torso above a long iridescent fish tail, wet flowing hair strung with pearls, webbed hands raised mid-song, hypnotic pale eyes, faint sound-ripples in the water around her",
-    "Léviathans": "colossal leviathan of the abyss, immense serpentine sea beast breaching, barnacle-crusted armoured hide, rows of jagged teeth in a cavernous maw, ridged dorsal fins, dwarfing the waves around it",
-    // Primordiaux (Le Socle du Monde)
-    "Cristallins": "crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, jagged mineral spurs at the shoulders, glowing core visible within the chest",
-    "Troglodytes": "subterranean troglodyte, pale hairless cave dweller with oversized lidless eyes and elongated grasping fingers, stooped from low tunnels, stone-tipped spear, clinging to a cavern wall",
-    "Bêtes Chtoniennes": "chthonic beast erupting from bedrock, vast burrowing horror of segmented stone-plated chitin, circular maw ringed with grinding teeth, blind and eyeless, showering earth and rubble",
-    // Primordiaux (La Colère des Flammes)
-    "Salamandres": "fire salamander elemental, sinuous lizard whose black scaled hide is cracked open by veins of molten orange, flames guttering along the spine and tail, clawed feet leaving scorch marks, smoke curling from the nostrils",
-    // Primordiaux (Le Souffle des Cimes)
-    "Sylphes": "sylph air spirit, slender translucent figure barely condensed out of moving air, hair and trailing veils drawn into visible wind currents, weightless mid-turn, edges dissolving into breeze",
-    "Néphélides": "nephelid cloud nymph, figure formed of dense storm cloud with a humanoid silhouette, lightning flickering inside the vapour, rain falling from her trailing lower body, eyes like breaks of clear sky",
-  };
+  const raceVisualDescriptions = RACE_VISUALS;
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
   const visualKey = (clanId && raceVisualDescriptions[clanId]) ? clanId : raceId;
-  const raceVisual = visualKey && raceVisualDescriptions[visualKey] ? ` Visual: ${raceVisualDescriptions[visualKey]}.` : '';
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- feature en attente : à injecter dans le prompt (indice de race pour la génération)
-  const raceHint = raceId ? `\n- Race: ${raceId}. La créature DOIT correspondre visuellement à cette race.${raceVisual}` : '';
   // CHARTE GRAPHIQUE du clan : celle demandée, sinon la charte par défaut.
   // Elle fixe l'UNIVERS (palette, lumière, décors, matériaux, motifs,
   // interdits) ; la race, plus bas, reste le sujet. Sans charte, l'ancienne
@@ -150,10 +52,13 @@ export async function POST(request: Request) {
   const charte = clanId
     ? await loadStyleGuide(auth.supabase, { id: typeof styleGuideId === 'number' ? styleGuideId : null, clan: clanId })
     : null;
-  const blocCharte = formatStyleGuideForPrompt(charte);
+  // Mode RÉPERTOIRE : palette, lumière, style et interdits s'imposent ; décors,
+  // matériaux et motifs sont des pistes (sinon chaque carte reprend les
+  // premiers de la liste).
+  const blocCharte = formatStyleGuideForPrompt(charte, { mode: 'repertoire' });
   const clanHint = !clanId ? ''
     : blocCharte
-      ? `\n- Clan: ${clanId}. Respecte STRICTEMENT la charte graphique du clan ci-dessous : le champ "illustrationPrompt" doit en intégrer la palette, la lumière, le style, un décor, les matériaux et au moins un motif, et ne jamais contenir ce qu'elle interdit.\n${blocCharte}`
+      ? `\n- Clan: ${clanId}. Charte graphique du clan ci-dessous : le champ "illustrationPrompt" en applique TOUJOURS la partie MANDATORY (palette, lumière, style) et ne contient jamais ce qu'elle interdit ; du RÉPERTOIRE, il ne prend qu'un ou deux éléments au plus (ceux du concept s'il y en a un), ou en invente dans le même esprit.\n${blocCharte}`
       : `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.`;
 
   // Build context from existing card data if provided
@@ -168,7 +73,53 @@ export async function POST(request: Request) {
     ? `\n- Contexte supplémentaire IMPÉRATIF (à intégrer dans l'illustration ET à refléter dans le ton / nom / capacité / lore si pertinent) : ${extra}`
     : '';
 
-  const raceVisualDesc = raceId ? (raceVisualDescriptions[visualKey ?? raceId] || raceId) : '';
+  // ── Création assistée (onglet du même nom) : genre, règle de nom, thème du
+  // lot, mécanique exacte et noms déjà pris. Tous optionnels : la forge
+  // manuelle et le mode Auto n'en envoient aucun.
+  const gender = body.gender === 'homme' || body.gender === 'femme' || body.gender === 'neutre' ? body.gender : null;
+  const nameRule = body.nameRule === 'propre' || body.nameRule === 'generique' ? body.nameRule : null;
+  const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : '';
+  const mechanics: string[] = Array.isArray(body.mechanics) ? body.mechanics.filter((m: unknown): m is string => typeof m === 'string').slice(0, 8) : [];
+  const forbiddenNames: string[] = Array.isArray(body.forbiddenNames) ? body.forbiddenNames.filter((n: unknown): n is string => typeof n === 'string').slice(0, 200) : [];
+  // Concept décidé par le planificateur du lot (/api/forge/concepts) ; absent
+  // dans la forge manuelle et le mode Auto, où Claude en invente un.
+  const concept = body.concept ? sanitizeConcept(body.concept, type) : null;
+  const lexique: string[] = Array.isArray(body.lexique) ? body.lexique.filter((x: unknown): x is string => typeof x === 'string').slice(0, 30) : [];
+  const genderHint = type !== 'Unité' ? '' : gender === 'homme'
+    ? `\n- Genre : MASCULIN. Nom et accords au masculin ; dans "illustrationPrompt", le sujet est explicitement male.`
+    : gender === 'femme'
+      ? `\n- Genre : FÉMININ. Nom et accords au féminin (« Gardienne », « Archère ») ; dans "illustrationPrompt", le sujet est explicitement female.`
+      : gender === 'neutre'
+        ? `\n- Genre : NEUTRE / non genré. Nom sans genre marqué ; dans "illustrationPrompt", aucune indication de genre (créature ou silhouette non genrée).`
+        : '';
+  const nameRuleHint = nameRule ? `\n- NOM : ${nameRuleText(nameRule, type)}` : '';
+  const notesHint = notes ? `\n- Thème du lot (à refléter dans le nom, le texte d'ambiance et l'illustration) : ${notes}` : '';
+  const mechanicsHint = mechanics.length
+    ? `\n- MÉCANIQUE EXACTE de la carte — le champ "ability" doit la décrire fidèlement, en français clair, sans inventer ni omettre d'effet :\n${mechanics.map((m) => `  • ${m}`).join('\n')}`
+    : '';
+  const forbiddenHint = forbiddenNames.length
+    ? `\n- Noms DÉJÀ PRIS (interdits ; ne commence pas non plus par le même premier mot que l'un d'eux) : ${forbiddenNames.slice(-60).join(' ; ')}`
+    : '';
+  // Sans concept : Claude invente le sien, en évitant les cartes déjà au
+  // catalogue pour cette race et ce clan.
+  let catalogueHint = '';
+  if (!concept && !existingName && (raceId || clanId)) {
+    const rows = await chargerCatalogue(auth.supabase, raceId ? [raceId] : [], clanId ? [clanId] : [], 120).catch(() => []);
+    const noms = rows.map((r) => r.name).filter(Boolean).slice(0, 80);
+    if (noms.length) catalogueHint = `\n- Cartes DÉJÀ au catalogue pour cette race / ce clan (ne les imite pas, trouve un sujet qu'elles ne couvrent pas) : ${noms.join(' ; ')}`;
+  }
+  const conceptHint = concept
+    ? `\n${conceptPourPrompt(concept, lexique)}`
+    : existingName ? '' : `\n- Invente d'abord un CONCEPT original : qui est cette carte (métier, caste, âge, tempérament — pas forcément un guerrier en armure), ce que sa mécanique raconte d'elle, dans quelle scène et sous quel cadrage. Le nom, le texte d'ambiance et l'illustration en découlent.`;
+  const assistHint = `${genderHint}${nameRuleHint}${notesHint}${mechanicsHint}${conceptHint}${catalogueHint}${forbiddenHint}`;
+  const subjectKind = concept?.subjectKind ?? (type === 'Unité' ? 'membre' : 'evenement');
+  // Forme du texte d'ambiance : celle du concept, sinon tirée au hasard.
+  const formeAmbiance = concept?.formeAmbiance
+    ? `${concept.formeAmbiance}${concept.ton ? `, ton ${concept.ton}` : ''}`
+    : `${FLAVOR_FORMS[Math.floor(Math.random() * FLAVOR_FORMS.length)]}, ton ${FLAVOR_TONES[Math.floor(Math.random() * FLAVOR_TONES.length)]}`;
+  const gear = raceId ? RACE_TYPICAL_GEAR[raceId] : undefined;
+
+  const raceVisualDesc = raceId ? physiquePourGenre(raceVisualDescriptions[visualKey ?? raceId] || raceId, type === 'Unité' ? gender : null) : '';
   // Quand la race a une description, le post-traitement la place lui-même en
   // tête de l'illustrationPrompt : Claude ne doit pas la réécrire, sinon le
   // prompt la contient deux fois.
@@ -176,32 +127,35 @@ export async function POST(request: Request) {
 
   // Build prompt with race as the PRIMARY subject when specified
   const creatureSubject = raceId
-    ? `Cette carte représente un(e) ${raceId} (apparence : ${raceVisualDesc}). La faction ${factionId} donne le thème/ambiance mais l'apparence physique est celle d'un(e) ${raceId}, PAS d'un(e) ${fac?.races?.[0] || factionId}.`
+    ? `Cette carte appartient à la race ${raceId} (apparence : ${raceVisualDesc}). La faction ${factionId} donne le thème/ambiance mais tout personnage montré est un(e) ${raceId}, PAS un(e) ${fac?.races?.[0] || factionId}.`
     : `Cette carte appartient à la faction ${factionId} (${facDesc}).`;
 
   const prompt = `Tu es un game designer expert pour "Armies & Magic", un CCG médiéval-fantastique.
 Génère les textes pour cette carte :
 
 SUJET PRINCIPAL — ${creatureSubject}
-- Faction: ${factionId} (thème/ambiance uniquement)${clanHint}${subTypeHint}${volHint}${existingHint}${extraHint}
+- Faction: ${factionId} (thème/ambiance uniquement)${clanHint}${subTypeHint}${volHint}${existingHint}${extraHint}${assistHint}
 - Type: ${type} | Rareté: ${rarityId} | Coût mana: ${stats.mana}
 - ${statsDesc}${kws}
 ${existingName ? `Le nom "${existingName}" est déjà choisi — garde-le tel quel.` : ''}
 ${existingAbility ? `La capacité est déjà définie — garde-la telle quelle.` : ''}
 Pour le champ "illustrationPrompt" :
-${raceId ? `- Le sujet de l'illustration est un(e) ${raceId} : ${raceVisualDesc}. C'est NON NÉGOCIABLE.
-- Ne dessine JAMAIS un membre d'une autre race (par ex. pas de hobbit si la race est Hommes-Arbres, pas d'elfe si la race est Aigles Géants).
-- Le nom, les capacités et la faction influencent le STYLE et l'AMBIANCE, mais le SUJET PHYSIQUE reste un(e) ${raceId}.${racePrefixee ? `
-- NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par la pose, l'action et la scène.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
-- Ajoute des détails visuels semi-aléatoires (pose, environnement, éclairage, style d'armure/vêtements, éléments de background) pour rendre l'illustration unique.
+${raceId ? `- La race est NON NÉGOCIABLE : tout personnage montré est un(e) ${raceId} (${raceVisualDesc}) ; ne dessine JAMAIS un membre d'une autre race (pas de hobbit si la race est Hommes-Arbres, pas d'elfe si la race est Aigles Géants).
+- En revanche le RÔLE, la tenue, l'âge, l'attitude et l'équipement sont LIBRES : une race n'est pas « un guerrier en armure ». ${gear ? `Équipement habituel (une piste parmi d'autres, pas une obligation) : ${gear}.` : ''}${racePrefixee && (subjectKind === 'membre' || subjectKind === 'groupe') ? `
+- NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par le sujet précis, la pose, l'action et la scène.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
+- Varie le cadrage (portrait serré, plan moyen, plan large, contre-plongée…), la composition et l'instant : l'illustration doit se distinguer des autres cartes du clan.
+
+Pour le champ "flavorText" : UNE phrase courte, sous la forme suivante : ${formeAmbiance}. Pas de formule épique creuse.
 
 Réponds UNIQUEMENT en JSON valide sans backticks :
 {
   "name": "${existingName || 'Nom épique (2-4 mots, français, cohérent avec la race et la faction)'}",
   "ability": "${existingAbility || 'Texte de capacité (1-2 phrases, clair, cohérent avec les mots-clés listés)'}",
-  "flavorText": "Citation narrative immersive (1 phrase courte, style lore épique)",
+  "flavorText": "Texte d'ambiance (1 phrase courte, forme indiquée ci-dessus)",
   "illustrationPrompt": "${racePrefixee
-    ? `Pose, action, scene, lighting… (English, cinematic dark fantasy, detailed, no text in image; do NOT restate the race's appearance)`
+    ? (subjectKind === 'membre' || subjectKind === 'groupe'
+      ? `Specific subject, pose, action, scene, framing, lighting… (English, cinematic dark fantasy, detailed, no text in image; do NOT restate the race's appearance)`
+      : `Subject, scene, framing, lighting… (English, cinematic dark fantasy, detailed, no text in image)`)
     : raceId
       ? `A ${raceVisualDesc} — this is a ${raceId}, NOT a ${fac?.races?.[0] || factionId}. Cinematic dark fantasy, detailed, no text in image.`
       : 'Midjourney prompt (English, cinematic dark fantasy, detailed, no text in image)'}"
@@ -265,7 +219,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
       // Force race visual into illustrationPrompt — LLM instructions alone are unreliable.
       // visualKey resolves to the clan element for clan-tuned factions (Élémentaires).
       if (visualKey && raceVisualDescriptions[visualKey] && parsed.illustrationPrompt) {
-        const raceDesc = raceVisualDescriptions[visualKey];
+        const raceDesc = physiquePourGenre(raceVisualDescriptions[visualKey], type === 'Unité' ? gender : null);
         // Mapping of wrong race terms (French + English) to remove from the prompt
         const wrongRaceTerms: Record<string, string[]> = {
           "Elfes": ["elf", "elven", "elfe"],
@@ -364,17 +318,24 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\b`, 'gi');
           fixedPrompt = fixedPrompt.replace(regex, visualKey);
         }
-        // Prepend the authoritative race description — unless Claude already
-        // opened with it verbatim (« A <desc> » ou « <desc> »).
+        // Ancre la race : apparence en tête pour un être (ou un groupe) de la
+        // race, en fin de prompt pour une monture, un lieu, un objet…
+        const { prefixe, suffixe } = ancrageRace(raceDesc, subjectKind);
         const tete = fixedPrompt.trim().replace(/^an?\s+/i, '').toLowerCase();
-        if (!tete.startsWith(raceDesc.toLowerCase())) {
-          parsed.illustrationPrompt = `${raceDesc}. ${fixedPrompt}`;
-        } else {
-          parsed.illustrationPrompt = fixedPrompt;
-        }
+        if (prefixe && !tete.startsWith(raceDesc.toLowerCase())) fixedPrompt = `${prefixe}. ${fixedPrompt}`;
+        if (suffixe && !fixedPrompt.toLowerCase().includes(raceDesc.toLowerCase())) fixedPrompt = `${fixedPrompt.trim()} ${suffixe}`;
+        parsed.illustrationPrompt = fixedPrompt;
       }
 
-      return NextResponse.json({ ...parsed, styleGuideId: charte?.id ?? null });
+      // Nom unique (Création assistée) : ni dans le catalogue, ni dans le lot.
+      let nameAdjusted = false;
+      if (body.uniqueName === true && typeof parsed.name === 'string') {
+        const r = await nomLibre(auth.supabase, parsed.name, forbiddenNames, { prompt, nameRule, gender });
+        nameAdjusted = r !== parsed.name;
+        parsed.name = r;
+      }
+
+      return NextResponse.json({ ...parsed, styleGuideId: charte?.id ?? null, ...(nameAdjusted ? { nameAdjusted } : {}) });
     } catch (err) {
       lastErrorMessage = err instanceof Error ? err.message : String(err);
       console.error(`[card-forge] generateText error (attempt ${attempt + 1}):`, err);
@@ -386,4 +347,62 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
   }
 
   return NextResponse.json({ error: `Failed after ${maxRetries} attempts: ${lastErrorMessage}` }, { status: 502 });
+}
+
+// ─── Nom libre ──────────────────────────────────────────────────────────────
+
+type SupabaseAdmin = Parameters<typeof findNameCollision>[0];
+
+async function estPris(admin: SupabaseAdmin, name: string, interdits: string[], premier = true): Promise<boolean> {
+  const n = normalizeCardName(name);
+  if (!n) return true;
+  if (interdits.some((x) => normalizeCardName(x) === n)) return true;
+  // Dans un lot, deux noms ne commencent pas par le même mot (« Garde… »).
+  const m = premierMot(name);
+  if (premier && m && interdits.some((x) => premierMot(x) === m)) return true;
+  return (await findNameCollision(admin, name)) != null;
+}
+
+/** Rend `name` s'il est libre ; sinon redemande un nom à Claude (3 essais),
+ *  puis, en dernier recours, suffixe « II », « III »… */
+async function nomLibre(
+  admin: SupabaseAdmin,
+  name: string,
+  interdits: string[],
+  ctx: { prompt: string; nameRule: string | null; gender: string | null },
+): Promise<string> {
+  if (!(await estPris(admin, name, interdits))) return name;
+  const pris = [...interdits, name];
+  for (let essai = 0; essai < 3; essai++) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-5-5',
+          max_tokens: 600,
+          output_config: { effort: 'low' },
+          messages: [{
+            role: 'user',
+            content: `${ctx.prompt}\n\nLes noms suivants sont DÉJÀ PRIS : ${pris.slice(-60).join(' ; ')}.\nPropose UN autre nom pour cette carte, en respectant les mêmes règles, qui ne commence pas par le même premier mot qu'un nom pris. Réponds UNIQUEMENT par le nom, sans guillemets.`,
+          }],
+        }),
+      });
+      const data = await res.json();
+      const texte = (data?.content ?? []).filter((c: { type: string }) => c.type === 'text').map((c: { text: string }) => c.text).join('').trim();
+      const candidat = texte.split('\n')[0].replace(/^["«\s]+|["»\s.]+$/g, '').slice(0, 60);
+      if (candidat && !(await estPris(admin, candidat, pris))) return candidat;
+      if (candidat) pris.push(candidat);
+    } catch { /* on retente */ }
+  }
+  for (const suffixe of ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']) {
+    const c = `${name} ${suffixe}`;
+    // Dernier recours : le premier mot est forcément partagé, seul compte l'exact.
+    if (!(await estPris(admin, c, pris, false))) return c;
+  }
+  return `${name} ${Date.now() % 1000}`;
 }
