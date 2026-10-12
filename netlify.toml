@@ -1,6 +1,10 @@
+# Le site est hébergé sur VERCEL depuis 2026-09 : Netlify ne doit plus rien
+# construire. `ignore` qui sort en 0 = Netlify annule chaque build avant de
+# le lancer (push, PR, preview). Pour reprendre Netlify : retirer cette ligne.
 [build]
   command = "npm run build"
   publish = ".next"
+  ignore = "exit 0"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
