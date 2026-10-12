@@ -245,7 +245,7 @@ export default function CardEditor() {
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-  const [newImageFile, setNewImageFile] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [newImageFile, setNewImageFile] = useState<{ base64: string; mimeType: string; model?: string } | null>(null);
   const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
   // Bruitage d'entrée en jeu — même contrat que le pouvoir de héros : un
   // fichier choisi remplace le son générique de pose ; sans fichier, la carte
@@ -880,6 +880,7 @@ export default function CardEditor() {
       if (newImageFile) {
         body.imageBase64 = newImageFile.base64;
         body.imageMimeType = newImageFile.mimeType;
+        body.imageModel = newImageFile.model ?? null;
       }
       if (sfxPlayFile) {
         body.sfxPlayBase64 = sfxPlayFile.base64;
@@ -1114,7 +1115,7 @@ export default function CardEditor() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
-      setNewImageFile({ base64: data.imageBase64, mimeType: data.mimeType });
+      setNewImageFile({ base64: data.imageBase64, mimeType: data.mimeType, model: data.model });
       setNewImagePreview(`data:${data.mimeType};base64,${data.imageBase64}`);
       setSaveResult({ ok: true, msg: "Image générée — sauvegarde pour l'enregistrer." });
     } catch (err) {
