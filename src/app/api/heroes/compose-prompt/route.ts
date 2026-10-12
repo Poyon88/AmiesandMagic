@@ -3,6 +3,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { enforceAiQuota } from '@/lib/ai/rate-limit';
 import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
+import { loadStyleGuide } from '@/lib/ai/style-guide';
+import { getAdminClient } from '@/lib/admin/requireAdmin';
 import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 const LEGACY_SIMPLIFIED_RACES = new Set([
@@ -119,11 +121,14 @@ export async function POST(request: Request) {
     }
   }
 
+  // Charte graphique par défaut du clan : costume et accents du portrait.
+  const clanStyle = clan ? await loadStyleGuide(getAdminClient(), { clan }) : null;
   const basePrompt = buildHeroPortraitPrompt({
     name: name ?? null,
     race,
     faction: faction ?? null,
     clan: clan ?? null,
+    clanStyle,
     extraContext: null, // we'll let the LLM weave it in instead of brute-concat
   });
 
@@ -142,6 +147,7 @@ export async function POST(request: Request) {
       race,
       faction: faction ?? null,
       clan: clan ?? null,
+      clanStyle,
       extraContext: trimmedExtra,
     });
     return NextResponse.json({ prompt: withExtra, llmEnriched: false });

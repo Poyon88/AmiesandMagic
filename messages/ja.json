@@ -2937,7 +2937,8 @@
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
     "content_selection_magique": "魔法選択（3枚から1つのアクション）",
     "content_forge": "鍛造（デッキに混ぜるアイテム1つ）",
-    "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。"
+    "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。",
+    "tab_style_guides": "スタイルガイド"
   },
   "game": {
     "error_not_authenticated": "未認証",

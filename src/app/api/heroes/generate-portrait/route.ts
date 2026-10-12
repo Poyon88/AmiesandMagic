@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { enforceAiQuota } from '@/lib/ai/rate-limit';
 import { generateImage, GenerateImageError } from '@/lib/ai/generate-image';
 import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
+import { loadStyleGuide } from '@/lib/ai/style-guide';
+import { getAdminClient } from '@/lib/admin/requireAdmin';
 import { chromaKeyToPng } from '@/lib/ai/chroma-key';
 import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
@@ -78,11 +80,14 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Clan invalide pour cette faction' }, { status: 400 });
       }
     }
+    // Charte graphique par défaut du clan : costume et accents du portrait.
+    const clanStyle = clan ? await loadStyleGuide(getAdminClient(), { clan }) : null;
     prompt = buildHeroPortraitPrompt({
       name: name ?? null,
       race,
       faction: faction ?? null,
       clan: clan ?? null,
+      clanStyle,
       extraContext: extraContext ?? null,
     });
   }
