@@ -21,9 +21,11 @@ export const SELECTABLE_IMAGE_MODELS = [
 ] as const;
 
 // Choix proposé dans la Création assistée (2026-10-12). Le premier sert par
-// défaut. Imagen 4 Ultra n'est TOUJOURS PAS exposé par la clé du projet à cette
+// défaut : Nano Banana 2, celui que la cascade sans modèle imposé atteignait
+// déjà (Imagen inaccessible), pour ne pas changer le rendu des lots. Imagen 4 Ultra n'est TOUJOURS PAS exposé par la clé du projet à cette
 // date : le choisir donne des cartes sans image, avec l'erreur dans le suivi.
 export const BULK_IMAGE_MODELS = [
+  { id: 'gemini-3.1-flash-image', label: 'Nano Banana 2' },
   { id: 'gemini-3-pro-image', label: 'Nano Banana Pro' },
   { id: 'imagen-4.0-ultra-generate-001', label: 'Imagen 4 Ultra' },
 ] as const;
