@@ -4,6 +4,7 @@ import { getTransverseRaceProfile,
   MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_WEIGHTS_BY_MANA,
   RARITY_WEIGHTS_GLOBAL,
 } from './constants';
+import { regleRace } from './race-abilities';
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ function computeBudget(mana: number, rarityId: string) {
 
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
 
-function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string, clanId?: string) {
+export function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string, clanId?: string) {
   const faction = FACTIONS[factionId];
   const tier = RARITY_MAP[rarityId].tier;
   // Poids des mots-clés : cascade CLAN > RACE > FACTION, comblée PAR MOT-CLÉ.
@@ -71,8 +72,10 @@ function getAvailableKeywords(factionId: string, rarityId: string, raceId?: stri
   // Race transverse (Insectes) hors de sa faction d'origine : son profil de
   // pouvoirs la suit, sinon un insecte elfe ne serait qu'un elfe.
   const raceKws = raceId ? (faction.raceProfiles?.[raceId] ?? getTransverseRaceProfile(raceId))?.likelyKeywords : undefined;
+  // Cohérence de race/clan (race-abilities.ts) : un interdit n'est jamais tiré.
+  const { interdits } = regleRace(raceId, clanId);
   return Object.entries(KEYWORDS)
-    .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id))
+    .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id) && !interdits.includes(id))
     .map(([id, kw]) => ({ id, ...kw, weight: clanKws?.[id] ?? raceKws?.[id] ?? faction.likelyKeywords[id] ?? 0.12 }));
 }
 
@@ -86,6 +89,14 @@ function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>,
     if (r <= 0) return kw;
   }
   return pool[pool.length - 1];
+}
+
+/** Poids ATK/DEF : cascade d'OBJET entier CLAN > RACE > FACTION. */
+export function getStatWeights(factionId: string, raceId?: string | null, clanId?: string | null): { atk: number; def: number } {
+  const faction = FACTIONS[factionId];
+  const clanStatW = clanId ? faction.clanProfiles?.[clanId]?.statWeights : undefined;
+  const raceStatW = raceId ? faction.raceProfiles?.[raceId]?.statWeights : undefined;
+  return { ...(clanStatW ?? raceStatW ?? faction.statWeights) };
 }
 
 // ─── MAIN GENERATOR ──────────────────────────────────────────────────────────
@@ -103,9 +114,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
 
   // Poids de stats : cascade CLAN > RACE > FACTION (le profil de clan prime,
   // le profil de race comble, sinon l'ombrelle de faction).
-  const clanStatW = clanId ? faction.clanProfiles?.[clanId]?.statWeights : undefined;
-  const raceStatW = effectiveRace ? faction.raceProfiles?.[effectiveRace]?.statWeights : undefined;
-  const statWeights = { ...(clanStatW ?? raceStatW ?? faction.statWeights) };
+  const statWeights = getStatWeights(factionId, effectiveRace, clanId);
   let budget = computeBudget(mana, rarityId);
   const totalBudget = budget;
 
@@ -115,16 +124,11 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
   const FREQUENT_CHANCE = 0.40;
 
   if (isUnit) {
-    // Dragons, Aigles Géants, Griffons, Faucons, Chiroptères, Tengu et Pégases : Vol
-    // toujours garanti. Le poids de Vol dans le profil de race ne suffit PAS à
-    // faire voler : les poids sont RELATIFS entre ~130 mots-clés, si bien que
-    // « Vol: 0.85 » ne sort qu'une fois sur quatre-vingts (mesuré sur le Tengu).
-    // Une race AILÉE par définition passe donc par cette liste. Le clan Air (anciennement la race "Air/Tempête") conserve ce Vol
-    // garanti. Les Gargouilles, elles, en restent au tirage (0.40) : une
-    // gargouille perchée reste une gargouille.
-    if (effectiveRace === "Dragons" || effectiveRace === "Aigles Géants" || effectiveRace === "Griffons" || effectiveRace === "Faucons" || effectiveRace === "Chiroptères" || effectiveRace === "Tengu" || effectiveRace === "Pégases" || clanId === "Le Souffle des Cimes") {
-      keywords.push("Vol");
-    }
+    // Capacités OBLIGATOIRES de la race / du clan (race-abilities.ts) : une
+    // race ailée vole toujours. Le poids de Vol dans un profil ne suffit pas —
+    // les poids sont RELATIFS entre ~130 mots-clés, « Vol: 0.85 » ne sortait
+    // qu'une fois sur quatre-vingts (mesuré sur le Tengu).
+    for (const l of regleRace(effectiveRace, clanId).obligatoires) keywords.push(l);
 
     // Faction guaranteed keywords → fréquents à 40%
     for (const kid of faction.guaranteedKeywords) {

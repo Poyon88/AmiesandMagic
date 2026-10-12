@@ -44,3 +44,21 @@ describe("portrait de héros", () => {
     expect(p).not.toContain("Lueur de forge");
   });
 });
+
+describe("formatStyleGuideForPrompt — mode répertoire (cartes)", () => {
+  it("sépare l'obligatoire (palette, lumière, style, à éviter) du répertoire", () => {
+    const bloc = formatStyleGuideForPrompt(charte, { mode: "repertoire" })!;
+    const [avant, apres] = bloc.split("REPERTOIRE");
+    expect(avant).toContain("MANDATORY");
+    expect(avant).toContain("Noir de roche");
+    expect(avant).toContain("Pas de steampunk");
+    expect(avant).not.toContain("Plates sombres");
+    expect(apres).toContain("Plates sombres");
+    expect(apres).toContain("Runes gravées");
+    expect(apres).not.toContain("Lueur de forge");
+  });
+
+  it("le mode par défaut reste un bloc unique", () => {
+    expect(formatStyleGuideForPrompt(charte)).not.toContain("REPERTOIRE");
+  });
+});

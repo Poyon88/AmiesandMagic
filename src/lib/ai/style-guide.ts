@@ -36,20 +36,45 @@ export const STYLE_GUIDE_FIELDS: { key: StyleGuideField; label: string; prompt: 
   { key: "notes", label: "Notes", prompt: "Notes", aide: "Ce qui n'entre nulle part ailleurs" },
 ];
 
+/** Champs qui font l'UNITÉ d'un clan (toujours appliqués) ; les autres
+ *  (décors, matériaux, motifs, notes) forment un RÉPERTOIRE où chaque carte
+ *  pioche — sinon le modèle prend à chaque fois les premiers de la liste et
+ *  toutes les cartes du clan portent le même bouclier. */
+export const STYLE_GUIDE_MANDATORY: readonly StyleGuideField[] = ["palette", "lighting", "art_style", "avoid"];
+
 /** Bloc de direction artistique pour un prompt. Les champs vides sont omis ;
  *  `null` si la charte n'a rien à dire. La charte est rédigée en français : le
  *  modèle la transpose (Claude écrit l'illustrationPrompt en anglais, Gemini
- *  lit les deux langues). */
-export function formatStyleGuideForPrompt(sg: Pick<StyleGuide, "clan" | StyleGuideField> | null | undefined): string | null {
+ *  lit les deux langues).
+ *
+ *  `mode: "repertoire"` (cartes) sépare l'obligatoire du répertoire ; le mode
+ *  par défaut (jetons, plateaux, héros) garde le bloc unique. */
+export function formatStyleGuideForPrompt(
+  sg: Pick<StyleGuide, "clan" | StyleGuideField> | null | undefined,
+  opts: { mode?: "strict" | "repertoire" } = {},
+): string | null {
   if (!sg) return null;
-  const lignes = STYLE_GUIDE_FIELDS
-    .map(({ key, prompt }) => {
-      const v = sg[key]?.trim();
-      return v ? `- ${prompt}: ${v}` : null;
-    })
+  const ligne = (key: StyleGuideField, prompt: string) => {
+    const v = sg[key]?.trim();
+    return v ? `- ${prompt}: ${v}` : null;
+  };
+  const lignes = (filtre: (k: StyleGuideField) => boolean) => STYLE_GUIDE_FIELDS
+    .filter(({ key }) => filtre(key))
+    .map(({ key, prompt }) => ligne(key, prompt))
     .filter((l): l is string => l !== null);
-  if (lignes.length === 0) return null;
-  return `ART DIRECTION — clan "${sg.clan}" (house style guide, written in French; apply it, do not quote it):\n${lignes.join("\n")}`;
+  if (opts.mode === "repertoire") {
+    const obligatoire = lignes((k) => STYLE_GUIDE_MANDATORY.includes(k));
+    const repertoire = lignes((k) => !STYLE_GUIDE_MANDATORY.includes(k));
+    if (!obligatoire.length && !repertoire.length) return null;
+    return [
+      `ART DIRECTION — clan "${sg.clan}" (house style guide, written in French; apply it, do not quote it).`,
+      ...(obligatoire.length ? ["MANDATORY for every card:", ...obligatoire] : []),
+      ...(repertoire.length ? ["REPERTOIRE — ideas to draw from, not a checklist: use at most one or two per card, vary them from card to card, and feel free to invent others in the same spirit:", ...repertoire] : []),
+    ].join("\n");
+  }
+  const tout = lignes(() => true);
+  if (tout.length === 0) return null;
+  return `ART DIRECTION — clan "${sg.clan}" (house style guide, written in French; apply it, do not quote it):\n${tout.join("\n")}`;
 }
 
 /** Charte à utiliser (serveur, client service_role) : celle demandée si elle

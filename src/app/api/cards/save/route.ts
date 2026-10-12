@@ -355,6 +355,12 @@ export async function POST(request: Request) {
     if (card.status_reason !== undefined) cardData.status_reason = card.status_reason || null;
     // Charte graphique du prompt : recopiée si fournie, laissée intacte sinon.
     if (card.style_guide_id !== undefined) cardData.style_guide_id = Number.isInteger(card.style_guide_id) ? card.style_guide_id : null;
+    // Genre (Création assistée) : recopié s'il est fourni, laissé intact sinon.
+    if (card.gender !== undefined) {
+      const refusGenre = validerChampsVoix({ gender: card.gender });
+      if (refusGenre) return NextResponse.json({ error: refusGenre }, { status: 400 });
+      cardData.gender = card.gender ?? null;
+    }
     if (updateId && cardData.status) {
       const refus = await refusTransition(supabaseAdmin, updateId, cardData.status as CardStatus);
       if (refus) return NextResponse.json({ error: refus }, { status: 409 });
@@ -456,7 +462,7 @@ export async function POST(request: Request) {
         if (printErr) console.error('[card-save] prints error:', printErr.message);
       }
 
-      return NextResponse.json({ success: true, name: card.name, updated: false });
+      return NextResponse.json({ success: true, name: card.name, updated: false, id: inserted?.id ?? null });
     }
   } catch (err) {
     console.error('[card-save] error:', err);

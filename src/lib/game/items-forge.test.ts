@@ -4,6 +4,7 @@
 // le budget, et les deux failles que l'ouverture d'un troisième type de carte
 // laissait béantes (la remise à zéro entre deux cartes, et la limite de
 // capacités par deck).
+import { sanitizeBrief } from "@/lib/card-engine/brief";
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -43,8 +44,11 @@ describe("Le type « Objet » dans la forge", () => {
     // gratuits à équiper et à moitié inertes.
     expect(TYPES_ALEATOIRES).not.toContain("Objet");
     expect(TYPES_ALEATOIRES).toContain("Unité");
-    expect(SRC("src/components/card-forge/CardForge.tsx"))
-      .toContain("pick(TYPES_ALEATOIRES)");
+    // La Création assistée (ex-onglet Masse) ne connaît que Unité et Action :
+    // un « Objet » demandé dans le brief est écarté et signalé.
+    const { brief, warnings } = sanitizeBrief({ faction: "Nains", types: { "Objet": 1, "Unité": 1 } });
+    expect(brief.types).toEqual({ "Unité": 1 });
+    expect(warnings.join(" ")).toContain("Objet");
   });
 
   it("le coût d'équipement n'est écrit QUE sur un objet", () => {
