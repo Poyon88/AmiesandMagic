@@ -1,5 +1,8 @@
 'use client';
 
+import StyleGuidesForge from "@/components/card-forge/StyleGuidesForge";
+import StyleGuidePicker, { useStyleGuides } from "@/components/card-forge/StyleGuidePicker";
+import { formatStyleGuideForPrompt } from "@/lib/ai/style-guide";
 import { useState, useCallback, useRef, useEffect } from "react";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
@@ -51,13 +54,15 @@ interface CardText {
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
+  /** Charte graphique appliquée par le serveur (null : clan sans charte). */
+  styleGuideId?: number | null;
 }
 
-async function generateCardText(factionId: string, type: string, rarityId: string, stats: ReturnType<typeof generateCardStats>, raceId?: string, clanId?: string): Promise<CardText> {
+async function generateCardText(factionId: string, type: string, rarityId: string, stats: ReturnType<typeof generateCardStats>, raceId?: string, clanId?: string, styleGuideId?: number | null): Promise<CardText> {
   const response = await fetch('/api/cards/generate-text', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ factionId, type, rarityId, stats, raceId, clanId }),
+    body: JSON.stringify({ factionId, type, rarityId, stats, raceId, clanId, styleGuideId: styleGuideId ?? undefined }),
   });
   if (!response.ok) return { name: 'Inconnu', ability: '—', flavorText: '', illustrationPrompt: '' };
   return response.json();
@@ -176,6 +181,8 @@ interface ForgeCard {
   ability: string;
   flavorText: string;
   illustrationPrompt: string;
+  /** Charte graphique qui a servi au prompt (enregistrée en `style_guide_id`). */
+  styleGuideId?: number | null;
   budgetTotal: number;
   budgetUsed: number;
   generatedAt: string;
@@ -290,6 +297,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [tokenRace, setTokenRace] = useState("");
   const [tokenFaction, setTokenFaction] = useState("");
   const [tokenClan, setTokenClan] = useState("");
+  // Charte graphique par défaut du clan du jeton (bloc injecté dans son prompt).
+  const tokenStyleGuides = useStyleGuides(tokenClan);
+  const tokenCharte = formatStyleGuideForPrompt(tokenStyleGuides.find((g) => g.is_default) ?? null);
   const [tokenName, setTokenName] = useState("");
   const [tokenAttack, setTokenAttack] = useState<number>(1);
   const [tokenHealth, setTokenHealth] = useState<number>(1);
@@ -621,6 +631,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [bdFaction, setBdFaction] = useState<string>("");
   const [bdRace, setBdRace] = useState<string>("");
   const [bdClan, setBdClan] = useState<string>("");
+  // Charte graphique par défaut du clan du plateau.
+  const bdStyleGuides = useStyleGuides(bdClan);
+  const bdCharte = formatStyleGuideForPrompt(bdStyleGuides.find((g) => g.is_default) ?? null);
   const [bdInstructions, setBdInstructions] = useState("");
   const [bdRarity, setBdRarity] = useState<string>("Commune");
   const [bdMaxPrints, setBdMaxPrints] = useState<number | null>(null);
@@ -1411,7 +1424,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         parts.push(`Thematic ${bdRace} influence on the props, architecture and natural elements of the scene.`);
       }
       if (bdClan) {
-        parts.push(`Subtle decorative motif hinting at the "${bdClan}" clan woven into the side strips and props.`);
+        // Charte du clan : son univers (palette, matériaux, motifs) habille les
+        // bandes latérales et les accessoires. Sans charte, l'ancien rappel.
+        parts.push(bdCharte
+          ? `Clan "${bdClan}": dress the side strips and props in this clan's art direction.\n${bdCharte}`
+          : `Subtle decorative motif hinting at the "${bdClan}" clan woven into the side strips and props.`);
       }
     }
 
@@ -1779,6 +1796,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [manualAbility, setManualAbility] = useState("");
   const [manualFlavorText, setManualFlavorText] = useState("");
   const [manualIllustrationPrompt, setManualIllustrationPrompt] = useState("");
+  // Charte graphique choisie pour le prompt (null = celle par défaut du clan).
+  const [manualStyleGuideId, setManualStyleGuideId] = useState<number | null>(null);
   // Free-form context the admin can write to steer image generation. Fed
   // into the prompt-generation prompt (so it shapes the auto-built
   // illustrationPrompt) AND appended at image-generation time (so even
@@ -2034,6 +2053,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     ability: manualAbility,
     flavorText: manualFlavorText,
     illustrationPrompt: manualIllustrationPrompt,
+    styleGuideId: manualStyleGuideId,
     capabilities: composedCaps,
     budgetTotal: manualBudgetTotal,
     budgetUsed: manualBudgetUsed,
@@ -2256,9 +2276,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     };
     const visual = tokenVisualDescriptions[tokenRace] || `a ${tokenRace} creature`;
     const nameHint = tokenName ? ` named "${tokenName}"` : '';
-    const clanHint = tokenClan
-      ? ` Belongs to the "${tokenClan}" clan: weave subtle visual motifs of that clan (palette, ornamentation, body paint, regalia or environmental hints) into the appearance and the surrounding atmosphere.`
-      : '';
+    const clanHint = !tokenClan ? ''
+      : tokenCharte
+        ? ` Belongs to the "${tokenClan}" clan: follow its art direction for palette, lighting, environment, gear and motifs (the creature itself stays a ${tokenRace}).\n${tokenCharte}\n`
+        : ` Belongs to the "${tokenClan}" clan: weave subtle visual motifs of that clan (palette, ornamentation, body paint, regalia or environmental hints) into the appearance and the surrounding atmosphere.`;
     const kwHint = tokenKeywords.length > 0 ? ` Abilities: ${tokenKeywords.join(", ")}.` : '';
     // Same aesthetic vocabulary as the main card illustrator (see
     // /api/cards/generate-text route): cinematic dark fantasy, painterly,
@@ -2270,7 +2291,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Portrait composition centered on the creature, tasteful soft bokeh on the backdrop so the figure pops. " +
       "Absolutely NO text, NO letters, NO words, NO numbers, NO symbols, NO watermark, NO border, NO frame, NO card layout, NO UI elements anywhere in the image.";
     setTokenPrompt(prompt);
-  }, [tokenRace, tokenClan, tokenName, tokenKeywords]);
+  }, [tokenRace, tokenClan, tokenName, tokenKeywords, tokenCharte]);
 
   const generateTokenImage = useCallback(async () => {
     if (!tokenPrompt) return;
@@ -2398,7 +2419,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualStyleGuideId(null); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
@@ -2419,6 +2440,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       ability: manualAbility,
       flavorText: manualFlavorText,
       illustrationPrompt: manualIllustrationPrompt,
+      styleGuideId: manualStyleGuideId,
       budgetTotal: manualBudgetTotal,
       budgetUsed: manualBudgetUsed,
       generatedAt: new Date().toISOString(),
@@ -2448,7 +2470,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     }
     let text: CardText = { name: "", ability: "—", flavorText: "", illustrationPrompt: "" };
     try {
-      text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined);
+      text = await generateCardText(f, t, r, stats, race || undefined, clan || undefined, manualStyleGuideId);
     } catch (err) {
       console.error("[card-forge] generateCardText failed:", err);
     }
@@ -2464,6 +2486,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       ability: text.ability || "—",
       flavorText: text.flavorText || "",
       illustrationPrompt: text.illustrationPrompt || "",
+      styleGuideId: text.styleGuideId ?? null,
       generatedAt: new Date().toISOString(),
     };
     setCard(newCard);
@@ -2487,9 +2510,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualAbility(newCard.ability);
     setManualFlavorText(newCard.flavorText);
     setManualIllustrationPrompt(newCard.illustrationPrompt);
+    setManualStyleGuideId(newCard.styleGuideId ?? null);
     setLoading(false);
     return newCard;
-  }, [faction, type, rarity, race, clan, manualMana, manualName, manualAbility, manualKeywords]);
+  }, [faction, type, rarity, race, clan, manualMana, manualName, manualAbility, manualKeywords, manualStyleGuideId]);
 
   const startBulk = useCallback(async () => {
     abortRef.current = false;
@@ -2517,6 +2541,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         race: stats.race ?? bulkRace,
         ability: text.ability || "—", flavorText: text.flavorText || "",
         illustrationPrompt: text.illustrationPrompt || "",
+        styleGuideId: text.styleGuideId ?? null,
         generatedAt: new Date().toISOString(),
       };
       results.push(c);
@@ -2575,7 +2600,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualName("");
     setManualAbility("");
     setManualFlavorText("");
-    setManualIllustrationPrompt("");
+    setManualIllustrationPrompt(""); setManualStyleGuideId(null);
     setManualExtraContext("");
     // Coûts et statistiques
     setManualMana(3);
@@ -2805,6 +2830,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             effect_text: effectText,
             flavor_text: forgeCard.flavorText || null,
             illustration_prompt: forgeCard.illustrationPrompt || null,
+            style_guide_id: forgeCard.styleGuideId ?? null,
             rarity: forgeCard.rarity || null,
             keywords: gameKeywords,
             keyword_instances: keywordInstances.length > 0 ? keywordInstances : null,
@@ -3019,7 +3045,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
-            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`]] as const).map(([t, l]) => (
+            {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `📦 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`], ["chartes", `🎨 ${tf('tab_style_guides')}`]] as const).map(([t, l]) => (
               <button key={t} onClick={() => { setTab(t); if (t === "sets") loadSets(); if (t === "formats") loadFormats(); if (t === "prints") loadPrintsData(); if (t === "kw-icons") loadKwAssets(); }} style={{
                 padding: "5px 14px", borderRadius: 6, cursor: "pointer",
                 background: tab === t ? "#333" : "transparent",
@@ -4603,6 +4629,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 raceId: race || undefined,
                                 clanId: clan || undefined,
                                 extraContext: manualExtraContext.trim() || undefined,
+                                styleGuideId: manualStyleGuideId ?? undefined,
                               }),
                             });
                             const data = await res.json().catch(() => null);
@@ -4617,6 +4644,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               return;
                             }
                             setManualIllustrationPrompt(data.illustrationPrompt);
+                            setManualStyleGuideId(typeof data.styleGuideId === "number" ? data.styleGuideId : null);
                             if (!manualAbility && data.ability) setManualAbility(data.ability);
                             if (!manualFlavorText && data.flavorText) setManualFlavorText(data.flavorText);
                             if (!manualName && data.name) setManualName(data.name);
@@ -4637,6 +4665,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         }}
                       >{genIllusPromptLoading ? `⏳ ${tf('generating')}` : `🤖 ${tf('generate_by_ai')}`}</button>
                     </div>
+                    <StyleGuidePicker clan={clan} value={manualStyleGuideId} onChange={setManualStyleGuideId} />
                     <textarea value={manualIllustrationPrompt} onChange={e => setManualIllustrationPrompt(e.target.value)}
                       placeholder={tf('english_prompt_placeholder')}
                       rows={3}
@@ -6901,6 +6930,11 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         {tab === "news" && (
           <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
             <NewsForge />
+          </div>
+        )}
+        {tab === "chartes" && (
+          <div style={{ flex: 1, padding: 22, overflowY: "auto" }}>
+            <StyleGuidesForge />
           </div>
         )}
 

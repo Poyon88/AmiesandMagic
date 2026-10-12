@@ -2937,7 +2937,8 @@
     "content_dechainement": "Scatenamento X/Y (azioni casuali)",
     "content_selection_magique": "Selezione magica (1 azione tra 3)",
     "content_forge": "Forgia (1 Oggetto mescolato nel mazzo)",
-    "forge_min_hint": "Costo minimo dell'Oggetto forgiato (limite inferiore A). Il costo massimo è X; X vuoto = qualsiasi costo."
+    "forge_min_hint": "Costo minimo dell'Oggetto forgiato (limite inferiore A). Il costo massimo è X; X vuoto = qualsiasi costo.",
+    "tab_style_guides": "Guide di stile"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

@@ -2937,7 +2937,8 @@
     "content_retour_differe": "Retour différé (sous le deck)",
     "content_silence": "Silence (retire tout à la cible)",
     "content_dechainement": "Déchainement X/Y (actions aléatoires)",
-    "content_selection_magique": "Sélection magique (1 action parmi 3)"
+    "content_selection_magique": "Sélection magique (1 action parmi 3)",
+    "tab_style_guides": "Chartes"
   },
   "game": {
     "error_not_authenticated": "Non authentifié",

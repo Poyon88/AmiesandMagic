@@ -1,5 +1,6 @@
 "use client";
 
+import StyleGuidePicker from "@/components/card-forge/StyleGuidePicker";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
@@ -85,6 +86,8 @@ interface DbCard {
   spell_effects: SpellComposableEffects | null;
   image_url: string | null;
   illustration_prompt: string | null;
+  /** Charte graphique qui a servi au prompt (cf. style_guides). */
+  style_guide_id?: number | null;
   faction: string | null;
   race: string | null;
   clan: string | null;
@@ -518,6 +521,7 @@ export default function CardEditor() {
       effect_text: cleanEffectText,
       flavor_text: card.flavor_text || "",
       illustration_prompt: card.illustration_prompt || "",
+      style_guide_id: card.style_guide_id ?? null,
       keywords: [...(card.keywords || [])],
       spell_keywords: card.spell_keywords ? JSON.parse(JSON.stringify(card.spell_keywords)) : [],
       spell_effects: card.spell_effects ? JSON.parse(JSON.stringify(card.spell_effects)) : null,
@@ -844,6 +848,7 @@ export default function CardEditor() {
         effect_text: effectTextFull || null,
         flavor_text: editFields.flavor_text || null,
         illustration_prompt: editFields.illustration_prompt || null,
+        style_guide_id: (editFields.style_guide_id as number | null) ?? null,
         keywords: editFields.keywords || [],
         keyword_instances: keywordInstances.length > 0 ? keywordInstances : null,
         spell_keywords: (editFields.spell_keywords as SpellKeywordInstance[])?.length ? editFields.spell_keywords : null,
@@ -1076,12 +1081,13 @@ export default function CardEditor() {
           clanId: editFields.clan || undefined,
           existingName: editFields.name || undefined,
           existingAbility: editFields.effect_text || undefined,
+          styleGuideId: (editFields.style_guide_id as number | null) ?? undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
       if (data.illustrationPrompt) {
-        setEditFields((f) => ({ ...f, illustration_prompt: data.illustrationPrompt }));
+        setEditFields((f) => ({ ...f, illustration_prompt: data.illustrationPrompt, style_guide_id: typeof data.styleGuideId === "number" ? data.styleGuideId : null }));
         setSaveResult({ ok: true, msg: "Prompt régénéré" });
       }
     } catch (err) {
@@ -2377,6 +2383,11 @@ export default function CardEditor() {
             {/* Illustration prompt + régénération IA */}
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Prompt illustration</div>
+              <StyleGuidePicker
+                clan={editFields.clan as string | undefined}
+                value={(editFields.style_guide_id as number | null) ?? null}
+                onChange={(id) => updateField("style_guide_id", id)}
+              />
               <textarea value={(editFields.illustration_prompt as string) || ""} onChange={e => updateField("illustration_prompt", e.target.value)} style={S.textarea} />
               <button
                 onClick={handleGeneratePrompt}
