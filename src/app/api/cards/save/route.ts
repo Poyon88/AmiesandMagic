@@ -134,7 +134,7 @@ export async function POST(request: Request) {
   const supabaseAdmin = auth.supabase;
 
   try {
-    const { card, imageBase64, imageMimeType, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, sfxExileBase64, sfxExileMimeType, clearSfxPlay, partial, composed_capabilities, allowDuplicateName } = await request.json();
+    const { card, imageBase64, imageMimeType, imageModel, updateId, sfxPlayBase64, sfxPlayMimeType, sfxDeathBase64, sfxDeathMimeType, sfxExileBase64, sfxExileMimeType, clearSfxPlay, partial, composed_capabilities, allowDuplicateName } = await request.json();
     const composedCaps = sanitizeComposed(composed_capabilities);
 
     // Partial update path: only update the fields explicitly present in
@@ -369,7 +369,13 @@ export async function POST(request: Request) {
     // reproduit fidèlement la sémantique legacy). Source de vérité côté moteur
     // une fois lue (getCapabilities) ; sinon repli adaptateur.
     cardData.capabilities = [...deriveCapabilities(cardData as unknown as Card), ...composedCaps];
-    if (image_url) cardData.image_url = image_url;
+    if (image_url) {
+      cardData.image_url = image_url;
+      // Modèle qui a produit CETTE image (null = import manuel). Écrit avec
+      // l'image et jamais sans elle : une édition qui ne touche pas à
+      // l'illustration garde le modèle déjà consigné.
+      cardData.image_model = typeof imageModel === 'string' && /^[a-z0-9.-]{1,80}$/.test(imageModel) ? imageModel : null;
+    }
 
     // Retrait du son d'entrée en jeu : la carte retombe sur le bruitage
     // générique de pose. Drapeau EXPLICITE, et non « sfx_play_url absent du

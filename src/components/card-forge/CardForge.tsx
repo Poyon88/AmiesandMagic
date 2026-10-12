@@ -4,7 +4,7 @@ import AssistedForge from "@/components/card-forge/AssistedForge";
 import StyleGuidesForge from "@/components/card-forge/StyleGuidesForge";
 import StyleGuidePicker, { useStyleGuides } from "@/components/card-forge/StyleGuidePicker";
 import { formatStyleGuideForPrompt } from "@/lib/ai/style-guide";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import ExileGlyph from "@/components/cards/ExileGlyph";
@@ -326,6 +326,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [tokenMessage, setTokenMessage] = useState<{ ok: boolean; msg: string } | null>(null);
   const [tab, setTab] = useState("forge");
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
+  // Modèle d'IA par URL d'aperçu générée : une image importée a une autre URL,
+  // donc aucun modèle (enregistré en `image_model`).
+  const imageModelByUrl = useRef<Record<string, string>>({});
 
   // ─── CARD BACKS (dos de cartes) ───────────────────────────────────────────
   const [cbName, setCbName] = useState("");
@@ -2819,6 +2822,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           },
           imageBase64,
           imageMimeType,
+          imageModel: imageBase64 ? (imageModelByUrl.current[blobUrl] ?? null) : null,
           updateId: undefined,
           composed_capabilities: composedCaps,
           sfxPlayBase64: sfxPlayFile?.base64 || null,
@@ -2960,6 +2964,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       // Convert base64 to blob URL for preview (base64 nettoyé : robuste sur Safari).
       const blobUrl = base64ToBlobUrl(data.imageBase64, data.mimeType);
 
+      imageModelByUrl.current[blobUrl] = data.model;
       setCardImages(prev => ({ ...prev, [forgeCard.id]: blobUrl }));
       setSaveResult({ ok: true, msg: tf('illustration_generated', { model: data.model }) });
     } catch (err) {
@@ -2967,7 +2972,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setGeneratingImage(false);
     }
-  }, [illusRefImageBase64, illusRefImageMime, manualExtraContext]);
+  }, [illusRefImageBase64, illusRefImageMime, manualExtraContext, illusModel]);
 
   const fac = FACTIONS[faction];
 

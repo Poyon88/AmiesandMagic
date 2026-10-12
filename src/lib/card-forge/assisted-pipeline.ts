@@ -99,6 +99,7 @@ export async function creerCarte(
   // Illustration : un échec n'empêche pas la carte (Brouillon, image à refaire).
   let imageBase64: string | null = null;
   let imageErreur: string | undefined;
+  let modeleProduit: string | null = null;
   if (texte.illustrationPrompt) {
     try {
       const img = await json(await fetch("/api/cards/generate-image", {
@@ -106,6 +107,7 @@ export async function creerCarte(
         body: JSON.stringify({ prompt: texte.illustrationPrompt, highRes: true, aspectRatio: "3:4", ...(imageModel ? { model: imageModel } : {}) }),
       }));
       imageBase64 = await compresser(img.imageBase64, img.mimeType);
+      modeleProduit = typeof img.model === "string" ? img.model : null;
     } catch (e) {
       if (signal?.aborted) throw e;
       imageErreur = e instanceof Error ? e.message : "Illustration non générée";
@@ -139,6 +141,7 @@ export async function creerCarte(
       },
       imageBase64,
       imageMimeType: imageBase64 ? "image/webp" : null,
+      imageModel: modeleProduit,
     }),
   }));
   return { id: saved.id ?? null, name: texte.name, nameAdjusted: texte.nameAdjusted, imageOk: !!imageBase64, imageErreur };
