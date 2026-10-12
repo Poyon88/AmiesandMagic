@@ -1,0 +1,1409 @@
+{
+  "version": 1,
+  "pointsParMana": 10,
+  "stat": {
+    "atk": 4.97,
+    "def": 4.28
+  },
+  "socle": {
+    "creature": -3.61,
+    "spell": 10.43,
+    "item": 8.26
+  },
+  "type": {
+    "creature": 1,
+    "spell": 1,
+    "item": 1
+  },
+  "rarete": {
+    "Commune": 1,
+    "Peu Commune": 1.1,
+    "Rare": 1.2,
+    "Épique": 1.3,
+    "Légendaire": 1.4
+  },
+  "eveil": 0.023,
+  "additionnel": {
+    "life": -1.64,
+    "discard": -3.13,
+    "sacrifice": -4.71,
+    "exile": -1.67,
+    "topdeck": -3.53,
+    "equip": -0.75
+  },
+  "plafondAdditionnel": 0.4,
+  "declencheur": {
+    "on_play": 1,
+    "automatic": 1,
+    "spell_resolution": 1.16,
+    "on_death": 0.324,
+    "on_return": 0.318,
+    "on_activation": 0.708,
+    "on_attack": 0.791,
+    "on_end_of_turn": 1.639,
+    "on_end_of_turn_in_hand": 1.167,
+    "on_start_of_turn": 0.974,
+    "on_start_of_turn_in_hand": 1,
+    "on_draw": 0.72,
+    "on_low_hp": 0.449,
+    "on_wound": 0.824
+  },
+  "portee": {
+    "all_enemies": 2.281,
+    "all_allies": 1.478,
+    "all": 2.549
+  },
+  "cible": {
+    "hero": 0.785,
+    "both": 0.897,
+    "self": 0.659,
+    "parCible": 0.533
+  },
+  "filtre": {
+    "a": 0.545
+  },
+  "parts": {
+    "race:Gobelins": 0.0061,
+    "clan:Les Cohortes Sanglantes": 0.0182,
+    "faction:Elfes Noirs": 0.0662,
+    "kw:charge": 0.027,
+    "cout<=2": 0.3585,
+    "cout<=3": 0.53,
+    "cout<=4": 0.6556,
+    "cout<=5": 0.761,
+    "cout<=6": 0.8352,
+    "cout<=7": 0.8832,
+    "cout<=8": 0.9264,
+    "cout<=9": 0.9615,
+    "cout<=10": 1,
+    "clan:La Forêt d'Émeraude": 0.0608,
+    "faction:Elfes": 0.3059,
+    "kw:esquive": 0.0135,
+    "cout<=1": 0.1634,
+    "race:Hobbits": 0.0324,
+    "clan:La Combe Verte": 0.0716,
+    "race:Démons": 0.0135,
+    "clan:Les Princes des Abîmes": 0.0122,
+    "kw:souffle_de_feu": 0.0054,
+    "race:Elfes": 0.0716,
+    "clan:Les Sylvains": 0.0655,
+    "kw:riposte": 0.0027,
+    "clan:Les Hauts-Elfes": 0.0709,
+    "kw:divine_shield": 0.0311,
+    "race:Squelettes": 0.0041,
+    "clan:Les Rangs Silencieux": 0.0081,
+    "faction:Morts-Vivants": 0.0182,
+    "kw:resurrection": 0.0068,
+    "race:Fées": 0.0236,
+    "race:Hommes-Loups": 0.0135,
+    "clan:Les Enfants de la Lune": 0.0149,
+    "faction:Hommes-Bêtes": 0.104,
+    "kw:invisible": 0.0068,
+    "race:Orcs": 0.0101,
+    "kw:gloire": 0.0054,
+    "race:Spectres": 0.0014,
+    "clan:Le Voile Hurlant": 0.0014,
+    "race:Zombies": 0.0027,
+    "kw:poison": 0.0101,
+    "race:Aigles Géants": 0.0169,
+    "kw:ranged": 0.0641,
+    "race:Golems": 0.0108,
+    "faction:Nains": 0.2424,
+    "kw:taunt": 0.0695,
+    "race:Hommes-Félins": 0.0155,
+    "race:Élémentaire": 0.0257,
+    "clan:Le Socle du Monde": 0.0054,
+    "faction:Élémentaires": 0.0311,
+    "kw:ancre": 0.0189,
+    "kw:profanation": 0.0027,
+    "clan:La Vague Sans Fin": 0.0068,
+    "kw:raid": 0.0608,
+    "race:Ogres": 0.0014,
+    "faction:Mercenaires": 0.0054,
+    "kw:bravoure": 0.0074,
+    "race:Phoenix": 0.0047,
+    "race:Humains": 0.1702,
+    "clan:Les Défenseurs d'Ivoire": 0.002,
+    "faction:EmpireDuMilieu": 0.0695,
+    "kw:resistance": 0.0155,
+    "race:Elfes Corrompus": 0.0149,
+    "clan:La Forêt Maudite": 0.0135,
+    "kw:persecution": 0.002,
+    "kw:double_attaque": 0.0054,
+    "race:Vampires": 0.0034,
+    "clan:La Cour Écarlate": 0.0034,
+    "kw:drain_de_vie": 0.002,
+    "kw:vampirisme": 0.0027,
+    "race:Dragons": 0.0074,
+    "kw:prescience": 0.0014,
+    "race:Hommes-Arbres": 0.0203,
+    "kw:ombre": 0.0223,
+    "kw:canalisation": 0.0041,
+    "kw:_composed": 0.2167,
+    "race:Anges": 0.0007,
+    "kw:heritage_du_cimetiere": 0.0014,
+    "clan:Le Souffle des Cimes": 0.0128,
+    "race:Lich": 0.0041,
+    "clan:Le Cénacle Nécromant": 0.0034,
+    "kw:liaison_de_vie": 0.0007,
+    "kw:indestructible": 0.0047,
+    "kw:impact": 0.0621,
+    "kw:deferlement": 0.0128,
+    "kw:selection": 0.0351,
+    "kw:invocation": 0.0088,
+    "clan:La Colère des Flammes": 0.0061,
+    "kw:guerison": 0.0068,
+    "kw:afflux": 0.0331,
+    "kw:renforcement": 0.027,
+    "kw:inspiration": 0.0263,
+    "kw:exhumation": 0.0122,
+    "faction:Humains": 0.0932,
+    "cout<=0": 0.002,
+    "kw:traque_du_destin": 0.0041,
+    "clan:L'Ordre de l'Aube": 0.0304,
+    "kw:commandement": 0.0405,
+    "kw:loyaute": 0.0074,
+    "kw:terreur": 0.0034,
+    "kw:fureur": 0.0047,
+    "race:Nains": 0.0587,
+    "clan:La Forge Ardente": 0.079,
+    "race:Géants": 0.0108,
+    "clan:Clan des Premiers Géants": 0.0169,
+    "kw:catalyse": 0.0007,
+    "kw:armure": 0.0398,
+    "kw:maitre_darme": 0.0041,
+    "kw:compagnons": 0.0081,
+    "kw:convocation": 0.0068,
+    "kw:domination": 0.0034,
+    "kw:dechainement": 0.0061,
+    "kw:silence": 0.0061,
+    "kw:contresort": 0.0041,
+    "kw:incineration": 0.0061,
+    "kw:premiere_frappe": 0.0088,
+    "kw:augure": 0.0027,
+    "kw:solidarite": 0.0027,
+    "kw:invocation_multiple": 0.0216,
+    "kw:entrave": 0.0128,
+    "kw:precision": 0.0162,
+    "kw:benediction": 0.0034,
+    "kw:celerite": 0.0054,
+    "kw:necrophagie": 0.0014,
+    "kw:metamorphose": 0.0014,
+    "kw:rappel": 0.0054,
+    "kw:transcendance": 0.0081,
+    "kw:paralysie": 0.0034,
+    "kw:combustion": 0.0034,
+    "kw:execution": 0.0061,
+    "race:Hommes-Ours": 0.0034,
+    "kw:lycanthropie": 0.0047,
+    "kw:pacte_de_sang": 0.0007,
+    "kw:regeneration": 0.0074,
+    "kw:fierte_du_clan": 0.0054,
+    "race:Trolls": 0.0027,
+    "race:Wargs": 0.0027,
+    "kw:relancer": 0.0027,
+    "kw:suprematie": 0.002,
+    "clan:Le Royaume du Nord": 0.0142,
+    "clan:Les Lames de l'Ombre": 0.0223,
+    "kw:appel_du_clan": 0.0277,
+    "kw:convocation_simple": 0.0176,
+    "kw:martyr": 0.002,
+    "kw:instinct_de_meute": 0.0027,
+    "kw:rassemblement": 0.0142,
+    "kw:tempete": 0.0614,
+    "kw:convocations_multiples": 0.023,
+    "kw:entraide": 0.0034,
+    "clan:La Forêt Enchantée": 0.0122,
+    "kw:concentration": 0.0041,
+    "kw:selection_magique": 0.0243,
+    "kw:mimique": 0.0027,
+    "kw:savant": 0.0027,
+    "kw:cycle_eternel": 0.0115,
+    "clan:Les Guerrières du Vent": 0.0115,
+    "kw:conquete": 0.002,
+    "clan:Les Enfants du Soleil": 0.0162,
+    "faction:RoyaumesDuSoleil": 0.0641,
+    "kw:totem": 0.0007,
+    "kw:remontee": 0.0101,
+    "kw:pietinement": 0.0122,
+    "kw:siphon": 0.0007,
+    "kw:sang_mele": 0.0047,
+    "clan:Les Seigneurs Fauves": 0.0122,
+    "kw:renfort_royal": 0.0108,
+    "race:Mimis": 0.0115,
+    "kw:epargne": 0.0189,
+    "clan:Les Seigneurs des Dunes": 0.0135,
+    "kw:pillage": 0.0095,
+    "kw:pauvrete": 0.0027,
+    "kw:richesse": 0.0041,
+    "kw:sacrifice_demoniaque": 0.002,
+    "kw:appel_supreme": 0.0041,
+    "kw:declenchement": 0.0007,
+    "clan:Le Pacte des Griffes": 0.0027,
+    "race:Hommes-Chiens": 0.002,
+    "race:Hommes-Cerfs": 0.0014,
+    "race:Centaures": 0.0365,
+    "clan:La Harde Sauvage": 0.0419,
+    "race:Hommes-Renards": 0.0014,
+    "kw:renforcement_multiple": 0.0169,
+    "kw:entrainement": 0.0068,
+    "kw:cataclysme": 0.0122,
+    "kw:affaiblissement": 0.0034,
+    "kw:dedoublement": 0.0054,
+    "race:Machines": 0.0155,
+    "clan:La Guilde des Ingénieurs": 0.0635,
+    "clan:Les Hordes des Steppes": 0.0162,
+    "kw:tactique": 0.0014,
+    "race:Griffons": 0.0007,
+    "kw:force_des_ancetres": 0.0061,
+    "kw:invocations_multiples": 0.0047,
+    "kw:touche_mortel": 0.0061,
+    "clan:L'Empire de Jade": 0.0088,
+    "kw:divination": 0.0122,
+    "kw:exploration": 0.0155,
+    "race:Chiens": 0.0007,
+    "race:Fauves": 0.0007,
+    "race:Guerriers du Chaos": 0.0014,
+    "kw:corruption": 0.0007,
+    "race:Araignées Géantes": 0.0014,
+    "kw:malefice": 0.0014,
+    "race:Bâtiments": 0.002,
+    "race:Gnomes": 0.0236,
+    "race:Kobolds": 0.0412,
+    "clan:Clan des Mille Tunnels": 0.0587,
+    "kw:creuser": 0.0068,
+    "kw:tresor": 0.0047,
+    "clan:Le Royaume des Masques": 0.0128,
+    "race:Esprits": 0.0088,
+    "clan:Les Fils du Volcan": 0.0162,
+    "kw:seuil_colere": 0.0014,
+    "kw:chant": 0.0162,
+    "kw:seuil_sacrificiel": 0.002,
+    "kw:devoration": 0.0007,
+    "kw:purete": 0.002,
+    "kw:boomerang": 0.0034,
+    "kw:fortifier": 0.0034,
+    "kw:preincanter": 0.0034,
+    "clan:La Sublime Porte": 0.0196,
+    "kw:discipline": 0.0068,
+    "kw:esprit_de_corps": 0.0081,
+    "kw:presage": 0.0054,
+    "kw:apprentissage": 0.0047,
+    "kw:soleil": 0.0054,
+    "kw:seconde_vie": 0.0041,
+    "kw:invention": 0.0095,
+    "kw:lune": 0.002,
+    "kw:foi": 0.0007,
+    "kw:retour_differe": 0.0014,
+    "kw:forge": 0.0034,
+    "kw:tuteur": 0.0115,
+    "kw:faveur": 0.0014,
+    "kw:sacrifice": 0.0007,
+    "kw:exclusion": 0.002,
+    "race:Farfadets": 0.0054,
+    "race:Dryades": 0.0054,
+    "race:Faunes": 0.0041,
+    "race:Korrigans": 0.0027,
+    "kw:malediction": 0.0007,
+    "race:Insectes": 0.0007
+  },
+  "hasard": 0.848,
+  "singulier": 0.6,
+  "don": 0.729,
+  "capacites": {
+    "loyaute": {
+      "base": 7.37,
+      "perX": 0,
+      "perY": 0,
+      "n": 11
+    },
+    "ancre": {
+      "base": 1.33,
+      "perX": 0,
+      "perY": 0,
+      "n": 28
+    },
+    "resistance": {
+      "base": 4.78,
+      "perX": 4.74,
+      "perY": 3,
+      "n": 26
+    },
+    "taunt": {
+      "base": 4.26,
+      "perX": 0,
+      "perY": 0,
+      "n": 107
+    },
+    "raid": {
+      "base": 5.1,
+      "perX": 0,
+      "perY": 0,
+      "n": 92
+    },
+    "charge": {
+      "base": 10.69,
+      "perX": 0,
+      "perY": 0,
+      "n": 41
+    },
+    "premiere_frappe": {
+      "base": 5.56,
+      "perX": 0,
+      "perY": 0,
+      "n": 13
+    },
+    "gloire": {
+      "base": 2.99,
+      "perX": 0.03,
+      "perY": 4,
+      "n": 9
+    },
+    "divine_shield": {
+      "base": 7.12,
+      "perX": 0,
+      "perY": 0,
+      "n": 58
+    },
+    "vol": {
+      "base": 7,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "touche_mortel": {
+      "base": 26.52,
+      "perX": 0,
+      "perY": 0,
+      "n": 9
+    },
+    "precision": {
+      "base": 2.99,
+      "perX": 0,
+      "perY": 0,
+      "n": 24
+    },
+    "drain_de_vie": {
+      "base": 6.33,
+      "perX": 0,
+      "perY": 0,
+      "n": 3
+    },
+    "esquive": {
+      "base": 5.12,
+      "perX": 0,
+      "perY": 0,
+      "n": 21
+    },
+    "poison": {
+      "base": 5.8,
+      "perX": 0,
+      "perY": 0,
+      "n": 15
+    },
+    "celerite": {
+      "base": 7.19,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "augure": {
+      "base": 9.81,
+      "perX": 0,
+      "perY": 0,
+      "n": 4
+    },
+    "benediction": {
+      "base": 6.28,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "bravoure": {
+      "base": 6.45,
+      "perX": 0,
+      "perY": 0,
+      "n": 11
+    },
+    "pillage": {
+      "base": 10.3,
+      "perX": 4.19,
+      "perY": 5,
+      "n": 14
+    },
+    "riposte": {
+      "base": 3.03,
+      "perX": 4,
+      "perY": 4,
+      "n": 4
+    },
+    "combustion": {
+      "base": 6.54,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "terreur": {
+      "base": 4.33,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "pauvrete": {
+      "base": -12.99,
+      "perX": 0,
+      "perY": 0,
+      "n": 4
+    },
+    "richesse": {
+      "base": 5.4,
+      "perX": 4.92,
+      "perY": 6,
+      "n": 6
+    },
+    "armure": {
+      "base": 6.39,
+      "perX": 0,
+      "perY": 0,
+      "n": 61
+    },
+    "commandement": {
+      "base": 7.76,
+      "perX": 8.03,
+      "perY": 11,
+      "n": 60
+    },
+    "fureur": {
+      "base": 5.83,
+      "perX": 0,
+      "perY": 0,
+      "n": 7
+    },
+    "double_attaque": {
+      "base": 12.57,
+      "perX": 0,
+      "perY": 0,
+      "n": 9
+    },
+    "invisible": {
+      "base": 7,
+      "perX": 0,
+      "perY": 0,
+      "n": 10
+    },
+    "canalisation": {
+      "base": 7.87,
+      "perX": 0,
+      "perY": 0,
+      "n": 6
+    },
+    "catalyse": {
+      "base": 10.82,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "entraide": {
+      "base": 10.74,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "contresort": {
+      "base": 14.43,
+      "perX": 7,
+      "perY": 7,
+      "n": 6
+    },
+    "transformation": {
+      "base": 6,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "maitre_darme": {
+      "base": 10.66,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "exclusion": {
+      "base": 20.27,
+      "perX": 12.22,
+      "perY": 8,
+      "n": 3
+    },
+    "convocation": {
+      "base": 9.53,
+      "perX": 6.97,
+      "perY": 5,
+      "n": 10
+    },
+    "convocation_simple": {
+      "base": 9.31,
+      "perX": 0,
+      "perY": 0,
+      "n": 26
+    },
+    "lycanthropie": {
+      "base": 3.28,
+      "perX": 3.63,
+      "perY": 5,
+      "n": 7
+    },
+    "malediction": {
+      "base": 17.82,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "necrophagie": {
+      "base": 16.2,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "force_des_ancetres": {
+      "base": 4.77,
+      "perX": 3.88,
+      "perY": 4.44,
+      "n": 10
+    },
+    "purete": {
+      "base": 4.58,
+      "perX": 3.37,
+      "perY": 4,
+      "n": 4
+    },
+    "seuil_sacrificiel": {
+      "base": 6.32,
+      "perX": 1.18,
+      "perY": 4,
+      "n": 3
+    },
+    "chant": {
+      "base": 2.69,
+      "perX": -0.9,
+      "perY": 0,
+      "n": 24
+    },
+    "lune": {
+      "base": 4.83,
+      "perX": 3.42,
+      "perY": 3,
+      "n": 3
+    },
+    "soleil": {
+      "base": 2.66,
+      "perX": 1.12,
+      "perY": 3,
+      "n": 8
+    },
+    "paralysie": {
+      "base": 7.61,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "permutation": {
+      "base": 16,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "persecution": {
+      "base": 7.85,
+      "perX": 4.32,
+      "perY": 5,
+      "n": 3
+    },
+    "pietinement": {
+      "base": 1.7,
+      "perX": 0,
+      "perY": 0,
+      "n": 19
+    },
+    "ombre_du_passe": {
+      "base": 11,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "savant": {
+      "base": 23.78,
+      "perX": 0,
+      "perY": 0,
+      "n": 4
+    },
+    "profanation": {
+      "base": 8.09,
+      "perX": 3.72,
+      "perY": 3,
+      "n": 4
+    },
+    "prescience": {
+      "base": 6.67,
+      "perX": 3.28,
+      "perY": 4,
+      "n": 2
+    },
+    "suprematie": {
+      "base": 17.14,
+      "perX": 0,
+      "perY": 0,
+      "n": 3
+    },
+    "divination": {
+      "base": 3.98,
+      "perX": 0,
+      "perY": 0,
+      "n": 18
+    },
+    "liaison_de_vie": {
+      "base": 13.72,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "ombre": {
+      "base": 6.18,
+      "perX": 0,
+      "perY": 0,
+      "n": 42
+    },
+    "sacrifice": {
+      "base": 15.59,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "malefice": {
+      "base": 19.59,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "indestructible": {
+      "base": 24.43,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "regeneration": {
+      "base": 7.89,
+      "perX": 1.11,
+      "perY": 7,
+      "n": 12
+    },
+    "corruption": {
+      "base": 29.23,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "carnage": {
+      "base": 12,
+      "perX": 5,
+      "perY": 5,
+      "n": 0
+    },
+    "heritage": {
+      "base": 14,
+      "perX": 6,
+      "perY": 6,
+      "n": 0
+    },
+    "mimique": {
+      "base": 13.33,
+      "perX": 0,
+      "perY": 0,
+      "n": 4
+    },
+    "metamorphose": {
+      "base": 20.39,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "dedoublement": {
+      "base": 24.41,
+      "perX": 0,
+      "perY": 0,
+      "n": 10
+    },
+    "tactique": {
+      "base": 9.59,
+      "perX": 9.21,
+      "perY": 7,
+      "n": 2
+    },
+    "heritage_du_cimetiere": {
+      "base": 11.6,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "pacte_de_sang": {
+      "base": 21.77,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "sacrifice_demoniaque": {
+      "base": 9.33,
+      "perX": 3.68,
+      "perY": 5,
+      "n": 3
+    },
+    "souffle_de_feu": {
+      "base": 11.58,
+      "perX": 3.29,
+      "perY": 6,
+      "n": 8
+    },
+    "domination": {
+      "base": 30.83,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "resurrection": {
+      "base": 41.39,
+      "perX": 0,
+      "perY": 0,
+      "n": 11
+    },
+    "transcendance": {
+      "base": 11.52,
+      "perX": 0,
+      "perY": 0,
+      "n": 14
+    },
+    "vampirisme": {
+      "base": 18.03,
+      "perX": 4.43,
+      "perY": 5,
+      "n": 4
+    },
+    "traque_du_destin": {
+      "base": 10.21,
+      "perX": 4.23,
+      "perY": 4,
+      "n": 6
+    },
+    "cycle_eternel": {
+      "base": 8.81,
+      "perX": 0,
+      "perY": 0,
+      "n": 17
+    },
+    "sang_mele": {
+      "base": 8.35,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "martyr": {
+      "base": 13.81,
+      "perX": 0,
+      "perY": 0,
+      "n": 3
+    },
+    "instinct_de_meute": {
+      "base": 9.57,
+      "perX": 3.87,
+      "perY": 5,
+      "n": 4
+    },
+    "totem": {
+      "base": 19.88,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "fierte_du_clan": {
+      "base": 9.14,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "appel_du_clan": {
+      "base": 6.2,
+      "perX": 2.92,
+      "perY": 5,
+      "n": 41
+    },
+    "appel_supreme": {
+      "base": 12.77,
+      "perX": 0,
+      "perY": 0,
+      "n": 6
+    },
+    "solidarite": {
+      "base": 4.06,
+      "perX": 4.17,
+      "perY": 4,
+      "n": 4
+    },
+    "rassemblement": {
+      "base": 3.09,
+      "perX": 4.54,
+      "perY": 4,
+      "n": 21
+    },
+    "rappel": {
+      "base": 2.21,
+      "perX": 0.75,
+      "perY": 0.5,
+      "n": 8
+    },
+    "exhumation": {
+      "base": 7.64,
+      "perX": 2.51,
+      "perY": 4,
+      "n": 18
+    },
+    "selection": {
+      "base": 5.17,
+      "perX": 1.26,
+      "perY": 4,
+      "n": 52
+    },
+    "forge": {
+      "base": 0.41,
+      "perX": 1.24,
+      "perY": 2,
+      "n": 6
+    },
+    "faveur": {
+      "base": 6.86,
+      "perX": 4.24,
+      "perY": 4,
+      "n": 2
+    },
+    "selection_magique": {
+      "base": 4.31,
+      "perX": 2.99,
+      "perY": 4,
+      "n": 36
+    },
+    "tresor": {
+      "base": 6.7,
+      "perX": 2.62,
+      "perY": 4,
+      "n": 7
+    },
+    "renfort_royal": {
+      "base": 7.83,
+      "perX": 3.37,
+      "perY": 5,
+      "n": 16
+    },
+    "relancer": {
+      "base": 12.45,
+      "perX": 7.64,
+      "perY": 8,
+      "n": 4
+    },
+    "dechainement": {
+      "base": 6.11,
+      "perX": 5.36,
+      "perY": 6.48,
+      "n": 9
+    },
+    "invocation": {
+      "base": 8.18,
+      "perX": 2.91,
+      "perY": 6.69,
+      "n": 13
+    },
+    "impact": {
+      "base": 1.4,
+      "perX": 4.56,
+      "perY": 4,
+      "n": 93
+    },
+    "renforcement": {
+      "base": 2.13,
+      "perX": 2.61,
+      "perY": 2.06,
+      "n": 40
+    },
+    "discipline": {
+      "base": 4.73,
+      "perX": 3.42,
+      "perY": 0.99,
+      "n": 10
+    },
+    "esprit_de_corps": {
+      "base": 2.69,
+      "perX": 0,
+      "perY": 0,
+      "n": 12
+    },
+    "affaiblissement": {
+      "base": 8.89,
+      "perX": 4.61,
+      "perY": 4.61,
+      "n": 5
+    },
+    "seconde_vie": {
+      "base": 12.7,
+      "perX": -0.04,
+      "perY": -2,
+      "n": 7
+    },
+    "incineration": {
+      "base": 4.79,
+      "perX": 0.68,
+      "perY": 3,
+      "n": 9
+    },
+    "devoration": {
+      "base": 24.78,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "creuser": {
+      "base": 4.01,
+      "perX": -0.27,
+      "perY": 2,
+      "n": 10
+    },
+    "presage": {
+      "base": 3.02,
+      "perX": 0,
+      "perY": 0,
+      "n": 8
+    },
+    "apprentissage": {
+      "base": 9.87,
+      "perX": 0,
+      "perY": 0,
+      "n": 7
+    },
+    "retour_differe": {
+      "base": 17.58,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "epargne": {
+      "base": 2.24,
+      "perX": 3.01,
+      "perY": 4,
+      "n": 28
+    },
+    "foi": {
+      "base": 5.25,
+      "perX": 4,
+      "perY": 4,
+      "n": 1
+    },
+    "conquete": {
+      "base": 3.43,
+      "perX": 0.82,
+      "perY": 5,
+      "n": 3
+    },
+    "exploration": {
+      "base": 0.62,
+      "perX": 2.38,
+      "perY": 4,
+      "n": 23
+    },
+    "invention": {
+      "base": 6.55,
+      "perX": 5.38,
+      "perY": 2.09,
+      "n": 14
+    },
+    "inspiration": {
+      "base": 4.6,
+      "perX": 7.14,
+      "perY": 5,
+      "n": 39
+    },
+    "remontee": {
+      "base": 12.78,
+      "perX": 0,
+      "perY": 0,
+      "n": 15
+    },
+    "renforcement_multiple": {
+      "base": 6.95,
+      "perX": 7.98,
+      "perY": 5.9,
+      "n": 25
+    },
+    "entrainement": {
+      "base": 9.2,
+      "perX": 5.88,
+      "perY": 8,
+      "n": 10
+    },
+    "fortifier": {
+      "base": 4.15,
+      "perX": 1.72,
+      "perY": 3,
+      "n": 5
+    },
+    "preincanter": {
+      "base": 3.37,
+      "perX": 2.57,
+      "perY": 3,
+      "n": 5
+    },
+    "concentration": {
+      "base": 8.31,
+      "perX": 4.92,
+      "perY": 6,
+      "n": 6
+    },
+    "invocations_multiples": {
+      "base": 29.22,
+      "perX": 14.06,
+      "perY": 0,
+      "n": 7
+    },
+    "invocation_multiple": {
+      "base": 21.31,
+      "perX": 0,
+      "perY": 0,
+      "n": 32
+    },
+    "tempete": {
+      "base": 4.66,
+      "perX": 3.81,
+      "perY": 4,
+      "n": 91
+    },
+    "cataclysme": {
+      "base": 12.04,
+      "perX": 6.31,
+      "perY": 4,
+      "n": 18
+    },
+    "afflux": {
+      "base": -1.41,
+      "perX": 5.67,
+      "perY": 4,
+      "n": 49
+    },
+    "neutralisation": {
+      "base": 12,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "conferer": {
+      "base": 8,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "declenchement": {
+      "base": 8.42,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    },
+    "compagnons": {
+      "base": 5.4,
+      "perX": 1.68,
+      "perY": 3,
+      "n": 12
+    },
+    "tuteur": {
+      "base": 7.45,
+      "perX": 3.19,
+      "perY": 4,
+      "n": 17
+    },
+    "ranged": {
+      "base": 3.41,
+      "perX": 0,
+      "perY": 0,
+      "n": 97
+    },
+    "deferlement": {
+      "base": 9.21,
+      "perX": 9.53,
+      "perY": 0,
+      "n": 19
+    },
+    "guerison": {
+      "base": 1.01,
+      "perX": 1.25,
+      "perY": 0,
+      "n": 10
+    },
+    "silence": {
+      "base": 0.17,
+      "perX": 0,
+      "perY": 0,
+      "n": 9
+    },
+    "entrave": {
+      "base": 4.82,
+      "perX": 1.81,
+      "perY": 0,
+      "n": 19
+    },
+    "execution": {
+      "base": 12.41,
+      "perX": 0,
+      "perY": 0,
+      "n": 9
+    },
+    "convocations_multiples": {
+      "base": 9.99,
+      "perX": 9.83,
+      "perY": 0,
+      "n": 34
+    },
+    "siphon": {
+      "base": 1.37,
+      "perX": 1.37,
+      "perY": 0,
+      "n": 1
+    },
+    "seuil_colere": {
+      "base": -0.5,
+      "perX": 0.32,
+      "perY": 0,
+      "n": 2
+    },
+    "boomerang": {
+      "base": -3.59,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    }
+  },
+  "composes": {
+    "deal_damage": {
+      "base": 6.66,
+      "perX": 2.94,
+      "perY": 4,
+      "n": 30
+    },
+    "heal": {
+      "base": 4.96,
+      "perX": 2.29,
+      "perY": 3,
+      "n": 18
+    },
+    "buff": {
+      "base": 6.09,
+      "perX": 2.76,
+      "perY": 1.76,
+      "n": 31
+    },
+    "debuff": {
+      "base": 9.1,
+      "perX": 4.14,
+      "perY": 4.14,
+      "n": 10
+    },
+    "draw_cards": {
+      "base": 17.28,
+      "perX": 5.74,
+      "perY": 5,
+      "n": 6
+    },
+    "summon_token": {
+      "base": 5.78,
+      "perX": 0,
+      "perY": 0,
+      "n": 5
+    },
+    "gain_mana": {
+      "base": 11.92,
+      "perX": 5.62,
+      "perY": 4,
+      "n": 3
+    },
+    "destroy": {
+      "base": 14.32,
+      "perX": 3,
+      "perY": 3,
+      "n": 7
+    },
+    "bounce": {
+      "base": 13.75,
+      "perX": 2.5,
+      "perY": 3,
+      "n": 26
+    },
+    "paralyze": {
+      "base": 8.05,
+      "perX": 3,
+      "perY": 3,
+      "n": 10
+    },
+    "grant_keyword": {
+      "base": 3.53,
+      "perX": 0.15,
+      "perY": 0.61,
+      "n": 51
+    },
+    "transformation": {
+      "base": 20,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "appel": {
+      "base": 15.47,
+      "perX": 3.28,
+      "perY": 5,
+      "n": 5
+    },
+    "poison": {
+      "base": 8.38,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "exhumation": {
+      "base": 15.44,
+      "perX": 3.13,
+      "perY": 4,
+      "n": 11
+    },
+    "rappel": {
+      "base": 11.66,
+      "perX": 0.5,
+      "perY": 0.5,
+      "n": 7
+    },
+    "invocation": {
+      "base": 19.47,
+      "perX": 5.28,
+      "perY": 5,
+      "n": 72
+    },
+    "appel_supreme": {
+      "base": 8.64,
+      "perX": -0.3,
+      "perY": 0,
+      "n": 1
+    },
+    "tuteur": {
+      "base": 21.46,
+      "perX": 4,
+      "perY": 4,
+      "n": 2
+    },
+    "epargne": {
+      "base": 9.5,
+      "perX": 5.29,
+      "perY": 4,
+      "n": 5
+    },
+    "foi": {
+      "base": 7,
+      "perX": 4,
+      "perY": 4,
+      "n": 0
+    },
+    "conquete": {
+      "base": 8,
+      "perX": 5,
+      "perY": 5,
+      "n": 0
+    },
+    "exploration": {
+      "base": 7.57,
+      "perX": 6.69,
+      "perY": 4,
+      "n": 3
+    },
+    "incineration": {
+      "base": 6.4,
+      "perX": 2.47,
+      "perY": 3,
+      "n": 1
+    },
+    "devoration": {
+      "base": 22.77,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "tactique": {
+      "base": 11,
+      "perX": 7,
+      "perY": 7,
+      "n": 0
+    },
+    "retour_differe": {
+      "base": 22.62,
+      "perX": 0,
+      "perY": 0,
+      "n": 2
+    },
+    "silence": {
+      "base": 9.79,
+      "perX": 3,
+      "perY": 3,
+      "n": 2
+    },
+    "dechainement": {
+      "base": 10.73,
+      "perX": 7.85,
+      "perY": 6.64,
+      "n": 2
+    },
+    "selection": {
+      "base": 18.63,
+      "perX": 1.43,
+      "perY": 4,
+      "n": 16
+    },
+    "selection_magique": {
+      "base": 11.01,
+      "perX": 3.14,
+      "perY": 4,
+      "n": 6
+    },
+    "faveur": {
+      "base": 11.02,
+      "perX": 6.2,
+      "perY": 4,
+      "n": 9
+    },
+    "renfort_royal": {
+      "base": 12.49,
+      "perX": 4.66,
+      "perY": 5,
+      "n": 1
+    },
+    "tresor": {
+      "base": 10.3,
+      "perX": 3.34,
+      "perY": 4,
+      "n": 2
+    },
+    "forge": {
+      "base": 5,
+      "perX": 2,
+      "perY": 2,
+      "n": 0
+    },
+    "discard": {
+      "base": 5.11,
+      "perX": 0,
+      "perY": 0,
+      "n": 1
+    }
+  },
+  "qualite": {
+    "r2": 0.801,
+    "erreurMedianeMana": 0.51,
+    "cartes": 1481,
+    "date": "2026-10-12"
+  }
+}

@@ -22,6 +22,8 @@
 // ne peut donc pas faire diverger deux clients.
 import { KEYWORDS } from "@/lib/game/abilities";
 import { STAT_COST, ADDITIONAL_COST_POINTS, BUDGET, RARITIES } from "./constants";
+import { ABILITIES } from "@/lib/game/abilities";
+import { BAREME_CALIBRE, applyBaremeOverrides, sanitizeBaremeOverrides, type BaremeOverrides } from "./bareme";
 
 export interface BalanceOverrides {
   /** Par LIBELLÉ de capacité (la clé de KEYWORDS), pas par id moteur. */
@@ -33,6 +35,20 @@ export interface BalanceOverrides {
   scopeAll?: number;
   /** Par id de rareté (« Commune », « Rare »…). */
   rarityMultipliers?: Record<string, number>;
+  /** Écarts au BARÈME CALIBRÉ (bareme.ts) — celui qui note les cartes dans la
+   *  jauge. Les champs ci-dessus restent ceux du GÉNÉRATEUR automatique. */
+  bareme?: BaremeOverrides;
+}
+
+// Le générateur lit `KEYWORDS[].cost/costPerX` : on y recopie, AVANT de figer
+// les défauts, les coûts de base du barème calibré, pour qu'il parle la même
+// langue que la jauge. Arrondis : le générateur raisonne en points entiers.
+for (const [id, c] of Object.entries(BAREME_CALIBRE.capacites ?? {})) {
+  const a = ABILITIES[id];
+  const label = a?.creature ? (a.creature.label ?? a.label) : undefined;
+  if (!label || !KEYWORDS[label]) continue;
+  KEYWORDS[label].cost = Math.round(c.base);
+  KEYWORDS[label].costPerX = Math.round(c.perX);
 }
 
 /** Ancienne clé de stockage navigateur. Conservée en LECTURE seule, pour offrir
@@ -89,6 +105,7 @@ export function applyBalanceOverrides(ov: BalanceOverrides): void {
   for (const r of RARITIES) {
     r.multiplier = ov.rarityMultipliers?.[r.id] ?? DEFAUTS.rarityMultipliers[r.id];
   }
+  applyBaremeOverrides(ov.bareme);
   courant = ov;
 }
 
@@ -113,10 +130,16 @@ export function countBalanceChanges(ov: BalanceOverrides): number {
   for (const [k, v] of Object.entries(ov.rarityMultipliers ?? {})) {
     if (v != null && v !== DEFAUTS.rarityMultipliers[k]) n++;
   }
+  n += compterFeuilles(ov.bareme);
   return n;
 }
 
 const estNombre = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+function compterFeuilles(o: unknown): number {
+  if (o == null || typeof o !== "object") return typeof o === "number" ? 1 : 0;
+  return Object.values(o as Record<string, unknown>).reduce<number>((s, v) => s + compterFeuilles(v), 0);
+}
 
 /** Ne garde d'un objet quelconque que ce qui est un barème valide : clés
  *  connues, nombres finis. Tout le reste est écarté SANS erreur.
@@ -175,6 +198,9 @@ export function sanitizeBalanceOverrides(brut: unknown): BalanceOverrides {
     if (Object.keys(rar).length) out.rarityMultipliers = rar;
   }
 
+  const bareme = sanitizeBaremeOverrides(src.bareme);
+  if (bareme) out.bareme = bareme;
+
   return out;
 }
 
@@ -203,6 +229,7 @@ export function mergeBalanceOverrides(base: BalanceOverrides, ajout: BalanceOver
     ...((base.rarityMultipliers || ajout.rarityMultipliers)
       ? { rarityMultipliers: { ...base.rarityMultipliers, ...ajout.rarityMultipliers } }
       : {}),
+    ...((base.bareme || ajout.bareme) ? { bareme: { ...base.bareme, ...ajout.bareme } } : {}),
   };
 }
 

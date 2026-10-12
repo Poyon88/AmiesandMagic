@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, pickRarity, buildId } from "@/lib/card-engine/generator";
-import { getAllRaces, additionalCostPoints, alignementAEnregistrer, BUDGET, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, TYPES_ALEATOIRES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -29,12 +29,16 @@ import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
-import { ABILITIES, abilityIconKeys, COUT_OPTIONNEL, creatureEngineId, RANDOM_X_ABILITY_IDS, xEquivalentCoutLibre, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
+import { ABILITIES, abilityIconKeys, COUT_OPTIONNEL, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
 import { FORGE_TO_GAME_KEYWORD, GAME_TO_FORGE_KEYWORD, buildKeywordInstances } from "@/lib/card-forge/keyword-instances";
 import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order";
 import { positionAfterExisting } from "@/lib/game/composed-position";
 import { describeComposedCap } from "@/lib/game/composed-display";
-import type { SpellKeywordId, Capability, CapabilityTrigger } from "@/lib/game/types";
+import type { SpellKeywordId, Capability, CapabilityTrigger, Card } from "@/lib/game/types";
+import { deriveCapabilities } from "@/lib/game/capability-adapter";
+import { scoreCarte } from "@/lib/card-engine/card-points";
+import { getBareme } from "@/lib/card-engine/bareme";
+import BudgetDetail from "@/components/card-forge/BudgetDetail";
 import CardEditor from "@/components/admin/CardEditor";
 import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
@@ -1957,45 +1961,63 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       || manualKeywords.includes(kwName))
     .sort(([a], [b]) => a.localeCompare(b, 'fr'));
 
-  const manualBudgetTotal = Math.round(manualMana * 10 * (RARITY_MAP[rarity]?.multiplier ?? 1));
-  const manualBudgetUsed = Math.round(
-    (porteStats ? (manualAttack * 5 + manualDefense * 4) : manualPower * 5)
-    // COÛTS ADDITIONNELS : ils RENDENT des points (somme négative). Un coût payé
-    // en plus du mana dessert son porteur et finance donc le reste de la carte,
-    // comme le font déjà Douleur X et Pauvreté X. L'éveil en est exclu : coût
-    // ALTERNATIF, il remplace le mana et déplace le budget entier au lieu de le
-    // réduire — cf. ADDITIONAL_COST_POINTS.
-    + additionalCostPoints({
-      lifeCost: manualLifeCost,
-      discardCost: manualDiscardCost,
-      sacrificeCost: manualSacrificeCost,
-      exileCost: manualExileCost,
-      topdeckCost: manualTopdeckCost,
-      equipCost: manualEquipCost,
-    })
-    + manualKeywords.reduce((sum, kw) => {
-      const kwDef = KEYWORDS[kw];
-      if (!kwDef) return sum;
-      // Compagnons : le « X » du budget est le NOMBRE de cartes liées (la
-      // capacité n'a pas de X saisi — coût de base + costPerX par carte au-delà
-      // de la première).
-      const x = kw === "Compagnons" ? Math.max(1, compagnonsCardIds.length)
-        : kw === "Tuteur" ? Math.max(1, tuteurCardIds.length)
-        : keywordXValues[kw]
-          // Coût optionnel laissé vide : barème d'un X = 10 (plafond) ou 5 (coût exact).
-          ?? (coutOpt(kw) ? xEquivalentCoutLibre(FORGE_TO_GAME_KEYWORD[kw] ?? "") : 1);
-      // Portée « toutes » : le coût de la capacité est multiplié (barème).
-      const porte = porteStats && porteeValide(keywordTargetScope[kw], creatureScopes(FORGE_TO_GAME_KEYWORD[kw] ?? ""));
-      return sum + (kwDef.cost + kwDef.costPerX * Math.max(0, x - 1)) * (porte ? BUDGET.scopeAll : 1);
-    }, 0)
-  );
-  // Crédit rendu par les coûts additionnels, isolé pour l'afficher : sans lui la
-  // jauge reculerait sans qu'on sache pourquoi.
-  const manualCostCredit = additionalCostPoints({
-    lifeCost: manualLifeCost, discardCost: manualDiscardCost, sacrificeCost: manualSacrificeCost,
-    exileCost: manualExileCost, topdeckCost: manualTopdeckCost, equipCost: manualEquipCost,
-  });
-  const budgetRatio = manualBudgetTotal > 0 ? manualBudgetUsed / manualBudgetTotal : 0;
+  // JAUGE : score de la carte en cours selon le BARÈME calibré (bareme.ts).
+  // On note la carte telle qu'elle sera ENREGISTRÉE — mêmes keyword_instances
+  // (constructeur partagé), mêmes capacités dérivées + composées que la route
+  // de sauvegarde — pour que la jauge et l'éditeur disent la même chose.
+  const scoreForge = (() => {
+    // Même correspondance que FORGE_TO_GAME_TYPE (déclarée plus bas, à la sauvegarde).
+    const cardType: CardType = type === "Unité" ? "creature" : type === "Objet" ? "item" : "spell";
+    const isSpellCard = cardType === "spell";
+    const keywordInstances = buildKeywordInstances({
+      labels: manualKeywords,
+      xValues: keywordXValues,
+      yValues: keywordYValues,
+      modes: keywordModes,
+      grantScopes: keywordGrantScope,
+      targetScopes: keywordTargetScope,
+      isSpellCard,
+      singulier: keywordSingulier,
+      randomX: keywordRandomX,
+      minX: keywordMinX,
+      extras: {
+        rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
+        invocCosts, invocRace, invocFaction,
+        conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId,
+        compagnonsCardIds, tuteurCardIds, transformationCardIds, inventionPart,
+      },
+    });
+    const gameKeywords = manualKeywords
+      .map(k => FORGE_TO_GAME_KEYWORD[k])
+      .filter((k): k is Keyword => !!k);
+    const brouillon = {
+      card_type: cardType,
+      mana_cost: manualMana,
+      attack: porteStats ? manualAttack : null,
+      health: porteStats ? manualDefense : null,
+      rarity,
+      effect_text: "",
+      keywords: gameKeywords,
+      keyword_instances: keywordInstances.length > 0 ? keywordInstances : null,
+      ...buildSpellData(),
+      convocation_token_id: convocationTokenId,
+      convocation_tokens: convocationTokens.length > 0 ? convocationTokens : null,
+      lycanthropie_token_id: lycanthropieTokenId,
+      entraide_race: gameKeywords.includes("entraide") ? (entraideRace || null) : null,
+      life_cost: manualLifeCost, discard_cost: manualDiscardCost, sacrifice_cost: manualSacrificeCost,
+      exile_cost: manualExileCost, topdeck_cost: manualTopdeckCost, eveil_cost: manualEveilCost,
+      equip_cost: cardType === "item" ? manualEquipCost : null,
+    } as unknown as Card;
+    let caps: Capability[] = [];
+    try { caps = [...deriveCapabilities(brouillon), ...composedCaps]; } catch { caps = composedCaps; }
+    return scoreCarte(getBareme(), { ...brouillon, capabilities: caps });
+  })();
+  const manualBudgetTotal = Math.round(scoreForge.budget);
+  const manualBudgetUsed = Math.round(scoreForge.utilise);
+  // Crédit rendu par les coûts additionnels (après plafond), isolé pour
+  // l'afficher : sans lui la jauge reculerait sans qu'on sache pourquoi.
+  const manualCostCredit = Math.round(scoreForge.rabaisAdditionnel);
+  const budgetRatio = scoreForge.ratio;
   const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
 
   // Live preview from manual fields — always computed so editing works in both modes
@@ -3960,6 +3982,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       {tf('cost_credit', { points: manualCostCredit })}
                     </div>
                   )}
+                  <BudgetDetail score={scoreForge} />
 
                   {/* Capacités */}
                   <div style={{ position: "relative" }}>

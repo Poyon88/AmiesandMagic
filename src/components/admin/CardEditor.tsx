@@ -39,6 +39,9 @@ import { CARD_STATUSES, type CardStatus } from "@/lib/game/types";
 import { cardStatusOf } from "@/lib/game/deck-rules";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import { CardStatusBadge, CARD_STATUS_COLORS } from "@/components/cards/CardStatusBadge";
+import { scoreCarte, facteurBudget, type CarteNotee } from "@/lib/card-engine/card-points";
+import { getBareme } from "@/lib/card-engine/bareme";
+import BudgetDetail, { BudgetGauge, couleurBudget } from "@/components/card-forge/BudgetDetail";
 
 /** Libellés ADMIN du statut (la forge est en français ; côté joueur, cf.
  *  l'espace i18n `cardStatus`). */
@@ -213,6 +216,11 @@ export default function CardEditor() {
   const [filterYear, setFilterYear] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [statusFilter, setStatusFilter] = useState<CardStatus | null>(null);
+  // Tri : par coût (défaut) ou par ÉCART AU BARÈME, en mana équivalent
+  // (points utilisés − budget, ramenés au prix d'un mana de la carte) — la
+  // même mesure que le rapport de calibrage, et la seule qui ait un sens pour
+  // une carte à 0 mana, dont le ratio points/budget est indéfini.
+  const [sortMode, setSortMode] = useState<"cout" | "ecart_desc" | "ecart_asc">("cout");
   // Bloc Statut : enregistré À PART de la sauvegarde complète (mise à jour
   // partielle), pour qu'une exclusion passe toujours par sa confirmation.
   const [statusDraft, setStatusDraft] = useState<CardStatus>("draft");
@@ -363,7 +371,20 @@ export default function CardEditor() {
   const years = useMemo(() => [...new Set(cards.map(c => c.card_year).filter(Boolean) as number[])].sort((a, b) => b - a), [cards]);
 
   // Filtered cards
+  const ecartBareme = useMemo(() => {
+    const b = getBareme();
+    const m = new Map<number, number>();
+    for (const c of cards) {
+      const n = c as unknown as CarteNotee;
+      const sc = scoreCarte(b, n);
+      m.set(c.id, (sc.utilise - sc.budget) / facteurBudget(b, n));
+    }
+    return m;
+  }, [cards]);
+
   const filteredCards = useMemo(() => {
+    const parCout = (a: DbCard, b: DbCard) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr");
+    const ecart = (c: DbCard) => ecartBareme.get(c.id) ?? 0;
     return cards.filter(card => {
       if (search && !card.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (manaCostFilter !== null && card.mana_cost !== manaCostFilter) return false;
@@ -388,8 +409,11 @@ export default function CardEditor() {
       if (filterMonth && String(card.card_month) !== filterMonth) return false;
       if (statusFilter !== null && cardStatusOf(card) !== statusFilter) return false;
       return true;
-    }).sort((a, b) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr"));
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter]);
+    }).sort((a, b) =>
+      sortMode === "ecart_desc" ? ecart(b) - ecart(a) || parCout(a, b)
+      : sortMode === "ecart_asc" ? ecart(a) - ecart(b) || parCout(a, b)
+      : parCout(a, b));
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter, sortMode, ecartBareme]);
 
   // Select card for editing
   const selectCard = useCallback((card: DbCard) => {
@@ -1221,6 +1245,13 @@ export default function CardEditor() {
           {ALIGNMENT_FILTERS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
         </select>
 
+        {/* Tri */}
+        <select value={sortMode} onChange={e => setSortMode(e.target.value as typeof sortMode)} style={{ ...S.select, width: 170 }} title="Écart au barème en mana équivalent : points utilisés − budget">
+          <option value="cout">Tri : coût</option>
+          <option value="ecart_desc">Tri : au-dessus du barème</option>
+          <option value="ecart_asc">Tri : en dessous du barème</option>
+        </select>
+
         {/* Statut de cycle de vie */}
         <select value={statusFilter || ""} onChange={e => setStatusFilter((e.target.value || null) as CardStatus | null)} style={{ ...S.select, width: 110 }}>
           <option value="">Statut...</option>
@@ -1327,6 +1358,7 @@ export default function CardEditor() {
                   <th style={{ padding: "6px 8px", fontFamily: "'Cinzel',serif", fontSize: 9, color: "#888" }}>Faction</th>
                   <th style={{ padding: "6px 8px", fontFamily: "'Cinzel',serif", fontSize: 9, color: "#888" }}>Race</th>
                   <th style={{ padding: "6px 8px", fontFamily: "'Cinzel',serif", fontSize: 9, color: "#888" }}>Rareté</th>
+                  <th style={{ padding: "6px 8px", fontFamily: "'Cinzel',serif", fontSize: 9, color: "#888", width: 60 }} title="Points utilisés / budget, selon le barème calibré">Budget</th>
                 </tr>
               </thead>
               <tbody>
@@ -1349,6 +1381,16 @@ export default function CardEditor() {
                     <td style={{ padding: "6px 8px" }}>{card.faction ? getFactionDisplayName(card.faction) : "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.race || "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.rarity || "—"}</td>
+                    {(() => {
+                      const r = scoreCarte(getBareme(), card as unknown as CarteNotee).ratio;
+                      const e = ecartBareme.get(card.id) ?? 0;
+                      return (
+                        <td style={{ padding: "6px 8px", fontWeight: 700, color: couleurBudget(r), whiteSpace: "nowrap" }}
+                          title="Points / budget · écart en mana équivalent">
+                          {card.mana_cost > 0 ? `${Math.round(r * 100)} %` : "—"} · {e >= 0 ? "+" : ""}{e.toFixed(1)}
+                        </td>
+                      );
+                    })()}
                   </tr>
                 ))}
               </tbody>
@@ -1597,6 +1639,14 @@ export default function CardEditor() {
                 <div style={S.label}>Mois</div>
                 <input type="number" min={1} max={12} value={(editFields.card_month as number) || ""} onChange={e => updateField("card_month", e.target.value ? parseInt(e.target.value) : null)} style={S.input} />
               </div>
+            </div>
+
+            {/* Barème : score de la carte ENREGISTRÉE (les modifications en
+                cours comptent après sauvegarde). */}
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ ...S.label, marginBottom: 3 }}>Barème (carte enregistrée)</div>
+              <BudgetGauge score={scoreCarte(getBareme(), selectedCard as unknown as CarteNotee)} />
+              <BudgetDetail score={scoreCarte(getBareme(), selectedCard as unknown as CarteNotee)} />
             </div>
 
             {/* Statut de cycle de vie — enregistré à part (mise à jour partielle),
