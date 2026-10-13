@@ -82,6 +82,16 @@ export async function fetchSnapshots(
 ): Promise<DeckSnapshot[]> {
   const start = periodStart(period);
   const table = source === 'sim' ? 'sim_deck_snapshots' : 'match_deck_snapshots';
+  // Simulé : le DERNIER lot seulement. Deux lots joués par des bots différents
+  // (v1 sans compteurs, v2 avec) ne se comparent pas : les additionner
+  // mélangerait deux politiques dans un même taux.
+  let run: string | null = null;
+  if (source === 'sim') {
+    const { data, error } = await supabase.from('sim_deck_snapshots').select('run_id').order('id', { ascending: false }).limit(1);
+    if (error) throw new Error(error.message);
+    run = (data?.[0] as { run_id?: string } | undefined)?.run_id ?? null;
+    if (!run) return [];
+  }
   const rows = await fetchAllRows<DeckSnapshot>(
     (from, to) => {
       const colonnes: string = source === 'sim'
@@ -89,6 +99,7 @@ export async function fetchSnapshots(
         : '*';
       let q = supabase.from(table).select(colonnes);
       if (start) q = q.gte('created_at', start);
+      if (run) q = q.eq('run_id', run);
       return q.order('id').range(from, to).returns<DeckSnapshot[]>();
     },
     { label: 'Lecture des instantanés de parties' },
