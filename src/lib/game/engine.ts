@@ -1998,10 +1998,17 @@ function resolveComposedEffect(
           if (recall(owner.graveyard.find((c) => c.instanceId === id))) done++;
         }
       } else {
+        // Une carte n'est rappelée qu'UNE fois par résolution : une créature
+        // revenue en main à 0 PV permanent repart au cimetière
+        // (triggerReturnToHand) et, sans ce garde, « toutes » la rappelait sans fin.
+        const dejaRappelees = new Set<CardInstance>();
         while (done < desired) {
-          const eligible = composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, owner, opponent);
+          const eligible = composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, owner, opponent)
+            .filter((c) => !dejaRappelees.has(c));
           if (eligible.length === 0) break;
-          if (!recall(eligible[eligible.length - 1])) break;
+          const inst = eligible[eligible.length - 1];
+          dejaRappelees.add(inst);
+          if (!recall(inst)) break;
           done++;
         }
       }
