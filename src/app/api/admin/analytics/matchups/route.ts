@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
-import { aggregateMatchups, fetchCards, fetchSnapshots, primaryAttributeOf, Period } from '@/lib/admin/analytics';
+import { aggregateMatchups, fetchCards, fetchSnapshots, sourceOf, primaryAttributeOf, Period } from '@/lib/admin/analytics';
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
   const { searchParams } = new URL(request.url);
+  const source = sourceOf(searchParams);
   const period = (searchParams.get('period') ?? 'all') as Period;
   const by = searchParams.get('by') === 'clan' ? 'clan' : 'faction';
   try {
-    const snapshots = await fetchSnapshots(auth.supabase, period);
+    const snapshots = await fetchSnapshots(auth.supabase, period, source);
     let cells;
     if (by === 'clan') {
       const cards = await fetchCards(auth.supabase);

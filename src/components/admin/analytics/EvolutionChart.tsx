@@ -16,24 +16,25 @@ interface Props {
   entityKey: string;
   entityLabel: string;
   period: string;
+  source?: "real" | "sim";
   onClose?: () => void;
 }
 
-export default function EvolutionChart({ entity, entityKey, entityLabel, period, onClose }: Props) {
+export default function EvolutionChart({ entity, entityKey, entityLabel, period, source = "real", onClose }: Props) {
   const [series, setSeries] = useState<Point[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setSeries(null);
     setError(null);
-    fetch(`/api/admin/analytics/evolution?entity=${entity}&key=${encodeURIComponent(entityKey)}&period=${period}`)
+    fetch(`/api/admin/analytics/evolution?entity=${entity}&key=${encodeURIComponent(entityKey)}&period=${period}&source=${source}`)
       .then(async (r) => {
         if (!r.ok) throw new Error((await r.json()).error ?? `HTTP ${r.status}`);
         return r.json();
       })
       .then((d) => setSeries(d.series ?? []))
       .catch((e) => setError(e.message));
-  }, [entity, entityKey, period]);
+  }, [entity, entityKey, period, source]);
 
   const data = (series ?? []).map((p) => ({ ...p, winratePct: +(p.winrate * 100).toFixed(1) }));
 
