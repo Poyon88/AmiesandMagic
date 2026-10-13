@@ -51,6 +51,8 @@ const ENTITY_MAP: Record<Exclude<EntityKind, "matchups" | "matchupsClan" | "turn
 export default function AnalyticsTabs() {
   const [tab, setTab] = useState<EntityKind>("factions");
   const [period, setPeriod] = useState<Period>("all");
+  // Parties réelles ou simulées par les bots : jamais mélangées.
+  const [source, setSource] = useState<"real" | "sim">("real");
   const [minGames, setMinGames] = useState(10);
   const [showLowSample, setShowLowSample] = useState(false);
   const [stats, setStats] = useState<EntityStat[] | null>(null);
@@ -69,20 +71,20 @@ export default function AnalyticsTabs() {
     const effMin = showLowSample ? 1 : minGames;
     try {
       if (tab === "turnOrder") {
-        const r = await fetch(`/api/admin/analytics/turn-order?period=${period}`);
+        const r = await fetch(`/api/admin/analytics/turn-order?period=${period}&source=${source}`);
         const j = await r.json();
         if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
         setTurnOrder(j as TurnOrderReport);
         setTotalMatches(j.total_matches ?? 0);
       } else if (MATCHUP_TABS.includes(tab)) {
         const by = tab === "matchupsClan" ? "clan" : "faction";
-        const r = await fetch(`/api/admin/analytics/matchups?period=${period}&by=${by}`);
+        const r = await fetch(`/api/admin/analytics/matchups?period=${period}&by=${by}&source=${source}`);
         const j = await r.json();
         if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
         setMatchups(j);
         setTotalMatches(j.total_matches ?? 0);
       } else {
-        const r = await fetch(`/api/admin/analytics/${tab}?period=${period}&minGames=${effMin}`);
+        const r = await fetch(`/api/admin/analytics/${tab}?period=${period}&minGames=${effMin}&source=${source}`);
         const j = await r.json();
         if (!r.ok) throw new Error(j.error ?? `HTTP ${r.status}`);
         setStats(j.stats ?? []);
@@ -91,7 +93,7 @@ export default function AnalyticsTabs() {
     } catch (e) {
       setError((e as Error).message);
     }
-  }, [tab, period, minGames, showLowSample]);
+  }, [tab, period, minGames, showLowSample, source]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -101,11 +103,11 @@ export default function AnalyticsTabs() {
         <div>
           <h1 style={{ margin: 0, color: "#c8a84e", fontFamily: "var(--font-cinzel), serif" }}>Équilibrage du jeu</h1>
           <div style={{ color: "#888", fontSize: 13, marginTop: 4 }}>
-            {totalMatches} partie{totalMatches > 1 ? "s" : ""} analysée{totalMatches > 1 ? "s" : ""}
+            {totalMatches} partie{totalMatches > 1 ? "s" : ""} {source === "sim" ? "simulée" : "analysée"}{totalMatches > 1 ? "s" : ""}
             {!showLowSample && ` · seuil ≥ ${minGames} parties`}
           </div>
         </div>
-        <BackfillButton onDone={fetchData} />
+        {source === "real" && <BackfillButton onDone={fetchData} />}
       </header>
 
       <nav style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -130,6 +132,23 @@ export default function AnalyticsTabs() {
       </nav>
 
       <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 4 }} title="Les parties simulées (bots) ne sont jamais mêlées aux parties réelles.">
+          {([["real", "Parties réelles"], ["sim", "Simulées (bots)"]] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setSource(id)}
+              style={{
+                background: source === id ? (id === "sim" ? "#5c3d8a" : "#3d3d5c") : "transparent",
+                color: source === id ? "#fff" : "#888",
+                border: `1px solid ${id === "sim" ? "#5c3d8a" : "#3d3d5c"}`,
+                padding: "4px 12px",
+                borderRadius: 4,
+                fontSize: 12,
+                cursor: "pointer",
+              }}
+            >{label}</button>
+          ))}
+        </div>
         <div style={{ display: "flex", gap: 4 }}>
           {PERIODS.map((p) => (
             <button
@@ -215,6 +234,7 @@ export default function AnalyticsTabs() {
                   entityKey={selected.key}
                   entityLabel={selected.label}
                   period={period}
+                  source={source}
                   onClose={() => setSelected(null)}
                 />
               )}

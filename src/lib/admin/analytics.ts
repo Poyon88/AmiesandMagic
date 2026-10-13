@@ -4,6 +4,15 @@ import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
 
 export type Period = '7d' | '30d' | '90d' | 'all';
 
+/** Parties RÉELLES (`match_deck_snapshots`) ou SIMULÉES par les bots
+ *  (`sim_deck_snapshots`). Jamais mélangées : une ligne simulée parmi les vraies
+ *  fausserait en silence les taux des joueurs. */
+export type Source = 'real' | 'sim';
+
+export function sourceOf(searchParams: URLSearchParams): Source {
+  return searchParams.get('source') === 'sim' ? 'sim' : 'real';
+}
+
 export function periodStart(period: Period): string | null {
   if (period === 'all') return null;
   const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
@@ -33,6 +42,8 @@ export interface DeckSnapshot {
   cards: Array<{ card_id: number; copies: number }>;
   primary_faction: string | null;
   created_at: string;
+  /** Parties simulées seulement : ce camp a-t-il commencé ? */
+  went_first?: boolean;
 }
 
 export interface CardRow {
@@ -66,14 +77,19 @@ export interface HeroRow {
  *  jouée, deux lignes par match. */
 export async function fetchSnapshots(
   supabase: SupabaseClient,
-  period: Period
+  period: Period,
+  source: Source = 'real',
 ): Promise<DeckSnapshot[]> {
   const start = periodStart(period);
+  const table = source === 'sim' ? 'sim_deck_snapshots' : 'match_deck_snapshots';
   const rows = await fetchAllRows<DeckSnapshot>(
     (from, to) => {
-      let q = supabase.from('match_deck_snapshots').select('*');
+      const colonnes: string = source === 'sim'
+        ? 'id, match_id, player_id, deck_id, hero_id, is_winner, cards, primary_faction, created_at, went_first'
+        : '*';
+      let q = supabase.from(table).select(colonnes);
       if (start) q = q.gte('created_at', start);
-      return q.order('id').range(from, to);
+      return q.order('id').range(from, to).returns<DeckSnapshot[]>();
     },
     { label: 'Lecture des instantanés de parties' },
   );
@@ -444,6 +460,13 @@ export function aggregateByTurnOrder(
   matches: MatchSides[],
 ): TurnOrderReport {
   const sides = new Map(matches.map((m) => [m.id, m]));
+  // Parties simulées : l'ordre de jeu est consigné (`went_first`), il n'y a pas
+  // de ligne `matches` d'où le dériver.
+  const commence = (snap: DeckSnapshot): boolean | null => {
+    if (typeof snap.went_first === 'boolean') return snap.went_first;
+    const m = sides.get(snap.match_id);
+    return m ? didPlayerStart(snap.match_id, snap.player_id, m.player1_id, m.player2_id) : null;
+  };
   const tally = {
     first: { wins: 0, losses: 0 },
     second: { wins: 0, losses: 0 },
@@ -452,10 +475,7 @@ export function aggregateByTurnOrder(
   let skipped = 0;
 
   for (const snap of snapshots) {
-    const m = sides.get(snap.match_id);
-    if (!m) { skipped += 1; continue; }
-
-    const started = didPlayerStart(snap.match_id, snap.player_id, m.player1_id, m.player2_id);
+    const started = commence(snap);
     if (started === null) { skipped += 1; continue; }
 
     const bucket = started ? tally.first : tally.second;

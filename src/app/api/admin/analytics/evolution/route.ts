@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
-import { evolutionFor, fetchCards, fetchHeroes, fetchSnapshots, Period } from '@/lib/admin/analytics';
+import { evolutionFor, fetchCards, fetchHeroes, fetchSnapshots, sourceOf, Period } from '@/lib/admin/analytics';
 
 type EntityType = 'card' | 'hero' | 'faction' | 'race' | 'clan' | 'ability';
 
@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
   const { searchParams } = new URL(request.url);
+  const source = sourceOf(searchParams);
   const period = (searchParams.get('period') ?? 'all') as Period;
   const entity = searchParams.get('entity') as EntityType | null;
   const key = searchParams.get('key');
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
   }
   try {
     const [snapshots, cards, heroes] = await Promise.all([
-      fetchSnapshots(auth.supabase, period),
+      fetchSnapshots(auth.supabase, period, source),
       fetchCards(auth.supabase),
       fetchHeroes(auth.supabase),
     ]);

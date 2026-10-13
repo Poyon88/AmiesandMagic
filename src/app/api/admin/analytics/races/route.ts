@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
-import { aggregateByCardAttribute, fetchCards, fetchSnapshots, Period } from '@/lib/admin/analytics';
+import { aggregateByCardAttribute, fetchCards, fetchSnapshots, sourceOf, Period } from '@/lib/admin/analytics';
 
 export async function GET(request: Request) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
   const { searchParams } = new URL(request.url);
+  const source = sourceOf(searchParams);
   const period = (searchParams.get('period') ?? 'all') as Period;
   const minGames = Number(searchParams.get('minGames') ?? 10);
   try {
     const [snapshots, cards] = await Promise.all([
-      fetchSnapshots(auth.supabase, period),
+      fetchSnapshots(auth.supabase, period, source),
       fetchCards(auth.supabase),
     ]);
     const stats = aggregateByCardAttribute(snapshots, cards, 'race', minGames);
