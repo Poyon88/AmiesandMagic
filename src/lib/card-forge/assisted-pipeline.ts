@@ -114,8 +114,6 @@ export async function creerCarte(
     }
   }
 
-  const xParts = isSpell ? "" : Object.entries(b.xValues).map(([l, x]) => `${l.replace(/ X$/, "")} ${x}`).join(", ");
-  const effectText = [texte.ability ?? "", xParts ? `[${xParts}]` : ""].filter(Boolean).join(" ");
   const champs = champsCarte(b);
   const ed = brief.edition;
   const saved = await json(await fetch("/api/cards/save", {
@@ -124,7 +122,9 @@ export async function creerCarte(
       card: {
         ...champs,
         name: texte.name,
-        effect_text: effectText,
+        // Vide exprès (arbitrage auteur 2026-10-13) : la carte affiche déjà la
+        // description de ses capacités ; un texte généré la doublait.
+        effect_text: null,
         flavor_text: texte.flavorText ?? null,
         illustration_prompt: texte.illustrationPrompt ?? null,
         style_guide_id: texte.styleGuideId ?? null,
