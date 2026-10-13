@@ -1111,7 +1111,8 @@ export default function CardEditor() {
       const res = await fetch("/api/cards/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        // Même format que la forge : l'illustration d'une carte est verticale.
+        body: JSON.stringify({ prompt, aspectRatio: "3:4" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);

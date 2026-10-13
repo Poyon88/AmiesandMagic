@@ -28,6 +28,20 @@ const IMAGEN_MODELS_2K = [
   'imagen-3.0-generate-002',
 ];
 
+// Formats acceptés par `imageConfig.aspectRatio` de Gemini ; un autre (ex. 5:7)
+// ferait échouer l'appel, on le laisse alors au seul prompt.
+const RATIOS_GEMINI = new Set(['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9']);
+
+/** Consigne d'orientation ajoutée au prompt : le paramètre de format ne suffit
+ *  pas toujours, le modèle peut cadrer une scène large dans un cadre vertical. */
+function consigneOrientation(ratio: string): string {
+  const [l, h] = ratio.split(':').map(Number);
+  if (!l || !h || l === h) return '';
+  return l < h
+    ? ` Vertical portrait composition (${ratio}), taller than wide: frame the subject vertically, full height of the image.`
+    : ` Horizontal landscape composition (${ratio}), wider than tall.`;
+}
+
 export type GenerateImageOptions = {
   prompt: string;
   highRes?: boolean;
@@ -104,6 +118,7 @@ async function callGemini(
   errorSink: string[],
   referenceImageBase64?: string,
   referenceImageMimeType?: string,
+  aspectRatio?: string,
 ): Promise<GenerateImageResult | null> {
   const parts: Array<
     | { text: string }
@@ -124,7 +139,12 @@ async function callGemini(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts }],
-        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+        generationConfig: {
+          responseModalities: ['IMAGE', 'TEXT'],
+          // Sans format imposé, Gemini (Nano Banana) choisit seul — souvent du
+          // paysage, alors que l'illustration d'une carte est verticale.
+          ...(aspectRatio && RATIOS_GEMINI.has(aspectRatio) ? { imageConfig: { aspectRatio } } : {}),
+        },
       }),
     },
   );
@@ -157,8 +177,8 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   if (!apiKey) throw new GenerateImageError('GEMINI_API_KEY non configurée', 500);
 
   const promptTexteBase = `Generate an image with absolutely no text, no letters, no words, no writing, no captions, no labels, no watermarks anywhere in the image. The image must contain zero readable characters. Description: ${prompt}`;
-  const promptText = promptTexteBase;
   const ratio = aspectRatio ?? '1:1';
+  const promptText = promptTexteBase + consigneOrientation(ratio);
   const hasReference = !!(referenceImageBase64 && referenceImageMimeType);
   const errorSink: string[] = [];
 
@@ -169,7 +189,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
     const estImagen = impose.startsWith('imagen-');
     const result = estImagen
       ? await callImagen(impose, promptText, apiKey, ratio, '2K', errorSink)
-      : await callGemini(impose, promptText, apiKey, errorSink, referenceImageBase64, referenceImageMimeType);
+      : await callGemini(impose, promptText, apiKey, errorSink, referenceImageBase64, referenceImageMimeType, ratio);
     if (result) return result;
     throw new GenerateImageError(
       `Le modèle « ${impose} » n'a rien renvoyé. Détails: ${errorSink.join(' | ') || '(aucune erreur capturée)'}`,
@@ -210,6 +230,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
         errorSink,
         referenceImageBase64,
         referenceImageMimeType,
+        ratio,
       );
       if (result) return result;
     } catch (err) {
