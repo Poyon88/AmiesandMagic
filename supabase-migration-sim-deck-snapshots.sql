@@ -33,3 +33,8 @@ CREATE INDEX IF NOT EXISTS sim_deck_snapshots_match_idx ON public.sim_deck_snaps
 CREATE INDEX IF NOT EXISTS sim_deck_snapshots_created_idx ON public.sim_deck_snapshots (created_at DESC);
 
 ALTER TABLE public.sim_deck_snapshots ENABLE ROW LEVEL SECURITY;
+
+-- Usage des compteurs par ce camp sur la partie (Épargne, Foi, Conquête,
+-- Invention, Exploration) : { epargne: { gagne, depense, depenses, reste, max } … }.
+-- Sert à vérifier que les bots les dépensent à bon escient.
+ALTER TABLE public.sim_deck_snapshots ADD COLUMN IF NOT EXISTS counters JSONB;

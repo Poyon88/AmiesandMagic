@@ -13,7 +13,10 @@ import {
   creatureNeedsTarget, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
   getHeroPowerTargets, getSpellTargetSlots, getValidTargets, heroPowerNeedsTarget,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
+  canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, getCreatureTapComposedUid,
+  getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir,
 } from "@/lib/game/engine";
+import { MAX_HAND_SIZE } from "@/lib/game/constants";
 import type { GameAction, GameState, PlayerState, SelectionFamilyId, SpellTargetType } from "@/lib/game/types";
 
 const SELECTIONS_SORT: SelectionFamilyId[] = ["selection", "selection_magique", "renfort_royal", "tresor"];
@@ -142,6 +145,8 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
     }
   }
 
+  out.push(...coupsDeRessources(state, rand, variantes));
+
   const hero = me.hero.heroDefinition;
   if (hero && canUseHeroPower(state)) {
     if (heroPowerNeedsTarget(hero)) {
@@ -152,5 +157,62 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
   }
 
   out.push({ type: "end_turn" });
+  return out;
+}
+
+/** Coups liés aux COMPTEURS et zones annexes : dépenses d'Épargne / Foi /
+ *  Conquête, prise de la machine d'Invention, Éveil, Seconde vie, capacités
+ *  activées (tap). L'Exploration n'a pas de dépense : elle pioche toute seule
+ *  à son palier. Le bot heuristique décide ensuite QUAND dépenser
+ *  (cf. depenseOpportune) ; ici on se contente de proposer. */
+export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): GameAction[] {
+  const out: GameAction[] = [];
+  const me = state.players[state.currentPlayerIndex];
+  const mainPleine = me.hand.length >= MAX_HAND_SIZE;
+
+  const epargne = me.epargne ?? 0;
+  if (epargne >= 1 && !mainPleine) {
+    const offre = getSelectionCards(state, epargne, { faction: me.hero.heroDefinition?.faction ?? null });
+    for (const c of plusieurs(rand, offre, variantes)) out.push({ type: "spend_epargne", selectionCardId: c.id });
+  }
+  if ((me.foi ?? 0) >= 1 && !mainPleine) {
+    for (const c of plusieurs(rand, getFoiOffer(state), variantes)) out.push({ type: "spend_foi", cardInstanceId: c.instanceId });
+  }
+  if ((me.conquete ?? 0) >= 1 && !mainPleine) {
+    for (const c of plusieurs(rand, getConqueteOffer(state), variantes)) out.push({ type: "spend_conquete", cardInstanceId: c.instanceId });
+  }
+  if ((me.machine?.inventions ?? 0) >= 1 && !mainPleine) out.push({ type: "take_machine" });
+
+  // Éveil : mettre une carte en éveil, verser des points, la faire arriver.
+  for (const ci of me.hand) if (canSuspendToEveil(state, ci.instanceId)) out.push({ type: "suspend_eveil", cardInstanceId: ci.instanceId });
+  for (const e of me.eveil ?? []) {
+    if (e.remaining === 1) out.push({ type: "play_card", fromEveil: true, cardInstanceId: e.instance.instanceId, boardPosition: me.board.length });
+    else {
+      const max = maxEveilPayment(state, e.instance.instanceId);
+      if (max >= 1) out.push({ type: "pay_eveil", cardInstanceId: e.instance.instanceId, amount: max });
+    }
+  }
+
+  // Seconde vie : rejouer une créature depuis le cimetière.
+  for (const ci of me.graveyard) {
+    if (canPlayFromGraveyard(state, ci.instanceId)) out.push({ type: "play_card", fromGraveyard: true, cardInstanceId: ci.instanceId, boardPosition: me.board.length });
+  }
+
+  // Capacités activées (tap) : mot-clé en mode « tap » ou effet composé on_activation.
+  for (const src of me.board) {
+    if (!peutActiverPouvoir(src)) continue;
+    (src.card.keyword_instances ?? []).forEach((inst, idx) => {
+      if (inst.mode !== "tap") return;
+      const cibles = getTapActivateTargets(state, inst.id, src.instanceId);
+      if (cibles === null) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx });
+      else for (const t of plusieurs(rand, cibles, variantes)) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx, targetInstanceId: t });
+    });
+    const uid = getCreatureTapComposedUid(src.card);
+    if (uid) {
+      const cibles = getComposedTapTargets(state, src.card, uid);
+      if (!cibles || cibles.length === 0) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: -1, composedUid: uid });
+      else for (const t of plusieurs(rand, cibles, variantes)) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: -1, composedUid: uid, targetInstanceId: t });
+    }
+  }
   return out;
 }

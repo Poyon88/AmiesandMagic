@@ -24,6 +24,15 @@ export interface DeckSim { label: string; cards: { card: Card; quantity: number 
 
 export interface Incident { kind: "exception" | "refus" | "math_random" | "blocage"; action: string; detail: string; card?: string }
 
+/** Usage d'un compteur par un camp sur la partie. */
+export interface UsageCompteur { gagne: number; depense: number; depenses: number; reste: number; max: number }
+export const COMPTEURS = ["epargne", "foi", "conquete", "invention", "exploration"] as const;
+export type Compteur = (typeof COMPTEURS)[number];
+
+function niveau(p: GameState["players"][number], c: Compteur): number {
+  return c === "invention" ? p.machine?.inventions ?? 0 : (p[c] ?? 0);
+}
+
 export interface ResultatPartie {
   seed: number;
   winner: 0 | 1 | null;
@@ -33,6 +42,8 @@ export interface ResultatPartie {
   incidents: Incident[];
   /** Coups ACCEPTÉS par type (play_card, attack, hero_power…). */
   parType: Record<string, number>;
+  /** Par camp (p1, p2) : usage de chaque compteur alimenté au moins une fois. */
+  compteurs: [Partial<Record<Compteur, UsageCompteur>>, Partial<Record<Compteur, UsageCompteur>>];
   ms: number;
 }
 
@@ -72,6 +83,20 @@ export function simulerPartie(
   let state: GameState;
   let actions = 0;
   const parType: Record<string, number> = {};
+  const compteurs: ResultatPartie["compteurs"] = [{}, {}];
+  const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
+    apres.players.forEach((p, i) => {
+      for (const c of COMPTEURS) {
+        const n0 = niveau(avant.players[i], c), n1 = niveau(p, c);
+        if (n0 === n1 && !compteurs[i][c]) continue;
+        const u = (compteurs[i][c] ??= { gagne: 0, depense: 0, depenses: 0, reste: 0, max: 0 });
+        if (n1 > n0) u.gagne += n1 - n0;
+        if (n1 < n0) { u.depense += n0 - n1; if (act.type.startsWith("spend_") || act.type === "take_machine") u.depenses++; }
+        u.reste = n1;
+        u.max = Math.max(u.max, n1);
+      }
+    });
+  };
   let fin: ResultatPartie["fin"] = "limite_actions";
   try {
     state = initializeGame("p1", "p2", a.cards, b.cards, (seed % 2) as 0 | 1, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, null);
@@ -102,6 +127,7 @@ export function simulerPartie(
           continue;
         }
         if (suivant === state) { incidents.push({ kind: "refus", action: d.action, card: d.card, detail: "état inchangé" }); continue; }
+        suivre(state, suivant, act);
         state = suivant;
         actions++;
         parType[act.type] = (parType[act.type] ?? 0) + 1;
@@ -120,7 +146,7 @@ export function simulerPartie(
 
   const w = state!.winner;
   return {
-    seed, fin, tours: state!.turnNumber, actions, incidents, parType, ms: Date.now() - t0,
+    seed, fin, tours: state!.turnNumber, actions, incidents, parType, compteurs, ms: Date.now() - t0,
     winner: w === "p1" ? 0 : w === "p2" ? 1 : null,
   };
 }

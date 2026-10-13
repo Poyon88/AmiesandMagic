@@ -11,6 +11,8 @@
 // aléatoire — biais mineur pour un usage de simulation, à corriger avant d'en
 // faire un adversaire humain (déterminisation).
 import { applyAction } from "@/lib/game/engine";
+import { getConqueteOffer, getFoiOffer } from "@/lib/game/engine";
+import { MAX_CONQUETE, MAX_EPARGNE, MAX_FOI, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
 import type { CardInstance, GameAction, GameState, PlayerState } from "@/lib/game/types";
 import { candidateActions, type Rand } from "./random-bot";
 
@@ -22,12 +24,21 @@ export interface Poids {
   creatureAllie: number; // par point (ATK + PV) de créature alliée
   creatureAdverse: number; // par point (ATK + PV) de créature adverse
   main: number;          // par carte en main
+  mainParMana: number;   // + par point de coût d'une carte en main (une grosse carte vaut plus)
   manaGaspille: number;  // pénalité par mana non dépensé en fin d'évaluation
+  // Valeur des points MIS DE CÔTÉ : sans elle, le bot ne verrait aucun intérêt
+  // à jouer une carte qui alimente un compteur, ni rien à perdre à le vider.
+  epargne: number;       // par point d'Épargne
+  foi: number;           // par point de Foi
+  conquete: number;      // par point de Conquête
+  invention: number;     // par Invention de la machine en construction
+  eveil: number;         // par point d'Éveil déjà versé
 }
 
 export const POIDS_DEFAUT: Poids = {
   heroAdverse: 1, heroAllie: 0.7, heroAllieDanger: 1.5, seuilDanger: 10,
-  creatureAllie: 1, creatureAdverse: 1.15, main: 1.2, manaGaspille: 0,
+  creatureAllie: 1, creatureAdverse: 1.15, main: 1.2, mainParMana: 0.15, manaGaspille: 0,
+  epargne: 0.3, foi: 0.2, conquete: 0.8, invention: 0.6, eveil: 0.5,
 };
 
 const VICTOIRE = 1e6;
@@ -56,8 +67,48 @@ export function evaluer(state: GameState, moi: string, w: Poids = POIDS_DEFAUT):
   v += w.heroAllie * pvMoi + w.heroAllieDanger * Math.min(pvMoi - w.seuilDanger, 0);
   v += w.creatureAllie * me.board.reduce((s, c) => s + valeurCreature(c), 0);
   v -= w.creatureAdverse * opp.board.reduce((s, c) => s + valeurCreature(c), 0);
-  v += w.main * me.hand.length;
+  v += me.hand.reduce((s, c) => s + w.main + w.mainParMana * Math.min(c.card.mana_cost ?? 0, 8), 0);
+  v += w.epargne * (me.epargne ?? 0) + w.foi * (me.foi ?? 0) + w.conquete * (me.conquete ?? 0);
+  v += w.invention * (me.machine?.inventions ?? 0);
+  v += w.eveil * (me.eveil ?? []).reduce((s, e) => s + Math.max(0, (e.instance.card.eveil_cost ?? 0) - e.remaining), 0);
   return v;
+}
+
+/** Une DÉPENSE de compteur est-elle opportune maintenant ? L'évaluation dit
+ *  quel coup est le meilleur ; ces règles disent si c'est le MOMENT de vider la
+ *  réserve plutôt que de la laisser grossir :
+ *  · compteur au plafond (il ne peut plus rien gagner) ;
+ *  · ce qu'on obtient tient sa place dans la courbe : coût ≥ mana max − 2 (entre
+ *    2 et 5). Viser « ≥ mana max » laissait la réserve dormir toute la fin de
+ *    partie, le mana montant plus vite que les compteurs ;
+ *  · son héros est en danger (on prend ce qui est là) ;
+ *  · la Conquête ne se dépense qu'au palier : on la prend dès qu'elle y est. */
+export function depenseOpportune(state: GameState, a: GameAction, w: Poids = POIDS_DEFAUT): boolean {
+  const me = state.players[state.currentPlayerIndex];
+  const danger = pvHeros(me) <= w.seuilDanger;
+  const courbe = me.maxMana;
+  // Plafonné à 5 : en fin de partie le mana max atteint 10, et « mana max − 2 »
+  // ne serait plus jamais atteint — une carte à 5 tient toujours sa place.
+  const seuil = (plafond: number) => Math.min(plafond, 5, Math.max(2, courbe - 2));
+  switch (a.type) {
+    case "spend_epargne": {
+      const n = me.epargne ?? 0;
+      return n >= seuil(MAX_EPARGNE) || danger;
+    }
+    case "spend_foi": {
+      const n = me.foi ?? 0;
+      const offre = getFoiOffer(state).find((c) => c.instanceId === a.cardInstanceId);
+      return n >= MAX_FOI || danger || (offre?.card.mana_cost ?? 0) >= seuil(n);
+    }
+    case "spend_conquete":
+      return (me.conquete ?? 0) >= MAX_CONQUETE || getConqueteOffer(state).length > 0;
+    case "take_machine": {
+      const n = me.machine?.inventions ?? 0;
+      return n >= seuil(MAX_INVENTIONS_MACHINE) || danger;
+    }
+    default:
+      return true;
+  }
 }
 
 /** Qui choisit maintenant : le contrôleur d'un déclencheur en attente, sinon le joueur actif. */
@@ -82,6 +133,7 @@ export function coupsHeuristiques(state: GameState, rand: Rand, w: Poids = POIDS
   let repli: GameAction | null = null;
   for (const a of candidateActions(state, rand, variantes)) {
     if (a.type === "end_turn" || a.type === "auto_resolve_pending_triggers") { repli = a; continue; }
+    if (!depenseOpportune(state, a, w)) continue;
     let suivant: GameState;
     try { suivant = applyAction(state, a); } catch { continue; }
     if (suivant === state) continue;
