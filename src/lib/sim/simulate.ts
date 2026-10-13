@@ -2,7 +2,7 @@
 // tout ce qui empêche une simulation fiable : exceptions du moteur, coups
 // refusés (état inchangé), appels à Math.random (non reproductibles), blocages.
 import { applyAction, initializeGame } from "@/lib/game/engine";
-import type { Card, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
+import type { Card, FormatCode, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
 import { objetsDe } from "@/lib/game/items";
 import { isManaSpark } from "@/lib/game/mana-spark";
 import { candidateActions, seededRand, type Rand } from "./random-bot";
@@ -56,7 +56,76 @@ export interface ResultatPartie {
   compteurs: [Partial<Record<Compteur, UsageCompteur>>, Partial<Record<Compteur, UsageCompteur>>];
   objets: [UsageObjets, UsageObjets];
   etincelle: [UsageEtincelle, UsageEtincelle];
+  /** Par camp : ids des cartes PIOCHÉES (passées en main au moins une fois) et
+   *  nombre de poses par id — de quoi mesurer l'apport de chaque carte. */
+  cartes: [{ piochees: number[]; jouees: Record<number, number> }, { piochees: number[]; jouees: Record<number, number> }];
+  /** Index du joueur qui a commencé. */
+  premier: 0 | 1;
+  /** Chronologie coup par coup (seulement avec `options.journal`). */
+  journal?: EntreeJournal[];
   ms: number;
+}
+
+/** Une ligne du journal d'une partie rejouée. */
+export interface EntreeJournal {
+  tour: number;
+  joueur: 0 | 1;
+  coup: string;
+  pv: [number, number];
+  plateau: [string[], string[]];
+}
+
+export interface ViviersSim {
+  factionCardPool: Card[];
+  allSpellsPool: Card[];
+  tokens: TokenTemplate[];
+  machines?: Card[];
+  formatCode?: FormatCode | null;
+}
+
+export interface OptionsPartie {
+  /** Joueur qui commence ; par défaut `seed % 2`. */
+  premier?: 0 | 1;
+  /** Consigner la chronologie coup par coup (rejeu). */
+  journal?: boolean;
+}
+
+const nomCarte = (s: GameState, id?: string): string | undefined => {
+  if (!id) return undefined;
+  if (id === "enemy_hero" || id === "friendly_hero") return id === "enemy_hero" ? "héros adverse" : "son héros";
+  for (const p of s.players) {
+    const c = [...p.hand, ...p.board, ...p.graveyard, ...(p.items ?? [])].find((x) => x.instanceId === id);
+    if (c) return c.card.name;
+    if (p.id === id) return `héros ${p.id}`;
+  }
+  return id;
+};
+
+/** Phrase courte décrivant un coup, à partir de l'état AVANT le coup. */
+export function decrireCoup(s: GameState, a: GameAction): string {
+  const cible = (id?: string) => (id ? ` → ${nomCarte(s, id)}` : "");
+  switch (a.type) {
+    case "mulligan": return a.replacedInstanceIds.length ? `mulligan (${a.replacedInstanceIds.length} remplacée(s))` : "garde sa main";
+    case "play_card": {
+      const t = a.targetInstanceId ?? Object.values(a.targetMap ?? {})[0];
+      const src = a.fromGraveyard ? " (Seconde vie)" : a.fromEveil ? " (Éveil)" : "";
+      return `joue ${nomCarte(s, a.cardInstanceId)}${src}${cible(t)}`;
+    }
+    case "attack": return `${nomCarte(s, a.attackerInstanceId)} attaque${cible(a.targetInstanceId)}`;
+    case "hero_power": return `pouvoir héroïque${cible(a.targetInstanceId)}`;
+    case "tap_activate": return `active ${nomCarte(s, a.sourceInstanceId)}${cible(a.targetInstanceId)}`;
+    case "equip_item": return `équipe ${nomCarte(s, a.itemInstanceId)}${cible(a.targetInstanceId)}`;
+    case "spend_epargne": return "dépense son Épargne";
+    case "spend_foi": return "dépense sa Foi";
+    case "spend_conquete": return "dépense sa Conquête";
+    case "take_machine": return "prend sa machine";
+    case "suspend_eveil": return `met ${nomCarte(s, a.cardInstanceId)} en éveil`;
+    case "pay_eveil": return `verse ${a.amount ?? 1} point(s) d'éveil à ${nomCarte(s, a.cardInstanceId)}`;
+    case "resolve_pending_trigger": return `résout un déclencheur${cible(a.targetInstanceId)}`;
+    case "auto_resolve_pending_triggers": return "résout les déclencheurs";
+    case "end_turn": return "fin de tour";
+    default: return a.type;
+  }
 }
 
 const MAX_ACTIONS = 1500;
@@ -75,9 +144,17 @@ function decrire(state: GameState, a: GameAction): { action: string; card?: stri
 
 export function simulerPartie(
   a: DeckSim, b: DeckSim, seed: number,
-  pools: { factionCardPool: Card[]; allSpellsPool: Card[]; tokens: TokenTemplate[] },
+  pools: ViviersSim,
   politiques: [Politique, Politique] = [politiqueAleatoire, politiqueAleatoire],
+  options: OptionsPartie = {},
 ): ResultatPartie {
+  const premier = options.premier ?? ((seed % 2) as 0 | 1);
+  const journal: EntreeJournal[] | undefined = options.journal ? [] : undefined;
+  const cartes: ResultatPartie["cartes"] = [{ piochees: [], jouees: {} }, { piochees: [], jouees: {} }];
+  const piocheesVues = [new Set<string>(), new Set<string>()];
+  const noterPioches = (st: GameState) => st.players.forEach((p, i) => {
+    for (const c of p.hand) if (!piocheesVues[i].has(c.instanceId)) { piocheesVues[i].add(c.instanceId); cartes[i].piochees.push(c.card.id); }
+  });
   const t0 = Date.now();
   const rand: Rand = seededRand(seed * 7919 + 1);
   const incidents: Incident[] = [];
@@ -105,6 +182,22 @@ export function simulerPartie(
   ];
   const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
     const actif = avant.currentPlayerIndex;
+    if (act.type === "play_card") {
+      const p = avant.players[actif];
+      const c = [...p.hand, ...p.graveyard, ...(p.eveil ?? []).map((e) => e.instance)].find((x) => x.instanceId === act.cardInstanceId);
+      if (c) cartes[actif].jouees[c.card.id] = (cartes[actif].jouees[c.card.id] ?? 0) + 1;
+    }
+    if (journal) {
+      const qui = (avant.phase === "mulligan" && act.type === "mulligan")
+        ? (avant.players[0].id === act.playerId ? 0 : 1)
+        : avant.pendingTriggers?.[0] ? (avant.players[0].id === avant.pendingTriggers[0].controllerId ? 0 : 1) : actif;
+      journal.push({
+        tour: avant.turnNumber, joueur: qui as 0 | 1, coup: decrireCoup(avant, act),
+        pv: [apres.players[0].hero.hp, apres.players[1].hero.hp],
+        plateau: [0, 1].map((i) => apres.players[i].board.map((c) => `${c.card.name} ${c.currentAttack}/${c.currentHealth}`)) as [string[], string[]],
+      });
+    }
+    noterPioches(apres);
     if (act.type === "play_card" && avant.players[actif].hand.find((c) => c.instanceId === act.cardInstanceId)?.card.card_type === "item") objets[actif].poses++;
     if (act.type === "equip_item") objets[actif].equipes++;
     const e = etincelle[actif];
@@ -129,8 +222,10 @@ export function simulerPartie(
   };
   let fin: ResultatPartie["fin"] = "limite_actions";
   try {
-    state = initializeGame("p1", "p2", a.cards, b.cards, (seed % 2) as 0 | 1, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, null);
+    state = initializeGame("p1", "p2", a.cards, b.cards, premier, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, pools.formatCode ?? null);
     state.tokenTemplates = pools.tokens;
+    state.machineTemplates = pools.machines ?? [];
+    noterPioches(state);
 
     while (actions < MAX_ACTIONS) {
       if (state.phase === "finished") { fin = "victoire"; break; }
@@ -182,7 +277,7 @@ export function simulerPartie(
       inutilises: state!.players[i].hand.filter((c) => c.card.card_type === "item").length
         + objetsDe(state!.players[i]).filter((x) => !x.equippedToInstanceId).length,
     })) as ResultatPartie["objets"],
-    etincelle,
+    etincelle, cartes, premier, ...(journal ? { journal } : {}),
     winner: w === "p1" ? 0 : w === "p2" ? 1 : null,
   };
 }

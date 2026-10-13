@@ -20,6 +20,7 @@ const menuItems = [
   { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
   { label: "Joueurs", href: "/admin/players", icon: "👥" },
   { label: "Équilibrage", href: "/admin/analytics", icon: "⚖️" },
+  { label: "Simulateur", href: "/admin/simulator", icon: "🤖" },
 ];
 
 export default function AdminSidebar() {
