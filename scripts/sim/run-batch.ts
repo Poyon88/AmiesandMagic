@@ -26,7 +26,8 @@ const env = Object.fromEntries(readFileSync(".env.local", "utf8").split("\n")
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
 // v2 (2026-10-13) : dépense Épargne / Foi / Conquête / Invention, Éveil, Seconde vie, tap.
-const POLICY = "heuristique-v2";
+// v3 : pose et équipe les objets (coup « poser puis équiper » évalué d'un bloc).
+const POLICY = "heuristique-v3";
 const { clans, deck, pools } = chargerCatalogue(fichier);
 const heur: Politique = (s, r) => coupsHeuristiques(s, r);
 
@@ -64,8 +65,8 @@ for (const p of miennes) {
   if (r.fin !== "victoire" || r.winner === null) { ratees++; continue; }
   const premier = seed % 2; // firstPlayerIndex du simulateur
   const matchId = randomUUID();
-  tampon.push(ligne(da, clans[ia].clan, clans[ia].faction, matchId, r.winner === 0, premier === 0, r.tours, r.compteurs[0]));
-  tampon.push(ligne(db, clans[ib].clan, clans[ib].faction, matchId, r.winner === 1, premier === 1, r.tours, r.compteurs[1]));
+  tampon.push(ligne(da, clans[ia].clan, clans[ia].faction, matchId, r.winner === 0, premier === 0, r.tours, { ...r.compteurs[0], objets: r.objets[0] }));
+  tampon.push(ligne(db, clans[ib].clan, clans[ib].faction, matchId, r.winner === 1, premier === 1, r.tours, { ...r.compteurs[1], objets: r.objets[1] }));
   ecrites++;
   if (tampon.length >= 200) await vider();
   if (ecrites % 50 === 0) process.stderr.write(`[shard ${shard}] ${ecrites}/${miennes.length} parties (${((Date.now() - t0) / 1000).toFixed(0)} s)\n`);

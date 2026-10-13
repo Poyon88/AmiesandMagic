@@ -17,6 +17,7 @@ import {
   getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
+import { getEquipCost, objetsDe, peutRecevoirObjet } from "@/lib/game/items";
 import type { GameAction, GameState, PlayerState, SelectionFamilyId, SpellTargetType } from "@/lib/game/types";
 
 const SELECTIONS_SORT: SelectionFamilyId[] = ["selection", "selection_magique", "renfort_royal", "tresor"];
@@ -196,6 +197,15 @@ export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): 
   // Seconde vie : rejouer une créature depuis le cimetière.
   for (const ci of me.graveyard) {
     if (canPlayFromGraveyard(state, ci.instanceId)) out.push({ type: "play_card", fromGraveyard: true, cardInstanceId: ci.instanceId, boardPosition: me.board.length });
+  }
+
+  // OBJETS posés mais sans porteur : les équiper (coût d'équipement en mana).
+  for (const item of objetsDe(me)) {
+    if (item.equippedToInstanceId) continue;
+    if (me.mana < getEquipCost(item.card)) continue;
+    for (const c of me.board) {
+      if (peutRecevoirObjet(me, c, item)) out.push({ type: "equip_item", itemInstanceId: item.instanceId, targetInstanceId: c.instanceId });
+    }
   }
 
   // Capacités activées (tap) : mot-clé en mode « tap » ou effet composé on_activation.

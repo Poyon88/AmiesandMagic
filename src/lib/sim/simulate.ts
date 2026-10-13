@@ -3,6 +3,7 @@
 // refusés (état inchangé), appels à Math.random (non reproductibles), blocages.
 import { applyAction, initializeGame } from "@/lib/game/engine";
 import type { Card, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
+import { objetsDe } from "@/lib/game/items";
 import { candidateActions, seededRand, type Rand } from "./random-bot";
 
 /** Une stratégie : les coups qu'elle veut jouer, du préféré au moins voulu.
@@ -33,6 +34,10 @@ function niveau(p: GameState["players"][number], c: Compteur): number {
   return c === "invention" ? p.machine?.inventions ?? 0 : (p[c] ?? 0);
 }
 
+/** Usage des OBJETS par un camp : reçus en main, posés, équipés, et inutilisés
+ *  en fin de partie (encore en main, ou posés sans porteur). */
+export interface UsageObjets { recus: number; poses: number; equipes: number; inutilises: number }
+
 export interface ResultatPartie {
   seed: number;
   winner: 0 | 1 | null;
@@ -44,6 +49,7 @@ export interface ResultatPartie {
   parType: Record<string, number>;
   /** Par camp (p1, p2) : usage de chaque compteur alimenté au moins une fois. */
   compteurs: [Partial<Record<Compteur, UsageCompteur>>, Partial<Record<Compteur, UsageCompteur>>];
+  objets: [UsageObjets, UsageObjets];
   ms: number;
 }
 
@@ -84,7 +90,17 @@ export function simulerPartie(
   let actions = 0;
   const parType: Record<string, number> = {};
   const compteurs: ResultatPartie["compteurs"] = [{}, {}];
+  const objets: ResultatPartie["objets"] = [
+    { recus: 0, poses: 0, equipes: 0, inutilises: 0 }, { recus: 0, poses: 0, equipes: 0, inutilises: 0 },
+  ];
+  const objetsVus = new Set<string>();
   const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
+    const actif = avant.currentPlayerIndex;
+    if (act.type === "play_card" && avant.players[actif].hand.find((c) => c.instanceId === act.cardInstanceId)?.card.card_type === "item") objets[actif].poses++;
+    if (act.type === "equip_item") objets[actif].equipes++;
+    apres.players.forEach((p, i) => {
+      for (const c of p.hand) if (c.card.card_type === "item" && !objetsVus.has(c.instanceId)) { objetsVus.add(c.instanceId); objets[i].recus++; }
+    });
     apres.players.forEach((p, i) => {
       for (const c of COMPTEURS) {
         const n0 = niveau(avant.players[i], c), n1 = niveau(p, c);
@@ -147,6 +163,11 @@ export function simulerPartie(
   const w = state!.winner;
   return {
     seed, fin, tours: state!.turnNumber, actions, incidents, parType, compteurs, ms: Date.now() - t0,
+    objets: objets.map((o, i) => ({
+      ...o,
+      inutilises: state!.players[i].hand.filter((c) => c.card.card_type === "item").length
+        + objetsDe(state!.players[i]).filter((x) => !x.equippedToInstanceId).length,
+    })) as ResultatPartie["objets"],
     winner: w === "p1" ? 0 : w === "p2" ? 1 : null,
   };
 }

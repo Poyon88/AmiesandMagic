@@ -13,8 +13,9 @@
 import { applyAction } from "@/lib/game/engine";
 import { getConqueteOffer, getFoiOffer } from "@/lib/game/engine";
 import { MAX_CONQUETE, MAX_EPARGNE, MAX_FOI, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
+import { bonusDObjet, objetsDe } from "@/lib/game/items";
 import type { CardInstance, GameAction, GameState, PlayerState } from "@/lib/game/types";
-import { candidateActions, type Rand } from "./random-bot";
+import { candidateActions, coupsDeRessources, type Rand } from "./random-bot";
 
 export interface Poids {
   heroAdverse: number;   // par PV retiré au héros adverse
@@ -33,12 +34,16 @@ export interface Poids {
   conquete: number;      // par point de Conquête
   invention: number;     // par Invention de la machine en construction
   eveil: number;         // par point d'Éveil déjà versé
+  // Objet posé SANS porteur : une part de son bonus (ATK + PV). Équipé, il vaut
+  // plein pot puisque ses stats passent dans celles du porteur — d'où l'intérêt
+  // de l'équiper. Sans cette valeur, poser un objet paraissait une perte.
+  objetLibre: number;
 }
 
 export const POIDS_DEFAUT: Poids = {
   heroAdverse: 1, heroAllie: 0.7, heroAllieDanger: 1.5, seuilDanger: 10,
   creatureAllie: 1, creatureAdverse: 1.15, main: 1.2, mainParMana: 0.15, manaGaspille: 0,
-  epargne: 0.3, foi: 0.2, conquete: 0.8, invention: 0.6, eveil: 0.5,
+  epargne: 0.3, foi: 0.2, conquete: 0.8, invention: 0.6, eveil: 0.5, objetLibre: 0.5,
 };
 
 const VICTOIRE = 1e6;
@@ -50,8 +55,18 @@ function valeurCreature(c: CardInstance): number {
   let v = atk + pv;
   if (c.isParalyzed) v *= 0.6;
   if (c.card.keywords?.includes("taunt")) v += 1;
+  // Une capacité vaut quelque chose, même sans modèle fin de chacune : sans ce
+  // terme, l'Armure ou la Première frappe qu'apporte un objet ne comptaient pas.
+  v += 0.5 * (c.card.keywords?.length ?? 0);
   if (c.hasDivineShield) v += Math.min(atk, 3);
   return v;
+}
+
+/** Ce qu'un objet promet tant qu'il n'est pas porté : une part de son bonus
+ *  et de ses capacités. Toujours en dessous de ce qu'il vaut une fois équipé. */
+function potentielObjet(o: CardInstance, w: Poids): number {
+  const b = bonusDObjet(o);
+  return w.objetLibre * (b.atk + b.pv) + 0.3 * (o.card.keywords?.length ?? 0) + 0.3;
 }
 
 function pvHeros(p: PlayerState): number { return p.hero.hp + (p.hero.armor ?? 0); }
@@ -67,9 +82,15 @@ export function evaluer(state: GameState, moi: string, w: Poids = POIDS_DEFAUT):
   v += w.heroAllie * pvMoi + w.heroAllieDanger * Math.min(pvMoi - w.seuilDanger, 0);
   v += w.creatureAllie * me.board.reduce((s, c) => s + valeurCreature(c), 0);
   v -= w.creatureAdverse * opp.board.reduce((s, c) => s + valeurCreature(c), 0);
-  v += me.hand.reduce((s, c) => s + w.main + w.mainParMana * Math.min(c.card.mana_cost ?? 0, 8), 0);
+  v += me.hand.reduce((s, c) => s + (c.card.card_type === "item"
+    ? potentielObjet(c, w)
+    : w.main + w.mainParMana * Math.min(c.card.mana_cost ?? 0, 8)), 0);
   v += w.epargne * (me.epargne ?? 0) + w.foi * (me.foi ?? 0) + w.conquete * (me.conquete ?? 0);
   v += w.invention * (me.machine?.inventions ?? 0);
+  // OBJETS : en main, ils valent leur potentiel ; posés sans porteur, un peu
+  // plus (ils sont en jeu) ; équipés, leur bonus passe dans le porteur et vaut
+  // davantage encore — l'ordre main < posé < équipé pousse à les jouer.
+  for (const o of objetsDe(me)) if (!o.equippedToInstanceId) v += potentielObjet(o, w) + 0.2;
   v += w.eveil * (me.eveil ?? []).reduce((s, e) => s + Math.max(0, (e.instance.card.eveil_cost ?? 0) - e.remaining), 0);
   return v;
 }
@@ -137,7 +158,23 @@ export function coupsHeuristiques(state: GameState, rand: Rand, w: Poids = POIDS
     let suivant: GameState;
     try { suivant = applyAction(state, a); } catch { continue; }
     if (suivant === state) continue;
-    notes.push({ a, v: evaluer(suivant, moi, w) });
+    let v = evaluer(suivant, moi, w);
+    // POSER UN OBJET : on le note avec le meilleur équipement qui peut suivre
+    // dans la foulée — sans ce regard d'un coup plus loin, le bot ne voyait
+    // jamais l'intérêt de poser un objet seul.
+    if (a.type === "play_card" && !a.fromEveil && !a.fromGraveyard) {
+      const pose = state.players[state.currentPlayerIndex].hand.find((c) => c.instanceId === a.cardInstanceId);
+      if (pose?.card.card_type === "item") {
+        for (const e of coupsDeRessources(suivant, rand, variantes)) {
+          if (e.type !== "equip_item" || e.itemInstanceId !== a.cardInstanceId) continue;
+          try {
+            const apres = applyAction(suivant, e);
+            if (apres !== suivant) v = Math.max(v, evaluer(apres, moi, w));
+          } catch { /* équipement refusé : on garde la note de la pose seule */ }
+        }
+      }
+    }
+    notes.push({ a, v });
   }
   notes.sort((x, y) => y.v - x.v);
   const utiles = notes.filter((n) => n.v > ici + 0.01).map((n) => n.a);
