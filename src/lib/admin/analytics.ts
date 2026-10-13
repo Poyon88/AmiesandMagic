@@ -85,12 +85,22 @@ export async function fetchSnapshots(
   // Simulé : le DERNIER lot seulement. Deux lots joués par des bots différents
   // (v1 sans compteurs, v2 avec) ne se comparent pas : les additionner
   // mélangerait deux politiques dans un même taux.
+  // Lot sur DECKS EXISTANTS (sim_tests) : ses lignes ne recopient pas les
+  // cartes (`cards` = []) — on les recompose depuis les decks figés du test.
   let run: string | null = null;
+  let cartesDesDecks: Map<number, Array<{ card_id: number; copies: number }>> | null = null;
   if (source === 'sim') {
     const { data, error } = await supabase.from('sim_deck_snapshots').select('run_id').order('id', { ascending: false }).limit(1);
     if (error) throw new Error(error.message);
     run = (data?.[0] as { run_id?: string } | undefined)?.run_id ?? null;
     if (!run) return [];
+    const testId = run.startsWith('test-') ? Number(run.slice(5)) : NaN;
+    if (Number.isFinite(testId)) {
+      const { data: t, error: e2 } = await supabase.from('sim_tests').select('decks').eq('id', testId).maybeSingle();
+      if (e2) throw new Error(e2.message);
+      const decks = ((t?.decks ?? []) as Array<{ id: number; cards: Array<{ card_id: number; quantity: number }> }>);
+      cartesDesDecks = new Map(decks.map((d) => [d.id, d.cards.map((c) => ({ card_id: c.card_id, copies: c.quantity }))]));
+    }
   }
   const rows = await fetchAllRows<DeckSnapshot>(
     (from, to) => {
@@ -104,6 +114,11 @@ export async function fetchSnapshots(
     },
     { label: 'Lecture des instantanés de parties' },
   );
+  if (cartesDesDecks) {
+    for (const r of rows) {
+      if ((!r.cards || r.cards.length === 0) && r.deck_id != null) r.cards = cartesDesDecks.get(Number(r.deck_id)) ?? [];
+    }
+  }
   return rows;
 }
 
