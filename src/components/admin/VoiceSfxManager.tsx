@@ -3,19 +3,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getAllRaces } from "@/lib/card-engine/constants";
 import {
-  VOICE_GENDERS, VOICE_GENDER_LABELS, VOICE_MIME, extensionFichier, nomVoix,
+  VOICE_GENDERS, VOICE_GENDER_LABELS, VOICE_MIME, clansPourRace, extensionFichier, nomVoix, tousLesClans,
   type VoiceGender, type VoiceSfx,
 } from "@/lib/audio/voice-sfx";
 
 /** Bibliothèque des voix d'entrée en jeu.
  *
- *  Simple réserve rangée par race et genre (M, F, N) : rien en jeu ne la lit,
- *  le son d'une carte reste `sfx_play_url` (forge / éditeur). Import groupé :
- *  un lot = une race + un genre ; le nom est dérivé du fichier
- *  (« Nain_Let_them_come_3_M »), un nom déjà présent est ignoré, jamais écrasé. */
+ *  Simple réserve rangée par race, clan (facultatif) et genre (M, F, N) : rien
+ *  en jeu ne la lit, le son d'une carte reste `sfx_play_url` (forge / éditeur).
+ *  Import groupé : un lot = une race + un clan + un genre ; le nom est dérivé du
+ *  fichier (« Forge_Ardente_Let_them_come_3_M »), un nom déjà présent dans la
+ *  race est ignoré, jamais écrasé. */
 
 const MAX_SIZE_MB = 10;
 const ALL_RACES = getAllRaces().sort((a, b) => a.localeCompare(b, "fr"));
+const ALL_CLANS = tousLesClans();
+const SANS_CLAN = "__none";
+
+/** Options de clan : ceux déclarés pour la race d'abord, puis tous les autres
+ *  (des Humains vivent aussi à la Cour Écarlate, au Cénacle Nécromant…). */
+function OptionsClan({ race, vide }: { race: string; vide: string }) {
+  const siens = clansPourRace(race);
+  const autres = ALL_CLANS.filter((c) => !siens.includes(c));
+  return (
+    <>
+      <option value="">{vide}</option>
+      {siens.length > 0 && <optgroup label="Clans de la race">{siens.map((c) => <option key={c} value={c}>{c}</option>)}</optgroup>}
+      <optgroup label="Autres clans">{autres.map((c) => <option key={c} value={c}>{c}</option>)}</optgroup>
+    </>
+  );
+}
 
 const S = {
   card: { background: "#fff", borderRadius: 8, border: "1px solid #e0e0e0", padding: 16, marginBottom: 14 } as React.CSSProperties,
@@ -38,6 +55,7 @@ export default function VoiceSfxManager() {
 
   // Import
   const [race, setRace] = useState("");
+  const [clan, setClan] = useState("");
   const [gender, setGender] = useState<VoiceGender>("M");
   const [fichiers, setFichiers] = useState<File[]>([]);
   const [resultats, setResultats] = useState<Record<string, Pick<Ligne, "statut" | "detail">>>({});
@@ -47,6 +65,7 @@ export default function VoiceSfxManager() {
 
   // Bibliothèque
   const [filtreRace, setFiltreRace] = useState("");
+  const [filtreClan, setFiltreClan] = useState("");
   const [filtreGenre, setFiltreGenre] = useState<"" | VoiceGender>("");
   const [ouvert, setOuvert] = useState<number | null>(null);
 
@@ -71,17 +90,18 @@ export default function VoiceSfxManager() {
     return () => { vivant = false; };
   }, []);
 
-  const noms = useMemo(() => new Set(voix.map((v) => v.name)), [voix]);
+  // Unicité PAR RACE : la même réplique peut exister chez deux races.
+  const noms = useMemo(() => new Set(voix.map((v) => `${v.race}|${v.name}`)), [voix]);
 
   const lignes: Ligne[] = useMemo(() => fichiers.map((file) => {
     const fait = resultats[file.name];
     if (!race) return { file, name: "—", statut: "invalide", detail: "Choisissez une race" };
-    const name = nomVoix(race, gender, file.name);
+    const name = nomVoix(race, clan || null, gender, file.name);
     if (fait) return { file, name, ...fait };
     if (!extensionFichier(file.name)) return { file, name, statut: "invalide", detail: "Extension non audio" };
     if (file.size > MAX_SIZE_MB * 1024 * 1024) return { file, name, statut: "invalide", detail: `> ${MAX_SIZE_MB} Mo` };
-    return { file, name, statut: noms.has(name) ? "present" : "nouveau" };
-  }), [fichiers, race, gender, noms, resultats]);
+    return { file, name, statut: noms.has(`${race}|${name}`) ? "present" : "nouveau" };
+  }), [fichiers, race, clan, gender, noms, resultats]);
 
   const aImporter = lignes.filter((l) => l.statut === "nouveau");
 
@@ -99,7 +119,7 @@ export default function VoiceSfxManager() {
     setImportEnCours(true);
     setError(null);
     for (const l of aImporter) {
-      const corps = JSON.stringify({ race, gender, filename: l.file.name });
+      const corps = JSON.stringify({ race, clan: clan || null, gender, filename: l.file.name });
       const marquer = (statut: Ligne["statut"], detail?: string) =>
         setResultats((r) => ({ ...r, [l.file.name]: { statut, detail } }));
       try {
@@ -126,7 +146,7 @@ export default function VoiceSfxManager() {
     setImportEnCours(false);
   };
 
-  const modifier = async (v: VoiceSfx, patch: { race?: string; gender?: VoiceGender }) => {
+  const modifier = async (v: VoiceSfx, patch: { race?: string; clan?: string | null; gender?: VoiceGender }) => {
     setBusy(v.id);
     setError(null);
     const res = await fetch("/api/voice-sfx", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: v.id, ...patch }) });
@@ -155,17 +175,22 @@ export default function VoiceSfxManager() {
     audioRef.current = el;
   };
 
+  // Compteurs par race ET clan (« Humains · L'Ordre de l'Aube · 12 M / 4 F »).
   const compteurs = useMemo(() => {
-    const m = new Map<string, Record<VoiceGender, number>>();
+    const m = new Map<string, { race: string; clan: string | null; n: Record<VoiceGender, number> }>();
     for (const v of voix) {
-      const c = m.get(v.race) ?? { M: 0, F: 0, N: 0 };
-      c[v.gender] += 1;
-      m.set(v.race, c);
+      const k = `${v.race}|${v.clan ?? ""}`;
+      const c = m.get(k) ?? { race: v.race, clan: v.clan, n: { M: 0, F: 0, N: 0 } };
+      c.n[v.gender] += 1;
+      m.set(k, c);
     }
-    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0], "fr"));
+    return [...m.values()].sort((a, b) => a.race.localeCompare(b.race, "fr") || (a.clan ?? "").localeCompare(b.clan ?? "", "fr"));
   }, [voix]);
 
-  const visibles = voix.filter((v) => (!filtreRace || v.race === filtreRace) && (!filtreGenre || v.gender === filtreGenre));
+  const visibles = voix.filter((v) =>
+    (!filtreRace || v.race === filtreRace)
+    && (!filtreClan || (filtreClan === SANS_CLAN ? !v.clan : v.clan === filtreClan))
+    && (!filtreGenre || v.gender === filtreGenre));
 
   const couleurStatut: Record<Ligne["statut"], string> = {
     nouveau: "#27ae60", present: "#e08a00", invalide: "#c0392b", importe: "#6c5ce7", erreur: "#c0392b",
@@ -179,16 +204,20 @@ export default function VoiceSfxManager() {
       <div style={S.card}>
         <div style={S.title}>VOIX D&apos;ENTRÉE EN JEU</div>
         <div style={S.hint}>
-          Réserve de répliques rangées par race et genre. Le nom est dérivé du fichier : race au singulier + nom du fichier
-          + genre (ex. « Nain_Let_them_come_3_M »). Un nom déjà présent est ignoré. Rien n&apos;est attribué automatiquement aux cartes.
+          Réserve de répliques rangées par race, clan (facultatif, pour distinguer les accents) et genre. Le nom est dérivé du
+          fichier : clan + nom du fichier + genre (ex. « Forge_Ardente_Let_them_come_3_M ») ; le clan n&apos;est pas ajouté si le
+          fichier commence déjà par lui. Un nom déjà présent dans la race est ignoré. Rien n&apos;est attribué automatiquement aux cartes.
         </div>
 
         {/* Import groupé */}
         <div style={S.sub}>IMPORT GROUPÉ</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
-          <select value={race} onChange={(e) => { setRace(e.target.value); setResultats({}); }} style={S.select}>
+          <select value={race} onChange={(e) => { setRace(e.target.value); setClan(""); setResultats({}); }} style={S.select}>
             <option value="">— Race —</option>
             {ALL_RACES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select value={clan} onChange={(e) => { setClan(e.target.value); setResultats({}); }} style={S.select} disabled={!race}>
+            <OptionsClan race={race} vide="— Commune à la race —" />
           </select>
           {VOICE_GENDERS.map((g) => (
             <button key={g} onClick={() => { setGender(g); setResultats({}); }} style={{
@@ -246,18 +275,26 @@ export default function VoiceSfxManager() {
         <div style={S.sub}>BIBLIOTHÈQUE — {voix.length} SON{voix.length > 1 ? "S" : ""}</div>
         {error && <div style={{ fontSize: 10, color: "#c0392b", marginBottom: 8 }}>{error}</div>}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-          {compteurs.map(([r, c]) => (
-            <button key={r} onClick={() => setFiltreRace(filtreRace === r ? "" : r)} style={{
-              ...S.btn, borderColor: filtreRace === r ? "#6c5ce7" : "#e0e0e0", color: filtreRace === r ? "#6c5ce7" : "#555",
-            }}>
-              {r} · {VOICE_GENDERS.filter((g) => c[g]).map((g) => `${c[g]} ${g}`).join(" / ")}
-            </button>
-          ))}
+          {compteurs.map(({ race: r, clan: cl, n }) => {
+            const actif = filtreRace === r && filtreClan === (cl ?? SANS_CLAN);
+            return (
+              <button key={`${r}|${cl ?? ""}`} onClick={() => {
+                if (actif) { setFiltreRace(""); setFiltreClan(""); } else { setFiltreRace(r); setFiltreClan(cl ?? SANS_CLAN); }
+              }} style={{ ...S.btn, borderColor: actif ? "#6c5ce7" : "#e0e0e0", color: actif ? "#6c5ce7" : "#555" }}>
+                {r} · {cl ?? "commune"} · {VOICE_GENDERS.filter((g) => n[g]).map((g) => `${n[g]} ${g}`).join(" / ")}
+              </button>
+            );
+          })}
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <select value={filtreRace} onChange={(e) => setFiltreRace(e.target.value)} style={S.select}>
             <option value="">Toutes les races</option>
             {ALL_RACES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <select value={filtreClan} onChange={(e) => setFiltreClan(e.target.value)} style={S.select}>
+            <option value="">Tous les clans</option>
+            <option value={SANS_CLAN}>— Communes à la race —</option>
+            {(filtreRace ? clansPourRace(filtreRace) : ALL_CLANS).map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={filtreGenre} onChange={(e) => setFiltreGenre(e.target.value as "" | VoiceGender)} style={S.select}>
             <option value="">Tous les genres</option>
@@ -275,6 +312,9 @@ export default function VoiceSfxManager() {
                 <span style={{ ...S.label, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={v.file_path}>{v.name}</span>
                 <select value={v.race} disabled={busy === v.id} onChange={(e) => modifier(v, { race: e.target.value })} style={S.select}>
                   {ALL_RACES.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <select value={v.clan ?? ""} disabled={busy === v.id} onChange={(e) => modifier(v, { clan: e.target.value || null })} style={{ ...S.select, maxWidth: 170 }}>
+                  <OptionsClan race={v.race} vide="— Commune —" />
                 </select>
                 <select value={v.gender} disabled={busy === v.id} onChange={(e) => modifier(v, { gender: e.target.value as VoiceGender })} style={S.select}>
                   {VOICE_GENDERS.map((g) => <option key={g} value={g}>{g}</option>)}

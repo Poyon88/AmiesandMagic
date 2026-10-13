@@ -1,21 +1,29 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { getAllRaces } from '@/lib/card-engine/constants';
-import { cheminVoix, extensionFichier, isVoiceGender, nomVoix } from '@/lib/audio/voice-sfx';
+import { cheminVoix, extensionFichier, isVoiceGender, nomVoix, tousLesClans } from '@/lib/audio/voice-sfx';
 
 // /api/voice-sfx — ADMIN — bibliothèque des voix d'entrée en jeu (table voice_sfx).
 //
 // Import en deux temps, pour que le fichier parte directement du navigateur
 // vers Supabase Storage (pas de limite de corps de fonction) :
-//   1. POST { race, gender, filename } → nom calculé + URL d'upload signée
+//   1. POST { race, clan?, gender, filename } → nom calculé + URL d'upload signée
 //      (409 si le nom existe déjà : le fichier est ignoré, jamais écrasé) ;
-//   2. PUT  { race, gender, filename } → après l'upload, vérifie que le fichier
+//   2. PUT  { race, clan?, gender, filename } → après l'upload, vérifie que le fichier
 //      est bien dans le bucket puis inscrit la ligne.
-// PATCH { id, race?, gender? } : recalcule le nom, sans déplacer le fichier
+// Le nom n'est unique qu'AU SEIN D'UNE RACE (index (race, name)).
+// PATCH { id, race?, clan?, gender? } : recalcule le nom, sans déplacer le fichier
 // (des cartes peuvent y pointer). DELETE { id } : refusé si une carte l'utilise.
 
 const BUCKET = 'sfx-tracks';
-const COLONNES = 'id, name, race, gender, source_filename, file_path, file_url, created_at';
+const COLONNES = 'id, name, race, clan, gender, source_filename, file_path, file_url, created_at';
+
+/** Clan saisi : vide/null = commune à la race ; sinon un clan connu. */
+function lireClan(v: unknown): { clan: string | null } | { error: string } {
+  if (v === undefined || v === null || v === '') return { clan: null };
+  if (typeof v !== 'string' || !tousLesClans().includes(v)) return { error: `Clan inconnu : ${String(v)}` };
+  return { clan: v };
+}
 
 function valider(body: Record<string, unknown>) {
   const race = typeof body.race === 'string' ? body.race : '';
@@ -23,10 +31,12 @@ function valider(body: Record<string, unknown>) {
   const filename = typeof body.filename === 'string' ? body.filename : '';
   if (!getAllRaces().includes(race)) return { error: `Race inconnue : ${race || '(vide)'}` };
   if (!isVoiceGender(gender)) return { error: 'Genre attendu : M, F ou N' };
+  const c = lireClan(body.clan);
+  if ('error' in c) return c;
   const ext = extensionFichier(filename);
   if (!ext) return { error: `Extension non audio : ${filename}` };
-  const name = nomVoix(race, gender, filename);
-  return { race, gender, filename, ext, name, path: cheminVoix(race, gender, name, ext) };
+  const name = nomVoix(race, c.clan, gender, filename);
+  return { race, clan: c.clan, gender, filename, ext, name, path: cheminVoix(race, c.clan, gender, name, ext) };
 }
 
 export async function GET(request: Request) {
@@ -38,7 +48,10 @@ export async function GET(request: Request) {
   let q = supabase.from('voice_sfx').select(COLONNES).order('race').order('gender').order('name');
   const race = searchParams.get('race');
   const gender = searchParams.get('gender');
+  const clan = searchParams.get('clan');
   if (race) q = q.eq('race', race);
+  if (clan === '__none') q = q.is('clan', null);
+  else if (clan) q = q.eq('clan', clan);
   if (gender) q = q.eq('gender', gender);
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -69,7 +82,7 @@ export async function POST(request: Request) {
   const v = valider(await request.json().catch(() => ({})));
   if ('error' in v) return NextResponse.json({ error: v.error }, { status: 400 });
 
-  const { data: deja } = await supabase.from('voice_sfx').select('id').eq('name', v.name).maybeSingle();
+  const { data: deja } = await supabase.from('voice_sfx').select('id').eq('race', v.race).eq('name', v.name).maybeSingle();
   if (deja) return NextResponse.json({ error: 'Déjà présent', name: v.name }, { status: 409 });
 
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(v.path);
@@ -100,7 +113,7 @@ export async function PUT(request: Request) {
 
   const { data: url } = supabase.storage.from(BUCKET).getPublicUrl(v.path);
   const { data, error } = await supabase.from('voice_sfx').insert({
-    name: v.name, race: v.race, gender: v.gender, source_filename: v.filename,
+    name: v.name, race: v.race, clan: v.clan, gender: v.gender, source_filename: v.filename,
     file_path: v.path, file_url: url.publicUrl,
   }).select(COLONNES).single();
   if (error) {
@@ -124,9 +137,11 @@ export async function PATCH(request: Request) {
   const gender = body.gender ?? actuel.gender;
   if (!getAllRaces().includes(race)) return NextResponse.json({ error: `Race inconnue : ${race}` }, { status: 400 });
   if (!isVoiceGender(gender)) return NextResponse.json({ error: 'Genre attendu : M, F ou N' }, { status: 400 });
-  const name = nomVoix(race, gender, actuel.source_filename ?? actuel.file_path);
+  const c = lireClan('clan' in body ? body.clan : actuel.clan);
+  if ('error' in c) return NextResponse.json({ error: c.error }, { status: 400 });
+  const name = nomVoix(race, c.clan, gender, actuel.source_filename ?? actuel.file_path);
 
-  const { data, error } = await supabase.from('voice_sfx').update({ race, gender, name }).eq('id', id).select(COLONNES).single();
+  const { data, error } = await supabase.from('voice_sfx').update({ race, clan: c.clan, gender, name }).eq('id', id).select(COLONNES).single();
   if (error) {
     return NextResponse.json({ error: error.code === '23505' ? `Le nom ${name} existe déjà` : error.message }, { status: error.code === '23505' ? 409 : 500 });
   }
