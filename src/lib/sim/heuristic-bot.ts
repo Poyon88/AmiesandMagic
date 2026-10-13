@@ -174,6 +174,22 @@ export function coupsHeuristiques(state: GameState, rand: Rand, w: Poids = POIDS
         }
       }
     }
+    // GAIN DE MANA pour ce tour (Étincelle de mana, Afflux…) : ce mana ne vaut
+    // que par ce qu'il permet de jouer ensuite. On note donc le coup avec le
+    // meilleur coup qu'il rend possible — un seul cran, pas de récursion. Sans
+    // ce regard, l'Étincelle restait en main dans 100 % des parties.
+    const actif = state.currentPlayerIndex;
+    if (suivant.phase === "playing" && suivant.currentPlayerIndex === actif && !suivant.pendingTriggers?.length
+        && suivant.players[actif].mana > state.players[actif].mana) {
+      for (const b of candidateActions(suivant, rand, variantes)) {
+        if (b.type === "end_turn" || b.type === "auto_resolve_pending_triggers") continue;
+        if (!depenseOpportune(suivant, b, w)) continue;
+        try {
+          const apres = applyAction(suivant, b);
+          if (apres !== suivant) v = Math.max(v, evaluer(apres, moi, w));
+        } catch { /* coup refusé : sans effet sur la note */ }
+      }
+    }
     notes.push({ a, v });
   }
   notes.sort((x, y) => y.v - x.v);

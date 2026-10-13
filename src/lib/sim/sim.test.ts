@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Card } from "@/lib/game/types";
+import type { Card, GameState } from "@/lib/game/types";
 import { coupsHeuristiques } from "./heuristic-bot";
 import { applyAction, initializeGame } from "@/lib/game/engine";
 import { objetsDe } from "@/lib/game/items";
+import { isManaSpark, MANA_SPARK_FALLBACK } from "@/lib/game/mana-spark";
 import { seededRand } from "./random-bot";
 import { politiqueAleatoire, simulerPartie, type DeckSim, type Politique } from "./simulate";
 
@@ -63,5 +64,31 @@ describe("simulation de parties", () => {
     }
     const objet = objetsDe(s.players[s.currentPlayerIndex])[0];
     expect(objet?.equippedToInstanceId).toBe(me.board[0].instanceId);
+  });
+
+  describe("Étincelle de mana", () => {
+    // p1 actif avec `mana` disponible, l'Étincelle et éventuellement une créature en main.
+    const situation = (mana: number, avecCreature: boolean) => {
+      const d = (): { card: Card; quantity: number }[] => [{ card: creature(2, 2, 2), quantity: 20 }];
+      let s = initializeGame("p1", "p2", d(), d(), 0, 5, null, null, [MANA_SPARK_FALLBACK], [], null);
+      s = applyAction(s, { type: "mulligan", playerId: "p1", replacedInstanceIds: [] });
+      s = applyAction(s, { type: "mulligan", playerId: "p2", replacedInstanceIds: [] });
+      const me = s.players[s.currentPlayerIndex];
+      me.mana = me.maxMana = mana;
+      const etincelle = { ...me.hand[0], card: MANA_SPARK_FALLBACK, instanceId: "etincelle-1" };
+      me.hand = avecCreature ? [etincelle, me.hand[1]] : [etincelle];
+      return s;
+    };
+    const premierCoup = (s: GameState) => coupsHeuristiques(s, seededRand(2))[0];
+
+    it("est jouée quand le +1 permet de poser une carte", () => {
+      const a = premierCoup(situation(1, true));
+      expect(a.type).toBe("play_card");
+      expect(isManaSpark(situation(1, true).players[0].hand.find((c) => a.type === "play_card" && c.instanceId === a.cardInstanceId)!.card)).toBe(true);
+    });
+
+    it("est gardée quand le +1 ne sert à rien", () => {
+      expect(premierCoup(situation(1, false)).type).toBe("end_turn");
+    });
   });
 });

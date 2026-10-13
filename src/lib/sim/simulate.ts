@@ -4,6 +4,7 @@
 import { applyAction, initializeGame } from "@/lib/game/engine";
 import type { Card, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
 import { objetsDe } from "@/lib/game/items";
+import { isManaSpark } from "@/lib/game/mana-spark";
 import { candidateActions, seededRand, type Rand } from "./random-bot";
 
 /** Une stratégie : les coups qu'elle veut jouer, du préféré au moins voulu.
@@ -38,6 +39,10 @@ function niveau(p: GameState["players"][number], c: Compteur): number {
  *  en fin de partie (encore en main, ou posés sans porteur). */
 export interface UsageObjets { recus: number; poses: number; equipes: number; inutilises: number }
 
+/** ÉTINCELLE DE MANA (compensation du 2e joueur) : reçue, jouée à quel tour,
+ *  et si le mana gagné a servi (plus de mana à la fin de ce tour-là) ou non. */
+export interface UsageEtincelle { recue: boolean; joueeAuTour: number | null; manaPerdu: boolean | null }
+
 export interface ResultatPartie {
   seed: number;
   winner: 0 | 1 | null;
@@ -50,6 +55,7 @@ export interface ResultatPartie {
   /** Par camp (p1, p2) : usage de chaque compteur alimenté au moins une fois. */
   compteurs: [Partial<Record<Compteur, UsageCompteur>>, Partial<Record<Compteur, UsageCompteur>>];
   objets: [UsageObjets, UsageObjets];
+  etincelle: [UsageEtincelle, UsageEtincelle];
   ms: number;
 }
 
@@ -94,10 +100,18 @@ export function simulerPartie(
     { recus: 0, poses: 0, equipes: 0, inutilises: 0 }, { recus: 0, poses: 0, equipes: 0, inutilises: 0 },
   ];
   const objetsVus = new Set<string>();
+  const etincelle: ResultatPartie["etincelle"] = [
+    { recue: false, joueeAuTour: null, manaPerdu: null }, { recue: false, joueeAuTour: null, manaPerdu: null },
+  ];
   const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
     const actif = avant.currentPlayerIndex;
     if (act.type === "play_card" && avant.players[actif].hand.find((c) => c.instanceId === act.cardInstanceId)?.card.card_type === "item") objets[actif].poses++;
     if (act.type === "equip_item") objets[actif].equipes++;
+    const e = etincelle[actif];
+    if (act.type === "play_card" && avant.players[actif].hand.find((c) => c.instanceId === act.cardInstanceId && isManaSpark(c.card))) e.joueeAuTour = avant.turnNumber;
+    // Fin du tour où elle a servi : du mana inutilisé = le +1 n'a pas été converti.
+    if (act.type === "end_turn" && e.joueeAuTour === avant.turnNumber && e.manaPerdu === null) e.manaPerdu = avant.players[actif].mana >= 1;
+    apres.players.forEach((p, i) => { if (!etincelle[i].recue && p.hand.some((c) => isManaSpark(c.card))) etincelle[i].recue = true; });
     apres.players.forEach((p, i) => {
       for (const c of p.hand) if (c.card.card_type === "item" && !objetsVus.has(c.instanceId)) { objetsVus.add(c.instanceId); objets[i].recus++; }
     });
@@ -168,6 +182,7 @@ export function simulerPartie(
       inutilises: state!.players[i].hand.filter((c) => c.card.card_type === "item").length
         + objetsDe(state!.players[i]).filter((x) => !x.equippedToInstanceId).length,
     })) as ResultatPartie["objets"],
+    etincelle,
     winner: w === "p1" ? 0 : w === "p2" ? 1 : null,
   };
 }
