@@ -1,9 +1,24 @@
-// PROTOTYPE — simule une partie complète entre deux bots aléatoires et note
+// PROTOTYPE — simule une partie complète entre deux bots et note
 // tout ce qui empêche une simulation fiable : exceptions du moteur, coups
 // refusés (état inchangé), appels à Math.random (non reproductibles), blocages.
 import { applyAction, initializeGame } from "@/lib/game/engine";
 import type { Card, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
 import { candidateActions, seededRand, type Rand } from "./random-bot";
+
+/** Une stratégie : les coups qu'elle veut jouer, du préféré au moins voulu.
+ *  Le simulateur applique le premier que le moteur accepte. */
+export type Politique = (state: GameState, rand: Rand) => GameAction[];
+
+/** Bot ALÉATOIRE : un coup au hasard, la fin de tour en dernier 85 % du temps. */
+export const politiqueAleatoire: Politique = (state, rand) => {
+  const candidats = candidateActions(state, rand);
+  const finTour = candidats.find((c) => c.type === "end_turn");
+  const autres = candidats.filter((c) => c.type !== "end_turn");
+  const ordre: GameAction[] = [];
+  while (autres.length) ordre.push(autres.splice(Math.floor(rand() * autres.length), 1)[0]);
+  if (finTour) { if (rand() < 0.15) ordre.unshift(finTour); else ordre.push(finTour); }
+  return ordre;
+};
 
 export interface DeckSim { label: string; cards: { card: Card; quantity: number }[]; hero: HeroDefinition | null }
 
@@ -38,6 +53,7 @@ function decrire(state: GameState, a: GameAction): { action: string; card?: stri
 export function simulerPartie(
   a: DeckSim, b: DeckSim, seed: number,
   pools: { factionCardPool: Card[]; allSpellsPool: Card[]; tokens: TokenTemplate[] },
+  politiques: [Politique, Politique] = [politiqueAleatoire, politiqueAleatoire],
 ): ResultatPartie {
   const t0 = Date.now();
   const rand: Rand = seededRand(seed * 7919 + 1);
@@ -64,14 +80,15 @@ export function simulerPartie(
     while (actions < MAX_ACTIONS) {
       if (state.phase === "finished") { fin = "victoire"; break; }
       if (state.turnNumber > MAX_TOURS) { fin = "limite_tours"; break; }
-      const candidats = candidateActions(state, rand);
-      // Préférence pour l'action : on garde la fin de tour en dernier recours
-      // 85 % du temps, pour que la partie avance sans finir chaque tour à vide.
-      const finTour = candidats.find((c) => c.type === "end_turn");
-      const autres = candidats.filter((c) => c.type !== "end_turn");
-      const ordre: GameAction[] = [];
-      while (autres.length) ordre.push(autres.splice(Math.floor(rand() * autres.length), 1)[0]);
-      if (finTour) { if (rand() < 0.15) ordre.unshift(finTour); else ordre.push(finTour); }
+      // Qui décide : le joueur dont le mulligan est en attente, le contrôleur
+      // d'un déclencheur en attente, sinon le joueur actif.
+      const qui = state.phase === "mulligan"
+        ? (state.mulliganReady[0] ? 1 : 0)
+        : state.pendingTriggers?.[0]
+          ? (state.players[0].id === state.pendingTriggers[0].controllerId ? 0 : 1)
+          : state.currentPlayerIndex;
+      let ordre = politiques[qui](state, rand);
+      if (state.phase === "mulligan") ordre = ordre.filter((x) => x.type !== "mulligan" || x.playerId === state.players[qui].id);
 
       let avance = false;
       for (const act of ordre) {

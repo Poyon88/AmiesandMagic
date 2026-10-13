@@ -53,8 +53,18 @@ function slotCandidates(state: GameState, type: SpellTargetType): string[] | nul
   }
 }
 
-/** Coups candidats du joueur qui doit agir. `end_turn` est toujours dernier. */
-export function candidateActions(state: GameState, rand: Rand): GameAction[] {
+/** Jusqu'à `n` éléments distincts, dans un ordre tiré au hasard. */
+function plusieurs<T>(rand: Rand, xs: readonly T[], n: number): T[] {
+  return [...xs].sort(() => rand() - 0.5).slice(0, Math.max(1, n));
+}
+
+/** Coups candidats du joueur qui doit agir. `end_turn` est toujours dernier.
+ *
+ *  `variantes` : nombre de cibles essayées par choix PRINCIPAL (cible d'une
+ *  pose, premier emplacement d'un sort, cible d'attaque, de pouvoir). 1 = une
+ *  cible au hasard (bot aléatoire) ; plus = autant de coups distincts, que le
+ *  bot heuristique compare. Les choix secondaires restent tirés au hasard. */
+export function candidateActions(state: GameState, rand: Rand, variantes = 1): GameAction[] {
   const out: GameAction[] = [];
 
   if (state.phase === "mulligan") {
@@ -87,33 +97,28 @@ export function candidateActions(state: GameState, rand: Rand): GameAction[] {
     if (card.topdeck_cost) couts.topdeckInstanceIds = tirer(autresEnMain, card.topdeck_cost);
     const base = { type: "play_card" as const, cardInstanceId: ci.instanceId, boardPosition: me.board.length, ...couts };
     if (card.card_type === "spell") {
-      const targetMap: Record<string, string> = {};
-      let ok = true;
-      for (const slot of getSpellTargetSlots(card)) {
-        const c = slotCandidates(state, slot.type);
-        if (c === null) continue;
-        const t = pick(rand, c);
-        if (!t) { ok = false; break; }
-        targetMap[slot.slot] = t;
-      }
+      const slots = getSpellTargetSlots(card)
+        .map((slot) => ({ slot, c: slotCandidates(state, slot.type) }))
+        .filter((x): x is { slot: typeof x.slot; c: string[] } => x.c !== null);
+      if (slots.some((x) => x.c.length === 0)) continue;
       // Sélection portée par un sort : même offre que la modale du client.
-      const a: Extract<GameAction, { type: "play_card" }> = { ...base, targetMap };
+      let selectionCardId: number | undefined;
       for (const kw of SELECTIONS_SORT) {
         const sk = card.spell_keywords?.find((k) => k.id === kw);
         if (!sk) continue;
         const x = (sk.amount ?? 0) + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
-        const offre = selectionCardsForKeyword(kw, state, x, card, undefined, undefined, sk.randomX === true, sk.minX);
-        const choisie = pick(rand, offre);
-        if (choisie) { a.selectionCardId = choisie.id; break; }
+        const choisie = pick(rand, selectionCardsForKeyword(kw, state, x, card, undefined, undefined, sk.randomX === true, sk.minX));
+        if (choisie) { selectionCardId = choisie.id; break; }
       }
-      if (ok) out.push(a);
+      const premiers = slots.length ? plusieurs(rand, slots[0].c, variantes) : [undefined];
+      for (const t0 of premiers) {
+        const targetMap: Record<string, string> = {};
+        slots.forEach((x, i) => { targetMap[x.slot.slot] = i === 0 && t0 ? t0 : pick(rand, x.c)!; });
+        out.push({ ...base, targetMap, ...(selectionCardId != null ? { selectionCardId } : {}) });
+      }
       continue;
     }
     const a: Extract<GameAction, { type: "play_card" }> = { ...base };
-    if (creatureNeedsTarget(card)) {
-      const t = pick(rand, getCreatureTargets(state, card));
-      if (t) a.targetInstanceId = t;
-    }
     if (creatureNeedsGraveyardTarget(card)) {
       const t = pick(rand, getGraveyardTargets(state, card));
       if (t) a.graveyardTargetInstanceId = t;
@@ -125,20 +130,24 @@ export function candidateActions(state: GameState, rand: Rand): GameAction[] {
       const choisie = pick(rand, selectionCardsForKeyword(kw, state, amp.x, card, undefined, undefined, amp.randomX, amp.minX));
       if (choisie) a.selectionCardIds = { ...a.selectionCardIds, [kw]: choisie.id };
     }
-    out.push(a);
+    const cibles = creatureNeedsTarget(card) ? getCreatureTargets(state, card) : [];
+    if (cibles.length) for (const t of plusieurs(rand, cibles, variantes)) out.push({ ...a, targetInstanceId: t });
+    else out.push(a);
   }
 
   for (const ci of me.board) {
     if (!canAttack(state, ci.instanceId)) continue;
-    const t = pick(rand, getValidTargets(state, ci.instanceId));
-    if (t) out.push({ type: "attack", attackerInstanceId: ci.instanceId, targetInstanceId: t });
+    for (const t of plusieurs(rand, getValidTargets(state, ci.instanceId), variantes)) {
+      if (t) out.push({ type: "attack", attackerInstanceId: ci.instanceId, targetInstanceId: t });
+    }
   }
 
   const hero = me.hero.heroDefinition;
   if (hero && canUseHeroPower(state)) {
     if (heroPowerNeedsTarget(hero)) {
-      const t = pick(rand, getHeroPowerTargets(state, hero));
-      if (t) out.push({ type: "hero_power", targetInstanceId: t });
+      for (const t of plusieurs(rand, getHeroPowerTargets(state, hero), variantes)) {
+        if (t) out.push({ type: "hero_power", targetInstanceId: t });
+      }
     } else out.push({ type: "hero_power" });
   }
 
