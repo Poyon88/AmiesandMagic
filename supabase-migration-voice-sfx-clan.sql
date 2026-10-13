@@ -28,3 +28,11 @@ FROM (VALUES
   ('Elfes', 'Les Hauts-Elfes', 'Hauts-Elfes')
 ) AS m(race, clan, prefixe)
 WHERE v.race = m.race AND v.clan IS NULL AND v.source_filename IS NOT NULL;
+
+-- Bucket `sfx-tracks` : l'écran d'import des voix accepte le m4a et 10 Mo, mais
+-- le bucket refusait le m4a (« Upload échoué (400) ») et plafonnait à 5 Mo.
+-- Les autres écrans de sons gardent leur propre plafond de 5 Mo côté client.
+UPDATE storage.buckets
+SET allowed_mime_types = ARRAY['audio/mpeg','audio/ogg','audio/wav','audio/webm','audio/mp4','audio/x-m4a','audio/m4a'],
+    file_size_limit = 10485760
+WHERE id = 'sfx-tracks';
