@@ -254,6 +254,10 @@ export function simulerPartie(
         if (suivant === state) { incidents.push({ kind: "refus", action: d.action, card: d.card, detail: "état inchangé" }); continue; }
         suivre(state, suivant, act);
         state = suivant;
+        // Comme le store (gameStore, « onAttackWave ») : la photo intermédiaire
+        // d'une attaque ne sert qu'à l'animation. Gardée, chaque nouvelle photo
+        // contient la précédente et l'état enfle (3,5 Mo, parties bloquées).
+        if (state.onAttackWave) state.onAttackWave = undefined;
         actions++;
         parType[act.type] = (parType[act.type] ?? 0) + 1;
         avance = true;
