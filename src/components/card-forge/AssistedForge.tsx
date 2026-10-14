@@ -27,7 +27,7 @@ import { SUBJECT_KINDS, SUBJECT_KINDS_UNITE, SUBJECT_KIND_LABELS, type CardConce
 
 interface Msg { role: "user" | "assistant"; content: string }
 interface BriefRow { id: number; title: string; brief: CardBrief; created_at: string; updated_at: string; created_cards: number }
-interface Suivi { position: number; statut: "attente" | "encours" | "ok" | "erreur"; nom?: string; id?: number | null; erreur?: string; ratio?: number; image?: boolean; sujet?: string }
+interface Suivi { position: number; statut: "attente" | "encours" | "ok" | "erreur"; nom?: string; id?: number | null; erreur?: string; ratio?: number; image?: boolean; sujet?: string; voix?: string | null }
 
 const nouveauSeed = () => (Date.now() % 2147483646) + 1;
 /** Cartes du lot pour un tirage donné : même seed ⇒ mêmes cartes (concepts et lancement s'accordent). */
@@ -220,7 +220,7 @@ export default function AssistedForge() {
         const c = concepts[i];
         const r = await creerCarte(cartes[i], brief, pris, ctrl.signal, c ? { concept: c, lexique } : null, modeleImage);
         pris.push(r.name);
-        setSuivi((s) => s.map((x) => x.position === pos ? { ...x, statut: "ok", nom: r.name, id: r.id, image: r.imageOk, erreur: r.imageErreur } : x));
+        setSuivi((s) => s.map((x) => x.position === pos ? { ...x, statut: "ok", nom: r.name, id: r.id, image: r.imageOk, erreur: r.imageErreur, voix: r.voix } : x));
         item = { position: pos, card_id: r.id, status: "created", error: r.imageOk ? null : (r.imageErreur ?? "Illustration non générée") };
       } catch (e) {
         if (ctrl.signal.aborted) {
@@ -408,7 +408,7 @@ export default function AssistedForge() {
                 <span style={{ width: 20, color: "#aaa" }}>{s.position + 1}</span>
                 <span style={{ width: 16 }}>{s.statut === "ok" ? "✅" : s.statut === "erreur" ? "❌" : s.statut === "encours" ? "⏳" : "·"}</span>
                 <span style={{ flex: 1, color: "#333", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={s.erreur ?? s.sujet}>
-                  {s.nom ?? (s.statut === "erreur" ? s.erreur : s.sujet ? <span style={{ color: "#999" }}>{s.sujet}</span> : "")}{s.statut === "ok" && s.image === false ? <span title={s.erreur ?? undefined} style={{ color: "#e08a00" }}> (sans image)</span> : ""}
+                  {s.nom ?? (s.statut === "erreur" ? s.erreur : s.sujet ? <span style={{ color: "#999" }}>{s.sujet}</span> : "")}{s.statut === "ok" && s.image === false ? <span title={s.erreur ?? undefined} style={{ color: "#e08a00" }}> (sans image)</span> : ""}{s.voix ? <span title={`Voix : « ${s.voix} »`} style={{ color: "#888" }}> 🔊</span> : ""}
                 </span>
                 {s.ratio != null && <span style={{ color: Math.abs(s.ratio - 1) <= 0.05 ? "#27ae60" : "#e08a00" }}>{Math.round(s.ratio * 100)} %</span>}
               </div>

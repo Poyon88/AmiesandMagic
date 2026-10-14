@@ -63,7 +63,7 @@ async function compresser(base64: string, mime: string): Promise<string> {
   return canvas.toDataURL("image/webp", 0.85).split(",")[1];
 }
 
-export interface CarteCreee { id: number | null; name: string; nameAdjusted?: boolean; imageOk: boolean; imageErreur?: string }
+export interface CarteCreee { id: number | null; name: string; nameAdjusted?: boolean; imageOk: boolean; imageErreur?: string; voix?: string | null }
 
 /** Ce que le planificateur de concepts doit savoir d'une carte du lot. */
 export function cartepourConcept(b: BalancedCard) {
@@ -144,5 +144,19 @@ export async function creerCarte(
       imageModel: modeleProduit,
     }),
   }));
-  return { id: saved.id ?? null, name: texte.name, nameAdjusted: texte.nameAdjusted, imageOk: !!imageBase64, imageErreur };
+  // Voix d'entrée en jeu (unités) : la réplique la plus proche de la carte parmi
+  // celles de sa race / son clan / son genre. Un échec laisse le son générique.
+  let voix: string | null = null;
+  if (saved.id && !isSpell && b.cardType !== "item") {
+    try {
+      const r = await json(await fetch("/api/voice-sfx/assign", {
+        method: "POST", headers: { "Content-Type": "application/json" }, signal,
+        body: JSON.stringify({ cardIds: [saved.id] }),
+      }));
+      voix = r.resultats?.[0]?.replique ?? null;
+    } catch (e) {
+      if (signal?.aborted) throw e;
+    }
+  }
+  return { id: saved.id ?? null, name: texte.name, nameAdjusted: texte.nameAdjusted, imageOk: !!imageBase64, imageErreur, voix };
 }
