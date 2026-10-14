@@ -69,6 +69,10 @@ export default function VoiceSfxManager() {
   const [filtreGenre, setFiltreGenre] = useState<"" | VoiceGender>("");
   const [ouvert, setOuvert] = useState<number | null>(null);
 
+  // Association automatique aux unités sans son (paquets de 10, en boucle).
+  const [assoc, setAssoc] = useState<{ enCours: boolean; faites: number; restantes: number | null; journal: string[]; erreur?: string }>({ enCours: false, faites: 0, restantes: null, journal: [] });
+  const assocStop = useRef(false);
+
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/voice-sfx", { cache: "no-store" });
@@ -104,6 +108,29 @@ export default function VoiceSfxManager() {
   }), [fichiers, race, clan, gender, noms, resultats]);
 
   const aImporter = lignes.filter((l) => l.statut === "nouveau");
+
+  const associerVoix = async () => {
+    assocStop.current = false;
+    setAssoc({ enCours: true, faites: 0, restantes: null, journal: [] });
+    let faites = 0;
+    try {
+      for (;;) {
+        const res = await fetch("/api/voice-sfx/assign", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ manquantes: true, limite: 10 }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error ?? `Erreur ${res.status}`);
+        const ok = (data.resultats ?? []).filter((r: { replique?: string }) => r.replique);
+        faites += ok.length;
+        const lignesJournal = ok.map((r: { name: string; replique: string }) => `${r.name} → « ${r.replique} »`);
+        setAssoc((a) => ({ ...a, faites, restantes: data.restantes, journal: [...lignesJournal, ...a.journal].slice(0, 200) }));
+        // Paquet sans aucune association (erreurs répétées) : on s'arrête plutôt que de boucler.
+        if (!data.restantes || ok.length === 0 || assocStop.current) break;
+      }
+    } catch (e) {
+      setAssoc((a) => ({ ...a, erreur: e instanceof Error ? e.message : String(e) }));
+    }
+    setAssoc((a) => ({ ...a, enCours: false }));
+    load();
+  };
 
   const ajouterFichiers = (liste: FileList | null) => {
     if (!liste) return;
@@ -206,8 +233,26 @@ export default function VoiceSfxManager() {
         <div style={S.hint}>
           Réserve de répliques rangées par race, clan (facultatif, pour distinguer les accents) et genre. Le nom est dérivé du
           fichier : clan + nom du fichier + genre (ex. « Forge_Ardente_Let_them_come_3_M ») ; le clan n&apos;est pas ajouté si le
-          fichier commence déjà par lui. Un nom déjà présent dans la race est ignoré. Rien n&apos;est attribué automatiquement aux cartes.
+          fichier commence déjà par lui. Un nom déjà présent dans la race est ignoré. Les unités de la Création assistée reçoivent
+          automatiquement la réplique la plus proche de leur carte (même race, clan, genre) ; le bouton ci-dessous fait de même pour
+          les unités existantes SANS son (aucun son déjà choisi n&apos;est remplacé).
         </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", margin: "10px 0" }}>
+          <button style={S.btn} disabled={assoc.enCours} onClick={associerVoix}>
+            {assoc.enCours ? "Association en cours…" : "🔊 Associer les voix aux unités sans son"}
+          </button>
+          {assoc.enCours && <button style={{ ...S.btn, background: "#888" }} onClick={() => { assocStop.current = true; }}>Arrêter</button>}
+          {(assoc.faites > 0 || assoc.restantes !== null) && (
+            <span style={{ fontSize: 11, color: "#555" }}>{assoc.faites} associée(s){assoc.restantes ? ` · ${assoc.restantes} restante(s)` : ""}</span>
+          )}
+          {assoc.erreur && <span style={{ fontSize: 11, color: "#c0392b" }}>{assoc.erreur}</span>}
+        </div>
+        {assoc.journal.length > 0 && (
+          <div style={{ maxHeight: 160, overflowY: "auto", fontSize: 10, color: "#666", marginBottom: 10, lineHeight: 1.6 }}>
+            {assoc.journal.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+        )}
 
         {/* Import groupé */}
         <div style={S.sub}>IMPORT GROUPÉ</div>
