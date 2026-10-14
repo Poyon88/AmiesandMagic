@@ -146,6 +146,7 @@ ${raceId ? `- La race est NON NÉGOCIABLE : tout personnage montré est un(e) ${
 - Varie le cadrage (portrait serré, plan moyen, plan large, contre-plongée…), la composition et l'instant : l'illustration doit se distinguer des autres cartes du clan.
 
 Pour le champ "flavorText" : UNE phrase courte, sous la forme suivante : ${formeAmbiance}. Pas de formule épique creuse.
+- Le texte d'ambiance vit DANS LE MONDE du jeu, jamais dans ses règles : AUCUNE référence aux mécanismes : pas de cartes à jouer, de deck, de main, de cimetière de cartes, de mana, de tour de jeu, de pioche ou de défausse de cartes, ni de nom de capacité ou de coût employé comme règle (Exil, Sacrifice, Épargne, Invention, Traque…). Les mots du monde restent permis dans leur sens propre (une carte géographique, une pioche de mineur, l'exil d'un peuple). La mécanique peut INSPIRER l'idée, mais elle s'exprime par l'histoire (un serment, une perte, une ruse, un prix payé), jamais en termes de jeu.
 
 Réponds UNIQUEMENT en JSON valide sans backticks :
 {
