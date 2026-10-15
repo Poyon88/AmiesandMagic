@@ -80,7 +80,7 @@ export function formatStyleGuideForPrompt(
   if (!sg) return null;
   const valeur = (key: StyleGuideField) => {
     const v = sg[key]?.trim();
-    if (!v || !opts.tirage || opts.mode !== "repertoire" || !estRepertoire(key)) return v;
+    if (!v || !opts.tirage || opts.mode !== "repertoire" || !estRepertoire(key) || key === "notes") return v;
     const items = elementsCharte(v);
     for (let i = items.length - 1; i > 0; i--) {
       const j = Math.floor(opts.tirage() * (i + 1));
