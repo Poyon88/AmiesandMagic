@@ -46,15 +46,17 @@ export const STYLE_GUIDE_MANDATORY: readonly StyleGuideField[] = ["art_style", "
  *  et la météo de la carte. */
 export const STYLE_GUIDE_ACCENTS: readonly StyleGuideField[] = ["palette"];
 
-/** Éléments d'un champ libre (« a, b (c, d) ; e ») : coupés aux virgules et
- *  points-virgules hors parenthèses. */
+/** Éléments d'un champ libre, hors parenthèses : aux points-virgules s'il y en a
+ *  (« pagne de kapa, épaules nues ; cape de fibres » = deux options), sinon aux
+ *  virgules. */
 export function elementsCharte(texte: string): string[] {
+  const seps = texte.includes(";") ? [";"] : [","];
   const out: string[] = [];
   let prof = 0, cur = "";
   for (const ch of texte) {
     if (ch === "(") prof++;
     if (ch === ")") prof = Math.max(0, prof - 1);
-    if (prof === 0 && (ch === "," || ch === ";")) { out.push(cur); cur = ""; continue; }
+    if (prof === 0 && seps.includes(ch)) { out.push(cur); cur = ""; continue; }
     cur += ch;
   }
   out.push(cur);

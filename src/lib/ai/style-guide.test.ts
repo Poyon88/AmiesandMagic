@@ -65,7 +65,7 @@ describe("formatStyleGuideForPrompt — mode répertoire (cartes)", () => {
   });
 
   it("avec un tirage, réduit chaque champ du répertoire à quelques éléments", () => {
-    const riche = { ...charte, environments: "plage noire, forêt de lehua (fougères, mousses), village de pêcheurs ; champ de taro, volcan au loin." };
+    const riche = { ...charte, environments: "plage noire; forêt de lehua (fougères, mousses); village de pêcheurs, filets; champ de taro; volcan au loin (occasionnel)." };
     const bloc = formatStyleGuideForPrompt(riche, { mode: "repertoire", tirage: () => 0, parChamp: 2 })!;
     const ligne = bloc.split("\n").find((l) => l.startsWith("- Environments"))!;
     expect(ligne.split(" ; ")).toHaveLength(2);
@@ -75,7 +75,8 @@ describe("formatStyleGuideForPrompt — mode répertoire (cartes)", () => {
 });
 
 describe("elementsCharte", () => {
-  it("coupe aux virgules et points-virgules hors parenthèses", () => {
-    expect(elementsCharte("a, b (c, d) ; e.")).toEqual(["a", "b (c, d)", "e"]);
+  it("coupe aux points-virgules s'il y en a, sinon aux virgules, hors parenthèses", () => {
+    expect(elementsCharte("a, b (c; d) ; e.")).toEqual(["a, b (c; d)", "e"]);
+    expect(elementsCharte("a, b (c, d), e.")).toEqual(["a", "b (c, d)", "e"]);
   });
 });
