@@ -134,7 +134,7 @@ RÈGLES
    - Action commune : ${NAME_FORMS.generique.action.join(' ; ')}
    Deux noms du lot ne commencent JAMAIS par le même mot ; aucun nom du catalogue n'est repris. Accorde le nom au genre de l'Unité.
 7. LEXIQUE : invente quelques noms de lieux, lignées, divinités ou événements propres au lot (6 à 12), à réutiliser avec MODÉRATION (un même nom au plus sur deux ou trois cartes).
-8. TEXTE D'AMBIANCE : fais tourner les formes (${FLAVOR_FORMS.join(', ')}) et les tons (${FLAVOR_TONES.join(', ')}).
+8. TEXTE D'AMBIANCE : fais tourner les formes (${FLAVOR_FORMS.join(', ')}) et les tons (${FLAVOR_TONES.join(', ')}) ; il parle du monde, jamais des règles (aucune référence aux cartes, au deck, au mana ni aux noms de capacités).
 
 Réponds UNIQUEMENT par un objet JSON valide, sans backticks :
 {"lexique": ["…"], "concepts": [{"subjectKind": "membre", "sujet": "qui ou quoi, précis (français)", "role": "ce que sa mécanique raconte", "scene": "où, quel instant", "cadrage": "…", "elementsCharte": "1-2 éléments du répertoire", "moment": "…", "tenue": "…", "ideeNom": "…", "formeNom": "…", "formeAmbiance": "…", "ton": "…"}]}
