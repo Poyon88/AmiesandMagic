@@ -1,6 +1,6 @@
 // Charte graphique d'un clan → bloc de direction artistique des prompts.
 import { describe, expect, it } from "vitest";
-import { formatStyleGuideForPrompt, STYLE_GUIDE_FIELDS } from "./style-guide";
+import { elementsCharte, formatStyleGuideForPrompt, STYLE_GUIDE_FIELDS } from "./style-guide";
 import { buildHeroPortraitPrompt } from "./hero-portrait-prompt";
 
 const charte = {
@@ -46,19 +46,36 @@ describe("portrait de héros", () => {
 });
 
 describe("formatStyleGuideForPrompt — mode répertoire (cartes)", () => {
-  it("sépare l'obligatoire (palette, lumière, style, à éviter) du répertoire", () => {
+  it("n'impose que le style et les interdits ; la palette en accents, la lumière au répertoire", () => {
     const bloc = formatStyleGuideForPrompt(charte, { mode: "repertoire" })!;
-    const [avant, apres] = bloc.split("REPERTOIRE");
+    const [avant, reste] = bloc.split("CLAN COLOURS");
+    const [accents, apres] = reste.split("REPERTOIRE");
     expect(avant).toContain("MANDATORY");
-    expect(avant).toContain("Noir de roche");
     expect(avant).toContain("Pas de steampunk");
-    expect(avant).not.toContain("Plates sombres");
+    expect(avant).not.toContain("Noir de roche");
+    expect(avant).not.toContain("Lueur de forge");
+    expect(accents).toContain("Noir de roche");
+    expect(apres).toContain("Lueur de forge");
     expect(apres).toContain("Plates sombres");
     expect(apres).toContain("Runes gravées");
-    expect(apres).not.toContain("Lueur de forge");
   });
 
   it("le mode par défaut reste un bloc unique", () => {
     expect(formatStyleGuideForPrompt(charte)).not.toContain("REPERTOIRE");
+  });
+
+  it("avec un tirage, réduit chaque champ du répertoire à quelques éléments", () => {
+    const riche = { ...charte, environments: "plage noire, forêt de lehua (fougères, mousses), village de pêcheurs ; champ de taro, volcan au loin." };
+    const bloc = formatStyleGuideForPrompt(riche, { mode: "repertoire", tirage: () => 0, parChamp: 2 })!;
+    const ligne = bloc.split("\n").find((l) => l.startsWith("- Environments"))!;
+    expect(ligne.split(" ; ")).toHaveLength(2);
+    // Le style et la palette ne sont jamais tronqués.
+    expect(bloc).toContain("Noir de roche, bronze, braises");
+  });
+});
+
+describe("elementsCharte", () => {
+  it("coupe aux virgules et points-virgules hors parenthèses", () => {
+    expect(elementsCharte("a, b (c, d) ; e.")).toEqual(["a", "b (c, d)", "e"]);
   });
 });

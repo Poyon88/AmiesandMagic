@@ -36,26 +36,58 @@ export const STYLE_GUIDE_FIELDS: { key: StyleGuideField; label: string; prompt: 
   { key: "notes", label: "Notes", prompt: "Notes", aide: "Ce qui n'entre nulle part ailleurs" },
 ];
 
-/** Champs qui font l'UNITÉ d'un clan (toujours appliqués) ; les autres
- *  (décors, matériaux, motifs, notes) forment un RÉPERTOIRE où chaque carte
- *  pioche — sinon le modèle prend à chaque fois les premiers de la liste et
- *  toutes les cartes du clan portent le même bouclier. */
-export const STYLE_GUIDE_MANDATORY: readonly StyleGuideField[] = ["palette", "lighting", "art_style", "avoid"];
+/** Champs qui font l'UNITÉ d'un clan (toujours appliqués) : le rendu et les
+ *  interdits. La palette n'y est plus (2026-10-15) : imposée à chaque carte avec
+ *  la lumière, elle peignait tout le clan de la même couleur (Fils du Volcan :
+ *  nuit, lave et volcan sur chaque carte). Elle donne désormais des ACCENTS ; la
+ *  lumière rejoint le RÉPERTOIRE, où chaque carte pioche. */
+export const STYLE_GUIDE_MANDATORY: readonly StyleGuideField[] = ["art_style", "avoid"];
+/** Couleurs du clan, en touches : la couleur dominante de l'image suit le moment
+ *  et la météo de la carte. */
+export const STYLE_GUIDE_ACCENTS: readonly StyleGuideField[] = ["palette"];
+
+/** Éléments d'un champ libre (« a, b (c, d) ; e ») : coupés aux virgules et
+ *  points-virgules hors parenthèses. */
+export function elementsCharte(texte: string): string[] {
+  const out: string[] = [];
+  let prof = 0, cur = "";
+  for (const ch of texte) {
+    if (ch === "(") prof++;
+    if (ch === ")") prof = Math.max(0, prof - 1);
+    if (prof === 0 && (ch === "," || ch === ";")) { out.push(cur); cur = ""; continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.map((e) => e.trim().replace(/\.$/, "").trim()).filter(Boolean);
+}
 
 /** Bloc de direction artistique pour un prompt. Les champs vides sont omis ;
  *  `null` si la charte n'a rien à dire. La charte est rédigée en français : le
  *  modèle la transpose (Claude écrit l'illustrationPrompt en anglais, Gemini
  *  lit les deux langues).
  *
- *  `mode: "repertoire"` (cartes) sépare l'obligatoire du répertoire ; le mode
- *  par défaut (jetons, plateaux, héros) garde le bloc unique. */
+ *  `mode: "repertoire"` (cartes) sépare l'obligatoire, les accents et le
+ *  répertoire ; le mode par défaut (jetons, plateaux, héros) garde le bloc
+ *  unique. Avec `tirage` (un générateur dans [0, 1[), chaque champ du répertoire
+ *  est réduit à `parChamp` éléments tirés au hasard : une carte isolée ne voit
+ *  plus toujours les mêmes premiers éléments de la liste. */
 export function formatStyleGuideForPrompt(
   sg: Pick<StyleGuide, "clan" | StyleGuideField> | null | undefined,
-  opts: { mode?: "strict" | "repertoire" } = {},
+  opts: { mode?: "strict" | "repertoire"; tirage?: () => number; parChamp?: number } = {},
 ): string | null {
   if (!sg) return null;
-  const ligne = (key: StyleGuideField, prompt: string) => {
+  const valeur = (key: StyleGuideField) => {
     const v = sg[key]?.trim();
+    if (!v || !opts.tirage || opts.mode !== "repertoire" || !estRepertoire(key)) return v;
+    const items = elementsCharte(v);
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(opts.tirage() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return items.slice(0, opts.parChamp ?? 3).join(" ; ");
+  };
+  const ligne = (key: StyleGuideField, prompt: string) => {
+    const v = valeur(key);
     return v ? `- ${prompt}: ${v}` : null;
   };
   const lignes = (filtre: (k: StyleGuideField) => boolean) => STYLE_GUIDE_FIELDS
@@ -64,17 +96,23 @@ export function formatStyleGuideForPrompt(
     .filter((l): l is string => l !== null);
   if (opts.mode === "repertoire") {
     const obligatoire = lignes((k) => STYLE_GUIDE_MANDATORY.includes(k));
-    const repertoire = lignes((k) => !STYLE_GUIDE_MANDATORY.includes(k));
-    if (!obligatoire.length && !repertoire.length) return null;
+    const accents = lignes((k) => STYLE_GUIDE_ACCENTS.includes(k));
+    const repertoire = lignes(estRepertoire);
+    if (!obligatoire.length && !accents.length && !repertoire.length) return null;
     return [
       `ART DIRECTION — clan "${sg.clan}" (house style guide, written in French; apply it, do not quote it).`,
       ...(obligatoire.length ? ["MANDATORY for every card:", ...obligatoire] : []),
-      ...(repertoire.length ? ["REPERTOIRE — ideas to draw from, not a checklist: use at most one or two per card, vary them from card to card, and feel free to invent others in the same spirit:", ...repertoire] : []),
+      ...(accents.length ? ["CLAN COLOURS — accents only (one or two touches: cloth, banner, glow, jewel, paint); the dominant colours of the image come from the card's own time of day, weather and setting:", ...accents] : []),
+      ...(repertoire.length ? ["REPERTOIRE — ideas to draw from, not a checklist: use at most one or two per card, vary them from card to card, and feel free to invent others in the same spirit. The clan's signature light or landmark is an OPTION, not a rule:", ...repertoire] : []),
     ].join("\n");
   }
   const tout = lignes(() => true);
   if (tout.length === 0) return null;
   return `ART DIRECTION — clan "${sg.clan}" (house style guide, written in French; apply it, do not quote it):\n${tout.join("\n")}`;
+}
+
+function estRepertoire(k: StyleGuideField): boolean {
+  return !STYLE_GUIDE_MANDATORY.includes(k) && !STYLE_GUIDE_ACCENTS.includes(k);
 }
 
 /** Charte à utiliser (serveur, client service_role) : celle demandée si elle

@@ -5,7 +5,7 @@ import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide'
 import { findNameCollision, normalizeCardName } from '@/lib/cards/nameCollision';
 import { RACE_TYPICAL_GEAR, RACE_VISUALS, physiquePourGenre } from '@/lib/ai/race-visuals';
 import {
-  FLAVOR_FORMS, FLAVOR_TONES, ancrageRace, chargerCatalogue, conceptPourPrompt, nameRuleText, premierMot, sanitizeConcept,
+  FLAVOR_FORMS, FLAVOR_TONES, MOMENTS, TENUES, ancrageRace, auHasard, chargerCatalogue, conceptPourPrompt, nameRuleText, premierMot, sanitizeConcept,
 } from '@/lib/ai/card-concepts';
 
 export async function POST(request: Request) {
@@ -52,13 +52,18 @@ export async function POST(request: Request) {
   const charte = clanId
     ? await loadStyleGuide(auth.supabase, { id: typeof styleGuideId === 'number' ? styleGuideId : null, clan: clanId })
     : null;
-  // Mode RÉPERTOIRE : palette, lumière, style et interdits s'imposent ; décors,
-  // matériaux et motifs sont des pistes (sinon chaque carte reprend les
-  // premiers de la liste).
-  const blocCharte = formatStyleGuideForPrompt(charte, { mode: 'repertoire' });
+  // Concept décidé par le planificateur du lot (/api/forge/concepts) ; absent
+  // dans la forge manuelle et le mode Auto, où Claude en invente un.
+  const concept = body.concept ? sanitizeConcept(body.concept, type) : null;
+  // Mode RÉPERTOIRE : style et interdits s'imposent, la palette ne donne que des
+  // accents ; lumière, décors, matériaux et motifs sont des pistes. Sans concept
+  // (forge manuelle, mode Auto), chaque champ du répertoire est réduit à
+  // quelques éléments tirés au hasard : une carte isolée ne voit plus toujours
+  // les premiers de la liste.
+  const blocCharte = formatStyleGuideForPrompt(charte, concept ? { mode: 'repertoire' } : { mode: 'repertoire', tirage: Math.random });
   const clanHint = !clanId ? ''
     : blocCharte
-      ? `\n- Clan: ${clanId}. Charte graphique du clan ci-dessous : le champ "illustrationPrompt" en applique TOUJOURS la partie MANDATORY (palette, lumière, style) et ne contient jamais ce qu'elle interdit ; du RÉPERTOIRE, il ne prend qu'un ou deux éléments au plus (ceux du concept s'il y en a un), ou en invente dans le même esprit.\n${blocCharte}`
+      ? `\n- Clan: ${clanId}. Charte graphique du clan ci-dessous : le champ "illustrationPrompt" en applique TOUJOURS la partie MANDATORY (style, interdits) ; les couleurs du clan n'y sont que des ACCENTS ; du RÉPERTOIRE (lumière, décors, matériaux, motifs), il ne prend qu'un ou deux éléments au plus (ceux du concept s'il y en a un), ou en invente dans le même esprit.\n${blocCharte}`
       : `\n- Clan: ${clanId}. Le style, l'environnement et l'ambiance doivent refléter ce clan.`;
 
   // Build context from existing card data if provided
@@ -81,9 +86,6 @@ export async function POST(request: Request) {
   const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 2000) : '';
   const mechanics: string[] = Array.isArray(body.mechanics) ? body.mechanics.filter((m: unknown): m is string => typeof m === 'string').slice(0, 8) : [];
   const forbiddenNames: string[] = Array.isArray(body.forbiddenNames) ? body.forbiddenNames.filter((n: unknown): n is string => typeof n === 'string').slice(0, 200) : [];
-  // Concept décidé par le planificateur du lot (/api/forge/concepts) ; absent
-  // dans la forge manuelle et le mode Auto, où Claude en invente un.
-  const concept = body.concept ? sanitizeConcept(body.concept, type) : null;
   const lexique: string[] = Array.isArray(body.lexique) ? body.lexique.filter((x: unknown): x is string => typeof x === 'string').slice(0, 30) : [];
   const genderHint = type !== 'Unité' ? '' : gender === 'homme'
     ? `\n- Genre : MASCULIN. Nom et accords au masculin ; dans "illustrationPrompt", le sujet est explicitement male.`
@@ -118,6 +120,9 @@ export async function POST(request: Request) {
     ? `${concept.formeAmbiance}${concept.ton ? `, ton ${concept.ton}` : ''}`
     : `${FLAVOR_FORMS[Math.floor(Math.random() * FLAVOR_FORMS.length)]}, ton ${FLAVOR_TONES[Math.floor(Math.random() * FLAVOR_TONES.length)]}`;
   const gear = raceId ? RACE_TYPICAL_GEAR[raceId] : undefined;
+  // Moment et tenue : ceux du concept, sinon tirés au hasard (forge manuelle).
+  const moment = concept?.moment || auHasard(MOMENTS);
+  const tenue = concept?.tenue || auHasard(TENUES);
 
   const raceVisualDesc = raceId ? physiquePourGenre(raceVisualDescriptions[visualKey ?? raceId] || raceId, type === 'Unité' ? gender : null) : '';
   // Quand la race a une description, le post-traitement la place lui-même en
@@ -143,6 +148,9 @@ Pour le champ "illustrationPrompt" :
 ${raceId ? `- La race est NON NÉGOCIABLE : tout personnage montré est un(e) ${raceId} (${raceVisualDesc}) ; ne dessine JAMAIS un membre d'une autre race (pas de hobbit si la race est Hommes-Arbres, pas d'elfe si la race est Aigles Géants).
 - En revanche le RÔLE, la tenue, l'âge, l'attitude et l'équipement sont LIBRES : une race n'est pas « un guerrier en armure ». ${gear ? `Équipement habituel (une piste parmi d'autres, pas une obligation) : ${gear}.` : ''}${racePrefixee && (subjectKind === 'membre' || subjectKind === 'groupe') ? `
 - NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par le sujet précis, la pose, l'action et la scène.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
+- MOMENT, LUMIÈRE ET MÉTÉO : ${moment}. La lumière et les couleurs dominantes de l'image en découlent (les couleurs du clan n'y sont que des accents) ; sous terre ou en intérieur, transpose-le. Écris-le explicitement dans le prompt.
+- TENUE : ${tenue} — prise dans les matériaux de la charte ou inventée dans le même esprit, pas la tenue type du clan ; pour une bête, une machine, un esprit ou un lieu, un harnais, des parures, un ornement ou rien.
+- Le décor signature du clan (son volcan, sa cité, sa forêt…) est facultatif : souvent un autre lieu du clan, ou un simple fond.
 - Varie le cadrage (portrait serré, plan moyen, plan large, contre-plongée…), la composition et l'instant : l'illustration doit se distinguer des autres cartes du clan.
 
 Pour le champ "flavorText" : UNE phrase courte, sous la forme suivante : ${formeAmbiance}. Pas de formule épique creuse.

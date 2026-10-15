@@ -448,6 +448,8 @@ export default function AssistedForge() {
                   {champ("sujet", "Sujet", 2)}
                   {champ("scene", "Scène")}
                   {champ("cadrage", "Cadrage")}
+                  {champ("moment", "Moment et météo")}
+                  {champ("tenue", "Tenue")}
                   {champ("ideeNom", `Idée de nom (${c.formeNom || "forme libre"})`)}
                   {champ("formeAmbiance", `Texte d'ambiance${c.ton ? ` (ton ${c.ton})` : ""}`)}
                 </div>

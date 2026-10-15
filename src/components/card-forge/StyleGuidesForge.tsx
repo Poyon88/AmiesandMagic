@@ -119,7 +119,9 @@ export default function StyleGuidesForge() {
   };
 
   const actuelle = typeof selection === "number" ? guides.find((g) => g.id === selection) : undefined;
-  const apercu = formatStyleGuideForPrompt({ clan, ...Object.fromEntries(STYLE_GUIDE_FIELDS.map(({ key }) => [key, brouillon[key] ?? null])) } as never);
+  // Aperçu tel que le reçoivent les CARTES (obligatoire / accents / répertoire) ;
+  // jetons, plateaux et héros reçoivent le bloc unique.
+  const apercu = formatStyleGuideForPrompt({ clan, ...Object.fromEntries(STYLE_GUIDE_FIELDS.map(({ key }) => [key, brouillon[key] ?? null])) } as never, { mode: "repertoire" });
 
   return (
     <div style={{ display: "flex", gap: 18, alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -205,7 +207,7 @@ export default function StyleGuidesForge() {
 
             {selection !== null && apercu && (
               <details style={S.carte}>
-                <summary style={{ ...S.etiq, cursor: "pointer" }}>APERÇU DU BLOC INJECTÉ DANS LES PROMPTS</summary>
+                <summary style={{ ...S.etiq, cursor: "pointer" }}>APERÇU DU BLOC INJECTÉ DANS LES PROMPTS DE CARTE</summary>
                 <pre style={{ whiteSpace: "pre-wrap", fontSize: 10, color: "#555", marginTop: 8 }}>{apercu}</pre>
               </details>
             )}
