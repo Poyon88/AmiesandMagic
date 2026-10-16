@@ -32,6 +32,10 @@ export interface CardConcept {
   cadrage: string;
   /** Les un ou deux éléments du répertoire de la charte retenus pour cette carte. */
   elementsCharte: string;
+  /** Heure, lumière et météo (MOMENTS) : la lumière et les couleurs dominantes en découlent. */
+  moment: string;
+  /** Tenue du sujet (TENUES) : sans elle, tout le clan portait le même costume. */
+  tenue: string;
   ideeNom: string;
   formeNom: string;
   formeAmbiance: string;
@@ -44,7 +48,7 @@ export interface ConceptsDuLot {
   concepts: CardConcept[];
 }
 
-const CHAMPS_TEXTE = ["sujet", "role", "scene", "cadrage", "elementsCharte", "ideeNom", "formeNom", "formeAmbiance", "ton"] as const;
+const CHAMPS_TEXTE = ["sujet", "role", "scene", "cadrage", "elementsCharte", "moment", "tenue", "ideeNom", "formeNom", "formeAmbiance", "ton"] as const;
 
 const texte = (v: unknown, max = 240) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
 
@@ -129,6 +133,42 @@ export const FLAVOR_FORMS = [
 
 export const FLAVOR_TONES = ["grave", "ironique", "menaçant", "humour sec", "mélancolique", "fier", "inquiétant"] as const;
 
+/** Heure, lumière et météo, imposées carte par carte (2026-10-15) : la charte
+ *  fixait une seule lumière pour tout le clan, d'où huit Fils du Volcan de nuit
+ *  devant le même volcan. Sous terre ou en intérieur, le moment se transpose. */
+export const MOMENTS = [
+  "aube froide", "matin clair", "plein midi écrasant", "après-midi doré", "crépuscule",
+  "nuit étoilée", "nuit à la seule lueur des torches", "pluie battante", "brume épaisse",
+  "ciel d'orage", "vent violent et poussière", "éclaircie après l'averse",
+  "intérieur éclairé au feu", "intérieur baigné de jour", "pénombre d'un abri ou d'un souterrain",
+] as const;
+
+/** Tenue du sujet. Pour une bête, une machine ou un esprit : harnais, parures, ornements ou rien. */
+export const TENUES = [
+  "tenue de tous les jours", "tenue de travail ou de métier", "tenue de voyage", "tenue de cérémonie ou d'apparat",
+  "tenue de guerre légère", "tenue de guerre lourde", "presque rien : peau, peintures ou parures",
+  "tenue de deuil ou de pénitence", "tenue de chasse", "tenue usée, rapiécée, de fortune",
+  "habit de rang ou de fonction (prêtre, chef, messager, juge)",
+] as const;
+
+/** Un tirage par carte dans une liste, en cycles mélangés : sur un lot, chaque
+ *  valeur sort avant qu'une autre ne revienne. */
+export function repartir<T>(liste: readonly T[], n: number, tirage: () => number = Math.random): T[] {
+  const out: T[] = [];
+  while (out.length < n) {
+    const cycle = [...liste];
+    for (let i = cycle.length - 1; i > 0; i--) {
+      const j = Math.floor(tirage() * (i + 1));
+      [cycle[i], cycle[j]] = [cycle[j], cycle[i]];
+    }
+    out.push(...cycle);
+  }
+  return out.slice(0, n);
+}
+
+export const auHasard = <T>(liste: readonly T[], tirage: () => number = Math.random): T =>
+  liste[Math.floor(tirage() * liste.length)];
+
 export function nameRuleText(rule: "propre" | "generique", type: string): string {
   const unite = type === "Unité";
   const formes = NAME_FORMS[rule][unite ? "unite" : "action"].join(" ; ");
@@ -151,6 +191,8 @@ export function conceptPourPrompt(c: CardConcept, lexique: string[] = []): strin
     c.scene && `  • Scène : ${c.scene}`,
     c.cadrage && `  • Cadrage : ${c.cadrage}`,
     c.elementsCharte && `  • Éléments de la charte retenus : ${c.elementsCharte}`,
+    c.moment && `  • Moment, lumière et météo : ${c.moment}`,
+    c.tenue && `  • Tenue : ${c.tenue}`,
     c.ideeNom && `  • Idée de nom (${c.formeNom || "forme libre"}) : ${c.ideeNom} — tu peux l'améliorer, garde la forme`,
     c.formeAmbiance && `  • Texte d'ambiance : ${c.formeAmbiance}${c.ton ? `, ton ${c.ton}` : ""}`,
     lexique.length ? `  • Lexique du lot (lieux, lignées… réutilisables avec modération) : ${lexique.join(" ; ")}` : "",

@@ -1,7 +1,7 @@
 // Concepts de carte : validation de la réponse du planificateur et ancrage de
 // la race dans le prompt d'illustration.
 import { describe, expect, it } from "vitest";
-import { ancrageRace, nameRuleText, premierMot, sanitizeConcepts, sanitizePlan } from "./card-concepts";
+import { MOMENTS, ancrageRace, nameRuleText, premierMot, repartir, sanitizeConcepts, sanitizePlan } from "./card-concepts";
 import { RACE_VISUALS } from "./race-visuals";
 
 const concept = (over: Record<string, unknown> = {}) => ({
@@ -75,5 +75,18 @@ describe("apparence accordée au genre", () => {
     expect(physiquePourGenre(nain, "femme")).not.toMatch(/beard/i);
     expect(physiquePourGenre(nain, "femme")).toContain("stocky");
     expect(physiquePourGenre(nain, "homme")).toBe(nain);
+  });
+});
+
+describe("moment et tenue", () => {
+  it("sanitizeConcept garde les deux axes", () => {
+    const { value } = sanitizeConcepts({ concepts: [concept({ moment: "pluie battante", tenue: "tenue de pêche" })] }, ["Unité"]);
+    expect(value.concepts[0]).toMatchObject({ moment: "pluie battante", tenue: "tenue de pêche" });
+  });
+
+  it("repartir fait sortir chaque valeur avant d'en répéter une", () => {
+    const r = repartir(MOMENTS, MOMENTS.length * 2, () => 0.37);
+    expect(new Set(r.slice(0, MOMENTS.length)).size).toBe(MOMENTS.length);
+    expect(new Set(r.slice(MOMENTS.length)).size).toBe(MOMENTS.length);
   });
 });
