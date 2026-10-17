@@ -2113,6 +2113,37 @@
         "all_allies": "alle verbündeten Kreaturen",
         "all": "alle Kreaturen beider Seiten"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Lebenskosten {n}",
+        "desc": "Zusätzlich zum Mana verliert dein Held {n} LP, wenn du diese Karte spielst. Nicht erlaubt, wenn er dadurch auf 0 LP fiele."
+      },
+      "defausse": {
+        "title": "Abwerfen {n}",
+        "desc_one": "Zusätzlich zum Mana wirfst du eine Karte deiner Wahl aus der Hand ab.",
+        "desc_many": "Zusätzlich zum Mana wirfst du {n} Karten deiner Wahl aus der Hand ab."
+      },
+      "sacrifice": {
+        "title": "Opfer {n}",
+        "desc_one": "Zusätzlich zum Mana opferst du eine deiner Kreaturen im Spiel, nach deiner Wahl.",
+        "desc_many": "Zusätzlich zum Mana opferst du {n} deiner Kreaturen im Spiel, nach deiner Wahl."
+      },
+      "exil": {
+        "title": "Exil {n}",
+        "desc_one": "Zusätzlich zum Mana wird die oberste Karte deines Decks verbannt: Sie verlässt das Spiel. Nicht erlaubt, wenn dein Deck leer ist.",
+        "desc_many": "Zusätzlich zum Mana werden die obersten {n} Karten deines Decks verbannt: Sie verlassen das Spiel. Dein Deck muss mindestens {n} Karten enthalten."
+      },
+      "repli": {
+        "title": "Rückzug {n}",
+        "desc_one": "Zusätzlich zum Mana legst du eine Karte deiner Wahl aus der Hand oben auf dein Deck.",
+        "desc_many": "Zusätzlich zum Mana legst du {n} Karten deiner Wahl aus der Hand oben auf dein Deck. Die zuerst gewählte liegt oben."
+      },
+      "eveil": {
+        "title": "Erwachen {n}",
+        "desc": "Statt sie zu spielen, kannst du diese Karte erwachen lassen. Danach zahlst du ihre {n} Punkte mit deinem Mana, 1 Punkt pro Mana, in deinen Zügen. Mit dem letzten Punkt kommt sie ins Spiel, als hättest du sie gespielt.",
+        "remaining": "Noch {left} von {n} Punkten zu zahlen."
+      }
     }
   },
   "home": {

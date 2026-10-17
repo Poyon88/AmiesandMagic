@@ -2113,6 +2113,37 @@
         "all_allies": "tutte le creature alleate",
         "all": "tutte le creature di entrambi gli schieramenti"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Costo in vita {n}",
+        "desc": "Oltre al mana, il tuo eroe perde {n} PV quando giochi questa carta. Non consentito se lo porterebbe a 0 PV."
+      },
+      "defausse": {
+        "title": "Scarto {n}",
+        "desc_one": "Oltre al mana, scarta una carta a tua scelta dalla mano.",
+        "desc_many": "Oltre al mana, scarta {n} carte a tua scelta dalla mano."
+      },
+      "sacrifice": {
+        "title": "Sacrificio {n}",
+        "desc_one": "Oltre al mana, sacrifica una tua creatura in gioco, a tua scelta.",
+        "desc_many": "Oltre al mana, sacrifica {n} tue creature in gioco, a tua scelta."
+      },
+      "exil": {
+        "title": "Esilio {n}",
+        "desc_one": "Oltre al mana, la prima carta del tuo mazzo viene esiliata: lascia la partita. Non consentito se il mazzo è vuoto.",
+        "desc_many": "Oltre al mana, le prime {n} carte del tuo mazzo vengono esiliate: lasciano la partita. Il mazzo deve contenere almeno {n} carte."
+      },
+      "repli": {
+        "title": "Ripiego {n}",
+        "desc_one": "Oltre al mana, rimetti una carta a tua scelta dalla mano in cima al mazzo.",
+        "desc_many": "Oltre al mana, rimetti {n} carte a tua scelta dalla mano in cima al mazzo. La prima scelta finisce in cima."
+      },
+      "eveil": {
+        "title": "Risveglio {n}",
+        "desc": "Invece di giocarla, puoi mettere questa carta in risveglio. Poi ne versi i {n} punti con il tuo mana, 1 punto per mana, durante i tuoi turni. All'ultimo punto entra in gioco come se l'avessi giocata.",
+        "remaining": "Restano {left} punti da versare su {n}."
+      }
     }
   },
   "home": {

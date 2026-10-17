@@ -2113,6 +2113,37 @@
         "all_allies": "toutes les créatures alliées",
         "all": "toutes les créatures des deux camps"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Coût en vie {n}",
+        "desc": "En plus du mana, votre héros perd {n} PV quand vous jouez cette carte. Impossible si cela le ferait tomber à 0 PV."
+      },
+      "defausse": {
+        "title": "Défausse {n}",
+        "desc_one": "En plus du mana, défaussez une carte de votre main, de votre choix.",
+        "desc_many": "En plus du mana, défaussez {n} cartes de votre main, de votre choix."
+      },
+      "sacrifice": {
+        "title": "Sacrifice {n}",
+        "desc_one": "En plus du mana, sacrifiez une de vos créatures en jeu, de votre choix.",
+        "desc_many": "En plus du mana, sacrifiez {n} de vos créatures en jeu, de votre choix."
+      },
+      "exil": {
+        "title": "Exil {n}",
+        "desc_one": "En plus du mana, la carte du dessus de votre deck est exilée : elle quitte la partie. Impossible si votre deck est vide.",
+        "desc_many": "En plus du mana, les {n} cartes du dessus de votre deck sont exilées : elles quittent la partie. Il faut au moins {n} cartes dans votre deck."
+      },
+      "repli": {
+        "title": "Repli {n}",
+        "desc_one": "En plus du mana, replacez une carte de votre main, de votre choix, sur le dessus de votre deck.",
+        "desc_many": "En plus du mana, replacez {n} cartes de votre main, de votre choix, sur le dessus de votre deck. La première choisie finit sur le dessus."
+      },
+      "eveil": {
+        "title": "Éveil {n}",
+        "desc": "Au lieu de la jouer, vous pouvez mettre cette carte en éveil. Vous versez ensuite ses {n} points avec votre mana, 1 point par mana, pendant vos tours. Au dernier point, elle entre en jeu comme si vous l'aviez jouée.",
+        "remaining": "Encore {left} points à verser sur {n}."
+      }
     }
   },
   "home": {

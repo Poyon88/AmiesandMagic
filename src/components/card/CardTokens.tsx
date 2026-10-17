@@ -13,9 +13,12 @@
 // Deux slots maximum à droite — l'Éveil d'abord, le coût additionnel ensuite.
 // Une carte ne porte qu'UN coût additionnel : c'est une règle de design,
 // posée aussi côté API (cf. /api/cards/save) ; ici on ne rend que le premier.
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { HERALDRY_FONT } from "./CardCounters";
+import { costHelp, type CostHelpKind } from "@/lib/game/cost-descriptions";
+import { useSafeT } from "@/i18n/useVocab";
 
 export type CostType = "vie" | "defausse" | "sacrifice" | "exil" | "repli";
 
@@ -157,12 +160,50 @@ export interface RightSlotsProps {
   after?: ReactNode;
 }
 
+/** Infobulle de survol d'un jeton : titre et descriptif du coût. Rendue dans un
+ *  portail en `position: fixed` — la carte coupe ce qui déborde (overflow) et
+ *  se zoome au survol, une bulle restée dedans serait rognée ou déformée. */
+function CostHelpBubble({ help, rect, note }: {
+  help: { title: string; desc: string; extra?: string };
+  rect: DOMRect;
+  note?: string;
+}) {
+  if (typeof document === "undefined") return null;
+  // Au-dessus du jeton, sauf s'il n'y a pas la place (carte en haut d'écran).
+  const dessous = rect.top < 140;
+  const left = Math.min(Math.max(rect.left + rect.width / 2, 120), window.innerWidth - 120);
+  return createPortal(
+    <div
+      role="tooltip"
+      style={{
+        position: "fixed", zIndex: 10000, pointerEvents: "none",
+        left, top: dessous ? rect.bottom + 6 : rect.top - 6,
+        transform: dessous ? "translateX(-50%)" : "translateX(-50%) translateY(-100%)",
+        width: 220, padding: "6px 9px", borderRadius: 6,
+        background: "rgba(14,10,4,0.96)", border: "1px solid rgba(201,162,39,0.7)",
+        boxShadow: "0 4px 14px rgba(0,0,0,0.5)",
+        color: "#f0e6cc", fontSize: 11, lineHeight: 1.35, textAlign: "left",
+        fontFamily: "'Crimson Text',serif",
+      }}
+    >
+      <div style={{ fontFamily: HERALDRY_FONT, fontWeight: 700, color: "#E3C463", fontSize: 12, marginBottom: 2 }}>{help.title}</div>
+      <div>{help.desc}</div>
+      {help.extra && <div style={{ marginTop: 3, color: "#FFD277" }}>{help.extra}</div>}
+      {note && <div style={{ marginTop: 3, fontStyle: "italic", opacity: 0.8 }}>{note}</div>}
+    </div>,
+    document.body,
+  );
+}
+
 /** Colonne de droite : l'Éveil d'abord, le coût additionnel ensuite, puis `after`.
- *  Deux jetons maximum — le troisième est ignoré, et signalé en dev. */
+ *  Deux jetons maximum — le troisième est ignoré, et signalé en dev.
+ *  Chaque jeton affiche son descriptif au survol. */
 export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: RightSlotsProps) {
-  const items: { key: string; node: ReactNode; button?: boolean }[] = [];
-  if (awaken?.total) items.push({ key: "aw", node: <AwakenToken total={awaken.total} paid={awaken.paid} />, button: !!onAwaken });
-  if (cost?.value) items.push({ key: "ct", node: <CostToken type={cost.type} value={cost.value} /> });
+  const t = useSafeT();
+  const [survol, setSurvol] = useState<{ key: string; rect: DOMRect } | null>(null);
+  const items: { key: string; node: ReactNode; button?: boolean; help: { kind: CostHelpKind; n: number; paid?: number } }[] = [];
+  if (awaken?.total) items.push({ key: "aw", node: <AwakenToken total={awaken.total} paid={awaken.paid} />, button: !!onAwaken, help: { kind: "eveil", n: awaken.total, paid: awaken.paid } });
+  if (cost?.value) items.push({ key: "ct", node: <CostToken type={cost.type} value={cost.value} />, help: { kind: cost.type, n: cost.value } });
   if (items.length > 2 && process.env.NODE_ENV !== "production") {
     console.warn("[card] plus de deux jetons dans le coin droit — les suivants sont ignorés");
   }
@@ -172,13 +213,31 @@ export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: Right
     width: `${RIGHT_SLOT.width}cqw`, height: `${RIGHT_SLOT.height}cqw`,
     display: "grid", placeItems: "center", zIndex: 3,
   });
+  // Survol : la bulle part du rectangle du jeton. Le clic, lui, n'est pas
+  // intercepté — sur une carte en main, cliquer le jeton joue toujours la carte.
+  const survolProps = (key: string) => ({
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => setSurvol({ key, rect: e.currentTarget.getBoundingClientRect() }),
+    onMouseLeave: () => setSurvol((s) => (s?.key === key ? null : s)),
+  });
+  const bulle = (() => {
+    const item = survol && shown.find((it) => it.key === survol.key);
+    if (!item || !survol) return null;
+    return (
+      <CostHelpBubble
+        help={costHelp(item.help.kind, item.help.n, t, item.help.paid)}
+        rect={survol.rect}
+        note={item.button ? awakenTitle : undefined}
+      />
+    );
+  })();
   return (
     <>
       {shown.map(({ key, node, button }, i) => button ? (
         <button
           key={key}
           type="button"
-          title={awakenTitle}
+          aria-label={awakenTitle}
+          {...survolProps(key)}
           onClick={(e) => { e.stopPropagation(); onAwaken?.(); }}
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
@@ -186,8 +245,9 @@ export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: Right
           style={{ ...slotStyle(i), zIndex: 6, background: "transparent", border: "none", padding: 0, cursor: "pointer", pointerEvents: "auto" }}
         >{node}</button>
       ) : (
-        <div key={key} style={{ ...slotStyle(i), pointerEvents: "none" }}>{node}</div>
+        <div key={key} {...survolProps(key)} style={{ ...slotStyle(i), pointerEvents: "auto", cursor: "help" }}>{node}</div>
       ))}
+      {bulle}
       {after != null && (
         <div style={{ ...slotStyle(shown.length), pointerEvents: "none" }}>{after}</div>
       )}

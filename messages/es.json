@@ -2113,6 +2113,37 @@
         "all_allies": "todas las criaturas aliadas",
         "all": "todas las criaturas de ambos bandos"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Coste en vida {n}",
+        "desc": "Además del maná, tu héroe pierde {n} PV al jugar esta carta. No se permite si lo dejaría a 0 PV."
+      },
+      "defausse": {
+        "title": "Descarte {n}",
+        "desc_one": "Además del maná, descarta una carta de tu mano a tu elección.",
+        "desc_many": "Además del maná, descarta {n} cartas de tu mano a tu elección."
+      },
+      "sacrifice": {
+        "title": "Sacrificio {n}",
+        "desc_one": "Además del maná, sacrifica una de tus criaturas en juego, a tu elección.",
+        "desc_many": "Además del maná, sacrifica {n} de tus criaturas en juego, a tu elección."
+      },
+      "exil": {
+        "title": "Exilio {n}",
+        "desc_one": "Además del maná, la carta superior de tu mazo es exiliada: sale de la partida. No se permite si tu mazo está vacío.",
+        "desc_many": "Además del maná, las {n} cartas superiores de tu mazo son exiliadas: salen de la partida. Tu mazo debe tener al menos {n} cartas."
+      },
+      "repli": {
+        "title": "Repliegue {n}",
+        "desc_one": "Además del maná, pon una carta de tu mano a tu elección encima de tu mazo.",
+        "desc_many": "Además del maná, pon {n} cartas de tu mano a tu elección encima de tu mazo. La primera elegida queda encima."
+      },
+      "eveil": {
+        "title": "Despertar {n}",
+        "desc": "En lugar de jugarla, puedes poner esta carta en despertar. Luego pagas sus {n} puntos con tu maná, 1 punto por maná, durante tus turnos. Con el último punto entra en juego como si la hubieras jugado.",
+        "remaining": "Quedan {left} puntos por pagar de {n}."
+      }
     }
   },
   "home": {
