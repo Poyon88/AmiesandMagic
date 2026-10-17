@@ -72,7 +72,8 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Zombies": CADAVRES,
   "Momies": CADAVRES,
   "Ghoules": { interdits: ["Vol", "Régénération X"] },
-  "Chimères nécrotiques": { interdits: ["Vol", "Régénération X"] },
+  // Chairs cousues qui se réparent : Régénération permise (arbitrage 2026-10-17).
+  "Chimères nécrotiques": AU_SOL,
   "Dullahans": AU_SOL,
 
   // ─── Peuples et bêtes à terre ─────────────────────────────────────────
@@ -117,6 +118,58 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Vermines mortuaires": AU_SOL,
 };
 
+// ─── Interdits THÉMATIQUES (2026-10-17) ───────────────────────────────────
+// Cumulés aux règles ci-dessus : chaque groupe écarte les capacités dont
+// l'IMAGE contredit la nature physique de la race. On ne vise que les
+// contresens évidents (une fée qui piétine, un géant qui se cache) ; les
+// capacités magiques ou abstraites restent permises à tous.
+
+/** Trop petits ou trop légers pour écraser l'adversaire. */
+const PETITS = { interdits: ["Piétinement"] } satisfies RaceAbilityRule;
+/** Incorporels : rien à piétiner avec, rien à cuirasser. */
+const ESPRITS = { interdits: ["Piétinement", "Armure"] } satisfies RaceAbilityRule;
+/** Colosses : impossible de passer inaperçus. */
+const COLOSSES = { interdits: ["Ombre"] } satisfies RaceAbilityRule;
+/** Sans chair ni sang : ni dévorer les morts, ni boire la vie. */
+const SANS_CHAIR = { interdits: ["Nécrophagie", "Vampirisme X"] } satisfies RaceAbilityRule;
+
+export const THEME_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule[]>> = {
+  "Fées": [PETITS, { interdits: ["Armure"] }],
+  "Farfadets": [PETITS],
+  "Korrigans": [PETITS],
+  "Hobbits": [PETITS],
+  "Gnomes": [PETITS],
+  "Kobolds": [PETITS],
+  "Mimis": [PETITS],
+  "Faucons": [PETITS],
+  "Chiroptères": [PETITS],
+  "Homuncules de Sang": [PETITS],
+  "Vermines mortuaires": [PETITS],
+  "Insectes": [PETITS],
+  "Esprits": [ESPRITS],
+  "Spectres": [ESPRITS],
+  "Banshees": [ESPRITS],
+  "Poltergeists": [ESPRITS],
+  "Sluaghs": [ESPRITS],
+  "Néphélides": [ESPRITS],
+  "Géants": [COLOSSES],
+  "Mammouths": [COLOSSES],
+  "Éléphants": [COLOSSES],
+  "Hommes-Arbres": [COLOSSES],
+  "Léviathans": [COLOSSES],
+  "Bêtes Chtoniennes": [COLOSSES],
+  "Golems": [COLOSSES, SANS_CHAIR],
+  "Trolls": [COLOSSES],
+  "Ogres": [COLOSSES],
+  "Dragons": [COLOSSES],
+  "Machines": [SANS_CHAIR],
+  "Cristallins": [SANS_CHAIR],
+  "Gargouilles": [SANS_CHAIR, { interdits: ["Poison"] }],
+  "Bâtiments": [SANS_CHAIR],
+  "Squelettes": [{ interdits: ["Vampirisme X"] }],
+  "Anges": [{ interdits: ["Nécrophagie", "Poison"] }],
+};
+
 /** Règles de CLAN, cumulées à celles de la race (la race « Élémentaire » est
  *  partagée par les quatre éléments : seul le clan de l'Air vole). */
 export const CLAN_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
@@ -129,9 +182,11 @@ export const CLAN_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
 /** Règles cumulées race + clan ; un obligatoire l'emporte sur un interdit. */
 export function regleRace(race: string | null | undefined, clan?: string | null): Required<RaceAbilityRule> {
   const r = race ? RACE_ABILITY_RULES[race] : undefined;
+  const t = race ? THEME_ABILITY_RULES[race] ?? [] : [];
   const c = clan ? CLAN_ABILITY_RULES[clan] : undefined;
   const obligatoires = [...new Set([...(r?.obligatoires ?? []), ...(c?.obligatoires ?? [])])];
-  const interdits = [...new Set([...(r?.interdits ?? []), ...(c?.interdits ?? [])])].filter((l) => !obligatoires.includes(l));
+  const interdits = [...new Set([...(r?.interdits ?? []), ...t.flatMap((x) => x.interdits ?? []), ...(c?.interdits ?? [])])]
+    .filter((l) => !obligatoires.includes(l));
   return { interdits, obligatoires };
 }
 

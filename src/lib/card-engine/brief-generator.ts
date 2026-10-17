@@ -14,7 +14,7 @@ import { ABILITIES } from "@/lib/game/abilities";
 import { deriveCapabilities } from "@/lib/game/capability-adapter";
 import { buildKeywordInstances, FORGE_TO_GAME_KEYWORD } from "@/lib/card-forge/keyword-instances";
 import {
-  CURATED_KEYWORD_MODES, FACTIONS, KEYWORDS, MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_MAP,
+  CURATED_KEYWORD_MODES, FACTIONS, KEYWORDS, MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY,
   deriveRaceForClan, getClanNamesForRace, getRacesForClan,
 } from "./constants";
 import { getAvailableKeywords, getStatWeights, POIDS_HORS_PROFIL, resserrerProfil } from "./generator";
@@ -282,9 +282,12 @@ export function planBatch(brief: CardBrief, rng: Rng): BatchPlan {
   }
 
   // Complément au hasard, cohérent avec la race (profils likelyKeywords).
+  // Les capacités à quota en sont exclues : leur quota est EXACT, un tirage
+  // de complément ne doit pas le dépasser.
+  const horsQuota = new Set([...exclues, ...brief.abilities.map((a) => a.id)]);
   for (const c of cards) {
     while (libre(c.index) > 0) {
-      const id = tirerComplement(c, exclues, rng);
+      const id = tirerComplement(c, horsQuota, rng);
       if (!id) break;
       c.abilities.push(id);
     }
@@ -329,12 +332,10 @@ function garantirEffetPrincipal(c: PlannedCard, exclues: Set<string>, rng: Rng):
   const aDegats = c.abilities.some((id) => SORTS_DE_DEGATS.has(id));
   const veutDegats = c.abilities.some((id) => MODIFICATEURS_DE_DEGATS.has(id)) && !aDegats;
   if (!veutDegats && c.abilities.some(estEffetPrincipal)) return;
-  const tier = RARITY_MAP[c.rarity]?.tier ?? 0;
   const fac = FACTIONS[c.faction];
   const dispo = Object.values(ABILITIES)
     .filter((a) => sortGenerable(a.id) && estEffetPrincipal(a.id) && !exclues.has(a.id) && !c.abilities.includes(a.id))
-    .filter((a) => !veutDegats || SORTS_DE_DEGATS.has(a.id))
-    .filter((a) => (a.creature?.minTier ?? 0) <= tier);
+    .filter((a) => !veutDegats || SORTS_DE_DEGATS.has(a.id));
   const id = pickWeighted(dispo, (a) => fac.likelyKeywords[a.creature?.label ?? a.label] ?? 0.12, rng)?.id;
   if (id) c.abilities.unshift(id);
 }
@@ -348,19 +349,62 @@ function tirerComplement(c: PlannedCard, exclues: Set<string>, rng: Rng): string
       .filter((k) => !exclues.has(k.id) && !interdits.has(k.label) && !c.abilities.includes(k.id));
     return pickWeighted(dispo, (k) => k.weight, rng)?.id ?? null;
   }
-  const tier = RARITY_MAP[c.rarity]?.tier ?? 0;
   const fac = FACTIONS[c.faction];
   const aDegats = c.abilities.some((id) => SORTS_DE_DEGATS.has(id));
   const dispo = Object.values(ABILITIES)
     .filter((a) => sortGenerable(a.id) && !exclues.has(a.id) && !c.abilities.includes(a.id))
     .filter((a) => (MODIFICATEURS_DE_DEGATS.has(a.id) ? aDegats : META_DE_SORT.has(a.id) ? c.abilities.length > 0 : true))
-    .filter((a) => (a.creature?.minTier ?? 0) <= tier && !fac.forbiddenKeywords.includes(a.creature?.label ?? a.label));
+    .filter((a) => !fac.forbiddenKeywords.includes(a.creature?.label ?? a.label));
   const profil = (a: (typeof dispo)[number]) => fac.likelyKeywords[a.creature?.label ?? a.label];
   const ponderes = resserrerProfil(
     dispo.map((a) => ({ a, w: profil(a) ?? POIDS_HORS_PROFIL, profiled: profil(a) !== undefined })),
     (x) => x.w, (x) => x.profiled, (x, w) => ({ ...x, w }),
   );
   return pickWeighted(ponderes, (x) => x.w, rng)?.a.id ?? null;
+}
+
+// ─── Échange de capacité au concept ─────────────────────────────────────────
+// Au moment du concept, Claude peut remplacer UNE capacité de complément d'une
+// Unité par une capacité typique de sa race (liste fermée, coût proche) :
+// le nom et le visuel peuvent ainsi corriger une mécanique qui jure avec eux.
+
+export interface EchangeCapacite { de: string; vers: string; raison: string }
+
+/** Capacités qu'un échange peut retirer : ni verrouillées (quota du brief,
+ *  obligatoire de race), ni porteuses d'un déclencheur. Unités seulement. */
+export function echangeables(c: PlannedCard): string[] {
+  if (c.type !== "Unité") return [];
+  return c.abilities.filter((id) => {
+    const l = labelUnite(id);
+    return !!l && !c.locked.includes(id) && !c.modes[l];
+  });
+}
+
+/** Remplaçantes possibles : profil race/clan, tirables, absentes de la carte,
+ *  de coût proche (±1) d'une capacité échangeable ; les 6 plus typiques. */
+export function candidatsEchange(c: PlannedCard, exclues: readonly string[] = []): { id: string; label: string; cout: number }[] {
+  const couts = echangeables(c).map((id) => KEYWORDS[labelUnite(id)!]?.cost ?? 0);
+  if (!couts.length) return [];
+  return getAvailableKeywords(c.faction, c.rarity, c.race ?? undefined, c.clan ?? undefined)
+    .filter((k) => k.profiled)
+    .map((k) => ({ id: idDeLabel(k.id), label: k.id, cout: k.cost, poids: k.weight }))
+    .filter((k): k is { id: string; label: string; cout: number; poids: number } => !!k.id && labelUnite(k.id) === k.label)
+    .filter((k) => !exclues.includes(k.id) && !c.abilities.includes(k.id))
+    .filter((k) => couts.some((x) => Math.abs(k.cout - x) <= 1))
+    .sort((a, b) => b.poids - a.poids)
+    .slice(0, 6)
+    .map(({ id, label, cout }) => ({ id, label, cout }));
+}
+
+/** La carte avec l'échange appliqué (la remplaçante est verrouillée pour que
+ *  l'équilibrage ne la retire pas). Échange devenu invalide ⇒ carte inchangée. */
+export function appliquerEchange(c: PlannedCard, e: Pick<EchangeCapacite, "de" | "vers"> | null | undefined, exclues: readonly string[] = []): PlannedCard {
+  if (!e || !echangeables(c).includes(e.de) || !candidatsEchange(c, exclues).some((k) => k.id === e.vers)) return c;
+  return {
+    ...c,
+    abilities: c.abilities.map((id) => (id === e.de ? e.vers : id)),
+    locked: [...c.locked, e.vers],
+  };
 }
 
 /** Affinité d'une carte pour une capacité : son poids de tirage selon le

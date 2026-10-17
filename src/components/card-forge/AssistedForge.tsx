@@ -19,7 +19,7 @@ import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import {
   BRIEF_COST_LABELS, BRIEF_MAX_CARDS, BRIEF_TRIGGER_LABELS, COST_FREQ_SHARE, emptyBrief, type CardBrief,
 } from "@/lib/card-engine/brief";
-import { equilibrer, planBatch, seededRng, type BalancedCard, type BatchPlan } from "@/lib/card-engine/brief-generator";
+import { appliquerEchange, equilibrer, labelUnite, planBatch, seededRng, type BalancedCard, type BatchPlan } from "@/lib/card-engine/brief-generator";
 import { getBareme } from "@/lib/card-engine/bareme";
 import { cartepourConcept, creerCarte } from "@/lib/card-forge/assisted-pipeline";
 import { BULK_IMAGE_MODELS, type BulkImageModel } from "@/lib/ai/image-models";
@@ -33,11 +33,21 @@ interface BriefRow { id: number; title: string; brief: CardBrief; created_at: st
 interface Suivi { position: number; statut: "attente" | "encours" | "ok" | "erreur"; nom?: string; id?: number | null; erreur?: string; ratio?: number; image?: boolean; sujet?: string; voix?: string | null }
 
 const nouveauSeed = () => (Date.now() % 2147483646) + 1;
-/** Cartes du lot pour un tirage donné : même seed ⇒ mêmes cartes (concepts et lancement s'accordent). */
-const cartesDuLot = (brief: CardBrief, seed: number) => {
+/** Cartes du lot pour un tirage donné : même seed ⇒ mêmes cartes (concepts et lancement s'accordent).
+ *  Avec `concepts`, leurs échanges de capacité sont appliqués AVANT l'équilibrage ;
+ *  sans, c'est le tirage d'origine (celui que voit le planificateur). */
+/** Hors des candidates d'échange : les capacités exclues, et celles à quota
+ *  (un échange vers elles dépasserait leur quota exact). */
+const exclusEchange = (brief: CardBrief) => [...(brief.constraints.excludedAbilities ?? []), ...brief.abilities.map((a) => a.id)];
+const cartesDuLot = (brief: CardBrief, seed: number, concepts?: (CardConcept | null)[]) => {
   const plan = planBatch(brief, seededRng(seed));
-  return { plan, cartes: plan.cards.map((c) => equilibrer(c, getBareme(), brief.constraints)) };
+  const exclues = exclusEchange(brief);
+  return {
+    plan,
+    cartes: plan.cards.map((c, i) => equilibrer(appliquerEchange(c, concepts?.[i]?.echange, exclues), getBareme(), brief.constraints)),
+  };
 };
+const pourConcepts = (brief: CardBrief) => (b: BalancedCard) => cartepourConcept(b, exclusEchange(brief));
 
 const ACCUEIL = "Bonjour ! Décrivons le lot à créer. Pour commencer : **combien de cartes**, de quelle **faction**, quelle(s) **race(s)** (et clans éventuels), quels **types** (Unités / Actions), quelle **répartition des raretés**, et s'agit-il d'une **édition limitée** (année) ou d'un **set** (Communes uniquement) ?";
 
@@ -252,7 +262,7 @@ export default function AssistedForge() {
       const { cartes } = cartesDuLot(brief, seed);
       const res = await fetch("/api/forge/concepts", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief, cards: cartes.map(cartepourConcept), consigne }),
+        body: JSON.stringify({ brief, cards: cartes.map(pourConcepts(brief)), consigne }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error ?? `Erreur ${res.status}`);
@@ -274,7 +284,7 @@ export default function AssistedForge() {
       const { cartes } = cartesDuLot(brief, plan.seed);
       const res = await fetch("/api/forge/concepts", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief, cards: cartes.map(cartepourConcept), consigne, index: i, concepts: plan.concepts, lexique: plan.lexique }),
+        body: JSON.stringify({ brief, cards: cartes.map(pourConcepts(brief)), consigne, index: i, concepts: plan.concepts, lexique: plan.lexique }),
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d?.error ?? `Erreur ${res.status}`);
@@ -289,6 +299,10 @@ export default function AssistedForge() {
   const modifierConcept = (i: number, champ: keyof CardConcept, valeur: string) =>
     setPlan((p) => p && { ...p, concepts: p.concepts.map((c, j) => (j === i ? { ...c, [champ]: valeur } : c)) });
 
+  /** ↩ : la carte revient à sa capacité tirée (le memo rééquilibre). */
+  const annulerEchange = (i: number) =>
+    setPlan((p) => p && { ...p, concepts: p.concepts.map((c, j) => (j === i ? (({ echange: _, ...reste }) => reste)(c) : c)) });
+
   /** Changer l'échelle remet une nature de sujet compatible. */
   const modifierEchelle = (i: number, echelle: Echelle) =>
     setPlan((p) => p && { ...p, concepts: p.concepts.map((c, j) => (j === i ? { ...c, echelle, subjectKind: kindPourEchelle(echelle, c.subjectKind) } : c)) });
@@ -298,8 +312,11 @@ export default function AssistedForge() {
     setErreur(null);
     const id = await sauverBrief();
     if (!id) return;
-    const { plan: lot, cartes } = cartesDuLot(brief, plan?.seed ?? nouveauSeed());
-    const concepts = plan && plan.concepts.length === cartes.length ? plan.concepts : cartes.map(() => null);
+    const seed = plan?.seed ?? nouveauSeed();
+    const base = cartesDuLot(brief, seed);
+    const avecPlan = !!plan && plan.concepts.length === base.cartes.length;
+    const { plan: lot, cartes } = avecPlan ? cartesDuLot(brief, seed, plan.concepts) : base;
+    const concepts = avecPlan ? plan.concepts : cartes.map(() => null);
     setPlanInfo(lot.quotas); setPlanWarnings(lot.warnings);
     setSuivi(cartes.map((c, i) => ({ position: i, statut: "attente", ratio: c.score.ratio, sujet: concepts[i]?.sujet })));
     await executer(id, `run_${Date.now()}`, cartes, concepts, plan?.lexique ?? [], [], 0);
@@ -313,7 +330,7 @@ export default function AssistedForge() {
   };
 
   // Cartes correspondant aux concepts affichés (même seed).
-  const cartesConcepts = useMemo(() => (plan ? cartesDuLot(brief, plan.seed).cartes : []), [brief, plan]);
+  const cartesConcepts = useMemo(() => (plan ? cartesDuLot(brief, plan.seed, plan.concepts).cartes : []), [brief, plan]);
 
   const stats = useMemo(() => ({
     ok: suivi.filter((s) => s.statut === "ok").length,
@@ -457,6 +474,12 @@ export default function AssistedForge() {
                     <button onClick={() => regenererConcept(i)} disabled={enCours || !!conceptsAttente} title="Régénérer ce concept" style={{ ...S.secondaire, padding: "1px 7px" }}>↻</button>
                   </div>
                   {b && <div style={{ fontSize: 9, color: "#999", margin: "3px 0" }}>{cartepourConcept(b).mechanics.map((m) => m.split(" : ")[0]).join(" · ")}</div>}
+                  {c.echange && b?.plan.abilities.includes(c.echange.vers) && (
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "#6b3fa0", margin: "2px 0 4px" }}>
+                      <span style={{ flex: 1 }}>↪ {labelUnite(c.echange.de) ?? c.echange.de} → <strong>{labelUnite(c.echange.vers) ?? c.echange.vers}</strong>{c.echange.raison ? ` — ${c.echange.raison}` : ""}</span>
+                      <button onClick={() => annulerEchange(i)} disabled={enCours} title="Revenir à la capacité d'origine" style={{ ...S.secondaire, padding: "1px 7px" }}>↩</button>
+                    </div>
+                  )}
                   {champ("sujet", "Sujet", 2)}
                   {champ("scene", "Scène")}
                   {champ("cadrage", "Cadrage")}

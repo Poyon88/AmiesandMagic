@@ -6,7 +6,7 @@ import { ABILITIES, KEYWORDS } from "@/lib/game/abilities";
 import type { KeywordMode } from "@/lib/game/types";
 import { alignementAEnregistrer } from "@/lib/card-engine/constants";
 import { BRIEF_COST_LABELS, BRIEF_TRIGGER_LABELS, type CardBrief } from "@/lib/card-engine/brief";
-import { champsCarte, regleNom, type BalancedCard } from "@/lib/card-engine/brief-generator";
+import { candidatsEchange, champsCarte, echangeables, labelUnite, regleNom, type BalancedCard } from "@/lib/card-engine/brief-generator";
 import type { CardConcept } from "@/lib/ai/card-concepts";
 
 const MODE_LABEL: Record<KeywordMode, string> = {
@@ -66,9 +66,16 @@ async function compresser(base64: string, mime: string): Promise<string> {
 export interface CarteCreee { id: number | null; name: string; nameAdjusted?: boolean; imageOk: boolean; imageErreur?: string; voix?: string | null }
 
 /** Ce que le planificateur de concepts doit savoir d'une carte du lot. */
-export function cartepourConcept(b: BalancedCard) {
+export function cartepourConcept(b: BalancedCard, exclues: readonly string[] = []) {
   const p = b.plan;
-  return { type: p.type, rarity: p.rarity, mana: p.mana, race: p.race, clan: p.clan, gender: p.gender, mechanics: mecaniques(b) };
+  // Échangeables encore présentes après l'équilibrage (qui peut retirer un complément).
+  const libres = echangeables(p).filter((id) => b.labels.includes(labelUnite(id) ?? ""));
+  const candidats = libres.length ? candidatsEchange(p, exclues) : [];
+  return {
+    type: p.type, rarity: p.rarity, mana: p.mana, race: p.race, clan: p.clan, gender: p.gender, mechanics: mecaniques(b),
+    echangeables: candidats.length ? libres.map((id) => ({ id, label: labelUnite(id)! })) : [],
+    candidats: candidats.map((k) => ({ id: k.id, label: k.label, desc: (KEYWORDS[k.label]?.desc ?? "").slice(0, 100) })),
+  };
 }
 
 /** Crée UNE carte : texte, image, sauvegarde. `pris` = noms déjà donnés dans le

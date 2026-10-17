@@ -1335,7 +1335,7 @@ export default function CardEditor() {
               itemContent={(_, card) => (
                 <div style={{ position: "relative" }}>
                 {cardStatusOf(card) !== "playable" && (
-                  <CardStatusBadge card={card} style={{ position: "absolute", top: 4, left: 4, zIndex: 2 }} />
+                  <CardStatusBadge overlay card={card} style={{ position: "absolute", top: "16%", left: 6, zIndex: 2 }} />
                 )}
                 {selectedCard?.id === card.id ? (
                   <div onClick={() => selectCard(card)} style={{ cursor: "pointer" }}>

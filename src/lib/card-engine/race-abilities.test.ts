@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FACTIONS, getAllClanNames, getAllRaces, KEYWORDS } from "./constants";
 import { RACE_VISUALS } from "../ai/race-visuals";
-import { CLAN_ABILITY_RULES, RACE_ABILITY_RULES, regleRace } from "./race-abilities";
+import { CLAN_ABILITY_RULES, RACE_ABILITY_RULES, regleRace, THEME_ABILITY_RULES } from "./race-abilities";
 
 describe("RACE_ABILITY_RULES", () => {
   it("ne nomme que des races et des capacités existantes", () => {
@@ -38,5 +38,46 @@ describe("races ailées", () => {
     const ailees = Object.entries(RACE_VISUALS).filter(([, d]) => /\bwing(s|ed|span)?\b/i.test(d)).map(([r]) => r);
     expect(ailees.length).toBeGreaterThan(5);
     for (const race of ailees) expect(regleRace(race).obligatoires, race).toContain("Vol");
+  });
+});
+
+describe("THEME_ABILITY_RULES", () => {
+  it("ne nomme que des races et des capacités existantes", () => {
+    const races = new Set(getAllRaces());
+    for (const [race, regles] of Object.entries(THEME_ABILITY_RULES)) {
+      expect(races.has(race), race).toBe(true);
+      for (const l of regles.flatMap((r) => r.interdits ?? [])) expect(KEYWORDS[l], `${race} → ${l}`).toBeDefined();
+    }
+  });
+
+  it("s'ajoutent aux règles de race", () => {
+    expect(regleRace("Fées").interdits).toEqual(expect.arrayContaining(["Piétinement", "Armure"]));
+    expect(regleRace("Géants").interdits).toEqual(expect.arrayContaining(["Vol", "Ombre"]));
+    expect(regleRace("Gargouilles").obligatoires).toContain("Vol");
+    expect(regleRace("Gargouilles").interdits).toContain("Poison");
+  });
+
+  it("n'interdisent aucune capacité typique du profil de la race", () => {
+    const conflits: string[] = [];
+    for (const f of Object.values(FACTIONS)) {
+      for (const [race, prof] of Object.entries(f.raceProfiles ?? {})) {
+        const themes = (THEME_ABILITY_RULES[race] ?? []).flatMap((r) => r.interdits ?? []);
+        for (const l of Object.keys(prof.likelyKeywords ?? {})) if (themes.includes(l)) conflits.push(`${race} : ${l}`);
+      }
+    }
+    expect(conflits).toEqual([]);
+  });
+});
+
+describe("profils et interdits", () => {
+  it("aucune capacité typique d'un profil de race n'est interdite à cette race", () => {
+    const conflits: string[] = [];
+    for (const f of Object.values(FACTIONS)) {
+      for (const [race, prof] of Object.entries(f.raceProfiles ?? {})) {
+        const interdits = regleRace(race).interdits;
+        for (const l of Object.keys(prof.likelyKeywords ?? {})) if (interdits.includes(l)) conflits.push(`${race} : ${l}`);
+      }
+    }
+    expect(conflits).toEqual([]);
   });
 });

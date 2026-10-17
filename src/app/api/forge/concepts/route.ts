@@ -21,7 +21,18 @@ import {
 //   - avec `index` : régénère cette carte seule, les autres concepts en
 //     contexte pour ne pas les répéter → { concept }
 
-interface CartePlan { type: string; rarity: string; mana: number; race: string | null; clan: string | null; gender: string; mechanics: string[] }
+interface Capa { id: string; label: string; desc?: string }
+interface CartePlan {
+  type: string; rarity: string; mana: number; race: string | null; clan: string | null; gender: string; mechanics: string[];
+  /** Capacités qu'un échange peut retirer, et remplaçantes permises (cf. `candidatsEchange`). */
+  echangeables: Capa[]; candidats: Capa[];
+}
+
+const lireCapas = (v: unknown, max: number): Capa[] =>
+  (Array.isArray(v) ? v : []).slice(0, max).map((x) => {
+    const r = (x ?? {}) as Record<string, unknown>;
+    return { id: String(r.id ?? '').slice(0, 60), label: String(r.label ?? '').slice(0, 60), desc: typeof r.desc === 'string' ? r.desc.slice(0, 140) : undefined };
+  }).filter((c) => c.id && c.label);
 
 const TRANCHE = 25;
 
@@ -36,6 +47,8 @@ function lireCartes(v: unknown): CartePlan[] {
       clan: typeof r.clan === 'string' ? r.clan : null,
       gender: typeof r.gender === 'string' ? r.gender : 'neutre',
       mechanics: (Array.isArray(r.mechanics) ? r.mechanics : []).filter((m): m is string => typeof m === 'string').slice(0, 8),
+      echangeables: r.type === 'Action' ? [] : lireCapas(r.echangeables, 6),
+      candidats: r.type === 'Action' ? [] : lireCapas(r.candidats, 6),
     };
   });
 }
@@ -46,16 +59,25 @@ function lireCartes(v: unknown): CartePlan[] {
 interface Axes { moment: string; tenue: string; echelle: Echelle }
 
 const ligneCarte = (c: CartePlan, i: number, axes?: Axes) =>
-  `${i + 1}. ${c.type} ${c.rarity}, ${c.mana} mana, ${c.race ?? 'sans race'}${c.clan ? ` / ${c.clan}` : ''}${c.type === 'Unité' ? `, genre ${c.gender}` : ''} — ${c.mechanics.join(' | ') || 'sans capacité'}${axes ? ` — ÉCHELLE : ${ECHELLE_LABELS[axes.echelle]} — MOMENT : ${axes.moment} — TENUE : ${axes.tenue}` : ''}`;
+  `${i + 1}. ${c.type} ${c.rarity}, ${c.mana} mana, ${c.race ?? 'sans race'}${c.clan ? ` / ${c.clan}` : ''}${c.type === 'Unité' ? `, genre ${c.gender}` : ''} — ${c.mechanics.join(' | ') || 'sans capacité'}${axes ? ` — ÉCHELLE : ${ECHELLE_LABELS[axes.echelle]} — MOMENT : ${axes.moment} — TENUE : ${axes.tenue}` : ''}${
+  c.echangeables.length && c.candidats.length
+    ? `\n   ÉCHANGEABLES : ${c.echangeables.map((k) => `${k.label} [${k.id}]`).join(', ')} — CANDIDATES : ${c.candidats.map((k) => `${k.label} [${k.id}]${k.desc ? ` (${k.desc})` : ''}`).join(' ; ')}`
+    : ''}`;
 
 const ligneConcept = (c: CardConcept, i: number) =>
   `${i + 1}. [${c.subjectKind}${c.echelle ? `, ${ECHELLE_LABELS[c.echelle]}` : ''}] ${c.sujet} — ${c.scene} — ${c.moment || '?'} — ${c.tenue || '?'} — ${c.cadrage} — nom : ${c.ideeNom} (${c.formeNom}) — ambiance : ${c.formeAmbiance}`;
 
-/** Le tirage fait foi si Claude omet le champ ; l'échelle, toujours. */
-const avecAxes = (c: CardConcept, a: Axes): CardConcept => ({
-  ...c, moment: c.moment || a.moment, tenue: c.tenue || a.tenue,
-  echelle: a.echelle, subjectKind: kindPourEchelle(a.echelle, c.subjectKind),
-});
+/** Le tirage fait foi si Claude omet le champ ; l'échelle, toujours. Un
+ *  échange hors des listes fermées de la carte est ignoré. */
+const avecAxes = (c: CardConcept, a: Axes, carte: CartePlan): CardConcept => {
+  const { echange, ...reste } = c;
+  const valide = echange && carte.echangeables.some((k) => k.id === echange.de) && carte.candidats.some((k) => k.id === echange.vers);
+  return {
+    ...reste, moment: c.moment || a.moment, tenue: c.tenue || a.tenue,
+    echelle: a.echelle, subjectKind: kindPourEchelle(a.echelle, c.subjectKind),
+    ...(valide ? { echange } : {}),
+  };
+};
 
 async function appelClaude(system: string, user: string, maxTokens: number): Promise<unknown> {
   let lastError = 'Erreur inconnue';
@@ -127,6 +149,7 @@ OBJECTIF : des cartes ORIGINALES et DIFFÉRENTES les unes des autres, qui compl�
 
 RÈGLES
 1. Le concept ILLUSTRE la mécanique : lis les capacités, déclencheurs et coûts (Provocation → quelqu'un qui tient la ligne ; coût de sacrifice → un rituel ou un pacte ; « à la mort » → martyr, kamikaze, héritage ; pioche → érudit, éclaireur, archiviste…). Deux cartes aux mécaniques proches reçoivent quand même des sujets nettement différents.
+1 bis. ÉCHANGE DE CAPACITÉ (Unités) : quand une carte liste des ÉCHANGEABLES et des CANDIDATES, et qu'une capacité échangeable JURE avec la race, le sujet ou le nom que tu imagines (une gargouille de pierre qui piétine, un esprit qui s'exhume…), remplace-la par UNE candidate qui leur colle mieux : "echange": {"de": "<id échangeable>", "vers": "<id candidate>", "raison": "pourquoi, en quelques mots"}. Au plus UN échange par carte, uniquement entre ces deux listes (ids entre crochets), et AUCUN quand tout colle déjà — la plupart des cartes n'en ont pas besoin. Le reste du concept (rôle, sujet, nom) décrit alors la carte APRÈS l'échange.
 2. Sujets LARGES : métiers, castes, âges, tempéraments, montures, machines et constructions servies. L'ÉCHELLE de la scène est imposée (règle 5 ter). Une race n'est pas « un guerrier en armure » : au plus un tiers des Unités sont des combattants en armure. Pour une Action : un lieu, un objet, un phénomène ou un événement, avec ou sans personnage.
 3. La race de chaque carte est NON NÉGOCIABLE : tout personnage montré en est. Ne prends jamais comme sujet une créature d'une autre race du jeu.
 4. subjectKind ∈ ${SUBJECT_KINDS.map((k) => `"${k}"`).join(', ')} ; une Unité est seulement ${SUBJECT_KINDS_UNITE.map((k) => `"${k}"`).join(', ')}.
@@ -144,7 +167,7 @@ RÈGLES
 8. TEXTE D'AMBIANCE : fais tourner les formes (${FLAVOR_FORMS.join(', ')}) et les tons (${FLAVOR_TONES.join(', ')}) ; il parle du monde, jamais des règles (aucune référence aux cartes, au deck, au mana ni aux noms de capacités).
 
 Réponds UNIQUEMENT par un objet JSON valide, sans backticks :
-{"lexique": ["…"], "concepts": [{"echelle": "…", "subjectKind": "membre", "sujet": "qui ou quoi, précis (français)", "role": "ce que sa mécanique raconte", "scene": "où, quel instant", "cadrage": "…", "elementsCharte": "1-2 éléments du répertoire", "moment": "…", "tenue": "…", "ideeNom": "…", "formeNom": "…", "formeAmbiance": "…", "ton": "…"}]}
+{"lexique": ["…"], "concepts": [{"echelle": "…", "subjectKind": "membre", "sujet": "qui ou quoi, précis (français)", "role": "ce que sa mécanique raconte", "scene": "où, quel instant", "cadrage": "…", "elementsCharte": "1-2 éléments du répertoire", "moment": "…", "tenue": "…", "ideeNom": "…", "formeNom": "…", "formeAmbiance": "…", "ton": "…", "echange": null}]}
 Un concept par carte, dans l'ordre exact des cartes. Concis : chaque champ tient en une courte phrase.`;
 
   const contexte = `THÈME DU LOT (précisions de l'auteur) : ${brief.notes || 'aucune'}
@@ -188,7 +211,7 @@ ${actuel ? `CONCEPT ACTUEL, que l'auteur REJETTE : ${ligneConcept(actuel, index)
       const raw = await appelClaude(system, user, 3000);
       const { value } = sanitizeConcepts(raw, [cartes[index].type]);
       if (!value.concepts[0]) return NextResponse.json({ error: 'Concept illisible' }, { status: 502 });
-      return NextResponse.json({ concept: avecAxes(value.concepts[0], axesRegen) });
+      return NextResponse.json({ concept: avecAxes(value.concepts[0], axesRegen, cartes[index]) });
     }
 
     // ── Tout le lot, par tranches ──
@@ -211,7 +234,7 @@ ${tranche.map((c, i) => ligneCarte(c, debut + i, axes[debut + i])).join('\n')}`;
       const { value, errors } = sanitizeConcepts(raw, tranche.map((c) => c.type));
       if (value.concepts.length !== tranche.length) throw new Error(`Plan incomplet : ${errors.join(', ')}`);
       warnings.push(...errors);
-      concepts.push(...value.concepts.map((c, i) => avecAxes(c, axes[debut + i])));
+      concepts.push(...value.concepts.map((c, i) => avecAxes(c, axes[debut + i], cartes[debut + i])));
       for (const l of value.lexique) if (!lexique.includes(l)) lexique.push(l);
     }
     return NextResponse.json({ lexique: lexique.slice(0, 30), concepts, warnings });

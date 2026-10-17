@@ -1009,7 +1009,7 @@ export default function DeckBuilder({
                   dimmed={atMax}
                   count={inDeck?.quantity}
                 />
-                <CardStatusBadge card={card} style={{ position: "absolute", top: 6, left: 6, zIndex: 2, pointerEvents: "auto" }} />
+                <CardStatusBadge overlay card={card} style={{ position: "absolute", top: "16%", left: 6, zIndex: 2, pointerEvents: "auto" }} />
               </div>
             );
           })}
