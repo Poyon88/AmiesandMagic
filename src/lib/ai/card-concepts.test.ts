@@ -1,7 +1,10 @@
 // Concepts de carte : validation de la réponse du planificateur et ancrage de
 // la race dans le prompt d'illustration.
 import { describe, expect, it } from "vitest";
-import { MOMENTS, ancrageRace, nameRuleText, premierMot, repartir, sanitizeConcepts, sanitizePlan } from "./card-concepts";
+import {
+  MOMENTS, ancrageRace, echellePourCarte, nameRuleText, poidsEchelle, premierMot, repartir, repartirEchelles, sanitizeConcepts, sanitizePlan,
+  type CarteEchelle, type Echelle,
+} from "./card-concepts";
 import { RACE_VISUALS } from "./race-visuals";
 
 const concept = (over: Record<string, unknown> = {}) => ({
@@ -88,5 +91,58 @@ describe("moment et tenue", () => {
     const r = repartir(MOMENTS, MOMENTS.length * 2, () => 0.37);
     expect(new Set(r.slice(0, MOMENTS.length)).size).toBe(MOMENTS.length);
     expect(new Set(r.slice(MOMENTS.length)).size).toBe(MOMENTS.length);
+  });
+});
+
+describe("échelle de la scène", () => {
+  const unite = (mana: number, over: Partial<CarteEchelle> = {}): CarteEchelle => ({ type: "Unité", rarity: "Commune", mana, race: "Vampires", ...over });
+  const compte = (l: Echelle[]) => l.reduce((m, e) => ({ ...m, [e]: (m[e] ?? 0) + 1 }), {} as Record<string, number>);
+
+  it("barème par coût, héros, colossales et Actions", () => {
+    expect(poidsEchelle(unite(1))).toEqual({ seule: 80, entourage: 10, groupe: 10, armee: 0 });
+    expect(poidsEchelle(unite(10))).toEqual({ seule: 15, entourage: 20, groupe: 25, armee: 40 });
+    expect(poidsEchelle(unite(9, { heros: true }))).toEqual({ seule: 60, entourage: 40 });
+    expect(poidsEchelle(unite(5, { race: "Dragons" })).armee).toBe(0);
+    expect(poidsEchelle(unite(10, { race: "Dragons" })).armee).toBeGreaterThan(0);
+    expect(poidsEchelle(unite(5, { race: "Élémentaire", clan: "Le Socle du Monde" })).armee).toBe(0);
+    expect(poidsEchelle({ type: "Action", rarity: "Rare", mana: 4 })).toEqual({ sort: 45, manoeuvre: 35, lieu: 20 });
+  });
+
+  it("lot stratifié : 10 Communes à 1-2 mana → 8 seules, 1 entourée, 1 groupe", () => {
+    let k = 0;
+    const tirage = () => ((k = (k * 9301 + 49297) % 233280) / 233280);
+    const r = repartirEchelles(Array.from({ length: 10 }, (_, i) => unite(1 + (i % 2))), tirage);
+    expect(compte(r)).toEqual({ seule: 8, entourage: 1, groupe: 1 });
+  });
+
+  it("une colossale sous 9 mana n'est jamais une armée ; les Actions ne tirent que leurs échelles", () => {
+    for (let s = 0; s < 50; s++) {
+      const r = repartirEchelles([...Array.from({ length: 6 }, () => unite(8, { race: "Géants" })), { type: "Action", rarity: "Commune", mana: 3 }]);
+      expect(r.slice(0, 6)).not.toContain("armee");
+      expect(["sort", "manoeuvre", "lieu"]).toContain(r[6]);
+    }
+  });
+
+  it("Légendaires toujours héros, une Épique sur deux", () => {
+    for (let s = 0; s < 30; s++) {
+      const r = repartirEchelles([unite(10, { rarity: "Légendaire" }), unite(10, { rarity: "Épique" }), unite(10, { rarity: "Épique" })]);
+      expect(["seule", "entourage"]).toContain(r[0]);
+    }
+    expect(echellePourCarte(unite(10, { rarity: "Légendaire" }), () => 0.99)).toBe("entourage");
+  });
+
+  it("sanitize : échelle invalide écartée, nature du sujet rendue cohérente", () => {
+    const { value } = sanitizeConcepts({ concepts: [
+      concept({ echelle: "armee", subjectKind: "membre" }),
+      concept({ echelle: "sort" }),
+      concept({ echelle: "lieu", subjectKind: "membre" }),
+    ] }, ["Unité", "Unité", "Action"]);
+    expect(value.concepts[0]).toMatchObject({ echelle: "armee", subjectKind: "groupe" });
+    expect(value.concepts[1].echelle).toBeUndefined();
+    expect(value.concepts[2]).toMatchObject({ echelle: "lieu", subjectKind: "lieu" });
+  });
+
+  it("ancrage d'une armée", () => {
+    expect(ancrageRace("a stout dwarf", "groupe", "armee").prefixe).toBe("A vast host of stout dwarf");
   });
 });

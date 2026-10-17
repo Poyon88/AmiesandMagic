@@ -38,7 +38,9 @@ function consigneOrientation(ratio: string): string {
   const [l, h] = ratio.split(':').map(Number);
   if (!l || !h || l === h) return '';
   return l < h
-    ? ` Vertical portrait composition (${ratio}), taller than wide: frame the subject vertically, full height of the image.`
+    // Ni « portrait » ni « the subject » : ces mots ramenaient chaque carte à
+    // une figure seule en gros plan (2026-10-16).
+    ? ` Vertical composition (${ratio}), taller than wide: use the full height of the frame.`
     : ` Horizontal landscape composition (${ratio}), wider than tall.`;
 }
 

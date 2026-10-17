@@ -15,9 +15,9 @@ export const RACE_VISUALS: Record<string, string> = {
   "Fées": "tiny luminous fairy with translucent butterfly/dragonfly wings, glowing aura, ethereal and delicate",
   // Alliance Céleste (La Forêt d'Émeraude)
   "Farfadets": "small mischievous leprechaun, weathered red-cheeked face under a wide green felt hat, buckled shoes and a worn waistcoat, clay pipe, gold coins spilling from a hidden pouch, sly knowing grin",
-  "Korrigans": "stunted korrigan sprite of Breton legend, gnarled bark-like skin and oversized ears, tangled mossy hair strung with dolmen charms, squat and stubborn, crouched on a standing stone under moonlight",
-  "Faunes": "woodland faun, human torso above shaggy goat legs and cloven hooves, curling ram horns, pointed ears, reed panpipes at the lips, ivy in the hair, mid-dance in a sunlit glade",
-  "Dryades": "woodland dryad, feminine figure whose skin is smooth living bark streaked with sap, hair of leaves and blossom shifting with the season, roots trailing from the feet into the soil, serene and unhurried, half-emerged from an ancient oak",
+  "Korrigans": "stunted korrigan sprite of Breton legend, gnarled bark-like skin and oversized ears, tangled mossy hair strung with dolmen charms, squat and stubborn",
+  "Faunes": "woodland faun, human torso above shaggy goat legs and cloven hooves, curling ram horns, pointed ears, reed panpipes at the lips, ivy in the hair",
+  "Dryades": "woodland dryad, feminine figure whose skin is smooth living bark streaked with sap, hair of leaves and blossom shifting with the season, roots trailing from the feet into the soil, serene and unhurried",
   // Nains
   "Nains": "stout, broad-shouldered dwarf, short and stocky, thick braided beard, weathered ruddy face, heavy hands",
   "Golems": "massive stone or metal construct, glowing runes carved into body, hulking and mechanical, no organic features",
@@ -31,8 +31,8 @@ export const RACE_VISUALS: Record<string, string> = {
   "Griffons": "majestic griffin with eagle head and front talons, powerful lion hindquarters, broad feathered wings, regal bearing, heraldic harness",
   "Faucons": "swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings folded in a dive or spread mid-flight",
   // Royaumes Libres (Guerrières du Vent)
-  "Pégases": "majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, powerful legs mid-gallop across the clouds, noble and untamed",
-  "Sphinx": "Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, seated upright on a rocky outcrop above a mountain road, inscrutable knowing gaze",
+  "Pégases": "majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, powerful legs, noble and untamed",
+  "Sphinx": "Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, inscrutable knowing gaze",
   // Hommes-Bêtes
   "Hommes-Loups": "werewolf-like humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
   "Hommes-Ours": "werebear-like humanoid, massive bear-headed figure, thick fur, enormous claws, towering and powerful",
@@ -76,17 +76,17 @@ export const RACE_VISUALS: Record<string, string> = {
   // Empire du Milieu (Défenseurs d'Ivoire)
   "Nagas": "serpent temple guardian, human torso rising from a long coiling snake body, fanned cobra hood, jewelled iridescent scales, Khmer gold ornaments, serene and watchful",
   // Empire du Milieu (Lames de l'Ombre)
-  "Tengu": "crow-spirit swordmaster of the Japanese mountains, large black feathered wings, crimson long-nosed face or corvid beak, yamabushi ascetic robes and small black tokin cap, feather fan and katana, perched among misty cedar peaks",
+  "Tengu": "crow-spirit swordmaster of the Japanese mountains, large black feathered wings, crimson long-nosed face or corvid beak, yamabushi ascetic robes and small black tokin cap, feather fan and katana",
   "Oni": "hulking Japanese ogre-demon, red or deep blue skin, two short horns, wild black mane, tusked jaw, tiger-skin loincloth, iron bracelets, huge studded iron kanabo club, brutal and menacing",
   // Empire du Milieu (Empire de Jade)
   "Qilins": "Chinese qilin, auspicious celestial chimera with a dragon-like head and a single branching antler, deer body covered in shimmering jade-green and gold scales, ox tail, cloven hooves wreathed in soft flame and mist, stepping without bending the grass, serene and benevolent",
   // Nécropole (Rangs Silencieux)
-  "Ghoules": "hunched flesh-eating ghoul, grey mottled skin stretched over a gaunt frame, long clawed fingers, jaw distended too wide, sunken eyes, crouched low over gnawed bones",
+  "Ghoules": "hunched flesh-eating ghoul, grey mottled skin stretched over a gaunt frame, long clawed fingers, jaw distended too wide, sunken eyes",
   // Nécropole (Cour Écarlate)
   "Homuncules de Sang": "small alchemical homunculus grown from blood, translucent crimson flesh over a fragile skeletal frame, glass tubes and stitched seams, malformed and pitiful, dripping",
-  "Gargouilles": "winged stone gargoyle perched on a gothic cornice, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
+  "Gargouilles": "winged stone gargoyle, cracked grey granite hide, curled horns, folded leathery stone wings, clawed talons, blank glowing eyes",
   "Dhampirs": "half-vampire, pale human features with faint fangs, cold restrained stare",
-  "Chiroptères": "gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur, clinging upside down, swarm of smaller bats behind",
+  "Chiroptères": "gaunt humanoid bat, huge outstretched membrane wings, oversized ears and flattened snout, dark fur",
   // Nécropole (Cénacle Nécromant)
   "Momies": "bandaged undead mummy, ancient linen wrappings blackened with resin and grave dust, gilded funerary mask and jewelled pectoral, dry withered limbs, hollow sockets lit from within, slow and inexorable",
   "Chimères nécrotiques": "necrotic chimera stitched from several corpses, mismatched animal heads on one bloated carcass, crude iron sutures and exposed ribs, mottled dead flesh, ichor dripping from the seams, hulking and brutal",
@@ -97,7 +97,7 @@ export const RACE_VISUALS: Record<string, string> = {
   "Sluaghs": "sluagh host of the restless dead, a dense flock of gaunt winged spirits pouring across a night sky, ragged membranous wings and clawed hands, hollow wailing faces, a single dark tide of souls",
   // Primordiaux (La Vague Sans Fin)
   "Ondins": "undine, blue-green scaled humanoid with finned forearms and a crested head, calm luminous eyes, water streaming from the shoulders",
-  "Sirènes": "siren enchantress, humanoid torso above a long iridescent fish tail, wet flowing hair strung with pearls, webbed hands raised mid-song, hypnotic pale eyes, faint sound-ripples in the water around her",
+  "Sirènes": "siren enchantress, humanoid torso above a long iridescent fish tail, wet flowing hair strung with pearls, webbed hands, hypnotic pale eyes",
   "Léviathans": "colossal leviathan of the abyss, immense serpentine sea beast breaching, barnacle-crusted armoured hide, rows of jagged teeth in a cavernous maw, ridged dorsal fins, dwarfing the waves around it",
   // Primordiaux (Le Socle du Monde)
   "Cristallins": "crystalline elemental, humanoid figure grown from faceted quartz and geode shards, light refracting through a translucent body, jagged mineral spurs at the shoulders, glowing core visible within the chest",
