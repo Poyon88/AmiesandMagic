@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FACTIONS, getAllClanNames, getAllRaces, KEYWORDS } from "./constants";
 import { RACE_VISUALS } from "../ai/race-visuals";
-import { CLAN_ABILITY_RULES, RACE_ABILITY_RULES, regleRace, THEME_ABILITY_RULES } from "./race-abilities";
+import { AILES_FACULTATIVES, CAVALIERS_VOLANTS, CLAN_ABILITY_RULES, RACE_ABILITY_RULES, volParMonture, regleRace, THEME_ABILITY_RULES } from "./race-abilities";
 
 describe("RACE_ABILITY_RULES", () => {
   it("ne nomme que des races et des capacités existantes", () => {
@@ -35,9 +35,16 @@ describe("RACE_ABILITY_RULES", () => {
 
 describe("races ailées", () => {
   it("toute race dessinée avec des ailes a Vol obligatoire", () => {
-    const ailees = Object.entries(RACE_VISUALS).filter(([, d]) => /\bwing(s|ed|span)?\b/i.test(d)).map(([r]) => r);
+    const ailees = Object.entries(RACE_VISUALS).filter(([r, d]) => /\bwing(s|ed|span)?\b/i.test(d) && !AILES_FACULTATIVES.has(r)).map(([r]) => r);
     expect(ailees.length).toBeGreaterThan(5);
     for (const race of ailees) expect(regleRace(race).obligatoires, race).toContain("Vol");
+  });
+
+  it("ailes facultatives : Vol ni obligatoire ni interdit", () => {
+    for (const race of AILES_FACULTATIVES) {
+      expect(regleRace(race).obligatoires, race).not.toContain("Vol");
+      expect(regleRace(race).interdits, race).not.toContain("Vol");
+    }
   });
 });
 
@@ -79,5 +86,21 @@ describe("profils et interdits", () => {
       }
     }
     expect(conflits).toEqual([]);
+  });
+});
+
+describe("cavaliers volants", () => {
+  it("Elfes, Humains, Nains… peuvent avoir Vol (monture), les bêtes à terre non", () => {
+    for (const r of ["Elfes", "Humains", "Nains"]) {
+      expect(CAVALIERS_VOLANTS.has(r)).toBe(true);
+      expect(regleRace(r).interdits).not.toContain("Vol");
+    }
+    for (const r of ["Loups", "Centaures", "Géants"]) expect(regleRace(r).interdits).toContain("Vol");
+  });
+  it("volParMonture : seulement un cavalier avec Vol", () => {
+    expect(volParMonture("Elfes", ["Vol", "Précision"])).toBe(true);
+    expect(volParMonture("Elfes", ["Précision"])).toBe(false);
+    expect(volParMonture("Dragons", ["Vol"])).toBe(false);
+    expect(volParMonture(null, ["Vol"])).toBe(false);
   });
 });

@@ -68,7 +68,7 @@ export const RACE_VISUALS: Record<string, string> = {
   // Elfes Noirs
   "Elfes Corrompus": "dark elf with ashen/obsidian skin, white hair, cruel features, malevolent aura",
   "Araignées Géantes": "enormous spider with dark chitin, multiple glowing eyes, venomous dripping fangs, web-covered",
-  "Démons": "demonic creature with horns, bat-like wings, cloven hooves, infernal flames, corrupted and terrifying",
+  "Démons": "demonic creature with horns, cloven hooves, infernal flames, corrupted and terrifying; only some demons bear bat-like wings",
   // Nains (Guilde des Ingénieurs)
   "Gnomes": "small gnome, bushy beard, large nose, bright inquisitive eyes",
   // Légions du Chaos (Garde Noire)

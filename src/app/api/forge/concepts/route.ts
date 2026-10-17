@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { sanitizeBrief } from '@/lib/card-engine/brief';
+import { volParMonture } from '@/lib/card-engine/race-abilities';
 import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide';
 import { RACE_TYPICAL_GEAR, RACE_VISUALS } from '@/lib/ai/race-visuals';
 import {
@@ -60,6 +61,7 @@ interface Axes { moment: string; tenue: string; echelle: Echelle }
 
 const ligneCarte = (c: CartePlan, i: number, axes?: Axes) =>
   `${i + 1}. ${c.type} ${c.rarity}, ${c.mana} mana, ${c.race ?? 'sans race'}${c.clan ? ` / ${c.clan}` : ''}${c.type === 'Unité' ? `, genre ${c.gender}` : ''} — ${c.mechanics.join(' | ') || 'sans capacité'}${axes ? ` — ÉCHELLE : ${ECHELLE_LABELS[axes.echelle]} — MOMENT : ${axes.moment} — TENUE : ${axes.tenue}` : ''}${
+  cavalierVolant(c) ? ' — VOL : race sans ailes, elle CHEVAUCHE une monture volante (griffon, pégase, aigle géant, wyverne…)' : ''}${
   c.echangeables.length && c.candidats.length
     ? `\n   ÉCHANGEABLES : ${c.echangeables.map((k) => `${k.label} [${k.id}]`).join(', ')} — CANDIDATES : ${c.candidats.map((k) => `${k.label} [${k.id}]${k.desc ? ` (${k.desc})` : ''}`).join(' ; ')}`
     : ''}`;
@@ -67,14 +69,21 @@ const ligneCarte = (c: CartePlan, i: number, axes?: Axes) =>
 const ligneConcept = (c: CardConcept, i: number) =>
   `${i + 1}. [${c.subjectKind}${c.echelle ? `, ${ECHELLE_LABELS[c.echelle]}` : ''}] ${c.sujet} — ${c.scene} — ${c.moment || '?'} — ${c.tenue || '?'} — ${c.cadrage} — nom : ${c.ideeNom} (${c.formeNom}) — ambiance : ${c.formeAmbiance}`;
 
+/** Libellés de forge des mécaniques (« Vol : … » → « Vol »). */
+const labelsCarte = (c: CartePlan) => c.mechanics.map((m) => m.split(' : ')[0].split(' (')[0].trim());
+/** Peuple sans ailes qui vole : il chevauche une monture volante. */
+const cavalierVolant = (c: CartePlan) => c.type === 'Unité' && volParMonture(c.race, labelsCarte(c));
+
 /** Le tirage fait foi si Claude omet le champ ; l'échelle, toujours. Un
- *  échange hors des listes fermées de la carte est ignoré. */
+ *  échange hors des listes fermées de la carte est ignoré. Un cavalier volant
+ *  seul ou entouré est une « monture et son cavalier ». */
 const avecAxes = (c: CardConcept, a: Axes, carte: CartePlan): CardConcept => {
   const { echange, ...reste } = c;
   const valide = echange && carte.echangeables.some((k) => k.id === echange.de) && carte.candidats.some((k) => k.id === echange.vers);
+  const monture = cavalierVolant(carte) && (a.echelle === 'seule' || a.echelle === 'entourage');
   return {
     ...reste, moment: c.moment || a.moment, tenue: c.tenue || a.tenue,
-    echelle: a.echelle, subjectKind: kindPourEchelle(a.echelle, c.subjectKind),
+    echelle: a.echelle, subjectKind: monture ? 'monture' : kindPourEchelle(a.echelle, c.subjectKind),
     ...(valide ? { echange } : {}),
   };
 };
