@@ -362,7 +362,7 @@ export const FACTIONS: Record<string, {
       // Reste sous la moyenne d'attaque des factions offensives : c'est une
       // charge lourde, pas un assassin. Aucun mot-clé interdit de la faction
       // (Vol, Invisible, Esquive, Ombre, Traque, Pillage) n'est sollicité.
-      "Mammouths": { statWeights: { atk: 1.35, def: 1.10 }, likelyKeywords: { "Piétinement": 0.70, "Bravoure": 0.55, "Carnage X": 0.50, "Fureur": 0.45, "Terreur": 0.35, "Célérité": 0.30, "Armure": 0.30 } },
+      "Mammouths": { statWeights: { atk: 1.35, def: 1.10 }, likelyKeywords: { "Piétinement": 0.70, "Bravoure": 0.55, "Carnage X": 0.50, "Fureur": 0.45, "Terreur": 0.35, "Armure": 0.30 } },
     },
     clanProfiles: {
       "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
