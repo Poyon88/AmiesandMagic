@@ -258,6 +258,18 @@ function pendingTriggerOverlay(
     if (cartes.length === 0) return none;
     return { targetingMode: "divination" as const, validTargets: [], pendingTriggerId: t.id, pendingTriggerPrompt: null, pendingTriggerNeeded: 1, pendingTriggerPicked: [], divinationCards: cartes, deckPickerOrder: null, alternativeOptions: [] };
   }
+  // SORT RETARDÉ arrivé à terme : le lanceur désigne maintenant la ou les
+  // cibles (une par créneau du sort réduit à cet effet).
+  if (t.delayedSpell) {
+    const targets = endOfTurnTriggerTargets(gs!, t);
+    if (targets.length === 0) return none;
+    const needed = Math.min(Math.max(1, t.delayedSpell.slots.length), targets.length);
+    return {
+      targetingMode: "pending_trigger" as const, validTargets: targets, pendingTriggerId: t.id,
+      pendingTriggerPrompt: `⏳ ${t.delayedSpell.card.name} — choisissez une cible`,
+      pendingTriggerNeeded: needed, pendingTriggerPicked: [], alternativeOptions: [],
+    };
+  }
   // Variante « Sélection en fin de tour » : ouvre la modale « 1 parmi 3 » (les
   // cartes offertes sont portées par le trigger sous forme d'ids).
   if (t.selectionType) {
