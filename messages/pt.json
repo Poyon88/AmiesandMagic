@@ -2113,6 +2113,42 @@
         "all_allies": "todas as criaturas aliadas",
         "all": "todas as criaturas de ambos os lados"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Custo em vida {n}",
+        "desc": "Além do mana, seu herói perde {n} PV ao jogar esta carta. Não é permitido se o deixar com 0 PV."
+      },
+      "defausse": {
+        "title": "Descarte {n}",
+        "desc_one": "Além do mana, descarte uma carta da sua mão, à sua escolha.",
+        "desc_many": "Além do mana, descarte {n} cartas da sua mão, à sua escolha."
+      },
+      "sacrifice": {
+        "title": "Sacrifício {n}",
+        "desc_one": "Além do mana, sacrifique uma de suas criaturas em jogo, à sua escolha.",
+        "desc_many": "Além do mana, sacrifique {n} de suas criaturas em jogo, à sua escolha."
+      },
+      "exil": {
+        "title": "Exílio {n}",
+        "desc_one": "Além do mana, a carta do topo do seu deck é exilada: ela sai da partida. Não é permitido se o deck estiver vazio.",
+        "desc_many": "Além do mana, as {n} cartas do topo do seu deck são exiladas: elas saem da partida. Seu deck precisa ter pelo menos {n} cartas."
+      },
+      "repli": {
+        "title": "Recolocação {n}",
+        "desc_one": "Além do mana, coloque uma carta da sua mão, à sua escolha, no topo do deck.",
+        "desc_many": "Além do mana, coloque {n} cartas da sua mão, à sua escolha, no topo do deck. A primeira escolhida fica no topo."
+      },
+      "eveil": {
+        "title": "Despertar {n}",
+        "desc": "Em vez de jogá-la, você pode colocar esta carta em despertar. Depois paga seus {n} pontos com seu mana, 1 ponto por mana, durante seus turnos. No último ponto, ela entra em jogo como se você a tivesse jogado.",
+        "remaining": "Faltam {left} de {n} pontos a pagar."
+      },
+      "equipement": {
+        "title": "Equipar {n}",
+        "desc": "Com o objeto em jogo, equipá-lo em uma de suas criaturas custa {n} de mana. O custo é pago a cada equipamento, mudanças incluídas.",
+        "desc_free": "Com o objeto em jogo, equipá-lo em uma de suas criaturas é gratuito, mudanças incluídas."
+      }
     }
   },
   "home": {

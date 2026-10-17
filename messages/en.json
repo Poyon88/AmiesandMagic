@@ -2113,6 +2113,42 @@
         "all_allies": "all allied creatures",
         "all": "all creatures on both sides"
       }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Life cost {n}",
+        "desc": "On top of mana, your hero loses {n} HP when you play this card. Not allowed if it would bring your hero to 0 HP."
+      },
+      "defausse": {
+        "title": "Discard {n}",
+        "desc_one": "On top of mana, discard a card of your choice from your hand.",
+        "desc_many": "On top of mana, discard {n} cards of your choice from your hand."
+      },
+      "sacrifice": {
+        "title": "Sacrifice {n}",
+        "desc_one": "On top of mana, sacrifice one of your creatures in play, of your choice.",
+        "desc_many": "On top of mana, sacrifice {n} of your creatures in play, of your choice."
+      },
+      "exil": {
+        "title": "Exile {n}",
+        "desc_one": "On top of mana, the top card of your deck is exiled: it leaves the game. Not allowed if your deck is empty.",
+        "desc_many": "On top of mana, the top {n} cards of your deck are exiled: they leave the game. Your deck must hold at least {n} cards."
+      },
+      "repli": {
+        "title": "Retreat {n}",
+        "desc_one": "On top of mana, put a card of your choice from your hand on top of your deck.",
+        "desc_many": "On top of mana, put {n} cards of your choice from your hand on top of your deck. The first one chosen ends up on top."
+      },
+      "eveil": {
+        "title": "Awakening {n}",
+        "desc": "Instead of playing it, you can set this card to awaken. You then pay its {n} points with your mana, 1 point per mana, during your turns. On the last point, it enters play as if you had played it.",
+        "remaining": "{left} of {n} points left to pay."
+      },
+      "equipement": {
+        "title": "Equip {n}",
+        "desc": "Once the item is in play, equipping it to one of your creatures costs {n} mana. The cost is paid every time you equip it, moves included.",
+        "desc_free": "Once the item is in play, equipping it to one of your creatures is free, moves included."
+      }
     }
   },
   "home": {
