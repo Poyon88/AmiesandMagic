@@ -298,7 +298,9 @@ export type SpellKeywordId =
  *  ability, tinted orange so it stays distinct from an on-play effect that may
  *  sit on the same creature. "death" = on-death rattle. Only a curated subset
  *  of keywords accept non-play modes — see plan. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "start_of_turn" | "draw" | "low_hp" | "wound";
+/** "delay" = RETARD X : l'effet part UNE fois, au début du X-ième tour suivant
+ *  du contrôleur (X dans `KeywordInstance.delay`), cf. lib/game/retard.ts. */
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "start_of_turn" | "draw" | "low_hp" | "wound" | "delay";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -318,6 +320,8 @@ export interface KeywordInstance {
    *  doublon) ; sinon il est inerte. Mis en œuvre par retrait/restauration de
    *  l'élément dans la vue `card` de l'instance (cf. lib/game/singulier.ts). */
   singulier?: boolean;
+  /** RETARD X (mode "delay") : nombre de tours avant le déclenchement (1–3). */
+  delay?: number;
   x?: number;
   /** Renforcement multiple : bonus de PV (+Y). `x` porte le bonus d'ATK (+X). */
   y?: number;
@@ -393,6 +397,9 @@ export interface SpellKeywordInstance {
   linkedCardIds?: number[];
   /** SINGULIER : même contrat que `KeywordInstance.singulier`. */
   singulier?: boolean;
+  /** RETARD X : l'effet ne se résout pas au lancement mais au début du X-ième
+   *  tour suivant du lanceur (1–3), cibles choisies à ce moment-là. */
+  delay?: number;
   /** SÉLECTION au hasard : même contrat que `KeywordInstance.randomX`. */
   randomX?: boolean;
   /** Plancher A du « ? » : même contrat que `KeywordInstance.minX`. */
@@ -517,6 +524,10 @@ export type CapabilityTrigger =
    *  d'effet (balayage `checkWoundTriggers`), jamais au milieu d'un sort : une
    *  créature morte entre-temps ne déclenche rien. La source est EN JEU. */
   | "on_wound"
+  /** RETARD X : une seule fois, au début du X-ième tour suivant du contrôleur
+   *  (X = `Capability.delay`), si la créature est encore en jeu. Armé quand la
+   *  carte est JOUÉE (comme on_play), cf. lib/game/retard.ts. */
+  | "on_delay"
   | "automatic"
   | "spell_resolution";
 
@@ -569,6 +580,9 @@ export interface Capability {
    *  aussi par les capacités dérivées, pour que `capabilities` et
    *  `keyword_instances` se retirent ENSEMBLE chez un joueur non singleton. */
   singulier?: boolean;
+  /** RETARD X (1–3). Créature : avec le déclencheur `on_delay`. Sort : sur une
+   *  capacité `spell_resolution`, qui est alors différée de X tours. */
+  delay?: number;
   /** Slots de cibles (0/1/N). Vide = aucun ciblage. Ordre = ordre du picker. */
   targets?: CapabilityTargetSlot[];
   /** « OU » — cette capacité est une BRANCHE du choix de la carte.
@@ -1287,6 +1301,10 @@ export interface CardInstance {
   // paralysée, tour en cours compris (décrémenté à chaque fin de tour de son
   // camp). Absent ⇒ 1, la durée historique — cf. `paralyser` dans le moteur.
   paralysisTurnsLeft?: number;
+  /** RETARD X en cours : capacités armées quand la carte a été JOUÉE, avec les
+   *  tours restants (décomptés au début de chaque tour de son contrôleur).
+   *  Effacé à toute remise en jeu (returnInstanceToPlay). */
+  retards?: RetardEntry[];
   // Loyauté: permanent on-summon bonus
   loyauteATKBonus: number;
   loyautePVBonus: number;
@@ -1789,6 +1807,25 @@ export interface PlayerState {
    *  l'ajout ne la portent pas (lire avec `?? []`). Vérité de jeu durable —
    *  hashée comme le reste de PlayerState, mutée uniquement sous applyAction. */
   eveil?: EveilEntry[];
+  /** RETARD X des SORTS lancés par ce joueur : effets en attente, décomptés au
+   *  début de chacun de ses tours. Optionnel (snapshots antérieurs). */
+  delayedSpells?: DelayedSpell[];
+}
+
+/** Capacité d'une créature armée par Retard X. `key` : `kw:<id>` (mot-clé curé
+ *  en mode "delay") ou `cap:<uid>` (capacité composée `on_delay`). */
+export interface RetardEntry {
+  key: string;
+  turnsLeft: number;
+}
+
+/** Effet de sort différé par Retard X. `card` est une VUE du sort réduite à cet
+ *  effet seul (sans son `delay`) : la résoudre avec `resolveSpellCard` rejoue
+ *  exactement l'effet, cibles choisies au déclenchement. */
+export interface DelayedSpell {
+  id: string;
+  card: Card;
+  turnsLeft: number;
 }
 
 /** SINGULIER — ce qui a été retiré de la vue `card` d'une instance, avec la
@@ -2445,6 +2482,12 @@ export interface EndOfTurnStep {
    *  les pas de créature — sans quoi tout emblème serait silencieusement sauté,
    *  sa source étant justement partie. */
   emblemIndex?: number;
+  /** RETARD X d'une créature arrivé à terme : clé de l'entrée (cf. RetardEntry).
+   *  La capacité doit encore exister sur la carte (un Silence l'annule). */
+  retardKey?: string;
+  /** RETARD X d'un SORT arrivé à terme : l'effet voyage avec le pas (le sort
+   *  n'a pas de source en jeu, comme un emblème). */
+  delayedSpell?: DelayedSpell;
 }
 
 /** Famille des « 1 parmi 3 » : même modale, mêmes déclencheurs différés, même
@@ -2457,6 +2500,9 @@ export interface PendingTrigger {
    *  `PlayerState.emblems` du contrôleur. Présent ⇒ `sourceInstanceId` est null,
    *  l'emblème n'ayant par nature aucune source en jeu. */
   emblemIndex?: number;
+  /** SORT RETARDÉ arrivé à terme, en attente de sa ou ses cibles. La vue du sort
+   *  voyage avec le déclencheur ; `slots` = créneaux à remplir, dans l'ordre. */
+  delayedSpell?: { card: Card; slots: SpellTargetSlot[] };
   id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
   controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
