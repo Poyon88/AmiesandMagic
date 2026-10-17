@@ -836,7 +836,8 @@
         "in_hand_suffix": "en main",
         "on_draw": "Quand cette carte est piochée",
         "on_low_hp": "Sous 15 PV",
-        "on_wound": "Blessure"
+        "on_wound": "Blessure",
+        "on_delay": "Retard {d}"
       },
       "content": {
         "deal_damage_one": "inflige {x} dégât",
@@ -2059,7 +2060,8 @@
         "draw": "à la pioche",
         "low_hp": "sous {n} PV",
         "spell": "à la résolution de l'action",
-        "wound": "quand elle est blessée sans mourir"
+        "wound": "quand elle est blessée sans mourir",
+        "delay": "au terme de son Retard"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Début de tour",
       "draw": "Pioche",
       "low_hp": "Sous {n} PV",
-      "wound": "Blessure"
+      "wound": "Blessure",
+      "delay": "Retard {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_silence": "Silence (retire tout à la cible)",
     "content_dechainement": "Déchainement X/Y (actions aléatoires)",
     "content_selection_magique": "Sélection magique (1 action parmi 3)",
-    "tab_style_guides": "Chartes"
+    "tab_style_guides": "Chartes",
+    "mode_title_delay": "Retard X : une seule fois, au début du X-ième tour suivant, si l'unité est encore en jeu",
+    "trigger_on_delay": "Retard X (au début du X-ième tour suivant)",
+    "retard_turns_title": "Retard : nombre de tours avant le déclenchement",
+    "retard_spell_title": "Retard : l'effet se déclenche au début du X-ième tour suivant du lanceur, cible choisie à ce moment-là",
+    "label_retard": "Retard"
   },
   "game": {
     "error_not_authenticated": "Non authentifié",

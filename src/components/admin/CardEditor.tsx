@@ -4,6 +4,7 @@ import StyleGuidePicker from "@/components/card-forge/StyleGuidePicker";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
+import { clampRetard } from "@/lib/game/retard";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import Image from "next/image";
 import GameCard from "@/components/cards/GameCard";
@@ -198,6 +199,8 @@ export default function CardEditor() {
   const [keywordModes, setKeywordModes] = useState<Record<string, KeywordMode>>({});
   // SINGULIER par id moteur (cf. keyword_instances[i].singulier).
   const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
+  // RETARD X par id moteur (cf. keyword_instances[i].delay, mode "delay").
+  const [keywordDelay, setKeywordDelay] = useState<Record<string, number>>({});
   // SÉLECTION AU HASARD (selection / selection_magique / renfort_royal) : le X
   // devient un plafond tiré entre 1 et lui à chaque déclenchement. Persisté
   // dans keyword_instances[i].randomX, comme la case « ? » des effets composés.
@@ -476,6 +479,7 @@ export default function CardEditor() {
     // sidecar; the effect_text bracket is the legacy fallback for X.
     const modes: Record<string, KeywordMode> = {};
     const singuliers: Record<string, boolean> = {};
+    const retards: Record<string, number> = {};
     const aleatoires: Record<string, boolean> = {};
     const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
@@ -493,6 +497,7 @@ export default function CardEditor() {
     for (const inst of card.keyword_instances ?? []) {
       if (inst.mode) modes[inst.id] = inst.mode;
       if (inst.singulier === true) singuliers[inst.id] = true;
+      if (inst.mode === "delay" && inst.delay) retards[inst.id] = inst.delay;
       if (inst.randomX === true) aleatoires[inst.id] = true;
       // Forge : la borne basse A existe sans « ? ».
       if ((inst.randomX === true || inst.id === "forge") && (inst.minX ?? 1) > 1) planchers[inst.id] = inst.minX!;
@@ -532,6 +537,7 @@ export default function CardEditor() {
     setTransformationCardIds(transformationLoaded);
     setKeywordModes(modes);
     setKeywordSingulier(singuliers);
+    setKeywordDelay(retards);
     setKeywordRandomX(aleatoires);
     setKeywordMinX(planchers);
     setKeywordXValues(parsedX);
@@ -868,6 +874,12 @@ export default function CardEditor() {
           if (keywordSingulier[id] !== true) return inst;
           return { ...(inst ?? { id: id as Keyword }), singulier: true };
         })
+        // RETARD X : le nombre de tours voyage avec le mode "delay".
+        .map((inst, i): KeywordInstance | null => {
+          const id = activeKeywords[i];
+          if (isSpellCard || keywordModes[id] !== "delay") return inst;
+          return { ...(inst ?? { id: id as Keyword }), mode: "delay", delay: clampRetard(keywordDelay[id] ?? 1) };
+        })
         .filter((k): k is KeywordInstance => k !== null);
 
       const cardData = {
@@ -956,7 +968,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -1877,6 +1889,13 @@ export default function CardEditor() {
                           onClick={() => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, singulier: k.singulier ? undefined : true } : k))}
                           style={{ marginLeft: 0, width: 18, height: 18, borderRadius: 3, background: kw.singulier === true ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: kw.singulier === true ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
                         >S</button>
+                        {/* RETARD X : l'effet se résout X tours après le lancement, cible choisie à ce moment-là. */}
+                        <select value={kw.delay ?? 0} title="Retard : l'effet se déclenche au début du X-ième tour suivant (cible choisie à ce moment-là)"
+                          onChange={e => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, delay: Number(e.target.value) || undefined } : k))}
+                          style={{ height: 18, fontSize: 9, border: "1px solid #D4A373", borderRadius: 3, color: kw.delay ? "#8a5a2b" : "#bbb" }}>
+                          <option value={0}>⏳ —</option>
+                          {[1, 2, 3].map(n => <option key={n} value={n}>⏳ {n}</option>)}
+                        </select>
                         {def.params.includes("amount") && (
                           <div>
                             <label style={{ fontSize: 7, color: "#666" }}>X</label>
@@ -2390,13 +2409,13 @@ export default function CardEditor() {
                             {label}
                           </span>
                           <div style={{ display: "inline-flex", gap: 3 }}>
-                            {(["play", "death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound"] as const).map(mode => {
+                            {(["play", "death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound", "delay"] as const).map(mode => {
                               const allowed = mode === "play" || allowedModes.has(mode);
                               const active = mode === "play" ? !keywordModes[kw] : keywordModes[kw] === mode;
                               // attack = #E735F6 : la couleur réelle de l'icône en jeu
                               // (l'ancien #9b59b6 violet se confondait avec low_hp #8B5CF6).
-                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : mode === "start_of_turn" ? "#A9B8CC" : "#2faa3f";
-                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : mode === "start_of_turn" ? "🌅" : "⌛";
+                              const color = mode === "play" ? "#333" : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : mode === "start_of_turn" ? "#A9B8CC" : mode === "delay" ? "#D4A373" : "#2faa3f";
+                              const glyph = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : mode === "start_of_turn" ? "🌅" : mode === "delay" ? "⏳" : "⌛";
                               return (
                                 <button
                                   key={mode}
@@ -2407,7 +2426,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : mode === "low_hp" ? "Quand votre héros passe sous 15 PV (une seule fois)" : mode === "wound" ? "Blessure : quand elle subit des dégâts sans mourir (une fois par source et par tour)" : mode === "start_of_turn" ? "Au début du tour (après la pioche)" : "À la fin du tour"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : mode === "low_hp" ? "Quand votre héros passe sous 15 PV (une seule fois)" : mode === "wound" ? "Blessure : quand elle subit des dégâts sans mourir (une fois par source et par tour)" : mode === "start_of_turn" ? "Au début du tour (après la pioche)" : mode === "delay" ? "Retard X : une seule fois, au début du X-ième tour suivant, si l'unité est encore en jeu" : "À la fin du tour"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",
@@ -2419,6 +2438,13 @@ export default function CardEditor() {
                                 >{glyph}</button>
                               );
                             })}
+                            {keywordModes[kw] === "delay" && (
+                              <select value={keywordDelay[kw] ?? 1} title="Retard : nombre de tours avant le déclenchement"
+                                onChange={e => setKeywordDelay(prev => ({ ...prev, [kw]: Number(e.target.value) }))}
+                                style={{ height: 22, fontSize: 10, border: "1px solid #D4A373", borderRadius: 4, color: "#8a5a2b" }}>
+                                {[1, 2, 3].map(n => <option key={n} value={n}>⏳ {n}</option>)}
+                              </select>
+                            )}
                           </div>
                         </div>
                       );

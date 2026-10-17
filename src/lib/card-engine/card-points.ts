@@ -42,7 +42,7 @@ const NOM_DECLENCHEUR: Record<string, string> = {
   on_play: "entrée", on_death: "mort", on_return: "retour", on_activation: "activation",
   on_attack: "attaque", on_end_of_turn: "fin de tour", on_end_of_turn_in_hand: "fin de tour (main)",
   on_start_of_turn: "début de tour", on_start_of_turn_in_hand: "début de tour (main)", on_draw: "pioche",
-  on_low_hp: "PV bas", on_wound: "blessure", automatic: "passif", spell_resolution: "résolution",
+  on_low_hp: "PV bas", on_wound: "blessure", on_delay: "retard", automatic: "passif", spell_resolution: "résolution",
 };
 
 export function libelleDeclencheur(t: string): string {
@@ -53,6 +53,16 @@ export function libelleDeclencheur(t: string): string {
 
 function multDeclencheur(b: Bareme, t: string | undefined): number {
   return (t ? b.declencheur[t as keyof Bareme["declencheur"]] : undefined) ?? 1;
+}
+
+/** RETARD X : un effet différé vaut moins qu'un effet immédiat, d'autant moins
+ *  que l'attente est longue. Valeurs de départ, ajustées par le calibrage. */
+export const RETARD_A_PRIORI = [0.85, 0.75, 0.65];
+
+function multRetard(b: Bareme, delay: number | undefined): number {
+  if (!delay || delay <= 0) return 1;
+  const i = Math.min(RETARD_A_PRIORI.length, Math.max(1, Math.round(delay))) - 1;
+  return b.retard?.[i] ?? RETARD_A_PRIORI[i];
 }
 
 /** Part du catalogue d'une liste de valeurs ALTERNATIVES (race A OU race B). */
@@ -126,6 +136,7 @@ function termesNommes(b: Bareme, cap: Capability, ligneForcee?: string, multExte
     * (scope ? b.portee[scope] : 1)
     * multFiltre(b, { race: [cap.race], clan: [cap.clan], faction: [cap.faction] })
     * (cap.singulier ? b.singulier : 1)
+    * multRetard(b, cap.delay)
     * (random ? b.hasard : 1);
   const ligne = ligneForcee ?? `${libelleCapacite(id)}${x !== undefined && x > 1 ? ` ${Math.round(x * 10) / 10}` : ""} · ${libelleDeclencheur(cap.trigger)}`;
   return termesLineaires(`cap.${id}`, ligne, mult, xEffectif(x, random, p.minX), y);
@@ -151,6 +162,7 @@ function termesComposes(b: Bareme, cap: Capability, c: ComposedEffect): Terme[] 
     })
     * (hasard ? b.hasard : 1)
     * (cap.singulier ? b.singulier : 1)
+    * multRetard(b, cap.delay)
     * Math.max(1, c.occurrences ?? 1);
   const ligne = `${c.content}${m.x ? ` ${m.x}` : ""}${t?.count === "all" ? " (toutes)" : ""} · ${libelleDeclencheur(cap.trigger)}`;
   const out = termesLineaires(`comp.${c.content}`, ligne, mult, xEffectif(m.x, random, m.minX), m.y);

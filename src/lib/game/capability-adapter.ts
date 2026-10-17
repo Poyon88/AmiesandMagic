@@ -135,7 +135,9 @@ export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
   // `on_wound` (Blessure) : écarté par DÉCISION D'AUTEUR, pas par impossibilité
   // — greffé sur le porteur, il partirait. Les objets ne l'offrent pas dans ce
   // premier lot ; le rouvrir tient à cette seule ligne.
-  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound";
+  // `on_delay` (Retard X) : armé quand une CRÉATURE est jouée — un objet ne
+  // passe pas par ce chemin, son Retard ne partirait jamais.
+  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound" && trigger !== "on_delay";
 }
 
 /** Cadences auxquelles un EMBLÈME peut réagir.

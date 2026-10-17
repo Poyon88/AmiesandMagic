@@ -836,7 +836,8 @@
         "in_hand_suffix": "在手牌中",
         "on_draw": "被抽到时",
         "on_low_hp": "生命值低于15",
-        "on_wound": "受伤"
+        "on_wound": "受伤",
+        "on_delay": "延迟{d}"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -2059,7 +2060,8 @@
         "draw": "抽牌时",
         "low_hp": "生命值低于{n}点时",
         "spell": "行动结算时",
-        "wound": "当它受伤但未死亡时"
+        "wound": "当它受伤但未死亡时",
+        "delay": "延迟结束时"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "回合开始",
       "draw": "抽牌",
       "low_hp": "生命值低于{n}点",
-      "wound": "受伤"
+      "wound": "受伤",
+      "delay": "延迟{d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "魔法抉择（从3张中选1张行动）",
     "content_forge": "熔铸（1件物品混入牌堆）",
     "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。",
-    "tab_style_guides": "风格指南"
+    "tab_style_guides": "风格指南",
+    "mode_title_delay": "延迟X：在之后第X个己方回合开始时触发一次（单位仍在场时）",
+    "trigger_on_delay": "延迟X（之后第X个回合开始时）",
+    "retard_turns_title": "延迟：触发前的回合数",
+    "retard_spell_title": "延迟：效果在施法者之后第X个回合开始时触发，届时选择目标",
+    "label_retard": "延迟"
   },
   "game": {
     "error_not_authenticated": "未登录",

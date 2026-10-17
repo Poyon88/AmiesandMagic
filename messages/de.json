@@ -836,7 +836,8 @@
         "in_hand_suffix": "auf der Hand",
         "on_draw": "Beim Ziehen",
         "on_low_hp": "Unter 15 LP",
-        "on_wound": "Verwundung"
+        "on_wound": "Verwundung",
+        "on_delay": "Verzögerung {d}"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -2059,7 +2060,8 @@
         "draw": "beim Ziehen",
         "low_hp": "unter {n} LP",
         "spell": "bei der Auflösung der Aktion",
-        "wound": "wenn sie verwundet wird, ohne zu sterben"
+        "wound": "wenn sie verwundet wird, ohne zu sterben",
+        "delay": "wenn ihre Verzögerung abläuft"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Rundenanfang",
       "draw": "Ziehen",
       "low_hp": "Unter {n} LP",
-      "wound": "Verwundung"
+      "wound": "Verwundung",
+      "delay": "Verzögerung {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
     "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
     "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten.",
-    "tab_style_guides": "Stilrichtlinien"
+    "tab_style_guides": "Stilrichtlinien",
+    "mode_title_delay": "Verzögerung X: einmalig, zu Beginn des X-ten folgenden Zuges, falls die Einheit noch im Spiel ist",
+    "trigger_on_delay": "Verzögerung X (Beginn des X-ten folgenden Zuges)",
+    "retard_turns_title": "Verzögerung: Anzahl der Züge bis zur Auslösung",
+    "retard_spell_title": "Verzögerung: der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkers ausgelöst, Ziel wird dann gewählt",
+    "label_retard": "Verzögerung"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

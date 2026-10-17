@@ -7,6 +7,8 @@ import { applyAction, getSpellTargetSlots } from "./engine";
 import type { Capability, ComposedEffect, GameState, KeywordInstance, SpellKeywordInstance } from "./types";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import { delayedSpellParts, hasDelayedParts, immediateSpellView } from "./retard";
+import { getBareme } from "@/lib/card-engine/bareme";
+import { scoreCarte, type CarteNotee } from "@/lib/card-engine/card-points";
 
 function composedCap(trigger: Capability["trigger"], composed: ComposedEffect, extra: Partial<Capability> = {}): Capability {
   return { uid: `cap_${Math.random().toString(36).slice(2, 8)}`, trigger, effectKind: "immediate", abilityId: "_composed", composed, ...extra };
@@ -199,5 +201,19 @@ describe("Retard — sort", () => {
     const hp = st.players[1].hero.hp;
     expect(hp).toBe(etat().players[1].hero.hp); // rien au lancement
     expect(tourComplet(st).players[1].hero.hp).toBe(hp - 2);
+  });
+});
+
+describe("Retard — coût", () => {
+  it("le coût d'une capacité baisse quand X augmente", () => {
+    const b = getBareme();
+    const cout = (delay?: number) => scoreCarte(b, mkCard({
+      card_type: "spell", attack: null, health: null, mana_cost: 3,
+      spell_keywords: [{ id: "impact", amount: 4, ...(delay ? { delay } : {}) }] as SpellKeywordInstance[],
+    }) as unknown as CarteNotee).utilise;
+    const [c0, c1, c2, c3] = [cout(), cout(1), cout(2), cout(3)];
+    expect(c1).toBeLessThan(c0);
+    expect(c2).toBeLessThan(c1);
+    expect(c3).toBeLessThan(c2);
   });
 });

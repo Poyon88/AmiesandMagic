@@ -63,6 +63,9 @@ export interface Bareme {
   /** Tirage au hasard (X « ? », désignation au hasard, répartition). */
   hasard: number;
   singulier: number;
+  /** RETARD X : multiplicateur d'une capacité différée, par X (index X − 1).
+   *  Absent ⇒ valeurs a priori (RETARD_A_PRIORI, card-points.ts). */
+  retard?: number[];
   /** Don d'une capacité (Conférer composé) : part de la valeur de la capacité
    *  conférée qui compte, en plus du socle du contenu. */
   don: number;

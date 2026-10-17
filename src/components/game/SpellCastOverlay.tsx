@@ -379,7 +379,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                       return (
                         <div key={`sk_${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
                           <span style={{ flexShrink: 0 }}>
-                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} />
+                            <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={16} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
                           </span>
                           <div>
                             <div style={{ fontSize: "0.8rem", color: keywordModeColor("spell") ?? accentColor, fontWeight: 700, textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>{label}</div>

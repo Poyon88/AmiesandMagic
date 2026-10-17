@@ -47,6 +47,7 @@ import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "./NeutralisationPicker";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
+import RetardSelect from "./RetardSelect";
 
 // ─── API CALL ────────────────────────────────────────────────────────────────
 
@@ -1813,6 +1814,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // SINGULIER par libellé : condition ajoutée au déclencheur (cf.
   // lib/game/singulier.ts). Persistée dans keyword_instances[i].singulier.
   const [keywordSingulier, setKeywordSingulier] = useState<Record<string, boolean>>({});
+  // RETARD X par libellé (lu quand le mode est "delay").
+  const [keywordDelay, setKeywordDelay] = useState<Record<string, number>>({});
   // SÉLECTION AU HASARD par libellé forge : le X devient un plafond tiré à
   // chaque déclenchement. Persisté dans keyword_instances[i].randomX.
   const [keywordRandomX, setKeywordRandomX] = useState<Record<string, boolean>>({});
@@ -1978,6 +1981,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       singulier: keywordSingulier,
       randomX: keywordRandomX,
       minX: keywordMinX,
+      delays: keywordDelay,
       extras: {
         rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
         invocCosts, invocRace, invocFaction,
@@ -2417,7 +2421,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const resetManualForm = useCallback(() => {
     setManualName(""); setManualMana(3); setManualAttack(3); setManualDefense(3);
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
-    setManualIllustrationPrompt(""); setManualStyleGuideId(null); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
+    setManualIllustrationPrompt(""); setManualStyleGuideId(null); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordDelay({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
@@ -2579,7 +2583,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     // Mots-clés et leur paramétrage
     setManualKeywords([]);
     setKeywordXValues({});
-    setKeywordModes({}); setKeywordSingulier({}); setKeywordRandomX({}); setKeywordMinX({});
+    setKeywordModes({}); setKeywordSingulier({}); setKeywordDelay({}); setKeywordRandomX({}); setKeywordMinX({});
     setKeywordGrantScope({});
     setKeywordTargetScope({});
     setSpellKeywords([]);
@@ -2739,6 +2743,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         singulier: keywordSingulier,
         randomX: keywordRandomX,
         minX: keywordMinX,
+        delays: keywordDelay,
         extras: {
           rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
@@ -2864,7 +2869,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3706,6 +3711,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 onClick={() => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, singulier: k.singulier ? undefined : true } : k))}
                                 style={{ marginLeft: 3, width: 18, height: 18, borderRadius: 3, background: kw.singulier === true ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: kw.singulier === true ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
                               >S</button>
+                              {/* RETARD X : l'effet part X tours après le lancement, cible choisie à ce moment-là. */}
+                              <RetardSelect allowNone value={kw.delay} title={tf('retard_spell_title')}
+                                onChange={n => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, delay: n } : k))} />
                               {def.params.includes("amount") && (
                                 <div>
                                   <label style={{ fontSize: 7, color: "#666" }}>X</label>
@@ -4112,14 +4120,14 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 and present in CURATED_KEYWORD_MODES. */}
                             {selected && CURATED_KEYWORD_MODES[id] && (
                               <div style={{ display: "inline-flex", gap: 2, marginLeft: 4 }}>
-                                {(["play", "death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound"] as const).map(mode => {
+                                {(["play", "death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound", "delay"] as const).map(mode => {
                                   const allowed = mode === "play" || CURATED_KEYWORD_MODES[id].has(mode);
                                   const active = mode === "play" ? !keywordModes[id] : keywordModes[id] === mode;
                                   // attack = #E735F6 : la couleur RÉELLE de l'icône en jeu
                                   // (keywordModeColor) — l'ancien #9b59b6 violet prêtait à
                                   // confusion avec le nouveau mode low_hp (#8B5CF6).
-                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : mode === "start_of_turn" ? "#A9B8CC" : "#2faa3f";
-                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : mode === "start_of_turn" ? "🌅" : "⌛";
+                                  const color = mode === "play" ? fac.color : mode === "death" ? "#a83232" : mode === "tap" ? "#F68D09" : mode === "return" ? "#3a7dd4" : mode === "attack" ? "#E735F6" : mode === "draw" ? "#17b6c4" : mode === "low_hp" ? "#8B5CF6" : mode === "wound" ? "#B6E62E" : mode === "start_of_turn" ? "#A9B8CC" : mode === "delay" ? "#D4A373" : "#2faa3f";
+                                  const label = mode === "play" ? "⚡" : mode === "death" ? "💀" : mode === "tap" ? "⟲" : mode === "return" ? "↩" : mode === "attack" ? "⚔" : mode === "draw" ? "📥" : mode === "low_hp" ? "🩸" : mode === "wound" ? "🩹" : mode === "start_of_turn" ? "🌅" : mode === "delay" ? "⏳" : "⌛";
                                   return (
                                     <button
                                       key={mode}
@@ -4132,7 +4140,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                           return next;
                                         });
                                       }}
-                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : mode === "low_hp" ? tf('mode_title_low_hp') : mode === "wound" ? tf('mode_title_wound') : mode === "start_of_turn" ? tf('mode_title_start_of_turn') : tf('mode_title_end_of_turn')}
+                                      title={mode === "play" ? tf('mode_title_play') : mode === "death" ? tf('mode_title_death') : mode === "tap" ? tf('mode_title_tap') : mode === "return" ? tf('mode_title_return') : mode === "attack" ? tf('mode_title_attack') : mode === "draw" ? tf('mode_title_draw') : mode === "low_hp" ? tf('mode_title_low_hp') : mode === "wound" ? tf('mode_title_wound') : mode === "start_of_turn" ? tf('mode_title_start_of_turn') : mode === "delay" ? tf('mode_title_delay') : tf('mode_title_end_of_turn')}
                                       style={{
                                         width: 18, height: 18, borderRadius: 3,
                                         background: active ? color : "transparent",
@@ -4145,6 +4153,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                     >{label}</button>
                                   );
                                 })}
+                                {keywordModes[id] === "delay" && (
+                                  <RetardSelect value={keywordDelay[id] ?? 1} title={tf('retard_turns_title')}
+                                    onChange={n => setKeywordDelay(prev => ({ ...prev, [id]: n ?? 1 }))} />
+                                )}
                               </div>
                             )}
                             {/* Grant-scope picker — spells only. ◯ = créature
@@ -4662,6 +4674,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             draw: tf('trigger_on_draw'), on_draw: tf('trigger_on_draw'),
             low_hp: tf('trigger_on_low_hp'), on_low_hp: tf('trigger_on_low_hp'),
             wound: tf('trigger_on_wound'), on_wound: tf('trigger_on_wound'),
+            delay: tf('trigger_on_delay'), on_delay: tf('trigger_on_delay'),
             automatic: tf('trigger_automatic'),
             spell_resolution: tf('trigger_spell_resolution_full'),
           };
@@ -4777,7 +4790,15 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   <option key={m} value={m}>{TRIGGER_FR[m] ?? m}</option>
                                 ))}
                               </select>
-                            ) : (
+                            ) : null}
+                            {curated && keywordModes[label] === "delay" ? (
+                              <>
+                                <span style={labelStyle}>⏳</span>
+                                <RetardSelect value={keywordDelay[label] ?? 1} title={tf('retard_turns_title')}
+                                  onChange={n => setKeywordDelay(prev => ({ ...prev, [label]: n ?? 1 }))} />
+                              </>
+                            ) : null}
+                            {curated ? null : (
                               <span style={valStyle}>{TRIGGER_FR[fixedTrigger]}</span>
                             )}
 
