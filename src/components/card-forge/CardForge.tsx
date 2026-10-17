@@ -158,6 +158,8 @@ interface ForgeCard {
   name: string;
   faction: string;
   race: string;
+  /** Seconde race (unité bi-race) — "" si aucune. */
+  race2?: string;
   clan: string;
   cardAlignment: string;
   type: string;
@@ -283,6 +285,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const tf = useTranslations("forge");
   const [faction, setFaction] = useState("Elfes");
   const [race, setRace] = useState("");
+  const [race2, setRace2] = useState("");
   const [clan, setClan] = useState("");
   const [cardAlignment, setCardAlignment] = useState<string>("neutre");
   const [type, setType] = useState("Unité");
@@ -2018,11 +2021,17 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const budgetRatio = scoreForge.ratio;
   const budgetColor = budgetRatio <= 0.85 ? "#27ae60" : budgetRatio <= 1.0 ? "#f39c12" : "#e74c3c";
 
+  // Clans ouverts par l'une OU l'autre race de la carte (unité bi-race).
+  const clansForRaces = [...new Set([
+    ...getClanNamesForRace(faction, race),
+    ...(race && race2 ? getClanNamesForRace(faction, race2) : []),
+  ])];
+
   // Live preview from manual fields — always computed so editing works in both modes
   const manualCard: ForgeCard = {
     id: card?.id || "manual_preview",
     name: manualName || "Sans nom",
-    faction, race, clan, cardAlignment, type, rarity,
+    faction, race, race2, clan, cardAlignment, type, rarity,
     mana: manualMana,
     attack: porteStats ? manualAttack : null,
     defense: porteStats ? manualDefense : null,
@@ -2429,7 +2438,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     const newCard: ForgeCard = {
       id: newId,
       name: manualName || "Sans nom",
-      faction, race, clan, cardAlignment, type, rarity,
+      faction, race, race2, clan, cardAlignment, type, rarity,
       mana: manualMana,
       attack: porteStats ? manualAttack : null,
       defense: porteStats ? manualDefense : null,
@@ -2481,6 +2490,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       faction: f, clan, cardAlignment, type: t, rarity: r, ...stats,
       // La race dérivée du mana (clans à sous-races) prime ; sinon la race choisie.
       race: stats.race ?? race,
+      race2,
       ability: text.ability || "—",
       flavorText: text.flavorText || "",
       illustrationPrompt: text.illustrationPrompt || "",
@@ -2799,6 +2809,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             ...buildSpellData(),
             faction: forgeCard.faction,
             race: forgeCard.race || null,
+            race2: forgeCard.race && forgeCard.race2 && forgeCard.race2 !== forgeCard.race ? forgeCard.race2 : null,
             clan: forgeCard.clan || null,
             // Alignement de la faction (le sélecteur n'existe que pour les Mercenaires).
             card_alignment: alignementAEnregistrer(forgeCard.faction, forgeCard.cardAlignment),
@@ -3080,7 +3091,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       <div style={{ fontSize: 8, color: "#aaa", letterSpacing: 1, marginBottom: 3 }}>{group.label}</div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                         {group.list.map(r => (
-                          <button key={r} onClick={() => { setRace(race === r ? "" : r); setClan(""); }} style={{
+                          <button key={r} onClick={() => { setRace(race === r ? "" : r); setClan(""); if (race2 === r || race === r) setRace2(""); }} style={{
                             padding: "4px 8px", borderRadius: 5, cursor: "pointer",
                             background: race === r ? `${fac.color}22` : "#fff",
                             border: `1px solid ${race === r ? fac.color : "#e0e0e0"}`,
@@ -3095,11 +3106,24 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 </Sec>
               )}
 
-              {/* Clan selector — race-aware (transversal + race-specific clans) */}
-              {getClanNamesForRace(faction, race).length > 0 && (
+              {/* Seconde race (unité bi-race, ex. Elfes + Aigles Géants) : toutes
+                  factions confondues. Elle compte pour toutes les mécaniques de race. */}
+              {race && (
+                <Sec title={tf('section_race2')}>
+                  <select value={race2} onChange={e => { setRace2(e.target.value); setClan(""); }}
+                    style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif" }}>
+                    <option value="">—</option>
+                    {getAllRaces().filter(r => r !== race).sort().map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </Sec>
+              )}
+
+              {/* Clan selector — race-aware (transversal + race-specific clans),
+                  ouvert par l'une OU l'autre des deux races. */}
+              {clansForRaces.length > 0 && (
                 <Sec title={tf('section_clan')}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                    {getClanNamesForRace(faction, race).map(c => (
+                    {clansForRaces.map(c => (
                       <button key={c} onClick={() => setClan(clan === c ? "" : c)} style={{
                         padding: "4px 8px", borderRadius: 5, cursor: "pointer",
                         background: clan === c ? `${fac.color}22` : "#fff",

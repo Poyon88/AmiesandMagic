@@ -11,6 +11,7 @@ import CardThumb from "@/components/cards/CardThumb";
 import { VirtuosoGrid } from "react-virtuoso";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
 import { getAllRaces, KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
+import { cardRaces, formatRaces, hasRace } from "@/lib/game/races";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
@@ -104,6 +105,8 @@ interface DbCard {
   style_guide_id?: number | null;
   faction: string | null;
   race: string | null;
+  /** Seconde race (unité bi-race), toutes factions confondues. */
+  race2?: string | null;
   clan: string | null;
   rarity: string | null;
   card_alignment: string | null;
@@ -352,7 +355,7 @@ export default function CardEditor() {
 
   // Dynamic filter options
   const factions = useMemo(() => [...new Set(cards.map(c => c.faction).filter(Boolean) as string[])].sort(), [cards]);
-  const races = useMemo(() => [...new Set(cards.map(c => c.race).filter(Boolean) as string[])].sort(), [cards]);
+  const races = useMemo(() => [...new Set(cards.flatMap(c => cardRaces(c)))].sort(), [cards]);
   // Tous les clans portés par au moins une carte, sans restriction. Sert de
   // filet à l'ÉDITION (`editClans`) : un clan hors FACTIONS resterait sinon
   // invisible.
@@ -385,6 +388,8 @@ export default function CardEditor() {
     const canonical: string[] = getAssignableRaces(editFaction);
     return [...new Set([...canonical, ...races])].sort();
   }, [races, editFields]);
+  // Seconde race : toutes les races connues, toutes factions confondues.
+  const allRaces = useMemo(() => [...new Set([...getAllRaces(), ...races])].sort(), [races]);
   const years = useMemo(() => [...new Set(cards.map(c => c.card_year).filter(Boolean) as number[])].sort((a, b) => b - a), [cards]);
 
   // Filtered cards
@@ -427,7 +432,7 @@ export default function CardEditor() {
       }
       if (factionFilter !== null && card.faction !== factionFilter) return false;
       if (rarityFilter !== null && card.rarity !== rarityFilter) return false;
-      if (raceFilter !== null && card.race !== raceFilter) return false;
+      if (raceFilter !== null && !hasRace(card, raceFilter)) return false;
       if (clanFilter === NO_CLAN_KEY) { if (card.clan) return false; }
       else if (clanFilter !== null && card.clan !== clanFilter) return false;
       if (alignmentFilter !== null && getEffectiveAlignment(card) !== alignmentFilter) return false;
@@ -558,6 +563,7 @@ export default function CardEditor() {
       spell_effects: card.spell_effects ? JSON.parse(JSON.stringify(card.spell_effects)) : null,
       faction: card.faction || "",
       race: card.race || "",
+      race2: card.race2 || "",
       clan: card.clan || "",
       rarity: card.rarity || "Commune",
       // Alignement de la faction (choix libre pour les seuls Mercenaires).
@@ -886,6 +892,8 @@ export default function CardEditor() {
         spell_effects: editFields.spell_effects || null,
         faction: editFields.faction || null,
         race: editFields.race || null,
+        // Une seconde race sans principale (ou identique) n'a pas de sens.
+        race2: editFields.race && editFields.race2 !== editFields.race ? (editFields.race2 || null) : null,
         clan: editFields.clan || null,
         rarity: editFields.rarity || null,
         card_alignment: alignementAEnregistrer(editFields.faction as string, editFields.card_alignment as string),
@@ -1420,7 +1428,7 @@ export default function CardEditor() {
                     <td style={{ padding: "6px 8px" }}>{LIBELLE_TYPE[card.card_type] ?? card.card_type}</td>
                     <td style={{ padding: "6px 8px" }}>{card.card_type === "spell" ? "—" : card.card_type === "item" ? `+${card.attack ?? 0}/+${card.health ?? 0}` : `${card.attack}/${card.health}`}</td>
                     <td style={{ padding: "6px 8px" }}>{card.faction ? getFactionDisplayName(card.faction) : "—"}</td>
-                    <td style={{ padding: "6px 8px" }}>{card.race || "—"}</td>
+                    <td style={{ padding: "6px 8px" }}>{formatRaces(card) || "—"}</td>
                     <td style={{ padding: "6px 8px" }}>{card.rarity || "—"}</td>
                     {(() => {
                       const r = scoreCarte(getBareme(), card as unknown as CarteNotee).ratio;
@@ -1619,6 +1627,17 @@ export default function CardEditor() {
                 <select value={(editFields.race as string) || ""} onChange={e => updateField("race", e.target.value || null)} style={S.select}>
                   <option value="">—</option>
                   {editRaces.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                {/* Unité bi-race (ex. Elfes + Aigles Géants) : la seconde race
+                    peut venir de n'importe quelle faction. */}
+                <div style={S.label} title="Unité bi-race : elle compte comme membre de ses deux races pour toutes les mécaniques de race (Loyauté, Sang mêlé…).">Race 2</div>
+                <select value={(editFields.race2 as string) || ""} disabled={!editFields.race}
+                  onChange={e => updateField("race2", e.target.value || null)}
+                  style={{ ...S.select, ...(editFields.race ? {} : { opacity: 0.6, cursor: "not-allowed" }) }}>
+                  <option value="">—</option>
+                  {allRaces.filter(r => r !== editFields.race).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div style={{ flex: 1 }}>

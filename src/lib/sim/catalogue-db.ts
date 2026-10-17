@@ -13,7 +13,7 @@ export const ROLES_DECKS_SIM = ["admin", "testeur"] as const;
 // Miroir de GAME_CARD_COLUMNS (page de match), plus le statut pour les filtres.
 const COLONNES_JEU =
   "id, name, mana_cost, card_type, attack, health, effect_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
-  "faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, " +
+  "faction, race, race2, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, " +
   "card_year, card_month, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status";
 
 interface HeroRow {
