@@ -19,7 +19,7 @@ import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import {
   BRIEF_COST_LABELS, BRIEF_MAX_CARDS, BRIEF_TRIGGER_LABELS, COST_FREQ_SHARE, emptyBrief, type CardBrief,
 } from "@/lib/card-engine/brief";
-import { appliquerEchange, equilibrer, labelUnite, planBatch, seededRng, type BalancedCard, type BatchPlan } from "@/lib/card-engine/brief-generator";
+import { appliquerEchange, bornesEquilibrage, equilibrer, labelUnite, planBatch, seededRng, type BalancedCard, type BatchPlan } from "@/lib/card-engine/brief-generator";
 import { getBareme } from "@/lib/card-engine/bareme";
 import { cartepourConcept, creerCarte } from "@/lib/card-forge/assisted-pipeline";
 import { BULK_IMAGE_MODELS, type BulkImageModel } from "@/lib/ai/image-models";
@@ -44,7 +44,7 @@ const cartesDuLot = (brief: CardBrief, seed: number, concepts?: (CardConcept | n
   const exclues = exclusEchange(brief);
   return {
     plan,
-    cartes: plan.cards.map((c, i) => equilibrer(appliquerEchange(c, concepts?.[i]?.echange, exclues), getBareme(), brief.constraints)),
+    cartes: plan.cards.map((c, i) => equilibrer(appliquerEchange(c, concepts?.[i]?.echange, exclues), getBareme(), bornesEquilibrage(brief, c))),
   };
 };
 const pourConcepts = (brief: CardBrief) => (b: BalancedCard) => cartepourConcept(b, exclusEchange(brief));

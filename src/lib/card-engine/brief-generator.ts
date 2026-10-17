@@ -597,7 +597,85 @@ export function equilibrer(
     const r = equilibrerBorne(enrichi, bareme, bornes);
     if (Math.abs(r.score.ratio - 1) < Math.abs(best.score.ratio - 1)) best = r;
   }
+  if (ecartBareme(best) > TOLERANCE) best = retoucherStructure(plan, best, bareme, bornes);
   return best;
+}
+
+const ecartBareme = (b: BalancedCard) => Math.abs(b.score.ratio - 1);
+
+/** Bornes d'équilibrage d'une carte du lot : un brief qui fixe une COURBE de
+ *  mana fige le coût (combler une courbe n'a de sens qu'au coût demandé) ;
+ *  sinon, le coût peut bouger dans les bornes du brief. */
+export function bornesEquilibrage(brief: CardBrief, c: PlannedCard): { minMana?: number; maxMana?: number } {
+  return Object.keys(brief.manaCurve).length ? { minMana: c.mana, maxMana: c.mana } : brief.constraints;
+}
+
+/** Remplaçantes envisagées par la retouche : les plus typiques de la carte. */
+function candidatsRetouche(c: PlannedCard, n = 10): string[] {
+  if (c.type === "Unité") {
+    if (!FACTIONS[c.faction]) return [];
+    return getAvailableKeywords(c.faction, c.rarity, c.race ?? undefined, c.clan ?? undefined)
+      .sort((a, b) => b.weight - a.weight)
+      .map((k) => idDeLabel(k.id))
+      .filter((id): id is string => !!id && labelUnite(id) != null && !c.abilities.includes(id))
+      .slice(0, n);
+  }
+  const fac = FACTIONS[c.faction];
+  return Object.values(ABILITIES)
+    .filter((a) => sortGenerable(a.id) && !c.abilities.includes(a.id) && !MODIFICATEURS_DE_DEGATS.has(a.id) && !META_DE_SORT.has(a.id))
+    .filter((a) => !fac?.forbiddenKeywords.includes(a.creature?.label ?? a.label))
+    .sort((a, b) => (fac?.likelyKeywords[b.creature?.label ?? b.label] ?? POIDS_HORS_PROFIL) - (fac?.likelyKeywords[a.creature?.label ?? a.label] ?? POIDS_HORS_PROFIL) || a.id.localeCompare(b.id))
+    .slice(0, n * 2)
+    .map((a) => a.id);
+}
+
+/** Une Action reste jouable : un effet principal (ou un effet composé), et
+ *  pas de modificateur de dégâts sans dégâts. */
+function actionValide(c: PlannedCard): boolean {
+  if (c.type !== "Action") return true;
+  const principal = c.composes.length > 0 || c.abilities.some((id) => !MODIFICATEURS_DE_DEGATS.has(id) && !META_DE_SORT.has(id));
+  const modOk = !c.abilities.some((id) => MODIFICATEURS_DE_DEGATS.has(id)) || c.abilities.some((id) => SORTS_DE_DEGATS.has(id));
+  return principal && modOk;
+}
+
+/** Retouche de STRUCTURE quand ATK/DEF, X et le coût n'ont pas suffi (cas
+ *  typique : coût figé par une courbe). Jusqu'à 3 pas, chacun gardant la
+ *  meilleure variante : remplacer une capacité de complément par une plus
+ *  typique, la retirer (trop forte : une Commune à 1 mana peut être sans
+ *  capacité), ou ajouter une capacité / un effet composé (trop faible).
+ *  Déterministe : les concepts et le lancement retombent sur la même carte. */
+function retoucherStructure(plan: PlannedCard, depart: BalancedCard, bareme: Bareme, bornes: { minMana?: number; maxMana?: number }): BalancedCard {
+  let cur = plan, res = depart;
+  for (let pas = 0; pas < 3 && ecartBareme(res) > TOLERANCE; pas++) {
+    const trop = res.score.ratio > 1;
+    const cands = candidatsRetouche(cur);
+    const libres = cur.abilities.filter((id) => !cur.locked.includes(id));
+    const variantes: PlannedCard[] = [];
+    const sans = (id: string) => {
+      const modes = { ...cur.modes };
+      const l = labelUnite(id);
+      if (l) delete modes[l];
+      return modes;
+    };
+    for (const id of libres) {
+      for (const k of cands) variantes.push({ ...cur, abilities: cur.abilities.map((x) => (x === id ? k : x)), modes: sans(id) });
+      if (trop) variantes.push({ ...cur, abilities: cur.abilities.filter((x) => x !== id), modes: sans(id) });
+    }
+    if (!trop) {
+      for (const k of cands) variantes.push({ ...cur, abilities: [...cur.abilities, k] });
+      if (!cur.composes.length && cur.mana >= 4) variantes.push({ ...cur, composes: [tirerCompose(cur, seededRng(cur.index * 31 + cur.mana))] });
+    }
+    let meilleure: { v: PlannedCard; r: BalancedCard } | null = null;
+    for (const v of variantes) {
+      if (!actionValide(v)) continue;
+      const r = equilibrerBorne(v, bareme, bornes);
+      if (!meilleure || ecartBareme(r) < ecartBareme(meilleure.r)) meilleure = { v, r };
+    }
+    if (!meilleure || ecartBareme(meilleure.r) >= ecartBareme(res)) break;
+    cur = meilleure.v;
+    res = meilleure.r;
+  }
+  return res;
 }
 
 function equilibrerBorne(plan: PlannedCard, bareme: Bareme, bornes: { minMana?: number; maxMana?: number }): BalancedCard {
