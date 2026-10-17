@@ -196,13 +196,13 @@ describe("génération", () => {
     }
   });
 
-  it("la Gargouille, elle, reste au tirage — perchée n'est pas volante", () => {
-    let volantes = 0;
+  it("la Gargouille vole TOUJOURS — race ailée (règle du 2026-10-17)", () => {
+    // Auparavant « perchée n'est pas volante » ; arbitrage de l'auteur : toute
+    // race dessinée avec des ailes reçoit Vol d'office.
     for (let i = 0; i < 60; i++) {
       const c = generateCardStats("Morts-Vivants", "Unité", "Rare", 10, "Gargouilles", "La Cour Écarlate");
-      if (c.keywords?.includes("Vol")) volantes++;
+      expect(c.keywords).toContain("Vol");
     }
-    expect(volantes).toBeLessThan(60);
   });
 });
 

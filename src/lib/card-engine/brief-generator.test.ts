@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeBrief, type CardBrief } from "./brief";
-import { equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
+import { affinite, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
 import { regleRace } from "./race-abilities";
+import { getAvailableKeywords, resserrerProfil } from "./generator";
 
 const brief = (over: Partial<CardBrief> = {}): CardBrief => sanitizeBrief({
   count: 20, faction: "Nains", races: ["Nains"], types: { "Unité": 1 },
@@ -83,5 +84,33 @@ describe("regleNom", () => {
   it("Commune générique, sinon nom propre", () => {
     expect(regleNom("Commune")).toBe("generique");
     expect(regleNom("Rare")).toBe("propre");
+  });
+});
+
+describe("capacités en lien avec la race", () => {
+  it("le hors-profil ne pèse jamais plus de 25 % du tirage", () => {
+    const ks = getAvailableKeywords("Morts-Vivants", "Rare", "Gargouilles", "La Cour Écarlate");
+    const tot = ks.reduce((s, k) => s + k.weight, 0);
+    const hors = ks.filter((k) => !k.profiled).reduce((s, k) => s + k.weight, 0);
+    expect(hors / tot).toBeCloseTo(0.25, 2);
+  });
+
+  it("resserrerProfil ne touche pas un tirage déjà concentré ni un tirage sans profil", () => {
+    const id = (x: { w: number; p: boolean }, w: number) => ({ ...x, w });
+    const concentre = [{ w: 1, p: true }, { w: 0.1, p: false }];
+    expect(resserrerProfil(concentre, (x) => x.w, (x) => x.p, id)).toBe(concentre);
+    const plat = [{ w: 0.12, p: false }, { w: 0.12, p: false }];
+    expect(resserrerProfil(plat, (x) => x.w, (x) => x.p, id)).toBe(plat);
+  });
+
+  it("une capacité du brief va d'abord à la race qui la porte le mieux", () => {
+    const b = brief({ faction: "Morts-Vivants", races: ["Gargouilles", "Homuncules de Sang"], clans: [], count: 10, abilities: [{ id: "armure", pct: 10 }], triggers: [], additionalCosts: [] });
+    for (let seed = 1; seed <= 5; seed++) {
+      const p = planBatch(b, seededRng(seed));
+      const porteurs = p.cards.filter((c) => c.abilities.includes("armure") && c.locked.includes("armure"));
+      const gargouillesLibres = p.cards.filter((c) => c.race === "Gargouilles" && !c.abilities.includes("armure"));
+      if (gargouillesLibres.length) for (const c of porteurs) expect(affinite(c, "armure"), `seed ${seed}`).toBeGreaterThanOrEqual(affinite(gargouillesLibres[0], "armure") - 1e-9);
+      expect(porteurs.length).toBeGreaterThan(0);
+    }
   });
 });
