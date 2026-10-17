@@ -61,9 +61,11 @@ function computeBudget(mana: number, rarityId: string) {
 
 // ─── KEYWORDS ────────────────────────────────────────────────────────────────
 
-export function getAvailableKeywords(factionId: string, rarityId: string, raceId?: string, clanId?: string) {
+export function getAvailableKeywords(factionId: string, _rarityId: string, raceId?: string, clanId?: string) {
   const faction = FACTIONS[factionId];
-  const tier = RARITY_MAP[rarityId].tier;
+  // Plus de palier de rareté (`minTier`) depuis le 2026-10-17 : toutes les
+  // capacités sont ouvertes à toutes les raretés, le barème en fait payer le
+  // prix. La rareté reste dans la signature pour les appelants.
   // Poids des mots-clés : cascade CLAN > RACE > FACTION, comblée PAR MOT-CLÉ.
   // Le profil de clan prime ; un mot-clé absent de sa table retombe sur le
   // profil de race (ex. l'Aigle Géant garde son poids de Vol dans un clan elfe),
@@ -75,7 +77,7 @@ export function getAvailableKeywords(factionId: string, rarityId: string, raceId
   // Cohérence de race/clan (race-abilities.ts) : un interdit n'est jamais tiré.
   const { interdits } = regleRace(raceId, clanId);
   const dispo = Object.entries(KEYWORDS)
-    .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id) && !interdits.includes(id))
+    .filter(([id]) => !faction.forbiddenKeywords.includes(id) && !interdits.includes(id))
     .map(([id, kw]) => {
       // L'ombrelle de faction ne compte qu'à moitié quand la race ou le clan
       // a son propre profil : sinon le Poison des Morts-Vivants passait
@@ -167,7 +169,7 @@ export function generateCardStats(factionId: string, type: string, rarityId: str
     for (const kid of faction.guaranteedKeywords) {
       if (keywords.includes(kid)) continue; // déjà ajouté (ex: Vol Dragons)
       const kw = KEYWORDS[kid];
-      if (kw && kw.minTier <= RARITY_MAP[rarityId].tier && Math.random() < FREQUENT_CHANCE) {
+      if (kw && Math.random() < FREQUENT_CHANCE) {
         keywords.push(kid);
       }
     }
