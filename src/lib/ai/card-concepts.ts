@@ -172,6 +172,9 @@ export interface CardConcept {
   formeNom: string;
   formeAmbiance: string;
   ton: string;
+  /** Échange de capacité décidé au concept (ids du registre) : appliqué au
+   *  plan avant l'équilibrage, annulable dans l'interface. */
+  echange?: { de: string; vers: string; raison: string };
 }
 
 export interface ConceptsDuLot {
@@ -196,6 +199,12 @@ export function sanitizeConcept(raw: unknown, type: string): CardConcept | null 
   const echelle = permises.includes(r.echelle as string) ? r.echelle as Echelle : undefined;
   const c = { subjectKind: echelle ? kindPourEchelle(echelle, kind) : kind, ...(echelle ? { echelle } : {}) } as CardConcept;
   for (const k of CHAMPS_TEXTE) c[k] = texte(r[k]);
+  // Forme seulement : la validité (échangeable, candidate) se juge sur la carte.
+  const e = r.echange as Record<string, unknown> | null | undefined;
+  if (type !== "Action" && e && typeof e === "object") {
+    const de = texte(e.de, 60), vers = texte(e.vers, 60);
+    if (de && vers && de !== vers) c.echange = { de, vers, raison: texte(e.raison, 120) };
+  }
   return c.sujet ? c : null;
 }
 

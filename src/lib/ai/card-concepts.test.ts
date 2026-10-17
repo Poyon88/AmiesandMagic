@@ -2,7 +2,7 @@
 // la race dans le prompt d'illustration.
 import { describe, expect, it } from "vitest";
 import {
-  MOMENTS, ancrageRace, echellePourCarte, nameRuleText, poidsEchelle, premierMot, repartir, repartirEchelles, sanitizeConcepts, sanitizePlan,
+  MOMENTS, ancrageRace, echellePourCarte, nameRuleText, poidsEchelle, premierMot, repartir, repartirEchelles, sanitizeConcept, sanitizeConcepts, sanitizePlan,
   type CarteEchelle, type Echelle,
 } from "./card-concepts";
 import { RACE_VISUALS } from "./race-visuals";
@@ -144,5 +144,16 @@ describe("échelle de la scène", () => {
 
   it("ancrage d'une armée", () => {
     expect(ancrageRace("a stout dwarf", "groupe", "armee").prefixe).toBe("A vast host of stout dwarf");
+  });
+});
+
+describe("échange de capacité dans le concept", () => {
+  const base = { subjectKind: "membre", sujet: "gardienne de pierre" };
+  it("conserve un échange bien formé, ignore le reste", () => {
+    expect(sanitizeConcept({ ...base, echange: { de: "pietinement", vers: "ancre", raison: "statue scellée" } }, "Unité")?.echange)
+      .toEqual({ de: "pietinement", vers: "ancre", raison: "statue scellée" });
+    expect(sanitizeConcept({ ...base, echange: null }, "Unité")?.echange).toBeUndefined();
+    expect(sanitizeConcept({ ...base, echange: { de: "ancre", vers: "ancre" } }, "Unité")?.echange).toBeUndefined();
+    expect(sanitizeConcept({ ...base, echange: { de: "a", vers: "b" } }, "Action")?.echange).toBeUndefined();
   });
 });

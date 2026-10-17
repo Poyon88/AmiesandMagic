@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeBrief, type CardBrief } from "./brief";
-import { affinite, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
+import { affinite, appliquerEchange, candidatsEchange, echangeables, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
 import { regleRace } from "./race-abilities";
 import { getAvailableKeywords, resserrerProfil } from "./generator";
+import { getBareme } from "./bareme";
+import { KEYWORDS } from "./constants";
 
 const brief = (over: Partial<CardBrief> = {}): CardBrief => sanitizeBrief({
   count: 20, faction: "Nains", races: ["Nains"], types: { "Unité": 1 },
@@ -112,5 +114,49 @@ describe("capacités en lien avec la race", () => {
       if (gargouillesLibres.length) for (const c of porteurs) expect(affinite(c, "armure"), `seed ${seed}`).toBeGreaterThanOrEqual(affinite(gargouillesLibres[0], "armure") - 1e-9);
       expect(porteurs.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("échange de capacité au concept", () => {
+  const lot = () => planBatch(brief({ faction: "Morts-Vivants", races: ["Gargouilles", "Homuncules de Sang"], clans: [], count: 30, types: { "Unité": 3, "Action": 1 }, abilities: [{ id: "armure", pct: 10 }], triggers: [{ trigger: "death", freq: "moyen" }], additionalCosts: [] }), seededRng(7)).cards;
+
+  it("seules les capacités libres et sans déclencheur d'une Unité sont échangeables", () => {
+    for (const c of lot()) {
+      const e = echangeables(c);
+      if (c.type !== "Unité") { expect(e).toEqual([]); continue; }
+      for (const id of e) {
+        expect(c.locked).not.toContain(id);
+        expect(c.modes[labelUnite(id)!]).toBeUndefined();
+      }
+    }
+    expect(lot().some((c) => echangeables(c).length > 0)).toBe(true);
+  });
+
+  it("les candidates sont du profil, absentes de la carte, de coût proche, au plus 6", () => {
+    for (const c of lot().filter((c) => echangeables(c).length)) {
+      const profil = new Set(getAvailableKeywords(c.faction, c.rarity, c.race ?? undefined, c.clan ?? undefined).filter((k) => k.profiled).map((k) => k.id));
+      const couts = echangeables(c).map((id) => KEYWORDS[labelUnite(id)!].cost);
+      const cands = candidatsEchange(c);
+      expect(cands.length).toBeLessThanOrEqual(6);
+      for (const k of cands) {
+        expect(profil.has(k.label)).toBe(true);
+        expect(c.abilities).not.toContain(k.id);
+        expect(regleRace(c.race, c.clan).interdits).not.toContain(k.label);
+        expect(couts.some((x) => Math.abs(x - k.cout) <= 1)).toBe(true);
+      }
+    }
+  });
+
+  it("appliquerEchange remplace, verrouille, et survit à l'équilibrage ; un échange invalide ne change rien", () => {
+    const c = lot().find((c) => echangeables(c).length && candidatsEchange(c).length)!;
+    const de = echangeables(c)[0], vers = candidatsEchange(c)[0].id;
+    const e = appliquerEchange(c, { de, vers });
+    expect(e.abilities).toContain(vers);
+    expect(e.abilities).not.toContain(de);
+    expect(e.locked).toContain(vers);
+    expect(equilibrer(e, getBareme(), {}).labels).toContain(labelUnite(vers));
+    expect(appliquerEchange(c, { de, vers: "inexistante" })).toBe(c);
+    expect(appliquerEchange(c, { de: "inexistante", vers })).toBe(c);
+    expect(appliquerEchange(c, null)).toBe(c);
   });
 });
