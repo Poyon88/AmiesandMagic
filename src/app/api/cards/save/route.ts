@@ -84,7 +84,7 @@ export async function GET() {
   // nous-mêmes les BROUILLONS pour qui n'est ni admin ni testeur.
   const { data: profil } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).maybeSingle();
   const voitBrouillons = profil?.role === 'admin' || profil?.role === 'testeur';
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id, created_at';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
