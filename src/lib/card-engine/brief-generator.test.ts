@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeBrief, type CardBrief } from "./brief";
-import { affinite, appliquerEchange, candidatsEchange, echangeables, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
+import { affinite, appliquerEchange, CAPACITES_A_CHOIX, PART_A_CHOIX, candidatsEchange, echangeables, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
 import { regleRace } from "./race-abilities";
-import { getAvailableKeywords, resserrerProfil } from "./generator";
+import { getAvailableKeywords, PART_HORS_PROFIL, resserrerProfil } from "./generator";
 import { getBareme } from "./bareme";
 import { KEYWORDS } from "./constants";
 
@@ -59,7 +59,8 @@ describe("planBatch", () => {
     for (const seed of [1, 2, 3, 4]) {
       const p = planBatch(brief({ count: 40, types: { "Action": 1 }, abilities: [{ id: "precision", pct: 30 }, { id: "boomerang", pct: 20 }] } as Partial<CardBrief>), seededRng(seed));
       for (const c of p.cards) {
-        expect(c.abilities.some((id) => !MODIFICATEURS_DE_DEGATS.has(id) && !META_DE_SORT.has(id)), c.abilities.join()).toBe(true);
+        // Un effet composé tient lieu d'effet principal.
+        expect(c.composes.length > 0 || c.abilities.some((id) => !MODIFICATEURS_DE_DEGATS.has(id) && !META_DE_SORT.has(id)), c.abilities.join()).toBe(true);
         if (c.abilities.some((id) => MODIFICATEURS_DE_DEGATS.has(id))) expect(c.abilities.some((id) => SORTS_DE_DEGATS.has(id)), c.abilities.join()).toBe(true);
       }
     }
@@ -90,11 +91,11 @@ describe("regleNom", () => {
 });
 
 describe("capacités en lien avec la race", () => {
-  it("le hors-profil ne pèse jamais plus de 25 % du tirage", () => {
+  it("le hors-profil ne pèse jamais plus de la moitié du tirage", () => {
     const ks = getAvailableKeywords("Morts-Vivants", "Rare", "Gargouilles", "La Cour Écarlate");
     const tot = ks.reduce((s, k) => s + k.weight, 0);
     const hors = ks.filter((k) => !k.profiled).reduce((s, k) => s + k.weight, 0);
-    expect(hors / tot).toBeCloseTo(0.25, 2);
+    expect(hors / tot).toBeCloseTo(PART_HORS_PROFIL, 2);
   });
 
   it("resserrerProfil ne touche pas un tirage déjà concentré ni un tirage sans profil", () => {
@@ -158,5 +159,26 @@ describe("échange de capacité au concept", () => {
     expect(appliquerEchange(c, { de, vers: "inexistante" })).toBe(c);
     expect(appliquerEchange(c, { de: "inexistante", vers })).toBe(c);
     expect(appliquerEchange(c, null)).toBe(c);
+  });
+});
+
+describe("cartes à choix", () => {
+  it("au moins 30 % du lot porte une capacité à choix, verrouillée", () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const p = planBatch(brief({ count: 40, types: { "Unité": 3, "Action": 1 } } as Partial<CardBrief>), seededRng(seed));
+      const avec = p.cards.filter((c) => c.abilities.some((id) => CAPACITES_A_CHOIX.has(id)) || c.composes.length > 0);
+      expect(avec.length, `seed ${seed}`).toBeGreaterThanOrEqual(Math.round(40 * PART_A_CHOIX));
+      for (const c of p.cards) for (const id of c.abilities.filter((x) => CAPACITES_A_CHOIX.has(x))) {
+        if (c.type === "Unité") expect(regleRace(c.race, c.clan).interdits).not.toContain(labelUnite(id));
+      }
+    }
+  });
+
+  it("une capacité à choix survit à l'équilibrage", () => {
+    const p = planBatch(brief({ count: 30 } as Partial<CardBrief>), seededRng(8));
+    for (const c of p.cards.filter((c) => c.abilities.some((id) => CAPACITES_A_CHOIX.has(id) && c.locked.includes(id)))) {
+      const b = equilibrer(c, getBareme(), {});
+      expect(b.plan.abilities.some((id) => CAPACITES_A_CHOIX.has(id))).toBe(true);
+    }
   });
 });

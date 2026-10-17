@@ -42,6 +42,19 @@ import { CardStatusBadge, CARD_STATUS_COLORS } from "@/components/cards/CardStat
 import { scoreCarte, facteurBudget, type CarteNotee } from "@/lib/card-engine/card-points";
 import { getBareme } from "@/lib/card-engine/bareme";
 import BudgetDetail, { BudgetGauge, couleurBudget } from "@/components/card-forge/BudgetDetail";
+import { auditCoherence, capacitesTypiques, resumeAudit, type AuditCoherence } from "@/lib/card-engine/race-audit";
+
+const COULEUR_AUDIT = { rouge: "#c0392b", orange: "#e08a00" } as const;
+/** Pastille d'audit race ↔ capacités (rien pour une carte cohérente). */
+function PastilleAudit({ audit, style }: { audit?: AuditCoherence; style?: React.CSSProperties }) {
+  if (!audit || audit.niveau === "ok") return null;
+  return (
+    <span title={`Cohérence avec la race : ${resumeAudit(audit)}`} style={{
+      display: "inline-block", width: 12, height: 12, borderRadius: "50%", background: COULEUR_AUDIT[audit.niveau],
+      border: "2px solid #fff", boxShadow: "0 0 2px #000", verticalAlign: "middle", ...style,
+    }} />
+  );
+}
 
 /** Libellés ADMIN du statut (la forge est en français ; côté joueur, cf.
  *  l'espace i18n `cardStatus`). */
@@ -222,7 +235,9 @@ export default function CardEditor() {
   // même mesure que le rapport de calibrage, et la seule qui ait un sens pour
   // une carte à 0 mana, dont le ratio points/budget est indéfini. « recent » :
   // dernières créées en haut (date de création, puis id).
-  const [sortMode, setSortMode] = useState<"cout" | "recent" | "ecart_desc" | "ecart_asc">("cout");
+  const [sortMode, setSortMode] = useState<"cout" | "recent" | "ecart_desc" | "ecart_asc" | "coherence">("cout");
+  // Audit race ↔ capacités : seulement les Unités signalées (rouge / orange).
+  const [incoherentesSeules, setIncoherentesSeules] = useState(false);
   // Bloc Statut : enregistré À PART de la sauvegarde complète (mise à jour
   // partielle), pour qu'une exclusion passe toujours par sa confirmation.
   const [statusDraft, setStatusDraft] = useState<CardStatus>("draft");
@@ -384,6 +399,16 @@ export default function CardEditor() {
     return m;
   }, [cards]);
 
+  // Audit de cohérence race ↔ capacités des Unités (race-audit.ts).
+  const audits = useMemo(() => {
+    const m = new Map<number, AuditCoherence>();
+    for (const c of cards) {
+      const a = auditCoherence(c as never);
+      if (a) m.set(c.id, a);
+    }
+    return m;
+  }, [cards]);
+
   const filteredCards = useMemo(() => {
     const parCout = (a: DbCard, b: DbCard) => a.mana_cost - b.mana_cost || a.name.localeCompare(b.name, "fr");
     const ecart = (c: DbCard) => ecartBareme.get(c.id) ?? 0;
@@ -410,13 +435,16 @@ export default function CardEditor() {
       if (filterYear && String(card.card_year) !== filterYear) return false;
       if (filterMonth && String(card.card_month) !== filterMonth) return false;
       if (statusFilter !== null && cardStatusOf(card) !== statusFilter) return false;
+      if (incoherentesSeules && (audits.get(card.id)?.niveau ?? "ok") === "ok") return false;
       return true;
     }).sort((a, b) =>
       sortMode === "recent" ? (b.created_at ?? "").localeCompare(a.created_at ?? "") || b.id - a.id
       : sortMode === "ecart_desc" ? ecart(b) - ecart(a) || parCout(a, b)
       : sortMode === "ecart_asc" ? ecart(a) - ecart(b) || parCout(a, b)
+      // Non notées (Actions, Objets) à la fin.
+      : sortMode === "coherence" ? (audits.get(a.id)?.note ?? 101) - (audits.get(b.id)?.note ?? 101) || a.id - b.id
       : parCout(a, b));
-  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter, sortMode, ecartBareme]);
+  }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter, sortMode, ecartBareme, incoherentesSeules, audits]);
 
   // Select card for editing
   const selectCard = useCallback((card: DbCard) => {
@@ -1133,6 +1161,7 @@ export default function CardEditor() {
     setFactionFilter(null); setRarityFilter(null); setRaceFilter(null); setClanFilter(null);
     setAlignmentFilter(null);
     setFilterSet(""); setFilterYear(""); setFilterMonth(""); setStatusFilter(null);
+    setIncoherentesSeules(false);
   };
 
   // Applique le statut choisi. Une EXCLUSION demande une confirmation qui
@@ -1256,7 +1285,12 @@ export default function CardEditor() {
           <option value="recent">Tri : plus récentes</option>
           <option value="ecart_desc">Tri : au-dessus du barème</option>
           <option value="ecart_asc">Tri : en dessous du barème</option>
+          <option value="coherence">Tri : moins cohérentes d&apos;abord</option>
         </select>
+        <button onClick={() => setIncoherentesSeules((v) => !v)} style={S.filterBtn(incoherentesSeules)}
+          title="Unités dont les capacités jurent avec la race : interdites, obligatoires manquantes ou majorité hors profil">
+          ⚠ Incohérentes
+        </button>
 
         {/* Statut de cycle de vie */}
         <select value={statusFilter || ""} onChange={e => setStatusFilter((e.target.value || null) as CardStatus | null)} style={{ ...S.select, width: 110 }}>
@@ -1337,6 +1371,7 @@ export default function CardEditor() {
                 {cardStatusOf(card) !== "playable" && (
                   <CardStatusBadge overlay card={card} style={{ position: "absolute", top: "16%", left: 6, zIndex: 2 }} />
                 )}
+                <PastilleAudit audit={audits.get(card.id)} style={{ position: "absolute", top: "16%", right: 8, zIndex: 2 }} />
                 {selectedCard?.id === card.id ? (
                   <div onClick={() => selectCard(card)} style={{ cursor: "pointer" }}>
                     <GameCard
@@ -1380,7 +1415,7 @@ export default function CardEditor() {
                     onMouseEnter={e => { if (selectedCard?.id !== card.id) (e.currentTarget.style.background = "#fafafa"); }}
                     onMouseLeave={e => { if (selectedCard?.id !== card.id) (e.currentTarget.style.background = "transparent"); }}
                   >
-                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{card.name} <CardStatusBadge card={card} /></td>
+                    <td style={{ padding: "6px 8px", fontWeight: 600 }}>{card.name} <CardStatusBadge card={card} /> <PastilleAudit audit={audits.get(card.id)} /></td>
                     <td style={{ padding: "6px 8px", color: "#4a90d9" }}>{card.mana_cost}</td>
                     <td style={{ padding: "6px 8px" }}>{LIBELLE_TYPE[card.card_type] ?? card.card_type}</td>
                     <td style={{ padding: "6px 8px" }}>{card.card_type === "spell" ? "—" : card.card_type === "item" ? `+${card.attack ?? 0}/+${card.health ?? 0}` : `${card.attack}/${card.health}`}</td>
@@ -1654,6 +1689,26 @@ export default function CardEditor() {
               <BudgetGauge score={scoreCarte(getBareme(), selectedCard as unknown as CarteNotee)} />
               <BudgetDetail score={scoreCarte(getBareme(), selectedCard as unknown as CarteNotee)} />
             </div>
+
+            {/* Audit race ↔ capacités (carte ENREGISTRÉE). */}
+            {(() => {
+              const a = audits.get(selectedCard.id);
+              if (!a) return null;
+              const typiques = capacitesTypiques(selectedCard as never);
+              const ligne = (titre: string, l: string[], couleur: string) => l.length > 0 && (
+                <div><span style={{ color: couleur, fontWeight: 700 }}>{titre} :</span> {l.join(", ")}</div>
+              );
+              return (
+                <div style={{ marginBottom: 10, padding: 8, border: `1px solid ${a.niveau === "ok" ? "#2e7d32" : COULEUR_AUDIT[a.niveau]}`, borderRadius: 6, background: "#fff", fontSize: 11, lineHeight: 1.6 }}>
+                  <div style={{ ...S.label, marginBottom: 3 }}>Cohérence avec la race — {a.note}/100</div>
+                  {a.niveau === "ok" && <div style={{ color: "#2e7d32" }}>Capacités cohérentes avec {selectedCard.race ?? "la faction"}.</div>}
+                  {ligne("Interdites", a.interdits, COULEUR_AUDIT.rouge)}
+                  {ligne("Obligatoires manquantes", a.manquants, COULEUR_AUDIT.rouge)}
+                  {ligne("Hors profil", a.horsProfil, COULEUR_AUDIT.orange)}
+                  {a.niveau !== "ok" && typiques.length > 0 && <div style={{ color: "#666" }}>Typiques : {typiques.join(", ")}</div>}
+                </div>
+              );
+            })()}
 
             {/* Statut de cycle de vie — enregistré à part (mise à jour partielle),
                 pour que l'exclusion passe toujours par sa confirmation. */}

@@ -49,6 +49,14 @@ const cartesDuLot = (brief: CardBrief, seed: number, concepts?: (CardConcept | n
 };
 const pourConcepts = (brief: CardBrief) => (b: BalancedCard) => cartepourConcept(b, exclusEchange(brief));
 
+/** Ligne courte d'une mécanique pour la tuile : « Libellé (déclencheur) », et
+ *  pour un effet composé sa description (« ✦ à la mort : Pioche 2 cartes. »). */
+const resumeMecanique = (m: string) => {
+  const d = m.match(/^(.*?) \(déclencheur : ([^)]*)\) : (.*)$/);
+  if (d) return d[1] === "Effet composé" ? `✦ ${d[2]} : ${d[3]}` : `${d[1]} (${d[2]})`;
+  return m.split(" : ")[0];
+};
+
 const ACCUEIL = "Bonjour ! Décrivons le lot à créer. Pour commencer : **combien de cartes**, de quelle **faction**, quelle(s) **race(s)** (et clans éventuels), quels **types** (Unités / Actions), quelle **répartition des raretés**, et s'agit-il d'une **édition limitée** (année) ou d'un **set** (Communes uniquement) ?";
 
 const FREQ_LABEL = { leger: "léger", moyen: "moyen", fort: "fort" } as const;
@@ -473,7 +481,7 @@ export default function AssistedForge() {
                     </select>
                     <button onClick={() => regenererConcept(i)} disabled={enCours || !!conceptsAttente} title="Régénérer ce concept" style={{ ...S.secondaire, padding: "1px 7px" }}>↻</button>
                   </div>
-                  {b && <div style={{ fontSize: 9, color: "#999", margin: "3px 0" }}>{cartepourConcept(b).mechanics.map((m) => m.split(" : ")[0]).join(" · ")}</div>}
+                  {b && <div style={{ fontSize: 9, color: "#999", margin: "3px 0" }}>{cartepourConcept(b).mechanics.map(resumeMecanique).join(" · ")}</div>}
                   {c.echange && b?.plan.abilities.includes(c.echange.vers) && (
                     <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "#6b3fa0", margin: "2px 0 4px" }}>
                       <span style={{ flex: 1 }}>↪ {labelUnite(c.echange.de) ?? c.echange.de} → <strong>{labelUnite(c.echange.vers) ?? c.echange.vers}</strong>{c.echange.raison ? ` — ${c.echange.raison}` : ""}</span>

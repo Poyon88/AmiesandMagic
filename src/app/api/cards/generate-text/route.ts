@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { FACTIONS } from '@/lib/card-engine/constants';
+import { volParMonture } from '@/lib/card-engine/race-abilities';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide';
 import { findNameCollision, normalizeCardName } from '@/lib/cards/nameCollision';
@@ -41,7 +42,11 @@ export async function POST(request: Request) {
   }
 
   const hasVol = stats.keywords?.includes('Vol');
-  const volHint = hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la race)' : '';
+  // Peuple sans ailes (Elfes, Humains, Nains…) : le Vol vient d'une monture.
+  const monteVolant = volParMonture(raceId, stats.keywords ?? []);
+  const volHint = monteVolant
+    ? '\n- IMPORTANT: La carte a le mot-clé Vol mais sa race n\'a pas d\'ailes → elle CHEVAUCHE une créature volante (griffon, pégase, aigle géant, wyverne… cohérente avec la faction), en vol ou prête à décoller, bien visible dans l\'illustration ; le nom et le texte peuvent évoquer le cavalier ou la monture.'
+    : hasVol ? '\n- IMPORTANT: La carte a le mot-clé Vol → la créature DOIT être volante (dragon, wyverne, aigle, faucon, griffon, chauve-souris, spectre ailé, démon ailé, etc. selon la race)' : '';
   const raceVisualDescriptions = RACE_VISUALS;
   // For factions whose visual identity lives on the clan (Élémentaires: race
   // "Élémentaire", clan = element), prefer the clan-keyed descriptor.
@@ -119,7 +124,10 @@ export async function POST(request: Request) {
   // l'unité, plans enregistrés avant l'échelle).
   const echelle = concept?.echelle
     ?? echellePourCarte({ type: type === 'Action' ? 'Action' : 'Unité', rarity: String(rarityId ?? ''), mana: Number(stats.mana) || 0, race: raceId, clan: clanId });
-  const subjectKind = concept?.subjectKind ?? kindPourEchelle(echelle, null);
+  // Cavalier volant seul ou entouré : la monture fait partie du sujet.
+  const subjectKind = monteVolant && (echelle === 'seule' || echelle === 'entourage')
+    ? 'monture'
+    : concept?.subjectKind ?? kindPourEchelle(echelle, null);
   // Forme du texte d'ambiance : celle du concept, sinon tirée au hasard.
   const formeAmbiance = concept?.formeAmbiance
     ? `${concept.formeAmbiance}${concept.ton ? `, ton ${concept.ton}` : ''}`

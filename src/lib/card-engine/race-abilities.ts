@@ -21,12 +21,19 @@ export interface RaceAbilityRule {
 
 const AILES = { obligatoires: ["Vol"] } satisfies RaceAbilityRule;
 const AU_SOL = { interdits: ["Vol"] } satisfies RaceAbilityRule;
+/** Peuples à terre qui peuvent CHEVAUCHER une monture volante : Vol permis
+ *  (l'illustration les montre alors montés, cf. `volParMonture`). */
+const CAVALIER = {} satisfies RaceAbilityRule;
 /** Masses lentes : ni Vol, ni vivacité. */
 const LOURDS = { interdits: ["Vol", "Célérité", "Esquive", "Traque"] } satisfies RaceAbilityRule;
 /** Constructions sans chair : ni Vol, ni Poison, ni Drain de vie. */
 const INERTES = { interdits: ["Vol", "Poison", "Drain de vie", "Régénération X"] } satisfies RaceAbilityRule;
 /** Morts-vivants de chair : ni Vol ni Régénération. */
 const CADAVRES = { interdits: ["Vol", "Régénération X", "Célérité"] } satisfies RaceAbilityRule;
+
+/** Races dont seuls CERTAINS membres ont des ailes : Vol ni obligatoire ni
+ *  interdit (il reste dans leur profil). Exemptées du test « races ailées ». */
+export const AILES_FACULTATIVES: ReadonlySet<string> = new Set(["Démons"]);
 
 export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   // ─── Volants par nature ────────────────────────────────────────────────
@@ -48,7 +55,6 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   // Vol. Le test « races ailées » vérifie cette correspondance.
   "Gargouilles": AILES,
   "Sphinx": AILES,
-  "Démons": AILES,
   "Sluaghs": AILES,
 
   // ─── Lourds ───────────────────────────────────────────────────────────
@@ -63,7 +69,9 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
 
   // ─── Constructions ────────────────────────────────────────────────────
   "Golems": { interdits: [...INERTES.interdits, "Célérité", "Esquive"] },
-  "Machines": INERTES,
+  // Une machine peut voler (luciole mécanique, ornithoptère) : Vol permis,
+  // simplement absent de son profil — rare au tirage, « hors profil » à l'audit.
+  "Machines": { interdits: INERTES.interdits.filter((l) => l !== "Vol") },
   "Cristallins": INERTES,
   "Bâtiments": { interdits: ["Vol", "Traque", "Raid", "Célérité", "Esquive", "Double Attaque", "Poison", "Drain de vie"] },
 
@@ -77,19 +85,19 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Dullahans": AU_SOL,
 
   // ─── Peuples et bêtes à terre ─────────────────────────────────────────
-  "Elfes": AU_SOL,
-  "Elfes Corrompus": AU_SOL,
-  "Hobbits": AU_SOL,
+  "Elfes": CAVALIER,
+  "Elfes Corrompus": CAVALIER,
+  "Hobbits": CAVALIER,
   "Farfadets": AU_SOL,
   "Korrigans": AU_SOL,
   "Faunes": AU_SOL,
   "Dryades": AU_SOL,
-  "Nains": AU_SOL,
-  "Gnomes": AU_SOL,
-  "Kobolds": AU_SOL,
-  "Humains": AU_SOL,
+  "Nains": CAVALIER,
+  "Gnomes": CAVALIER,
+  "Kobolds": CAVALIER,
+  "Humains": CAVALIER,
   "Nagas": AU_SOL,
-  "Oni": AU_SOL,
+  "Oni": CAVALIER,
   "Hommes-Loups": AU_SOL,
   "Hommes-Ours": AU_SOL,
   "Hommes-Félins": AU_SOL,
@@ -109,11 +117,11 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Loups": AU_SOL,
   "Fauves": AU_SOL,
   "Wargs": AU_SOL,
-  "Orcs": AU_SOL,
-  "Gobelins": AU_SOL,
+  "Orcs": CAVALIER,
+  "Gobelins": CAVALIER,
   "Guerriers du Chaos": AU_SOL,
   "Araignées Géantes": AU_SOL,
-  "Dhampirs": AU_SOL,
+  "Dhampirs": CAVALIER,
   "Homuncules de Sang": AU_SOL,
   "Vermines mortuaires": AU_SOL,
 };
@@ -192,4 +200,15 @@ export function regleRace(race: string | null | undefined, clan?: string | null)
 
 export function estInterditPourRace(label: string, race: string | null | undefined, clan?: string | null): boolean {
   return regleRace(race, clan).interdits.includes(label);
+}
+
+/** Races sans ailes dont le Vol vient d'une MONTURE volante (griffon, pégase,
+ *  aigle géant, wyverne…) : Elfes, Humains, Nains, etc. (arbitrage 2026-10-17). */
+export const CAVALIERS_VOLANTS: ReadonlySet<string> = new Set(
+  Object.entries(RACE_ABILITY_RULES).filter(([, r]) => r === CAVALIER).map(([race]) => race),
+);
+
+/** L'Unité vole-t-elle parce qu'elle est montée ? (libellés de forge) */
+export function volParMonture(race: string | null | undefined, labels: readonly string[]): boolean {
+  return !!race && CAVALIERS_VOLANTS.has(race) && labels.includes("Vol");
 }

@@ -95,8 +95,10 @@ export const POIDS_HORS_PROFIL = 0.12;
 /** Part MAXIMALE du tirage laissée aux capacités hors profil. Avec un poids
  *  fixe de 0,12 sur ~85 capacités, le hors-profil pesait ~80 % du tirage et
  *  noyait les 5-7 capacités typiques de la race (mesuré le 2026-10-17 :
- *  22 % seulement des tirages d'une Gargouille venaient de son profil). */
-export const PART_HORS_PROFIL = 0.25;
+ *  22 % seulement des tirages d'une Gargouille venaient de son profil).
+ *  Resserré à 25 %, puis rouvert à 50 % (arbitrage de l'auteur, même jour) :
+ *  les capacités typiques reviennent souvent sans uniformiser les lots. */
+export const PART_HORS_PROFIL = 0.5;
 
 /** Réduit le poids cumulé du hors-profil à `part` du total (sans jamais
  *  l'augmenter). Sans profil du tout, rien ne change : tirage uniforme. */
