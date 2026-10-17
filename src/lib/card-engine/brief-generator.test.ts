@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeBrief, type CardBrief } from "./brief";
-import { affinite, appliquerEchange, CAPACITES_A_CHOIX, PART_A_CHOIX, candidatsEchange, echangeables, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
+import { affinite, appliquerEchange, bornesEquilibrage, CAPACITES_A_CHOIX, PART_A_CHOIX, candidatsEchange, echangeables, equilibrer, labelUnite, largestRemainder, META_DE_SORT, MODIFICATEURS_DE_DEGATS, planBatch, regleNom, seededRng, SORTS_DE_DEGATS, sortGenerable } from "./brief-generator";
 import { regleRace } from "./race-abilities";
 import { getAvailableKeywords, PART_HORS_PROFIL, resserrerProfil } from "./generator";
 import { getBareme } from "./bareme";
@@ -180,5 +180,29 @@ describe("cartes à choix", () => {
       const b = equilibrer(c, getBareme(), {});
       expect(b.plan.abilities.some((id) => CAPACITES_A_CHOIX.has(id))).toBe(true);
     }
+  });
+});
+
+describe("équilibrage à coût fixe (courbe imposée)", () => {
+  const courbe = (types: Partial<Record<"Unité" | "Action", number>>, manaCurve: Record<string, number>) => brief({
+    count: 26, faction: "Hommes-Bêtes", races: ["Hommes-Félins"], clans: ["Les Seigneurs Fauves"], types, rarities: { Commune: 1 }, manaCurve,
+    abilities: [], triggers: [{ trigger: "entry", freq: "moyen" }], additionalCosts: [],
+  } as Partial<CardBrief>);
+
+  it("le coût de la courbe est conservé et ≥ 85 % des cartes tiennent ±10 %", () => {
+    for (const b of [courbe({ "Unité": 1 }, { "1": 5, "2": 6, "6": 3, "7": 4, "8": 3, "9": 3, "10": 2 }), courbe({ "Action": 1 }, { "1": 3, "4": 2, "5": 2, "6": 3, "7": 2, "8": 2, "9": 2, "10": 2 })]) {
+      let ok = 0, n = 0;
+      for (const seed of [1, 2, 3]) for (const c of planBatch(b, seededRng(seed)).cards) {
+        const r = equilibrer(c, getBareme(), bornesEquilibrage(b, c));
+        expect(r.plan.mana).toBe(c.mana);
+        n++; if (Math.abs(r.score.ratio - 1) <= 0.1) ok++;
+      }
+      expect(ok / n).toBeGreaterThan(0.85);
+    }
+  });
+
+  it("sans courbe, les bornes du brief s'appliquent", () => {
+    const b = brief({ constraints: { minMana: 2, maxMana: 8 } } as Partial<CardBrief>);
+    expect(bornesEquilibrage(b, planBatch(b, seededRng(1)).cards[0])).toEqual({ minMana: 2, maxMana: 8 });
   });
 });
