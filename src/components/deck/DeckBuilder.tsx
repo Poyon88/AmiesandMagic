@@ -115,6 +115,7 @@ const RACE_ICONS: Record<string, string> = {
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 import { cardHasAbility } from "@/lib/game/ability-filter";
+import { cardRaces, hasRace } from "@/lib/game/races";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 // Mots-clés de SORT seuls (le filtre teste keywords ET spell_keywords ; les
 // polymorphes, même id des deux côtés, sont déjà couverts par la liste créature).
@@ -359,7 +360,7 @@ export default function DeckBuilder({
 
   const races = useMemo(() => {
     const set = new Set<string>();
-    cards.forEach(c => { if (c.race) set.add(c.race); });
+    cards.forEach(c => { for (const r of cardRaces(c)) set.add(r); });
     return Array.from(set).sort();
   }, [cards]);
 
@@ -432,7 +433,7 @@ export default function DeckBuilder({
         return false;
       if (expertOnly && (card.rarity ?? "Commune") === "Commune")
         return false;
-      if (raceFilter !== null && card.race !== raceFilter)
+      if (raceFilter !== null && !hasRace(card, raceFilter))
         return false;
       if (clanFilter !== null && card.clan !== clanFilter)
         return false;

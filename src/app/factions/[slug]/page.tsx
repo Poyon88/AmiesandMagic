@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const COLONNES_CARTE =
   "id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, " +
   "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
-  "image_url, faction, race, clan, rarity, card_alignment, convocation_token_id, " +
+  "image_url, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, " +
   "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
   "card_month, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost";
 

@@ -6,7 +6,7 @@
 // aucune entrée (vérifié en base : 0 sur 134 cartes). La statistique était donc
 // silencieusement vide côté sorts — aucune erreur, juste des lignes manquantes.
 import { describe, expect, it } from "vitest";
-import { aggregateByAbility } from "./analytics";
+import { aggregateByAbility, aggregateByCardAttribute } from "./analytics";
 import type { CardRow, DeckSnapshot } from "./analytics";
 
 function card(id: number, over: Partial<CardRow> = {}): CardRow {
@@ -74,5 +74,19 @@ describe("aggregateByAbility", () => {
     const stats = aggregateByAbility([snapshot(1, true, [{ card_id: 1, copies: 1 }])], cards, 5);
 
     expect(byKey(stats, "afflux")).toBeUndefined();
+  });
+});
+
+describe("aggregateByCardAttribute — race", () => {
+  it("une carte bi-race compte pour ses deux races", () => {
+    const cards = new Map([[1, card(1, { race: "Elfes", race2: "Aigles Géants" })], [2, card(2, { race: "Elfes" })]]);
+    const stats = aggregateByCardAttribute(
+      [snapshot(1, true, [{ card_id: 1, copies: 1 }, { card_id: 2, copies: 2 }])],
+      cards, "race", 0,
+    );
+    const par = Object.fromEntries(stats.map((s) => [s.key, s]));
+    expect(par["Elfes"].copies_total).toBe(3);
+    expect(par["Aigles Géants"].copies_total).toBe(1);
+    expect(par["Elfes"].games_count).toBe(1);
   });
 });

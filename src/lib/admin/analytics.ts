@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { didPlayerStart } from "@/lib/game/first-player";
 import { fetchAllRows } from '@/lib/supabase/fetchAllRows';
+import { cardRaces } from '@/lib/game/races';
 
 export type Period = '7d' | '30d' | '90d' | 'all';
 
@@ -51,6 +52,8 @@ export interface CardRow {
   name: string;
   faction: string | null;
   race: string | null;
+  /** Seconde race (unité bi-race) : la carte compte pour ses DEUX races. */
+  race2?: string | null;
   clan: string | null;
   keywords: string[] | null;
   // Chaque entrée de la colonne `spell_keywords` est un SpellKeywordInstance :
@@ -127,7 +130,7 @@ export async function fetchCards(supabase: SupabaseClient): Promise<Map<number, 
     (from, to) =>
       supabase
         .from('cards')
-        .select('id, name, faction, race, clan, keywords, spell_keywords, image_url')
+        .select('id, name, faction, race, race2, clan, keywords, spell_keywords, image_url')
         .order('id')
         .range(from, to),
     { label: 'Lecture du catalogue' },
@@ -174,17 +177,18 @@ export function aggregateByCardAttribute(
     for (const entry of snap.cards) {
       const card = cards.get(entry.card_id);
       if (!card) continue;
-      const value = card[attribute];
-      if (!value) continue;
-      let stat = map.get(value);
-      if (!stat) {
-        stat = { key: value, label: value, wins: 0, losses: 0, winrate: 0, games_count: 0, copies_total: 0 };
-        map.set(value, stat);
+      const values = attribute === 'race' ? cardRaces(card) : (card[attribute] ? [card[attribute]!] : []);
+      for (const value of values) {
+        let stat = map.get(value);
+        if (!stat) {
+          stat = { key: value, label: value, wins: 0, losses: 0, winrate: 0, games_count: 0, copies_total: 0 };
+          map.set(value, stat);
+        }
+        stat.copies_total += entry.copies;
+        if (snap.is_winner) stat.wins += entry.copies;
+        else stat.losses += entry.copies;
+        seenInThisDeck.add(value);
       }
-      stat.copies_total += entry.copies;
-      if (snap.is_winner) stat.wins += entry.copies;
-      else stat.losses += entry.copies;
-      seenInThisDeck.add(value);
     }
     for (const value of seenInThisDeck) {
       map.get(value)!.games_count += 1;
