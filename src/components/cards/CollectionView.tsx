@@ -649,7 +649,8 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
                       <div className={estIndisponible(item.card) ? "opacity-50 grayscale" : undefined}>{inner}</div>
                       <CardStatusBadge
                         card={item.card}
-                        style={{ position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)", zIndex: 5, fontSize: 10 }}
+                        overlay
+                        style={{ position: "absolute", top: "16%", left: 8, zIndex: 5, fontSize: 10 }}
                       />
                     </div>
                   </div>

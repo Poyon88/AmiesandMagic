@@ -17,9 +17,13 @@ export const CARD_STATUS_COLORS: Record<CardStatus, string> = {
 export function CardStatusBadge({
   card,
   style,
+  overlay = false,
 }: {
   card: { status?: CardStatus | null; status_reason?: string | null };
   style?: React.CSSProperties;
+  /** Posée SUR l'illustration d'une carte : fond translucide. À placer sous
+   *  le cadre du nom (top ≈ 16 %), jamais par-dessus le nom ni le coût. */
+  overlay?: boolean;
 }) {
   const t = useTranslations("cardStatus");
   const status = cardStatusOf(card);
@@ -31,8 +35,9 @@ export function CardStatusBadge({
         display: "inline-block",
         padding: "1px 6px",
         borderRadius: 999,
-        background: CARD_STATUS_COLORS[status],
+        background: overlay ? `${CARD_STATUS_COLORS[status]}59` : CARD_STATUS_COLORS[status],
         color: "#fff",
+        ...(overlay ? { textShadow: "0 0 2px #000, 0 0 3px #000", border: `1px solid ${CARD_STATUS_COLORS[status]}99` } : {}),
         fontSize: 9,
         fontWeight: 700,
         letterSpacing: 0.3,
