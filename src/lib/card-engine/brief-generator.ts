@@ -17,7 +17,7 @@ import {
   CURATED_KEYWORD_MODES, FACTIONS, KEYWORDS, MANA_WEIGHTS, MANA_WEIGHTS_BY_RARITY, RARITY_MAP,
   deriveRaceForClan, getClanNamesForRace, getRacesForClan,
 } from "./constants";
-import { getAvailableKeywords, getStatWeights } from "./generator";
+import { getAvailableKeywords, getStatWeights, POIDS_HORS_PROFIL, resserrerProfil } from "./generator";
 import { regleRace } from "./race-abilities";
 import { getBareme, type Bareme } from "./bareme";
 import { scoreCarte, type ScoreCarte } from "./card-points";
@@ -268,7 +268,11 @@ export function planBatch(brief: CardBrief, rng: Rng): BatchPlan {
   for (const id of ordre) {
     const demande = quotasBruts[id] ?? 0;
     let pose = cards.filter((c) => c.abilities.includes(id)).length; // déjà obligatoire
-    const cibles = shuffle(compatibles(id), rng).sort((a, b) => libre(b.index) - libre(a.index));
+    // Les races qui portent le mieux la capacité d'abord (Vol → Chiroptères
+    // avant Homuncules), puis les cartes qui ont le plus de place. Le mélange
+    // préalable départage les ex æquo au hasard.
+    const cibles = shuffle(compatibles(id), rng)
+      .sort((a, b) => affinite(b, id) - affinite(a, id) || libre(b.index) - libre(a.index));
     for (const c of cibles) {
       if (pose >= demande) break;
       c.abilities.push(id); c.locked.push(id); pose++;
@@ -351,7 +355,26 @@ function tirerComplement(c: PlannedCard, exclues: Set<string>, rng: Rng): string
     .filter((a) => sortGenerable(a.id) && !exclues.has(a.id) && !c.abilities.includes(a.id))
     .filter((a) => (MODIFICATEURS_DE_DEGATS.has(a.id) ? aDegats : META_DE_SORT.has(a.id) ? c.abilities.length > 0 : true))
     .filter((a) => (a.creature?.minTier ?? 0) <= tier && !fac.forbiddenKeywords.includes(a.creature?.label ?? a.label));
-  return pickWeighted(dispo, (a) => fac.likelyKeywords[a.creature?.label ?? a.label] ?? 0.12, rng)?.id ?? null;
+  const profil = (a: (typeof dispo)[number]) => fac.likelyKeywords[a.creature?.label ?? a.label];
+  const ponderes = resserrerProfil(
+    dispo.map((a) => ({ a, w: profil(a) ?? POIDS_HORS_PROFIL, profiled: profil(a) !== undefined })),
+    (x) => x.w, (x) => x.profiled, (x, w) => ({ ...x, w }),
+  );
+  return pickWeighted(ponderes, (x) => x.w, rng)?.a.id ?? null;
+}
+
+/** Affinité d'une carte pour une capacité : son poids de tirage selon le
+ *  profil clan > race > faction (0 si la capacité ne lui est pas tirable). */
+export function affinite(c: PlannedCard, id: string): number {
+  if (c.type === "Unité") {
+    const label = labelUnite(id);
+    if (!label) return 0;
+    const k = getAvailableKeywords(c.faction, c.rarity, c.race ?? undefined, c.clan ?? undefined).find((k) => k.id === label);
+    // Poids BRUT (non resserré) : comparable à celui d'une Action.
+    return !k ? 0 : k.profiled ? k.weight : POIDS_HORS_PROFIL;
+  }
+  const a = ABILITIES[id];
+  return FACTIONS[c.faction]?.likelyKeywords[a?.creature?.label ?? a?.label ?? ""] ?? POIDS_HORS_PROFIL;
 }
 
 // ─── Équilibrage au barème ──────────────────────────────────────────────────

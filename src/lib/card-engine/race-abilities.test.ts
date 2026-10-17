@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FACTIONS, getAllClanNames, getAllRaces, KEYWORDS } from "./constants";
+import { RACE_VISUALS } from "../ai/race-visuals";
 import { CLAN_ABILITY_RULES, RACE_ABILITY_RULES, regleRace } from "./race-abilities";
 
 describe("RACE_ABILITY_RULES", () => {
@@ -29,5 +30,13 @@ describe("RACE_ABILITY_RULES", () => {
     for (const c of Object.keys(CLAN_ABILITY_RULES)) expect(clans.has(c), c).toBe(true);
     expect(regleRace("Élémentaire", "Le Souffle des Cimes").obligatoires).toContain("Vol");
     expect(regleRace("Élémentaire", "Le Socle du Monde").interdits).toContain("Vol");
+  });
+});
+
+describe("races ailées", () => {
+  it("toute race dessinée avec des ailes a Vol obligatoire", () => {
+    const ailees = Object.entries(RACE_VISUALS).filter(([, d]) => /\bwing(s|ed|span)?\b/i.test(d)).map(([r]) => r);
+    expect(ailees.length).toBeGreaterThan(5);
+    for (const race of ailees) expect(regleRace(race).obligatoires, race).toContain("Vol");
   });
 });

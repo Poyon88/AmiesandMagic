@@ -4,8 +4,9 @@ import { sanitizeBrief } from '@/lib/card-engine/brief';
 import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide';
 import { RACE_TYPICAL_GEAR, RACE_VISUALS } from '@/lib/ai/race-visuals';
 import {
-  FLAVOR_FORMS, FLAVOR_TONES, MOMENTS, NAME_FORMS, SUBJECT_KINDS, SUBJECT_KINDS_UNITE, TENUES, chargerCatalogue, repartir,
-  resumeCatalogue, sanitizeConcept, sanitizeConcepts, type CardConcept,
+  ECHELLE_LABELS, ECHELLE_NOMS, ECHELLES_ACTION, ECHELLES_UNITE, FLAVOR_FORMS, FLAVOR_TONES, MOMENTS, NAME_FORMS, SUBJECT_KINDS,
+  SUBJECT_KINDS_UNITE, TENUES, chargerCatalogue, echellePourCarte, kindPourEchelle, repartir, repartirEchelles,
+  resumeCatalogue, sanitizeConcept, sanitizeConcepts, type CardConcept, type Echelle,
 } from '@/lib/ai/card-concepts';
 
 // POST /api/forge/concepts — ADMIN — plan des CONCEPTS d'un lot de Création
@@ -39,18 +40,22 @@ function lireCartes(v: unknown): CartePlan[] {
   });
 }
 
-/** Moment et tenue TIRÉS pour chaque carte (en cycles, cf. `repartir`) : laissés
- *  au choix de Claude, ils retombaient sur la lumière signature du clan. */
-interface Axes { moment: string; tenue: string }
+/** Moment, tenue et échelle TIRÉS pour chaque carte (cf. `repartir`,
+ *  `repartirEchelles`) : laissés au choix de Claude, ils retombaient sur la
+ *  lumière signature du clan et sur un personnage en gros plan. */
+interface Axes { moment: string; tenue: string; echelle: Echelle }
 
 const ligneCarte = (c: CartePlan, i: number, axes?: Axes) =>
-  `${i + 1}. ${c.type} ${c.rarity}, ${c.mana} mana, ${c.race ?? 'sans race'}${c.clan ? ` / ${c.clan}` : ''}${c.type === 'Unité' ? `, genre ${c.gender}` : ''} — ${c.mechanics.join(' | ') || 'sans capacité'}${axes ? ` — MOMENT : ${axes.moment} — TENUE : ${axes.tenue}` : ''}`;
+  `${i + 1}. ${c.type} ${c.rarity}, ${c.mana} mana, ${c.race ?? 'sans race'}${c.clan ? ` / ${c.clan}` : ''}${c.type === 'Unité' ? `, genre ${c.gender}` : ''} — ${c.mechanics.join(' | ') || 'sans capacité'}${axes ? ` — ÉCHELLE : ${ECHELLE_LABELS[axes.echelle]} — MOMENT : ${axes.moment} — TENUE : ${axes.tenue}` : ''}`;
 
 const ligneConcept = (c: CardConcept, i: number) =>
-  `${i + 1}. [${c.subjectKind}] ${c.sujet} — ${c.scene} — ${c.moment || '?'} — ${c.tenue || '?'} — ${c.cadrage} — nom : ${c.ideeNom} (${c.formeNom}) — ambiance : ${c.formeAmbiance}`;
+  `${i + 1}. [${c.subjectKind}${c.echelle ? `, ${ECHELLE_LABELS[c.echelle]}` : ''}] ${c.sujet} — ${c.scene} — ${c.moment || '?'} — ${c.tenue || '?'} — ${c.cadrage} — nom : ${c.ideeNom} (${c.formeNom}) — ambiance : ${c.formeAmbiance}`;
 
-/** Le tirage fait foi si Claude omet le champ. */
-const avecAxes = (c: CardConcept, a: Axes): CardConcept => ({ ...c, moment: c.moment || a.moment, tenue: c.tenue || a.tenue });
+/** Le tirage fait foi si Claude omet le champ ; l'échelle, toujours. */
+const avecAxes = (c: CardConcept, a: Axes): CardConcept => ({
+  ...c, moment: c.moment || a.moment, tenue: c.tenue || a.tenue,
+  echelle: a.echelle, subjectKind: kindPourEchelle(a.echelle, c.subjectKind),
+});
 
 async function appelClaude(system: string, user: string, maxTokens: number): Promise<unknown> {
   let lastError = 'Erreur inconnue';
@@ -122,22 +127,24 @@ OBJECTIF : des cartes ORIGINALES et DIFFÉRENTES les unes des autres, qui compl�
 
 RÈGLES
 1. Le concept ILLUSTRE la mécanique : lis les capacités, déclencheurs et coûts (Provocation → quelqu'un qui tient la ligne ; coût de sacrifice → un rituel ou un pacte ; « à la mort » → martyr, kamikaze, héritage ; pioche → érudit, éclaireur, archiviste…). Deux cartes aux mécaniques proches reçoivent quand même des sujets nettement différents.
-2. Sujets LARGES : métiers, castes, âges, tempéraments, montures, machines et constructions servies, groupes ou portraits isolés. Une race n'est pas « un guerrier en armure » : au plus un tiers des Unités sont des combattants en armure. Pour une Action : un lieu, un objet, un phénomène ou un événement, avec ou sans personnage.
+2. Sujets LARGES : métiers, castes, âges, tempéraments, montures, machines et constructions servies. L'ÉCHELLE de la scène est imposée (règle 5 ter). Une race n'est pas « un guerrier en armure » : au plus un tiers des Unités sont des combattants en armure. Pour une Action : un lieu, un objet, un phénomène ou un événement, avec ou sans personnage.
 3. La race de chaque carte est NON NÉGOCIABLE : tout personnage montré en est. Ne prends jamais comme sujet une créature d'une autre race du jeu.
 4. subjectKind ∈ ${SUBJECT_KINDS.map((k) => `"${k}"`).join(', ')} ; une Unité est seulement ${SUBJECT_KINDS_UNITE.map((k) => `"${k}"`).join(', ')}.
-5. Répartis dans le lot : les sujets, les cadrages (portrait serré, plan moyen, plan large, contre-plongée, vue plongeante, silhouette en contre-jour…), les décors, les instants (avant, pendant, après l'action) et les éléments du RÉPERTOIRE de la charte (un ou deux par carte, jamais les mêmes partout ; tu peux en inventer dans le même esprit). Le décor signature du clan (son volcan, sa cité, sa forêt…) n'apparaît que sur une carte sur trois au plus.
+5. Répartis dans le lot : les sujets, les cadrages (plan d'ensemble, plan large, plan moyen, en pied, contre-plongée, vue plongeante, de dos, silhouette en contre-jour… ; le gros plan sur un visage reste rare), les décors, les instants (avant, pendant, après l'action) et les éléments du RÉPERTOIRE de la charte (un ou deux par carte, jamais les mêmes partout ; tu peux en inventer dans le même esprit). Le décor signature du clan (son volcan, sa cité, sa forêt…) n'apparaît que sur une carte sur trois au plus.
 5 bis. MOMENT et TENUE sont tirés au sort pour chaque carte (indiqués dans la liste) : reprends-les tels quels dans "moment" et "tenue", en les précisant pour la carte (« pluie battante sur le marché aux poissons », « tenue de travail : pagne et tablier de pêcheur »). Le moment fixe la lumière et les couleurs de l'image, la palette du clan n'y met que des accents. Sous terre ou en intérieur, transpose-le (une aube vue par un puits de lumière). Seule exception : si la charte INTERDIT ce moment ou si la mécanique l'exige, prends le plus proche et dis pourquoi dans "moment". La tenue vient des matériaux de la charte ou s'invente dans le même esprit, différente d'une carte à l'autre ; pour une bête, une machine, un esprit ou un lieu, c'est un harnais, des parures, un ornement ou rien.
+5 ter. ÉCHELLE tirée au sort pour chaque carte (indiquée dans la liste) : reprends-la telle quelle dans "echelle" (code : ${[...ECHELLES_UNITE, ...ECHELLES_ACTION].map((e) => `"${e}" = ${ECHELLE_LABELS[e]}`).join(', ')}) et construis le sujet, la scène et le cadrage pour elle. « entourage » : une figure centrale avec serviteurs, gardes ou suppliants autour ; « groupe » : trois à dix membres sans héros unique ; « armée » : des dizaines de silhouettes dans un vaste décor, cadrage large obligatoire. Pour une Action : « sort » = la magie visible en train d'opérer ; « manœuvre » = des troupes en action (charge, embuscade, mur de boucliers, rempart tenu) ; « lieu » = le lieu ou l'événement domine, personnages minuscules ou absents. Choisis toi-même le point de vue, compatible avec l'échelle (jamais de gros plan sur une armée). Pour une créature colossale entourée, les petites figures autour donnent l'échelle.
 6. NOMS : la forme dépend de la rareté — Commune = nom GÉNÉRIQUE, jamais de nom propre ; au-dessus = édition limitée = nom PROPRE ou unité spécifique. Formes à faire tourner :
    - Unité, nom propre : ${NAME_FORMS.propre.unite.join(' ; ')}
    - Action, nom propre : ${NAME_FORMS.propre.action.join(' ; ')}
    - Unité commune : ${NAME_FORMS.generique.unite.join(' ; ')}
    - Action commune : ${NAME_FORMS.generique.action.join(' ; ')}
+   Le nom suit l'ÉCHELLE d'une Unité : ${ECHELLES_UNITE.map((e) => `${ECHELLE_LABELS[e]} → ${ECHELLE_NOMS[e]}`).join(' ; ')}.
    Deux noms du lot ne commencent JAMAIS par le même mot ; aucun nom du catalogue n'est repris. Accorde le nom au genre de l'Unité.
 7. LEXIQUE : invente quelques noms de lieux, lignées, divinités ou événements propres au lot (6 à 12), à réutiliser avec MODÉRATION (un même nom au plus sur deux ou trois cartes).
 8. TEXTE D'AMBIANCE : fais tourner les formes (${FLAVOR_FORMS.join(', ')}) et les tons (${FLAVOR_TONES.join(', ')}) ; il parle du monde, jamais des règles (aucune référence aux cartes, au deck, au mana ni aux noms de capacités).
 
 Réponds UNIQUEMENT par un objet JSON valide, sans backticks :
-{"lexique": ["…"], "concepts": [{"subjectKind": "membre", "sujet": "qui ou quoi, précis (français)", "role": "ce que sa mécanique raconte", "scene": "où, quel instant", "cadrage": "…", "elementsCharte": "1-2 éléments du répertoire", "moment": "…", "tenue": "…", "ideeNom": "…", "formeNom": "…", "formeAmbiance": "…", "ton": "…"}]}
+{"lexique": ["…"], "concepts": [{"echelle": "…", "subjectKind": "membre", "sujet": "qui ou quoi, précis (français)", "role": "ce que sa mécanique raconte", "scene": "où, quel instant", "cadrage": "…", "elementsCharte": "1-2 éléments du répertoire", "moment": "…", "tenue": "…", "ideeNom": "…", "formeNom": "…", "formeAmbiance": "…", "ton": "…"}]}
 Un concept par carte, dans l'ordre exact des cartes. Concis : chaque champ tient en une courte phrase.`;
 
   const contexte = `THÈME DU LOT (précisions de l'auteur) : ${brief.notes || 'aucune'}
@@ -161,7 +168,9 @@ ${catalogue.join('\n') || '(vide)'}`;
       const lexique = (Array.isArray(body?.lexique) ? body.lexique : []).filter((x: unknown) => typeof x === 'string');
       const actuel = Array.isArray(body?.concepts) ? sanitizeConcept(body.concepts[index], cartes[index].type) : null;
       // Nouveau tirage, différent du moment et de la tenue rejetés.
+      // L'échelle tirée est GARDÉE : elle préserve la répartition du lot.
       const axesRegen: Axes = {
+        echelle: actuel?.echelle ?? echellePourCarte(cartes[index]),
         moment: repartir(MOMENTS.filter((m) => !actuel?.moment.startsWith(m)), 1)[0],
         tenue: repartir(TENUES.filter((t) => !actuel?.tenue.startsWith(t)), 1)[0],
       };
@@ -188,7 +197,8 @@ ${actuel ? `CONCEPT ACTUEL, que l'auteur REJETTE : ${ligneConcept(actuel, index)
     const warnings: string[] = [];
     const moments = repartir(MOMENTS, cartes.length);
     const tenues = repartir(TENUES, cartes.length);
-    const axes: Axes[] = cartes.map((_, i) => ({ moment: moments[i], tenue: tenues[i] }));
+    const echelles = repartirEchelles(cartes);
+    const axes: Axes[] = cartes.map((_, i) => ({ moment: moments[i], tenue: tenues[i], echelle: echelles[i] }));
     for (let debut = 0; debut < cartes.length; debut += TRANCHE) {
       const tranche = cartes.slice(debut, debut + TRANCHE);
       const user = `${contexte}

@@ -23,7 +23,10 @@ import { equilibrer, planBatch, seededRng, type BalancedCard, type BatchPlan } f
 import { getBareme } from "@/lib/card-engine/bareme";
 import { cartepourConcept, creerCarte } from "@/lib/card-forge/assisted-pipeline";
 import { BULK_IMAGE_MODELS, type BulkImageModel } from "@/lib/ai/image-models";
-import { SUBJECT_KINDS, SUBJECT_KINDS_UNITE, SUBJECT_KIND_LABELS, type CardConcept, type ConceptPlan } from "@/lib/ai/card-concepts";
+import {
+  ECHELLES_ACTION, ECHELLES_UNITE, ECHELLE_LABELS, SUBJECT_KINDS, SUBJECT_KINDS_UNITE, SUBJECT_KIND_LABELS, kindPourEchelle,
+  type CardConcept, type ConceptPlan, type Echelle,
+} from "@/lib/ai/card-concepts";
 
 interface Msg { role: "user" | "assistant"; content: string }
 interface BriefRow { id: number; title: string; brief: CardBrief; created_at: string; updated_at: string; created_cards: number }
@@ -286,6 +289,10 @@ export default function AssistedForge() {
   const modifierConcept = (i: number, champ: keyof CardConcept, valeur: string) =>
     setPlan((p) => p && { ...p, concepts: p.concepts.map((c, j) => (j === i ? { ...c, [champ]: valeur } : c)) });
 
+  /** Changer l'échelle remet une nature de sujet compatible. */
+  const modifierEchelle = (i: number, echelle: Echelle) =>
+    setPlan((p) => p && { ...p, concepts: p.concepts.map((c, j) => (j === i ? { ...c, echelle, subjectKind: kindPourEchelle(echelle, c.subjectKind) } : c)) });
+
   const lancer = async () => {
     if (enCours) return;
     setErreur(null);
@@ -433,12 +440,17 @@ export default function AssistedForge() {
                 </label>
               );
               const types = b?.plan.type === "Unité" ? SUBJECT_KINDS_UNITE : SUBJECT_KINDS;
+              const echelles = b?.plan.type === "Unité" ? ECHELLES_UNITE : ECHELLES_ACTION;
               return (
                 <div key={i} style={{ border: "1px solid #eee", borderRadius: 6, padding: 8, opacity: conceptsAttente === i ? 0.5 : 1 }}>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "#555" }}>
                     <strong>#{i + 1}</strong>
                     <span>{b ? `${b.plan.type} ${b.plan.rarity} · ${b.plan.mana} mana${b.plan.type === "Unité" ? ` · ${b.attack}/${b.health} · ${b.plan.gender}` : ""}` : "—"}</span>
                     <span style={{ flex: 1 }} />
+                    <select value={c.echelle ?? ""} disabled={enCours} onChange={(e) => modifierEchelle(i, e.target.value as Echelle)} title="Échelle de la scène" style={{ fontSize: 10 }}>
+                      {!c.echelle && <option value="">échelle libre</option>}
+                      {echelles.map((e) => <option key={e} value={e}>{ECHELLE_LABELS[e]}</option>)}
+                    </select>
                     <select value={c.subjectKind} disabled={enCours} onChange={(e) => modifierConcept(i, "subjectKind", e.target.value)} style={{ fontSize: 10 }}>
                       {types.map((k) => <option key={k} value={k}>{SUBJECT_KIND_LABELS[k]}</option>)}
                     </select>

@@ -74,9 +74,42 @@ export function getAvailableKeywords(factionId: string, rarityId: string, raceId
   const raceKws = raceId ? (faction.raceProfiles?.[raceId] ?? getTransverseRaceProfile(raceId))?.likelyKeywords : undefined;
   // Cohérence de race/clan (race-abilities.ts) : un interdit n'est jamais tiré.
   const { interdits } = regleRace(raceId, clanId);
-  return Object.entries(KEYWORDS)
+  const dispo = Object.entries(KEYWORDS)
     .filter(([id, kw]) => kw.minTier <= tier && !faction.forbiddenKeywords.includes(id) && !interdits.includes(id))
-    .map(([id, kw]) => ({ id, ...kw, weight: clanKws?.[id] ?? raceKws?.[id] ?? faction.likelyKeywords[id] ?? 0.12 }));
+    .map(([id, kw]) => {
+      // L'ombrelle de faction ne compte qu'à moitié quand la race ou le clan
+      // a son propre profil : sinon le Poison des Morts-Vivants passait
+      // devant l'Armure d'une Gargouille.
+      const propre = clanKws?.[id] ?? raceKws?.[id];
+      const fac = faction.likelyKeywords[id];
+      const profil = propre ?? (fac !== undefined && (clanKws || raceKws) ? fac * 0.5 : fac);
+      return { id, ...kw, weight: profil ?? POIDS_HORS_PROFIL, profiled: profil !== undefined };
+    });
+  return resserrerProfil(dispo, (k) => k.weight, (k) => k.profiled, (k, w) => ({ ...k, weight: w }));
+}
+
+/** Poids d'une capacité absente de tout profil (clan, race, faction). */
+export const POIDS_HORS_PROFIL = 0.12;
+/** Part MAXIMALE du tirage laissée aux capacités hors profil. Avec un poids
+ *  fixe de 0,12 sur ~85 capacités, le hors-profil pesait ~80 % du tirage et
+ *  noyait les 5-7 capacités typiques de la race (mesuré le 2026-10-17 :
+ *  22 % seulement des tirages d'une Gargouille venaient de son profil). */
+export const PART_HORS_PROFIL = 0.25;
+
+/** Réduit le poids cumulé du hors-profil à `part` du total (sans jamais
+ *  l'augmenter). Sans profil du tout, rien ne change : tirage uniforme. */
+export function resserrerProfil<T>(
+  items: T[],
+  poids: (t: T) => number,
+  estProfil: (t: T) => boolean,
+  avecPoids: (t: T, w: number) => T,
+  part = PART_HORS_PROFIL,
+): T[] {
+  const p = items.filter(estProfil).reduce((s, t) => s + poids(t), 0);
+  const h = items.filter((t) => !estProfil(t)).reduce((s, t) => s + poids(t), 0);
+  if (p <= 0 || h <= 0 || h / (p + h) <= part) return items;
+  const k = (part * p) / ((1 - part) * h);
+  return items.map((t) => (estProfil(t) ? t : avecPoids(t, poids(t) * k)));
 }
 
 function pickWeightedKeyword(available: ReturnType<typeof getAvailableKeywords>, alreadyPicked: string[]) {

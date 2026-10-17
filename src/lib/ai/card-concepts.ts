@@ -20,8 +20,140 @@ export const SUBJECT_KIND_LABELS: Record<SubjectKind, string> = {
   machine: "une machine ou une construction servie", lieu: "un lieu", objet: "un objet", evenement: "un événement",
 };
 
+/** ÉCHELLE de la scène, tirée au sort par carte (2026-10-16) : laissée au
+ *  choix de Claude, presque toutes les illustrations étaient un personnage en
+ *  gros plan. Une Unité montre une figure seule, entourée, un groupe ou une
+ *  armée ; une Action un sort, une manœuvre ou un lieu/événement. */
+export const ECHELLES_UNITE = ["seule", "entourage", "groupe", "armee"] as const;
+export const ECHELLES_ACTION = ["sort", "manoeuvre", "lieu"] as const;
+export const ECHELLES = [...ECHELLES_UNITE, ...ECHELLES_ACTION] as const;
+export type Echelle = typeof ECHELLES[number];
+
+export const ECHELLE_LABELS: Record<Echelle, string> = {
+  seule: "figure seule", entourage: "figure et son entourage", groupe: "groupe, unité",
+  armee: "armée, foule dans un vaste décor", sort: "sort en train d'opérer",
+  manoeuvre: "manœuvre de troupes", lieu: "lieu ou événement",
+};
+
+/** Consigne d'image (anglais, reprise dans l'illustrationPrompt). */
+export const ECHELLE_CONSIGNES: Record<Echelle, string> = {
+  seule: "a single figure alone in the scene, shown whole within its setting (not a face close-up)",
+  entourage: "one central figure surrounded by attendants, guards, servants or supplicants who give it rank and scale",
+  groupe: "a band of three to ten members acting together, no single hero, each figure readable",
+  armee: "a host of dozens of figures spread across a vast setting, individuals small, the mass and the landscape tell the story",
+  sort: "magic visibly at work: the spell's effect fills the scene, with or without its caster",
+  manoeuvre: "troops in action: a charge, an ambush, a shield wall, a formation, a rampart held — several figures, movement",
+  lieu: "the place or the event itself dominates the image (a building, a landscape, a rite, a feast), figures tiny or absent",
+};
+
+/** Contrainte de nom : une Unité en groupe ou en armée porte un nom collectif. */
+export const ECHELLE_NOMS: Partial<Record<Echelle, string>> = {
+  seule: "nom d'UN individu ou d'UNE créature (singulier)",
+  entourage: "nom de la figure centrale (singulier), pas de son entourage",
+  groupe: "nom COLLECTIF d'une troupe (« Les Veilleurs de Sang », « La Garde des Mille Serments », « Escouade… »)",
+  armee: "nom COLLECTIF d'une armée ou d'une foule (« Légion… », « L'Ost de… », « La Horde… », « Le Cortège… »)",
+};
+
+/** Créatures par essence grandes et puissantes : plus souvent seules, jamais
+ *  en armée sous 9 de mana. Clés de race, ou de clan pour les Élémentaires. */
+export const RACES_COLOSSALES: ReadonlySet<string> = new Set([
+  "Géants", "Dragons", "Griffons", "Hommes-Arbres", "Trolls", "Ogres", "Golems", "Aigles Géants", "Phoenix",
+  "Sphinx", "Léviathans", "Araignées Géantes", "Bêtes Chtoniennes", "Chimères nécrotiques", "Qilins", "Oni", "Démons",
+  "La Colère des Flammes", "Le Socle du Monde", "La Vague Sans Fin", "Le Souffle des Cimes",
+]);
+
+export interface CarteEchelle { type: string; rarity: string; mana: number; race?: string | null; clan?: string | null; heros?: boolean }
+
+type Poids = Partial<Record<Echelle, number>>;
+// Unités, par coût : seule / entourage / groupe / armée.
+const POIDS_COUT: [number, Poids][] = [
+  [2, { seule: 80, entourage: 10, groupe: 10, armee: 0 }],
+  [4, { seule: 50, entourage: 15, groupe: 30, armee: 5 }],
+  [6, { seule: 30, entourage: 20, groupe: 35, armee: 15 }],
+  [8, { seule: 20, entourage: 20, groupe: 30, armee: 30 }],
+  [Infinity, { seule: 15, entourage: 20, groupe: 25, armee: 40 }],
+];
+const POIDS_HEROS: Poids = { seule: 60, entourage: 40 };
+const POIDS_COLOSSE: Poids = { seule: 70, entourage: 20, groupe: 10, armee: 0 };
+const POIDS_COLOSSE_9: Poids = { seule: 60, entourage: 15, groupe: 15, armee: 10 };
+const POIDS_ACTION: Poids = { sort: 45, manoeuvre: 35, lieu: 20 };
+
+export const estColossale = (c: Pick<CarteEchelle, "race" | "clan">) =>
+  !!((c.race && RACES_COLOSSALES.has(c.race)) || (c.clan && RACES_COLOSSALES.has(c.clan)));
+
+/** Poids des échelles pour une carte. Priorité : héros > colossale > coût. */
+export function poidsEchelle(c: CarteEchelle): Poids {
+  if (c.type === "Action") return POIDS_ACTION;
+  if (c.heros) return POIDS_HEROS;
+  if (estColossale(c)) return c.mana >= 9 ? POIDS_COLOSSE_9 : POIDS_COLOSSE;
+  return POIDS_COUT.find(([max]) => c.mana <= max)![1];
+}
+
+function tirerPondere(p: Poids, tirage: () => number): Echelle {
+  const entrees = Object.entries(p).filter(([, w]) => (w ?? 0) > 0) as [Echelle, number][];
+  const total = entrees.reduce((s, [, w]) => s + w, 0);
+  let x = tirage() * total;
+  for (const [e, w] of entrees) if ((x -= w) < 0) return e;
+  return entrees[entrees.length - 1][0];
+}
+
+/** Un seul tirage pondéré (forge à l'unité). Sans plan de lot, une Légendaire
+ *  est traitée en héros. */
+export const echellePourCarte = (c: CarteEchelle, tirage: () => number = Math.random): Echelle =>
+  tirerPondere(poidsEchelle({ ...c, heros: c.heros ?? c.rarity === "Légendaire" }), tirage);
+
+/** Échelles d'un lot, tirage STRATIFIÉ : les cartes de même barème sont
+ *  réparties au plus fort reste (10 cartes à 1-2 mana → 8 seules, 1 entourée,
+ *  1 groupe), le reliquat tiré au sort, puis l'ordre mélangé. Héros : toutes
+ *  les Légendaires et une Épique sur deux (alternance tirée au sort). */
+export function repartirEchelles(cartes: CarteEchelle[], tirage: () => number = Math.random): Echelle[] {
+  let epique = tirage() < 0.5;
+  const avecHeros = cartes.map((c) => {
+    if (c.type === "Action") return { ...c, heros: false };
+    if (c.heros != null) return c;
+    if (c.rarity === "Légendaire") return { ...c, heros: true };
+    if (c.rarity === "Épique") { epique = !epique; return { ...c, heros: epique }; }
+    return { ...c, heros: false };
+  });
+  const groupes = new Map<Poids, number[]>();
+  avecHeros.forEach((c, i) => {
+    const p = poidsEchelle(c);
+    groupes.set(p, [...(groupes.get(p) ?? []), i]);
+  });
+  const out: Echelle[] = new Array(cartes.length);
+  for (const [p, indices] of groupes) {
+    const n = indices.length;
+    const entrees = Object.entries(p).filter(([, w]) => (w ?? 0) > 0) as [Echelle, number][];
+    const total = entrees.reduce((s, [, w]) => s + w, 0);
+    const parts = entrees.map(([e, w]) => ({ e, exact: (n * w) / total }));
+    const liste: Echelle[] = parts.flatMap(({ e, exact }) => Array(Math.floor(exact)).fill(e));
+    // Reliquat : tiré au prorata des restes, sans remise.
+    const restes = Object.fromEntries(parts.map(({ e, exact }) => [e, exact - Math.floor(exact)])) as Poids;
+    while (liste.length < n) {
+      const e = tirerPondere(restes, tirage);
+      liste.push(e);
+      restes[e] = 0;
+      if (!Object.values(restes).some((w) => (w ?? 0) > 0)) Object.assign(restes, Object.fromEntries(entrees));
+    }
+    repartir(liste, n, tirage).forEach((e, k) => { out[indices[k]] = e; });
+  }
+  return out;
+}
+
+/** Nature du sujet cohérente avec l'échelle (celle de Claude si elle l'est déjà). */
+export function kindPourEchelle(e: Echelle, kind: SubjectKind | null): SubjectKind {
+  switch (e) {
+    case "seule": case "entourage": return kind && ["membre", "monture", "machine"].includes(kind) ? kind : "membre";
+    case "groupe": case "armee": case "manoeuvre": return "groupe";
+    case "lieu": return kind && ["lieu", "evenement", "objet"].includes(kind) ? kind : "lieu";
+    case "sort": return kind && kind !== "groupe" ? kind : "evenement";
+  }
+}
+
 export interface CardConcept {
   subjectKind: SubjectKind;
+  /** Échelle tirée (absente dans les plans enregistrés avant 2026-10-16). */
+  echelle?: Echelle;
   /** Qui ou quoi (« vieille forgeronne aveugle », « wagonnet piégé »). */
   sujet: string;
   /** Ce que la carte FAIT, lu dans sa mécanique (« tient la brèche », « se sacrifie »). */
@@ -60,7 +192,9 @@ export function sanitizeConcept(raw: unknown, type: string): CardConcept | null 
   let kind = (SUBJECT_KINDS as readonly string[]).includes(r.subjectKind as string) ? r.subjectKind as SubjectKind : null;
   if (type === "Unité" && (!kind || !SUBJECT_KINDS_UNITE.includes(kind))) kind = "membre";
   if (!kind) kind = "evenement";
-  const c = { subjectKind: kind } as CardConcept;
+  const permises: readonly string[] = type === "Unité" ? ECHELLES_UNITE : type === "Action" ? ECHELLES_ACTION : ECHELLES;
+  const echelle = permises.includes(r.echelle as string) ? r.echelle as Echelle : undefined;
+  const c = { subjectKind: echelle ? kindPourEchelle(echelle, kind) : kind, ...(echelle ? { echelle } : {}) } as CardConcept;
   for (const k of CHAMPS_TEXTE) c[k] = texte(r[k]);
   return c.sujet ? c : null;
 }
@@ -182,11 +316,18 @@ export function nameRuleText(rule: "propre" | "generique", type: string): string
     : `action COMMUNE : nom générique d'action, JAMAIS de nom propre. Formes possibles : ${formes}.`;
 }
 
+/** Échelle imposée, sa consigne d'image et, pour une Unité, sa forme de nom. */
+export function consigneEchelle(e: Echelle): string {
+  const nom = ECHELLE_NOMS[e];
+  return `ÉCHELLE IMPOSÉE : ${ECHELLE_LABELS[e]} — l'illustration le montre (« ${ECHELLE_CONSIGNES[e]} »)${nom ? ` ; le nom est un ${nom}` : ""}.`;
+}
+
 /** Bloc « concept » injecté dans generate-text. */
 export function conceptPourPrompt(c: CardConcept, lexique: string[] = []): string {
   const l = [
     `- CONCEPT DE LA CARTE (décidé pour le lot, à suivre) :`,
     `  • Sujet (${SUBJECT_KIND_LABELS[c.subjectKind]}) : ${c.sujet}`,
+    c.echelle && `  • ${consigneEchelle(c.echelle)}`,
     c.role && `  • Rôle, lu dans sa mécanique : ${c.role}`,
     c.scene && `  • Scène : ${c.scene}`,
     c.cadrage && `  • Cadrage : ${c.cadrage}`,
@@ -204,10 +345,10 @@ export function conceptPourPrompt(c: CardConcept, lexique: string[] = []): strin
  *  anti-dérive de race). Pour un sujet qui n'est pas un être de la race (lieu,
  *  objet, machine, événement), l'apparence ne s'applique qu'aux silhouettes
  *  éventuelles et passe en fin de prompt. */
-export function ancrageRace(physique: string, kind: SubjectKind): { prefixe: string | null; suffixe: string | null } {
+export function ancrageRace(physique: string, kind: SubjectKind, echelle?: Echelle): { prefixe: string | null; suffixe: string | null } {
   switch (kind) {
     case "membre": return { prefixe: physique, suffixe: null };
-    case "groupe": return { prefixe: `A group of ${physique.replace(/^an?\s+/i, "")}`, suffixe: null };
+    case "groupe": return { prefixe: `${echelle === "armee" ? "A vast host of" : "A group of"} ${physique.replace(/^an?\s+/i, "")}`, suffixe: null };
     case "monture": return { prefixe: null, suffixe: `The rider is a ${physique.replace(/^an?\s+/i, "")}.` };
     default: return { prefixe: null, suffixe: `Any figures shown are ${physique.replace(/^an?\s+/i, "")}.` };
   }

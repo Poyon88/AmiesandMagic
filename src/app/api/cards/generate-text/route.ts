@@ -5,7 +5,8 @@ import { formatStyleGuideForPrompt, loadStyleGuide } from '@/lib/ai/style-guide'
 import { findNameCollision, normalizeCardName } from '@/lib/cards/nameCollision';
 import { RACE_TYPICAL_GEAR, RACE_VISUALS, physiquePourGenre } from '@/lib/ai/race-visuals';
 import {
-  FLAVOR_FORMS, FLAVOR_TONES, MOMENTS, TENUES, ancrageRace, auHasard, chargerCatalogue, conceptPourPrompt, nameRuleText, premierMot, sanitizeConcept,
+  FLAVOR_FORMS, FLAVOR_TONES, MOMENTS, TENUES, ancrageRace, auHasard, chargerCatalogue, conceptPourPrompt, consigneEchelle,
+  echellePourCarte, kindPourEchelle, nameRuleText, premierMot, sanitizeConcept,
 } from '@/lib/ai/card-concepts';
 
 export async function POST(request: Request) {
@@ -114,7 +115,11 @@ export async function POST(request: Request) {
     ? `\n${conceptPourPrompt(concept, lexique)}`
     : existingName ? '' : `\n- Invente d'abord un CONCEPT original : qui est cette carte (métier, caste, âge, tempérament — pas forcément un guerrier en armure), ce que sa mécanique raconte d'elle, dans quelle scène et sous quel cadrage. Le nom, le texte d'ambiance et l'illustration en découlent.`;
   const assistHint = `${genderHint}${nameRuleHint}${notesHint}${mechanicsHint}${conceptHint}${catalogueHint}${forbiddenHint}`;
-  const subjectKind = concept?.subjectKind ?? (type === 'Unité' ? 'membre' : 'evenement');
+  // Échelle de la scène : celle du concept, sinon tirée au barème (forge à
+  // l'unité, plans enregistrés avant l'échelle).
+  const echelle = concept?.echelle
+    ?? echellePourCarte({ type: type === 'Action' ? 'Action' : 'Unité', rarity: String(rarityId ?? ''), mana: Number(stats.mana) || 0, race: raceId, clan: clanId });
+  const subjectKind = concept?.subjectKind ?? kindPourEchelle(echelle, null);
   // Forme du texte d'ambiance : celle du concept, sinon tirée au hasard.
   const formeAmbiance = concept?.formeAmbiance
     ? `${concept.formeAmbiance}${concept.ton ? `, ton ${concept.ton}` : ''}`
@@ -147,11 +152,12 @@ ${existingAbility ? `La capacité est déjà définie — garde-la telle quelle.
 Pour le champ "illustrationPrompt" :
 ${raceId ? `- La race est NON NÉGOCIABLE : tout personnage montré est un(e) ${raceId} (${raceVisualDesc}) ; ne dessine JAMAIS un membre d'une autre race (pas de hobbit si la race est Hommes-Arbres, pas d'elfe si la race est Aigles Géants).
 - En revanche le RÔLE, la tenue, l'âge, l'attitude et l'équipement sont LIBRES : une race n'est pas « un guerrier en armure ». ${gear ? `Équipement habituel (une piste parmi d'autres, pas une obligation) : ${gear}.` : ''}${racePrefixee && (subjectKind === 'membre' || subjectKind === 'groupe') ? `
-- NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par le sujet précis, la pose, l'action et la scène.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
+- NE RECOPIE PAS la description d'apparence de la race : elle est ajoutée automatiquement en tête du prompt. Commence directement par ${subjectKind === 'membre' ? 'le sujet précis, la pose, l\'action et la scène' : 'la scène, ses sujets et ce qui s\'y passe'}.` : ''}` : `- Base l'apparence sur la faction ${factionId} : ${facDesc}.`}
+- ${consigneEchelle(echelle)} Écris cette échelle explicitement en tête du prompt, en anglais. Si la charte demande un « sujet principal » ou une « silhouette » nets et lisibles, cela vaut aussi pour un groupe, une foule ou un lieu : l'échelle imposée prime.
 - MOMENT, LUMIÈRE ET MÉTÉO : ${moment}. La lumière et les couleurs dominantes de l'image en découlent (les couleurs du clan n'y sont que des accents) ; sous terre ou en intérieur, transpose-le. Écris-le explicitement dans le prompt.
 - TENUE : ${tenue} — prise dans les matériaux de la charte ou inventée dans le même esprit, pas la tenue type du clan ; pour une bête, une machine, un esprit ou un lieu, un harnais, des parures, un ornement ou rien.
 - Le décor signature du clan (son volcan, sa cité, sa forêt…) est facultatif : souvent un autre lieu du clan, ou un simple fond.
-- Varie le cadrage (portrait serré, plan moyen, plan large, contre-plongée…), la composition et l'instant : l'illustration doit se distinguer des autres cartes du clan.
+- Varie le cadrage (plan d'ensemble, plan large, en pied, plan moyen, contre-plongée, plongée, de dos…, compatible avec l'échelle ; le gros plan sur un visage reste rare), la composition et l'instant : l'illustration doit se distinguer des autres cartes du clan.
 
 Pour le champ "name" : même règle que l'ambiance ci-dessous — un nom du MONDE, jamais un terme de règle (pas de « Carte », « Deck », « Mana », « Pioche », « Défausse », ni de nom de capacité ou de coût employé comme tel : « Gardien de l'Exil », « Maître du Sacrifice », « Traqueur » au sens du mot-clé…).
 
@@ -331,7 +337,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
         }
         // Ancre la race : apparence en tête pour un être (ou un groupe) de la
         // race, en fin de prompt pour une monture, un lieu, un objet…
-        const { prefixe, suffixe } = ancrageRace(raceDesc, subjectKind);
+        const { prefixe, suffixe } = ancrageRace(raceDesc, subjectKind, echelle);
         const tete = fixedPrompt.trim().replace(/^an?\s+/i, '').toLowerCase();
         if (prefixe && !tete.startsWith(raceDesc.toLowerCase())) fixedPrompt = `${prefixe}. ${fixedPrompt}`;
         if (suffixe && !fixedPrompt.toLowerCase().includes(raceDesc.toLowerCase())) fixedPrompt = `${fixedPrompt.trim()} ${suffixe}`;

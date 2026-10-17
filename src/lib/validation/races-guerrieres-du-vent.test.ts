@@ -144,21 +144,13 @@ describe("génération et formes", () => {
     expect((c.attack ?? 0) + (c.defense ?? 0)).toBeGreaterThan(0);
   });
 
-  it("le pégase vole TOUJOURS, la sphinx jamais par construction", () => {
-    // Garanti par la liste en dur du générateur : les poids étant RELATIFS entre
-    // ~130 mots-clés, « Vol: 0.90 » seul ne ferait presque jamais voler (mesuré
-    // sur le Tengu : un sur quatre-vingts).
+  it("le pégase et la sphinx volent TOUJOURS", () => {
+    // La sphinx ne volait pas d'office ; arbitrage de l'auteur du 2026-10-17 :
+    // toute race dessinée avec des ailes reçoit Vol d'office.
     for (let i = 0; i < 60; i++) {
       expect(generateCardStats("Humains", "Unité", "Commune", 3, "Pégases", CLAN).keywords).toContain("Vol");
+      expect(generateCardStats("Humains", "Unité", "Commune", 3, "Sphinx", CLAN).keywords).toContain("Vol");
     }
-    // La sphinx peut tirer Vol comme n'importe quel mot-clé au poids de fond,
-    // mais rien ne le lui GARANTIT : sur des Communes à bas coût, jamais deux
-    // fois de suite sur tout l'échantillon.
-    let volantes = 0;
-    for (let i = 0; i < 60; i++) {
-      if (generateCardStats("Humains", "Unité", "Commune", 3, "Sphinx", CLAN).keywords?.includes("Vol")) volantes++;
-    }
-    expect(volantes).toBeLessThan(10);
   });
 
   it("sont déclinées en français", () => {

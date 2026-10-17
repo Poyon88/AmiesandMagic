@@ -43,6 +43,13 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Néphélides": AILES,
   "Anges": AILES,
   "Hommes-Oiseaux": AILES,
+  // Ajoutées le 2026-10-17 : toute race dont l'apparence (race-visuals) porte
+  // des ailes vole — sinon l'illustration montre des ailes sur une carte sans
+  // Vol. Le test « races ailées » vérifie cette correspondance.
+  "Gargouilles": AILES,
+  "Sphinx": AILES,
+  "Démons": AILES,
+  "Sluaghs": AILES,
 
   // ─── Lourds ───────────────────────────────────────────────────────────
   "Géants": LOURDS,

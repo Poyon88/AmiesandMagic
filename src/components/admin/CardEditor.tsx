@@ -73,6 +73,7 @@ const ALIGNMENT_FILTERS: { value: string; label: string }[] = [
 
 interface DbCard {
   id: number;
+  created_at?: string | null;
   name: string;
   mana_cost: number;
   card_type: string;
@@ -219,8 +220,9 @@ export default function CardEditor() {
   // Tri : par coût (défaut) ou par ÉCART AU BARÈME, en mana équivalent
   // (points utilisés − budget, ramenés au prix d'un mana de la carte) — la
   // même mesure que le rapport de calibrage, et la seule qui ait un sens pour
-  // une carte à 0 mana, dont le ratio points/budget est indéfini.
-  const [sortMode, setSortMode] = useState<"cout" | "ecart_desc" | "ecart_asc">("cout");
+  // une carte à 0 mana, dont le ratio points/budget est indéfini. « recent » :
+  // dernières créées en haut (date de création, puis id).
+  const [sortMode, setSortMode] = useState<"cout" | "recent" | "ecart_desc" | "ecart_asc">("cout");
   // Bloc Statut : enregistré À PART de la sauvegarde complète (mise à jour
   // partielle), pour qu'une exclusion passe toujours par sa confirmation.
   const [statusDraft, setStatusDraft] = useState<CardStatus>("draft");
@@ -410,7 +412,8 @@ export default function CardEditor() {
       if (statusFilter !== null && cardStatusOf(card) !== statusFilter) return false;
       return true;
     }).sort((a, b) =>
-      sortMode === "ecart_desc" ? ecart(b) - ecart(a) || parCout(a, b)
+      sortMode === "recent" ? (b.created_at ?? "").localeCompare(a.created_at ?? "") || b.id - a.id
+      : sortMode === "ecart_desc" ? ecart(b) - ecart(a) || parCout(a, b)
       : sortMode === "ecart_asc" ? ecart(a) - ecart(b) || parCout(a, b)
       : parCout(a, b));
   }, [cards, search, manaCostFilter, typeFilter, keywordFilter, factionFilter, rarityFilter, raceFilter, clanFilter, alignmentFilter, filterSet, filterYear, filterMonth, statusFilter, sortMode, ecartBareme]);
@@ -1250,6 +1253,7 @@ export default function CardEditor() {
         {/* Tri */}
         <select value={sortMode} onChange={e => setSortMode(e.target.value as typeof sortMode)} style={{ ...S.select, width: 170 }} title="Écart au barème en mana équivalent : points utilisés − budget">
           <option value="cout">Tri : coût</option>
+          <option value="recent">Tri : plus récentes</option>
           <option value="ecart_desc">Tri : au-dessus du barème</option>
           <option value="ecart_asc">Tri : en dessous du barème</option>
         </select>
