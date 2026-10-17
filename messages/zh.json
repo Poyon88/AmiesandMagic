@@ -2010,6 +2010,7 @@
       "invocations_more_one": "一个费用为{cost}的",
       "invocations_more_many": "{count}个费用为{cost}的",
       "invocations_join": " 和 ",
+      "race_or": " 或 ",
       "invocations_of_race": "（{v}中）",
       "invocations_of_faction": "（{v}阵营中）",
       "lycanthrope": "一个X/X指示物",

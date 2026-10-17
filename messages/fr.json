@@ -2010,6 +2010,7 @@
       "invocations_more_one": "une de coût {cost}",
       "invocations_more_many": "{count} de coût {cost}",
       "invocations_join": " et ",
+      "race_or": " ou ",
       "invocations_of_race": " (parmi les {v})",
       "invocations_of_faction": " (parmi la faction {v})",
       "lycanthrope": "un token X/X",

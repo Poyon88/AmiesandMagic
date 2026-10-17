@@ -2010,6 +2010,7 @@
       "invocations_more_one": "コスト{cost}のもの1体",
       "invocations_more_many": "コスト{cost}のもの{count}体",
       "invocations_join": "と",
+      "race_or": "または",
       "invocations_of_race": "({v}の中から)",
       "invocations_of_faction": "({v}派閥の中から)",
       "lycanthrope": "X/Xのトークン",
