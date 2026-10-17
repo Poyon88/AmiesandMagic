@@ -3,7 +3,8 @@
 //   Brouillon. La carte arrive déjà conçue et équilibrée (brief-generator) ;
 //   on ne fait ici qu'appeler les routes existantes de la forge.
 import { ABILITIES, KEYWORDS } from "@/lib/game/abilities";
-import type { KeywordMode } from "@/lib/game/types";
+import type { CapabilityTrigger, KeywordMode } from "@/lib/game/types";
+import { describeComposedCap } from "@/lib/game/composed-display";
 import { alignementAEnregistrer } from "@/lib/card-engine/constants";
 import { BRIEF_COST_LABELS, BRIEF_TRIGGER_LABELS, type CardBrief } from "@/lib/card-engine/brief";
 import { candidatsEchange, champsCarte, echangeables, labelUnite, regleNom, type BalancedCard } from "@/lib/card-engine/brief-generator";
@@ -14,6 +15,13 @@ const MODE_LABEL: Record<KeywordMode, string> = {
   return: BRIEF_TRIGGER_LABELS.return, attack: BRIEF_TRIGGER_LABELS.attack, end_of_turn: BRIEF_TRIGGER_LABELS.end_of_turn,
   start_of_turn: BRIEF_TRIGGER_LABELS.start_of_turn, draw: BRIEF_TRIGGER_LABELS.draw, low_hp: BRIEF_TRIGGER_LABELS.low_hp,
   wound: BRIEF_TRIGGER_LABELS.wound,
+};
+
+/** Déclencheurs des effets composés tirés (composed-generator.ts). */
+const DECLENCHEUR_COMPOSE: Partial<Record<CapabilityTrigger, string>> = {
+  on_play: BRIEF_TRIGGER_LABELS.entry, on_death: BRIEF_TRIGGER_LABELS.death, on_attack: BRIEF_TRIGGER_LABELS.attack,
+  on_end_of_turn: BRIEF_TRIGGER_LABELS.end_of_turn, on_start_of_turn: BRIEF_TRIGGER_LABELS.start_of_turn,
+  on_wound: BRIEF_TRIGGER_LABELS.wound, on_low_hp: BRIEF_TRIGGER_LABELS.low_hp, spell_resolution: "à la résolution",
 };
 
 /** « Résistance X » + 2 → « Résistance 2 » ; « Gloire +X/+Y » + 1/1 → « Gloire +1/+1 ». */
@@ -38,6 +46,10 @@ export function mecaniques(b: BalancedCard): string[] {
       const desc = (KEYWORDS[l]?.desc ?? "").replace(/\bX\b/g, String(x ?? "X")).replace(/\bY\b/g, String(y ?? x ?? "Y"));
       out.push(`${libelleAvecValeurs(l, x, y)}${mode ? ` (déclencheur : ${MODE_LABEL[mode]})` : ""} : ${desc}`);
     }
+  }
+  for (const cap of b.composes ?? []) {
+    const texte = describeComposedCap(cap);
+    if (texte) out.push(`Effet composé (déclencheur : ${DECLENCHEUR_COMPOSE[cap.trigger] ?? cap.trigger}) : ${texte}`);
   }
   if (b.plan.cost) out.push(`Coût additionnel pour jouer la carte : ${BRIEF_COST_LABELS[b.plan.cost.kind]} (${b.plan.cost.n})`);
   return out;
@@ -146,6 +158,8 @@ export async function creerCarte(
         status: "draft",
         gender: p.gender,
       },
+      // Effets composés : la route les assainit et les fusionne dans `capabilities`.
+      composed_capabilities: b.composes?.length ? b.composes : undefined,
       imageBase64,
       imageMimeType: imageBase64 ? "image/webp" : null,
       imageModel: modeleProduit,

@@ -9,8 +9,8 @@
 //
 // Le code CONÇOIT la carte ; Claude n'en écrit que le nom, le texte et le
 // prompt d'illustration (route generate-text). Rien ici ne touche au réseau.
-import type { Card, CardType, Keyword, KeywordMode, SpellKeywordInstance } from "@/lib/game/types";
-import { ABILITIES } from "@/lib/game/abilities";
+import type { Capability, Card, CardType, Keyword, KeywordMode, SpellKeywordInstance } from "@/lib/game/types";
+import { ABILITIES, AUTOMATIC_ABILITY_IDS } from "@/lib/game/abilities";
 import { deriveCapabilities } from "@/lib/game/capability-adapter";
 import { buildKeywordInstances, FORGE_TO_GAME_KEYWORD } from "@/lib/card-forge/keyword-instances";
 import {
@@ -19,6 +19,7 @@ import {
 } from "./constants";
 import { getAvailableKeywords, getStatWeights, POIDS_HORS_PROFIL, resserrerProfil } from "./generator";
 import { regleRace } from "./race-abilities";
+import { aUnX, avecX, partComposeParCout, tirerCompose } from "./composed-generator";
 import { getBareme, type Bareme } from "./bareme";
 import { scoreCarte, type ScoreCarte } from "./card-points";
 import {
@@ -147,6 +148,8 @@ export interface PlannedCard {
   /** Déclencheur par capacité d'unité (absent = à l'entrée en jeu / passif). */
   modes: Record<string, KeywordMode>;
   cost: { kind: BriefCost; n: number } | null;
+  /** Effets composés tirés (cf. composed-generator.ts) ; X ajusté par `equilibrer`. */
+  composes: Capability[];
 }
 
 export interface BatchPlan {
@@ -240,7 +243,7 @@ export function planBatch(brief: CardBrief, rng: Rng): BatchPlan {
     race = deriveRaceForClan(brief.faction, clan, mana) ?? race;
     cards.push({
       index: i, type, rarity, mana, faction: brief.faction, race, clan,
-      gender: type === "Unité" ? GENRE[genres[iGenre++] ?? "O"] : "neutre", abilities: [], locked: [], modes: {}, cost: null,
+      gender: type === "Unité" ? GENRE[genres[iGenre++] ?? "O"] : "neutre", abilities: [], locked: [], modes: {}, cost: null, composes: [],
     });
   }
 
@@ -325,7 +328,92 @@ export function planBatch(brief: CardBrief, rng: Rng): BatchPlan {
     }
   }
 
+  // Effets composés, tirés EN DERNIER : les tirages précédents (et donc les
+  // lots déjà planifiés sous une seed) restent identiques. L'effet prend la
+  // place d'une capacité de complément quand il y en a une à céder.
+  for (const c of cards) {
+    if (rng() >= partComposeParCout(c.mana)) continue;
+    c.composes = [tirerCompose(c, rng, donnables(c, exclues))];
+    const cedee = complementCedable(c);
+    if (cedee) {
+      c.abilities = c.abilities.filter((id) => id !== cedee);
+      const l = labelUnite(cedee);
+      if (l) delete c.modes[l];
+    }
+  }
+
+  // Quota de cartes « à choix » (arbitrage 2026-10-17) : au moins 30 % du lot
+  // porte une capacité qui fait CHOISIR le joueur (découverte, compteur à
+  // décision, main/cimetière). Posé en dernier, comme les effets composés, et
+  // à la place d'un complément quand il y en a un à céder.
+  const aChoix = (c: PlannedCard) => c.abilities.some((id) => CAPACITES_A_CHOIX.has(id))
+    || c.composes.some((cap) => CONTENUS_A_CHOIX.has(cap.composed?.content ?? ""));
+  let manque = Math.round(n * PART_A_CHOIX) - cards.filter(aChoix).length;
+  for (const c of shuffle(cards, rng)) {
+    if (manque <= 0) break;
+    if (aChoix(c)) continue;
+    const interdits = regleRace(c.race, c.clan).interdits;
+    const options = [...CAPACITES_A_CHOIX].filter((id) => capaciteCompatible(id, c.type) && !exclues.has(id)
+      && !interdits.includes(labelUnite(id) ?? "") && !FACTIONS[c.faction]?.forbiddenKeywords.includes(ABILITIES[id]?.creature?.label ?? ABILITIES[id]?.label ?? ""));
+    // Affinité de race + socle commun : les capacités typiques passent devant
+    // sans éclipser les Sélections, présentes dans toutes les factions.
+    const id = pickWeighted(options, (x) => affinite(c, x) + 0.3, rng);
+    if (!id) continue;
+    const cedee = complementCedable(c);
+    if (cedee) {
+      c.abilities = c.abilities.filter((x) => x !== cedee);
+      const l = labelUnite(cedee);
+      if (l) delete c.modes[l];
+    }
+    c.abilities.push(id);
+    c.locked.push(id);
+    const label = c.type === "Unité" ? labelUnite(id) : null;
+    const mode = label ? pickTrigger(label, brief, rng) : null;
+    if (label && mode) c.modes[label] = mode;
+    manque--;
+  }
+  if (manque > 0) warnings.push(`Cartes à choix : ${manque} manquante(s) sur ${Math.round(n * PART_A_CHOIX)} (pas assez de capacités compatibles).`);
+
   return { cards, quotas, warnings };
+}
+
+/** Part MINIMALE du lot qui porte une capacité à choix. */
+export const PART_A_CHOIX = 0.3;
+/** Capacités qui font CHOISIR le joueur : découverte (1 parmi N, ordre),
+ *  compteurs à décision, choix dans la main ou le cimetière. Le simple choix
+ *  de cible n'en fait pas partie. */
+export const CAPACITES_A_CHOIX: ReadonlySet<string> = new Set([
+  "selection", "selection_magique", "renfort_royal", "tresor", "traque_du_destin", "presage", "creuser", "divination",
+  "epargne", "foi", "conquete",
+  "rappel", "exhumation", "heritage_du_cimetiere", "apprentissage", "combustion",
+]);
+/** Contenus d'effet composé équivalents. */
+const CONTENUS_A_CHOIX: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal", "tresor", "epargne", "foi", "conquete", "rappel", "exhumation"]);
+
+/** Capacités qu'un `grant_keyword` peut conférer : profil de la race, hors
+ *  interdits et exclusions, et PASSIVES seulement — conférée à une unité déjà
+ *  en jeu, une capacité d'entrée en jeu (Domination…) ne partirait jamais. */
+function donnables(c: PlannedCard, exclues: Set<string>): string[] {
+  if (!c.faction || !FACTIONS[c.faction]) return [];
+  return getAvailableKeywords(c.faction, c.rarity, c.race ?? undefined, c.clan ?? undefined)
+    .filter((k) => k.profiled && AUTOMATIC_ABILITY_IDS.has(FORGE_TO_GAME_KEYWORD[k.id] ?? ""))
+    .map((k) => idDeLabel(k.id))
+    .filter((id): id is string => !!id && !!labelUnite(id) && !exclues.has(id));
+}
+
+/** Complément que l'effet composé remplace : le dernier non verrouillé, sauf
+ *  si l'Action en deviendrait incohérente (modificateur sans dégâts, méta seul). */
+function complementCedable(c: PlannedCard): string | undefined {
+  for (const id of [...c.abilities].reverse()) {
+    if (c.locked.includes(id)) continue;
+    if (c.type === "Action") {
+      const reste = c.abilities.filter((x) => x !== id);
+      if (reste.some((x) => MODIFICATEURS_DE_DEGATS.has(x)) && !reste.some((x) => SORTS_DE_DEGATS.has(x))) continue;
+      if (reste.length && reste.every((x) => META_DE_SORT.has(x))) continue;
+    }
+    return id;
+  }
+  return undefined;
 }
 
 function garantirEffetPrincipal(c: PlannedCard, exclues: Set<string>, rng: Rng): void {
@@ -437,6 +525,8 @@ export interface BalancedCard {
   score: ScoreCarte;
   /** Capacités retirées faute de budget. */
   retirees: string[];
+  /** Effets composés, X ajusté au barème. */
+  composes: Capability[];
 }
 
 const CHAMP_COUT: Record<BriefCost, keyof Card> = {
@@ -474,10 +564,12 @@ function noter(bareme: Bareme, b: Omit<BalancedCard, "score" | "retirees">): Sco
   const brouillon = { ...champsCarte(b), effect_text: "" } as unknown as Card;
   let caps: ReturnType<typeof deriveCapabilities> = [];
   try { caps = deriveCapabilities(brouillon); } catch { caps = []; }
-  return scoreCarte(bareme, { ...brouillon, capabilities: caps });
+  return scoreCarte(bareme, { ...brouillon, capabilities: [...caps, ...b.composes] });
 }
 
 const TOLERANCE = 0.05;
+/** Clé de l'X des effets composés parmi les X ajustés par l'équilibrage. */
+const CLE_COMPOSE = "_compose";
 /** Au-delà de cet écart seulement, on touche à la STRUCTURE de la carte
  *  (retirer une capacité, monter X). En deçà, l'écart vient de la granularité
  *  des stats — un point d'ATK vaut ~13 % du budget d'une carte à 3 mana — et
@@ -549,11 +641,16 @@ function equilibrerAMana(plan: PlannedCard, bareme: Bareme): BalancedCard {
         spellKeywords.push(inst);
       }
     }
-    return { plan: { ...plan, abilities }, cardType: (isUnit ? "creature" : "spell") as CardType, attack: atk, health: def, labels, xValues, yValues, spellKeywords };
+    const composes = plan.composes.map((cap) => (aUnX(cap) ? avecX(cap, xs[CLE_COMPOSE] ?? 1) : cap));
+    return { plan: { ...plan, abilities }, cardType: (isUnit ? "creature" : "spell") as CardType, attack: atk, health: def, labels, xValues, yValues, spellKeywords, composes };
   };
-  const scalables = () => isUnit
-    ? abilities.map(labelUnite).filter((l): l is string => !!l && !!KEYWORDS[l]?.scalable)
-    : abilities.filter((id) => (ABILITIES[id]?.spell?.params ?? []).length > 0);
+  const composeX = plan.composes.some(aUnX) ? [CLE_COMPOSE] : [];
+  const scalables = () => [
+    ...(isUnit
+      ? abilities.map(labelUnite).filter((l): l is string => !!l && !!KEYWORDS[l]?.scalable)
+      : abilities.filter((id) => (ABILITIES[id]?.spell?.params ?? []).length > 0)),
+    ...composeX,
+  ];
   const xs: Record<string, number> = {};
   for (const k of scalables()) xs[k] = Math.max(1, Math.floor(plan.mana / 3));
 
