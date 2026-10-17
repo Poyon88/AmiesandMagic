@@ -42,6 +42,7 @@ import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, ge
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
+import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
 import { KEYWORD_LABELS, isPermanentKeyword, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { nombreDOccurrences } from "./composed-occurrences";
@@ -571,6 +572,7 @@ function capTriggerForMode(mode: import("./types").KeywordMode | undefined): imp
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
   if (mode === "wound") return "on_wound";
+  if (mode === "delay") return "on_delay";
   return "on_play";
 }
 
@@ -1512,6 +1514,8 @@ function appliquerSilence(target: CardInstance): void {
   delete target.neutralisationStash;
   delete target.neutralisationTargetId;
   target.apprentissageSpell = undefined;
+  // RETARD X : les effets en attente étaient des capacités de l'unité.
+  target.retards = undefined;
   target.hasDivineShield = false;
   desarmerGardes(target);
   levierParalysie(target);
@@ -1749,6 +1753,13 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   if (trigger.emblemIndex != null) {
     const spec = (controller.emblems ?? [])[trigger.emblemIndex]?.composed?.target;
     return spec ? composedTargetIds(spec, controller, other) : [];
+  }
+  // SORT RETARDÉ : les cibles de son premier créneau, vues du lanceur.
+  if (trigger.delayedSpell) {
+    const slot = trigger.delayedSpell.slots[0];
+    if (!slot) return [];
+    const vue = { ...state, players: [controller, other], currentPlayerIndex: 0 } as GameState;
+    return getSpellSlotTargets(vue, trigger.delayedSpell.card, slot);
   }
   const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
   if (!source) return [];
@@ -2371,6 +2382,7 @@ function keywordModeToTrigger(mode: import("./types").KeywordMode | undefined): 
     case "draw": return "on_draw";
     case "low_hp": return "on_low_hp";
     case "wound": return "on_wound";
+    case "delay": return "on_delay";
     case "entry": return "on_play";
     case "spell": return "spell_resolution";
     default: return "on_activation";
@@ -2392,6 +2404,7 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_start_of_turn_in_hand": return "start_of_turn"; // même teinte que le début de tour
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
+    case "on_delay": return "delay";
     case "on_play": return "entry"; // arrivée en jeu → jaune (cohérence flèche/icône)
     case "spell_resolution": return "spell"; // sort → jaune (cohérence flèche/icône)
     default: return undefined;
@@ -2955,6 +2968,9 @@ function stripBoostsToBase(inst: CardInstance): void {
 }
 
 function returnInstanceToPlay(inst: CardInstance): void {
+  // RETARD X : quitter le plateau annule les effets en attente. Une unité
+  // rejouée depuis la main ré-arme un décompte complet (cf. armRetards).
+  inst.retards = undefined;
   // APPRENTISSAGE : quitter le plateau fait oublier. Effacé à TOUTE remise en
   // jeu, quelle qu'en soit la voie (Remontée-mort, Cycle éternel, résurrection,
   // Dédoublement…) — c'est la ceinture qui rend la règle vraie sans avoir à
@@ -4094,6 +4110,9 @@ export function startTurn(state: GameState): GameState {
   // file ordonnée que la fin de tour ; une cible « au choix » y ouvre le
   // sélecteur au joueur entrant, dont c'est le tour (cf. advanceTurnPhase).
   newState.startOfTurnQueue = buildTurnPhaseQueue(player, "start_of_turn");
+  // RETARD X : décompte d'un tour, et les effets arrivés à terme passent APRÈS
+  // tous les effets de début de tour déjà en jeu (plateau, main, emblèmes).
+  newState.startOfTurnQueue.push(...buildRetardSteps(player));
   // Frontière pour l'ÉCRAN : la fin du tour adverse, la bascule et la pioche se
   // jouent AVANT les effets de début de tour. Sans elle, un dégât de fin de
   // tour et un dégât de début de tour partaient dans la même salve.
@@ -4316,6 +4335,79 @@ const TURN_PHASES: Record<TurnPhase, {
  *
  *  Les deux règles ne tiennent qu'à l'ordre des boucles ci-dessous et à celui du
  *  tableau `emblems` : ni tri, ni insertion en tête ici ou dans placeEmblem. */
+/** RETARD X — début de tour du joueur : décompte ses Retards (unités de SON
+ *  plateau, donc celles qu'il contrôle, et ses sorts retardés) et rend les pas
+ *  arrivés à terme : unités de gauche à droite, puis sorts dans l'ordre de
+ *  lancement. Un Retard ne part qu'une fois : l'entrée quitte son registre. */
+function buildRetardSteps(joueur: PlayerState): import("./types").EndOfTurnStep[] {
+  const steps: import("./types").EndOfTurnStep[] = [];
+  for (const creature of joueur.board) {
+    for (const e of tickRetards(creature)) steps.push({ sourceInstanceId: creature.instanceId, retardKey: e.key });
+  }
+  if (joueur.delayedSpells?.length) {
+    const rest: import("./types").DelayedSpell[] = [];
+    for (const d of joueur.delayedSpells) {
+      if (d.turnsLeft - 1 <= 0) steps.push({ sourceInstanceId: "", delayedSpell: d });
+      else rest.push({ ...d, turnsLeft: d.turnsLeft - 1 });
+    }
+    joueur.delayedSpells = rest.length > 0 ? rest : undefined;
+  }
+  return steps;
+}
+
+/** RETARD X d'un SORT arrivé à terme. Sans cible à désigner (ou cible au
+ *  cimetière, que le sélecteur de début de tour ne sait pas montrer), l'effet se
+ *  résout comme un sort relancé, cibles tirées au hasard. Sinon un déclencheur
+ *  en attente demande la cible au lanceur ; aucune cible éligible ⇒ l'effet est
+ *  perdu. Rend true quand la file doit se mettre en pause. */
+function resolveDelayedSpellStep(
+  state: GameState,
+  caster: PlayerState,
+  opponent: PlayerState,
+  d: import("./types").DelayedSpell,
+): boolean {
+  const slots = getSpellTargetSlots(d.card).filter(sl => requiresPlayerSelection(sl.type));
+  const auCimetiere = slots.some(sl => sl.type === "friendly_graveyard" || sl.type === "friendly_graveyard_to_board");
+  if (slots.length === 0 || auCimetiere) {
+    castSpellWithRandomTargets(state, caster, opponent, d.card);
+    return false;
+  }
+  const trig: import("./types").PendingTrigger = {
+    id: `delayed_${d.id}`,
+    controllerId: caster.id,
+    sourceInstanceId: null,
+    delayedSpell: { card: d.card, slots },
+  };
+  if (endOfTurnTriggerTargets(state, trig).length === 0) return false;
+  (state.pendingTriggers ??= []).push(trig);
+  return true;
+}
+
+/** Résout un sort retardé sur les cibles choisies (une par créneau, dans
+ *  l'ordre), avec l'animation d'un sort relancé. */
+function resolveDelayedSpellWithTargets(
+  state: GameState,
+  caster: PlayerState,
+  opponent: PlayerState,
+  ds: { card: Card; slots: SpellTargetSlot[] },
+  ids: string[] | undefined,
+): void {
+  const targetMap: Record<string, string> = {};
+  ds.slots.forEach((sl, i) => {
+    const id = ids?.[i];
+    if (id) targetMap[sl.slot] = id;
+  });
+  const pIdx = state.players.indexOf(caster);
+  const oIdx = state.players.indexOf(opponent);
+  const animTargetIds = [...new Set(Object.values(targetMap))].map(id =>
+    id === "enemy_hero" ? `__hero_${oIdx}__`
+    : id === "friendly_hero" ? `__hero_${pIdx}__`
+    : id,
+  );
+  (state.recastEvents ??= []).push({ card: ds.card, targetIds: animTargetIds });
+  resolveSpellCard(state, caster, opponent, ds.card, targetMap);
+}
+
 function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./types").EndOfTurnStep[] {
   const spec = TURN_PHASES[phase];
   const steps: import("./types").EndOfTurnStep[] = [];
@@ -4437,6 +4529,14 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       continue;
     }
 
+    // RETARD X d'un SORT : pas de source en jeu (comme un emblème), traité
+    // avant la garde « source absente ».
+    if (step.delayedSpell) {
+      queue.shift();
+      if (resolveDelayedSpellStep(newState, actif, opponent, step.delayedSpell)) return pauseTurnPhase(newState, phase); // PAUSE
+      continue;
+    }
+
     const creature = step.inHand
       ? actif.hand.find(c => c.instanceId === step.sourceInstanceId)
       : actif.board.find(c => c.instanceId === step.sourceInstanceId);
@@ -4451,6 +4551,19 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
     // plateau comme des « cadavres en sursis », et que la résolution des sorts,
     // qui règle ses morts après chaque effet.
     if (!step.inHand && creature.currentHealth <= 0) { queue.shift(); continue; }
+
+    // RETARD X d'une unité arrivé à terme : la capacité doit encore être portée
+    // (un Silence l'a effacée). Elle reprend alors le chemin ordinaire d'un pas
+    // curé ou composé — mêmes pauses sur une cible au choix.
+    if (step.retardKey) {
+      queue.shift();
+      const r = resolveRetardKey(creature.card, step.retardKey);
+      if (!r) continue;
+      queue.unshift(r.curated
+        ? { sourceInstanceId: creature.instanceId, curated: r.curated }
+        : { sourceInstanceId: creature.instanceId, capUid: r.capUid });
+      continue;
+    }
 
     if (step.curated) {
       const inst = step.curated;
@@ -4589,6 +4702,7 @@ function triggerIsResolvable(state: GameState, trigger: import("./types").Pendin
     ]);
     return (trigger.selectionOptionIds ?? []).some(id => ids.has(id));
   }
+  if (trigger.delayedSpell) return endOfTurnTriggerTargets(state, trigger).length > 0;
   // `emblemIndex` autant que `capUid` : un EMBLÈME « au choix » de fin de tour
   // ne porte ni l'un ni l'autre des autres marqueurs (pas de capUid, pas de kw,
   // pas de source en jeu). Sans ce test il tombait dans le repli « rien à
@@ -4997,6 +5111,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     cardInstance.tapped = false;
     const pos = action.boardPosition ?? player.board.length;
     player.board.splice(pos, 0, cardInstance);
+    // RETARD X : la carte est JOUÉE (main, Éveil, Seconde vie) — ses capacités
+    // à Retard commencent leur décompte. Invocations, résurrections et tokens ne
+    // passent pas ici : comme un effet d'entrée en jeu, ils n'arment rien.
+    armRetards(cardInstance);
 
     // TEMPO — gravé ICI, donc AVANT tout déclencheur d'entrée en jeu : Douleur,
     // Inspiration, Divination & Cie doivent déjà lire les valeurs majorées.
@@ -6306,9 +6424,11 @@ function castSpellWithRandomTargets(
   // fallback target_0 défensif ci-dessous — sinon un sort de zone afficherait
   // une flèche parasite vers une créature aléatoire.
   const realTargetIds: string[] = [];
-  if (card.spell_keywords?.length) {
-    for (let i = 0; i < card.spell_keywords.length; i++) {
-      const kw = card.spell_keywords[i];
+  // Créneaux de la vue IMMÉDIATE : les effets à Retard ciblent à terme.
+  const tcard = immediateSpellView(card);
+  if (tcard.spell_keywords?.length) {
+    for (let i = 0; i < tcard.spell_keywords.length; i++) {
+      const kw = tcard.spell_keywords[i];
       const def = SPELL_KEYWORDS[kw.id];
       if (!def) continue;
       // Portée « toutes » : la résolution se passe de cible.
@@ -6346,7 +6466,7 @@ function castSpellWithRandomTargets(
   // au hasard parmi les options éligibles avec le RNG semé partagé — même
   // parti pris que le chemin créature quand la modale ne peut pas s'ouvrir.
   const SELECTION_KW_IDS = ["selection", "renfort_royal", "selection_magique", "tresor"] as const;
-  for (const kw of card.spell_keywords ?? []) {
+  for (const kw of tcard.spell_keywords ?? []) {
     const selId = SELECTION_KW_IDS.find((id) => id === kw.id);
     if (!selId) continue;
     // Les getters d'options lisent players[currentPlayerIndex] : on leur
@@ -6473,6 +6593,15 @@ function resolveSpellCard(
   // ils ne reçoivent aucun bonus (et n'incrémentent pas le compteur non plus).
   tempoAmount = 0,
 ): SpellResolutionContext {
+  // RETARD X : les effets à Retard ne se résolvent pas maintenant. Ils sont
+  // rangés chez le lanceur, un par effet, et le sort se résout sans eux — avec
+  // les cibles de sa vue immédiate, la seule que le ciblage ait présentée
+  // (cf. getSpellTargetSlots). Tout lancement compte, relances comprises.
+  if (hasDelayedParts(card)) {
+    const n = caster.delayedSpells?.length ?? 0;
+    (caster.delayedSpells ??= []).push(...delayedSpellParts(card, `ds${state.turnNumber}_${card.id}_${n}`));
+    card = immediateSpellView(card);
+  }
   const ctx: SpellResolutionContext = {
     state, caster, opponent, card, targetMap, results: {},
     realManaCost: realManaCost ?? effectiveManaCost({ card }, caster),
@@ -7652,6 +7781,9 @@ function requiresPlayerSelection(targetType: SpellTargetType): boolean {
 }
 
 export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
+  // Les effets à Retard choisissent leurs cibles au déclenchement, pas au
+  // lancement : seule la vue immédiate réclame des créneaux.
+  card = immediateSpellView(card);
   const slots: SpellTargetSlot[] = [];
 
   // From spell keywords — l'index `kw_${i}` doit rester aligné sur l'ordre de
@@ -11739,6 +11871,11 @@ function applyOnePendingTrigger(
         processDeathTriggers(deadO, other, controller);
       }
     }
+  } else if (trigger.delayedSpell) {
+    // SORT RETARDÉ : la cible vient d'être désignée, le sort se résout.
+    if (controller && other) {
+      resolveDelayedSpellWithTargets(newState, controller, other, trigger.delayedSpell, pendingChoiceIds(choice));
+    }
   } else if (trigger.capUid) {
     // Variante « fin de tour » : résout l'effet composé sur la cible choisie.
     if (controller && other) {
@@ -11849,7 +11986,7 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
       } else if (trigger.selectionType) {
         const opts = trigger.selectionOptionIds ?? [];
         if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
-      } else if (trigger.capUid || trigger.emblemIndex != null) {
+      } else if (trigger.capUid || trigger.emblemIndex != null || trigger.delayedSpell) {
         // Même pool pour les deux provenances. Un emblème laissé sans choix
         // retombait sur `pool.slice(0, n)` dans selectComposedTargets, c'est-à-
         // dire toujours la première unité du plateau : un repli AUTOMATIQUE
@@ -14186,6 +14323,7 @@ export function selectionCardsForKeyword(
 export function isIncinerationSlot(card: Card, slot: SpellTargetSlot): boolean {
   const m = /^kw_(\d+)$/.exec(slot.slot);
   if (!m) return false;
+  card = immediateSpellView(card); // `kw_${i}` indexe la vue immédiate
   return card.spell_keywords?.[Number(m[1])]?.id === "incineration";
 }
 
@@ -14325,6 +14463,7 @@ export function getSpellTargets(state: GameState, card: Card, slotType?: SpellTa
 }
 
 export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex: number): string[] {
+  card = immediateSpellView(card); // `kw_${i}` indexe la vue immédiate
   if (card.card_type !== "spell" || !card.spell_keywords) return [];
   const player = state.players[state.currentPlayerIndex];
   const kw = card.spell_keywords[slotIndex];

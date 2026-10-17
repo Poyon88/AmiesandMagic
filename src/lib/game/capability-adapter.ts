@@ -65,6 +65,7 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (mode === "draw") return "on_draw";
   if (mode === "low_hp") return "on_low_hp";
   if (mode === "wound") return "on_wound";
+  if (mode === "delay") return "on_delay";
   // mode === undefined
   if (CURATED_MULTIMODE_IDS.has(id)) return "on_play";
   if (DEATH_NATURE_IDS.has(id)) return "on_death";
@@ -96,6 +97,7 @@ export function modeForCreatureTrigger(trigger: CapabilityTrigger): KeywordMode 
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
+    case "on_delay": return "delay";
     default: return undefined;
   }
 }
@@ -133,7 +135,9 @@ export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
   // `on_wound` (Blessure) : écarté par DÉCISION D'AUTEUR, pas par impossibilité
   // — greffé sur le porteur, il partirait. Les objets ne l'offrent pas dans ce
   // premier lot ; le rouvrir tient à cette seule ligne.
-  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound";
+  // `on_delay` (Retard X) : armé quand une CRÉATURE est jouée — un objet ne
+  // passe pas par ce chemin, son Retard ne partirait jamais.
+  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound" && trigger !== "on_delay";
 }
 
 /** Cadences auxquelles un EMBLÈME peut réagir.
@@ -205,6 +209,8 @@ function deriveSpellCapabilities(card: Card): Capability[] {
       ...(scope ? { targetScope: scope } : {}),
       // Singulier : la condition suit l'effet dans le modèle unifié.
       ...(sk.singulier === true ? { singulier: true } : {}),
+      // Retard X : l'effet est différé (cf. lib/game/retard.ts).
+      ...(sk.delay ? { delay: sk.delay } : {}),
     });
   });
 
@@ -299,6 +305,8 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
       // Singulier : porté par la capacité dérivée, pour qu'un retrait chez un
       // joueur non singleton touche `capabilities` ET `keyword_instances`.
       ...(inst.singulier === true ? { singulier: true } : {}),
+      // Retard X : nombre de tours avant le déclenchement (mode "delay").
+      ...(mode === "delay" && inst.delay ? { delay: inst.delay } : {}),
     };
   });
 }

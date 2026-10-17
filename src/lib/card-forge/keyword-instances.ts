@@ -16,6 +16,7 @@
 import { CREATURE_LABEL_TO_ENGINE_ID, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import type { CapabilityTrigger, Keyword, KeywordInstance, KeywordMode } from "@/lib/game/types";
 import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import { clampRetard } from "@/lib/game/retard";
 import type { TargetScope } from "@/lib/game/types";
 
 /** Libellé FR de la forge → id moteur. Base dérivée du registre (exhaustive par
@@ -176,13 +177,16 @@ export interface BuildKeywordInstancesInput {
   randomX?: Record<string, boolean>;
   /** Plancher A du « ? », par libellé (ignoré sans « ? »). */
   minX?: Record<string, number>;
+  /** RETARD X par libellé : tours avant le déclenchement, lu quand le mode est
+   *  "delay" (1 par défaut). Ignoré sur un sort. */
+  delays?: Record<string, number>;
   extras?: ForgeKeywordExtras;
 }
 
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, targetScopes = {}, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, targetScopes = {}, delays = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
@@ -193,6 +197,8 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // stocker produit quand même une instance, c'est elle qui la porte.
       const scope = isSpellCard ? undefined : porteeValide(targetScopes[label], creatureScopes(id));
       if (scope) inst = { ...(inst ?? { id }), targetScope: scope };
+      // Retard X : le nombre de tours voyage avec le mode "delay".
+      if (!isSpellCard && modes[label] === "delay") inst = { ...(inst ?? { id }), mode: "delay", delay: clampRetard(delays[label] ?? 1) };
       if (singulier[label] !== true) return inst;
       return { ...(inst ?? { id }), singulier: true };
     })

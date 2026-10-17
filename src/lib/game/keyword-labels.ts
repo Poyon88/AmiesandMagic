@@ -43,6 +43,7 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "draw") return "#17b6c4"; // cyan (à la pioche)
   if (mode === "low_hp") return "#8B5CF6"; // violet (« Sous 15 PV »)
   if (mode === "wound") return "#B6E62E"; // vert citron (Blessure : blessée sans mourir)
+  if (mode === "delay") return "#D4A373"; // ambre sablier (Retard X)
   return null;
 }
 
@@ -148,6 +149,12 @@ function keywordModeTint(mode: KeywordMode | undefined): string | null {
     // mêmes raisons que "attack" et "low_hp". Garder en phase avec
     // keywordModeColor("wound").
     return "brightness(0) saturate(100%) invert(57%) sepia(62%) saturate(507%) hue-rotate(35deg) brightness(132%) contrast(86%)";
+  }
+  if (mode === "delay") {
+    // → #D4A373 ambre sablier (Retard X). Chaîne résolue par simulation de la
+    // pipeline filter (rendu #d5a474, Δ≈2), saturate MODÉRÉ (393%) pour les
+    // mêmes raisons que "attack". Garder en phase avec keywordModeColor("delay").
+    return "brightness(0) saturate(100%) invert(73%) sepia(42%) saturate(393%) hue-rotate(346deg) brightness(88%) contrast(88%)";
   }
   return null;
 }

@@ -17,7 +17,7 @@ import { getCapabilities } from "@/lib/game/capability-adapter";
 import { ABILITIES } from "@/lib/game/abilities";
 import { ADDITIONAL_COST_POINTS, STAT_COST } from "./constants";
 import { RARETE_FIXEE, type Bareme, type CoutLineaire } from "./bareme";
-import { budgetCarte, facteurBudget, termesCarte, valeurParametre, type CarteNotee } from "./card-points";
+import { budgetCarte, facteurBudget, RETARD_A_PRIORI, termesCarte, valeurParametre, type CarteNotee } from "./card-points";
 
 export type CarteCalibree = CarteNotee & Pick<Card, "id" | "name"> & Partial<Pick<Card, "race" | "clan" | "faction">>;
 
@@ -223,6 +223,13 @@ function multiplicateurs(): Multiplicateur[] {
   out.push({ nom: "filtre.a", lire: (b) => b.filtre.a, ecrire: (b, v) => { b.filtre.a = v; }, min: 0, max: 1 });
   out.push({ nom: "hasard", lire: (b) => b.hasard, ecrire: (b, v) => { b.hasard = v; }, min: 0.3, max: 1.5 });
   out.push({ nom: "singulier", lire: (b) => b.singulier, ecrire: (b, v) => { b.singulier = v; }, min: 0.2, max: 1.5 });
+  // Retard X : un multiplicateur par X (1 à 3).
+  RETARD_A_PRIORI.forEach((apriori, i) => out.push({
+    nom: `retard.${i + 1}`,
+    lire: (b) => b.retard?.[i] ?? apriori,
+    ecrire: (b, v) => { b.retard = RETARD_A_PRIORI.map((d, j) => (j === i ? v : b.retard?.[j] ?? d)); },
+    min: 0.2, max: 1.2,
+  }));
   out.push({ nom: "don", lire: (b) => b.don, ecrire: (b, v) => { b.don = v; }, min: 0.1, max: 2 });
   out.push({ nom: "type.item", lire: (b) => b.type.item, ecrire: (b, v) => { b.type.item = v; }, min: 0.4, max: 2.5 });
   out.push({ nom: "eveil", lire: (b) => b.eveil, ecrire: (b, v) => { b.eveil = v; }, min: 0, max: 2 });

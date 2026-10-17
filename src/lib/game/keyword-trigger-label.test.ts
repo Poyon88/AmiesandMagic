@@ -121,12 +121,12 @@ describe("Le mot ET sa couleur vont ensemble", () => {
 
 describe("Traductions", () => {
   const LOCALES = ["fr", "en", "es", "de", "it", "pt", "ja", "zh"];
-  const CLES = ["permanent", "entry", "attack", "death", "return", "tap", "end_of_turn", "start_of_turn", "draw", "low_hp", "wound"];
+  const CLES = ["permanent", "entry", "attack", "death", "return", "tap", "end_of_turn", "start_of_turn", "draw", "low_hp", "wound", "delay"];
 
   const catalogue = (loc: string) =>
     JSON.parse(fs.readFileSync(path.join(process.cwd(), `messages/${loc}.json`), "utf8"));
 
-  it.each(LOCALES)("%s fournit les onze mots", (loc) => {
+  it.each(LOCALES)("%s fournit les douze mots", (loc) => {
     const tr = catalogue(loc).vocab.triggers;
     expect(Object.keys(tr).sort()).toEqual([...CLES].sort());
     for (const k of CLES) expect(tr[k]?.trim(), `${loc} / ${k}`).toBeTruthy();
@@ -135,6 +135,10 @@ describe("Traductions", () => {
   it.each(LOCALES)("%s garde le marqueur {n} du seuil", (loc) => {
     // Substitué à la main : SafeT rend la chaîne brute, sans formatage ICU.
     expect(catalogue(loc).vocab.triggers.low_hp).toContain("{n}");
+  });
+
+  it.each(LOCALES)("%s garde le marqueur {d} de Retard", (loc) => {
+    expect(catalogue(loc).vocab.triggers.delay).toContain("{d}");
   });
 });
 

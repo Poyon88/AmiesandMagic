@@ -836,7 +836,8 @@
         "in_hand_suffix": "in hand",
         "on_draw": "When Drawn",
         "on_low_hp": "Below 15 HP",
-        "on_wound": "Wound"
+        "on_wound": "Wound",
+        "on_delay": "Delay {d}"
       },
       "content": {
         "deal_damage_one": "deals {x} damage",
@@ -2059,7 +2060,8 @@
         "draw": "on draw",
         "low_hp": "below {n} HP",
         "spell": "when the action resolves",
-        "wound": "when it is wounded without dying"
+        "wound": "when it is wounded without dying",
+        "delay": "when its Delay expires"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Start of turn",
       "draw": "Draw",
       "low_hp": "Below {n} HP",
-      "wound": "Wound"
+      "wound": "Wound",
+      "delay": "Delay {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
     "content_selection_magique": "Magic Selection (1 Action out of 3)",
-    "tab_style_guides": "Style guides"
+    "tab_style_guides": "Style guides",
+    "mode_title_delay": "Delay X: once, at the start of the X-th following turn, if the unit is still in play",
+    "trigger_on_delay": "Delay X (start of the X-th following turn)",
+    "retard_turns_title": "Delay: number of turns before it triggers",
+    "retard_spell_title": "Delay: the effect triggers at the start of the caster's X-th following turn, target chosen then",
+    "label_retard": "Delay"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

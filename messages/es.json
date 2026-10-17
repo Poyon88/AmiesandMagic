@@ -836,7 +836,8 @@
         "in_hand_suffix": "en la mano",
         "on_draw": "Al robarse",
         "on_low_hp": "Menos de 15 PV",
-        "on_wound": "Herida"
+        "on_wound": "Herida",
+        "on_delay": "Retardo {d}"
       },
       "content": {
         "deal_damage_one": "inflige {x} daño",
@@ -2059,7 +2060,8 @@
         "draw": "al robar",
         "low_hp": "con menos de {n} PV",
         "spell": "al resolverse la acción",
-        "wound": "cuando resulta herida sin morir"
+        "wound": "cuando resulta herida sin morir",
+        "delay": "al vencer su Retardo"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Inicio de turno",
       "draw": "Robo",
       "low_hp": "Con menos de {n} PV",
-      "wound": "Herida"
+      "wound": "Herida",
+      "delay": "Retardo {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "Selección mágica (1 acción de entre 3)",
     "content_forge": "Forja (1 objeto mezclado en el mazo)",
     "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste.",
-    "tab_style_guides": "Guías de estilo"
+    "tab_style_guides": "Guías de estilo",
+    "mode_title_delay": "Retardo X: una sola vez, al inicio del X-ésimo turno siguiente, si la unidad sigue en juego",
+    "trigger_on_delay": "Retardo X (inicio del X-ésimo turno siguiente)",
+    "retard_turns_title": "Retardo: número de turnos antes de activarse",
+    "retard_spell_title": "Retardo: el efecto se activa al inicio del X-ésimo turno siguiente del lanzador, objetivo elegido entonces",
+    "label_retard": "Retardo"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

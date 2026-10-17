@@ -504,7 +504,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   transition: "all 0.2s",
                 }}>
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
-                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} size={15 * s} fill mode="spell" singulier={spellKw.singulier} />
+                    <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} keyword={`spell_${spellKw.id}`} size={15 * s} fill mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
                     {spellKwScope(spellKw) && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(spellKwScope(spellKw)!)} />}
                   </span>
                   {valueText && (
@@ -669,7 +669,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
               const desc = getSpellKeywordDesc(spellKw, fakeCard, tokens);
               return (
                 <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
                   <div>
                     <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

@@ -794,6 +794,35 @@ function BoardCreature({
         );
       })()}
 
+      {/* RETARD X en attente : sablier ambre et tours restants (le plus proche),
+          sous les autres pastilles de la colonne de droite. Le survol détaille
+          chaque effet. Public : l'adversaire voit aussi ce qui arrive. */}
+      {(creature.retards?.length ?? 0) > 0 && (() => {
+        const retards = creature.retards!;
+        const n = Math.min(...retards.map(r => r.turnsLeft));
+        const nom = (key: string) => {
+          if (key.startsWith("kw:")) return vocab.keywordLabel(key.slice(3) as Keyword);
+          const cap = composedCapsOf(card.capabilities).find(c => `cap:${c.uid}` === key);
+          return cap ? vocab.composedName(cap) : "Effet";
+        };
+        const lignes = retards.map(r => `${nom(r.key)} : ${r.turnsLeft <= 1 ? "au début du prochain tour" : `dans ${r.turnsLeft} tours`}`);
+        const ambre = keywordModeColor("delay") ?? "#D4A373";
+        const top = 4 + 22 * ((creature.hasDivineShield ? 1 : 0) + (creature.contresortActive ? 1 : 0) + ((creature.exclusionCharges ?? 0) > 0 ? 1 : 0) + (hasOmbre ? 1 : 0));
+        return (
+          <div
+            title={`⏳ Retard\n${lignes.join("\n")}`}
+            style={{
+              position: "absolute", top, right: 4, zIndex: 3,
+              height: 18, minWidth: 18, padding: "0 3px", borderRadius: 9,
+              background: `${ambre}33`, border: `1px solid ${ambre}aa`,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 1,
+              color: ambre, fontSize: 9, fontWeight: 900, lineHeight: 1,
+              textShadow: "0 0 2px #000, 0 0 2px #000",
+            }}
+          >⏳{n}</div>
+        );
+      })()}
+
       {/* Ombre (stealth) indicator */}
       {hasOmbre && !creature.ombreRevealed && (
         <div style={{

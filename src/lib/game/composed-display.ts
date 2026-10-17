@@ -33,6 +33,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.on_draw": "Quand cette carte est piochée",
   "trigger.on_low_hp": "Sous 15 PV",
   "trigger.on_wound": "Blessure",
+  "trigger.on_delay": "Retard {d}",
 
   "content.deal_damage_one": "inflige {x} dégât",
   "content.deal_damage_many": "inflige {x} dégâts",
@@ -466,6 +467,8 @@ export function composedKeywordName(cap: Capability, t?: SafeT): string {
  *  magenta, fin de tour → vert. Seul le passif (automatic) reste neutre
  *  (undefined → blanc). Réutilise keywordModeColor/keywordModeFilter. */
 export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
+  // Retard X : aussi sur un effet de SORT différé (spell_resolution + delay).
+  if ((cap.delay ?? 0) > 0 && (cap.trigger === "on_delay" || cap.trigger === "spell_resolution")) return "delay";
   switch (cap.trigger) {
     case "on_play": return "entry"; // arrivée en jeu → argent bleuté (distinct du passif blanc)
     case "on_death": return "death";
@@ -479,6 +482,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_draw": return "draw";
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
+    case "on_delay": return "delay";
     case "spell_resolution": return "spell"; // sort (résolution immédiate) → gris
     default: return undefined; // automatic (passif/permanent) → blanc
   }
@@ -507,7 +511,7 @@ function composedBadgeBase(cap: Capability, t?: SafeT): TriggerBadge | null {
     // mots-clés (cf. keywordTriggerBadge). Le mot appartient désormais aux seuls
     // EMBLÈMES, où il qualifie une durée de vie réelle.
     if (mode === undefined) return null;
-    const badge = triggerBadge(mode, t);
+    const badge = triggerBadge(mode, t, cap.delay);
     // « Fin de tour · en main » : même couleur que la fin de tour, mais le joueur
     // doit savoir que l'effet ne part QUE tant que la carte attend en main.
     if (badge && (cap.trigger === "on_end_of_turn_in_hand" || cap.trigger === "on_start_of_turn_in_hand")) {

@@ -41,7 +41,7 @@ export { KEYWORDS, KEYWORD_DESC_BY_ID, CREATURE_LABEL_TO_ENGINE_ID } from "@/lib
 // (engine.ts, boucle du flux d'attaque) exécute n'importe quel mot-clé curé
 // en mode "attack" de façon générique ; l'appartenance à ce map est le seul
 // verrou côté picker.
-type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "start_of_turn" | "attack" | "draw" | "low_hp" | "wound";
+type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "start_of_turn" | "attack" | "draw" | "low_hp" | "wound" | "delay";
 // Chantier « tous déclencheurs » : tous les effets d'invocation sont
 // authorables sur les 5 modes supplémentaires. Règles transverses :
 //   - Pouvoirs CIBLÉS déclenchés pendant le tour adverse → cible AU HASARD
@@ -59,8 +59,10 @@ type CuratedMode = "death" | "tap" | "return" | "end_of_turn" | "start_of_turn" 
 // "start_of_turn" (début du tour) rejoint LES DEUX, en miroir exact de
 // "end_of_turn" : la porteuse est en jeu, réveillée et vivante au moment où la
 // file de début de tour la lit.
-const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound"]);
-const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound"]);
+// "delay" (Retard X) rejoint LES DEUX, comme "start_of_turn" : il part dans la
+// même file de début de tour, et seulement si la porteuse est encore en jeu.
+const ALL_MODES = new Set<CuratedMode>(["death", "tap", "return", "end_of_turn", "start_of_turn", "attack", "draw", "low_hp", "wound", "delay"]);
+const ONBOARD_MODES = new Set<CuratedMode>(["tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound", "delay"]);
 export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Convocation X": ALL_MODES,
   "Convocations multiples": ALL_MODES,
@@ -164,7 +166,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Exclusion X": ONBOARD_MODES,
   "Maître d'arme": ONBOARD_MODES,
   // Transformation : mort comprise, mais ni retour en main ni pioche.
-  "Transformation": new Set<CuratedMode>(["death", "tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound"]),
+  "Transformation": new Set<CuratedMode>(["death", "tap", "end_of_turn", "start_of_turn", "attack", "low_hp", "wound", "delay"]),
   "Profanation X": ONBOARD_MODES,
   "Héritage du cimetière": ONBOARD_MODES,
 };

@@ -836,7 +836,8 @@
         "in_hand_suffix": "na mão",
         "on_draw": "Ao ser comprada",
         "on_low_hp": "Abaixo de 15 PV",
-        "on_wound": "Ferimento"
+        "on_wound": "Ferimento",
+        "on_delay": "Atraso {d}"
       },
       "content": {
         "deal_damage_one": "causa {x} de dano",
@@ -2059,7 +2060,8 @@
         "draw": "à compra",
         "low_hp": "abaixo de {n} PV",
         "spell": "na resolução da ação",
-        "wound": "quando ela é ferida sem morrer"
+        "wound": "quando ela é ferida sem morrer",
+        "delay": "ao fim do seu Atraso"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Início de turno",
       "draw": "Compra",
       "low_hp": "Abaixo de {n} PV",
-      "wound": "Ferimento"
+      "wound": "Ferimento",
+      "delay": "Atraso {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "Seleção mágica (1 ação entre 3)",
     "content_forge": "Forja (1 objeto misturado no deck)",
     "forge_min_hint": "Custo mínimo do objeto forjado (limite inferior A). O custo máximo é X; X vazio = qualquer custo.",
-    "tab_style_guides": "Guias de estilo"
+    "tab_style_guides": "Guias de estilo",
+    "mode_title_delay": "Atraso X: uma única vez, no início do X-ésimo turno seguinte, se a unidade ainda estiver em jogo",
+    "trigger_on_delay": "Atraso X (início do X-ésimo turno seguinte)",
+    "retard_turns_title": "Atraso: número de turnos antes do disparo",
+    "retard_spell_title": "Atraso: o efeito dispara no início do X-ésimo turno seguinte de quem o lançou, alvo escolhido nesse momento",
+    "label_retard": "Atraso"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

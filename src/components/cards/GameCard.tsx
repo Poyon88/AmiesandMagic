@@ -480,7 +480,7 @@ export default function GameCard({
                 fontSize: 10 * s, overflow: "visible",
               }}>
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
                   {porteeSk && <AllAlliesMarker size={13 * icoS} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
@@ -628,7 +628,7 @@ export default function GameCard({
               const desc = vocab.spellKeywordDesc(spellKw, card, effectiveTokens);
               return (
               <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
+                <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

@@ -836,7 +836,8 @@
         "in_hand_suffix": "in mano",
         "on_draw": "Quando viene pescata",
         "on_low_hp": "Sotto i 15 PV",
-        "on_wound": "Ferita"
+        "on_wound": "Ferita",
+        "on_delay": "Ritardo {d}"
       },
       "content": {
         "deal_damage_one": "infligge {x} danno",
@@ -2059,7 +2060,8 @@
         "draw": "alla pescata",
         "low_hp": "sotto {n} PV",
         "spell": "alla risoluzione dell'azione",
-        "wound": "quando è ferita senza morire"
+        "wound": "quando è ferita senza morire",
+        "delay": "allo scadere del suo Ritardo"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "Inizio turno",
       "draw": "Pescata",
       "low_hp": "Sotto {n} PV",
-      "wound": "Ferita"
+      "wound": "Ferita",
+      "delay": "Ritardo {d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "Selezione magica (1 azione tra 3)",
     "content_forge": "Forgia (1 Oggetto mescolato nel mazzo)",
     "forge_min_hint": "Costo minimo dell'Oggetto forgiato (limite inferiore A). Il costo massimo è X; X vuoto = qualsiasi costo.",
-    "tab_style_guides": "Guide di stile"
+    "tab_style_guides": "Guide di stile",
+    "mode_title_delay": "Ritardo X: una sola volta, all'inizio del X-esimo turno successivo, se l'unità è ancora in gioco",
+    "trigger_on_delay": "Ritardo X (inizio del X-esimo turno successivo)",
+    "retard_turns_title": "Ritardo: numero di turni prima dell'attivazione",
+    "retard_spell_title": "Ritardo: l'effetto si attiva all'inizio del X-esimo turno successivo di chi lo lancia, bersaglio scelto in quel momento",
+    "label_retard": "Ritardo"
   },
   "game": {
     "error_not_authenticated": "Non autenticato",

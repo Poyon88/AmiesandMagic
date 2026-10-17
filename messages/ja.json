@@ -836,7 +836,8 @@
         "in_hand_suffix": "手札にある",
         "on_draw": "引かれたとき",
         "on_low_hp": "HP15未満",
-        "on_wound": "負傷"
+        "on_wound": "負傷",
+        "on_delay": "遅延{d}"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -2059,7 +2060,8 @@
         "draw": "ドロー時",
         "low_hp": "HPが{n}以下のとき",
         "spell": "アクションの解決時",
-        "wound": "致命傷を受けずに負傷した時"
+        "wound": "致命傷を受けずに負傷した時",
+        "delay": "遅延が終わったとき"
       }
     },
     "triggers": {
@@ -2073,7 +2075,8 @@
       "start_of_turn": "ターン開始時",
       "draw": "ドロー時",
       "low_hp": "HP{n}以下",
-      "wound": "負傷"
+      "wound": "負傷",
+      "delay": "遅延{d}"
     },
     "target_scope": {
       "spell": {
@@ -2938,7 +2941,12 @@
     "content_selection_magique": "魔法選択（3枚から1つのアクション）",
     "content_forge": "鍛造（デッキに混ぜるアイテム1つ）",
     "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。",
-    "tab_style_guides": "スタイルガイド"
+    "tab_style_guides": "スタイルガイド",
+    "mode_title_delay": "遅延X：X回後の自分のターン開始時に一度だけ発動（ユニットが場に残っている場合）",
+    "trigger_on_delay": "遅延X（X回後のターン開始時）",
+    "retard_turns_title": "遅延：発動までのターン数",
+    "retard_spell_title": "遅延：使用者のX回後のターン開始時に発動し、その時に対象を選ぶ",
+    "label_retard": "遅延"
   },
   "game": {
     "error_not_authenticated": "未認証",
