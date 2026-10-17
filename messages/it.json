@@ -2143,6 +2143,11 @@
         "title": "Risveglio {n}",
         "desc": "Invece di giocarla, puoi mettere questa carta in risveglio. Poi ne versi i {n} punti con il tuo mana, 1 punto per mana, durante i tuoi turni. All'ultimo punto entra in gioco come se l'avessi giocata.",
         "remaining": "Restano {left} punti da versare su {n}."
+      },
+      "equipement": {
+        "title": "Equipaggiamento {n}",
+        "desc": "Una volta in gioco, equipaggiare l'oggetto su una tua creatura costa {n} mana. Il costo si paga a ogni equipaggiamento, spostamenti compresi.",
+        "desc_free": "Una volta in gioco, equipaggiare l'oggetto su una tua creatura è gratuito, spostamenti compresi."
       }
     }
   },

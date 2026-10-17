@@ -2143,6 +2143,11 @@
         "title": "Awakening {n}",
         "desc": "Instead of playing it, you can set this card to awaken. You then pay its {n} points with your mana, 1 point per mana, during your turns. On the last point, it enters play as if you had played it.",
         "remaining": "{left} of {n} points left to pay."
+      },
+      "equipement": {
+        "title": "Equip {n}",
+        "desc": "Once the item is in play, equipping it to one of your creatures costs {n} mana. The cost is paid every time you equip it, moves included.",
+        "desc_free": "Once the item is in play, equipping it to one of your creatures is free, moves included."
       }
     }
   },

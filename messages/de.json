@@ -2143,6 +2143,11 @@
         "title": "Erwachen {n}",
         "desc": "Statt sie zu spielen, kannst du diese Karte erwachen lassen. Danach zahlst du ihre {n} Punkte mit deinem Mana, 1 Punkt pro Mana, in deinen Zügen. Mit dem letzten Punkt kommt sie ins Spiel, als hättest du sie gespielt.",
         "remaining": "Noch {left} von {n} Punkten zu zahlen."
+      },
+      "equipement": {
+        "title": "Ausrüsten {n}",
+        "desc": "Sobald der Gegenstand im Spiel ist, kostet das Ausrüsten einer deiner Kreaturen {n} Mana. Die Kosten fallen bei jedem Ausrüsten an, Umrüsten eingeschlossen.",
+        "desc_free": "Sobald der Gegenstand im Spiel ist, ist das Ausrüsten einer deiner Kreaturen kostenlos, Umrüsten eingeschlossen."
       }
     }
   },

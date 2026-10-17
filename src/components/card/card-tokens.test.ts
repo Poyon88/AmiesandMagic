@@ -54,6 +54,10 @@ describe("descriptif au survol", () => {
     expect(costHelp("defausse", 1).desc).toContain("une carte");
     expect(costHelp("defausse", 2).desc).toContain("2 cartes");
   });
+  it("équipement : payant ou gratuit", () => {
+    expect(costHelp("equipement", 2).desc).toContain("2 mana");
+    expect(costHelp("equipement", 0).desc).toContain("gratuit");
+  });
   it("Éveil entamé : indique les points restants", () => {
     expect(costHelp("eveil", 7, undefined, 4).extra).toBe("Encore 3 points à verser sur 7.");
     expect(costHelp("eveil", 7).extra).toBeUndefined();

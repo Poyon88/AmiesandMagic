@@ -2143,6 +2143,11 @@
         "title": "Despertar {n}",
         "desc": "Em vez de jogá-la, você pode colocar esta carta em despertar. Depois paga seus {n} pontos com seu mana, 1 ponto por mana, durante seus turnos. No último ponto, ela entra em jogo como se você a tivesse jogado.",
         "remaining": "Faltam {left} de {n} pontos a pagar."
+      },
+      "equipement": {
+        "title": "Equipar {n}",
+        "desc": "Com o objeto em jogo, equipá-lo em uma de suas criaturas custa {n} de mana. O custo é pago a cada equipamento, mudanças incluídas.",
+        "desc_free": "Com o objeto em jogo, equipá-lo em uma de suas criaturas é gratuito, mudanças incluídas."
       }
     }
   },

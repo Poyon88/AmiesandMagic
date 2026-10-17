@@ -2143,6 +2143,11 @@
         "title": "Éveil {n}",
         "desc": "Au lieu de la jouer, vous pouvez mettre cette carte en éveil. Vous versez ensuite ses {n} points avec votre mana, 1 point par mana, pendant vos tours. Au dernier point, elle entre en jeu comme si vous l'aviez jouée.",
         "remaining": "Encore {left} points à verser sur {n}."
+      },
+      "equipement": {
+        "title": "Équipement {n}",
+        "desc": "Une fois l'objet en jeu, l'équiper sur une de vos créatures coûte {n} mana. Le coût se paie à chaque équipement, déplacement compris.",
+        "desc_free": "Une fois l'objet en jeu, l'équiper sur une de vos créatures est gratuit, déplacement compris."
       }
     }
   },

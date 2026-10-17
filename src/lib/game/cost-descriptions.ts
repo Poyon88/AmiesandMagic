@@ -7,7 +7,7 @@
 // le repli sont choisis par le joueur, l'exil prend le dessus du deck.
 import type { SafeT } from "@/i18n/config";
 
-export type CostHelpKind = "vie" | "defausse" | "sacrifice" | "exil" | "repli" | "eveil";
+export type CostHelpKind = "vie" | "defausse" | "sacrifice" | "exil" | "repli" | "eveil" | "equipement";
 
 export const COST_HELP_FR: Record<string, string> = {
   "vie.title": "Coût en vie {n}",
@@ -27,6 +27,9 @@ export const COST_HELP_FR: Record<string, string> = {
   "eveil.title": "Éveil {n}",
   "eveil.desc": "Au lieu de la jouer, vous pouvez mettre cette carte en éveil. Vous versez ensuite ses {n} points avec votre mana, 1 point par mana, pendant vos tours. Au dernier point, elle entre en jeu comme si vous l'aviez jouée.",
   "eveil.remaining": "Encore {left} points à verser sur {n}.",
+  "equipement.title": "Équipement {n}",
+  "equipement.desc": "Une fois l'objet en jeu, l'équiper sur une de vos créatures coûte {n} mana. Le coût se paie à chaque équipement, déplacement compris.",
+  "equipement.desc_free": "Une fois l'objet en jeu, l'équiper sur une de vos créatures est gratuit, déplacement compris.",
 };
 
 function texte(t: SafeT | undefined, cle: string, params: Record<string, number>): string {
@@ -44,7 +47,9 @@ export function costHelp(
   paid = 0,
 ): { title: string; desc: string; extra?: string } {
   const singulier = kind === "vie" || kind === "eveil";
-  const desc = texte(t, singulier ? `${kind}.desc` : `${kind}.desc_${n > 1 ? "many" : "one"}`, { n });
+  const cle = kind === "equipement" ? (n > 0 ? "equipement.desc" : "equipement.desc_free")
+    : singulier ? `${kind}.desc` : `${kind}.desc_${n > 1 ? "many" : "one"}`;
+  const desc = texte(t, cle, { n });
   const left = Math.max(0, n - paid);
   return {
     title: texte(t, `${kind}.title`, { n }),
