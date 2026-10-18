@@ -943,7 +943,7 @@ function HandCard({
                 fontSize: 8, overflow: "visible",
               }}>
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
-                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode="spell" singulier={spellKw.singulier} />
+                  <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
                   {porteeSk && <AllAlliesMarker size={8} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
@@ -1077,7 +1077,7 @@ function HandCard({
                 const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
                 return (
                 <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode="spell" singulier={spellKw.singulier} /></span>
+                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
                   <div>
                     <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
                     <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>

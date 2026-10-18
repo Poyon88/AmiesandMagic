@@ -148,8 +148,12 @@ export function useVocab(): Vocab {
         keywordTriggerBadge(kw, inst, safe),
       triggerBadge: (mode: KeywordMode | undefined) => triggerBadge(mode, safe),
       composedBadge: (cap: Capability) => composedBadge(cap, safe),
-      spellKeywordLabel: (kw: SpellKeywordInstance) =>
-        getSpellKeywordLabel(kw, safe),
+      // Retard X : « Impact 3 · Retard 2 » — l'effet ne part pas au lancement.
+      spellKeywordLabel: (kw: SpellKeywordInstance) => {
+        const base = getSpellKeywordLabel(kw, safe);
+        const retard = kw.delay ? triggerBadge("delay", safe, kw.delay) : null;
+        return retard ? `${base} · ${retard.label}` : base;
+      },
       spellKeywordDesc: (
         kw: SpellKeywordInstance,
         card?: Card | null,

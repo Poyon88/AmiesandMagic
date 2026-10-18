@@ -29,6 +29,7 @@ import type { CardType, Capability, ComposedEffect, ComposedEffectContent, Compo
 import { porteeValide, spellScopes } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import MachinePartEditor from "./MachinePartEditor";
+import RetardSelect from "./RetardSelect";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
@@ -245,7 +246,7 @@ export default function ComposedEffectsEditor({
   const locale = useLocale();
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
-  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }];
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }, { v: "on_delay", l: tr('trigger_on_delay') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui
@@ -632,10 +633,30 @@ export default function ComposedEffectsEditor({
                   // ce déclencheur en la gardant laisserait un effet inerte, sans
                   // que rien à l'écran ne le dise.
                   const perdSaCible = v !== "on_wound" && cap.composed?.target?.entity === "damage_source";
+                  // Retard X : 1 par défaut en passant à `on_delay` ; effacé sur
+                  // tout déclencheur qui ne le lit pas.
+                  const retard = v === "on_delay" ? { delay: cap.delay ?? 1 }
+                    : v === "spell_resolution" ? {} : { delay: undefined };
                   patchCap(idx, perdSaCible
-                    ? { trigger: v, composed: { ...cap.composed!, target: { ...cap.composed!.target!, entity: "unit", designation: "choice" } } }
-                    : { trigger: v });
+                    ? { trigger: v, ...retard, composed: { ...cap.composed!, target: { ...cap.composed!.target!, entity: "unit", designation: "choice" } } }
+                    : { trigger: v, ...retard });
                 },
+              )}
+
+              {/* RETARD X — unité : nombre de tours du déclencheur `on_delay` ; sort :
+                  effet différé, facultatif (cible choisie au déclenchement). */}
+              {cap.effectKind !== "emblem" && (cap.trigger === "on_delay" || (!isUnit && cap.trigger === "spell_resolution")) && (
+                <>
+                  <span style={labelStyle}>{tr('label_retard')}</span>
+                  <span>
+                    <RetardSelect
+                      allowNone={cap.trigger === "spell_resolution"}
+                      value={cap.delay ?? (cap.trigger === "on_delay" ? 1 : undefined)}
+                      title={cap.trigger === "on_delay" ? tr('retard_turns_title') : tr('retard_spell_title')}
+                      onChange={(n) => patchCap(idx, { delay: n ?? (cap.trigger === "on_delay" ? 1 : undefined) })}
+                    />
+                  </span>
+                </>
               )}
 
               {/* SINGULIER — condition ajoutée au déclencheur choisi ci-dessus. */}
@@ -680,7 +701,7 @@ export default function ComposedEffectsEditor({
                       ...(e.target.checked && !isEmblemCadence(cap.trigger)
                         ? { trigger: DEFAULT_EMBLEM_CADENCE }
                         : {}),
-                      ...(e.target.checked ? {} : { side: undefined }),
+                      ...(e.target.checked ? { delay: undefined } : { side: undefined }),
                     })}
                   />
                   {tr('emblem_permanent')}

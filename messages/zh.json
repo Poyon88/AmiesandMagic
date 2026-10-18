@@ -836,7 +836,8 @@
         "in_hand_suffix": "在手牌中",
         "on_draw": "被抽到时",
         "on_low_hp": "生命值低于15",
-        "on_wound": "受伤"
+        "on_wound": "受伤",
+        "on_delay": "延迟{d}"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -2060,7 +2061,8 @@
         "draw": "抽牌时",
         "low_hp": "生命值低于{n}点时",
         "spell": "行动结算时",
-        "wound": "当它受伤但未死亡时"
+        "wound": "当它受伤但未死亡时",
+        "delay": "延迟结束时"
       }
     },
     "triggers": {
@@ -2074,7 +2076,8 @@
       "start_of_turn": "回合开始",
       "draw": "抽牌",
       "low_hp": "生命值低于{n}点",
-      "wound": "受伤"
+      "wound": "受伤",
+      "delay": "延迟{d}"
     },
     "target_scope": {
       "spell": {
@@ -2110,6 +2113,42 @@
         "all_enemies": "所有敌方生物",
         "all_allies": "所有友方生物",
         "all": "双方所有生物"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "生命代价 {n}",
+        "desc": "除法力外，打出此牌时你的英雄失去{n}点生命。若会使英雄降至0点生命则不能打出。"
+      },
+      "defausse": {
+        "title": "弃牌 {n}",
+        "desc_one": "除法力外，从手牌中弃掉一张你选择的牌。",
+        "desc_many": "除法力外，从手牌中弃掉{n}张你选择的牌。"
+      },
+      "sacrifice": {
+        "title": "献祭 {n}",
+        "desc_one": "除法力外，献祭一个你在场上的生物（由你选择）。",
+        "desc_many": "除法力外，献祭{n}个你在场上的生物（由你选择）。"
+      },
+      "exil": {
+        "title": "放逐 {n}",
+        "desc_one": "除法力外，你牌库顶的一张牌被放逐，离开游戏。牌库为空时不能打出。",
+        "desc_many": "除法力外，你牌库顶的{n}张牌被放逐，离开游戏。牌库中至少需要{n}张牌。"
+      },
+      "repli": {
+        "title": "回置 {n}",
+        "desc_one": "除法力外，将一张你选择的手牌放回牌库顶。",
+        "desc_many": "除法力外，将{n}张你选择的手牌放回牌库顶。最先选择的那张位于最上面。"
+      },
+      "eveil": {
+        "title": "觉醒 {n}",
+        "desc": "你可以不打出此牌，而是让它进入觉醒。之后在你的回合中用法力支付其{n}点，每点法力支付1点。支付最后一点时，它如同被你打出一样进场。",
+        "remaining": "还需支付{left}/{n}点。"
+      },
+      "equipement": {
+        "title": "装备 {n}",
+        "desc": "物品进场后，将其装备给你的一个生物需要{n}点法力。每次装备（包括转移）都需支付。",
+        "desc_free": "物品进场后，将其装备给你的一个生物免费，包括转移。"
       }
     }
   },
@@ -2940,7 +2979,12 @@
     "content_selection_magique": "魔法抉择（从3张中选1张行动）",
     "content_forge": "熔铸（1件物品混入牌堆）",
     "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。",
-    "tab_style_guides": "风格指南"
+    "tab_style_guides": "风格指南",
+    "mode_title_delay": "延迟X：在之后第X个己方回合开始时触发一次（单位仍在场时）",
+    "trigger_on_delay": "延迟X（之后第X个回合开始时）",
+    "retard_turns_title": "延迟：触发前的回合数",
+    "retard_spell_title": "延迟：效果在施法者之后第X个回合开始时触发，届时选择目标",
+    "label_retard": "延迟"
   },
   "game": {
     "error_not_authenticated": "未登录",

@@ -836,7 +836,8 @@
         "in_hand_suffix": "na mão",
         "on_draw": "Ao ser comprada",
         "on_low_hp": "Abaixo de 15 PV",
-        "on_wound": "Ferimento"
+        "on_wound": "Ferimento",
+        "on_delay": "Atraso {d}"
       },
       "content": {
         "deal_damage_one": "causa {x} de dano",
@@ -2060,7 +2061,8 @@
         "draw": "à compra",
         "low_hp": "abaixo de {n} PV",
         "spell": "na resolução da ação",
-        "wound": "quando ela é ferida sem morrer"
+        "wound": "quando ela é ferida sem morrer",
+        "delay": "ao fim do seu Atraso"
       }
     },
     "triggers": {
@@ -2074,7 +2076,8 @@
       "start_of_turn": "Início de turno",
       "draw": "Compra",
       "low_hp": "Abaixo de {n} PV",
-      "wound": "Ferimento"
+      "wound": "Ferimento",
+      "delay": "Atraso {d}"
     },
     "target_scope": {
       "spell": {
@@ -2110,6 +2113,42 @@
         "all_enemies": "todas as criaturas inimigas",
         "all_allies": "todas as criaturas aliadas",
         "all": "todas as criaturas de ambos os lados"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Custo em vida {n}",
+        "desc": "Além do mana, seu herói perde {n} PV ao jogar esta carta. Não é permitido se o deixar com 0 PV."
+      },
+      "defausse": {
+        "title": "Descarte {n}",
+        "desc_one": "Além do mana, descarte uma carta da sua mão, à sua escolha.",
+        "desc_many": "Além do mana, descarte {n} cartas da sua mão, à sua escolha."
+      },
+      "sacrifice": {
+        "title": "Sacrifício {n}",
+        "desc_one": "Além do mana, sacrifique uma de suas criaturas em jogo, à sua escolha.",
+        "desc_many": "Além do mana, sacrifique {n} de suas criaturas em jogo, à sua escolha."
+      },
+      "exil": {
+        "title": "Exílio {n}",
+        "desc_one": "Além do mana, a carta do topo do seu deck é exilada: ela sai da partida. Não é permitido se o deck estiver vazio.",
+        "desc_many": "Além do mana, as {n} cartas do topo do seu deck são exiladas: elas saem da partida. Seu deck precisa ter pelo menos {n} cartas."
+      },
+      "repli": {
+        "title": "Recolocação {n}",
+        "desc_one": "Além do mana, coloque uma carta da sua mão, à sua escolha, no topo do deck.",
+        "desc_many": "Além do mana, coloque {n} cartas da sua mão, à sua escolha, no topo do deck. A primeira escolhida fica no topo."
+      },
+      "eveil": {
+        "title": "Despertar {n}",
+        "desc": "Em vez de jogá-la, você pode colocar esta carta em despertar. Depois paga seus {n} pontos com seu mana, 1 ponto por mana, durante seus turnos. No último ponto, ela entra em jogo como se você a tivesse jogado.",
+        "remaining": "Faltam {left} de {n} pontos a pagar."
+      },
+      "equipement": {
+        "title": "Equipar {n}",
+        "desc": "Com o objeto em jogo, equipá-lo em uma de suas criaturas custa {n} de mana. O custo é pago a cada equipamento, mudanças incluídas.",
+        "desc_free": "Com o objeto em jogo, equipá-lo em uma de suas criaturas é gratuito, mudanças incluídas."
       }
     }
   },
@@ -2940,7 +2979,12 @@
     "content_selection_magique": "Seleção mágica (1 ação entre 3)",
     "content_forge": "Forja (1 objeto misturado no deck)",
     "forge_min_hint": "Custo mínimo do objeto forjado (limite inferior A). O custo máximo é X; X vazio = qualquer custo.",
-    "tab_style_guides": "Guias de estilo"
+    "tab_style_guides": "Guias de estilo",
+    "mode_title_delay": "Atraso X: uma única vez, no início do X-ésimo turno seguinte, se a unidade ainda estiver em jogo",
+    "trigger_on_delay": "Atraso X (início do X-ésimo turno seguinte)",
+    "retard_turns_title": "Atraso: número de turnos antes do disparo",
+    "retard_spell_title": "Atraso: o efeito dispara no início do X-ésimo turno seguinte de quem o lançou, alvo escolhido nesse momento",
+    "label_retard": "Atraso"
   },
   "game": {
     "error_not_authenticated": "Não autenticado",

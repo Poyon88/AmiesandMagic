@@ -836,7 +836,8 @@
         "in_hand_suffix": "en la mano",
         "on_draw": "Al robarse",
         "on_low_hp": "Menos de 15 PV",
-        "on_wound": "Herida"
+        "on_wound": "Herida",
+        "on_delay": "Retardo {d}"
       },
       "content": {
         "deal_damage_one": "inflige {x} daño",
@@ -2060,7 +2061,8 @@
         "draw": "al robar",
         "low_hp": "con menos de {n} PV",
         "spell": "al resolverse la acción",
-        "wound": "cuando resulta herida sin morir"
+        "wound": "cuando resulta herida sin morir",
+        "delay": "al vencer su Retardo"
       }
     },
     "triggers": {
@@ -2074,7 +2076,8 @@
       "start_of_turn": "Inicio de turno",
       "draw": "Robo",
       "low_hp": "Con menos de {n} PV",
-      "wound": "Herida"
+      "wound": "Herida",
+      "delay": "Retardo {d}"
     },
     "target_scope": {
       "spell": {
@@ -2110,6 +2113,42 @@
         "all_enemies": "todas las criaturas enemigas",
         "all_allies": "todas las criaturas aliadas",
         "all": "todas las criaturas de ambos bandos"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Coste en vida {n}",
+        "desc": "Además del maná, tu héroe pierde {n} PV al jugar esta carta. No se permite si lo dejaría a 0 PV."
+      },
+      "defausse": {
+        "title": "Descarte {n}",
+        "desc_one": "Además del maná, descarta una carta de tu mano a tu elección.",
+        "desc_many": "Además del maná, descarta {n} cartas de tu mano a tu elección."
+      },
+      "sacrifice": {
+        "title": "Sacrificio {n}",
+        "desc_one": "Además del maná, sacrifica una de tus criaturas en juego, a tu elección.",
+        "desc_many": "Además del maná, sacrifica {n} de tus criaturas en juego, a tu elección."
+      },
+      "exil": {
+        "title": "Exilio {n}",
+        "desc_one": "Además del maná, la carta superior de tu mazo es exiliada: sale de la partida. No se permite si tu mazo está vacío.",
+        "desc_many": "Además del maná, las {n} cartas superiores de tu mazo son exiliadas: salen de la partida. Tu mazo debe tener al menos {n} cartas."
+      },
+      "repli": {
+        "title": "Repliegue {n}",
+        "desc_one": "Además del maná, pon una carta de tu mano a tu elección encima de tu mazo.",
+        "desc_many": "Además del maná, pon {n} cartas de tu mano a tu elección encima de tu mazo. La primera elegida queda encima."
+      },
+      "eveil": {
+        "title": "Despertar {n}",
+        "desc": "En lugar de jugarla, puedes poner esta carta en despertar. Luego pagas sus {n} puntos con tu maná, 1 punto por maná, durante tus turnos. Con el último punto entra en juego como si la hubieras jugado.",
+        "remaining": "Quedan {left} puntos por pagar de {n}."
+      },
+      "equipement": {
+        "title": "Equipar {n}",
+        "desc": "Una vez el objeto en juego, equiparlo a una de tus criaturas cuesta {n} de maná. El coste se paga cada vez que lo equipas, cambios incluidos.",
+        "desc_free": "Una vez el objeto en juego, equiparlo a una de tus criaturas es gratis, cambios incluidos."
       }
     }
   },
@@ -2940,7 +2979,12 @@
     "content_selection_magique": "Selección mágica (1 acción de entre 3)",
     "content_forge": "Forja (1 objeto mezclado en el mazo)",
     "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste.",
-    "tab_style_guides": "Guías de estilo"
+    "tab_style_guides": "Guías de estilo",
+    "mode_title_delay": "Retardo X: una sola vez, al inicio del X-ésimo turno siguiente, si la unidad sigue en juego",
+    "trigger_on_delay": "Retardo X (inicio del X-ésimo turno siguiente)",
+    "retard_turns_title": "Retardo: número de turnos antes de activarse",
+    "retard_spell_title": "Retardo: el efecto se activa al inicio del X-ésimo turno siguiente del lanzador, objetivo elegido entonces",
+    "label_retard": "Retardo"
   },
   "game": {
     "error_not_authenticated": "No autenticado",

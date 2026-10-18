@@ -68,7 +68,7 @@ export interface TriggerBadge {
 
 /** Badge d'un mode d'affichage. Sert tel quel aux effets COMPOSÉS, dont le
  *  déclencheur est déjà un mode (cf. `composedTriggerMode`). */
-export function triggerBadge(mode: KeywordMode | undefined, t?: SafeT): TriggerBadge | null {
+export function triggerBadge(mode: KeywordMode | undefined, t?: SafeT, delay?: number): TriggerBadge | null {
   // `spell` ne désigne pas un déclencheur de créature mais la résolution du
   // sort porteur : aucun mot ne lui a été attribué.
   if (mode === "spell") return null;
@@ -79,7 +79,8 @@ export function triggerBadge(mode: KeywordMode | undefined, t?: SafeT): TriggerB
   return {
     // SafeT rend la chaîne BRUTE (pas de formatage ICU) : la substitution est à
     // notre charge, comme partout dans ce module.
-    label: brut.replace("{n}", String(LOW_HP_TRIGGER_THRESHOLD)),
+    // `{d}` : le X de Retard (« Retard 2 »).
+    label: brut.replace("{n}", String(LOW_HP_TRIGGER_THRESHOLD)).replace("{d}", String(delay ?? 1)),
     // Blanc pour un permanent — même règle que l'icône non teintée.
     color: keywordModeColor(mode) ?? "#fff",
   };
@@ -106,7 +107,7 @@ export function keywordTriggerBadge(
   t?: SafeT,
 ): TriggerBadge | null {
   const mode = keywordTriggerMode(kw, inst);
-  const base = mode === undefined ? null : triggerBadge(mode, t);
+  const base = mode === undefined ? null : triggerBadge(mode, t, inst?.delay);
   // SINGULIER : la condition s'annonce à côté du moment (« Mort · Singulier »),
   // dans SA couleur réservée — un passif Singulier s'annonce « Singulier » seul.
   if (inst?.singulier === true) {
@@ -154,6 +155,7 @@ const REPLI_FR: Record<string, string> = {
   draw: "Pioche",
   low_hp: "Sous {n} PV",
   wound: "Blessure",
+  delay: "Retard {d}",
 };
 
 export function keywordScopeNote(

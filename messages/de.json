@@ -836,7 +836,8 @@
         "in_hand_suffix": "auf der Hand",
         "on_draw": "Beim Ziehen",
         "on_low_hp": "Unter 15 LP",
-        "on_wound": "Verwundung"
+        "on_wound": "Verwundung",
+        "on_delay": "Verzögerung {d}"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -2060,7 +2061,8 @@
         "draw": "beim Ziehen",
         "low_hp": "unter {n} LP",
         "spell": "bei der Auflösung der Aktion",
-        "wound": "wenn sie verwundet wird, ohne zu sterben"
+        "wound": "wenn sie verwundet wird, ohne zu sterben",
+        "delay": "wenn ihre Verzögerung abläuft"
       }
     },
     "triggers": {
@@ -2074,7 +2076,8 @@
       "start_of_turn": "Rundenanfang",
       "draw": "Ziehen",
       "low_hp": "Unter {n} LP",
-      "wound": "Verwundung"
+      "wound": "Verwundung",
+      "delay": "Verzögerung {d}"
     },
     "target_scope": {
       "spell": {
@@ -2110,6 +2113,42 @@
         "all_enemies": "alle gegnerischen Kreaturen",
         "all_allies": "alle verbündeten Kreaturen",
         "all": "alle Kreaturen beider Seiten"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Lebenskosten {n}",
+        "desc": "Zusätzlich zum Mana verliert dein Held {n} LP, wenn du diese Karte spielst. Nicht erlaubt, wenn er dadurch auf 0 LP fiele."
+      },
+      "defausse": {
+        "title": "Abwerfen {n}",
+        "desc_one": "Zusätzlich zum Mana wirfst du eine Karte deiner Wahl aus der Hand ab.",
+        "desc_many": "Zusätzlich zum Mana wirfst du {n} Karten deiner Wahl aus der Hand ab."
+      },
+      "sacrifice": {
+        "title": "Opfer {n}",
+        "desc_one": "Zusätzlich zum Mana opferst du eine deiner Kreaturen im Spiel, nach deiner Wahl.",
+        "desc_many": "Zusätzlich zum Mana opferst du {n} deiner Kreaturen im Spiel, nach deiner Wahl."
+      },
+      "exil": {
+        "title": "Exil {n}",
+        "desc_one": "Zusätzlich zum Mana wird die oberste Karte deines Decks verbannt: Sie verlässt das Spiel. Nicht erlaubt, wenn dein Deck leer ist.",
+        "desc_many": "Zusätzlich zum Mana werden die obersten {n} Karten deines Decks verbannt: Sie verlassen das Spiel. Dein Deck muss mindestens {n} Karten enthalten."
+      },
+      "repli": {
+        "title": "Rückzug {n}",
+        "desc_one": "Zusätzlich zum Mana legst du eine Karte deiner Wahl aus der Hand oben auf dein Deck.",
+        "desc_many": "Zusätzlich zum Mana legst du {n} Karten deiner Wahl aus der Hand oben auf dein Deck. Die zuerst gewählte liegt oben."
+      },
+      "eveil": {
+        "title": "Erwachen {n}",
+        "desc": "Statt sie zu spielen, kannst du diese Karte erwachen lassen. Danach zahlst du ihre {n} Punkte mit deinem Mana, 1 Punkt pro Mana, in deinen Zügen. Mit dem letzten Punkt kommt sie ins Spiel, als hättest du sie gespielt.",
+        "remaining": "Noch {left} von {n} Punkten zu zahlen."
+      },
+      "equipement": {
+        "title": "Ausrüsten {n}",
+        "desc": "Sobald der Gegenstand im Spiel ist, kostet das Ausrüsten einer deiner Kreaturen {n} Mana. Die Kosten fallen bei jedem Ausrüsten an, Umrüsten eingeschlossen.",
+        "desc_free": "Sobald der Gegenstand im Spiel ist, ist das Ausrüsten einer deiner Kreaturen kostenlos, Umrüsten eingeschlossen."
       }
     }
   },
@@ -2940,7 +2979,12 @@
     "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
     "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
     "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten.",
-    "tab_style_guides": "Stilrichtlinien"
+    "tab_style_guides": "Stilrichtlinien",
+    "mode_title_delay": "Verzögerung X: einmalig, zu Beginn des X-ten folgenden Zuges, falls die Einheit noch im Spiel ist",
+    "trigger_on_delay": "Verzögerung X (Beginn des X-ten folgenden Zuges)",
+    "retard_turns_title": "Verzögerung: Anzahl der Züge bis zur Auslösung",
+    "retard_spell_title": "Verzögerung: der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkers ausgelöst, Ziel wird dann gewählt",
+    "label_retard": "Verzögerung"
   },
   "game": {
     "error_not_authenticated": "Nicht authentifiziert",

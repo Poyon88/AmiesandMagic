@@ -15,6 +15,9 @@
 //    peut pas s'élargir sans toucher le bandeau de titre et baisse un peu son
 //    corps ; jamais trois chiffres (borné à 99).
 import React from "react";
+import { CostHelpBubble, useHoverRect } from "./CostHelpBubble";
+import { costHelp } from "@/lib/game/cost-descriptions";
+import { useSafeT } from "@/i18n/useVocab";
 
 export const HERALDRY = {
   goldCost: "#C9A227",
@@ -208,10 +211,14 @@ export function EquipToken({ value, sousLeCout = true }: { value: number; sousLe
   const shown = shownValue(value);
   const c = SHIELD_GEOMETRY.cost;
   const e = SHIELD_GEOMETRY.equip;
+  const t = useSafeT();
+  const { survol, props } = useHoverRect<"eq">();
   return (
     <div
-      title={shown > 0 ? `Équiper : ${shown} mana, à chaque équipement` : "Équiper : gratuit"}
+      {...props("eq")}
+      aria-label={shown > 0 ? `Équiper : ${shown} mana, à chaque équipement` : "Équiper : gratuit"}
       style={{
+        cursor: "help",
         position: "absolute", left: `${c.left}cqw`,
         top: `${sousLeCout ? c.top + c.size + e.gap : c.top}cqw`,
         width: `${c.size}cqw`, height: `${e.height}cqw`,
@@ -239,6 +246,7 @@ export function EquipToken({ value, sousLeCout = true }: { value: number; sousLe
         <span aria-hidden="true" style={{ fontSize: "5.4cqw" }}>⚒</span>
         <span style={{ fontSize: "7.4cqw" }}>{shown}</span>
       </span>
+      {survol && <CostHelpBubble help={costHelp("equipement", shown, t)} rect={survol.rect} />}
     </div>
   );
 }

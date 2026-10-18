@@ -16,6 +16,9 @@
 import React, { useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { HERALDRY_FONT } from "./CardCounters";
+import { CostHelpBubble, useHoverRect } from "./CostHelpBubble";
+import { costHelp, type CostHelpKind } from "@/lib/game/cost-descriptions";
+import { useSafeT } from "@/i18n/useVocab";
 
 export type CostType = "vie" | "defausse" | "sacrifice" | "exil" | "repli";
 
@@ -158,11 +161,14 @@ export interface RightSlotsProps {
 }
 
 /** Colonne de droite : l'Éveil d'abord, le coût additionnel ensuite, puis `after`.
- *  Deux jetons maximum — le troisième est ignoré, et signalé en dev. */
+ *  Deux jetons maximum — le troisième est ignoré, et signalé en dev.
+ *  Chaque jeton affiche son descriptif au survol. */
 export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: RightSlotsProps) {
-  const items: { key: string; node: ReactNode; button?: boolean }[] = [];
-  if (awaken?.total) items.push({ key: "aw", node: <AwakenToken total={awaken.total} paid={awaken.paid} />, button: !!onAwaken });
-  if (cost?.value) items.push({ key: "ct", node: <CostToken type={cost.type} value={cost.value} /> });
+  const t = useSafeT();
+  const { survol, props: survolProps } = useHoverRect<string>();
+  const items: { key: string; node: ReactNode; button?: boolean; help: { kind: CostHelpKind; n: number; paid?: number } }[] = [];
+  if (awaken?.total) items.push({ key: "aw", node: <AwakenToken total={awaken.total} paid={awaken.paid} />, button: !!onAwaken, help: { kind: "eveil", n: awaken.total, paid: awaken.paid } });
+  if (cost?.value) items.push({ key: "ct", node: <CostToken type={cost.type} value={cost.value} />, help: { kind: cost.type, n: cost.value } });
   if (items.length > 2 && process.env.NODE_ENV !== "production") {
     console.warn("[card] plus de deux jetons dans le coin droit — les suivants sont ignorés");
   }
@@ -172,13 +178,25 @@ export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: Right
     width: `${RIGHT_SLOT.width}cqw`, height: `${RIGHT_SLOT.height}cqw`,
     display: "grid", placeItems: "center", zIndex: 3,
   });
+  const bulle = (() => {
+    const item = survol && shown.find((it) => it.key === survol.key);
+    if (!item || !survol) return null;
+    return (
+      <CostHelpBubble
+        help={costHelp(item.help.kind, item.help.n, t, item.help.paid)}
+        rect={survol.rect}
+        note={item.button ? awakenTitle : undefined}
+      />
+    );
+  })();
   return (
     <>
       {shown.map(({ key, node, button }, i) => button ? (
         <button
           key={key}
           type="button"
-          title={awakenTitle}
+          aria-label={awakenTitle}
+          {...survolProps(key)}
           onClick={(e) => { e.stopPropagation(); onAwaken?.(); }}
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
@@ -186,8 +204,9 @@ export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: Right
           style={{ ...slotStyle(i), zIndex: 6, background: "transparent", border: "none", padding: 0, cursor: "pointer", pointerEvents: "auto" }}
         >{node}</button>
       ) : (
-        <div key={key} style={{ ...slotStyle(i), pointerEvents: "none" }}>{node}</div>
+        <div key={key} {...survolProps(key)} style={{ ...slotStyle(i), pointerEvents: "auto", cursor: "help" }}>{node}</div>
       ))}
+      {bulle}
       {after != null && (
         <div style={{ ...slotStyle(shown.length), pointerEvents: "none" }}>{after}</div>
       )}

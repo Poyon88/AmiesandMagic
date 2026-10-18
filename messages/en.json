@@ -836,7 +836,8 @@
         "in_hand_suffix": "in hand",
         "on_draw": "When Drawn",
         "on_low_hp": "Below 15 HP",
-        "on_wound": "Wound"
+        "on_wound": "Wound",
+        "on_delay": "Delay {d}"
       },
       "content": {
         "deal_damage_one": "deals {x} damage",
@@ -2060,7 +2061,8 @@
         "draw": "on draw",
         "low_hp": "below {n} HP",
         "spell": "when the action resolves",
-        "wound": "when it is wounded without dying"
+        "wound": "when it is wounded without dying",
+        "delay": "when its Delay expires"
       }
     },
     "triggers": {
@@ -2074,7 +2076,8 @@
       "start_of_turn": "Start of turn",
       "draw": "Draw",
       "low_hp": "Below {n} HP",
-      "wound": "Wound"
+      "wound": "Wound",
+      "delay": "Delay {d}"
     },
     "target_scope": {
       "spell": {
@@ -2110,6 +2113,42 @@
         "all_enemies": "all enemy creatures",
         "all_allies": "all allied creatures",
         "all": "all creatures on both sides"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Life cost {n}",
+        "desc": "On top of mana, your hero loses {n} HP when you play this card. Not allowed if it would bring your hero to 0 HP."
+      },
+      "defausse": {
+        "title": "Discard {n}",
+        "desc_one": "On top of mana, discard a card of your choice from your hand.",
+        "desc_many": "On top of mana, discard {n} cards of your choice from your hand."
+      },
+      "sacrifice": {
+        "title": "Sacrifice {n}",
+        "desc_one": "On top of mana, sacrifice one of your creatures in play, of your choice.",
+        "desc_many": "On top of mana, sacrifice {n} of your creatures in play, of your choice."
+      },
+      "exil": {
+        "title": "Exile {n}",
+        "desc_one": "On top of mana, the top card of your deck is exiled: it leaves the game. Not allowed if your deck is empty.",
+        "desc_many": "On top of mana, the top {n} cards of your deck are exiled: they leave the game. Your deck must hold at least {n} cards."
+      },
+      "repli": {
+        "title": "Retreat {n}",
+        "desc_one": "On top of mana, put a card of your choice from your hand on top of your deck.",
+        "desc_many": "On top of mana, put {n} cards of your choice from your hand on top of your deck. The first one chosen ends up on top."
+      },
+      "eveil": {
+        "title": "Awakening {n}",
+        "desc": "Instead of playing it, you can set this card to awaken. You then pay its {n} points with your mana, 1 point per mana, during your turns. On the last point, it enters play as if you had played it.",
+        "remaining": "{left} of {n} points left to pay."
+      },
+      "equipement": {
+        "title": "Equip {n}",
+        "desc": "Once the item is in play, equipping it to one of your creatures costs {n} mana. The cost is paid every time you equip it, moves included.",
+        "desc_free": "Once the item is in play, equipping it to one of your creatures is free, moves included."
       }
     }
   },
@@ -2940,7 +2979,12 @@
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
     "content_selection_magique": "Magic Selection (1 Action out of 3)",
-    "tab_style_guides": "Style guides"
+    "tab_style_guides": "Style guides",
+    "mode_title_delay": "Delay X: once, at the start of the X-th following turn, if the unit is still in play",
+    "trigger_on_delay": "Delay X (start of the X-th following turn)",
+    "retard_turns_title": "Delay: number of turns before it triggers",
+    "retard_spell_title": "Delay: the effect triggers at the start of the caster's X-th following turn, target chosen then",
+    "label_retard": "Delay"
   },
   "game": {
     "error_not_authenticated": "Not authenticated",

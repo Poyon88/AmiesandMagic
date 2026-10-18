@@ -14,7 +14,7 @@ const MODE_LABEL: Record<KeywordMode, string> = {
   entry: BRIEF_TRIGGER_LABELS.entry, spell: "à la résolution", death: BRIEF_TRIGGER_LABELS.death, tap: BRIEF_TRIGGER_LABELS.tap,
   return: BRIEF_TRIGGER_LABELS.return, attack: BRIEF_TRIGGER_LABELS.attack, end_of_turn: BRIEF_TRIGGER_LABELS.end_of_turn,
   start_of_turn: BRIEF_TRIGGER_LABELS.start_of_turn, draw: BRIEF_TRIGGER_LABELS.draw, low_hp: BRIEF_TRIGGER_LABELS.low_hp,
-  wound: BRIEF_TRIGGER_LABELS.wound,
+  wound: BRIEF_TRIGGER_LABELS.wound, delay: "à retardement",
 };
 
 /** Déclencheurs des effets composés tirés (composed-generator.ts). */
