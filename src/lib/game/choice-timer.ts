@@ -9,12 +9,16 @@ import { CHOICE_TIMER_SECONDS, TURN_TIMER_SECONDS } from "./constants";
 
 /** Délai de grâce après lequel l'AUTRE client tranche à la place du
  *  propriétaire (déconnecté, onglet gelé). Le repli est idempotent
- *  (`headTriggerId`) : si les deux l'émettent, le second est sans effet. Large
- *  à dessein : la voie seq ne tolère qu'un émetteur à la fois, et une réponse
- *  tardive du propriétaire (retenue par une animation plus longue chez lui)
- *  croisant ce secours serait une collision de seq — rattrapée par la
- *  réconciliation de points de contrôle, mais à éviter. */
-export const CHOICE_FALLBACK_GRACE_SECONDS = 10;
+ *  (`headTriggerId`) : si les deux l'émettent, le second est sans effet.
+ *
+ *  Large à dessein, parce que les deux horloges ne partent PAS ensemble : chacune
+ *  démarre quand SES animations se taisent. Le client qui a joué l'action la vit
+ *  tout de suite ; l'autre la reçoit derrière la file des actions précédentes
+ *  (attaques enchaînées puis fin de tour) et peut l'ouvrir 20 s plus tard. À
+ *  10 s de grâce, le secours de l'adversaire tranchait alors une découverte
+ *  5 s après l'ouverture de la modale chez son propriétaire. Ce secours ne sert
+ *  qu'à un joueur parti : le faire attendre ne coûte rien aux autres. */
+export const CHOICE_FALLBACK_GRACE_SECONDS = 45;
 
 /** Ancre et durée du badge de chrono affiché par-dessus les modales de choix,
  *  ou null quand il n'a pas lieu d'être. */
