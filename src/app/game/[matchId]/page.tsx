@@ -43,6 +43,7 @@ interface HeroRow {
   power_effect: HeroPowerEffect;
   power_description: string;
   power_usage_limit?: number | null;
+  starting_hp?: number | null;
   glb_url?: string | null;
   thumbnail_url?: string | null;
   power_image_url?: string | null;
@@ -69,6 +70,7 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
     powerEffect: row.power_effect,
     powerDescription: row.power_description,
     powerUsageLimit: row.power_usage_limit ?? null,
+    startingHp: row.starting_hp ?? null,
     glbUrl: row.glb_url ?? null,
     thumbnailUrl: row.thumbnail_url ?? null,
     powerImageUrl: row.power_image_url ?? null,

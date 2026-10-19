@@ -19,6 +19,7 @@ const COLONNES_JEU =
 interface HeroRow {
   id: number; name: string; race: string; faction?: string | null; clan?: string | null;
   power_name: string; power_cost: number; power_effect: HeroPowerEffect; power_description: string; power_usage_limit?: number | null;
+  starting_hp?: number | null;
 }
 
 /** Même correspondance que mapHeroRow (page de match), sans les médias. */
@@ -27,7 +28,7 @@ export function heroDepuisLigne(r: HeroRow | null): HeroDefinition | null {
   return {
     id: r.id, name: r.name, race: r.race as Race, faction: r.faction ?? null, clan: r.clan ?? null,
     powerName: r.power_name, powerCost: r.power_cost, powerEffect: r.power_effect, powerDescription: r.power_description,
-    powerUsageLimit: r.power_usage_limit ?? null, glbUrl: null, thumbnailUrl: null, powerImageUrl: null, powerSfxUrl: null,
+    powerUsageLimit: r.power_usage_limit ?? null, startingHp: r.starting_hp ?? null, glbUrl: null, thumbnailUrl: null, powerImageUrl: null, powerSfxUrl: null,
   };
 }
 

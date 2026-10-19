@@ -1566,6 +1566,9 @@ export interface HeroDefinition {
   powerDescription: string;
   // Max number of activations per game; null = unlimited.
   powerUsageLimit?: number | null;
+  /** PV de départ — et maximum — du héros (colonne `starting_hp`, 20–40).
+   *  Absent ⇒ HERO_MAX_HP (30), la valeur historique de tous les héros. */
+  startingHp?: number | null;
   glbUrl?: string | null;
   thumbnailUrl?: string | null;
   powerImageUrl?: string | null;
