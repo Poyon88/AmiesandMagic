@@ -10,8 +10,8 @@
 //   1. le déclenchement est un BALAYAGE idempotent (flag one-shot par
 //      instance), pas une détection de front — d'où l'arrivée en jeu sous le
 //      seuil qui déclenche, et l'absence de re-fire tant que le flag est posé ;
-//   2. le ciblage suit la règle commune : tour du contrôleur → choix différé,
-//      tour adverse → cible aléatoire (rng semée), sans jamais bloquer.
+//   2. le ciblage suit la règle commune : le PROPRIÉTAIRE choisit, quel que
+//      soit le tour ; à l'expiration de sa fenêtre, cible aléatoire (rng semée).
 import { describe, expect, it } from "vitest";
 import { applyAction, initRNG } from "./engine";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
@@ -227,7 +227,7 @@ describe("sous 15 PV — ciblage", () => {
     expect(fin.pendingTriggers ?? []).toEqual([]);
   });
 
-  it("tour ADVERSE : le même effet « au choix » se résout seul, cible aléatoire", () => {
+  it("tour ADVERSE : la question va au propriétaire ; à l'expiration, cible aléatoire", () => {
     const s = mkState();
     initRNG(42);
     s.players[1].hero.hp = 16;
@@ -236,11 +236,16 @@ describe("sous 15 PV — ciblage", () => {
     const sort = sortDegats(2);
     s.players[0].hand = [sort];
 
-    const st = lance(s, sort.instanceId);
+    const pose = lance(s, sort.instanceId);
+    // P1 passe sous le seuil pendant le tour de P0 : c'est P1 qui choisit.
+    const t = pose.pendingTriggers?.find(p => p.frameId);
+    expect(t?.controllerId).toBe(pose.players[1].id);
+    expect(pose.players[0].board.every(c => c.currentHealth === 9)).toBe(true);
 
+    const st = applyAction(pose, { type: "auto_resolve_pending_triggers", headTriggerId: t!.id });
     expect(st.effectStack ?? []).toEqual([]);
     expect(st.pendingTriggers ?? []).toEqual([]);
-    // Exactement une des deux unités de P1 a pris les 2 dégâts.
+    // Exactement une des deux unités de P0 a pris les 2 dégâts.
     const degats = st.players[0].board.map(c => 9 - c.currentHealth);
     expect(degats.filter(d => d === 2)).toHaveLength(1);
     expect(degats.filter(d => d === 0)).toHaveLength(1);
@@ -258,7 +263,7 @@ describe("sous 15 PV — ciblage", () => {
       s.players[0].board = [mkInstance(mkCard({ name: "A", attack: 1, health: 9 })), mkInstance(mkCard({ name: "B", attack: 1, health: 9 }))];
       const sort = sortDegats(2);
       s.players[0].hand = [sort];
-      const st = lance(s, sort.instanceId);
+      const st = applyAction(lance(s, sort.instanceId), { type: "auto_resolve_pending_triggers" });
       return st.players[0].board.map(c => c.currentHealth).join("/");
     };
     expect(resoudre()).toBe(resoudre());

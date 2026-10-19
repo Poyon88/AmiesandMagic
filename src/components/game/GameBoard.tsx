@@ -5,7 +5,8 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
 import { getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupees } from "@/lib/game/items";
-import { canPlayFromGraveyard, hasSecondeVie } from "@/lib/game/engine";
+import { canPlayFromGraveyard, getOnAttackChoiceSlots, hasSecondeVie } from "@/lib/game/engine";
+import { useVocab } from "@/i18n/useVocab";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
 import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
@@ -92,6 +93,7 @@ function PendingCreaturePreview({ instance }: { instance: CardInstance }) {
 export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false }: GameBoardProps) {
   useGameMusic();
   const t = useTranslations("game");
+  const vocab = useVocab();
   const { shakeControls, isFrozen, isFrozenBig } = useScreenShake();
 
   const {
@@ -106,6 +108,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     targetingMode,
     pendingComposedGraveyard,
     creatureComposedCollected,
+    attackPowerCollected,
     pendingTriggerPrompt,
     pendingTriggerNeeded,
     pendingTriggerPicked,
@@ -306,6 +309,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       ? { startedAt: gameState.choiceStartedAt, seconds: CHOICE_TIMER_SECONDS }
       : { startedAt: gameState.turnStartedAt, seconds: TURN_TIMER_SECONDS };
   }, [gameState, targetingMode, overlayPeeked, localPlayerId]);
+
+  // Libellé de la désignation d'attaque EN COURS (cf. getOnAttackChoiceSlots).
+  const attackPowerLabel = useMemo(() => {
+    if (targetingMode !== "attack_power" || !gameState || !selectedAttackerInstanceId) return null;
+    const attacker = gameState.players[gameState.currentPlayerIndex].board
+      .find(c => c.instanceId === selectedAttackerInstanceId);
+    if (!attacker) return null;
+    const slot = getOnAttackChoiceSlots(gameState, attacker)[attackPowerCollected.length];
+    if (!slot) return null;
+    return slot.kw ? vocab.keywordLabel(slot.kw) : t("attack_power_label");
+  }, [targetingMode, gameState, selectedAttackerInstanceId, attackPowerCollected, vocab, t]);
 
   // Une carte attend-elle la cible d'une INCINÉRATION ? Sa cible désigne un camp :
   // héros, unité, ou n'importe quelle carte du cimetière convoité. Ce dernier
@@ -1987,6 +2001,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           <p className="text-white font-bold">
             {spellTargetSlots[currentTargetSlotIndex]?.label ?? "Choisissez une cible"}
           </p>
+        </div>
+      )}
+
+      {/* Déclaration d'attaque : désignations à faire AVANT le combat (pouvoir
+          composé « au choix », mots-clés ciblés en mode attaque). Le bandeau
+          dit QUEL effet on cible — sans lui, rien ne distinguait le clic du
+          pouvoir de celui d'un Affaiblissement. */}
+      {targetingMode === "attack_power" && attackPowerLabel && (
+        <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 bg-purple-900/90 border border-purple-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
+          <p className="text-white font-bold">{t("attack_choice_target", { label: attackPowerLabel })}</p>
         </div>
       )}
 

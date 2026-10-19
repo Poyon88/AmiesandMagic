@@ -28,8 +28,7 @@ import {
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
-  getOnAttackComposedChoice,
-  getOnAttackTargets,
+  getOnAttackChoiceSlots,
   getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
@@ -4480,18 +4479,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
-      // Defender chosen. If the attacker carries an "à l'attaque" composed
-      // power with player-chosen targets, collect those next (carried in the
-      // same attack action) before dispatching. Otherwise dispatch now.
+      // Defender chosen. If the attacker has on-attack choices to make (composed
+      // power « au choix », curated targeted keywords in attack mode), collect
+      // them next — they travel in the same attack action, because they must
+      // resolve BEFORE the damage. Otherwise dispatch now.
       const gs = get().gameState;
       const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
-      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
-      if (gs && attacker && powerChoice) {
+      const slots = gs && attacker ? getOnAttackChoiceSlots(gs, attacker) : [];
+      if (slots.length > 0) {
         set({
           pendingAttackDefenderId: targetId,
           targetingMode: "attack_power",
           attackPowerCollected: [],
-          validTargets: getOnAttackTargets(gs, attacker.card),
+          validTargets: slots[0].targets,
         });
         return null;
       }
@@ -4501,25 +4501,32 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "attack_power" && selectedAttackerInstanceId) {
-      // Collecting the on-attack power's target(s). When complete, dispatch the
-      // attack carrying both the defender and the power's targetMap.
+      // Collecting the on-attack choices, one click per slot. When complete,
+      // dispatch the attack carrying both the defender and the targetMap.
       const { pendingAttackDefenderId, gameState: gs } = get();
       const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
-      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
-      if (!gs || !attacker || !powerChoice || pendingAttackDefenderId == null) {
+      const slots = gs && attacker ? getOnAttackChoiceSlots(gs, attacker) : [];
+      if (!gs || !attacker || slots.length === 0 || pendingAttackDefenderId == null) {
         set({ targetingMode: "none", validTargets: [], pendingAttackDefenderId: null, attackPowerCollected: [] });
         return null;
       }
       const collected = [...get().attackPowerCollected, targetId];
-      if (collected.length < powerChoice.count) {
+      if (collected.length < slots.length) {
+        // Plusieurs cibles d'un MÊME pouvoir composé (`uid#0`, `uid#1`…) : une
+        // unité déjà désignée par lui ne peut pas l'être deux fois.
+        const next = slots[collected.length];
+        const prefixe = next.key.includes("#") ? next.key.slice(0, next.key.indexOf("#") + 1) : null;
+        const dejaPris = prefixe
+          ? collected.filter((_, i) => slots[i].key.startsWith(prefixe))
+          : [];
         set({
           attackPowerCollected: collected,
-          validTargets: get().validTargets.filter(t => t !== targetId),
+          validTargets: next.targets.filter(t => !dejaPris.includes(t)),
         });
         return null; // continue collecting
       }
       const targetMap: Record<string, string> = {};
-      collected.forEach((id, i) => { targetMap[`${powerChoice.uid}#${i}`] = id; });
+      collected.forEach((id, i) => { targetMap[slots[i].key] = id; });
       set({ pendingAttackDefenderId: null, attackPowerCollected: [] });
       return get().dispatchAction({
         type: "attack",

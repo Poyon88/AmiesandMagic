@@ -27,6 +27,7 @@ import type {
   TokenTemplate,
   PendingTrigger,
   ResolvePendingTriggerAction,
+  AutoResolvePendingTriggersAction,
   SpendEpargneAction,
   SpendFoiAction,
   SpendConqueteAction,
@@ -90,10 +91,6 @@ let currentTurnNumber = 0;
 /** Tour courant pour l'estampille d'arrivée de Neutralisation. Suit la bascule
  *  de tour EN COURS d'action, contrairement à `currentTurnNumber`. */
 let tourNeutralisation = 0;
-// Id du joueur dont c'est le tour pendant l'action en cours (set dans applyAction).
-// Permet aux déclencheurs (Remontée mort/retour) de savoir si le contrôleur est
-// le joueur actif → ciblage interactif, sinon cible aléatoire.
-let currentPlayerId = "";
 // Accumulateur de déclencheurs interactifs créés pendant l'action en cours.
 // Vidé au début d'applyAction, rattaché au state retourné à la fin.
 let pendingTriggerSink: PendingTrigger[] = [];
@@ -2205,9 +2202,10 @@ function resolveComposedEffect(
       // à arriver sans source ; le trigger n'a de toute façon besoin que du
       // contrôleur (cf. la branche `selectionType` d'applyOnePendingTrigger, qui
       // ne lit jamais sourceInstanceId).
+      // Le PROPRIÉTAIRE choisit, quel que soit le tour et y compris à
+      // l'attaque : le choix est posé à la fin de l'action (il n'influe pas
+      // sur le combat — la carte va en main).
       const interactive = (!!source || opts?.trigger === "spell_resolution" || opts?.emblemIndex != null)
-        && owner.id === currentPlayerId
-        && opts?.trigger !== "on_attack"
         && !opts?.noSuspend;
 
       /** Une passe : ouvre la fenêtre de choix, ou tire à sa place. */
@@ -2435,6 +2433,12 @@ function composedBeforeFirstCurated(card: Card, trigger: import("./types").Capab
   return new Set();
 }
 
+/** Déclencheurs composés dont un « au choix » non désigné part sur la pile
+ *  (cf. runComposedCapsForCard). L'entrée en jeu et la résolution de sort en
+ *  sont exclues : leur cible est désignée AVANT, par l'interface de jeu. */
+const DECLENCHEURS_A_CHOIX_DIFFERE: ReadonlySet<import("./types").CapabilityTrigger> =
+  new Set(["on_death", "on_draw", "on_return", "on_attack"]);
+
 function runComposedCapsForCard(
   card: Card,
   trigger: import("./types").CapabilityTrigger,
@@ -2488,6 +2492,19 @@ function runComposedCapsForCard(
       else if (targetMap[cap.uid] != null) chosen = [targetMap[cap.uid]];
     }
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
+    // « Au choix » SANS désignation sur un déclencheur qui n'a pas de
+    // pré-désignation (mort, pioche, retour en main — ou une attaque déclarée
+    // sans cible pour son pouvoir) : la frame part sur la pile, qui sait
+    // suspendre et poser la question au PROPRIÉTAIRE, quel que soit le tour.
+    // Résolu ici, l'effet retombait sur le repli déterministe de
+    // selectComposedTargets (toujours la première unité). Même nuance que le
+    // « OU » : l'effet passe après les autres effets du même moment.
+    if (!chosen && DECLENCHEURS_A_CHOIX_DIFFERE.has(trigger)
+      && cap.composed!.target?.designation === "choice" && cap.composed!.target?.entity !== "self") {
+      frameSink.push(...buildComposedFrames(card, trigger, source, owner.id, targetMap, fallbackTargetId,
+        { only: (c) => c.uid === cap.uid }));
+      continue;
+    }
     withComposedMode(triggerToKeywordMode(trigger), () =>
       resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution",
         { trigger, capUid: cap.uid, sourceCard: card }));
@@ -8003,10 +8020,18 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // snapshot pour s'animer dans la 1re vague comme les pouvoirs composés (ex.
     // Renforcement/Entrainement en mode attaque). Miroir de la boucle fin-de-tour.
     if (hasCuratedAttack && player.board.find(c => c.instanceId === attacker.instanceId)) {
-      for (const inst of attacker.card.keyword_instances ?? []) {
-        if (inst.mode !== "attack") continue;
-        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, attacker, player, opponent, undefined, inst);
-      }
+      (attacker.card.keyword_instances ?? []).forEach((inst, i) => {
+        if (inst.mode !== "attack") return;
+        // Cible PRÉ-DÉSIGNÉE à la déclaration d'attaque (slot `kw_${i}`, cf.
+        // getOnAttackChoiceSlots) : l'effet doit frapper AVANT les dégâts, il
+        // ne peut donc pas attendre la fin de l'action. Devenue invalide entre-
+        // temps (tuée par un pouvoir composé résolu juste avant) ⇒ undefined,
+        // et le mot-clé retombe sur son tirage au hasard.
+        const voulue = action.targetMap?.[`kw_${i}`];
+        const cible = voulue && deferredKwTargetIds(inst.id, player, opponent, attacker.instanceId).includes(voulue)
+          ? voulue : undefined;
+        resolveCuratedKeywordEffect(inst.id, inst.x ?? 1, attacker, player, opponent, cible, inst);
+      });
       const pDeadAtk = cleanDeadCreatures(player);
       const oDeadAtk = cleanDeadCreatures(opponent);
       if (pDeadAtk.length || oDeadAtk.length) {
@@ -9492,7 +9517,6 @@ function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
   const owner = state.players.find(p => p.id === frame.ownerId);
   const opponent = state.players.find(p => p.id !== frame.ownerId);
   if (!owner || !opponent) return false;
-  if (owner.id !== currentPlayerId) return false; // tour adverse → résolution auto, pas d'UI
   return composedChoiceTargetIds(frame.composed.target, owner, opponent, frame.trigger === "spell_resolution").length > 0;
 }
 
@@ -9587,7 +9611,6 @@ function demanderLeChoixOu(
   groupe: StackFrame[],
 ): boolean {
   if (top.noSuspend) return false;            // rejeu Déclenchement : aucune interface
-  if (top.ownerId !== currentPlayerId) return false; // hors de son tour, le jeu tranche seul
   const id = `${top.originTag}#ou`;
   const deja = (state.pendingTriggers ?? []).some(t => t.id === id)
     || pendingTriggerSink.some(t => t.id === id);
@@ -9778,8 +9801,13 @@ function buildComposedFrames(
   const frames: StackFrame[] = [];
   const sourceId = opts && "sourceIdOverride" in opts ? opts.sourceIdOverride ?? null : (source?.instanceId ?? null);
   const baseTag = opts?.originTag ?? `${sourceId}#${trigger}`;
-  let seq = 0;
-  for (const cap of getCapabilities(card)) {
+  // Rang = position de la capacité DANS LA CARTE, et non compteur local : deux
+  // appels filtrés par `only` (branches d'un « OU », puis un « au choix »
+  // différé) produiraient sinon le même `…#0`, et la question de la seconde
+  // frame serait prise pour un doublon de la première.
+  const caps = getCapabilities(card);
+  for (let seq = 0; seq < caps.length; seq++) {
+    const cap = caps[seq];
     if (!composeExecutable(cap) || cap.trigger !== trigger) continue;
     // Ordre d'auteur : playCard pousse en deux temps (avant / après la cascade
     // des mots-clés curés), cf. composedBeforeFirstCurated.
@@ -9795,7 +9823,7 @@ function buildComposedFrames(
     }
     if (!chosen && fallbackTargetId) chosen = [fallbackTargetId];
     frames.push({
-      frameId: `${sourceId}#${trigger}#${seq++}`,
+      frameId: `${sourceId}#${trigger}#${seq}`,
       kind: "composed",
       ownerId,
       sourceInstanceId: sourceId,
@@ -10620,11 +10648,10 @@ function resolveCuratedKeywordEffect(
         resolveRemontee(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours);
         return;
       }
-      // Mort / retour : si c'est le tour du contrôleur ET qu'au moins une cible
-      // valide existe, on DIFFÈRE le choix (déclencheur interactif en attente).
-      // Sinon (tour adverse, mode attaque — flux synchrone sans pause — ou
-      // aucune cible) → cible aléatoire / fizzle.
-      if (inst?.mode !== "attack" && owner.id === currentPlayerId && remonteeTargetIds(owner, opponent, source.instanceId).length > 0) {
+      // Mort / retour : s'il existe une cible valide, on DIFFÈRE le choix au
+      // propriétaire (quel que soit le tour). En mode attaque sans cible
+      // pré-désignée, ou sans cible → cible aléatoire / fizzle.
+      if (inst?.mode !== "attack" && remonteeTargetIds(owner, opponent, source.instanceId).length > 0) {
         pendingTriggerSink.push({
           id: source.instanceId,
           kw: "remontee",
@@ -10639,12 +10666,12 @@ function resolveCuratedKeywordEffect(
     case "impact": {
       // Tap (ou résolution différée) : cible explicite → dégâts immédiats.
       if (targetInstanceId) { applyImpactTo(targetInstanceId, x, source, owner, opponent); return; }
-      // Mort / retour / fin de tour : sur le tour du contrôleur ET s'il existe
-      // une cible → on DIFFÈRE (picker interactif). Sur le tour adverse, en
-      // mode attaque (flux synchrone sans pause) ou sans cible → cible
-      // ALÉATOIRE déterministe (rng semée, comme Remontée).
+      // Mort / retour / fin de tour : s'il existe une cible → on DIFFÈRE au
+      // propriétaire (picker interactif, quel que soit le tour). En mode
+      // attaque sans cible pré-désignée → cible ALÉATOIRE déterministe (rng
+      // semée, comme Remontée).
       const pool = impactTargetIds(owner, opponent);
-      if (inst?.mode !== "attack" && owner.id === currentPlayerId && pool.length > 0) {
+      if (inst?.mode !== "attack" && pool.length > 0) {
         pendingTriggerSink.push({ id: source.instanceId, kw: "impact", x, controllerId: owner.id, sourceInstanceId: source.instanceId });
         return;
       }
@@ -11168,9 +11195,12 @@ function resolveCuratedKeywordEffect(
     case "selection_magique":
     case "renfort_royal":
     case "tresor": {
-      // Sélection « 1 parmi 3 » : modale sur le tour du contrôleur (déclencheur
-      // différé), tirage AU HASARD parmi les options révélées sinon (tour
-      // adverse ou mode attaque — la modale ne peut pas s'ouvrir).
+      // Sélection « 1 parmi 3 » : la modale s'ouvre TOUJOURS chez le
+      // propriétaire, à la fin de l'action qui l'a déclenchée — tour adverse,
+      // attaque et pioche compris. Les options sont tirées ICI (RNG semée, donc
+      // identiques chez les deux clients) ; le choix n'influe pas sur l'action
+      // en cours, la carte part simplement en main. À l'expiration du chrono,
+      // autoResolvePendingTriggers tire parmi ces mêmes options.
       const selState = {
         factionCardPool: currentCardPools.factionCardPool,
         allSpellsPool: currentCardPools.allSpellsPool,
@@ -11185,22 +11215,13 @@ function resolveCuratedKeywordEffect(
       } as unknown as GameState;
       const options = selectionCardsForKeyword(kw, selState, inst?.x ?? 0, source.card, undefined, source.instanceId, inst?.randomX === true, inst?.minX);
       if (options.length === 0) return;
-      // "attack" et "draw" : flux SYNCHRONE, sans point de pause possible (le
-  // premier est au milieu du flux de combat, le second au milieu de startTurn
-  // ou d'un autre effet). On tire donc toujours au hasard, via la RNG semée —
-  // donc à l'identique sur les deux clients.
-  if (inst?.mode !== "attack" && inst?.mode !== "draw" && owner.id === currentPlayerId) {
-        pendingTriggerSink.push({
-          id: `${source.instanceId}#${kw}`,
-          controllerId: owner.id,
-          sourceInstanceId: source.instanceId,
-          selectionType: kw,
-          selectionOptionIds: options.map(c => c.id),
-        });
-        return;
-      }
-      const picked = options[Math.floor(rng() * options.length)];
-      if (owner.hand.length < MAX_HAND_SIZE) owner.hand.push(createCardInstance(picked));
+      pendingTriggerSink.push({
+        id: `${source.instanceId}#${kw}`,
+        controllerId: owner.id,
+        sourceInstanceId: source.instanceId,
+        selectionType: kw,
+        selectionOptionIds: options.map(c => c.id),
+      });
       return;
     }
     case "affaiblissement": {
@@ -11368,9 +11389,10 @@ export function deferredKwTargetIds(
 }
 
 /** Décision « différer ou tirer au hasard » d'un mot-clé curé ciblé déclenché
- *  sans cible explicite. Tour du contrôleur (hors mode attaque) → pousse un
- *  déclencheur interactif et renvoie null. Sinon → renvoie une cible au hasard
- *  (rng semée). Aucune cible possible → undefined (fizzle). */
+ *  sans cible explicite. Hors mode attaque → pousse un déclencheur interactif
+ *  au PROPRIÉTAIRE (quel que soit le tour) et renvoie null. En mode attaque,
+ *  la cible aurait dû être pré-désignée (AttackAction.targetMap) : à défaut,
+ *  cible au hasard (rng semée). Aucune cible possible → undefined (fizzle). */
 function deferOrRandomTarget(
   kw: Keyword,
   source: CardInstance,
@@ -11382,7 +11404,7 @@ function deferOrRandomTarget(
 ): string | null | undefined {
   const pool = deferredKwTargetIds(kw, owner, opponent, source.instanceId);
   if (pool.length === 0) return undefined;
-  if (inst?.mode !== "attack" && owner.id === currentPlayerId) {
+  if (inst?.mode !== "attack") {
     pendingTriggerSink.push({
       id: `${source.instanceId}#${kw}`,
       kw,
@@ -12027,70 +12049,64 @@ function applyOnePendingTrigger(
   }
 }
 
-/** Repli à l'expiration du chrono : draine TOUTE la file `pendingTriggers` en
- *  choisissant au hasard (rng semée → déterministe entre les deux clients) un
- *  choix valide pour chacun, puis termine le tour. */
-export function autoResolvePendingTriggers(state: GameState): GameState {
+/** Repli à l'expiration de la fenêtre de choix : tranche au hasard (rng semée
+ *  → déterministe entre les deux clients) les choix en tête de file qui
+ *  appartiennent au joueur de la tête, en reprenant la séquence de phase entre
+ *  chacun. S'arrête dès que la tête appartient à l'AUTRE joueur : il a droit à
+ *  sa propre fenêtre. */
+export function autoResolvePendingTriggers(state: GameState, action?: AutoResolvePendingTriggersAction): GameState {
+  // Idempotence : la tête a changé depuis l'expiration (choix tranché, repli
+  // déjà appliqué par l'autre client) ⇒ rien à faire.
+  if (action?.headTriggerId && state.pendingTriggers?.[0]?.id !== action.headTriggerId) return state;
+
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
   const newState = cloneStateForAction(state);
   newState.factionCardPool = pool;
   newState.allSpellsPool = allPool;
 
-  // Draine TOUTE la séquence de fin de tour de façon déterministe (rng semée →
-  // identique entre clients). En ordre strict il n'y a qu'UN déclencheur
-  // interactif à la fois : on le résout au hasard, puis on reprend la file
-  // (automatiques + interactif suivant) jusqu'à la bascule. finishEndTurn, s'il
-  // s'exécute via advanceEndOfTurn, écrase ce lastAction par "end_turn" (comme
-  // avant). Le garde borne la boucle (chaque itération retire ≥1 effet).
-  newState.lastAction = { type: "auto_resolve_pending_triggers" };
+  newState.lastAction = { type: "auto_resolve_pending_triggers", ...(action?.headTriggerId ? { headTriggerId: action.headTriggerId } : {}) };
   let guard = 0;
   pruneUnresolvableTriggers(newState);
+  const proprietaire = newState.pendingTriggers?.[0]?.controllerId;
   // ⚠️ `st` est RÉASSIGNÉ : `advanceEndOfTurn` peut aboutir à `finishEndTurn`,
   // qui termine par `return startTurn(...)` — et `startTurn` CLONE l'état.
-  // Ignorer ce retour (ce que faisait cette boucle) revenait à jeter tout le
-  // début de tour du joueur entrant : bascule d'index appliquée, mais NI
-  // incrément de tour, NI mana rechargé, NI pioche, NI purge des statuts, NI
-  // remise à zéro de `turnStartedAt`. Le joueur entrant héritait donc d'un
-  // chrono DÉJÀ expiré, rendait la main aussitôt, et le tour repartait au
-  // joueur précédent — le « il rejoue un tour, et encore, et encore »
-  // rapporté en partie (Esprit des Cauris Dispersés, renvoi en main au choix).
+  // Ignorer ce retour revenait à jeter tout le début de tour du joueur entrant
+  // (ni incrément de tour, ni mana, ni pioche, ni remise à zéro du chrono) : le
+  // « il rejoue un tour, et encore, et encore » rapporté en partie.
   let st = newState;
-  while ((st.pendingTriggers?.length ?? 0) > 0 && guard++ < 500) {
-    const queue = st.pendingTriggers ?? [];
-    st.pendingTriggers = [];
-    for (const trigger of queue) {
-      // Traque du destin : choice vide ⇒ deckChoiceIndex absent ⇒ le résolveur
-      // tire lui-même au hasard. Rien à préparer ici.
-      let choice: { targetInstanceId?: string; selectionCardId?: number; alternativeCapUid?: string } = {};
-      if (trigger.alternativeOptions?.length) {
-        const opts = trigger.alternativeOptions;
-        choice = { alternativeCapUid: opts[Math.floor(rng() * opts.length)].capUid };
-      } else if (trigger.selectionType) {
-        const opts = trigger.selectionOptionIds ?? [];
-        if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
-      } else if (trigger.frameId) {
-        // Frame suspendue : réponse vide ⇒ applyOnePendingTrigger tire lui-même
-        // parmi les cibles encore valides au moment de la résolution.
-      } else if (trigger.capUid || trigger.emblemIndex != null || trigger.delayedSpell) {
-        // Même pool pour les deux provenances. Un emblème laissé sans choix
-        // retombait sur `pool.slice(0, n)` dans selectComposedTargets, c'est-à-
-        // dire toujours la première unité du plateau : un repli AUTOMATIQUE
-        // déguisé en tirage, et une divergence potentielle avec le client.
-        const targets = endOfTurnTriggerTargets(st, trigger);
+  while ((st.pendingTriggers?.length ?? 0) > 0
+    && st.pendingTriggers![0].controllerId === proprietaire && guard++ < 500) {
+    const trigger = st.pendingTriggers!.shift()!;
+    // Traque du destin / frame suspendue : choice vide ⇒ le résolveur tire
+    // lui-même au hasard. Rien à préparer ici.
+    let choice: { targetInstanceId?: string; selectionCardId?: number; alternativeCapUid?: string } = {};
+    if (trigger.alternativeOptions?.length) {
+      const opts = trigger.alternativeOptions;
+      choice = { alternativeCapUid: opts[Math.floor(rng() * opts.length)].capUid };
+    } else if (trigger.selectionType) {
+      const opts = trigger.selectionOptionIds ?? [];
+      if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
+    } else if (trigger.frameId) {
+      // cf. ci-dessus : applyOnePendingTrigger tire parmi les cibles valides.
+    } else if (trigger.capUid || trigger.emblemIndex != null || trigger.delayedSpell) {
+      // Même pool pour les deux provenances. Un emblème laissé sans choix
+      // retombait sur `pool.slice(0, n)` dans selectComposedTargets, c'est-à-
+      // dire toujours la première unité du plateau : un repli AUTOMATIQUE
+      // déguisé en tirage, et une divergence potentielle avec le client.
+      const targets = endOfTurnTriggerTargets(st, trigger);
+      if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
+    } else if (trigger.kw) {
+      // Pool générique par mot-clé (Remontée, Impact, et tous les curés
+      // ciblés du chantier multi-déclencheurs) — cf. deferredKwTargetIds.
+      const controller = st.players.find(p => p.id === trigger.controllerId);
+      const other = st.players.find(p => p.id !== trigger.controllerId);
+      if (controller && other) {
+        const targets = deferredKwTargetIds(trigger.kw, controller, other, trigger.sourceInstanceId);
         if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
-      } else if (trigger.kw) {
-        // Pool générique par mot-clé (Remontée, Impact, et tous les curés
-        // ciblés du chantier multi-déclencheurs) — cf. deferredKwTargetIds.
-        const controller = st.players.find(p => p.id === trigger.controllerId);
-        const other = st.players.find(p => p.id !== trigger.controllerId);
-        if (controller && other) {
-          const targets = deferredKwTargetIds(trigger.kw, controller, other, trigger.sourceInstanceId);
-          if (targets.length > 0) choice = { targetInstanceId: targets[Math.floor(rng() * targets.length)] };
-        }
       }
-      applyOnePendingTrigger(st, trigger, choice);
     }
+    applyOnePendingTrigger(st, trigger, choice);
     // Même balayage que la résolution MANUELLE (cf. resolvePendingTrigger) : un
     // choix tranché au hasard tue tout aussi bien qu'un choix du joueur, et la
     // dépouille resterait sur le plateau jusqu'à l'action suivante.
@@ -12105,6 +12121,9 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
     recalculateAuras(st.players[0], st.players[1]);
     checkWinCondition(st);
     pruneUnresolvableTriggers(st);
+    // Tant qu'un choix du même joueur attend encore, la séquence de phase
+    // reste en pause : on ne la reprend qu'une fois sa part de file vidée.
+    if ((st.pendingTriggers?.length ?? 0) > 0) continue;
     // Reprise de la file fin-de-tour : résout les automatiques suivants et met
     // éventuellement le prochain interactif en file (nouvelle itération) ou
     // finalise + bascule le tour (finishEndTurn).
@@ -12113,7 +12132,8 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
       : st;
     // Même reprise pour un DÉBUT de tour en pause — y compris celui que la
     // bascule ci-dessus vient d'ouvrir (finishEndTurn → startTurn peut lui-même
-    // suspendre sur un choix du joueur entrant, que la boucle tranchera).
+    // suspendre sur un choix du joueur entrant, que la boucle tranchera s'il
+    // s'agit du même joueur, ou laissera à SA fenêtre sinon).
     if (st.startOfTurnQueue !== undefined) st = advanceStartOfTurn(st);
   }
 
@@ -12566,7 +12586,6 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentTokenTemplates = state.tokenTemplates ?? [];
   currentTurnNumber = state.turnNumber;
   tourNeutralisation = state.turnNumber;
-  currentPlayerId = state.players[state.currentPlayerIndex].id;
   currentPlayerIds = state.players.map(p => p.id);
   // Vidé ici, repositionné par cloneStateForAction dans chaque handler : jamais
   // de référence héritée de l'action précédente (cf. la déclaration).
@@ -12628,7 +12647,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "take_machine": result = takeMachine(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
-    case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state); break;
+    case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state, action); break;
     default: result = state;
   }
 
@@ -13169,6 +13188,34 @@ export function getOnAttackComposedChoice(
   const type = composedSlotType(t);
   if (!type) return null;
   return { uid: cap.uid, count: t.count, type };
+}
+
+/** Désignations à faire en DÉCLARANT une attaque, dans l'ordre : chaque entrée
+ *  = UN clic, avec la clé de `AttackAction.targetMap` qu'il remplit et les
+ *  cibles valides. Couvre le pouvoir composé « au choix » (une entrée par cible
+ *  de son `count`, clés `${uid}#i`) puis les mots-clés curés ciblés en mode
+ *  attaque (clé `kw_${i}`, i = rang dans keyword_instances). Vide ⇒ l'attaque
+ *  part sans sélecteur. */
+export function getOnAttackChoiceSlots(
+  state: GameState,
+  attacker: CardInstance,
+): { key: string; targets: string[]; kw?: Keyword }[] {
+  const player = state.players[state.currentPlayerIndex];
+  const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+  const slots: { key: string; targets: string[]; kw?: Keyword }[] = [];
+  const composed = getOnAttackComposedChoice(attacker.card);
+  if (composed) {
+    const targets = getOnAttackTargets(state, attacker.card);
+    for (let i = 0; i < Math.min(composed.count, targets.length); i++) {
+      slots.push({ key: `${composed.uid}#${i}`, targets });
+    }
+  }
+  (attacker.card.keyword_instances ?? []).forEach((inst, i) => {
+    if (inst.mode !== "attack") return;
+    const targets = deferredKwTargetIds(inst.id, player, opponent, attacker.instanceId);
+    if (targets.length > 0) slots.push({ key: `kw_${i}`, targets, kw: inst.id });
+  });
+  return slots;
 }
 
 /** Valid target ids for an on_attack choice power (store picker). */

@@ -2332,13 +2332,18 @@ export interface ResolvePendingTriggerAction {
   alternativeCapUid?: string;
 }
 
-/** Repli automatique à l'expiration du chrono : résout TOUS les déclencheurs
- *  interactifs en attente au hasard (RNG semée, déterministe), puis termine le
- *  tour. Émise par le client du joueur actif quand son temps est écoulé alors
- *  que des `pendingTriggers` restent non résolus. Sans payload : le tirage est
- *  fait dans le moteur. */
+/** Repli automatique à l'expiration de la fenêtre de choix : résout au hasard
+ *  (RNG semée, déterministe) les déclencheurs en tête de file appartenant au
+ *  MÊME joueur que la tête — chaque joueur garde ses propres 15 s pour ses
+ *  propres choix. Émise par le propriétaire du choix (ou, en secours, par
+ *  l'autre client). Le tirage est fait dans le moteur. */
 export interface AutoResolvePendingTriggersAction {
   type: "auto_resolve_pending_triggers";
+  /** Id de la tête de file au moment où la fenêtre a expiré. Si la tête a
+   *  changé entre-temps (choix tranché, ou l'autre client a déjà replié),
+   *  l'action est sans effet : c'est ce qui la rend IDEMPOTENTE quand les deux
+   *  clients l'émettent. Absent (ancien client, simulation) ⇒ tête courante. */
+  headTriggerId?: string;
 }
 
 /** Dépense du compteur d'Épargne : le joueur a cliqué son compteur, vu les 3
