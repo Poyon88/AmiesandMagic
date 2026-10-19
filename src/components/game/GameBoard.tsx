@@ -3,9 +3,10 @@
 import { useState, useCallback, useEffect, useMemo, useRef, type DragEvent } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE, TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
+import { MAX_HAND_SIZE, MAX_BOARD_SIZE, MAX_CONQUETE } from "@/lib/game/constants";
 import { getEquipCost, objetsDe, occupeUnePlace, peutRecevoirObjet, placesOccupees } from "@/lib/game/items";
 import { canPlayFromGraveyard, getOnAttackChoiceSlots, hasSecondeVie } from "@/lib/game/engine";
+import { ancrageDuBadge } from "@/lib/game/choice-timer";
 import { useVocab } from "@/i18n/useVocab";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
@@ -287,28 +288,28 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     return { inst, position: pendingBoardPosition ?? me!.board.length };
   }, [gameState, localPlayerId, selectedCardInstanceId, pendingBoardPosition, targetingMode]);
 
+  // Propriétaire du choix en tête de file — pas forcément le joueur actif : un
+  // râle d'agonie, une Blessure ou une Sélection se tranchent aussi au tour
+  // adverse. null quand aucun choix n'attend.
+  const choiceOwnerId = gameState?.pendingTriggers?.[0]?.controllerId ?? null;
+  const isChoiceMine = choiceOwnerId != null && choiceOwnerId === localPlayerId;
+
   // Fenêtre de CHOIX ouverte : Sélection, Divination, mots-clés de Tactique, ou
-  // déclencheur de fin de tour à trancher. Ces modales assombrissent le plateau
-  // et masquent le chrono, au moment précis où il compte.
-  //
-  // L'ancrage reprend la règle de TurnTimer, sans la dupliquer autrement : chrono
-  // de CHOIX dédié quand un déclencheur est en attente, chrono de TOUR sinon —
-  // une Sélection à l'entrée en jeu, par exemple, se joue bien sur le temps du
-  // tour. Rien à afficher hors de son propre tour : le compte à rebours ne
-  // s'applique qu'à celui qui doit choisir.
+  // déclencheur à trancher. Ces modales assombrissent le plateau et masquent le
+  // chrono, au moment précis où il compte. Même règle que TurnTimer, partagée
+  // via ancrageDuBadge.
   const choiceTimer = useMemo(() => {
     if (!gameState) return null;
-    const enChoix = targetingMode === "selection"
-      || targetingMode === "divination"
-      || targetingMode === "pending_trigger";
-    if (!enChoix || overlayPeeked) return null;
-    if (gameState.players[gameState.currentPlayerIndex].id !== localPlayerId) return null;
-
-    const enAttente = (gameState.pendingTriggers?.length ?? 0) > 0;
-    return enAttente && gameState.choiceStartedAt
-      ? { startedAt: gameState.choiceStartedAt, seconds: CHOICE_TIMER_SECONDS }
-      : { startedAt: gameState.turnStartedAt, seconds: TURN_TIMER_SECONDS };
-  }, [gameState, targetingMode, overlayPeeked, localPlayerId]);
+    return ancrageDuBadge({
+      targetingMode,
+      overlayPeeked,
+      estMonTour: gameState.players[gameState.currentPlayerIndex].id === localPlayerId,
+      choixAMoi: isChoiceMine,
+      pendingTriggers: gameState.pendingTriggers?.length ?? 0,
+      choiceStartedAt: gameState.choiceStartedAt,
+      turnStartedAt: gameState.turnStartedAt,
+    });
+  }, [gameState, targetingMode, overlayPeeked, localPlayerId, isChoiceMine]);
 
   // Libellé de la désignation d'attaque EN COURS (cf. getOnAttackChoiceSlots).
   const attackPowerLabel = useMemo(() => {
@@ -513,16 +514,18 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     broadcast(dispatchAction({ type: "end_turn" }));
   }, [dispatchAction, broadcast]);
 
-  // Chrono écoulé alors que des effets « fin de tour » restent à résoudre : le
-  // joueur n'a pas choisi à temps → repli automatique (résolution au hasard,
-  // déterministe côté moteur). Seul le joueur actif (contrôleur de la file) émet
-  // l'action ; dispatchAction no-op pendant une animation, donc re-tentable.
+  // Fenêtre de choix écoulée : le propriétaire n'a pas choisi à temps → repli
+  // automatique (résolution au hasard, déterministe côté moteur). QUI émet est
+  // décidé par TurnTimer (le propriétaire, l'autre client en secours) ; l'id de
+  // la tête de file rend l'action sans effet si elle a changé entre-temps — y
+  // compris quand les deux clients l'émettent. dispatchAction no-op pendant une
+  // animation, donc re-tentable.
   const handleAutoResolvePending = useCallback(() => {
     const s = useGameStore.getState();
     if (!s.gameState || s.isAnimating) return;
-    if (s.gameState.players[s.gameState.currentPlayerIndex].id !== s.localPlayerId) return;
-    if ((s.gameState.pendingTriggers?.length ?? 0) === 0) return;
-    broadcast(dispatchAction({ type: "auto_resolve_pending_triggers" }));
+    const tete = s.gameState.pendingTriggers?.[0];
+    if (!tete) return;
+    broadcast(dispatchAction({ type: "auto_resolve_pending_triggers", headTriggerId: tete.id }));
   }, [dispatchAction, broadcast]);
 
   const handleActivateHeroPower = useCallback(() => {
@@ -1661,6 +1664,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
             choiceStartedAt={gameState.choiceStartedAt}
             onPendingTimeout={handleAutoResolvePending}
+            isChoiceMine={isChoiceMine}
           />
           <button
             onClick={handleEndTurn}
@@ -2011,6 +2015,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {targetingMode === "attack_power" && attackPowerLabel && (
         <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 bg-purple-900/90 border border-purple-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
           <p className="text-white font-bold">{t("attack_choice_target", { label: attackPowerLabel })}</p>
+        </div>
+      )}
+
+      {/* Choix en attente chez l'ADVERSAIRE : la partie est suspendue (verrou
+          du store) le temps de sa fenêtre — sans ce bandeau, le plateau
+          semblait simplement figé. */}
+      {choiceOwnerId != null && !isChoiceMine && (
+        <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 bg-slate-900/90 border border-slate-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
+          <p className="text-white font-bold">{t("opponent_choosing")}</p>
         </div>
       )}
 

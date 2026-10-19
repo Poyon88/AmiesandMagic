@@ -12767,10 +12767,21 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // qu'à chaque site d'empilage. Remise à zéro dès que la tête de file change :
   // chaque choix repart avec sa fenêtre pleine, y compris le 3ᵉ d'affilée.
   // Heure murale locale, comme turnStartedAt — exclue du hash de synchro.
+  //
+  // La fenêtre de choix SUSPEND le chrono de tour : quand une fenêtre se ferme
+  // (tête tranchée ou remplacée), sa durée est rendue au tour en avançant
+  // `turnStartedAt` d'autant. Le joueur actif retrouve donc son temps intact,
+  // que le choix ait été le sien ou celui de son adversaire. Sauf si le tour a
+  // basculé pendant l'action : startTurn vient d'en poser un neuf.
   if (result !== state) {
     const head = result.pendingTriggers?.[0]?.id;
     const prevHead = state.pendingTriggers?.[0]?.id;
-    if (head && head !== prevHead) result.choiceStartedAt = Date.now();
+    const now = Date.now();
+    if (prevHead && head !== prevHead && state.choiceStartedAt
+      && result.turnStartedAt === state.turnStartedAt) {
+      result.turnStartedAt += Math.max(0, now - state.choiceStartedAt);
+    }
+    if (head && head !== prevHead) result.choiceStartedAt = now;
     else if (!head) result.choiceStartedAt = undefined;
   }
   // TRANSFORMATION : toute instance transformée qui a quitté le plateau (morte,

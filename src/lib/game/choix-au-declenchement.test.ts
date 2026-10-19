@@ -148,3 +148,39 @@ describe("repli à l'expiration — un joueur à la fois", () => {
     expect(deux).toBe(une);
   });
 });
+
+describe("la fenêtre de choix suspend le chrono de tour", () => {
+  it("le temps passé à choisir est rendu au tour quand la fenêtre se ferme", () => {
+    const s = mkState();
+    s.factionCardPool = [commune(931)];
+    // Choix de P1 pendant le tour de P0, ouvert depuis 10 s.
+    s.pendingTriggers = [{ id: "x#selection", controllerId: s.players[1].id, sourceInstanceId: null, selectionType: "selection", selectionOptionIds: [931] }];
+    s.turnStartedAt = 1_000_000;
+    s.choiceStartedAt = Date.now() - 10_000;
+
+    const fin = applyAction(s, { type: "resolve_pending_trigger", triggerId: "x#selection", selectionCardId: 931 });
+
+    expect(fin.choiceStartedAt).toBeUndefined();
+    expect(fin.turnStartedAt - s.turnStartedAt).toBeGreaterThanOrEqual(10_000);
+    expect(fin.turnStartedAt - s.turnStartedAt).toBeLessThan(11_000);
+  });
+
+  it("pas de décalage quand le tour a basculé pendant l'action (chrono neuf)", () => {
+    const s = mkState();
+    s.players[0].deck = [mkInstance(mkCard({ name: "D" }))];
+    s.players[1].deck = [mkInstance(mkCard({ name: "E" }))];
+    const sorcier = mkInstance(creature("Sorcier", 2, 3, {
+      keywords: ["impact"] as unknown as Card["keywords"],
+      keyword_instances: [{ id: "impact" as Keyword, mode: "end_of_turn", x: 1 }],
+    }));
+    s.players[0].board.push(sorcier);
+    const pause = applyAction(s, { type: "end_turn" });
+    const t = pause.pendingTriggers![0];
+    const avant = Date.now();
+    const fin = applyAction({ ...pause, choiceStartedAt: avant - 60_000 }, { type: "resolve_pending_trigger", triggerId: t.id, targetInstanceId: "enemy_hero" });
+    expect(fin.currentPlayerIndex).toBe(1);
+    // startTurn a posé une ancre neuve : on ne lui ajoute pas la minute de choix.
+    expect(fin.turnStartedAt).toBeLessThanOrEqual(Date.now());
+    expect(fin.turnStartedAt).toBeGreaterThanOrEqual(avant);
+  });
+});

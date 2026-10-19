@@ -9,26 +9,9 @@
 // déclencheur est en attente, chrono de TOUR sinon.
 import { describe, expect, it } from "vitest";
 import { CHOICE_TIMER_SECONDS, TURN_TIMER_SECONDS } from "./constants";
+import { actionALExpiration, ancrageDuBadge, CHOICE_FALLBACK_GRACE_SECONDS } from "./choice-timer";
 
-/** Reproduit la décision de GameBoard. */
-function ancrageDuBadge(opts: {
-  targetingMode: string;
-  overlayPeeked?: boolean;
-  estMonTour: boolean;
-  pendingTriggers: number;
-  choiceStartedAt?: number;
-  turnStartedAt: number;
-}): { startedAt: number; seconds: number } | null {
-  const enChoix = ["selection", "divination", "pending_trigger"]
-    .includes(opts.targetingMode);
-  if (!enChoix || opts.overlayPeeked) return null;
-  if (!opts.estMonTour) return null;
-  return opts.pendingTriggers > 0 && opts.choiceStartedAt
-    ? { startedAt: opts.choiceStartedAt, seconds: CHOICE_TIMER_SECONDS }
-    : { startedAt: opts.turnStartedAt, seconds: TURN_TIMER_SECONDS };
-}
-
-const base = { estMonTour: true, pendingTriggers: 0, turnStartedAt: 1000 };
+const base = { estMonTour: true, choixAMoi: false, pendingTriggers: 0, turnStartedAt: 1000 };
 
 describe("Quand le badge s'affiche", () => {
   it.each(["selection", "divination", "pending_trigger"])(
@@ -52,12 +35,24 @@ describe("Quand le badge s'affiche", () => {
   it("ne s'affiche pas hors de son tour : ce n'est pas à nous de choisir", () => {
     expect(ancrageDuBadge({ ...base, targetingMode: "selection", estMonTour: false })).toBeNull();
   });
+
+  it("s'affiche AU TOUR ADVERSE quand le choix en file est le nôtre", () => {
+    expect(ancrageDuBadge({
+      ...base, estMonTour: false, choixAMoi: true, targetingMode: "pending_trigger", pendingTriggers: 1, choiceStartedAt: 5000,
+    })).toEqual({ startedAt: 5000, seconds: CHOICE_TIMER_SECONDS });
+  });
+
+  it("reste masqué à notre tour quand le choix en file est celui de l'adversaire", () => {
+    expect(ancrageDuBadge({
+      ...base, choixAMoi: false, targetingMode: "pending_trigger", pendingTriggers: 1, choiceStartedAt: 5000,
+    })).toBeNull();
+  });
 });
 
 describe("Quel chrono s'applique", () => {
   it("déclencheur en attente : chrono de CHOIX, ancré sur choiceStartedAt", () => {
     expect(ancrageDuBadge({
-      ...base, targetingMode: "pending_trigger", pendingTriggers: 1, choiceStartedAt: 5000,
+      ...base, choixAMoi: true, targetingMode: "pending_trigger", pendingTriggers: 1, choiceStartedAt: 5000,
     })).toEqual({ startedAt: 5000, seconds: CHOICE_TIMER_SECONDS });
   });
 
@@ -69,12 +64,35 @@ describe("Quel chrono s'applique", () => {
   it("déclencheur en attente mais horodatage absent : repli sur le chrono de tour", () => {
     // Même prudence que TurnTimer : sans ancre de choix, on n'invente pas de
     // fenêtre de 15 s qui serait déjà écoulée.
-    expect(ancrageDuBadge({ ...base, targetingMode: "pending_trigger", pendingTriggers: 1 }))
+    expect(ancrageDuBadge({ ...base, choixAMoi: true, targetingMode: "pending_trigger", pendingTriggers: 1 }))
       .toEqual({ startedAt: 1000, seconds: TURN_TIMER_SECONDS });
   });
 
   it("le chrono de choix est bien plus court que celui du tour", () => {
     // Ce qui justifie de le rendre visible : 15 s passent vite.
     expect(CHOICE_TIMER_SECONDS).toBeLessThan(TURN_TIMER_SECONDS);
+  });
+});
+
+describe("Qui émet quoi à l'expiration", () => {
+  const exp = { enChoix: false, estMonTour: true, choixAMoi: false, depassement: 0 };
+
+  it("chrono de tour écoulé : seul le joueur actif termine son tour", () => {
+    expect(actionALExpiration(exp)).toBe("end_turn");
+    expect(actionALExpiration({ ...exp, estMonTour: false })).toBeNull();
+  });
+
+  it("fenêtre de choix écoulée : le propriétaire replie aussitôt, même hors de son tour", () => {
+    expect(actionALExpiration({ ...exp, enChoix: true, estMonTour: false, choixAMoi: true })).toBe("auto_resolve");
+  });
+
+  it("l'autre client ne replie qu'après le délai de grâce (propriétaire déconnecté)", () => {
+    const autre = { ...exp, enChoix: true, choixAMoi: false };
+    expect(actionALExpiration({ ...autre, depassement: CHOICE_FALLBACK_GRACE_SECONDS - 1 })).toBeNull();
+    expect(actionALExpiration({ ...autre, depassement: CHOICE_FALLBACK_GRACE_SECONDS })).toBe("auto_resolve");
+  });
+
+  it("rien avant l'expiration", () => {
+    expect(actionALExpiration({ ...exp, enChoix: true, choixAMoi: true, depassement: -3 })).toBeNull();
   });
 });
