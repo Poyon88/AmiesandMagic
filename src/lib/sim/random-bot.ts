@@ -10,7 +10,7 @@
 // à l'identique à partir de (graine du moteur, graine du bot).
 import {
   canAttack, canPlayCard, canUseHeroPower, creatureNeedsDivination, creatureNeedsGraveyardTarget,
-  creatureNeedsTarget, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
+  creatureNeedsTarget, deferredKwTargetIds, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
   getHeroPowerTargets, getSpellTargetSlots, getValidTargets, heroPowerNeedsTarget,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
   canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, getCreatureTapComposedUid,
@@ -80,10 +80,22 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
 
   const pending = state.pendingTriggers?.[0];
   if (pending) {
-    const targets = endOfTurnTriggerTargets(state, pending);
+    // Cibles : capacité composée, emblème, sort retardé, frame suspendue…
+    // et mots-clés curés (Impact, Remontée, Affaiblissement…), dont le pool
+    // vit à part.
+    const controller = state.players.find((p) => p.id === pending.controllerId);
+    const other = state.players.find((p) => p.id !== pending.controllerId);
+    const targets = pending.kw && !pending.capUid && controller && other
+      ? deferredKwTargetIds(pending.kw, controller, other, pending.sourceInstanceId)
+      : endOfTurnTriggerTargets(state, pending);
     for (const t of targets) out.push({ type: "resolve_pending_trigger", triggerId: pending.id, targetInstanceId: t });
     for (const id of pending.selectionOptionIds ?? []) out.push({ type: "resolve_pending_trigger", triggerId: pending.id, selectionCardId: id });
-    out.push({ type: "auto_resolve_pending_triggers" });
+    for (const o of pending.alternativeOptions ?? []) out.push({ type: "resolve_pending_trigger", triggerId: pending.id, alternativeCapUid: o.capUid });
+    if (pending.deckPick && controller) {
+      const n = Math.min(pending.x ?? 1, controller.deck.length);
+      for (let i = 0; i < n; i++) out.push({ type: "resolve_pending_trigger", triggerId: pending.id, deckChoiceIndex: i });
+    }
+    out.push({ type: "auto_resolve_pending_triggers", headTriggerId: pending.id });
     return out;
   }
 
