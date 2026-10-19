@@ -137,10 +137,10 @@ describe("getSelectionCards — le germe dépend bien du tour", () => {
 // proposé les trois mêmes cartes.
 //
 // Le germe ne reposait que sur l'état du JOUEUR (tour, main, plateau, deck,
-// cimetière, mana) — rigoureusement identique pour les deux créatures. Et la
-// file de fin de tour ne met pas le tour en pause sur une Sélection : son effet
-// composé n'a pas de `target`, donc les deux offres sont calculées coup sur
-// coup, sur un état inchangé. Le germe intègre désormais l'identifiant de la
+// cimetière, mana) — rigoureusement identique pour les deux créatures. La file
+// de fin de tour se met en pause sur CHAQUE Sélection (ordre strict du plateau),
+// mais la première ne change presque rien à l'état : sans sel de source, la
+// seconde offre retombait sur la même. Le germe intègre désormais l'identifiant de la
 // SOURCE (cf. saltDeSource), produit par la RNG semée — donc identique chez les
 // deux clients, le tirage reste reproductible.
 describe("Sélection — deux sources distinctes, deux offres distinctes", () => {
@@ -162,11 +162,17 @@ describe("Sélection — deux sources distinctes, deux offres distinctes", () =>
   }
 
   function offresDe(depart: GameState): string[] {
-    const st = applyAction(depart, { type: "end_turn" });
-    const offres = (st.pendingTriggers ?? [])
-      .filter(t => t.selectionType)
-      .map(t => (t.selectionOptionIds ?? []).join(","));
-    expect(offres.length, "les deux créatures doivent chacune poser leur Sélection").toBe(2);
+    const offres: string[] = [];
+    let st = applyAction(depart, { type: "end_turn" });
+    for (let i = 0; i < 2; i++) {
+      // Le tour ne bascule pas tant qu'une Sélection du sortant attend.
+      expect(st.currentPlayerIndex, "la fin de tour attend la Sélection du sortant").toBe(0);
+      const t = (st.pendingTriggers ?? []).find(p => p.selectionType);
+      expect(t, "les deux créatures doivent chacune poser leur Sélection").toBeDefined();
+      offres.push((t!.selectionOptionIds ?? []).join(","));
+      st = applyAction(st, { type: "resolve_pending_trigger", triggerId: t!.id, selectionCardId: t!.selectionOptionIds![0] });
+    }
+    expect(st.currentPlayerIndex, "les deux choix tranchés, le tour bascule").toBe(1);
     return offres;
   }
 

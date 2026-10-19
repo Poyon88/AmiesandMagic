@@ -2505,7 +2505,7 @@ export interface PendingTrigger {
   delayedSpell?: { card: Card; slots: SpellTargetSlot[] };
   id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
-  controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
+  controllerId: string;            // joueur qui choisit — PAS forcément le joueur actif (choix au tour adverse)
   sourceInstanceId: string | null; // source (exclusion de cible)
   /** Montant porté par le trigger (ex. Impact X en mode différé mort/fin de
    *  tour : la source est au cimetière, on ne peut pas relire X du plateau). */
@@ -2534,6 +2534,11 @@ export interface PendingTrigger {
    *  figée dans la frame — le client doit annoncer le nombre qui se résoudra,
    *  pas le plafond. */
   alternativeOptions?: { capUid: string; composed: ComposedEffect }[];
+  /** Présent ⇒ variante « frame de pile suspendue » : une frame composée « au
+   *  choix » (Blessure, Sous 15 PV…) attend sa cible au sommet de la pile. La
+   *  réponse fixe ses `chosenTargetIds` et relance le drain — l'effet garde sa
+   *  place dans l'ordre de résolution au lieu d'être rejoué à part. */
+  frameId?: string;
 }
 
 /** Frame de la pile d'effets LIFO unifiée. UN frame = UN effet atomique (un

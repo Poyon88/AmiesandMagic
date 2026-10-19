@@ -1749,6 +1749,13 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   const controller = state.players.find(p => p.id === trigger.controllerId);
   const other = state.players.find(p => p.id !== trigger.controllerId);
   if (!controller || !other) return [];
+  // FRAME SUSPENDUE : la spec voyage dans la frame (snapshot de l'effet), la
+  // source a pu quitter le plateau entre-temps.
+  if (trigger.frameId) {
+    const frame = frameEnAttente(state, trigger.frameId);
+    const spec = frame?.composed?.target;
+    return spec ? composedChoiceTargetIds(spec, controller, other, frame!.trigger === "spell_resolution") : [];
+  }
   // EMBLÈME : pas de source en jeu, la spec vient de l'emblème lui-même.
   if (trigger.emblemIndex != null) {
     const spec = (controller.emblems ?? [])[trigger.emblemIndex]?.composed?.target;
@@ -4447,6 +4454,21 @@ function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./t
   return steps;
 }
 
+/** Verse dans `state.pendingTriggers` les choix déposés dans le puits pendant
+ *  l'action en cours. Le puits n'est rattaché à l'état qu'à la FIN de l'action
+ *  (applyAction) : une séquence de phase qui doit savoir, en cours de route,
+ *  si un choix l'attend doit donc les rapatrier elle-même. Sans doublon : le
+ *  « OU » et les frames suspendues testent déjà les deux listes. */
+function rapatrierLePuits(state: GameState): boolean {
+  if (pendingTriggerSink.length === 0) return false;
+  const file = (state.pendingTriggers ??= []);
+  for (const t of pendingTriggerSink) {
+    if (!file.some(x => x.id === t.id)) file.push(t);
+  }
+  pendingTriggerSink = [];
+  return true;
+}
+
 /** Met la séquence de phase EN PAUSE sur le déclencheur interactif qui vient
  *  d'être empilé. En fin de tour, c'est la bascule qui est différée
  *  (`endTurnPending`) ; en début de tour, elle est déjà faite — la file
@@ -4476,6 +4498,11 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
   if (!queue) return finalize(newState);
 
   while (queue.length > 0) {
+    // Un effet résolu EN LIGNE au pas précédent (mot-clé curé ciblé, Sélection
+    // composée de créature, râle d'agonie) a pu déposer un choix dans le puits.
+    // Sans rapatriement, la file continuait de se vider et le tour basculait
+    // par-dessus : le joueur entrant héritait du choix du sortant.
+    if (rapatrierLePuits(newState)) return pauseTurnPhase(newState, phase); // PAUSE
     const step = queue[0];
 
     // EMBLÈME composé : traité AVANT la garde « source absente » ci-dessous, et
@@ -4636,6 +4663,8 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
         { trigger: spec.trigger, capUid: cap.uid }));
   }
 
+  // Le DERNIER pas de la file a pu, lui aussi, déposer un choix.
+  if (rapatrierLePuits(newState)) return pauseTurnPhase(newState, phase); // PAUSE
   // File épuisée : plus aucun effet de la phase → finalisation.
   if (phase === "end_of_turn") newState.endOfTurnQueue = undefined;
   else newState.startOfTurnQueue = undefined;
@@ -4691,6 +4720,7 @@ function triggerIsResolvable(state: GameState, trigger: import("./types").Pendin
   // à demander au joueur » tout en bas et se faisait purger — la pile serait
   // restée suspendue pour toujours, plateau inerte.
   if (trigger.alternativeOptions?.length) return true;
+  if (trigger.frameId) return endOfTurnTriggerTargets(state, trigger).length > 0;
   if (trigger.deckPick) {
     const controller = state.players.find(p => p.id === trigger.controllerId);
     return (controller?.deck.length ?? 0) > 0;
@@ -4729,7 +4759,13 @@ function pruneUnresolvableTriggers(state: GameState): boolean {
   const kept = queue.filter(t => triggerIsResolvable(state, t));
   if (kept.length === queue.length) return false;
   for (const t of queue) {
-    if (!kept.includes(t)) console.warn(`[end-turn] déclencheur orphelin purgé (plus aucun choix possible) : ${t.id}`);
+    if (kept.includes(t)) continue;
+    console.warn(`[end-turn] déclencheur orphelin purgé (plus aucun choix possible) : ${t.id}`);
+    // Frame suspendue dont toutes les cibles ont disparu : on la libère, sinon
+    // la pile resterait figée sur une question sans réponse possible. Le drain
+    // de fin d'action la résout (à vide) à sa place.
+    const frame = t.frameId ? frameEnAttente(state, t.frameId) : undefined;
+    if (frame) { frame.awaitingChoice = false; frame.noSuspend = true; }
   }
   state.pendingTriggers = kept;
   return true;
@@ -4752,6 +4788,9 @@ function finalizeEndOfTurn(newState: GameState): GameState {
   // Les râles d'agonie ci-dessus peuvent avoir empilé des choix devenus
   // insolubles (leur cible est morte dans la même fournée). Différer la bascule
   // sur un tel déclencheur, c'est bloquer la partie : on purge d'abord.
+  // Leurs choix sont encore dans le PUITS : on les rapatrie avant de décider,
+  // sinon la bascule passait par-dessus (choix du sortant posé au tour entrant).
+  rapatrierLePuits(newState);
   pruneUnresolvableTriggers(newState);
   if ((newState.pendingTriggers?.length ?? 0) > 0) {
     newState.endTurnPending = true;
@@ -9569,6 +9608,29 @@ function demanderLeChoixOu(
   return true;
 }
 
+/** Pose la question de cible d'une frame « au choix » suspendue au sommet de la
+ *  pile. Sans ce déclencheur, la suspension n'avait AUCUNE interface : rien hors
+ *  du moteur ne lit `effectStack`, la pile restait figée et la frame s'évaporait
+ *  au fizzle de fin de tour. Idempotent pour la même raison que le « OU » :
+ *  `drainStack` repasse à la fin de chaque action. */
+function demanderLaCibleDeLaFrame(state: GameState, frame: StackFrame): void {
+  const id = `${frame.frameId}#cible`;
+  const deja = (state.pendingTriggers ?? []).some(t => t.id === id)
+    || pendingTriggerSink.some(t => t.id === id);
+  if (deja) return;
+  pendingTriggerSink.push({
+    id,
+    controllerId: frame.ownerId,
+    sourceInstanceId: frame.sourceInstanceId,
+    frameId: frame.frameId,
+  });
+}
+
+/** Frame suspendue désignée par un déclencheur `frameId`, si elle attend encore. */
+function frameEnAttente(state: GameState, frameId: string): StackFrame | undefined {
+  return (state.effectStack ?? []).find(f => f.frameId === frameId && f.awaitingChoice);
+}
+
 /** Applique la décision : la branche gagnante reste et se résout, les perdantes
  *  quittent la pile. Le drapeau `alternativeSettled` évite que la gagnante ne
  *  repose la question au tour de boucle suivant. */
@@ -9626,6 +9688,7 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
       // éventuellement empilés en dessous se résolvent normalement.
       if (opts?.fizzleUnresolvedChoices) { stack.pop(); continue; }
       top.awaitingChoice = true;
+      demanderLaCibleDeLaFrame(state, top);
       return;
     }
     stack.pop();
@@ -11852,6 +11915,26 @@ function applyOnePendingTrigger(
     return;
   }
 
+  // FRAME SUSPENDUE : la cible désignée est gravée dans la frame, qui se
+  // résout ensuite à SA place dans la pile. Réponse absente (repli, client
+  // d'une autre version) ⇒ tirage parmi les cibles encore valides : laisser la
+  // pile suspendue bloquerait tout le plateau.
+  if (trigger.frameId) {
+    const frame = frameEnAttente(newState, trigger.frameId);
+    if (!frame) return; // déjà résolue ou fizzlée (resync, double réponse)
+    const pool = endOfTurnTriggerTargets(newState, trigger);
+    const valides = (pendingChoiceIds(choice) ?? []).filter(id => pool.includes(id));
+    frame.chosenTargetIds = valides.length > 0
+      ? valides
+      : pool.length > 0 ? [pool[Math.floor(rng() * pool.length)]] : undefined;
+    frame.awaitingChoice = false;
+    // Plus aucune cible : la frame n'a plus rien à suspendre — noSuspend la
+    // laisse se résoudre (à vide) au lieu de reposer la question.
+    if (!frame.chosenTargetIds) frame.noSuspend = true;
+    drainStack(newState);
+    return;
+  }
+
   // EMBLÈME composé « au choix » : même résolution qu'une capacité de créature,
   // mais l'effet se lit sur l'emblème et la source est nulle — il n'y en a plus.
   if (trigger.emblemIndex != null) {
@@ -11986,6 +12069,9 @@ export function autoResolvePendingTriggers(state: GameState): GameState {
       } else if (trigger.selectionType) {
         const opts = trigger.selectionOptionIds ?? [];
         if (opts.length > 0) choice = { selectionCardId: opts[Math.floor(rng() * opts.length)] };
+      } else if (trigger.frameId) {
+        // Frame suspendue : réponse vide ⇒ applyOnePendingTrigger tire lui-même
+        // parmi les cibles encore valides au moment de la résolution.
       } else if (trigger.capUid || trigger.emblemIndex != null || trigger.delayedSpell) {
         // Même pool pour les deux provenances. Un emblème laissé sans choix
         // retombait sur `pool.slice(0, n)` dans selectComposedTargets, c'est-à-

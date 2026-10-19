@@ -288,7 +288,10 @@ function pendingTriggerOverlay(
   // mais aucun sélecteur ne s'ouvrait, et le joueur restait devant un tour figé
   // jusqu'au repli automatique du chrono.
   const isEmblem = t.emblemIndex != null;
-  const isEndOfTurn = !!t.capUid || isEmblem;
+  // Frame de pile suspendue (Blessure, Sous 15 PV… « au choix ») : l'effet
+  // voyage dans la frame, même rendu qu'une capacité composée.
+  const frame = t.frameId ? gs!.effectStack?.find(f => f.frameId === t.frameId) : undefined;
+  const isEndOfTurn = !!t.capUid || isEmblem || !!frame;
   if (!isEndOfTurn && !t.kw) return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
@@ -317,6 +320,8 @@ function pendingTriggerOverlay(
   // ne lisent que `.composed` : une enveloppe minimale suffit, et évite de
   // dupliquer un second rendu de libellé pour les emblèmes.
   const capEnCours: Capability | undefined = !isEndOfTurn ? undefined
+    : frame?.composed
+      ? { uid: frame.capUid ?? "", trigger: frame.trigger, effectKind: "immediate", abilityId: "_composed", composed: frame.composed } as Capability
     : isEmblem
       ? (() => {
         const emblem = (controller.emblems ?? [])[t.emblemIndex!];

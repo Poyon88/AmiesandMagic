@@ -204,6 +204,29 @@ describe("sous 15 PV — ciblage", () => {
     expect(st.players[1].board.every(c => c.currentHealth === 9)).toBe(true);
   });
 
+  it("la frame suspendue POSE la question au contrôleur, et la réponse la résout à sa place", () => {
+    // Sans ce déclencheur, la suspension n'avait aucune interface : la pile
+    // restait figée jusqu'au fizzle de fin de tour.
+    const s = mkState();
+    s.players[0].hero.hp = 16;
+    s.players[0].board = [mkInstance(mkCard({ name: "Choisisseuse", capabilities: [choixCible()] }))];
+    const cibleB = mkInstance(mkCard({ name: "CibleB", attack: 1, health: 9 }));
+    s.players[1].board = [mkInstance(mkCard({ name: "CibleA", attack: 1, health: 9 })), cibleB];
+    const carte = mkInstance(mkCard({ name: "Payeuse", life_cost: 2, attack: 1, health: 1 }));
+    s.players[0].hand = [carte];
+
+    const st = lance(s, carte.instanceId);
+    const t = st.pendingTriggers?.find(p => p.frameId);
+    expect(t, "un déclencheur de frame est posé").toBeDefined();
+    expect(t!.controllerId).toBe(st.players[0].id);
+
+    const fin = applyAction(st, { type: "resolve_pending_trigger", triggerId: t!.id, targetInstanceId: cibleB.instanceId });
+    expect(fin.players[1].board.find(c => c.instanceId === cibleB.instanceId)!.currentHealth).toBe(7);
+    expect(fin.players[1].board.filter(c => c.currentHealth === 9)).toHaveLength(1);
+    expect(fin.effectStack ?? []).toEqual([]);
+    expect(fin.pendingTriggers ?? []).toEqual([]);
+  });
+
   it("tour ADVERSE : le même effet « au choix » se résout seul, cible aléatoire", () => {
     const s = mkState();
     initRNG(42);
