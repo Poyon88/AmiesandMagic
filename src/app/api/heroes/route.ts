@@ -6,6 +6,7 @@ import { FACTIONS } from '@/lib/card-engine/constants';
 import { ABILITIES } from '@/lib/game/abilities';
 import { validateFactionClan } from '@/lib/validation/faction-clan';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
+import { HERO_HP_MAX, HERO_HP_MIN, pvDeDepartValides } from '@/lib/game/hero-hp';
 
 const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura', 'composed']);
 
@@ -104,6 +105,13 @@ function validateUsageLimit(raw: unknown): { ok: true; value: number | null } | 
   return { ok: true, value: raw };
 }
 
+function validateStartingHp(raw: unknown): { ok: true; value: number } | { ok: false; error: string } {
+  if (!pvDeDepartValides(raw)) {
+    return { ok: false, error: `starting_hp doit être un entier entre ${HERO_HP_MIN} et ${HERO_HP_MAX}` };
+  }
+  return { ok: true, value: raw };
+}
+
 async function getAuthUser() {
   const cookieStore = await cookies();
   const supabaseAuth = createServerClient(
@@ -192,7 +200,7 @@ export async function POST(request: Request) {
     const {
       name, race, faction, clan,
       power_name, power_cost, power_effect, power_description,
-      power_usage_limit,
+      power_usage_limit, starting_hp,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
@@ -217,6 +225,10 @@ export async function POST(request: Request) {
 
     const ulVal = validateUsageLimit(power_usage_limit);
     if (!ulVal.ok) return NextResponse.json({ error: ulVal.error }, { status: 400 });
+
+    // Absent ⇒ défaut de la colonne (30).
+    const hpVal = starting_hp === undefined ? null : validateStartingHp(starting_hp);
+    if (hpVal && !hpVal.ok) return NextResponse.json({ error: hpVal.error }, { status: 400 });
 
     // GLB source (optional): either base64 upload OR an already-hosted URL.
     let finalGlbUrl: string | null = null;
@@ -274,6 +286,7 @@ export async function POST(request: Request) {
     if (typeof power_cost === 'number') insert.power_cost = power_cost;
     insert.power_effect = peVal.value;
     insert.power_usage_limit = ulVal.value;
+    if (hpVal) insert.starting_hp = hpVal.value;
     if (typeof power_description === 'string') insert.power_description = power_description;
 
     if (typeof rarity === 'string' && ALLOWED_RARITIES.has(rarity)) insert.rarity = rarity;
@@ -321,7 +334,7 @@ export async function PUT(request: Request) {
     const {
       id, name, faction, clan,
       power_name, power_cost, power_effect, power_description,
-      power_usage_limit,
+      power_usage_limit, starting_hp,
       glbBase64, glbMimeType, glbUrl,
       thumbnailBase64, thumbnailMimeType,
       powerImageBase64, powerImageMimeType,
@@ -354,6 +367,11 @@ export async function PUT(request: Request) {
       const ulVal = validateUsageLimit(power_usage_limit);
       if (!ulVal.ok) return NextResponse.json({ error: ulVal.error }, { status: 400 });
       updates.power_usage_limit = ulVal.value;
+    }
+    if (starting_hp !== undefined) {
+      const hpVal = validateStartingHp(starting_hp);
+      if (!hpVal.ok) return NextResponse.json({ error: hpVal.error }, { status: 400 });
+      updates.starting_hp = hpVal.value;
     }
     if (typeof power_description === 'string') updates.power_description = power_description;
     if (typeof rarity === 'string' && ALLOWED_RARITIES.has(rarity)) updates.rarity = rarity;
