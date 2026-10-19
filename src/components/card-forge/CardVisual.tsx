@@ -24,6 +24,7 @@ import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
 import { TARGET_SCOPE_FR, composedScope, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
+import { formatRaces } from "@/lib/game/races";
 
 // Reverse of KEYWORD_LABELS: FR label → snake_case engine id. Forge state
 // stores keywords as FR labels, but the keyword-icon store is keyed by the
@@ -150,6 +151,7 @@ interface CardData {
   name: string;
   faction: string;
   race?: string;
+  race2?: string;
   clan?: string;
   cardAlignment?: string;
   type: string;
@@ -221,6 +223,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
   const descCtx = (kw: string) => ({
     card: {
       race: card?.race,
+      race2: card?.race2,
       clan: card?.clan,
       faction: card?.faction,
       card_alignment: card?.cardAlignment,
@@ -610,7 +613,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         {/* Race / Clan / Alignment */}
         {(card!.race || card!.clan || (card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale")) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * s, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
-            {card!.race && <span>{card!.race}</span>}
+            {card!.race && <span>{formatRaces(card)}</span>}
             {card!.race && card!.clan && <span style={{ color: "#888" }}>·</span>}
             {card!.clan && <span style={{ fontStyle: "italic" }}>{card!.clan}</span>}
             {card!.cardAlignment && card!.cardAlignment !== "spéciale" && fac.alignment === "spéciale" && (

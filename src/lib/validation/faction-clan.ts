@@ -55,3 +55,14 @@ export function validateRace(race: unknown, faction: string | null): RaceResult 
   if (!getAllRaces().includes(race)) return { ok: false, error: 'Race inconnue' };
   return { ok: true, race };
 }
+
+// Seconde race d'une unité bi-race : n'importe quelle race connue, toutes
+// factions confondues (un Dragon zombie croise deux factions). Elle exige une
+// race principale et doit en différer.
+export function validateRace2(race2: unknown, race: string | null | undefined): RaceResult {
+  const rc = validateRace(race2, null);
+  if (!rc.ok || !rc.race) return rc;
+  if (!race) return { ok: false, error: 'Seconde race sans race principale' };
+  if (rc.race === race) return { ok: false, error: 'La seconde race doit différer de la première' };
+  return rc;
+}

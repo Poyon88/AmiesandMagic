@@ -73,6 +73,7 @@ import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
+import { formatRaces } from "@/lib/game/races";
 
 interface GameCardProps {
   card: Card;
@@ -565,7 +566,7 @@ export default function GameCard({
         {/* Race / Clan */}
         {(card.race || card.clan) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 6 * s, fontSize: 13 * so, color: "#ddd", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{vocab.raceName(card.race)}</span>}
+            {card.race && <span>{formatRaces(card, vocab.raceName)}</span>}
             {card.race && card.clan && <span style={{ color: "#888" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>

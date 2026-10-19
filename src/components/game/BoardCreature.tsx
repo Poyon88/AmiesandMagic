@@ -33,6 +33,7 @@ import { composedScope, creatureScopes, kwInstanceScope, porteeValide, scopeAria
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 import { neutralisedIds } from "@/lib/game/neutralisation";
+import { formatRaces } from "@/lib/game/races";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -1012,7 +1013,7 @@ function BoardCreature({
         {/* Race / Clan */}
         {(card.race || card.clan) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{card.race}</span>}
+            {card.race && <span>{formatRaces(card)}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>

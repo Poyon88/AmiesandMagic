@@ -1040,6 +1040,11 @@ export interface Card {
   illustration_prompt?: string | null;
   faction?: string;
   race?: string;
+  /** Seconde race facultative (unité bi-race, ex. Elfes + Aigles Géants pour un
+   *  elfe chevauchant un aigle). Peut venir d'une autre faction que la carte.
+   *  Toute mécanique de race la compte comme la première : lire les races via
+   *  `cardRaces` / `hasRace` (races.ts), jamais `card.race` seul. */
+  race2?: string | null;
   clan?: string;
   rarity?: string;
   card_alignment?: string;

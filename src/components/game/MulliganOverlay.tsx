@@ -26,6 +26,7 @@ import { CostShield, EquipToken, StatShields, statShieldsReserve } from "@/compo
 import { getEquipCost } from "@/lib/game/items";
 import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
+import { formatRaces } from "@/lib/game/races";
 
 function playStandardSfx(eventType: string) {
   if (typeof window === "undefined") return;
@@ -349,7 +350,7 @@ function MulliganCard({
         {/* Race / Clan */}
         {(card.race || card.clan) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{card.race}</span>}
+            {card.race && <span>{formatRaces(card)}</span>}
             {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
             {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
           </div>

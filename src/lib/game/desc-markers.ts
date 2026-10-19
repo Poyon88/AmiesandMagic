@@ -2,7 +2,8 @@ import type { Card, Keyword, KeywordInstance, KeywordMode, TokenTemplate } from 
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import type { SafeT } from "@/i18n/config";
 import { getAlignmentLabel, getClanName, getEffectiveAlignment } from "@/lib/card-engine/constants";
-import { getClanForm, getFactionForm, getRaceForm } from "@/lib/card-engine/race-forms";
+import { getClanForm, getFactionForm, getRaceForm, type RaceForm } from "@/lib/card-engine/race-forms";
+import { cardRaces } from "./races";
 import { getKeywordDisplayLabel } from "./keyword-labels";
 import { AUTOMATIC_ABILITY_IDS, KEYWORD_DEFAULT_X } from "./abilities";
 
@@ -19,7 +20,7 @@ import { AUTOMATIC_ABILITY_IDS, KEYWORD_DEFAULT_X } from "./abilities";
 export interface MarkerCtx {
   card?: Pick<
     Card,
-    | "race" | "clan" | "faction" | "card_alignment" | "entraide_race"
+    | "race" | "race2" | "clan" | "faction" | "card_alignment" | "entraide_race"
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id"
   > | null;
   /** Instance : porte la race/clan CIBLÉS et la capacité conférée. */
@@ -89,6 +90,7 @@ export const MARKERS_FR: Record<string, string> = {
   "invocations_more_one": "une de coût {cost}",
   "invocations_more_many": "{count} de coût {cost}",
   "invocations_join": " et ",
+  "race_or": " ou ",
   "invocations_of_race": " (parmi les {v})",
   "invocations_of_faction": " (parmi la faction {v})",
   "lycanthrope": "un token X/X",
@@ -167,9 +169,21 @@ export function singulierLabel(t?: SafeT): string {
 // Race ciblée par CE mot-clé. Priorité à l'instance (Appel Suprême, Sélection
 // stockent leur cible sur l'instance), puis au champ dédié d'Entraide, puis à
 // la race de la carte elle-même (Loyauté, Martyr…).
-function targetRace(kw: string, ctx: MarkerCtx): string | null | undefined {
-  if (kw === "entraide") return ctx.card?.entraide_race ?? ctx.instance?.race;
-  return ctx.instance?.race ?? ctx.card?.race;
+// Une unité bi-race (race2) vise ses DEUX races quand la cible est la sienne :
+// « vos Elfes ou Aigles Géants ».
+function targetRaces(kw: string, ctx: MarkerCtx): string[] {
+  if (kw === "entraide") {
+    const r = ctx.card?.entraide_race ?? ctx.instance?.race;
+    return r ? [r] : [];
+  }
+  if (ctx.instance?.race) return [ctx.instance.race];
+  return cardRaces(ctx.card);
+}
+
+function raceForms(kw: string, ctx: MarkerCtx, form: RaceForm, t?: SafeT): string | null {
+  const forms = targetRaces(kw, ctx).map((r) => getRaceForm(r, form, t)).filter((f): f is string => !!f);
+  if (forms.length === 0) return null;
+  return forms.join(marker("race_or", t) ?? " ou ");
 }
 
 function targetClan(ctx: MarkerCtx): string | null | undefined {
@@ -179,10 +193,10 @@ function targetClan(ctx: MarkerCtx): string | null | undefined {
 export type Resolver = (kw: string, ctx: MarkerCtx, t?: SafeT) => string | null;
 
 export const BASE_RESOLVERS: Record<string, Resolver> = {
-  race: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "def", t),
-  race_bare: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "bare", t),
-  race_de: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "de", t),
-  race_pl: (kw, ctx, t) => getRaceForm(targetRace(kw, ctx), "pl", t),
+  race: (kw, ctx, t) => raceForms(kw, ctx, "def", t),
+  race_bare: (kw, ctx, t) => raceForms(kw, ctx, "bare", t),
+  race_de: (kw, ctx, t) => raceForms(kw, ctx, "de", t),
+  race_pl: (kw, ctx, t) => raceForms(kw, ctx, "pl", t),
   clan: (_kw, ctx, t) => {
     const c = targetClan(ctx);
     return c ? getClanName(c, t) : null;
