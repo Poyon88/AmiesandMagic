@@ -59,14 +59,17 @@ describe("Remontée mode mort — renvoi ciblé, pas auto-renvoi", () => {
     expect(handNames(next, 1)).not.toContain("Ronin Dévoué");
   });
 
-  it("renvoie bien une AUTRE créature (tirage quand la modale ne peut pas s'ouvrir)", () => {
+  it("renvoie bien une AUTRE créature (tirage quand la fenêtre de choix expire)", () => {
     const s = mkState();
     const r = ronin();
-    // Le Ronin meurt pendant le tour ADVERSE : pas de sélecteur possible, le
-    // moteur tire une cible — mais l'effet doit avoir lieu.
+    // Le Ronin meurt pendant le tour ADVERSE : son propriétaire reçoit le
+    // sélecteur ; s'il laisse filer le chrono, le moteur tire une cible — mais
+    // l'effet doit avoir lieu.
     s.players[1].board.push(r, mkInstance(mkCard({ name: "Alliée", attack: 1, health: 4 })));
 
-    const next = killWithAttacker(s, r);
+    const pose = killWithAttacker(s, r);
+    expect(pose.pendingTriggers?.[0]?.controllerId).toBe(pose.players[1].id);
+    const next = applyAction(pose, { type: "auto_resolve_pending_triggers" });
 
     const bounced = [...handNames(next, 0), ...handNames(next, 1)];
     expect(bounced.length).toBeGreaterThan(0);

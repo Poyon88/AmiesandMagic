@@ -2083,6 +2083,11 @@ export interface GameState {
   // power in a first wave (its damage/deaths) then combat in a second wave.
   // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
   onAttackWave?: { intermediate: GameState } | null;
+  /** Attaque SUSPENDUE entre ses effets « à l'attaque » et son combat : un de
+   *  ces effets a posé un choix (Sélection…), qui se tranche AVANT les dégâts.
+   *  Le joueur actif émet la reprise (`AttackAction.reprise`) dès la file vide ;
+   *  à défaut, `end_turn` la termine d'office. Déterministe ⇒ dans le hash. */
+  attaqueSuspendue?: { attackerInstanceId: string; targetInstanceId: string };
   // Transient : POINTS DE PASSAGE de l'animation — l'axe du temps INTERNE de
   // l'action, que le store ne pouvait pas deviner.
   //
@@ -2238,6 +2243,9 @@ export interface AttackAction {
    *  pour multi, `${uid}` pour cible unique. Porté par l'action ⇒ les deux
    *  clients résolvent le pouvoir à l'identique au rejeu. */
   targetMap?: Record<string, string>;
+  /** Reprise d'une attaque suspendue (`GameState.attaqueSuspendue`) : ses
+   *  effets « à l'attaque » sont déjà résolus, seul le combat reste à jouer. */
+  reprise?: boolean;
 }
 
 export interface EndTurnAction {
@@ -2332,13 +2340,18 @@ export interface ResolvePendingTriggerAction {
   alternativeCapUid?: string;
 }
 
-/** Repli automatique à l'expiration du chrono : résout TOUS les déclencheurs
- *  interactifs en attente au hasard (RNG semée, déterministe), puis termine le
- *  tour. Émise par le client du joueur actif quand son temps est écoulé alors
- *  que des `pendingTriggers` restent non résolus. Sans payload : le tirage est
- *  fait dans le moteur. */
+/** Repli automatique à l'expiration de la fenêtre de choix : résout au hasard
+ *  (RNG semée, déterministe) les déclencheurs en tête de file appartenant au
+ *  MÊME joueur que la tête — chaque joueur garde ses propres 15 s pour ses
+ *  propres choix. Émise par le propriétaire du choix (ou, en secours, par
+ *  l'autre client). Le tirage est fait dans le moteur. */
 export interface AutoResolvePendingTriggersAction {
   type: "auto_resolve_pending_triggers";
+  /** Id de la tête de file au moment où la fenêtre a expiré. Si la tête a
+   *  changé entre-temps (choix tranché, ou l'autre client a déjà replié),
+   *  l'action est sans effet : c'est ce qui la rend IDEMPOTENTE quand les deux
+   *  clients l'émettent. Absent (ancien client, simulation) ⇒ tête courante. */
+  headTriggerId?: string;
 }
 
 /** Dépense du compteur d'Épargne : le joueur a cliqué son compteur, vu les 3
@@ -2505,7 +2518,7 @@ export interface PendingTrigger {
   delayedSpell?: { card: Card; slots: SpellTargetSlot[] };
   id: string;                       // déterministe (= sourceInstanceId, +uid pour les caps)
   kw?: Keyword;                     // ex. "remontee" (variante mot-clé) ; absent pour les caps
-  controllerId: string;            // joueur qui choisit (toujours le joueur actif ici)
+  controllerId: string;            // joueur qui choisit — PAS forcément le joueur actif (choix au tour adverse)
   sourceInstanceId: string | null; // source (exclusion de cible)
   /** Montant porté par le trigger (ex. Impact X en mode différé mort/fin de
    *  tour : la source est au cimetière, on ne peut pas relire X du plateau). */
@@ -2534,6 +2547,11 @@ export interface PendingTrigger {
    *  figée dans la frame — le client doit annoncer le nombre qui se résoudra,
    *  pas le plafond. */
   alternativeOptions?: { capUid: string; composed: ComposedEffect }[];
+  /** Présent ⇒ variante « frame de pile suspendue » : une frame composée « au
+   *  choix » (Blessure, Sous 15 PV…) attend sa cible au sommet de la pile. La
+   *  réponse fixe ses `chosenTargetIds` et relance le drain — l'effet garde sa
+   *  place dans l'ordre de résolution au lieu d'être rejoué à part. */
+  frameId?: string;
 }
 
 /** Frame de la pile d'effets LIFO unifiée. UN frame = UN effet atomique (un

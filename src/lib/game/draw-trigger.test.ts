@@ -206,23 +206,27 @@ describe("à la pioche — règlement des morts", () => {
 });
 
 describe("à la pioche — ciblage", () => {
-  it("prend une cible AU HASARD sans jamais mettre le tour en pause", () => {
-    // Impact est un effet ciblé : hors mode draw/attack et sur son propre tour,
-    // le moteur poserait un pendingTrigger et attendrait le joueur. Au milieu
-    // d'une pioche, il n'y a pas de point de pause — la cible doit être tirée.
+  it("pose le choix de cible au joueur qui PIOCHE, au début de son tour", () => {
+    // Impact est un effet ciblé. La pioche de début de tour se déroule dans
+    // l'action `end_turn` du joueur SORTANT : l'ancien moteur y voyait un « tour
+    // adverse » et tirait la cible au hasard. Le choix revient désormais à son
+    // propriétaire, posé à la fin de l'action — le tour est déjà le sien.
     const s = mkState();
-    initRNG(42);
     s.players[0].board = [mkInstance(mkCard({ name: "CibleA", attack: 1, health: 9 }))];
     s.players[1].deck = [carteAPioche("Fouineur", "impact", 3)];
 
     const st = faitPiocher(s);
 
-    expect(st.pendingTriggers ?? []).toEqual([]);
+    expect(st.currentPlayerIndex, "le tour a bien basculé").toBe(1);
     expect(st.endTurnPending ?? false).toBe(false);
-    // L'effet a bien frappé (créature ou héros — la cible est aléatoire).
-    const degatsCreature = 9 - st.players[0].board[0].currentHealth;
-    const degatsHeros = 30 - st.players[0].hero.hp;
-    expect(degatsCreature + degatsHeros).toBe(3);
+    const t = (st.pendingTriggers ?? [])[0];
+    expect(t?.kw).toBe("impact");
+    expect(t.controllerId).toBe(st.players[1].id);
+    expect(st.players[0].board[0].currentHealth, "rien n'a encore frappé").toBe(9);
+
+    const fin = applyAction(st, { type: "resolve_pending_trigger", triggerId: t.id, targetInstanceId: st.players[0].board[0].instanceId });
+    expect(fin.players[0].board[0].currentHealth).toBe(6);
+    expect(fin.pendingTriggers ?? []).toEqual([]);
   });
 
   it("est DÉTERMINISTE : même graine ⇒ même cible", () => {
@@ -235,7 +239,9 @@ describe("à la pioche — ciblage", () => {
         mkInstance(mkCard({ name: "B", attack: 1, health: 9 })),
       ];
       s.players[1].deck = [carteAPioche("Fouineur", "impact", 3)];
-      const st = faitPiocher(s);
+      // Fenêtre de choix laissée expirer : le repli tire la cible.
+      const st = applyAction(faitPiocher(s), { type: "auto_resolve_pending_triggers" });
+      expect(st.pendingTriggers ?? []).toEqual([]);
       return [
         st.players[0].board.map(c => c.currentHealth).join("/"),
         st.players[0].hero.hp,

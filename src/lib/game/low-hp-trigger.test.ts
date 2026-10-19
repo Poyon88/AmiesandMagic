@@ -10,8 +10,8 @@
 //   1. le déclenchement est un BALAYAGE idempotent (flag one-shot par
 //      instance), pas une détection de front — d'où l'arrivée en jeu sous le
 //      seuil qui déclenche, et l'absence de re-fire tant que le flag est posé ;
-//   2. le ciblage suit la règle commune : tour du contrôleur → choix différé,
-//      tour adverse → cible aléatoire (rng semée), sans jamais bloquer.
+//   2. le ciblage suit la règle commune : le PROPRIÉTAIRE choisit, quel que
+//      soit le tour ; à l'expiration de sa fenêtre, cible aléatoire (rng semée).
 import { describe, expect, it } from "vitest";
 import { applyAction, initRNG } from "./engine";
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
@@ -204,7 +204,30 @@ describe("sous 15 PV — ciblage", () => {
     expect(st.players[1].board.every(c => c.currentHealth === 9)).toBe(true);
   });
 
-  it("tour ADVERSE : le même effet « au choix » se résout seul, cible aléatoire", () => {
+  it("la frame suspendue POSE la question au contrôleur, et la réponse la résout à sa place", () => {
+    // Sans ce déclencheur, la suspension n'avait aucune interface : la pile
+    // restait figée jusqu'au fizzle de fin de tour.
+    const s = mkState();
+    s.players[0].hero.hp = 16;
+    s.players[0].board = [mkInstance(mkCard({ name: "Choisisseuse", capabilities: [choixCible()] }))];
+    const cibleB = mkInstance(mkCard({ name: "CibleB", attack: 1, health: 9 }));
+    s.players[1].board = [mkInstance(mkCard({ name: "CibleA", attack: 1, health: 9 })), cibleB];
+    const carte = mkInstance(mkCard({ name: "Payeuse", life_cost: 2, attack: 1, health: 1 }));
+    s.players[0].hand = [carte];
+
+    const st = lance(s, carte.instanceId);
+    const t = st.pendingTriggers?.find(p => p.frameId);
+    expect(t, "un déclencheur de frame est posé").toBeDefined();
+    expect(t!.controllerId).toBe(st.players[0].id);
+
+    const fin = applyAction(st, { type: "resolve_pending_trigger", triggerId: t!.id, targetInstanceId: cibleB.instanceId });
+    expect(fin.players[1].board.find(c => c.instanceId === cibleB.instanceId)!.currentHealth).toBe(7);
+    expect(fin.players[1].board.filter(c => c.currentHealth === 9)).toHaveLength(1);
+    expect(fin.effectStack ?? []).toEqual([]);
+    expect(fin.pendingTriggers ?? []).toEqual([]);
+  });
+
+  it("tour ADVERSE : la question va au propriétaire ; à l'expiration, cible aléatoire", () => {
     const s = mkState();
     initRNG(42);
     s.players[1].hero.hp = 16;
@@ -213,11 +236,16 @@ describe("sous 15 PV — ciblage", () => {
     const sort = sortDegats(2);
     s.players[0].hand = [sort];
 
-    const st = lance(s, sort.instanceId);
+    const pose = lance(s, sort.instanceId);
+    // P1 passe sous le seuil pendant le tour de P0 : c'est P1 qui choisit.
+    const t = pose.pendingTriggers?.find(p => p.frameId);
+    expect(t?.controllerId).toBe(pose.players[1].id);
+    expect(pose.players[0].board.every(c => c.currentHealth === 9)).toBe(true);
 
+    const st = applyAction(pose, { type: "auto_resolve_pending_triggers", headTriggerId: t!.id });
     expect(st.effectStack ?? []).toEqual([]);
     expect(st.pendingTriggers ?? []).toEqual([]);
-    // Exactement une des deux unités de P1 a pris les 2 dégâts.
+    // Exactement une des deux unités de P0 a pris les 2 dégâts.
     const degats = st.players[0].board.map(c => 9 - c.currentHealth);
     expect(degats.filter(d => d === 2)).toHaveLength(1);
     expect(degats.filter(d => d === 0)).toHaveLength(1);
@@ -235,7 +263,7 @@ describe("sous 15 PV — ciblage", () => {
       s.players[0].board = [mkInstance(mkCard({ name: "A", attack: 1, health: 9 })), mkInstance(mkCard({ name: "B", attack: 1, health: 9 }))];
       const sort = sortDegats(2);
       s.players[0].hand = [sort];
-      const st = lance(s, sort.instanceId);
+      const st = applyAction(lance(s, sort.instanceId), { type: "auto_resolve_pending_triggers" });
       return st.players[0].board.map(c => c.currentHealth).join("/");
     };
     expect(resoudre()).toBe(resoudre());

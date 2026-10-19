@@ -1,9 +1,11 @@
 // Chantier « tous déclencheurs » : les effets d'invocation sont rejouables
 // depuis mort / attaque / retour / fin de tour / activation. Règles :
-//   - pouvoir ciblé déclenché pendant le tour ADVERSE → cible au hasard ;
-//   - sur le tour du contrôleur → picker différé (pendingTriggers) ;
-//   - mode "attack" (flux synchrone) → toujours au hasard ;
-//   - sélections interactives → modale sur le tour du contrôleur, hasard sinon.
+//   - pouvoir ciblé → picker différé (pendingTriggers) posé au PROPRIÉTAIRE,
+//     quel que soit le tour (fenêtre de 15 s, hasard à l'expiration) ;
+//   - mode "attack" ciblé → cible pré-désignée à la déclaration d'attaque,
+//     hasard à défaut ;
+//   - sélections interactives → modale chez le propriétaire, à la fin de
+//     l'action, quel que soit le tour (attaque comprise).
 import { describe, expect, it } from "vitest";
 import { applyAction, initRNG } from "./engine";
 import type { Card, GameAction, Keyword } from "./types";
@@ -181,7 +183,7 @@ describe("Chantier multi-déclencheurs — effets sans ciblage", () => {
 });
 
 describe("Chantier multi-déclencheurs — pouvoirs ciblés (hasard tour adverse / defer tour propre / hasard à l'attaque)", () => {
-  it("Affaiblissement à la MORT pendant le tour ADVERSE : cible ennemie au hasard", () => {
+  it("Affaiblissement à la MORT pendant le tour ADVERSE : choix posé au propriétaire", () => {
     const s = mkState();
     const attacker = mkInstance(creature("Brute", 5, 5));
     s.players[0].board.push(attacker);
@@ -192,11 +194,15 @@ describe("Chantier multi-déclencheurs — pouvoirs ciblés (hasard tour adverse
     s.players[1].board.push(defender);
 
     const next = applyAction(s, atk(attacker.instanceId, defender.instanceId));
+    // Le choix va au propriétaire du Maudisseur (P1), alors que c'est le tour de P0.
+    const t = (next.pendingTriggers ?? []).find(p => p.kw === "affaiblissement");
+    expect(t?.controllerId).toBe(next.players[1].id);
     const brute = next.players[0].board.find(c => c.card.name === "Brute")!;
-    // Seule ennemie → cible « au hasard » déterministe : -2 ATK / -2 PV.
-    expect(brute.currentAttack).toBe(3);
-    // Aucun picker en attente (tour adverse → résolution immédiate).
-    expect(next.pendingTriggers ?? []).toHaveLength(0);
+    expect(brute.currentAttack, "rien d'appliqué avant le choix").toBe(5);
+
+    const fin = applyAction(next, { type: "resolve_pending_trigger", triggerId: t!.id, targetInstanceId: brute.instanceId });
+    expect(fin.players[0].board.find(c => c.card.name === "Brute")!.currentAttack).toBe(3);
+    expect(fin.pendingTriggers ?? []).toHaveLength(0);
   });
 
   it("Affaiblissement en FIN DE TOUR (tour du contrôleur) : picker différé, puis résolution", () => {
@@ -323,7 +329,7 @@ describe("Chantier multi-déclencheurs — pouvoirs ciblés (hasard tour adverse
 });
 
 describe("Chantier multi-déclencheurs — Sélections interactives", () => {
-  it("Sélection à la MORT pendant le tour ADVERSE : carte au hasard ajoutée en main", () => {
+  it("Sélection à la MORT pendant le tour ADVERSE : modale chez le propriétaire", () => {
     const s = mkState();
     s.factionCardPool = [commune(901)];
     const attacker = mkInstance(creature("Brute", 5, 5));
@@ -337,9 +343,13 @@ describe("Chantier multi-déclencheurs — Sélections interactives", () => {
     initRNG(3);
 
     const next = applyAction(s, atk(attacker.instanceId, defender.instanceId));
-    // Tour adverse → pas de modale : la carte est tirée au hasard et va en main.
-    expect(next.players[1].hand.some(c => c.card.id === 901)).toBe(true);
-    expect(next.pendingTriggers ?? []).toHaveLength(0);
+    // Le propriétaire (P1) choisit, même pendant le tour de P0.
+    const t = (next.pendingTriggers ?? []).find(p => p.selectionType);
+    expect(t?.controllerId).toBe(next.players[1].id);
+    expect(next.players[1].hand.some(c => c.card.id === 901)).toBe(false);
+    const fin = applyAction(next, { type: "resolve_pending_trigger", triggerId: t!.id, selectionCardId: 901 });
+    expect(fin.players[1].hand.some(c => c.card.id === 901)).toBe(true);
+    expect(fin.pendingTriggers ?? []).toHaveLength(0);
   });
 
   it("Sélection à la MORT pendant le tour du CONTRÔLEUR : modale différée puis choix", () => {

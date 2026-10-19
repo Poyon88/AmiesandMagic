@@ -60,6 +60,25 @@ describe("Impact de fin de tour, cible désignée", () => {
   });
 });
 
+describe("Impact de fin de tour — la bascule attend le choix", () => {
+  it("le tour ne passe à l'adversaire qu'une fois la cible désignée", () => {
+    // Le déclencheur partait dans le puits SANS suspendre la file : le tour
+    // basculait, et le joueur entrant restait bloqué derrière le choix du
+    // sortant.
+    let s = scene(4);
+    expect(s.currentPlayerIndex, "fin de tour en pause").toBe(0);
+    expect(s.endTurnPending).toBe(true);
+    const trig = (s.pendingTriggers ?? [])[0];
+    expect(trig.controllerId).toBe(s.players[0].id);
+    s = applyAction(s, {
+      type: "resolve_pending_trigger", triggerId: trig.id,
+      targetInstanceId: s.players[1].board[0].instanceId,
+    });
+    expect(s.currentPlayerIndex, "choix tranché, le tour bascule").toBe(1);
+    expect(s.pendingTriggers ?? []).toEqual([]);
+  });
+});
+
 describe("repli automatique du chrono", () => {
   it("balaie aussi les morts qu'il provoque", () => {
     // Le tirage au hasard tue tout aussi bien qu'un choix du joueur. Graine

@@ -125,8 +125,10 @@ export default function GamePage() {
   // Per-match monotonic action sequence. The sender increments and tags
   // each broadcast ; the receiver detects gaps and replays missing rows
   // from match_actions. Both clients converge on the same lastSeq because
-  // only the active player can dispatch (UI lock) and the sender always
-  // increments by exactly 1 per dispatched action.
+  // only ONE client can dispatch at a time (UI lock): the active player, or —
+  // while a choice is pending — the choice's owner, who may be the inactive
+  // player (the store guard then blocks every other action on both sides).
+  // The sender always increments by exactly 1 per dispatched action.
   const lastSeqRef = useRef(0);
   // Async-safe lock so concurrent broadcasts can't trigger overlapping
   // gap-fetches that would replay the same seqs twice.

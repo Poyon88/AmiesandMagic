@@ -150,7 +150,7 @@ describe("Sélection composée — suspension du choix", () => {
     expect(next.players[0].hand).toHaveLength(0);
   });
 
-  it("déclencheur « à l'attaque » : tirage immédiat, pas de modale", () => {
+  it("déclencheur « à l'attaque » : modale posée AVANT le combat, qui reprend ensuite", () => {
     const s = mkState();
     s.factionCardPool = [poolCard("Loup"), poolCard("Chat")];
     const attacker = selectionCreature(undefined, 1, "on_attack");
@@ -161,8 +161,17 @@ describe("Sélection composée — suspension du choix", () => {
       type: "attack", attackerInstanceId: attacker.instanceId, targetInstanceId: "enemy_hero",
     });
 
-    expect((next.pendingTriggers ?? []).filter((t) => t.selectionType)).toHaveLength(0);
-    expect(next.players[0].hand).toHaveLength(1);
+    // L'attaque s'arrête sur le choix : il se tranche au déclenchement.
+    const t = (next.pendingTriggers ?? []).find((p) => p.selectionType);
+    expect(t?.controllerId).toBe(next.players[0].id);
+    expect(next.players[0].hand).toHaveLength(0);
+    expect(next.players[1].hero.hp, "pas encore de combat").toBe(s.players[1].hero.hp);
+    const choisi = applyAction(next, { type: "resolve_pending_trigger", triggerId: t!.id, selectionCardId: t!.selectionOptionIds![0] });
+    expect(choisi.players[0].hand).toHaveLength(1);
+    const fin = applyAction(choisi, {
+      type: "attack", attackerInstanceId: attacker.instanceId, targetInstanceId: "enemy_hero", reprise: true,
+    });
+    expect(fin.players[1].hero.hp, "l'attaque a bien porté").toBeLessThan(s.players[1].hero.hp);
   });
 });
 

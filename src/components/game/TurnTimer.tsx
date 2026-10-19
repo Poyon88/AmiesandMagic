@@ -5,6 +5,7 @@ import { TURN_TIMER_SECONDS, CHOICE_TIMER_SECONDS } from "@/lib/game/constants";
 import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import AudioEngine from "@/lib/audio/AudioEngine";
+import { actionALExpiration } from "@/lib/game/choice-timer";
 
 const WARNING_THRESHOLD = 15;
 
@@ -27,21 +28,33 @@ interface TurnTimerProps {
    *  ne déclenche PAS onTimeUp (end_turn, bloqué de toute façon) mais
    *  onPendingTimeout (repli automatique au hasard). */
   hasPendingTriggers?: boolean;
-  /** Ancre du compte à rebours du CHOIX (`gameState.choiceStartedAt`). Tant
+  /** Ancre du compte à rebours du CHOIX — l'instant où la fenêtre est devenue
+   *  VISIBLE chez ce client (cf. GameBoard, `choiceAnchor`), à défaut
+   *  `gameState.choiceStartedAt`. Tant
    *  qu'un choix est en attente, le compteur bascule sur cette horloge et sur
    *  CHOICE_TIMER_SECONDS au lieu du chrono de tour : la pause naît le plus
    *  souvent de l'expiration du chrono, et le reliquat valait alors ~0 s — la
    *  modale s'affichait puis le repli tranchait à la place du joueur. */
   choiceStartedAt?: number;
-  /** Appelé une fois quand le chrono atteint 0 alors que des pendingTriggers
-   *  restent — le joueur n'a pas choisi à temps, on résout au hasard. */
+  /** Appelé quand la fenêtre de choix expire — le propriétaire n'a pas choisi
+   *  à temps, on résout au hasard. */
   onPendingTimeout?: () => void;
+  /** Le joueur local est-il le PROPRIÉTAIRE du choix en tête de file ? Il peut
+   *  l'être hors de son tour (râle d'agonie, Blessure…). C'est lui qui replie à
+   *  l'expiration ; l'autre client seulement après un délai de grâce. */
+  isChoiceMine?: boolean;
 }
 
 function computeTimeLeft(anchor: number, offsetMs = 0, duration = TURN_TIMER_SECONDS): number {
   if (!anchor) return duration;
   const elapsed = Math.floor((Date.now() - anchor - offsetMs) / 1000);
   return Math.max(0, Math.min(duration, duration - elapsed));
+}
+
+/** Secondes écoulées AU-DELÀ de la durée (négatif tant que l'horloge court). */
+function computeOverrun(anchor: number, offsetMs: number, duration: number): number {
+  if (!anchor) return -duration;
+  return Math.floor((Date.now() - anchor - offsetMs) / 1000) - duration;
 }
 
 export default function TurnTimer({
@@ -53,13 +66,19 @@ export default function TurnTimer({
   hasPendingTriggers = false,
   choiceStartedAt,
   onPendingTimeout,
+  isChoiceMine = false,
 }: TurnTimerProps) {
   // Deux régimes, une seule mécanique : on ne change QUE l'ancre et la durée.
   const inChoice = hasPendingTriggers && !!choiceStartedAt;
   const anchor = inChoice ? choiceStartedAt! : turnStartedAt;
   const duration = inChoice ? CHOICE_TIMER_SECONDS : TURN_TIMER_SECONDS;
   const pauseStartedAtRef = useRef<number | null>(null);
-  const pauseOffsetMsRef = useRef(0);
+  // Un décompte de pause (animations) PAR horloge : celui du tour survit à une
+  // fenêtre de choix — le tour reprend où il en était, crédit compris — et
+  // celui du choix repart de zéro à chaque nouvelle fenêtre.
+  const turnPauseOffsetMsRef = useRef(0);
+  const choicePauseOffsetMsRef = useRef(0);
+  const pauseOffsetMsRef = inChoice ? choicePauseOffsetMsRef : turnPauseOffsetMsRef;
   const [timeLeft, setTimeLeft] = useState(() => computeTimeLeft(anchor, 0, duration));
   const onTimeUpRef = useRef(onTimeUp);
   onTimeUpRef.current = onTimeUp;
@@ -79,27 +98,32 @@ export default function TurnTimer({
     if (isPaused) return;
     const next = computeTimeLeft(anchor, pauseOffsetMsRef.current, duration);
     setTimeLeft(next);
-    if (next <= 0 && isMyTurn) {
-      // Des effets « fin de tour » non résolus restent en file : on déclenche le
-      // repli automatique (résolution au hasard) au lieu de end_turn — qui serait
-      // de toute façon bloqué tant que la file n'est pas vide. Re-tenté à chaque
-      // tick : l'action draine toute la file en une fois et est idempotente
-      // (dispatch no-op pendant une animation ; la condition s'éteint dès que la
-      // file est vidée), ce qui couvre le cas « tour terminé PAR le timeout ».
-      // PAS de verrou « déjà tiré » : les deux poignées sont refusées en silence
-      // quand une animation tourne (cf. handleEndTurn / handleAutoResolvePending),
-      // et un verrou transformait ce refus en abandon définitif — le tour restait
-      // planté à 0. On re-tente donc à chaque tick ; c'est sûr parce que les deux
-      // actions sont idempotentes côté moteur (end_turn sur une fin de tour déjà
-      // en pause est un no-op) et que la condition s'éteint d'elle-même dès que le
-      // tour bascule.
-      if (hasPendingTriggersRef.current) {
-        setTimeout(() => onPendingTimeoutRef.current?.(), 0);
-      } else {
-        setTimeout(() => onTimeUpRef.current(), 0);
-      }
+    // Qui émet quoi (cf. actionALExpiration) : fenêtre de choix → son
+    // propriétaire, l'autre client en secours après un délai de grâce ; chrono
+    // de tour → le joueur actif.
+    //
+    // Re-tenté à chaque tick, SANS verrou « déjà tiré » : les poignées sont
+    // refusées en silence quand une animation tourne (cf. handleEndTurn /
+    // handleAutoResolvePending), et un verrou transformait ce refus en abandon
+    // définitif — le tour restait planté à 0. C'est sûr parce que les actions
+    // sont idempotentes côté moteur (end_turn sur une fin de tour en pause est
+    // un no-op ; le repli porte l'id de la tête de file) et que la condition
+    // s'éteint d'elle-même dès que la file ou le tour change.
+    const action = actionALExpiration({
+      enChoix: inChoice,
+      estMonTour: isMyTurn,
+      choixAMoi: isChoiceMine,
+      depassement: computeOverrun(anchor, pauseOffsetMsRef.current, duration),
+    });
+    if (!action) return;
+    // Chrono de TOUR écoulé avec une file sans horloge de choix (état hérité) :
+    // end_turn serait bloqué, on replie la file.
+    if (action === "auto_resolve" || hasPendingTriggersRef.current) {
+      setTimeout(() => onPendingTimeoutRef.current?.(), 0);
+    } else {
+      setTimeout(() => onTimeUpRef.current(), 0);
     }
-  }, [anchor, duration, isMyTurn, isPaused]);
+  }, [anchor, duration, isMyTurn, isPaused, inChoice, isChoiceMine, pauseOffsetMsRef]);
 
   // Pause tracking — when isPaused flips true we anchor the moment; when
   // it flips false we add the elapsed pause to the offset so subsequent
@@ -113,7 +137,7 @@ export default function TurnTimer({
       const recomputed = computeTimeLeft(anchor, pauseOffsetMsRef.current, duration);
       setTimeLeft(recomputed);
     }
-  }, [isPaused, anchor, duration]);
+  }, [isPaused, anchor, duration, pauseOffsetMsRef]);
 
   // Remise à zéro AUDIO — au changement de TOUR seulement.
   //
@@ -140,14 +164,21 @@ export default function TurnTimer({
     AudioEngine.getInstance().resume();
   }, []);
 
-  // Remise à zéro de l'AFFICHAGE — à chaque changement d'horloge (tour ↔ choix).
-  // Le décompte de pause (auto-attaque) appartient à l'horloge courante et ne
-  // doit pas être reporté sur la suivante.
+  // Remise à zéro des décomptes de pause : celui du tour au changement de TOUR
+  // (son ancre bouge aussi quand une fenêtre de choix lui rend son temps — ce
+  // n'est pas un nouveau tour), celui du choix à chaque nouvelle fenêtre.
+  useEffect(() => { turnPauseOffsetMsRef.current = 0; }, [turnNumber]);
+  useEffect(() => { choicePauseOffsetMsRef.current = 0; }, [choiceStartedAt]);
+
+  // Remise à jour de l'AFFICHAGE à chaque changement d'horloge (tour ↔ choix).
+  // Une pause EN COURS (la fenêtre s'ouvre souvent pendant l'animation de
+  // l'action qui l'a déclenchée) repart de maintenant, pour la nouvelle horloge :
+  // l'oublier faisait manger la fenêtre de choix par l'animation.
   useEffect(() => {
-    pauseOffsetMsRef.current = 0;
-    pauseStartedAtRef.current = null;
-    setTimeLeft(computeTimeLeft(anchor, 0, duration));
-  }, [anchor, duration]);
+    pauseStartedAtRef.current = isPaused ? Date.now() : null;
+    setTimeLeft(computeTimeLeft(anchor, pauseOffsetMsRef.current, duration));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isPaused lu à l'instant du changement d'horloge seulement
+  }, [anchor, duration, pauseOffsetMsRef]);
 
   // 1 Hz interval ticking the display. The browser may throttle this when
   // the window is unfocused (Chrome especially), so we don't rely on it as
@@ -199,7 +230,7 @@ export default function TurnTimer({
       warningAudioRef.current = SfxEngine.getInstance().play(url);
     }
     AudioEngine.getInstance().pause();
-  }, [timeLeft, isMyTurn, inChoice, anchor, duration]);
+  }, [timeLeft, isMyTurn, inChoice, anchor, duration, pauseOffsetMsRef]);
 
   const percentage = (timeLeft / duration) * 100;
   const isLow = timeLeft <= WARNING_THRESHOLD;

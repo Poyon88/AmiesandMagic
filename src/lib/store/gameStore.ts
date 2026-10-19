@@ -28,8 +28,7 @@ import {
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
-  getOnAttackComposedChoice,
-  getOnAttackTargets,
+  getOnAttackChoiceSlots,
   getComposedTapTargets,
   creatureNeedsGraveyardTarget,
   getGraveyardTargets,
@@ -288,7 +287,10 @@ function pendingTriggerOverlay(
   // mais aucun sélecteur ne s'ouvrait, et le joueur restait devant un tour figé
   // jusqu'au repli automatique du chrono.
   const isEmblem = t.emblemIndex != null;
-  const isEndOfTurn = !!t.capUid || isEmblem;
+  // Frame de pile suspendue (Blessure, Sous 15 PV… « au choix ») : l'effet
+  // voyage dans la frame, même rendu qu'une capacité composée.
+  const frame = t.frameId ? gs!.effectStack?.find(f => f.frameId === t.frameId) : undefined;
+  const isEndOfTurn = !!t.capUid || isEmblem || !!frame;
   if (!isEndOfTurn && !t.kw) return none;
   const controller = gs!.players.find(p => p.id === t.controllerId);
   const other = gs!.players.find(p => p.id !== t.controllerId);
@@ -317,6 +319,8 @@ function pendingTriggerOverlay(
   // ne lisent que `.composed` : une enveloppe minimale suffit, et évite de
   // dupliquer un second rendu de libellé pour les emblèmes.
   const capEnCours: Capability | undefined = !isEndOfTurn ? undefined
+    : frame?.composed
+      ? { uid: frame.capUid ?? "", trigger: frame.trigger, effectKind: "immediate", abilityId: "_composed", composed: frame.composed } as Capability
     : isEmblem
       ? (() => {
         const emblem = (controller.emblems ?? [])[t.emblemIndex!];
@@ -1436,7 +1440,9 @@ function buildHistoryEntries(ctx: {
   }
 
   // ── Combat ───────────────────────────────────────────────────────────────
-  if (action.type === "attack") {
+  // Attaque suspendue sur un choix (cf. GameState.attaqueSuspendue) : le combat
+  // n'a pas encore eu lieu, il s'inscrira à la reprise.
+  if (action.type === "attack" && !newState.attaqueSuspendue) {
     const attacker = findInstance(action.attackerInstanceId);
     if (attacker) {
       // `targetInstanceId` est en POV de l'ATTAQUANT : "enemy_hero" désigne le
@@ -1922,6 +1928,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       console.warn(`[end-turn] action « ${action.type} » refusée : ${gameState.pendingTriggers!.length} choix en attente (${gameState.pendingTriggers!.map(t => t.id).join(", ")})`);
       return null;
     }
+    // Attaque suspendue, choix tranchés : seule sa reprise passe (fin de tour
+    // comprise, que le moteur fait précéder du combat).
+    if (gameState.attaqueSuspendue
+      && !(action.type === "attack" && action.reprise)
+      && action.type !== "end_turn") {
+      return null;
+    }
 
     // Merge any pending alternative-cost selections (discards / sacrifices /
     // replis) into the play_card action — single chokepoint so callers don't
@@ -2041,6 +2054,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     const isEndTurn = action.type === "end_turn";
 
     const newState = applyAction(gameState, action);
+    // Première moitié d'une attaque SUSPENDUE sur un choix « à l'attaque » :
+    // seuls ses effets d'attaque ont joué. Elle s'anime comme une action
+    // ordinaire — l'élan, le bruitage et le souffle de feu attendent la reprise,
+    // qui porte le combat.
+    const attaqueEnSuspens = action.type === "attack" && !!newState.attaqueSuspendue;
+    if (attaqueEnSuspens) fireEvent = null;
     // Two-wave attack: pop the post-power / pre-combat snapshot the engine
     // attached when an "à l'attaque" composed power fired. Wave 1 = power
     // (gameState→intermediate), wave 2 = combat (intermediate→newState). The
@@ -2504,7 +2523,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           sfxEvents.push({ type: "play_card", cardSfxUrl: cardInst.card.sfx_play_url ?? undefined });
         }
       }
-    } else if (action.type === "attack") {
+    } else if (action.type === "attack" && !attaqueEnSuspens) {
       sfxEvents.push({ type: "attack" });
     } else if (action.type === "end_turn") {
       sfxEvents.push({ type: "end_turn" });
@@ -3003,7 +3022,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Identify what kind of visible events this action produces.
     const hasOverlay = !!spellEvent || !!heroPowerEvent || !!fireEvent;
-    const isAttack = action.type === "attack";
+    const isAttack = action.type === "attack" && !attaqueEnSuspens;
 
     // Detect cards that left the graveyard (exiled, reanimated, sacrificed…).
     // Shown to both players so they see which cards from the graveyard were
@@ -4475,18 +4494,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (targetingMode === "attack" && selectedAttackerInstanceId) {
-      // Defender chosen. If the attacker carries an "à l'attaque" composed
-      // power with player-chosen targets, collect those next (carried in the
-      // same attack action) before dispatching. Otherwise dispatch now.
+      // Defender chosen. If the attacker has on-attack choices to make (composed
+      // power « au choix », curated targeted keywords in attack mode), collect
+      // them next — they travel in the same attack action, because they must
+      // resolve BEFORE the damage. Otherwise dispatch now.
       const gs = get().gameState;
       const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
-      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
-      if (gs && attacker && powerChoice) {
+      const slots = gs && attacker ? getOnAttackChoiceSlots(gs, attacker) : [];
+      if (slots.length > 0) {
         set({
           pendingAttackDefenderId: targetId,
           targetingMode: "attack_power",
           attackPowerCollected: [],
-          validTargets: getOnAttackTargets(gs, attacker.card),
+          validTargets: slots[0].targets,
         });
         return null;
       }
@@ -4496,25 +4516,32 @@ export const useGameStore = create<GameStore>((set, get) => {
         targetInstanceId: targetId,
       });
     } else if (targetingMode === "attack_power" && selectedAttackerInstanceId) {
-      // Collecting the on-attack power's target(s). When complete, dispatch the
-      // attack carrying both the defender and the power's targetMap.
+      // Collecting the on-attack choices, one click per slot. When complete,
+      // dispatch the attack carrying both the defender and the targetMap.
       const { pendingAttackDefenderId, gameState: gs } = get();
       const attacker = gs?.players[gs.currentPlayerIndex].board.find(c => c.instanceId === selectedAttackerInstanceId);
-      const powerChoice = attacker ? getOnAttackComposedChoice(attacker.card) : null;
-      if (!gs || !attacker || !powerChoice || pendingAttackDefenderId == null) {
+      const slots = gs && attacker ? getOnAttackChoiceSlots(gs, attacker) : [];
+      if (!gs || !attacker || slots.length === 0 || pendingAttackDefenderId == null) {
         set({ targetingMode: "none", validTargets: [], pendingAttackDefenderId: null, attackPowerCollected: [] });
         return null;
       }
       const collected = [...get().attackPowerCollected, targetId];
-      if (collected.length < powerChoice.count) {
+      if (collected.length < slots.length) {
+        // Plusieurs cibles d'un MÊME pouvoir composé (`uid#0`, `uid#1`…) : une
+        // unité déjà désignée par lui ne peut pas l'être deux fois.
+        const next = slots[collected.length];
+        const prefixe = next.key.includes("#") ? next.key.slice(0, next.key.indexOf("#") + 1) : null;
+        const dejaPris = prefixe
+          ? collected.filter((_, i) => slots[i].key.startsWith(prefixe))
+          : [];
         set({
           attackPowerCollected: collected,
-          validTargets: get().validTargets.filter(t => t !== targetId),
+          validTargets: next.targets.filter(t => !dejaPris.includes(t)),
         });
         return null; // continue collecting
       }
       const targetMap: Record<string, string> = {};
-      collected.forEach((id, i) => { targetMap[`${powerChoice.uid}#${i}`] = id; });
+      collected.forEach((id, i) => { targetMap[slots[i].key] = id; });
       set({ pendingAttackDefenderId: null, attackPowerCollected: [] });
       return get().dispatchAction({
         type: "attack",
