@@ -9,9 +9,14 @@ import { useGameStore } from "@/lib/store/gameStore";
 interface SelectionOverlayProps {
   cards: Card[];
   onChoose: (cardId: number) => void;
+  /** Titre et sous-titre propres (Découverte) ; absents ⇒ ceux de la Sélection. */
+  title?: string;
+  subtitle?: string;
+  /** Étiquette posée au-dessus de certaines cartes, par id (ex. « autre clan »). */
+  badges?: Record<number, string>;
 }
 
-export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayProps) {
+export default function SelectionOverlay({ cards, onChoose, title, subtitle, badges }: SelectionOverlayProps) {
   const t = useTranslations("game");
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
@@ -25,10 +30,10 @@ export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayPr
           fontFamily: "'Cinzel', serif", textAlign: "center",
           textShadow: "0 2px 8px rgba(0,0,0,0.5)",
         }}>
-          {t('selection_title')}
+          {title ?? t('selection_title')}
         </div>
         <p style={{ fontSize: 14, color: "#bbb", textAlign: "center", fontFamily: "'Crimson Text', serif", marginTop: -12 }}>
-          {t('selection_subtitle')}
+          {subtitle ?? t('selection_subtitle')}
         </p>
 
         {/* Cards */}
@@ -48,6 +53,14 @@ export default function SelectionOverlay({ cards, onChoose }: SelectionOverlayPr
                 boxShadow: hoveredIndex === i ? "0 0 20px #a855f766" : "0 4px 12px rgba(0,0,0,0.3)",
               }}
             >
+              {badges?.[card.id] && (
+                <div style={{
+                  textAlign: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                  color: "#c8a84e", fontFamily: "'Cinzel', serif", marginBottom: 6,
+                }}>
+                  {badges[card.id]}
+                </div>
+              )}
               <GameCard card={card} size="md" tokens={tokenTemplates} />
             </div>
           ))}

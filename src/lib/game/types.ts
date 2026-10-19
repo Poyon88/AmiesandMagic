@@ -1653,9 +1653,22 @@ export interface HeroState {
   heroPowerActivationsUsed: number;
 }
 
+/** Faction et clan de RÉFÉRENCE d'un joueur (cf. identiteDuDeck, decouverte.ts). */
+export interface IdentiteDeck { faction: string; clan: string | null }
+
+/** Variantes de règles d'une partie, fixées à l'initialisation. Absent ⇒ règles
+ *  standard. Dans le hash : les deux clients doivent jouer les mêmes règles. */
+export interface ReglesPartie {
+  /** Découverte un tour sur deux à la place de la pioche (cf. decouverte.ts). */
+  decouverteAlternee?: boolean;
+}
+
 export interface PlayerState {
   id: string;
   hero: HeroState;
+  /** Faction et clan de référence, figés à l'initialisation. Ne sert qu'aux
+   *  variantes qui en dépendent (découverte) ; absent sinon. */
+  identite?: IdentiteDeck | null;
   /** Seuil de PV déjà franchi : les emblèmes de cadence « sous 15 PV » ont
    *  parlé. Verrou à UN COUP, jamais réarmé — même resoigné au-dessus du seuil,
    *  le joueur ne les redéclenche pas. Même doctrine que
@@ -1927,6 +1940,8 @@ export interface GameState {
   // restreindre le pool d'Invocation X aux cartes légales dans le format en
   // cours. Absent (parties historiques / decks sans format) ⇒ aucun filtre.
   formatCode?: FormatCode | null;
+  /** Variantes de règles (cf. ReglesPartie). */
+  regles?: ReglesPartie;
   // Transient: each Fureur trigger fired during the last action is pushed
   // here so the store can sequence a follow-up attack-lunge animation and
   // delay the damage popups on the random victim. Cleared by the store
@@ -2535,7 +2550,7 @@ export interface PendingTrigger {
    *  (selection / selection_magique / renfort_royal). Le contrôleur choisit une
    *  carte parmi `selectionOptionIds` via la modale de sélection ; la carte
    *  choisie est ajoutée à sa main. */
-  selectionType?: SelectionFamilyId;
+  selectionType?: SelectionFamilyId | "decouverte";
   /** Ids des cartes offertes (résolus en Card côté store via les pools). */
   selectionOptionIds?: number[];
   /** Présent ⇒ variante « pioche au choix dans le deck » (Traque du destin en

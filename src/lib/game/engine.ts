@@ -43,6 +43,7 @@ import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, ge
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
+import { estTourDeDecouverte, identiteDuDeck } from "./decouverte";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -3173,6 +3174,7 @@ export function initializeGame(
   factionCardPool?: Card[],
   allSpellsPool?: Card[],
   formatCode?: FormatCode | null,
+  regles?: import("./types").ReglesPartie,
 ): GameState {
   if (seed !== undefined) initRNG(seed);
   const p1Deck = createDeckInstances(player1Cards);
@@ -3213,6 +3215,12 @@ export function initializeGame(
   // avant le premier tour (cf. lib/game/singulier.ts).
   syncSingulierPlayer(p1);
   syncSingulierPlayer(p2);
+  // Identité figée sur le deck SOUMIS : seule la découverte s'en sert, et
+  // l'état standard reste octet pour octet celui d'avant la variante.
+  if (regles?.decouverteAlternee) {
+    p1.identite = identiteDuDeck(player1Cards, player1Hero);
+    p2.identite = identiteDuDeck(player2Cards, player2Hero);
+  }
 
   return {
     players: [p1, p2],
@@ -3234,6 +3242,7 @@ export function initializeGame(
     factionCardPool: factionCardPool ? [...factionCardPool].sort((a, b) => a.id - b.id) : undefined,
     allSpellsPool: allSpellsPool ? [...allSpellsPool].sort((a, b) => a.id - b.id) : undefined,
     formatCode: formatCode ?? null,
+    ...(regles && Object.values(regles).some(Boolean) ? { regles } : {}),
   };
 }
 
@@ -4013,7 +4022,11 @@ export function startTurn(state: GameState): GameState {
   // posé — mal d'invocation, ou pas de mal si elle a Traque.
   const dejaEnJeu = new Set(player.board.map((c) => c.instanceId));
 
-  drawCard(player);
+  // DÉCOUVERTE (variante) : un tour sur deux, le joueur choisit 1 carte parmi 3
+  // au lieu de piocher. Le choix est déposé dans le puits : la séquence de
+  // début de tour se met en pause dessus (rapatrierLePuits) et reprend une fois
+  // la carte choisie. Offre vide (vivier sans Communes de sa faction) ⇒ pioche.
+  if (!(estTourDeDecouverte(newState) && poserDecouverte(newState, player))) drawCard(player);
 
   // Return Corruption-stolen units to opponent at start of owner's turn
   for (const creature of [...opponent.board]) {
@@ -11885,6 +11898,10 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   const idx = queue.findIndex(t => t.id === action.triggerId);
   if (idx === -1) return state; // déclencheur introuvable → no-op
   const trigger = queue[idx];
+  // Une carte qui ne fait pas partie de l'offre est refusée : sans ce contrôle,
+  // n'importe quelle carte du vivier pouvait être réclamée.
+  if (trigger.selectionOptionIds && action.selectionCardId != null
+    && !trigger.selectionOptionIds.includes(action.selectionCardId)) return state;
   queue.splice(idx, 1);
   newState.pendingTriggers = queue;
 
@@ -14164,6 +14181,57 @@ function offreSelection(
     dejaPris.add(choisie.id);
   }
   return retenus;
+}
+
+/** OFFRE DE DÉCOUVERTE (variante, cf. decouverte.ts) : 3 Communes de coûts
+ *  aléatoires — 2 du clan de référence du joueur, 1 de sa faction mais d'un
+ *  AUTRE clan. Chaque carte tire son coût à chances égales parmi les coûts
+ *  présents dans son sous-vivier (régime « tout coût » d'offreSelection).
+ *
+ *  Sous-vivier trop maigre : le clan se complète par les cartes sans clan de la
+ *  faction, et l'« autre clan » absent laisse sa place à une 3e carte du clan.
+ *  Germe semé sur le tour et le joueur, sans consommer la RNG partagée. */
+export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
+  const id = player.identite;
+  const pool = state.factionCardPool;
+  if (!id || !pool?.length) return [];
+  const communes = pool.filter(c => c.rarity === "Commune" && c.faction === id.faction && c.card_type !== "item");
+  let duClan = id.clan ? communes.filter(c => c.clan === id.clan) : communes;
+  if (duClan.length < 2) duClan = communes.filter(c => !id.clan || c.clan === id.clan || !c.clan);
+  const autreClan = id.clan ? communes.filter(c => c.clan && c.clan !== id.clan) : [];
+
+  let hash = state.turnNumber * 1000 + state.players.indexOf(player) * 100 + 4999 + saltDeSource(player.id);
+  const pseudoRng = () => {
+    hash = (hash * 16807 + 12345) & 0x7fffffff;
+    return (hash & 0xfffffff) / 0x10000000;
+  };
+  const melanger = (arr: Card[]): Card[] => {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(pseudoRng() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  const sansPaniers = { propre: new Set<string>(), neutre: new Set<string>() };
+  const clan = offreSelection(duClan, 0, true, sansPaniers, melanger, pseudoRng);
+  const autre = offreSelection(autreClan, 0, true, sansPaniers, melanger, pseudoRng).slice(0, 1);
+  return [...clan.slice(0, SELECTION_OFFER_COUNT - autre.length), ...autre];
+}
+
+/** Dépose la découverte du joueur actif dans le puits. Faux si l'offre est vide
+ *  (l'appelant pioche alors normalement). */
+function poserDecouverte(state: GameState, player: PlayerState): boolean {
+  const offre = offreDecouverte(state, player);
+  if (offre.length === 0) return false;
+  pendingTriggerSink.push({
+    id: `decouverte#${state.turnNumber}`,
+    controllerId: player.id,
+    sourceInstanceId: null,
+    selectionType: "decouverte",
+    selectionOptionIds: offre.map(c => c.id),
+  });
+  return true;
 }
 
 export function getRenfortRoyalCards(

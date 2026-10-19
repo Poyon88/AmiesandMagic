@@ -67,7 +67,7 @@ for (let i = 0; i < N; i++) {
     resultats.push({ ...simulerPartie(a, b, 1000 + i, pools), a: a.label, b: b.label, heros: (a.hero ? 1 : 0) + (b.hero ? 1 : 0) });
   } catch (e) {
     resultats.push({ seed: 1000 + i, winner: null, fin: "blocage", tours: 0, actions: 0, ms: 0, a: a.label, b: b.label, heros: 0,
-      parType: {}, compteurs: [{}, {}], objets: [{ recus: 0, poses: 0, equipes: 0, inutilises: 0 }, { recus: 0, poses: 0, equipes: 0, inutilises: 0 }], etincelle: [{ recue: false, joueeAuTour: null, manaPerdu: null }, { recue: false, joueeAuTour: null, manaPerdu: null }], cartes: [{ piochees: [], jouees: {} }, { piochees: [], jouees: {} }], premier: 0, incidents: [{ kind: "exception", action: "hors boucle", detail: e instanceof Error ? e.message : String(e) }] });
+      parType: {}, compteurs: [{}, {}], objets: [{ recus: 0, poses: 0, equipes: 0, inutilises: 0 }, { recus: 0, poses: 0, equipes: 0, inutilises: 0 }], etincelle: [{ recue: false, joueeAuTour: null, manaPerdu: null }, { recue: false, joueeAuTour: null, manaPerdu: null }], cartes: [{ piochees: [], jouees: {} }, { piochees: [], jouees: {} }], decouvertes: [{ offres: 0, autreClan: 0, mortes: 0 }, { offres: 0, autreClan: 0, mortes: 0 }], fatigue: [0, 0], premier: 0, incidents: [{ kind: "exception", action: "hors boucle", detail: e instanceof Error ? e.message : String(e) }] });
   }
 }
 

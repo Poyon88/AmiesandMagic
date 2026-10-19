@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { regleDecouverteActivee } from "@/lib/game/decouverte";
 import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import type { DeckPickerKeyword } from "@/lib/game/engine";
 import type { SelectionKwCreature } from "@/lib/game/engine";
@@ -1844,6 +1845,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       factionCardPool,
       allSpellsPool,
       formatCode,
+      // Variante de règles de CETTE build : les deux clients d'une partie
+      // tournent sur le même déploiement, donc sur le même drapeau.
+      regleDecouverteActivee() ? { decouverteAlternee: true } : undefined,
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;
