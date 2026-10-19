@@ -3019,6 +3019,7 @@
     "power_activations_unlimited": "発動回数：無制限",
     "power_activations_used": "発動回数：{used} / {limit}",
     "power_usage_limit": "上限：{limit}× まで",
+    "hero_starting_hp": "初期HP {hp}",
     "power_close_hint": "Escキーまたは枠外クリックで閉じる",
     "divination_traque_title": "🔮 運命の追跡",
     "divination_title": "🔍 占い",

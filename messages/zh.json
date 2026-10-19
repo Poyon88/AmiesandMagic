@@ -3019,6 +3019,7 @@
     "power_activations_unlimited": "发动次数：无限",
     "power_activations_used": "发动次数：{used} / {limit}",
     "power_usage_limit": "上限：最多 {limit} 次",
+    "hero_starting_hp": "初始生命 {hp}",
     "power_close_hint": "按 Esc 或点击区域外关闭",
     "divination_traque_title": "🔮 命运追踪",
     "divination_title": "🔍 占卜",

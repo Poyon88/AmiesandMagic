@@ -3019,6 +3019,7 @@
     "power_activations_unlimited": "Aktivierungen: unbegrenzt",
     "power_activations_used": "Aktivierungen: {used} / {limit}",
     "power_usage_limit": "Limit: {limit}× max",
+    "hero_starting_hp": "{hp} Start-LP",
     "power_close_hint": "Esc oder Klick außerhalb zum Schließen",
     "divination_traque_title": "🔮 Schicksalsjagd",
     "divination_title": "🔍 Divination",

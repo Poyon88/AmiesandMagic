@@ -3019,6 +3019,7 @@
     "power_activations_unlimited": "Activations: Unlimited",
     "power_activations_used": "Activations: {used} / {limit}",
     "power_usage_limit": "Limit: {limit}× max",
+    "hero_starting_hp": "{hp} starting HP",
     "power_close_hint": "Esc or click outside to close",
     "divination_traque_title": "🔮 Fate Tracker",
     "divination_title": "🔍 Divination",

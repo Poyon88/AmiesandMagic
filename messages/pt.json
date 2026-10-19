@@ -3019,6 +3019,7 @@
     "power_activations_unlimited": "Ativações: ilimitado",
     "power_activations_used": "Ativações: {used} / {limit}",
     "power_usage_limit": "Limite: {limit}× máx",
+    "hero_starting_hp": "{hp} PV iniciais",
     "power_close_hint": "Esc ou clique fora da área para fechar",
     "divination_traque_title": "🔮 Rastreio do destino",
     "divination_title": "🔍 Adivinhação",

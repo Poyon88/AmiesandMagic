@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
+import { pvDeDepart } from "@/lib/game/hero-hp";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -32,6 +33,7 @@ interface HeroRow {
   power_description: string;
   thumbnail_url: string | null;
   power_image_url: string | null;
+  starting_hp?: number | null;
 }
 
 interface DeckEntry {
@@ -207,6 +209,7 @@ export default function DeckBuilder({
   const vocab = useVocab();
   const heroText = useHeroText();
   const t = useTranslations("deck");
+  const tJeu = useTranslations("game");
   const tStatus = useTranslations("cardStatus");
 
   const [deckName, setDeckName] = useState(existingDeck?.name ?? "");
@@ -1487,6 +1490,8 @@ export default function DeckBuilder({
                 ) : (
                   <span className="px-1.5 py-0.5 bg-am-azure/20 text-am-azure text-[9px] font-bold rounded">{powerPopup.hero.power_cost} {t("mana")}</span>
                 )}
+                {/* PV de départ : la contrepartie d'un pouvoir plus ou moins fort. */}
+                <span className="ml-1 px-1.5 py-0.5 bg-am-ember/20 text-am-ember text-[9px] font-bold rounded">❤ {tJeu("hero_starting_hp", { hp: pvDeDepart({ startingHp: powerPopup.hero.starting_hp }) })}</span>
               </div>
             </div>
           </div>
