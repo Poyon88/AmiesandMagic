@@ -6,7 +6,7 @@ import type { Card, HeroDefinition, Race, TokenTemplate } from "@/lib/game/types
 import { pick, type Rand } from "@/lib/sim/random-bot";
 import type { DeckSim } from "@/lib/sim/simulate";
 
-interface HeroRow { id: number; name: string; race: string; faction?: string | null; clan?: string | null; power_name: string; power_cost: number; power_effect: HeroDefinition["powerEffect"]; power_description: string; power_usage_limit?: number | null }
+interface HeroRow { id: number; name: string; race: string; faction?: string | null; clan?: string | null; power_name: string; power_cost: number; power_effect: HeroDefinition["powerEffect"]; power_description: string; power_usage_limit?: number | null; starting_hp?: number | null }
 
 export function chargerCatalogue(fichier: string) {
   const cat = JSON.parse(readFileSync(fichier, "utf8")) as { cards: Card[]; tokens: TokenTemplate[]; heroes: HeroRow[]; sets: { id: number; type: string }[] };
@@ -17,7 +17,7 @@ export function chargerCatalogue(fichier: string) {
   const hero = (r: HeroRow): HeroDefinition => ({
     id: r.id, name: r.name, race: r.race as Race, faction: r.faction ?? null, clan: r.clan ?? null,
     powerName: r.power_name, powerCost: r.power_cost, powerEffect: r.power_effect, powerDescription: r.power_description,
-    powerUsageLimit: r.power_usage_limit ?? null, glbUrl: null, thumbnailUrl: null, powerImageUrl: null, powerSfxUrl: null,
+    powerUsageLimit: r.power_usage_limit ?? null, startingHp: r.starting_hp ?? null, glbUrl: null, thumbnailUrl: null, powerImageUrl: null, powerSfxUrl: null,
   });
 
   // Decks mono-clan : cartes du clan + cartes sans clan de la faction, 2 ex. max.
@@ -29,7 +29,8 @@ export function chargerCatalogue(fichier: string) {
     }
   }
 
-  function deck(rand: Rand, c = pick(rand, clans)!): DeckSim {
+  /** `heroForce` : le héros imposé (rapport par héros) ; sinon un héros du clan au hasard. */
+  function deck(rand: Rand, c = pick(rand, clans)!, heroForce?: HeroDefinition): DeckSim {
     const qte = new Map<number, number>();
     const ordre = [...c.pool].sort(() => rand() - 0.5);
     let total = 0;
@@ -40,12 +41,13 @@ export function chargerCatalogue(fichier: string) {
     return {
       label: `${c.faction} / ${c.clan}`,
       cards: [...qte].map(([id, quantity]) => ({ card: c.pool.find((x) => x.id === id)!, quantity })),
-      hero: h.length ? hero(pick(rand, h)!) : null,
+      hero: heroForce ?? (h.length ? hero(pick(rand, h)!) : null),
     };
   }
 
   const pools = { factionCardPool: cartes, allSpellsPool: cartes.filter((c) => c.card_type === "spell"), tokens: cat.tokens };
-  return { cartes, clans, deck, pools };
+  const heroes = cat.heroes.map(hero);
+  return { cartes, clans, deck, pools, heroes };
 }
 
 /** Coupe les journaux du moteur pendant la simulation ; rend la fonction pour les rétablir. */

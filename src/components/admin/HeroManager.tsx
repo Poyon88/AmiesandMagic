@@ -1,5 +1,7 @@
 "use client";
 
+import { HERO_MAX_HP } from "@/lib/game/constants";
+import { HERO_HP_MAX, HERO_HP_MIN, pvDeDepart } from "@/lib/game/hero-hp";
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
@@ -141,6 +143,9 @@ interface HeroRow {
   power_effect: Record<string, unknown> | null;
   power_description: string | null;
   power_usage_limit: number | null;
+  /** PV de départ (et maximum) du héros ; absent tant que la migration
+   *  heroes-starting-hp n'est pas passée. */
+  starting_hp?: number | null;
   power_image_url: string | null;
   glb_url: string | null;
   thumbnail_url: string | null;
@@ -229,6 +234,8 @@ export default function HeroManager() {
   const [powerTokenId, setPowerTokenId] = useState<number | null>(null);
   // null = unlimited
   const [powerUsageLimit, setPowerUsageLimit] = useState<number | null>(null);
+  // PV de départ du héros — levier d'équilibrage de son pouvoir (cf. hero-hp.ts).
+  const [startingHp, setStartingHp] = useState<number>(HERO_MAX_HP);
 
   // Token registry (reused by the cascade picker for summon_token).
   const [tokenTemplates, setTokenTemplates] = useState<TokenTemplate[]>([]);
@@ -405,6 +412,7 @@ export default function HeroManager() {
     setPowerParamHealth(0);
     setPowerTokenId(null);
     setPowerUsageLimit(null);
+    setStartingHp(HERO_MAX_HP);
     setPowerDescription("");
     if (glbPreviewUrl?.startsWith("blob:")) URL.revokeObjectURL(glbPreviewUrl);
     setGlbFile(null);
@@ -454,6 +462,7 @@ export default function HeroManager() {
     setPowerParamHealth(typeof params.health === "number" ? params.health : 0);
     setPowerTokenId(typeof pe.tokenId === "number" ? pe.tokenId : null);
     setPowerUsageLimit(typeof hero.power_usage_limit === "number" ? hero.power_usage_limit : null);
+    setStartingHp(pvDeDepart({ startingHp: hero.starting_hp }));
 
     setRarity(hero.rarity ?? "Commune");
     setMaxPrints(hero.max_prints ?? null);
@@ -841,6 +850,7 @@ export default function HeroManager() {
         power_cost: powerCost,
         power_effect: powerEffect,
         power_usage_limit: powerUsageLimit,
+        starting_hp: startingHp,
         power_description: powerDescription || null,
         glbUrl: publicGlbUrl,
         rarity,
@@ -1104,7 +1114,7 @@ export default function HeroManager() {
                     POUVOIR HÉROÏQUE
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 8 }}>
                     <div>
                       <label style={STYLE.label}>Nom</label>
                       <input type="text" value={powerName} onChange={(e) => setPowerName(e.target.value)}
@@ -1125,6 +1135,18 @@ export default function HeroManager() {
                         <option value="">Illimité</option>
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                           <option key={n} value={n}>{n}× max</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={STYLE.label}>PV de départ</label>
+                      <select
+                        value={startingHp}
+                        onChange={(e) => setStartingHp(Number(e.target.value))}
+                        title="Pouvoir plus fort ⇒ moins de PV ; plus faible ⇒ plus de PV. Aussi le maximum des soins du héros."
+                        style={STYLE.input}>
+                        {Array.from({ length: HERO_HP_MAX - HERO_HP_MIN + 1 }, (_, i) => HERO_HP_MIN + i).map(n => (
+                          <option key={n} value={n}>{n}{n === HERO_MAX_HP ? " (standard)" : ""}</option>
                         ))}
                       </select>
                     </div>
@@ -1746,7 +1768,7 @@ export default function HeroManager() {
 
               <div style={{ fontSize: 10, color: "#777", marginBottom: 6, fontFamily: "'Crimson Text',serif" }}>
                 {hero.power_name ? (
-                  <>⚡ <strong>{hero.power_name}</strong> ({hero.power_cost ?? 0} mana) — {hero.power_description ?? "pas de description"}</>
+                  <>⚡ <strong>{hero.power_name}</strong> ({hero.power_cost ?? 0} mana) — {hero.power_description ?? "pas de description"} · ❤ {pvDeDepart({ startingHp: hero.starting_hp })} PV</>
                 ) : (
                   <em>Aucun pouvoir configuré</em>
                 )}

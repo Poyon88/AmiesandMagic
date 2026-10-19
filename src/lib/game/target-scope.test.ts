@@ -47,6 +47,7 @@ describe("portée « toutes » — capacités d'action", () => {
 
   it("Siphon toutes les ennemies : le héros récupère X par créature touchée", () => {
     const s = plateau();
+    s.players[0].hero.hp = 20; // blessé : le soin est plafonné aux PV de départ
     const pv = s.players[0].hero.hp;
     const n = jouer(s, sort({ id: "siphon", amount: 1, targetScope: "all_enemies" }));
     expect(n.players[0].hero.hp).toBe(pv + 2);

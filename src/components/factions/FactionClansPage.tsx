@@ -18,6 +18,7 @@ import { motion, useInView } from "framer-motion";
 import { useMessages } from "next-intl";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
+import { pvDeDepart } from "@/lib/game/hero-hp";
 import { useTranslations } from "next-intl";
 import FactionActionBar from "./FactionActionBar";
 import GameCard from "@/components/cards/GameCard";
@@ -53,6 +54,8 @@ export interface HeroDeClan {
   power_image_url: string | null;
   /** Activations autorisées par partie. `null` = illimité. */
   power_usage_limit: number | null;
+  /** PV de départ — la contrepartie d'un pouvoir plus ou moins fort. */
+  starting_hp?: number | null;
 }
 
 interface Section {
@@ -650,6 +653,9 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
                     {" · "}{tJeu("power_usage_limit", { limit: hero.power_usage_limit })}
                   </span>
                 )}
+                <span style={{ color: "#e0e0e077" }}>
+                  {" · ❤ "}{tJeu("hero_starting_hp", { hp: pvDeDepart({ startingHp: hero.starting_hp }) })}
+                </span>
               </div>
             )}
             {desc && (

@@ -42,6 +42,7 @@ import { SPELL_KEYWORDS } from "./spell-keywords";
 import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
+import { pvDeDepart } from "./hero-hp";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -1448,6 +1449,17 @@ function composedChoiceTargetIds(
   return ids;
 }
 
+/** Soigne un héros, PLAFONNÉ à son maximum (ses PV de départ, cf. hero-hp.ts).
+ *  Point de passage unique de TOUS les soins du héros : sans plafond, un héros
+ *  à 25 PV remontait à 40 et l'écart de PV entre héros — levier d'équilibrage
+ *  de leurs pouvoirs — s'effaçait au premier soin. Renvoie le soin appliqué. */
+function soignerHeros(hero: import("./types").HeroState, x: number): number {
+  if (x <= 0) return 0;
+  const avant = hero.hp;
+  hero.hp = Math.max(hero.hp, Math.min(hero.maxHp, hero.hp + x));
+  return hero.hp - avant;
+}
+
 function applyComposedToHero(
   content: import("./types").ComposedEffectContent,
   hero: import("./types").HeroState,
@@ -1455,7 +1467,7 @@ function applyComposedToHero(
   source?: CardInstance | null,
 ): void {
   if (content === "deal_damage") dealDamageToHero(hero, x, source);
-  else if (content === "heal") hero.hp = Math.min(hero.maxHp, hero.hp + x);
+  else if (content === "heal") soignerHeros(hero, x);
 }
 
 /** Un effet composé CIBLE-t-il ses unités ? Seul « au choix » désigne ; au
@@ -2587,7 +2599,7 @@ function resolveCreatureKeywordAsHeroPower(
       if (!target) break;
       const amount = params?.amount ?? 1;
       dealDamageToCreature(target, amount, false, true, player.hero);
-      player.hero.hp += amount;
+      soignerHeros(player.hero, amount);
       break;
     }
     default:
@@ -3174,7 +3186,7 @@ export function initializeGame(
 
   const makePlayer = (id: string, hand: CardInstance[], deck: CardInstance[], hero?: HeroDefinition | null): PlayerState => ({
     id,
-    hero: { hp: HERO_MAX_HP, maxHp: HERO_MAX_HP, armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0 },
+    hero: { hp: pvDeDepart(hero), maxHp: pvDeDepart(hero), armor: 0, heroDefinition: hero ?? null, heroPowerUsedThisTurn: false, heroPowerActivationsUsed: 0 },
     emblems: [],
     mana: 0, maxMana: 0,
     hand, board: [], deck, graveyard: [],
@@ -6310,9 +6322,9 @@ function resolveSpellEffect(
     case "heal": {
       const amount = effect.amount ?? 0;
       if (effect.target === "friendly_hero") {
-        caster.hero.hp += amount;
+        soignerHeros(caster.hero, amount);
       } else if (effect.target === "enemy_hero") {
-        opponent.hero.hp += amount;
+        soignerHeros(opponent.hero, amount);
       } else if (targetInstanceId) {
         const target = findCreatureOnBoard(caster, targetInstanceId);
         if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -6972,7 +6984,7 @@ function resolveSpellKeywords(
         } else if (targetId === "enemy_hero") {
           dealDamageToHero(ctx.opponent.hero, amount);
         }
-        ctx.caster.hero.hp += amount;
+        soignerHeros(ctx.caster.hero, amount);
         break;
       }
       case "entrave": {
@@ -7145,9 +7157,9 @@ function resolveSpellKeywords(
       case "guerison": {
         const amount = kw.amount ?? 0;
         if (targetId === "enemy_hero") {
-          ctx.opponent.hero.hp += amount;
+          soignerHeros(ctx.opponent.hero, amount);
         } else if (targetId === "friendly_hero") {
-          ctx.caster.hero.hp += amount;
+          soignerHeros(ctx.caster.hero, amount);
         } else if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -7629,9 +7641,9 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
     case "heal": {
       const amount = effect.amount ?? 0;
       if (targetId === "friendly_hero") {
-        ctx.caster.hero.hp += amount;
+        soignerHeros(ctx.caster.hero, amount);
       } else if (targetId === "enemy_hero") {
-        ctx.opponent.hero.hp += amount;
+        soignerHeros(ctx.opponent.hero, amount);
       } else if (targetId) {
         const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
         if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
@@ -9112,7 +9124,7 @@ function applyLifesteal(
   } else if (owner.hero === victim) {
     return;
   }
-  owner.hero.hp += dealt;
+  soignerHeros(owner.hero, dealt);
 }
 
 // `source` = ce qui inflige les dégâts. Optionnel : les sources sans agresseur
@@ -10930,7 +10942,7 @@ function resolveCuratedKeywordEffect(
       const before = opponent.hero.hp;
       dealDamageToHero(opponent.hero, x, source);
       const dealt = before - opponent.hero.hp;
-      owner.hero.hp += dealt;
+      soignerHeros(owner.hero, dealt);
       break;
     }
     case "prescience": {

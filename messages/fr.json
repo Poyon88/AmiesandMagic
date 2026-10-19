@@ -3022,6 +3022,7 @@
     "power_activations_unlimited": "Activations : illimité",
     "power_activations_used": "Activations : {used} / {limit}",
     "power_usage_limit": "Limite : {limit}× max",
+    "hero_starting_hp": "{hp} PV de départ",
     "power_close_hint": "Échap ou clic hors zone pour fermer",
     "divination_traque_title": "🔮 Traque du destin",
     "divination_title": "🔍 Divination",
