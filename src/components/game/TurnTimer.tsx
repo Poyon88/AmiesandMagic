@@ -28,7 +28,9 @@ interface TurnTimerProps {
    *  ne déclenche PAS onTimeUp (end_turn, bloqué de toute façon) mais
    *  onPendingTimeout (repli automatique au hasard). */
   hasPendingTriggers?: boolean;
-  /** Ancre du compte à rebours du CHOIX (`gameState.choiceStartedAt`). Tant
+  /** Ancre du compte à rebours du CHOIX — l'instant où la fenêtre est devenue
+   *  VISIBLE chez ce client (cf. GameBoard, `choiceAnchor`), à défaut
+   *  `gameState.choiceStartedAt`. Tant
    *  qu'un choix est en attente, le compteur bascule sur cette horloge et sur
    *  CHOICE_TIMER_SECONDS au lieu du chrono de tour : la pause naît le plus
    *  souvent de l'expiration du chrono, et le reliquat valait alors ~0 s — la

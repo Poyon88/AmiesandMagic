@@ -294,6 +294,23 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const choiceOwnerId = gameState?.pendingTriggers?.[0]?.controllerId ?? null;
   const isChoiceMine = choiceOwnerId != null && choiceOwnerId === localPlayerId;
 
+  // Départ VISIBLE de la fenêtre de choix. Le moteur l'ancre à la fin de
+  // l'action (`choiceStartedAt`), mais la modale n'apparaît qu'une fois les
+  // animations de cette action jouées : sur une attaque, elles mangeaient
+  // l'essentiel des 15 s. Chaque client repart donc de l'instant où SES
+  // animations se sont tues — c'est son propre compte à rebours, et le repli de
+  // l'autre client garde son délai de grâce.
+  const cleDuChoix = gameState?.pendingTriggers?.[0]
+    ? `${gameState.pendingTriggers[0].id}@${gameState.choiceStartedAt ?? 0}` : null;
+  const [choixVisible, setChoixVisible] = useState<{ cle: string; at: number } | null>(null);
+  useEffect(() => {
+    if (!cleDuChoix) { setChoixVisible(null); return; }
+    if (isAnimating) return;
+    setChoixVisible(v => (v?.cle === cleDuChoix ? v : { cle: cleDuChoix, at: Date.now() }));
+  }, [cleDuChoix, isAnimating]);
+  const choiceAnchor = cleDuChoix && choixVisible?.cle === cleDuChoix
+    ? choixVisible.at : gameState?.choiceStartedAt;
+
   // Fenêtre de CHOIX ouverte : Sélection, Divination, mots-clés de Tactique, ou
   // déclencheur à trancher. Ces modales assombrissent le plateau et masquent le
   // chrono, au moment précis où il compte. Même règle que TurnTimer, partagée
@@ -306,10 +323,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       estMonTour: gameState.players[gameState.currentPlayerIndex].id === localPlayerId,
       choixAMoi: isChoiceMine,
       pendingTriggers: gameState.pendingTriggers?.length ?? 0,
-      choiceStartedAt: gameState.choiceStartedAt,
+      choiceStartedAt: choiceAnchor,
       turnStartedAt: gameState.turnStartedAt,
     });
-  }, [gameState, targetingMode, overlayPeeked, localPlayerId, isChoiceMine]);
+  }, [gameState, targetingMode, overlayPeeked, localPlayerId, isChoiceMine, choiceAnchor]);
 
   // Libellé de la désignation d'attaque EN COURS (cf. getOnAttackChoiceSlots).
   const attackPowerLabel = useMemo(() => {
@@ -528,6 +545,21 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     broadcast(dispatchAction({ type: "auto_resolve_pending_triggers", headTriggerId: tete.id }));
   }, [dispatchAction, broadcast]);
 
+  // Attaque SUSPENDUE sur un choix « à l'attaque » (cf. attaqueSuspendue) :
+  // une fois la file vide et les animations jouées, le joueur actif — seul
+  // émetteur légitime à son tour — rejoue le combat. Re-tenté à chaque rendu
+  // utile ; le moteur ignore une reprise qui ne correspond plus à rien.
+  const attaqueSuspendue = gameState?.attaqueSuspendue;
+  const fileVide = (gameState?.pendingTriggers?.length ?? 0) === 0;
+  const monTourActif = !!gameState && gameState.players[gameState.currentPlayerIndex].id === localPlayerId;
+  useEffect(() => {
+    if (!attaqueSuspendue || !fileVide || !monTourActif || isAnimating) return;
+    const s = useGameStore.getState();
+    if (!s.gameState?.attaqueSuspendue || s.isAnimating) return;
+    const action = dispatchAction({ type: "attack", ...s.gameState.attaqueSuspendue, reprise: true });
+    if (action) broadcast(action);
+  }, [attaqueSuspendue, fileVide, monTourActif, isAnimating, dispatchAction, broadcast]);
+
   const handleActivateHeroPower = useCallback(() => {
     const action = activateHeroPower();
     broadcast(action);
@@ -587,6 +619,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         const gs = s.gameState;
         if (!gs || gs.phase === "finished") break;
         if (gs.players[gs.currentPlayerIndex].id !== s.localPlayerId) break;
+        // Un choix s'est ouvert (Sélection « à l'attaque »…) : on rend la main
+        // au joueur plutôt que de geler sa fenêtre sous l'attaque automatique.
+        if ((gs.pendingTriggers?.length ?? 0) > 0 || gs.attaqueSuspendue) break;
         const me = gs.players[gs.currentPlayerIndex];
         const nextAttacker = me.board.find(
           (c) =>
@@ -599,7 +634,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           attackerInstanceId: nextAttacker.instanceId,
           targetInstanceId: "enemy_hero",
         });
-        if (action) broadcast(action);
+        if (!action) break;
+        broadcast(action);
         await waitForIdle();
         await new Promise((r) => setTimeout(r, 80));
       }
@@ -1662,7 +1698,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             // si bien que le client passif démarrait son tour en retard.
             isPaused={isAutoAttacking || isAnimating}
             hasPendingTriggers={(gameState.pendingTriggers?.length ?? 0) > 0}
-            choiceStartedAt={gameState.choiceStartedAt}
+            choiceStartedAt={choiceAnchor}
             onPendingTimeout={handleAutoResolvePending}
             isChoiceMine={isChoiceMine}
           />

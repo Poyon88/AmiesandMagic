@@ -29,7 +29,7 @@ const commune = (id: number) =>
   mkCard({ id, name: `Commune-${id}`, faction: "Mercenaires", rarity: "Commune", card_type: "creature", attack: 1, health: 1 });
 
 describe("Sélection à l'attaque (cas de l'Acheteur des Étals Dorés)", () => {
-  it("la modale est posée au propriétaire à la fin de l'attaque", () => {
+  function scene() {
     const s = mkState();
     s.factionCardPool = [commune(911), commune(912)];
     const acheteur = mkInstance(creature("Acheteur", 4, 2, {
@@ -39,17 +39,61 @@ describe("Sélection à l'attaque (cas de l'Acheteur des Étals Dorés)", () => 
     }));
     acheteur.hasSummoningSickness = false;
     s.players[0].board.push(acheteur);
+    return { s, acheteur };
+  }
+
+  it("la modale s'ouvre À L'ATTAQUE, le combat attend le choix puis la reprise", () => {
+    const { s, acheteur } = scene();
+    const pv = s.players[1].hero.hp;
 
     const next = applyAction(s, atk(acheteur.instanceId, "enemy_hero"));
-
-    expect(next.players[1].hero.hp, "l'attaque a porté").toBe(s.players[1].hero.hp - 4);
+    expect(next.players[1].hero.hp, "pas encore de dégâts").toBe(pv);
+    expect(next.attaqueSuspendue).toEqual({ attackerInstanceId: acheteur.instanceId, targetInstanceId: "enemy_hero" });
     const t = (next.pendingTriggers ?? []).find(p => p.selectionType);
     expect(t?.controllerId).toBe(next.players[0].id);
     expect(next.players[0].hand, "aucune carte tirée d'office").toHaveLength(0);
 
+    // Reprise refusée tant que le choix attend.
+    expect(applyAction(next, { ...atk(acheteur.instanceId, "enemy_hero"), reprise: true } as GameAction)).toBe(next);
+
     const choisie = t!.selectionOptionIds![t!.selectionOptionIds!.length - 1];
-    const fin = applyAction(next, { type: "resolve_pending_trigger", triggerId: t!.id, selectionCardId: choisie });
-    expect(fin.players[0].hand.map(c => c.card.id)).toEqual([choisie]);
+    const choisi = applyAction(next, { type: "resolve_pending_trigger", triggerId: t!.id, selectionCardId: choisie });
+    expect(choisi.players[0].hand.map(c => c.card.id)).toEqual([choisie]);
+    expect(choisi.players[1].hero.hp).toBe(pv);
+
+    const fin = applyAction(choisi, { ...atk(acheteur.instanceId, "enemy_hero"), reprise: true } as GameAction);
+    expect(fin.players[1].hero.hp, "le combat a lieu à la reprise").toBe(pv - 4);
+    expect(fin.attaqueSuspendue).toBeUndefined();
+    expect(fin.pendingTriggers ?? [], "la Sélection ne se redéclenche pas").toHaveLength(0);
+    const attaquant = fin.players[0].board.find(c => c.instanceId === acheteur.instanceId)!;
+    expect(attaquant.attacksRemaining).toBe(0);
+    // Une seconde reprise est sans effet.
+    expect(applyAction(fin, { ...atk(acheteur.instanceId, "enemy_hero"), reprise: true } as GameAction)).toBe(fin);
+  });
+
+  it("aucune autre attaque pendant la suspension", () => {
+    const { s, acheteur } = scene();
+    const autre = mkInstance(creature("Autre", 2, 2));
+    autre.hasSummoningSickness = false;
+    s.players[0].board.push(autre);
+    const next = applyAction(s, atk(acheteur.instanceId, "enemy_hero"));
+    const t = next.pendingTriggers![0];
+    const choisi = applyAction(next, { type: "resolve_pending_trigger", triggerId: t.id, selectionCardId: t.selectionOptionIds![0] });
+    expect(applyAction(choisi, atk(autre.instanceId, "enemy_hero"))).toBe(choisi);
+  });
+
+  it("fin de tour sans reprise (client parti) : le combat se joue d'abord", () => {
+    const { s, acheteur } = scene();
+    s.players[0].deck = [mkInstance(mkCard({ name: "D" }))];
+    s.players[1].deck = [mkInstance(mkCard({ name: "E" }))];
+    const pv = s.players[1].hero.hp;
+    const next = applyAction(s, atk(acheteur.instanceId, "enemy_hero"));
+    const t = next.pendingTriggers![0];
+    const choisi = applyAction(next, { type: "resolve_pending_trigger", triggerId: t.id, selectionCardId: t.selectionOptionIds![0] });
+    const fin = applyAction(choisi, { type: "end_turn" });
+    expect(fin.players[1].hero.hp).toBe(pv - 4);
+    expect(fin.attaqueSuspendue).toBeUndefined();
+    expect(fin.currentPlayerIndex).toBe(1);
   });
 });
 

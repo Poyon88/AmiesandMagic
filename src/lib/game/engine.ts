@@ -7941,49 +7941,71 @@ export function attack(state: GameState, action: AttackAction): GameState {
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
 
+  // REPRISE d'une attaque suspendue sur un choix « à l'attaque » : les
+  // contrôles ont été faits à la déclaration et les effets d'attaque résolus ;
+  // il ne reste que le combat. Le choix a pu changer le plateau (attaquant ou
+  // défenseur disparus) : on se rabat alors sur les chemins « sans combat ».
+  const suspendue = newState.attaqueSuspendue;
+  if (action.reprise) {
+    if (!suspendue || suspendue.attackerInstanceId !== action.attackerInstanceId
+      || suspendue.targetInstanceId !== action.targetInstanceId
+      || (state.pendingTriggers?.length ?? 0) > 0) return state;
+    newState.attaqueSuspendue = undefined;
+    if (!player.board.some(c => c.instanceId === action.attackerInstanceId)) {
+      newState.lastAction = action;
+      checkWinCondition(newState);
+      return newState;
+    }
+  } else if (suspendue) {
+    return state;
+  }
+
   const attacker = player.board.find(c => c.instanceId === action.attackerInstanceId);
   if (!attacker) return state;
-  if (attacker.attacksRemaining <= 0) return state;
-  // Tapped via a tap-mode keyword this turn → no attack allowed.
-  if (attacker.tapped) return state;
-  if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return state;
-
   const effectiveTarget = action.targetInstanceId;
 
-  // Raid with summoning sickness: can only target creatures, not hero
-  if (attacker.hasSummoningSickness && hasKw(attacker, "raid") && effectiveTarget === "enemy_hero") return state;
+  // Contrôles de DÉCLARATION — déjà passés si c'est une reprise.
+  if (!action.reprise) {
+    if (attacker.attacksRemaining <= 0) return state;
+    // Tapped via a tap-mode keyword this turn → no attack allowed.
+    if (attacker.tapped) return state;
+    if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return state;
 
-  // Taunt check
-  // Vol : ignore TOUTES les provocations adverses, même celles portées
-  // par une créature qui a aussi Vol. Le keyword historique côté engine
-  // est `ranged` mais le registre actuel l'expose sous `vol` — on
-  // accepte les deux pour ne pas perdre le bénéfice selon la façon
-  // dont la carte a été stockée.
-  const attackerFlies = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
-  // Une Provocation TAPIE dans l'ombre ne provoque pas : elle est intargetable
-  // tant qu'elle ne s'est pas révélée, si bien qu'elle interdisait toute
-  // attaque — ni sur elle (intargetable), ni ailleurs (sa provocation
-  // couvrait le reste). Situation de blocage total ; elle n'entre donc dans le
-  // calcul qu'une fois sortie de l'ombre.
-  const relevantTaunts = attackerFlies
-    ? []
-    : opponent.board.filter(c => hasKw(c, "taunt") && !isHiddenShadow(c));
-  if (relevantTaunts.length > 0) {
-    if (effectiveTarget === "enemy_hero") return state;
-    const target = opponent.board.find(c => c.instanceId === effectiveTarget);
-    if (target && !relevantTaunts.includes(target)) return state;
-  }
+    // Raid with summoning sickness: can only target creatures, not hero
+    if (attacker.hasSummoningSickness && hasKw(attacker, "raid") && effectiveTarget === "enemy_hero") return state;
 
-  // Ombre: reveal stealth when attacking
-  if (hasKw(attacker, "ombre")) {
-    attacker.ombreRevealed = true;
-  }
+    // Taunt check
+    // Vol : ignore TOUTES les provocations adverses, même celles portées
+    // par une créature qui a aussi Vol. Le keyword historique côté engine
+    // est `ranged` mais le registre actuel l'expose sous `vol` — on
+    // accepte les deux pour ne pas perdre le bénéfice selon la façon
+    // dont la carte a été stockée.
+    const attackerFlies = hasKw(attacker, "ranged") || hasKw(attacker, "vol");
+    // Une Provocation TAPIE dans l'ombre ne provoque pas : elle est intargetable
+    // tant qu'elle ne s'est pas révélée, si bien qu'elle interdisait toute
+    // attaque — ni sur elle (intargetable), ni ailleurs (sa provocation
+    // couvrait le reste). Situation de blocage total ; elle n'entre donc dans le
+    // calcul qu'une fois sortie de l'ombre.
+    const relevantTaunts = attackerFlies
+      ? []
+      : opponent.board.filter(c => hasKw(c, "taunt") && !isHiddenShadow(c));
+    if (relevantTaunts.length > 0) {
+      if (effectiveTarget === "enemy_hero") return state;
+      const target = opponent.board.find(c => c.instanceId === effectiveTarget);
+      if (target && !relevantTaunts.includes(target)) return state;
+    }
 
-  // Validate a creature target exists BEFORE firing any on-attack power, so an
-  // invalid attack stays a no-op — returning `state` AFTER the power would
-  // discard the power's effects.
-  if (effectiveTarget !== "enemy_hero" && !opponent.board.find(c => c.instanceId === effectiveTarget)) {
-    return state;
+    // Ombre: reveal stealth when attacking
+    if (hasKw(attacker, "ombre")) {
+      attacker.ombreRevealed = true;
+    }
+
+    // Validate a creature target exists BEFORE firing any on-attack power, so an
+    // invalid attack stays a no-op — returning `state` AFTER the power would
+    // discard the power's effects.
+    if (effectiveTarget !== "enemy_hero" && !opponent.board.find(c => c.instanceId === effectiveTarget)) {
+      return state;
+    }
   }
 
   // "À l'attaque" : les pouvoirs COMPOSÉS et les mots-clés CURÉS (mode "attack")
@@ -7994,10 +8016,12 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // Emblèmes qui guettent l'attaque. HORS du `if` ci-dessous, qui ne parle que
   // des capacités de L'ATTAQUANT : un emblème est un guetteur du joueur, il doit
   // parler même quand l'attaquant n'a aucun pouvoir d'attaque.
-  fireEmblemsForEvent("on_attack", player, opponent);
+  if (!action.reprise) fireEmblemsForEvent("on_attack", player, opponent);
 
+  // Choix posés par les effets d'attaque : comptés pour suspendre l'attaque.
+  const choixAvantAttaque = pendingTriggerSink.length;
   const hasCuratedAttack = (attacker.card.keyword_instances ?? []).some(i => i.mode === "attack");
-  if (hasOnAttackComposed(attacker.card) || hasCuratedAttack) {
+  if (!action.reprise && (hasOnAttackComposed(attacker.card) || hasCuratedAttack)) {
     // Pouvoirs composés "à l'attaque". Les cibles choisies voyagent dans
     // action.targetMap. Double Attaque frappe deux fois "dans" la même attaque :
     // l'effet composé se déclenche une fois par frappe (ex. Commandant des
@@ -8039,6 +8063,19 @@ export function attack(state: GameState, action: AttackAction): GameState {
         processDeathTriggers(oDeadAtk, opponent, player);
         recalculateAuras(player, opponent);
       }
+    }
+
+    // Un effet d'attaque attend un CHOIX (Sélection, Sélection Royale…) : il
+    // se tranche AVANT les dégâts, au moment où l'attaque le déclenche. On
+    // s'arrête donc ici ; le combat sera joué par l'action de reprise, que le
+    // joueur actif émet dès la file vide. Pas de vague d'attaque : cette moitié
+    // ne montre que les effets d'attaque, le combat s'animera à la reprise.
+    if (pendingTriggerSink.length > choixAvantAttaque
+      && player.board.some(c => c.instanceId === attacker.instanceId)) {
+      newState.attaqueSuspendue = { attackerInstanceId: attacker.instanceId, targetInstanceId: effectiveTarget };
+      newState.lastAction = action;
+      checkWinCondition(newState);
+      return newState;
     }
 
     // Snapshot for wave 1 — pools stripped (the store diffs boards only).
@@ -12634,7 +12671,18 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "mulligan": result = applyMulligan(state, action); break;
     case "play_card": result = playCard(state, action); break;
     case "attack": result = attack(state, action); break;
-    case "end_turn": result = endTurn(state); break;
+    case "end_turn": {
+      // Attaque restée suspendue (reprise jamais émise — client déconnecté) :
+      // son combat se joue avant la fin du tour. S'il pose à son tour un choix,
+      // la fin de tour attendra la prochaine demande.
+      if (!state.attaqueSuspendue || (state.pendingTriggers?.length ?? 0) > 0) {
+        result = endTurn(state);
+        break;
+      }
+      const repris = attack(state, { type: "attack", ...state.attaqueSuspendue, reprise: true });
+      result = pendingTriggerSink.length > 0 ? repris : endTurn(repris);
+      break;
+    }
     case "hero_power": result = useHeroPower(state, action); break;
     case "tap_activate": result = tapActivate(state, action); break;
     case "equip_item": result = equipItem(state, action); break;

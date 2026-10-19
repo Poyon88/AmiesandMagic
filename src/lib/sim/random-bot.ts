@@ -98,6 +98,9 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
     out.push({ type: "auto_resolve_pending_triggers", headTriggerId: pending.id });
     return out;
   }
+  // Attaque suspendue sur un choix « à l'attaque », désormais tranché : seule
+  // sa reprise est permise (le client l'émet d'office, cf. GameBoard).
+  if (state.attaqueSuspendue) return [{ type: "attack", ...state.attaqueSuspendue, reprise: true }];
 
   const me = state.players[state.currentPlayerIndex];
 

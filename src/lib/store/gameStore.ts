@@ -1440,7 +1440,9 @@ function buildHistoryEntries(ctx: {
   }
 
   // ── Combat ───────────────────────────────────────────────────────────────
-  if (action.type === "attack") {
+  // Attaque suspendue sur un choix (cf. GameState.attaqueSuspendue) : le combat
+  // n'a pas encore eu lieu, il s'inscrira à la reprise.
+  if (action.type === "attack" && !newState.attaqueSuspendue) {
     const attacker = findInstance(action.attackerInstanceId);
     if (attacker) {
       // `targetInstanceId` est en POV de l'ATTAQUANT : "enemy_hero" désigne le
@@ -1926,6 +1928,13 @@ export const useGameStore = create<GameStore>((set, get) => {
       console.warn(`[end-turn] action « ${action.type} » refusée : ${gameState.pendingTriggers!.length} choix en attente (${gameState.pendingTriggers!.map(t => t.id).join(", ")})`);
       return null;
     }
+    // Attaque suspendue, choix tranchés : seule sa reprise passe (fin de tour
+    // comprise, que le moteur fait précéder du combat).
+    if (gameState.attaqueSuspendue
+      && !(action.type === "attack" && action.reprise)
+      && action.type !== "end_turn") {
+      return null;
+    }
 
     // Merge any pending alternative-cost selections (discards / sacrifices /
     // replis) into the play_card action — single chokepoint so callers don't
@@ -2045,6 +2054,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     const isEndTurn = action.type === "end_turn";
 
     const newState = applyAction(gameState, action);
+    // Première moitié d'une attaque SUSPENDUE sur un choix « à l'attaque » :
+    // seuls ses effets d'attaque ont joué. Elle s'anime comme une action
+    // ordinaire — l'élan, le bruitage et le souffle de feu attendent la reprise,
+    // qui porte le combat.
+    const attaqueEnSuspens = action.type === "attack" && !!newState.attaqueSuspendue;
+    if (attaqueEnSuspens) fireEvent = null;
     // Two-wave attack: pop the post-power / pre-combat snapshot the engine
     // attached when an "à l'attaque" composed power fired. Wave 1 = power
     // (gameState→intermediate), wave 2 = combat (intermediate→newState). The
@@ -2508,7 +2523,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           sfxEvents.push({ type: "play_card", cardSfxUrl: cardInst.card.sfx_play_url ?? undefined });
         }
       }
-    } else if (action.type === "attack") {
+    } else if (action.type === "attack" && !attaqueEnSuspens) {
       sfxEvents.push({ type: "attack" });
     } else if (action.type === "end_turn") {
       sfxEvents.push({ type: "end_turn" });
@@ -3007,7 +3022,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Identify what kind of visible events this action produces.
     const hasOverlay = !!spellEvent || !!heroPowerEvent || !!fireEvent;
-    const isAttack = action.type === "attack";
+    const isAttack = action.type === "attack" && !attaqueEnSuspens;
 
     // Detect cards that left the graveyard (exiled, reanimated, sacrificed…).
     // Shown to both players so they see which cards from the graveyard were

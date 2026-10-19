@@ -2083,6 +2083,11 @@ export interface GameState {
   // power in a first wave (its damage/deaths) then combat in a second wave.
   // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
   onAttackWave?: { intermediate: GameState } | null;
+  /** Attaque SUSPENDUE entre ses effets « à l'attaque » et son combat : un de
+   *  ces effets a posé un choix (Sélection…), qui se tranche AVANT les dégâts.
+   *  Le joueur actif émet la reprise (`AttackAction.reprise`) dès la file vide ;
+   *  à défaut, `end_turn` la termine d'office. Déterministe ⇒ dans le hash. */
+  attaqueSuspendue?: { attackerInstanceId: string; targetInstanceId: string };
   // Transient : POINTS DE PASSAGE de l'animation — l'axe du temps INTERNE de
   // l'action, que le store ne pouvait pas deviner.
   //
@@ -2238,6 +2243,9 @@ export interface AttackAction {
    *  pour multi, `${uid}` pour cible unique. Porté par l'action ⇒ les deux
    *  clients résolvent le pouvoir à l'identique au rejeu. */
   targetMap?: Record<string, string>;
+  /** Reprise d'une attaque suspendue (`GameState.attaqueSuspendue`) : ses
+   *  effets « à l'attaque » sont déjà résolus, seul le combat reste à jouer. */
+  reprise?: boolean;
 }
 
 export interface EndTurnAction {
