@@ -1933,8 +1933,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       return null;
     }
     // Attaque suspendue, choix tranchés : seule sa reprise passe (fin de tour
-    // comprise, que le moteur fait précéder du combat).
+    // comprise, que le moteur fait précéder du combat). Tant que des choix
+    // attendent, c'est la garde précédente qui filtre : sans ce test, la
+    // résolution du choix lui-même était refusée et la modale ne répondait plus.
     if (gameState.attaqueSuspendue
+      && (gameState.pendingTriggers?.length ?? 0) === 0
       && !(action.type === "attack" && action.reprise)
       && action.type !== "end_turn") {
       return null;
