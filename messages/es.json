@@ -439,8 +439,9 @@
         "desc": "Revela las 3 cartas superiores en desorden; elige la de arriba para ponerla en tu mano, luego mezcla el mazo."
       },
       "apprentissage": {
-        "label": "Aprendizaje",
-        "desc": "Retira una acción de tu mano y la memoriza: la criatura puede jugarla pagando sus costes."
+        "label": "Aprendizaje X",
+        "desc": "Retira una acción de coste ≤ X de tu mano y la memoriza: la criatura puede jugarla sin pagar maná.",
+        "desc_any": "Retira una acción de tu mano y la memoriza: la criatura puede jugarla sin pagar maná."
       },
       "impact": {
         "label": "Impacto X",

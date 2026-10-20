@@ -1,6 +1,7 @@
 // APPRENTISSAGE — la créature retire un sort de la main et le MÉMORISE. Le sort
 // devient un pouvoir activable : elle peut le relancer autant de fois qu'elle
-// peut s'engager, en payant à chaque fois ses coûts.
+// peut s'engager, SANS MANA mais en payant ses coûts additionnels. Depuis
+// Apprentissage X (2026-10-20), seul un sort de coût imprimé ≤ X s'apprend.
 //
 // C'est la première capacité qui rend une carte RÉPÉTABLE. Quatre choses à
 // verrouiller, par ordre d'importance :
@@ -11,27 +12,28 @@
 //   2. **Le sort n'existe que sur le plateau.** Mort, retour en main, Silence ⇒
 //      oubli. C'est le garde-fou qui paie la répétabilité : tuer la créature
 //      détruit DEUX cartes.
-//   3. **Les coûts sont ceux du sort, intégralement.** Et le piège est le test
+//   3. **Le mana est offert, les coûts additionnels restent dus.** Et le piège est le test
 //      de défausse : `canPlayCard` retranche 1 à la main pour la carte jouée,
 //      or un sort mémorisé n'y est pas. Sans cette différence, un sort à
 //      « défausser 1 » serait refusé alors qu'une carte attend en main.
 //   4. **L'interface et le moteur doivent dire la MÊME chose.** Un bouton actif
 //      sur une activation que le moteur refuse est indiscernable d'un bug.
 import { describe, expect, it } from "vitest";
-import { applyAction, creatureCanCastLearnedSpell } from "./engine";
+import { applyAction, apprentissageMaxCost, creatureCanCastLearnedSpell, handSpellsFor } from "./engine";
 import { syncHash } from "./stateHash";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Card, GameState, KeywordInstance, SpellKeywordInstance } from "./types";
 
 type Mode = "tap" | "end_of_turn" | "attack" | "low_hp";
 
-/** Une créature porteuse d'Apprentissage. `mode` absent ⇒ entrée en jeu. */
-function apprenante(opts: { name?: string; mode?: Mode } = {}) {
-  const { name = "Élève", mode } = opts;
+/** Une créature porteuse d'Apprentissage. `mode` absent ⇒ entrée en jeu ;
+ *  `x` absent ⇒ X vide, n'importe quel coût. */
+function apprenante(opts: { name?: string; mode?: Mode; x?: number } = {}) {
+  const { name = "Élève", mode, x } = opts;
   return mkInstance(mkCard({
     name, mana_cost: 1, attack: 2, health: 3,
     keywords: ["apprentissage"] as never,
-    keyword_instances: [{ id: "apprentissage", ...(mode ? { mode } : {}) }] as KeywordInstance[],
+    keyword_instances: [{ id: "apprentissage", ...(mode ? { mode } : {}), ...(x != null ? { x } : {}) }] as KeywordInstance[],
   } as Partial<Card>));
 }
 
@@ -215,16 +217,18 @@ describe("les coûts", () => {
     return { s: st, cible: victime.instanceId, src };
   }
 
-  it("mana insuffisant ⇒ activation refusée", () => {
-    const { s, cible } = avecSort(trait(), 1); // le Trait coûte 2
-    expect(lancer(s, cible)).toBe(s);
-    expect(creatureCanCastLearnedSpell(s, s.players[0].board[0].instanceId)).toBe(false);
+  it("SANS MANA : lancé à 0 mana, l'interface comme le moteur l'acceptent", () => {
+    const { s, cible, src } = avecSort(trait(), 0); // le Trait coûte 2
+    expect(creatureCanCastLearnedSpell(s, src.instanceId)).toBe(true);
+    const st = lancer(s, cible);
+    expect(st).not.toBe(s);
+    expect(st.players[1].board[0].currentHealth).toBe(17);
   });
 
-  it("le mana est bien débité à chaque lancement", () => {
+  it("le mana n'est JAMAIS débité", () => {
     const { s, cible } = avecSort(trait(), 10);
     const st = lancer(s, cible);
-    expect(st.players[0].mana).toBe(8);
+    expect(st.players[0].mana).toBe(10);
   });
 
   it("LE PIÈGE : « défausser 1 » passe avec EXACTEMENT une carte en main", () => {
@@ -356,7 +360,8 @@ describe("l'interface et le moteur disent la même chose", () => {
       (s) => { s.players[0].board[0].tapped = true; },
       (s) => { s.players[0].board[0].isParalyzed = true; },
       (s) => { s.players[0].board[0].hasSummoningSickness = true; },
-      (s) => { s.players[0].mana = 0; },
+      // Coût en PV mortel : un coût additionnel reste dû même sans mana.
+      (s) => { s.players[0].board[0].apprentissageSpell!.card = { ...s.players[0].board[0].apprentissageSpell!.card, life_cost: 99 }; },
       (s) => { s.players[0].board[0].apprentissageSpell = undefined; },
     ];
     for (const abimer of cas) {
@@ -417,10 +422,11 @@ describe("lancer le sort appris est une ACTIVATION", () => {
   });
 
   it("une activation REFUSÉE ne révèle rien", () => {
-    // Mana insuffisant : l'action est rejetée, l'état d'origine est rendu tel
+    // Coût en PV mortel : l'action est rejetée, l'état d'origine est rendu tel
     // quel. Révéler une Ombre pour une activation qui n'a pas eu lieu la
     // rendrait attaquable sans qu'elle ait rien fait.
-    const { s, cible } = tapie(1); // le Trait coûte 2
+    const { s, src, cible } = tapie();
+    src.apprentissageSpell = trait("Saignée", { life_cost: 99 } as Partial<Card>);
     const st = lancer(s, cible, "Chamanesse");
     expect(st).toBe(s);
     expect(s.players[0].board[0].ombreRevealed).toBe(false);
@@ -432,5 +438,56 @@ describe("lancer le sort appris est une ACTIVATION", () => {
     const apres = st.players[0].board.find(c => c.card.name === "Chamanesse")!;
     expect(apres.tapped).toBe(true);
     expect(creatureCanCastLearnedSpell(st, apres.instanceId)).toBe(false);
+  });
+});
+
+describe("Apprentissage X — X plafonne le coût imprimé du sort apprenable", () => {
+  const gros = (name = "Gros") => trait(name, { mana_cost: 5 } as Partial<Card>);
+
+  it("le picker (handSpellsFor) ne propose que les sorts de coût ≤ X", () => {
+    const s = mkState();
+    const src = apprenante({ x: 2 });
+    s.players[0].hand.push(trait("Petit"), gros());
+    expect(apprentissageMaxCost(src)).toBe(2);
+    expect(handSpellsFor(s.players[0], apprentissageMaxCost(src)).map(c => c.card.name)).toEqual(["Petit"]);
+  });
+
+  it("un sort désigné AU-DELÀ de X n'est pas appris, et rien n'est tiré", () => {
+    const s = mkState();
+    s.rngState = 777;
+    const g = gros();
+    const src = apprenante({ x: 2 });
+    s.players[0].hand.push(g, src);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: src.instanceId, learnSpellInstanceId: g.instanceId });
+    expect(memorise(st)).toBeNull();
+    expect(st.players[0].hand.some(c => c.card.name === "Gros")).toBe(true);
+    expect(st.rngState).toBe(777);
+  });
+
+  it("aucun sort ≤ X en main ⇒ rien appris, aucun tirage consommé", () => {
+    const s = mkState();
+    s.rngState = 4242;
+    s.players[0].board.push(apprenante({ mode: "end_of_turn", x: 2 }));
+    s.players[0].hand.push(gros("A"), gros("B"));
+    const st = applyAction(s, { type: "end_turn" });
+    expect(memorise(st)).toBeNull();
+    expect(st.players[0].hand.filter(c => c.card.name === "A" || c.card.name === "B")).toHaveLength(2);
+  });
+
+  it("le tirage au hasard ne retient QUE les sorts ≤ X", () => {
+    for (const seed of [1, 2, 3, 17, 99, 12345]) {
+      const s = mkState();
+      s.rngState = seed;
+      s.players[0].board.push(apprenante({ mode: "end_of_turn", x: 2 }));
+      s.players[0].hand.push(gros("A"), trait("Petit"), gros("B"));
+      const st = applyAction(s, { type: "end_turn" });
+      expect(memorise(st)?.card.name).toBe("Petit");
+    }
+  });
+
+  it("X VIDE ⇒ n'importe quel coût", () => {
+    const s = mkState();
+    const st = poserEtApprendre(s, trait("Cher", { mana_cost: 9 } as Partial<Card>));
+    expect(memorise(st)?.card.name).toBe("Cher");
   });
 });

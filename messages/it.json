@@ -439,8 +439,9 @@
         "desc": "Rivela le 3 carte in cima al mazzo in disordine; scegliete quella in cima da prendere in mano, poi mescolate il mazzo."
       },
       "apprentissage": {
-        "label": "Apprendistato",
-        "desc": "Rimuove un'azione dalla tua mano e la memorizza: la creatura può giocarla pagandone i costi."
+        "label": "Apprendistato X",
+        "desc": "Rimuove un'azione di costo ≤ X dalla tua mano e la memorizza: la creatura può giocarla senza pagare mana.",
+        "desc_any": "Rimuove un'azione dalla tua mano e la memorizza: la creatura può giocarla senza pagare mana."
       },
       "impact": {
         "label": "Impatto X",

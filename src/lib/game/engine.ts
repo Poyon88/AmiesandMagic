@@ -4982,7 +4982,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // Depuis l'éveil, le coût est de 1 : c'est le DERNIER point, tout le reste a
   // déjà été versé tour après tour. Le coût en mana imprimé de la carte n'entre
   // jamais en jeu par ce chemin — l'éveil le remplace, il ne s'y ajoute pas.
-  const manaCost = fromEveil
+  // Depuis une créature (Apprentissage X) : le sort appris se lance SANS MANA.
+  // Seul le mana est offert — les coûts additionnels ci-dessous restent dus,
+  // sinon X (qui ne borne que le coût en mana) ne bornerait plus rien.
+  const manaCost = apprenante
+    ? 0
+    : fromEveil
     ? 1
     : fromGraveyard
       ? secondeVieCost(cardInstance)
@@ -8824,8 +8829,18 @@ function resolveBoomerang(player: PlayerState, spell: CardInstance): void {
  *  picker côté client et du tirage au sort côté moteur : deux listes séparées
  *  finiraient par diverger, et le joueur désignerait alors un sort que le
  *  moteur ne connaît pas. */
-export function handSpellsFor(player: PlayerState): CardInstance[] {
-  return player.hand.filter(c => c.card.card_type === "spell");
+export function handSpellsFor(player: PlayerState, maxCost?: number): CardInstance[] {
+  return player.hand.filter(c => c.card.card_type === "spell" && respecteCoutMax(c.card, maxCost));
+}
+
+/** APPRENTISSAGE X — coût imprimé maximal du sort apprenable ; 0 ⇒ tout coût
+ *  (convention `coutLibre`). Lu sur N'IMPORTE QUELLE capacité Apprentissage de
+ *  la carte, quel que soit son déclencheur : une créature n'en porte qu'une, et
+ *  le store doit lire le même X que le moteur sans connaître le mode qui a
+ *  déclenché l'apprentissage. Repli sur un X conféré (`grantedKeywordX`). */
+export function apprentissageMaxCost(source: Pick<CardInstance, "card"> & Partial<Pick<CardInstance, "grantedKeywordX">>): number {
+  const cap = getCapabilities(source.card).find(c => c.abilityId === "apprentissage" && c.params?.x != null);
+  return cap?.params?.x ?? source.grantedKeywordX?.["apprentissage"] ?? 0;
 }
 
 /** APPRENTISSAGE — retire un sort de la main et le mémorise sur `source`.
@@ -8843,7 +8858,7 @@ function resolveApprentissage(
 ): void {
   // Un seul sort, DÉFINITIF : un second déclenchement ne redemande rien.
   if (source.apprentissageSpell) return;
-  const candidats = handSpellsFor(owner);
+  const candidats = handSpellsFor(owner, apprentissageMaxCost(source));
   if (candidats.length === 0) return;
   const choisi = (spellInstanceId
     ? candidats.find(c => c.instanceId === spellInstanceId)
@@ -12961,8 +12976,9 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
  *  le bouton) : un écart entre les deux laisserait une activation proposée puis
  *  refusée en silence, indiscernable d'un pouvoir cassé.
  *
- *  Reprend `canPlayCard` avec DEUX différences, et elles comptent :
+ *  Reprend `canPlayCard` avec TROIS différences, et elles comptent :
  *    · les gardes d'ACTIVATION s'ajoutent (engagée, paralysée, mal d'invocation) ;
+ *    · aucun test de mana : le sort appris se lance gratuitement (Apprentissage X) ;
  *    · le test défausse/repli perd son `-1`. Ce `-1` compte la carte jouée, qui
  *      quitte la main — or un sort mémorisé n'y est pas. Le garder refuserait
  *      un sort à « défausser 1 » alors qu'une carte attend en main. */
@@ -12974,7 +12990,7 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
   const spell = source.apprentissageSpell;
   if (!spell) return false;
 
-  if (effectiveManaCost(spell, player) > player.mana) return false;
+  // Pas de test de mana : le sort appris se lance gratuitement (Apprentissage X).
   const lifeCost = getLifeCost(spell.card);
   if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return false;
   // Sans le `-1` : le sort mémorisé ne puise pas dans la main.

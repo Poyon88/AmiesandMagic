@@ -439,8 +439,9 @@
         "desc": "Revela 3 cartas do topo em ordem aleatória; escolha a do topo para colocá-la na mão, depois embaralhe o deck."
       },
       "apprentissage": {
-        "label": "Aprendizado",
-        "desc": "Remove uma ação da sua mão e a memoriza: a criatura pode jogá-la pagando seus custos."
+        "label": "Aprendizado X",
+        "desc": "Remove uma ação de custo ≤ X da sua mão e a memoriza: a criatura pode jogá-la sem pagar mana.",
+        "desc_any": "Remove uma ação da sua mão e a memoriza: a criatura pode jogá-la sem pagar mana."
       },
       "impact": {
         "label": "Impacto X",

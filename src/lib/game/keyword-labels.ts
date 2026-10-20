@@ -498,7 +498,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   discipline: "Discipline +X/+Y",
   esprit_de_corps: "Esprit de corps",
   presage: "Présage",
-  apprentissage: "Apprentissage",
+  apprentissage: "Apprentissage X",
   impact: "Impact X",
   inspiration: "Inspiration X", afflux: "Afflux X", epargne: "Épargne X", foi: "Foi X", conquete: "Conquête X", exploration: "Exploration X", invention: "Invention +X/+Y",
   seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé",

@@ -1275,10 +1275,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: [], needsTarget: false,
     },
   },
-  // APPRENTISSAGE : la créature retire un sort de la main et le MÉMORISE. Le
-  // sort devient un pouvoir activable — elle peut le relancer autant de fois
-  // qu'elle peut s'engager, en payant à chaque fois ses coûts (mana ET coûts
-  // additionnels). Coûts impayables ⇒ activation refusée.
+  // APPRENTISSAGE X : la créature retire un sort de coût imprimé ≤ X de la main
+  // et le MÉMORISE. Le sort devient un pouvoir activable — elle peut le relancer
+  // autant de fois qu'elle peut s'engager, SANS MANA (2026-10-20) ; les coûts
+  // additionnels restent dus, sinon X, qui ne borne que le mana, ne bornerait
+  // plus rien. Coûts impayables ⇒ activation refusée. X vide ⇒ tout coût.
   //
   // C'est la première capacité du jeu qui rend une carte RÉPÉTABLE, d'où trois
   // garde-fous arbitrés avec l'auteur :
@@ -1292,13 +1293,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // apprendre en mourant ou depuis la main donnerait un pouvoir que la créature
   // ne pourra jamais activer.
   apprentissage: {
-    id: "apprentissage", label: "Apprentissage", symbol: "📖",
-    desc: "Retire une action de votre main et la mémorise : la créature peut la jouer en payant ses coûts.",
+    id: "apprentissage", label: "Apprentissage X", symbol: "📖",
+    desc: "Retire une action de coût ≤ X de votre main et la mémorise : la créature peut la jouer sans payer de mana.",
     applicable_to: ["creature"],
     creature: {
-      // La plus chère du registre après Divination : rendre un sort répétable
-      // vaut plus qu'un effet ponctuel, si fort soit-il. À réajuster après essai.
-      cost: 12, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Mixte",
+      // Un sort de coût ≤ X OFFERT à chaque engagement : ~X mana par tour, d'où
+      // une pente forte. 8 + 4/X (X = 3 → 16, X vide ≈ X 10 → 44) ; l'ancien
+      // forfait de 12 valait pour un sort PAYÉ. À réajuster après essai.
+      cost: 8, costPerX: 4, se: 3.0, minTier: 2, scalable: true, zone: "Mixte",
     },
   },
   retour_differe: {
@@ -2131,6 +2133,8 @@ export const COUT_OPTIONNEL: Readonly<Record<string, "max" | "exact">> = {
   faveur: "exact",
   // Forge : X est un PLAFOND ; vide ⇒ tout coût.
   forge: "max",
+  // Apprentissage X : plafond du coût imprimé du sort apprenable.
+  apprentissage: "max",
   invocation: "exact",
   dechainement: "exact",
 };
@@ -2187,5 +2191,8 @@ export const DESC_COUT_LIBRE: Readonly<Record<string, { creature?: string; spell
   dechainement: {
     creature: "Joue X actions aléatoires de votre collection ({alignment}), avec des cibles aléatoires.",
     spell: "Joue X actions aléatoires de votre collection ({alignment}), avec des cibles aléatoires",
+  },
+  apprentissage: {
+    creature: "Retire une action de votre main et la mémorise : la créature peut la jouer sans payer de mana.",
   },
 };

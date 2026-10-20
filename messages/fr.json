@@ -444,8 +444,9 @@
         "desc": "Révèle 3 cartes du dessus dans le désordre ; désignez celle du sommet pour la prendre en main, puis mélangez le deck."
       },
       "apprentissage": {
-        "label": "Apprentissage",
-        "desc": "Retire une action de votre main et la mémorise : la créature peut la jouer en payant ses coûts."
+        "label": "Apprentissage X",
+        "desc": "Retire une action de coût ≤ X de votre main et la mémorise : la créature peut la jouer sans payer de mana.",
+        "desc_any": "Retire une action de votre main et la mémorise : la créature peut la jouer sans payer de mana."
       },
       "impact": {
         "label": "Impact X",

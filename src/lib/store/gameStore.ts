@@ -42,6 +42,7 @@ import {
   maxEveilPayment,
   creatureNeedsApprentissage,
   handSpellsFor,
+  apprentissageMaxCost,
   chantBonusForSpell,
   tempoBonusForCard,
   creatureNeedsTraqueDuDestin,
@@ -4253,7 +4254,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // mémoriser. `learnPickerFor` la distingue des pickers de DECK, qui
     // partagent le même mode d'affichage.
     if (creatureNeedsApprentissage(card.card)) {
-      const sorts = handSpellsFor(player);
+      // Même plafond X que le moteur (`resolveApprentissage`) : l'offre doit
+      // être identique, sinon le joueur désignerait un sort que le moteur refuse.
+      const sorts = handSpellsFor(player, apprentissageMaxCost(card));
       if (sorts.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -5738,7 +5741,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // l'invocation). Sans elle le pouvoir se résolvait au hasard et sans aucun
     // retour visuel — indiscernable d'un pouvoir inerte.
     if (instance.id === "apprentissage") {
-      const sorts = handSpellsFor(player);
+      const sorts = handSpellsFor(player, apprentissageMaxCost(source));
       if (sorts.length === 0) {
         // Aucun sort en main → on engage quand même la créature (fizzle),
         // comme Sélection et Divination.

@@ -444,8 +444,9 @@
         "desc": "Reveals the top 3 cards in random order; choose the top one to take into hand, then shuffle the deck."
       },
       "apprentissage": {
-        "label": "Apprenticeship",
-        "desc": "Removes an action from your hand and memorizes it: the creature can play it by paying its costs."
+        "label": "Apprenticeship X",
+        "desc": "Removes an action with cost ≤ X from your hand and memorizes it: the creature can play it without paying mana.",
+        "desc_any": "Removes an action from your hand and memorizes it: the creature can play it without paying mana."
       },
       "impact": {
         "label": "Impact X",

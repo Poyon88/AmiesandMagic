@@ -439,8 +439,9 @@
         "desc": "Deckt die obersten 3 Karten des Decks in beliebiger Reihenfolge auf; wählt die oberste aus, um sie auf die Hand zu nehmen, und mischt anschließend das Deck."
       },
       "apprentissage": {
-        "label": "Lehre",
-        "desc": "Entfernt eine Aktion aus Ihrer Hand und merkt sie sich: Die Kreatur kann sie durch Zahlung ihrer Kosten spielen."
+        "label": "Lehre X",
+        "desc": "Entfernt eine Aktion mit Kosten ≤ X aus deiner Hand und merkt sie sich: Die Kreatur kann sie ohne Mana spielen.",
+        "desc_any": "Entfernt eine Aktion aus deiner Hand und merkt sie sich: Die Kreatur kann sie ohne Mana spielen."
       },
       "impact": {
         "label": "Wucht X",

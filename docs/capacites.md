@@ -80,7 +80,7 @@
 - 🏰 **Fierté du clan** — Tant que cette unité est en jeu, les unités de même clan invoquées arrivent avec +1/+1.
 - 📯 **Appel du clan X** — Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.
 - 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
-- 📖 **Apprentissage** — Retire un sort de votre main et le mémorise : la créature peut le lancer, autant de fois qu'elle peut s'activer, en payant à chaque fois ses coûts (mana et coûts additionnels). Le sort est perdu si elle quitte le plateau.
+- 📖 **Apprentissage X** — Retire un sort de coût ≤ X de votre main et le mémorise : la créature peut le lancer, autant de fois qu'elle peut s'activer, sans payer de mana (les coûts additionnels restent dus). X vide : n'importe quel coût
 - 🫂 **Esprit de corps** — Gagne +1 ATK ou +1 PV au hasard par autre créature de même clan avec Esprit de corps que vous avez déjà jouée depuis votre main.
 
 ## Sort uniquement (9)

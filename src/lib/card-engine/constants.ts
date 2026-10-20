@@ -105,7 +105,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Présage": ALL_MODES,
   // Apprentissage : le sort mémorisé est un pouvoir ACTIVABLE de la créature,
   // qui doit donc être EN JEU. Ni mort, ni remontée en main, ni pioche.
-  "Apprentissage": ONBOARD_MODES,
+  "Apprentissage X": ONBOARD_MODES,
   "Préincanter X": ALL_MODES,
   "Dédoublement": ALL_MODES,
   // Sélections : modale « 1 parmi 3 » sur le tour du contrôleur (picker

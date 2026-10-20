@@ -35,6 +35,8 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Berserk": "gloire",
   // Idem avant le passage de Régénération (forfait 2 PV) à Régénération X.
   "Régénération": "regeneration",
+  // Idem avant le passage d'Apprentissage (sort payé) à Apprentissage X.
+  "Apprentissage": "apprentissage",
   // Tier 1 — Terrain
   "Précision": "precision", "Drain de vie": "drain_de_vie", "Esquive": "esquive",
   "Poison": "poison", "Célérité": "celerite",
@@ -95,6 +97,7 @@ const LIBELLE_RETOUR_FORCE: Record<string, string> = {
   // d'avant le passage au X) est inséré APRÈS la base dérivée et l'emporterait,
   // décochant la case à la réédition d'un token — capacité perdue en silence.
   commandement: "Commandement X",
+  apprentissage: "Apprentissage X",
 };
 
 /** Réciproque id moteur → libellé forge. Un id visé par plusieurs libellés
