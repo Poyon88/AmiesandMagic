@@ -141,6 +141,18 @@ let faveurSink: Array<{ card: Card; ownerId: string }> = [];
 // REDESCENDRE le compteur dans la même action, le diff serait muet ou négatif.
 // Vidé au début d'applyAction, rattaché à state.explorationEvents ; hors hash.
 let explorationSink: Array<{ ownerId: string; amount: number; draws: number }> = [];
+// Emblèmes COMPOSÉS qui ont agi pendant l'action (un par emblème, pas par pile).
+// L'orbite du héros les fait pulser chez les deux joueurs ; rien d'autre ne dit
+// qu'un emblème vient de parler.
+// Vidé au début d'applyAction, rattaché à state.emblemFireEvents ; hors hash.
+let emblemFireSink: Array<{ ownerId: string; emblemIndex: number }> = [];
+/** Note qu'un emblème a agi — une fois par action, quel que soit son nombre de
+ *  piles (la file de fin de tour fait un pas par pile). */
+function noterEmblemeDeclenche(ownerId: string, emblemIndex: number): void {
+  if (!emblemFireSink.some(e => e.ownerId === ownerId && e.emblemIndex === emblemIndex)) {
+    emblemFireSink.push({ ownerId, emblemIndex });
+  }
+}
 // Capacités NOMMÉES qui ont réellement résolu pendant l'action, avec leur
 // déclencheur. Le store en tire un bruitage par capacité (table `keyword_sfx`),
 // et le `trigger` décide de la PHASE d'animation où le son s'enchaîne — après
@@ -3426,8 +3438,11 @@ function placeEmblemsForCard(
     // encore là. Sans elle, une Sélection portée par un emblème abandonne en
     // silence (cf. `selCard` dans resolveComposedEffect).
     const provenance = { sourceFaction: card.faction ?? null, sourceAlignment: card.card_alignment ?? null };
+    // Malédiction : posé chez l'adversaire. Vérité de jeu (hashée), lue par
+    // l'orbite pour le liseré rouge — le porteur ne peut pas la déduire seul.
+    const malediction = cible === opponent ? { malediction: true as const } : {};
     if (cap.composed) {
-      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, ...tourPerdu, ...provenance, sourceCardId: card.id, sourceName: card.name });
+      placeEmblem(cible, { composed: cap.composed, stacks: 1, ...quand, ...duree, ...tourPerdu, ...provenance, ...malediction, sourceCardId: card.id, sourceName: card.name });
       continue;
     }
     // `params` n'est garni que s'il porte quelque chose : un objet de champs
@@ -3444,6 +3459,7 @@ function placeEmblemsForCard(
       stacks: 1,
       ...quand,
       ...duree,
+      ...malediction,
       sourceCardId: card.id,
       sourceName: card.name,
     });
@@ -3473,6 +3489,7 @@ function fireEmblemsForEvent(
   (porteur.emblems ?? []).forEach((emblem, index) => {
     if (!emblem.composed) return;
     if ((emblem.trigger ?? "on_end_of_turn") !== evenement) return;
+    noterEmblemeDeclenche(porteur.id, index);
     for (let n = 0; n < emblem.stacks; n++) {
       // Contexte d'origine posé ICI et non via `opts.emblemIndex` : ce dernier
       // ouvre aussi la modale des Sélections, ce que ce chemin (noSuspend) ne
@@ -4564,6 +4581,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       // reconnue comme provenance interactive. Même défaut, et même correctif,
       // que pour les sorts — troisième provenance sans instance source.
       const avant = pendingTriggerSink.length;
+      noterEmblemeDeclenche(actif.id, step.emblemIndex);
       withComposedMode(phase, () =>
         resolveComposedEffect(emblem.composed!, null, actif, opponent, undefined, false,
           {
@@ -12034,6 +12052,7 @@ function applyOnePendingTrigger(
         // Cadence de l'emblème lui-même (fin OU début de tour) : couleur de la
         // flèche et déclencheur transmis à l'effet.
         const cadence = emblem.trigger ?? "on_end_of_turn";
+        noterEmblemeDeclenche(controller.id, trigger.emblemIndex);
         withComposedMode(triggerToKeywordMode(cadence), () =>
           resolveComposedEffect(emblem.composed!, null, controller, other,
             pendingChoiceIds(choice), false,
@@ -12671,6 +12690,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   drawTriggerSink = [];
   faveurSink = [];
   explorationSink = [];
+  emblemFireSink = [];
   abilitySfxSink = [];
   exileCostSink = [];
   topdeckCostSink = [];
@@ -12786,6 +12806,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // déduire d'un diff, le palier ayant déjà fait redescendre le compteur.
   if (explorationSink.length > 0 && result !== state) {
     result.explorationEvents = [...(result.explorationEvents ?? []), ...explorationSink];
+  }
+  if (emblemFireSink.length > 0 && result !== state) {
+    result.emblemFireEvents = [...(result.emblemFireEvents ?? []), ...emblemFireSink];
   }
   // SINGULIER : dernier alignement de l'action. Couvre les changements de
   // contrôle (Conquête, Corruption, Domination) et toute carte créée depuis le

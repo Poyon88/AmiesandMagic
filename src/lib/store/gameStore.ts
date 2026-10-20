@@ -511,6 +511,14 @@ export type InventionGainEvent = FoiGainEvent;
  *  que d'un diff d'état — cf. le calcul dans `dispatchAction`. */
 export type ExplorationGainEvent = FoiGainEvent;
 
+/** Emblèmes composés qui viennent d'AGIR, par camp (point de vue local) et par
+ *  indice dans `emblems`. Vient du registre moteur `emblemFireEvents` : aucun
+ *  diff d'état ne dit qu'un emblème a parlé. */
+export interface EmblemFireEvent {
+  bySide: Partial<Record<"mine" | "theirs", number[]>>;
+  timestamp: number;
+}
+
 export interface HeroPowerCastEvent {
   // Purely an FX payload (not part of hashed GameState). heroId lets the
   // overlay localise name / power via useHeroText at render time.
@@ -751,6 +759,7 @@ interface GameStore {
   conqueteGainEvent: ConqueteGainEvent | null;
   inventionGainEvent: InventionGainEvent | null;
   explorationGainEvent: ExplorationGainEvent | null;
+  emblemFireEvent: EmblemFireEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
@@ -850,6 +859,7 @@ interface GameStore {
   clearConqueteGainEvent: () => void;
   clearInventionGainEvent: () => void;
   clearExplorationGainEvent: () => void;
+  clearEmblemFireEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearDiscardFromHandEvent: () => void;
@@ -1816,6 +1826,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   conqueteGainEvent: null,
   inventionGainEvent: null,
   explorationGainEvent: null,
+  emblemFireEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
   discardFromHandEvent: null,
@@ -1905,6 +1916,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   conqueteGainEvent: null,
   inventionGainEvent: null,
   explorationGainEvent: null,
+  emblemFireEvent: null,
       });
       return action;
     }
@@ -2886,6 +2898,21 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     }
 
+    // Emblèmes qui ont agi : registre moteur, regroupé par camp (indices
+    // dédoublonnés — un emblème qui parle deux fois ne pulse qu'une fois).
+    let emblemFireEvent: EmblemFireEvent | null = null;
+    {
+      const rawFires = newState.emblemFireEvents ?? [];
+      if (newState.emblemFireEvents) newState.emblemFireEvents = undefined;
+      const bySide: Partial<Record<"mine" | "theirs", number[]>> = {};
+      for (const ev of rawFires) {
+        const side = ev.ownerId === localPlayerId ? "mine" : "theirs";
+        const liste = (bySide[side] ??= []);
+        if (!liste.includes(ev.emblemIndex)) liste.push(ev.emblemIndex);
+      }
+      if (Object.keys(bySide).length > 0) emblemFireEvent = { bySide, timestamp: Date.now() };
+    }
+
     // Historique latéral : construit ICI, une fois toutes les dérivations faites
     // (sort + relances, pouvoir de héros, combat, pouvoirs déclenchés, morts) et
     // AVANT que les champs d'overlay ne soient planifiés puis vidés.
@@ -3180,7 +3207,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3711,6 +3738,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(conqueteGainEvent ? { conqueteGainEvent } : {}),
         ...(inventionGainEvent ? { inventionGainEvent } : {}),
         ...(explorationGainEvent ? { explorationGainEvent } : {}),
+        ...(emblemFireEvent ? { emblemFireEvent } : {}),
       });
       playSfxBatch(impactSfx);
     };
@@ -5222,6 +5250,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearInventionGainEvent: () => {
     set({ inventionGainEvent: null });
+  },
+
+  clearEmblemFireEvent: () => {
+    set({ emblemFireEvent: null });
   },
 
   clearExplorationGainEvent: () => {

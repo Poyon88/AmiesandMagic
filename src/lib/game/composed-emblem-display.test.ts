@@ -112,21 +112,24 @@ describe("cadence isolée — la bande d'emblèmes en jeu", () => {
   });
 });
 
-describe("câblage de la bande", () => {
+describe("câblage de l'orbite", () => {
   const lire = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
 
-  it("chaque bande déclare son PORTEUR", () => {
-    // Le risque que ce test verrouille : `align` et `porteur` corrèlent
-    // aujourd'hui (gauche = adversaire). Faire porter le sens à une valeur de
+  it("chaque orbite déclare son PORTEUR, qui suit la source des emblèmes", () => {
+    // Le risque que ce test verrouille : `side` et `porteur` corrèlent
+    // aujourd'hui (theirs = adversaire). Faire porter le sens à une valeur de
     // mise en page suffirait, jusqu'au jour où l'on retourne le plateau — la
-    // bande annoncerait alors les créatures du mauvais camp, en silence.
+    // bulle annoncerait alors les créatures du mauvais camp, en silence.
     const src = lire("src/components/game/GameBoard.tsx");
-    const bandes = src.match(/<EmblemStrip[^>]*\/>/g) ?? [];
-    expect(bandes.length).toBeGreaterThan(0);
-    for (const b of bandes) expect(b, b).toContain("porteur=");
-    // Et le porteur suit bien la source des emblèmes, pas l'alignement.
-    for (const b of bandes) {
-      expect(b, b).toContain(b.includes("myPlayer.emblems") ? 'porteur="self"' : 'porteur="opponent"');
-    }
+    const orbites = src.match(/<HeroOrbit [^>]*>/g) ?? [];
+    expect(orbites.length).toBe(4);
+    for (const o of orbites) expect(o, o).toMatch(/\{\.\.\.(myOrbit|opponentOrbit)\}/);
+    const bloc = (nom: string) => src.slice(src.indexOf(`const ${nom} = {`), src.indexOf("};", src.indexOf(`const ${nom} = {`)));
+    expect(bloc("myOrbit")).toContain('porteur: "self"');
+    expect(bloc("myOrbit")).toContain("emblems: myPlayer.emblems");
+    expect(bloc("opponentOrbit")).toContain('porteur: "opponent"');
+    expect(bloc("opponentOrbit")).toContain("emblems: opponent.emblems");
+    // L'orbite d'en face n'est jamais cliquable.
+    expect(bloc("opponentOrbit")).not.toMatch(/canSpend|onSpend|canTake|onTake/);
   });
 });

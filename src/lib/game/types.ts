@@ -1637,6 +1637,10 @@ export interface Emblem {
    *  emblème « 2 tours » n'agissait qu'une fois. Absent dans tous les autres
    *  cas. Fait partie de l'identité de cumul, comme la durée restante. */
   poseAuTour?: number;
+  /** MALÉDICTION : posé chez ce joueur par une carte ADVERSE. Absent ⇒ posé par
+   *  le porteur lui-même. Affichage seul (liseré rouge de l'orbite) ; hors
+   *  identité de cumul. */
+  malediction?: true;
   /** Pour l'infobulle : d'où il vient, une fois la source disparue. */
   sourceCardId?: number;
   sourceName?: string;
@@ -1992,6 +1996,13 @@ export interface GameState {
     ownerId: string;
     amount: number;
     draws: number;
+  }>;
+  // Transient : emblèmes composés qui ont AGI pendant l'action (indice dans
+  // `emblems` du porteur). Fait pulser leur losange dans l'orbite du héros.
+  // Vidé par le store après planification ; exclu du hash d'état.
+  emblemFireEvents?: Array<{
+    ownerId: string;
+    emblemIndex: number;
   }>;
   // Transient : capacités NOMMÉES ayant résolu pendant l'action, avec leur
   // déclencheur. Le store en tire un bruitage par capacité (table

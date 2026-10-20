@@ -12,7 +12,7 @@ import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
 import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
-import EmblemStrip from "./EmblemStrip";
+import HeroOrbit from "./orbite/HeroOrbit";
 import DelayedSpellStrip from "./DelayedSpellStrip";
 import Hero3DViewer from "./Hero3DViewer";
 import HeroPowerButton from "./HeroPowerButton";
@@ -170,6 +170,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearInventionGainEvent,
     explorationGainEvent,
     clearExplorationGainEvent,
+    emblemFireEvent,
+    clearEmblemFireEvent,
     isAnimating,
     spellTargetSlots,
     currentTargetSlotIndex,
@@ -232,6 +234,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // to before. scale = min(availW / 1920, availH / 1080).
   const boardWrapRef = useRef<HTMLDivElement>(null);
   const [boardScale, setBoardScale] = useState(1);
+
+  // Pulse des emblèmes qui viennent d'agir : l'orbite rejoue l'animation à
+  // chaque horodatage, on vide l'événement une fois le pulse terminé.
+  useEffect(() => {
+    if (!emblemFireEvent) return;
+    const t = setTimeout(clearEmblemFireEvent, 1000);
+    return () => clearTimeout(t);
+  }, [emblemFireEvent, clearEmblemFireEvent]);
+
   useEffect(() => {
     const el = boardWrapRef.current;
     const update = () => {
@@ -890,6 +901,32 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     && (myPlayer.machine?.inventions ?? 0) >= 1
     && myPlayer.hand.length < MAX_HAND_SIZE;
 
+  // ORBITE du héros : emblèmes + compteurs autour du portrait. Celle d'en face
+  // ne reçoit aucun `canSpend*` / `on*` : visible, jamais cliquable.
+  const myOrbit = {
+    side: "mine" as const, porteur: "self" as const,
+    emblems: myPlayer.emblems,
+    firedEmblems: emblemFireEvent?.bySide.mine, fireKey: emblemFireEvent?.timestamp,
+    epargne: myPlayer.epargne, canSpendEpargne, onSpendEpargne: handleSpendEpargne,
+    foi: myPlayer.foi, canSpendFoi, onSpendFoi: handleSpendFoi,
+    conquete: myPlayer.conquete, canSpendConquete, onSpendConquete: handleSpendConquete,
+    exploration: myPlayer.exploration,
+    machine: myPlayer.machine ?? null, machineFaction: myPlayer.hero.heroDefinition?.faction ?? null,
+    canTakeMachine, onTakeMachine: handleTakeMachine,
+    contresort: myPlayer.contresort, exclusion: myPlayer.exclusion,
+    singleton: myPlayer.singleton === true,
+  };
+  const opponentOrbit = {
+    side: "theirs" as const, porteur: "opponent" as const,
+    emblems: opponent.emblems,
+    firedEmblems: emblemFireEvent?.bySide.theirs, fireKey: emblemFireEvent?.timestamp,
+    epargne: opponent.epargne, foi: opponent.foi, conquete: opponent.conquete,
+    exploration: opponent.exploration,
+    machine: opponent.machine ?? null, machineFaction: opponent.hero.heroDefinition?.faction ?? null,
+    contresort: opponent.contresort, exclusion: opponent.exclusion,
+    singleton: opponent.singletonRevealed ? true : null,
+  };
+
   // SECONDE VIE : cartes de MON cimetière jouables maintenant — créatures
   // (place sur le plateau) comme sorts (au moins une cible). Le verdict vient
   // de `canPlayFromGraveyard`, la même source que le moteur : l'écran ne
@@ -1268,6 +1305,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (or activates power on own hero), right-click opens the
               hero / power description overlay. The portrait now uses
               the same handlers the 3D viewer wires up. */}
+          <HeroOrbit {...opponentOrbit}>
           <HeroPortrait
             hero={opponent.hero}
             isOpponent={true}
@@ -1287,9 +1325,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 : undefined
             }
           />
-          <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
+          </HeroOrbit>
           <DelayedSpellStrip spells={opponent.delayedSpells} align="left" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} machine={opponent.machine ?? null} machineFaction={opponent.hero.heroDefinition?.faction ?? null} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
+          <ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" />
         </div>
         )}
 
@@ -1299,6 +1337,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             it snaps back to the top-left corner. */}
         {opponent.hero.heroDefinition?.glbUrl && (
           <div className="absolute left-[1%] top-[10%] lg:top-[3%] z-20 flex flex-col items-center gap-1">
+            <HeroOrbit {...opponentOrbit}>
             <Hero3DViewer
               hero={opponent.hero}
               isOpponent={true}
@@ -1317,11 +1356,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   : undefined
               }
             />
+            </HeroOrbit>
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
-            <EmblemStrip emblems={opponent.emblems} align="left" porteur="opponent" />
             <DelayedSpellStrip spells={opponent.delayedSpells} align="left" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} epargne={opponent.epargne} foi={opponent.foi} conquete={opponent.conquete} machine={opponent.machine ?? null} machineFaction={opponent.hero.heroDefinition?.faction ?? null} exploration={opponent.exploration} singleton={opponent.singletonRevealed ? true : null} contresort={opponent.contresort} exclusion={opponent.exclusion} side="theirs" />
+            <ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" />
           </div>
         )}
 
@@ -1600,6 +1639,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (mirrors the 3D-hero UX). On touch, double-tap is unreliable and
               creatures/hand can cover the portrait, so an explicit single-tap
               button is shown instead. */}
+          <HeroOrbit {...myOrbit}>
           <HeroPortrait
             hero={myPlayer.hero}
             isOpponent={false}
@@ -1620,12 +1660,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 : undefined
             }
           />
+          </HeroOrbit>
           {/* Le pouvoir héroïque tactile est rendu dans la colonne END TURN
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
-          <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
           <DelayedSpellStrip spells={myPlayer.delayedSpells} align="right" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} machine={myPlayer.machine ?? null} machineFaction={myPlayer.hero.heroDefinition?.faction ?? null} canTakeMachine={canTakeMachine} onTakeMachine={handleTakeMachine} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
+          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" />
         </div>
         )}
 
@@ -1635,6 +1675,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         {myPlayer.hero.heroDefinition?.glbUrl && (
           <div className="absolute right-[1%] bottom-[28%] lg:bottom-[1%] z-40 flex flex-col items-center gap-1">
             {allAttackButton}
+            <HeroOrbit {...myOrbit}>
             <Hero3DViewer
               hero={myPlayer.hero}
               isOpponent={false}
@@ -1657,11 +1698,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             />
             {/* Pouvoir héroïque tactile : rendu dans la colonne END TURN (bord
                 droit dégagé) afin de ne pas être recouvert par une main pleine. */}
+            </HeroOrbit>
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
-            <EmblemStrip emblems={myPlayer.emblems} align="right" porteur="self" />
             <DelayedSpellStrip spells={myPlayer.delayedSpells} align="right" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} epargne={myPlayer.epargne} canSpendEpargne={canSpendEpargne} onSpendEpargne={handleSpendEpargne} foi={myPlayer.foi} canSpendFoi={canSpendFoi} onSpendFoi={handleSpendFoi} conquete={myPlayer.conquete} canSpendConquete={canSpendConquete} onSpendConquete={handleSpendConquete} machine={myPlayer.machine ?? null} machineFaction={myPlayer.hero.heroDefinition?.faction ?? null} canTakeMachine={canTakeMachine} onTakeMachine={handleTakeMachine} exploration={myPlayer.exploration} singleton={myPlayer.singleton === true} contresort={myPlayer.contresort} exclusion={myPlayer.exclusion} side="mine" />
+            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" />
           </div>
         )}
 

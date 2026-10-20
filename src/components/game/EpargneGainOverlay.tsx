@@ -17,9 +17,9 @@ interface Props {
 
 const DURATION_MS = 1500;
 
-/** Position du losange d'Épargne d'un camp. La ManaBar est montée en DOUBLE
- *  (variantes de gabarit) et l'exemplaire caché mesure 0×0 : on retient le
- *  premier qui a une surface réelle, sinon le popup atterrirait dans le coin
+/** Position du médaillon d'un compteur dans l'orbite du héros. L'orbite est
+ *  montée en DOUBLE (héros 2D / 3D) et un exemplaire caché mesure 0×0 : on
+ *  retient le premier qui a une surface réelle, sinon le popup atterrirait dans le coin
  *  haut-gauche. `overlayRect` (et non getBoundingClientRect) car le plateau est
  *  sous un `zoom` CSS que Safari ne répercute pas sur les coordonnées. */
 function epargneBadgeAnchor(kind: "epargne" | "foi" | "conquete" | "exploration" | "invention", side: "mine" | "theirs"): { x: number; y: number } | null {
@@ -29,13 +29,16 @@ function epargneBadgeAnchor(kind: "epargne" | "foi" | "conquete" | "exploration"
     const r = overlayRect(el);
     if (r.width > 0 && r.height > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
-  // Repli sur le bout de la barre de mana. Ne sert qu'à l'Exploration : un gain
-  // qui tombe pile sur le palier remet le compteur à 0, donc le losange est
-  // DÉJÀ démonté quand le popup cherche son ancre — et c'est justement le gain
-  // qui fait piocher, le plus important à montrer.
-  for (const el of Array.from(document.querySelectorAll(`[data-mana-bar="${side}"]`))) {
+  // Repli sur l'orbite du héros, côté plateau. Les compteurs n'y sont visibles
+  // qu'au-dessus de 0 : le TOUT PREMIER gain fait apparaître le médaillon dans
+  // le rendu même où le popup cherche son ancre, et un gain d'Exploration qui
+  // tombe pile sur le palier le remet à 0 (médaillon déjà démonté) — c'est
+  // justement le gain qui fait piocher, le plus important à montrer.
+  for (const el of Array.from(document.querySelectorAll(`[data-hero-orbit="${side}"]`))) {
     const r = overlayRect(el);
-    if (r.width > 0 && r.height > 0) return { x: r.left + r.width + 14, y: r.top + r.height / 2 };
+    if (r.width > 0 && r.height > 0) {
+      return { x: side === "mine" ? r.left - 30 : r.left + r.width + 30, y: r.top + r.height * 0.72 };
+    }
   }
   return null;
 }
@@ -85,8 +88,8 @@ export default function EpargneGainOverlay({ event, onComplete, kind = "epargne"
             <motion.div
               style={{
                 position: "absolute", left: p.pos.x, top: p.pos.y,
-                width: 28, height: 28, borderRadius: 8,
-                transform: "translate(-50%, -50%) rotate(45deg)",
+                width: 40, height: 40, borderRadius: "50%",
+                transform: "translate(-50%, -50%)",
                 border: "2px solid var(--am-gold-bright, #ffd76a)",
               }}
               initial={{ opacity: 0.9, scale: 0.8 }}

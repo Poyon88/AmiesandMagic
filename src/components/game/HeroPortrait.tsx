@@ -62,30 +62,10 @@ export default function HeroPortrait({
   const powerRing = isValidTarget && !!validTargetColor;
 
   return (
-    <div className="relative flex flex-col items-center pt-4">
-      {/* HP overlay — overlaid on the portrait (no background frame), big
-          and bold, with a heavy drop-shadow so it stays legible against
-          any artwork. Positioned at top-center so it reads like the HP
-          number floating above the head.
-          Une bande de 16 px (`pt-4`) est réservée au-dessus du portrait et le
-          chiffre y remonte (`-top-4`) : à `-top-5` sans bande, ses 36 px de
-          haut recouvraient le cadre de l'illustration sur 16 px — il n'en
-          mord plus que 4. Le décalage vers le HAUT du conteneur reste le
-          même à 4 px près, pour ne pas sortir du plateau sur grand écran. */}
-      <div
-        className={`pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 z-10 text-4xl font-black tracking-wide ${
-          hero.hp <= 10 ? "text-accent" : "text-white"
-        }`}
-        style={{
-          fontFamily: "var(--font-cinzel), serif",
-          textShadow:
-            "0 2px 6px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.9), 0 0 1px rgba(0,0,0,1)",
-          lineHeight: 1,
-        }}
-      >
-        {hero.hp}
-      </div>
-
+    // Boîte = le MÉDAILLON exactement (rond, 192 px / 208 px) : l'orbite du
+    // héros (HeroOrbit) se centre sur elle. L'écu des PV déborde en bas, en
+    // absolu, sans agrandir la boîte.
+    <div className="relative">
       <motion.div
         animate={
           damageAmount
@@ -106,7 +86,7 @@ export default function HeroPortrait({
           ? { ...LONG_PRESS_RESET_STYLE, boxShadow: `0 0 0 2px ${validTargetColor}, 0 0 14px 2px ${validTargetColor}66` }
           : LONG_PRESS_RESET_STYLE}
         className={`
-          pointer-events-none relative w-48 h-48 lg:w-52 lg:h-52 rounded-xl overflow-hidden
+          pointer-events-none relative w-48 h-48 lg:w-52 lg:h-52 rounded-full overflow-hidden
           transition-[box-shadow,transform]
           ${isValidTarget && !powerRing ? "ring-2 ring-attack-red animate-[pulse-ring_1.5s_ease-in-out_infinite] hover:scale-105" : ""}
           ${powerRing ? "hover:scale-105" : ""}
@@ -151,12 +131,9 @@ export default function HeroPortrait({
           </div>
         )}
 
-        {/* Armor badge */}
-        {hero.armor > 0 && (
-          <div className="absolute bottom-1.5 right-1.5 w-[42px] h-[42px] rounded-full bg-yellow-600 border-[3px] border-yellow-400 flex items-center justify-center shadow-lg">
-            <span className="text-[18px] font-bold text-white leading-none">{hero.armor}</span>
-          </div>
-        )}
+        {/* Cercle doré, par-dessus l'illustration. */}
+        <div className="pointer-events-none absolute inset-0 rounded-full"
+          style={{ boxShadow: "inset 0 0 0 4px var(--am-gold), inset 0 0 0 5px var(--am-gold-deep), inset 0 0 18px rgba(0,0,0,0.55)" }} />
 
         {/* Centered tap zone — the portrait box itself is pointer-transparent
             (pointer-events-none above); only this ~55%-wide disc over the
@@ -179,6 +156,51 @@ export default function HeroPortrait({
           style={{ width: "55%", height: "55%", touchAction: "manipulation" }}
         />
       </motion.div>
+
+      {/* PV dans l'écu, à cheval sur le bas du médaillon. Rouge sous 10 PV. */}
+      <div
+        className="pointer-events-none absolute left-1/2 z-10 flex items-start justify-center"
+        style={{
+          bottom: -22, width: 58, height: 64, transform: "translateX(-50%)",
+          background: "var(--am-gold)",
+          clipPath: "polygon(0 0, 100% 0, 100% 66%, 50% 100%, 0 66%)",
+          filter: "drop-shadow(0 3px 5px rgba(0,0,0,0.7))",
+        }}
+      >
+        <div
+          className="flex items-center justify-center"
+          style={{
+            marginTop: 3, width: 52, height: 58,
+            background: "linear-gradient(180deg, color-mix(in srgb, var(--orbit-hp) 80%, white 20%), var(--orbit-hp) 60%, #071c17)",
+            clipPath: "polygon(0 0, 100% 0, 100% 66%, 50% 100%, 0 66%)",
+            paddingBottom: 12,
+          }}
+        >
+          <span
+            className={`text-[28px] font-black leading-none ${hero.hp <= 10 ? "text-accent" : "text-[#f6eedb]"}`}
+            style={{ fontFamily: "var(--font-cinzel), serif", textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}
+          >
+            {hero.hp}
+          </span>
+        </div>
+      </div>
+
+      {/* Armure : petit écu d'acier à droite des PV. */}
+      {hero.armor > 0 && (
+        <div
+          className="pointer-events-none absolute z-10 flex items-center justify-center"
+          style={{
+            bottom: -10, left: "calc(50% + 32px)", width: 36, height: 40,
+            background: "var(--am-gold)",
+            clipPath: "polygon(0 0, 100% 0, 100% 66%, 50% 100%, 0 66%)",
+          }}
+        >
+          <div className="flex items-center justify-center"
+            style={{ width: 31, height: 35, marginTop: -2, background: "linear-gradient(180deg, #8d97a5, #3d4450)", clipPath: "polygon(0 0, 100% 0, 100% 66%, 50% 100%, 0 66%)", paddingBottom: 8 }}>
+            <span className="text-[16px] font-black leading-none text-white" style={{ fontFamily: "var(--font-cinzel), serif" }}>{hero.armor}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

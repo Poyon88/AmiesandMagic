@@ -48,6 +48,9 @@ export default function KeywordIcon(props: {
   singulier?: boolean;
   light?: boolean;
   barred?: boolean;
+  /** Teinte imposée (icône image seulement), prioritaire sur celle du mode —
+   *  l'orbite du héros dore toutes les icônes d'emblème. */
+  tint?: string;
 }) {
   const { barred, ...rest } = props;
   if (!barred) return <KeywordIconBase {...rest} />;
@@ -75,6 +78,7 @@ function KeywordIconBase({
   mode,
   singulier,
   light = false,
+  tint: tintImpose,
 }: {
   symbol: string;
   size?: number;
@@ -83,6 +87,7 @@ function KeywordIconBase({
   mode?: KeywordMode;
   singulier?: boolean;
   light?: boolean;
+  tint?: string;
 }) {
   const { overrides, scales, loaded, fetchOverrides } = useKeywordIconStore();
 
@@ -100,7 +105,7 @@ function KeywordIconBase({
   const transform = scale !== 1 ? `scale(${scale})` : undefined;
 
   const isImage = effectiveSymbol.startsWith("/") || effectiveSymbol.startsWith("http");
-  const tint = keywordModeColor(mode);
+  const tint = tintImpose ?? keywordModeColor(mode);
   const paint = keywordIconPaint(tint, singulier);
   // Liseré sombre : deux ombres portées de rayon nul, soit un contour d'environ
   // 1 px tout autour, posé sur le parent comme le halo (même contrainte

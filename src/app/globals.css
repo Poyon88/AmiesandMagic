@@ -44,6 +44,21 @@
   --am-gold-bright: #f4e09a;
   --am-gold-deep: #9a7730;
   --am-gold-ink: #1a1408;        /* text that sits on a gold fill */
+
+  /* Orbite du héros — teintes des emblèmes (par TYPE) et des compteurs. */
+  --orbit-permanent: #3a4150;    /* emblème permanent : ardoise */
+  --orbit-ephemere: #6a3a1c;     /* emblème à durée : brun */
+  --orbit-declenche: #233a78;    /* emblème qui réagit à un événement : bleu */
+  --orbit-malediction: #e0473c;  /* liseré d'un emblème posé par l'adversaire */
+  --orbit-epargne: #7a5a12;
+  --orbit-foi: #24478f;
+  --orbit-conquete: #8f1f1a;
+  --orbit-exploration: #1d5e45;
+  --orbit-machine: #6b6458;
+  --orbit-contresort: #7f1d1d;
+  --orbit-exclusion: #7c3a0c;
+  --orbit-singulier: #0d5e57;
+  --orbit-hp: #12463a;           /* écu des PV */
   --am-foil: linear-gradient(135deg, #f4e09a 0%, #d8b25a 42%, #b08b3a 70%, #f4e09a 100%);
   --am-foil-flat: linear-gradient(135deg, #f4e09a, #d8b25a 45%, #9a7730);
 
@@ -375,6 +390,18 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, var(--am-gold), var(--am-gold-deep));
+}
+
+/* Orbite du héros : pulse d'un emblème qui vient d'agir. */
+@keyframes orbit-fire {
+  0%   { transform: scale(1);    filter: brightness(1); }
+  30%  { transform: scale(1.28); filter: brightness(1.7) drop-shadow(0 0 10px var(--am-gold-bright)); }
+  100% { transform: scale(1);    filter: brightness(1); }
+}
+/* Orbite du héros : compteur dépensable maintenant. */
+@keyframes orbit-ready {
+  0%, 100% { box-shadow: 0 0 6px 1px rgba(244, 224, 154, 0.35); }
+  50%      { box-shadow: 0 0 14px 4px rgba(244, 224, 154, 0.75); }
 }
 
 /* ───────────────────────── Legacy game keyframes (unchanged) ───────────── */
