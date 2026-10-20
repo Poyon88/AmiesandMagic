@@ -131,10 +131,6 @@ export default function HeroPortrait({
           </div>
         )}
 
-        {/* Cercle doré, par-dessus l'illustration. */}
-        <div className="pointer-events-none absolute inset-0 rounded-full"
-          style={{ boxShadow: "inset 0 0 0 4px var(--am-gold), inset 0 0 0 5px var(--am-gold-deep), inset 0 0 18px rgba(0,0,0,0.55)" }} />
-
         {/* Centered tap zone — the portrait box itself is pointer-transparent
             (pointer-events-none above); only this ~55%-wide disc over the
             crest captures clicks/taps. This keeps hand cards that peek out

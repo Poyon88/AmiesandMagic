@@ -20,7 +20,7 @@ import { compteurVisible, orbitLayout, type OrbitGroupLayout, type OrbitSide } f
  *  mesure sa boîte, l'orbite se centre dessus. */
 
 const TAILLE = 42; // diamètre d'un élément d'orbite, px CSS
-const ECART_PORTRAIT = 20; // jour entre le bord du portrait et les éléments
+const ECART_PORTRAIT = 2; // jour entre le bord du portrait et les éléments
 const TAILLE_MINI = 34; // charges (Contresort, Exclusion, Singulier)
 
 export interface HeroOrbitProps {
@@ -191,28 +191,12 @@ export default function HeroOrbit(props: HeroOrbitProps) {
       {children}
       {rayon > 0 && (
         <>
-          <OrbitArc rayon={rayon} side={side} />
           <OrbitGroupe items={emblemItems} group="emblems" layout={layout.emblems} box={box} api={api} />
           <OrbitGroupe items={counterItems} group="counters" layout={layout.counters} box={box} api={api} />
         </>
       )}
       <OrbitTooltip bulle={api.bulle} side={side} />
     </div>
-  );
-}
-
-/** Trait pointillé de l'orbite, sur le demi-cercle côté plateau. */
-function OrbitArc({ rayon, side }: { rayon: number; side: OrbitSide }) {
-  const d = rayon * 2;
-  return (
-    <svg aria-hidden width={d} height={d} viewBox={`0 0 ${d} ${d}`}
-      style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", pointerEvents: "none", overflow: "visible" }}>
-      <path
-        d={side === "mine"
-          ? `M ${rayon} 0 A ${rayon} ${rayon} 0 0 0 ${rayon} ${d}`
-          : `M ${rayon} 0 A ${rayon} ${rayon} 0 0 1 ${rayon} ${d}`}
-        fill="none" stroke="color-mix(in srgb, var(--am-gold) 35%, transparent)" strokeWidth={1} strokeDasharray="3 5" />
-    </svg>
   );
 }
 

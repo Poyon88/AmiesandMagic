@@ -1327,7 +1327,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           />
           </HeroOrbit>
           <DelayedSpellStrip spells={opponent.delayedSpells} align="left" />
-          <ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" />
+          {/* Calée à droite et sous l'écu des PV : centrée, elle passait dessous. */}
+
+          <div className="self-end mt-5 pr-1"><ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" /></div>
         </div>
         )}
 
@@ -1360,7 +1362,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs sit directly under the 3D hero so they read as
                 "next to the HP number" rendered inside the canvas. */}
             <DelayedSpellStrip spells={opponent.delayedSpells} align="left" />
-            <ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" />
+            {/* Calée à droite et sous l'écu des PV : centrée, elle passait dessous. */}
+
+            <div className="self-end mt-5 pr-1"><ManaBar current={opponent.mana} max={opponent.maxMana} side="theirs" /></div>
           </div>
         )}
 
@@ -1665,7 +1669,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               (bord droit, zone dégagée) pour ne pas être recouvert par une main
               pleine — cf. ce bloc plus bas. */}
           <DelayedSpellStrip spells={myPlayer.delayedSpells} align="right" />
-          <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" />
+          {/* Calée à droite et sous l'écu des PV : centrée, elle passait dessous. */}
+
+          <div className="self-end mt-5 pr-1"><ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" /></div>
         </div>
         )}
 
@@ -1702,7 +1708,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             {/* Mana orbs directly under the 3D hero, next to the HP number
                 rendered inside the canvas. */}
             <DelayedSpellStrip spells={myPlayer.delayedSpells} align="right" />
-            <ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" />
+            {/* Calée à droite et sous l'écu des PV : centrée, elle passait dessous. */}
+
+            <div className="self-end mt-5 pr-1"><ManaBar current={myPlayer.mana} max={myPlayer.maxMana} reserved={reservedMana} side="mine" /></div>
           </div>
         )}
 
