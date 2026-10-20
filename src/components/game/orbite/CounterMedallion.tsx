@@ -86,7 +86,10 @@ export default function CounterMedallion({
       {...poignees}
       {...dataAttrs}
       aria-label={ariaLabel}
-      disabled={!actif}
+      // PAS `disabled` : un bouton désactivé ne reçoit aucun événement souris,
+      // et la bulle d'un compteur inactif (ceux d'en face, notamment) ne
+      // s'ouvrait jamais. Le clic est neutralisé par `onClick` ci-dessous.
+      aria-disabled={!actif}
       onClick={actif && onClick ? () => { if (consume()) return; onClick(); } : undefined}
       className={`relative transition-transform ${actif ? "cursor-pointer hover:scale-110" : "cursor-default"}`}
       style={{ width: size, height: size, touchAction: "manipulation", WebkitTouchCallout: "none" }}
@@ -133,7 +136,10 @@ export function MachineGear({ size, inventions, total, actif, onClick, ariaLabel
       {...poignees}
       {...dataAttrs}
       aria-label={ariaLabel}
-      disabled={!actif}
+      // PAS `disabled` : un bouton désactivé ne reçoit aucun événement souris,
+      // et la bulle d'un compteur inactif (ceux d'en face, notamment) ne
+      // s'ouvrait jamais. Le clic est neutralisé par `onClick` ci-dessous.
+      aria-disabled={!actif}
       onClick={actif && onClick ? () => { if (consume()) return; onClick(); } : undefined}
       className={`relative transition-transform ${actif ? "cursor-pointer hover:scale-110" : "cursor-help"}`}
       style={{ width: size, height: size, touchAction: "manipulation", WebkitTouchCallout: "none", borderRadius: "50%", animation: actif ? "orbit-ready 1.6s ease-in-out infinite" : undefined }}

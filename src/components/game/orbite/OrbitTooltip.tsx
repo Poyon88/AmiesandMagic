@@ -16,13 +16,17 @@ export interface Bulle {
   key: string;
   rect: { left: number; top: number; width: number; height: number };
   content: React.ReactNode;
+  /** Contenu NU (une carte) : ni cadre ni texte, et calé en hauteur pour rester
+   *  dans l'écran — au-dessus de l'élément pour mon héros (bas d'écran), en
+   *  dessous pour celui d'en face (haut d'écran). */
+  nu?: boolean;
 }
 
 /** État de la bulle d'une orbite, et poignées à poser sur chaque élément. */
 export function useOrbitBulle() {
   const [bulle, setBulle] = useState<Bulle | null>(null);
-  const ouvrir = useCallback((key: string, el: Element, content: React.ReactNode) => {
-    setBulle({ key, rect: overlayRect(el), content });
+  const ouvrir = useCallback((key: string, el: Element, content: React.ReactNode, nu?: boolean) => {
+    setBulle({ key, rect: overlayRect(el), content, nu });
   }, []);
   const fermer = useCallback((key?: string) => {
     setBulle(b => (key == null || b?.key === key ? null : b));
@@ -46,17 +50,18 @@ export function useBulleHandlers(
   key: string,
   content: () => React.ReactNode,
   api: Pick<ReturnType<typeof useOrbitBulle>, "ouvrir" | "fermer">,
+  nu?: boolean,
 ) {
   // L'élément est tenu en ÉTAT (callback ref) et non en `useRef` : les poignées
   // sont étalées pendant le rendu, où la lecture d'un ref est proscrite.
   const [el, setEl] = useState<HTMLElement | null>(null);
-  const lp = useLongPress(() => { if (el) api.ouvrir(key, el, content()); });
+  const lp = useLongPress(() => { if (el) api.ouvrir(key, el, content(), nu); });
   return {
     attacher: setEl,
     consume: lp.consume,
     handlers: {
       ...lp.handlers,
-      onMouseEnter: (e: React.MouseEvent) => api.ouvrir(key, e.currentTarget, content()),
+      onMouseEnter: (e: React.MouseEvent) => api.ouvrir(key, e.currentTarget, content(), nu),
       onMouseLeave: () => api.fermer(key),
     },
   };
@@ -65,6 +70,21 @@ export function useBulleHandlers(
 export default function OrbitTooltip({ bulle, side }: { bulle: Bulle | null; side: OrbitSide }) {
   if (!bulle || typeof document === "undefined") return null;
   const { rect } = bulle;
+  if (bulle.nu) {
+    const mine = side === "mine";
+    return createPortal(
+      <div role="tooltip" style={{
+        position: "fixed", zIndex: 210, pointerEvents: "none",
+        left: mine ? rect.left - 10 : rect.left + rect.width + 10,
+        top: mine ? rect.top + rect.height : rect.top,
+        transform: mine ? "translate(-100%, -100%)" : undefined,
+        filter: "drop-shadow(0 10px 26px rgba(0,0,0,0.75))",
+      }}>
+        {bulle.content}
+      </div>,
+      document.body,
+    );
+  }
   // Côté PLATEAU, comme l'orbite : à gauche de mon héros, à droite du sien.
   const style: React.CSSProperties = side === "mine"
     ? { left: rect.left - 10, transform: "translate(-100%, -50%)" }

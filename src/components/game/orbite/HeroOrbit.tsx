@@ -54,7 +54,7 @@ export interface HeroOrbitProps {
   children: React.ReactNode;
 }
 
-type Item = { key: string; size: number; render: (bulle: ReturnType<typeof useBulleHandlers>) => React.ReactNode; bulle: () => React.ReactNode };
+type Item = { key: string; size: number; render: (bulle: ReturnType<typeof useBulleHandlers>) => React.ReactNode; bulle: () => React.ReactNode; nu?: boolean };
 
 export default function HeroOrbit(props: HeroOrbitProps) {
   const { side, porteur, emblems = [], firedEmblems, fireKey, children } = props;
@@ -139,17 +139,10 @@ export default function HeroOrbit(props: HeroOrbitProps) {
     ),
   });
   if (machine && compteurVisible(machine.inventions)) counterItems.push({
-    key: "machine", size: TAILLE,
-    bulle: () => (
-      <>
-        <BulleTexte titre="Machine" lignes={[
-          `${machine.attack}/${machine.health}, coût ${machine.inventions} · ${machine.inventions} invention${machine.inventions > 1 ? "s" : ""} sur ${MAX_INVENTIONS_MACHINE}`,
-          mine && "Clic : prendre la machine en main",
-        ]} />
-        {/* La MÊME carte que le moteur mettra en main (buildMachineCard est pur). */}
-        {machineCard && <div style={{ marginTop: 8 }}><GameCard card={machineCard} size="sm" showDetails disableHoverZoom forceRarityFrame /></div>}
-      </>
-    ),
+    key: "machine", size: TAILLE, nu: true,
+    // La carte SEULE : la MÊME que le moteur mettra en main (buildMachineCard
+    // est pur). Elle dit déjà stats, coût et capacités ; le texte faisait doublon.
+    bulle: () => machineCard && <GameCard card={machineCard} size="sm" showDetails disableHoverZoom forceRarityFrame />,
     render: (b) => (
       <MachineGear size={TAILLE} total={MAX_INVENTIONS_MACHINE} inventions={machine.inventions}
         actif={props.canTakeMachine} onClick={props.onTakeMachine}
@@ -232,7 +225,7 @@ function Slot({ x, y, size, children }: { x: number; y: number; size: number; ch
 }
 
 function OrbitItem({ item, api }: { item: Item; api: ReturnType<typeof useOrbitBulle> }) {
-  const b = useBulleHandlers(item.key, item.bulle, api);
+  const b = useBulleHandlers(item.key, item.bulle, api, item.nu);
   return <>{item.render(b)}</>;
 }
 
