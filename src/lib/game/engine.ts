@@ -6226,7 +6226,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // `manaCost` = ce que ce sort vient RÉELLEMENT de coûter (Concentration
     // gravée sur l'instance comprise). Discipline en lit la parité, et
     // l'instance n'est plus atteignable une fois la résolution commencée.
-    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, manaCost, tempoAmount);
+    // Sort APPRIS (Apprentissage X) : lancé sans mana, `manaCost` vaut 0 — une
+    // parité toujours PAIRE. On transmet le coût qu'il aurait depuis la main,
+    // comme pour un sort relancé : « gratuit » n'est pas « de coût 0 ».
+    const coutDeLaCarte = apprenante ? effectiveManaCost(cardInstance, player) : manaCost;
+    const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, coutDeLaCarte, tempoAmount);
 
     // Morts causées par les phases 2/3, les composés et le repli legacy.
     settleSpellDeaths(ctx);

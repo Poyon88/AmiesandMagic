@@ -485,6 +485,26 @@ describe("Apprentissage X — X plafonne le coût imprimé du sort apprenable", 
     }
   });
 
+  it("GRATUIT n'est pas « de coût 0 » : Discipline lit la parité du coût du sort", () => {
+    // Bug vu en partie : le sort appris se lance sans mana, et la résolution
+    // recevait le coût PAYÉ (0, pair) — un sort impair ne disciplinait jamais
+    // un plateau impair.
+    const s = mkState();
+    const cible = mkInstance(mkCard({ name: "Cible", mana_cost: 3, attack: 2, health: 3 }));
+    const src = apprenante(); // coût 1 : plateau entièrement impair
+    src.apprentissageSpell = mkInstance(mkCard({
+      name: "Rite", card_type: "spell", mana_cost: 3, attack: null, health: null,
+      spell_keywords: [{ id: "discipline", attack: 3, health: 3 }] as SpellKeywordInstance[],
+    } as Partial<Card>));
+    src.hasSummoningSickness = false;
+    s.players[0].board.push(src, cible);
+    const st = lancer(s, cible.instanceId);
+    expect(st).not.toBe(s);
+    const t = st.players[0].board.find(c => c.card.name === "Cible")!;
+    expect([t.currentAttack, t.currentHealth]).toEqual([5, 6]);
+    expect(st.players[0].mana).toBe(s.players[0].mana);
+  });
+
   it("X VIDE ⇒ n'importe quel coût", () => {
     const s = mkState();
     const st = poserEtApprendre(s, trait("Cher", { mana_cost: 9 } as Partial<Card>));
