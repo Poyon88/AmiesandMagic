@@ -1,8 +1,10 @@
 // DÉCOUVERTE UN TOUR SUR DEUX — variante expérimentale des règles.
 //
 // Aux tours PAIRS d'un joueur (son 2e, 4e, 6e…), la pioche du tour est
-// remplacée par une DÉCOUVERTE : il choisit 1 carte parmi 3 Communes de coûts
-// aléatoires — 2 de son clan, 1 de sa faction mais d'un autre clan. La carte
+// remplacée par une DÉCOUVERTE : il choisit 1 carte parmi 3 Communes tirées au
+// hasard, chaque carte à chances égales (un coût sort donc en proportion du
+// nombre de cartes qui le portent) — 2 de son clan, 1 de sa faction mais d'un
+// autre clan. La carte
 // est créée à partir du vivier : le deck n'est pas entamé (cf. offreDecouverte
 // et startTurn, engine.ts).
 //

@@ -262,3 +262,44 @@ describe("Soleil X — un buff COMPOSÉ gagne ses DEUX moitiés", () => {
     expect([u.currentAttack, u.currentHealth]).toEqual([2, 1]);
   });
 });
+
+// ─── Nombre d'occurrences (« 2 fois : ») ────────────────────────────────────
+
+describe("Soleil X — le nombre d'OCCURRENCES est une valeur renforcée", () => {
+  const unite = (nom: string, cout: number) =>
+    mkInstance(mkCard({ name: nom, attack: 1, health: 1, mana_cost: cout }));
+  const appel = { content: "appel" as const, magnitude: { x: 3 }, occurrences: 2 };
+  const deck = (s: GameState) => s.players[0].deck.push(
+    unite("U1", 1), unite("U2", 1), unite("U3", 1), unite("U4", 1), unite("U5", 1),
+  );
+  const nbAppelees = (st: GameState) => st.players[0].board.filter(c => /^U\d$/.test(c.card.name)).length;
+
+  it("SORT : « 2 fois » + Soleil 2 en première carte ⇒ 4 passes, 2 ensuite", () => {
+    const sort = () => mkInstance(mkCard({
+      name: "L'Aube", card_type: "spell", attack: null, health: null,
+      spell_keywords: [{ id: "soleil", amount: 2 } as SpellKeywordInstance],
+      capabilities: [
+        { uid: "sk_0", trigger: "spell_resolution", abilityId: "soleil", effectKind: "immediate", params: { x: 2 } },
+        { uid: "cx_0", trigger: "spell_resolution", abilityId: "_composed", effectKind: "immediate", composed: appel },
+      ],
+    } as Parameters<typeof mkCard>[0]));
+    const premier = table(0); deck(premier.s);
+    expect(nbAppelees(jouer(premier.s, sort()))).toBe(4);
+    const second = table(1); deck(second.s);
+    expect(nbAppelees(jouer(second.s, sort()))).toBe(2);
+  });
+
+  it("CRÉATURE : le « 2 fois » gravé passe à « 4 fois »", () => {
+    const heraut = mkInstance(mkCard({
+      name: "Héraut", attack: 1, health: 1,
+      keywords: ["soleil"] as never,
+      keyword_instances: [{ id: "soleil", x: 2 } as KeywordInstance],
+      capabilities: [
+        { uid: "cw_0", trigger: "automatic", abilityId: "soleil", effectKind: "immediate", params: { x: 2 } },
+        { uid: "cx_0", trigger: "on_play", abilityId: "_composed", effectKind: "immediate", composed: appel },
+      ],
+    } as Parameters<typeof mkCard>[0]));
+    const { s } = table(0); deck(s);
+    expect(nbAppelees(jouer(s, heraut))).toBe(4);
+  });
+});

@@ -894,16 +894,6 @@ function coutLibre(x: number | undefined): boolean {
 function respecteCoutMax(c: Pick<Card, "mana_cost">, x: number | undefined): boolean {
   return coutLibre(x) || (c.mana_cost ?? 0) <= x!;
 }
-/** « N'importe quel coût » tiré au hasard : chaque coût PRÉSENT a les mêmes
- *  chances, puis on garde les candidats à ce coût — sans quoi les coûts bas,
- *  bien plus nombreux, écraseraient les autres. Un `rng()` exactement, sur un
- *  état identique chez les deux clients. */
-function restreindreAUnCoutTire<T extends { mana_cost: number }>(cands: T[]): T[] {
-  const couts = [...new Set(cands.map(c => c.mana_cost))].sort((a, b) => a - b);
-  if (couts.length === 0) return cands;
-  const cout = couts[Math.floor(rng() * couts.length)];
-  return cands.filter(c => c.mana_cost === cout);
-}
 
 // Alternative cost helpers — collapse null/undefined/0 to 0 so call sites can
 // stay terse. Canalisation/Entraide reductions never apply here: only mana_cost
@@ -1857,6 +1847,12 @@ function resolveComposedEffect(
   // sort résout ses propres effets composés drapeau posé. Sans ce test, la
   // capacité d'une créature tuée par le sort serait boostée elle aussi.
   const chantX = opts?.trigger === "spell_resolution" ? chantBonus + tempoBonus : 0;
+  // Le nombre d'OCCURRENCES (« 2 fois : ») est une valeur de la carte comme
+  // une autre : Chant / Lune / Soleil le majorent aussi. Absent ⇒ reste absent
+  // (une passe), même règle que `boosted`.
+  if (chantX > 0 && composed.occurrences != null) {
+    composed = { ...composed, occurrences: composed.occurrences + chantX };
+  }
   // Filet pour les chemins qui ne passent pas par la pile — emblèmes,
   // activations directes. Sans effet sur ce qui en vient : les drapeaux y ont
   // déjà été retirés (cf. figerAmplitudeAleatoire, idempotent).
@@ -2834,8 +2830,10 @@ function stampTempoBonus(inst: CardInstance, bonus: number): void {
           // au bonus (même règle que `boosted` côté sort), sans quoi on
           // inventerait une magnitude là où le résolveur attend son repli.
           composed: c.composed?.magnitude
-            ? { ...c.composed, magnitude: { ...c.composed.magnitude, x: decale(c.composed.magnitude.x), y: decale(c.composed.magnitude.y) } }
-            : c.composed,
+            ? { ...c.composed, occurrences: decale(c.composed.occurrences), magnitude: { ...c.composed.magnitude, x: decale(c.composed.magnitude.x), y: decale(c.composed.magnitude.y) } }
+            : c.composed?.occurrences != null
+              ? { ...c.composed, occurrences: decale(c.composed.occurrences) }
+              : c.composed,
         },
     ),
     // 3. Une créature peut porter des effets de sort (mots-clés conférés,
@@ -8590,8 +8588,7 @@ function resolveInvocationObjet(
     console.warn(`[engine] Invocation d'objet : aucun objet au coût ${plafond ? `${plancher} à ${x}` : x} pour « ${sourceCard.name} ».`);
     return;
   }
-  const tirables = libre ? restreindreAUnCoutTire(candidats) : candidats;
-  const choisi = tirables[Math.floor(rng() * tirables.length)];
+  const choisi = candidats[Math.floor(rng() * candidats.length)];
   owner.items = [...objetsDe(owner), createCardInstance(choisi)];
 }
 
@@ -14023,7 +14020,7 @@ function resolveInvocationSummon(
 ): void {
   if (placesOccupees(owner) >= MAX_BOARD_SIZE) return;
   if (!pool || pool.length === 0) return;
-  // X absent / ≤ 0 ⇒ n'importe quel coût (tiré à chances égales par coût).
+  // X absent / ≤ 0 ⇒ n'importe quel coût (chaque carte à chances égales).
   const libre = coutLibre(x);
   const plancher = plancherAleatoire(minX, x);
   const restricted = !!(restrict?.race || restrict?.faction || restrict?.clan || restrict?.keywordId);
@@ -14058,10 +14055,9 @@ function resolveInvocationSummon(
   // Pondération 2:1 en faveur de l'alignement propre — sauf quand `restrict`
   // a REMPLACÉ le filtre d'alignement : « invoque un Loup » ne doit pas se voir
   // réintroduire une préférence d'alignement par la bande.
-  const tirables = libre ? restreindreAUnCoutTire(candidates) : candidates;
   const chosen = restricted
-    ? tirables[Math.floor(rng() * tirables.length)]
-    : tirageUniquePondere(tirables, buckets)!;
+    ? candidates[Math.floor(rng() * candidates.length)]
+    : tirageUniquePondere(candidates, buckets)!;
   mettreEnJeuInvoquee(owner, chosen);
 }
 
@@ -14205,7 +14201,7 @@ function resolveDechainement(
   for (let i = 0; i < x; i++) {
     // Un `rng()` par sort, pondéré — le COMPTE d'appels reste identique chez
     // les deux clients, ce qui préserve la synchro du flux aléatoire.
-    const chosen = tirageUniquePondere(libre ? restreindreAUnCoutTire(candidates) : candidates, buckets)!;
+    const chosen = tirageUniquePondere(candidates, buckets)!;
     castSpellWithRandomTargets(state, player, opponent, chosen);
   }
 }
@@ -14248,14 +14244,13 @@ export function plancherAleatoire(minX: number | undefined, plafond: number): nu
  *  l'offre. Le coût exact rend le nombre saisi par l'auteur lisible sur la
  *  table. Épargne, qui désignait déjà un coût exact, rejoint la règle commune.
  *
- *  « ? » (randomX) : chaque carte tire SON PROPRE coût, entre 1 et X — trois
- *  tirages indépendants, donc une offre panachée. C'est le seul régime où X
- *  redevient un plafond, et il est désormais explicite.
- *
- *  Le tirage porte sur les coûts RÉELLEMENT présents dans le vivier : tirer un
- *  coût auquel aucune carte ne répond n'aurait fait que retirer une carte de
- *  l'offre, en silence, et une Sélection « ? » aurait pu n'offrir qu'une carte
- *  sans que rien ne l'explique.
+ *  « ? » (randomX) et COÛT LIBRE (X ≤ 0) : chaque emplacement tire une carte
+ *  UNIFORMÉMENT parmi celles du vivier comprises entre A et X (tout le vivier
+ *  en coût libre) — trois tirages indépendants, sans doublon de carte. Chaque
+ *  carte éligible a donc la même chance : un coût sort en proportion du nombre
+ *  de cartes qui le portent. (Auparavant le COÛT était tiré à chances égales,
+ *  ce qui sur-représentait les gros coûts, peu peuplés — arbitrage de l'auteur,
+ *  2026-10-24.) Plusieurs cartes du même coût dans une offre sont permises.
  *
  *  Le QUOTA D'ALIGNEMENT tient dans les deux régimes : au plus une neutre sur
  *  trois. En régime aléatoire les cartes se choisissent une à une, le quota est
@@ -14270,13 +14265,11 @@ function offreSelection(
   randomX: boolean | undefined,
   buckets: PaniersAlignement,
   melanger: (arr: Card[]) => Card[],
-  tirage: () => number,
-  // Plancher A du « ? » : les coûts se tirent entre A et X (1 par défaut).
+  // Plancher A du « ? » : les cartes se tirent entre A et X (1 par défaut).
   minX = 1,
 ): Card[] {
-  // X absent / ≤ 0 ⇒ N'IMPORTE QUEL COÛT : même régime que « ? », sur tous les
-  // coûts présents — chaque carte tire son coût à chances égales, au lieu d'un
-  // tirage direct où les coûts bas, plus nombreux, écraseraient les autres.
+  // X absent / ≤ 0 ⇒ N'IMPORTE QUEL COÛT : même régime que « ? », sur tout le
+  // vivier.
   const libre = x <= 0;
   if (!randomX && !libre) {
     const exact = vivier.filter(c => c.mana_cost === x);
@@ -14284,21 +14277,18 @@ function offreSelection(
   }
   const plafond = libre ? Infinity : Math.max(1, x);
   const plancher = libre ? -Infinity : plancherAleatoire(minX, plafond);
-  const coutsDisponibles = [...new Set(
-    vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= plafond).map(c => c.mana_cost),
-  )].sort((a, b) => a - b);
-  if (coutsDisponibles.length === 0) return [];
+  const eligibles = vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= plafond);
+  if (eligibles.length === 0) return [];
 
   const retenus: Card[] = [];
   const dejaPris = new Set<number>();
   let neutresRestants = quotaNeutre(SELECTION_OFFER_COUNT);
   for (let i = 0; i < SELECTION_OFFER_COUNT; i++) {
-    const cout = coutsDisponibles[Math.floor(tirage() * coutsDisponibles.length)];
-    const candidats = vivier.filter(c => c.mana_cost === cout && !dejaPris.has(c.id));
-    if (candidats.length === 0) continue;
+    const candidats = eligibles.filter(c => !dejaPris.has(c.id));
+    if (candidats.length === 0) break;
     const { propre, neutre } = partitionParAlignement(candidats, buckets);
-    // Quota épuisé : on n'ouvre le neutre que si l'alignement propre n'a rien à
-    // ce coût — mieux vaut une neutre de plus qu'une carte de moins.
+    // Quota épuisé : on n'ouvre le neutre que si l'alignement propre n'a plus
+    // rien — mieux vaut une neutre de plus qu'une carte de moins.
     const source = neutresRestants > 0 ? candidats : (propre.length > 0 ? propre : neutre);
     const [choisie] = melanger(source);
     if (!choisie) continue;
@@ -14311,8 +14301,9 @@ function offreSelection(
 
 /** OFFRE DE DÉCOUVERTE (variante, cf. decouverte.ts) : 3 Communes de coûts
  *  aléatoires — 2 du clan de référence du joueur, 1 de sa faction mais d'un
- *  AUTRE clan. Chaque carte tire son coût à chances égales parmi les coûts
- *  présents dans son sous-vivier (régime « tout coût » d'offreSelection).
+ *  AUTRE clan. Chaque carte est tirée uniformément dans son sous-vivier
+ *  (régime « tout coût » d'offreSelection) : un coût sort en proportion du
+ *  nombre de cartes qui le portent.
  *
  *  Sous-vivier trop maigre : le clan se complète par les cartes sans clan de la
  *  faction, et l'« autre clan » absent laisse sa place à une 3e carte du clan.
@@ -14345,8 +14336,8 @@ export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
     return out;
   };
   const sansPaniers = { propre: new Set<string>(), neutre: new Set<string>() };
-  const clan = offreSelection(duClan, 0, true, sansPaniers, melanger, pseudoRng);
-  const autre = offreSelection(autreClan, 0, true, sansPaniers, melanger, pseudoRng).slice(0, 1);
+  const clan = offreSelection(duClan, 0, true, sansPaniers, melanger);
+  const autre = offreSelection(autreClan, 0, true, sansPaniers, melanger).slice(0, 1);
   return [...clan.slice(0, SELECTION_OFFER_COUNT - autre.length), ...autre];
 }
 
@@ -14414,7 +14405,7 @@ export function getRenfortRoyalCards(
   // joueur, où la règle d'alignement 2:1 n'a pas cours. `offreSelection` s'y
   // réduit alors au mélange + découpe d'avant — seul le régime de coût change.
   return offreSelection(filtered, maxManaCost, randomX,
-    { propre: new Set<string>(), neutre: new Set<string>() }, melanger, pseudoRng, minX);
+    { propre: new Set<string>(), neutre: new Set<string>() }, melanger, minX);
 }
 
 /** Sélection : propose jusqu'à 3 cartes communes partageant l'alignement de
@@ -14474,7 +14465,7 @@ export function getSelectionCards(
     }
     return out;
   };
-  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng, minX);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, minX);
 }
 
 /** FAVEUR X : UNE carte commune, tirée au hasard, de l'alignement de la source
@@ -14537,22 +14528,15 @@ export function getFaveurCard(
   // Régime de coût. X ≤ 0 : aucun filtre (une carte sans amplitude saisie tire
   // dans tout le vivier) — même repli historique que les Sélections.
   let candidats: Card[];
+  // Une carte tirée UNIFORMÉMENT parmi les éligibles (chaque carte a la même
+  // chance, cf. offreSelection).
   if (x <= 0) {
-    // N'importe quel coût : un coût tiré à chances égales, puis la carte.
-    const couts = [...new Set(vivier.map(c => c.mana_cost))].sort((a, b) => a - b);
-    const cout = couts[Math.floor(pseudoRng() * couts.length)];
-    candidats = vivier.filter(c => c.mana_cost === cout);
+    candidats = vivier;
   } else if (!randomX) {
     candidats = vivier.filter(c => c.mana_cost === x);
   } else {
-    // Tirage du coût parmi ceux RÉELLEMENT peuplés entre A et X.
     const plancher = plancherAleatoire(minX, x);
-    const coutsDisponibles = [...new Set(
-      vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= Math.max(1, x)).map(c => c.mana_cost),
-    )].sort((a, b) => a - b);
-    if (coutsDisponibles.length === 0) return null;
-    const cout = coutsDisponibles[Math.floor(pseudoRng() * coutsDisponibles.length)];
-    candidats = vivier.filter(c => c.mana_cost === cout);
+    candidats = vivier.filter(c => c.mana_cost >= plancher && c.mana_cost <= Math.max(1, x));
   }
   if (candidats.length === 0) return null;
   return candidats[Math.floor(pseudoRng() * candidats.length)];
@@ -14623,7 +14607,7 @@ export function getTresorCards(
     propre: new Set(), neutre: new Set(),
     estNeutre: (c) => tranche && alignementDeLaCarte(c) === "neutre",
   };
-  return offreSelection(vivier, maxManaCost, randomX, paniers, melanger, pseudoRng, minX);
+  return offreSelection(vivier, maxManaCost, randomX, paniers, melanger, minX);
 }
 
 /** Sélection magique : propose jusqu'à 3 sorts communs partageant
@@ -14678,7 +14662,7 @@ export function getMagicalSelectionCards(
     }
     return out;
   };
-  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, pseudoRng, minX);
+  return offreSelection(filtered, maxManaCost, randomX, buckets, melanger, minX);
 }
 
 /** Amplitude d'une Sélection curée à l'ENTRÉE EN JEU, lue dans le modèle

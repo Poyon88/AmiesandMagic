@@ -51,7 +51,7 @@ describe("Exhumation / Invocation sans coût", () => {
     expect(st.players[0].board.map(c => c.card.name)).toContain("Géant");
   });
 
-  it("Invocation sans X invoque, et chaque coût a sa chance", () => {
+  it("Invocation sans X invoque, chaque CARTE à chances égales", () => {
     let pasA1 = 0; const n = 60;
     for (let i = 0; i < n; i++) {
       const s = mkState();
@@ -71,14 +71,15 @@ describe("Exhumation / Invocation sans coût", () => {
       expect(invoquee).toBeDefined();
       if (invoquee!.card.mana_cost !== 1) pasA1++;
     }
-    // Tirage direct : les 20 créatures à 1 sortiraient ~80 % du temps (autre
-    // coût ≈ 20 %). Par coût : 5 coûts sur 6 ne sont pas 1 (≈ 83 %).
-    expect(pasA1 / n).toBeGreaterThan(0.5);
+    // Chaque carte à chances égales : 5 cartes sur 25 ne coûtent pas 1 (≈ 20 %).
+    // L'ancien tirage par coût en donnait ≈ 83 %.
+    expect(pasA1 / n).toBeGreaterThan(0);
+    expect(pasA1 / n).toBeLessThan(0.4);
   });
 });
 
-describe("Sélection sans coût : chaque coût à chances égales", () => {
-  it("les coûts élevés, rares, sortent autant que les bas", () => {
+describe("Sélection sans coût : chaque carte à chances égales", () => {
+  it("une carte chère isolée ne sort pas plus qu'une autre", () => {
     let hauts = 0, total = 0;
     for (let i = 0; i < 60; i++) {
       const s = mkState();
@@ -89,8 +90,8 @@ describe("Sélection sans coût : chaque coût à chances égales", () => {
       ];
       for (const c of getSelectionCards(s, 0, { faction: "Mercenaires" })) { total++; if (c.mana_cost === 8) hauts++; }
     }
-    // Tirage direct : ~1 carte sur 31. Par coût : environ une sur deux.
-    expect(hauts / total).toBeGreaterThan(0.2);
+    // Une carte sur 31 (l'ancien tirage par coût en donnait environ une sur deux).
+    expect(hauts / total).toBeLessThan(0.1);
   });
 });
 
