@@ -71,8 +71,13 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
     setSurvolee(c);
   };
 
+  // Plancher de taille : dans les bulles du plateau l'échelle hôte descend
+  // très bas, et la carte désignée — l'information qui compte — devenait
+  // illisible. On ne rétrécit jamais la pastille sous sa taille nominale.
+  const k = Math.max(scale, 1);
+
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 * scale, marginTop: 3 * scale }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 * k, marginTop: 4 * k }}>
       {groupes.map(({ carte: c, count }) => (
         <span
           key={c.id}
@@ -80,19 +85,27 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
           onMouseEnter={() => montrer(c)}
           onMouseLeave={() => setSurvolee(null)}
           style={{
-            display: "inline-flex", alignItems: "center", gap: 3 * scale,
-            padding: `${1.5 * scale}px ${6 * scale}px`,
-            borderRadius: 999,
-            border: "1px solid rgba(230, 180, 90, 0.55)",
-            background: "rgba(230, 180, 90, 0.12)",
-            color: "#e6b45a",
-            fontSize: 11 * scale,
+            display: "inline-flex", alignItems: "center", gap: 6 * k,
+            padding: `${3 * k}px ${10 * k}px ${3 * k}px ${3 * k}px`,
+            borderRadius: 8 * k,
+            border: "1px solid rgba(230, 180, 90, 0.7)",
+            background: "rgba(230, 180, 90, 0.16)",
+            color: "#f0c674",
+            fontSize: 14 * k,
+            fontWeight: 600,
             fontFamily: "'Crimson Text',serif",
             whiteSpace: "nowrap",
             cursor: "help",
           }}
         >
-          <span aria-hidden="true">{icon}</span>
+          {c.image_url ? (
+            // Vignette de l'illustration : la carte se reconnaît d'un coup d'œil.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={c.image_url} alt="" aria-hidden="true" style={{
+              width: 26 * k, height: 36 * k, objectFit: "cover", borderRadius: 4 * k,
+              border: "1px solid rgba(230, 180, 90, 0.6)", flexShrink: 0,
+            }} />
+          ) : <span aria-hidden="true">{icon}</span>}
           {count > 1 && <span style={{ fontWeight: 700 }}>{count} ×</span>}
           {nameOf ? nameOf(c) : localizeName(c)}
         </span>

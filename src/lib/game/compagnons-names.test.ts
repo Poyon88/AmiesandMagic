@@ -20,10 +20,7 @@ const lire = (p: string) => fs.readFileSync(path.join(process.cwd(), p), "utf8")
 /** Les renderers qui peignent un verso de carte. */
 const RENDERERS = [
   "src/components/cards/GameCard.tsx",
-  "src/components/game/HandCard.tsx",
-  "src/components/game/BoardCreature.tsx",
   "src/components/game/SpellCastOverlay.tsx",
-  "src/components/game/MulliganOverlay.tsx",
 ];
 
 describe("Câblage des noms de compagnons", () => {
@@ -62,6 +59,19 @@ describe("Câblage des noms de compagnons", () => {
         .filter((f) => lire(f).includes("buildKeywordDisplayEntries") && lire(f).includes("keywordDesc")),
     );
     expect([...trouves].sort()).toEqual([...RENDERERS].sort());
+  });
+});
+
+// Plateau, main et mulligan n'ont PLUS de bloc de description à eux : ils
+// affichent la carte de la collection (GameCard) via DetailEnJeu. C'est ce qui
+// les garde alignés sur la collection — compagnons compris.
+describe("Surfaces de jeu", () => {
+  it.each([
+    "src/components/game/HandCard.tsx",
+    "src/components/game/BoardCreature.tsx",
+    "src/components/game/MulliganOverlay.tsx",
+  ])("%s passe par DetailEnJeu", (f) => {
+    expect(lire(f)).toContain("<DetailEnJeu");
   });
 });
 

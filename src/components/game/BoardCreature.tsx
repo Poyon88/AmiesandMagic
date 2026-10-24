@@ -9,7 +9,7 @@ import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { KEYWORD_SYMBOLS, xNumeral, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
 import { OBJET_TEINTE, OBJET_RGB, OBJET_GLYPHE } from "@/lib/game/objet-theme";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -25,10 +25,7 @@ import { isBigHit } from "@/lib/fx/impactFx";
 import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
-import CompagnonsNames from "@/components/cards/CompagnonsNames";
-import { designatedCardIds } from "@/lib/game/tuteur";
-import TokenNames from "@/components/cards/TokenNames";
-import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
+import DetailEnJeu from "@/components/cards/DetailEnJeu";
 import { composedScope, creatureScopes, kwInstanceScope, porteeValide, scopeAriaLabel } from "@/lib/game/target-scope";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
@@ -136,7 +133,7 @@ function BoardCreature({
 }: BoardCreatureProps) {
   // Vue d'AFFICHAGE (cf. HandCard) : capacités Singulier toujours visibles.
   const card = displayCardOf(creature);
-  const { localizeName, localizeFlavor } = useCardText();
+  const { localizeName } = useCardText();
   const vocab = useVocab();
   // localizeName already localises token names (CardTextProvider →
   // vocab.tokens.{token_id}); no token-specific handling needed here.
@@ -327,6 +324,46 @@ function BoardCreature({
   // Couleurs alignées sur les palettes Canvas de impactFx.ts.
   const haloRgb = isEmpower ? "168,85,247" : "234,179,8";
   const haloPeak = isEmpower ? 1.5 : 1.35;
+
+  // STATUTS de la créature (état des pouvoirs, mal d'invocation exclu) pour le
+  // descriptif. Chaque statut nomme le POUVOIR dont il est l'état : l'icône en
+  // vient, comme pour les pastilles de coin.
+  const statutsEnJeu = () => {
+          const statuses: { kw: Keyword; label: string; color: string }[] = [];
+          if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
+          if (creature.isParalyzed) {
+            // Entrave X : tours restants, celui en cours compris.
+            const n = creature.paralysisTurnsLeft ?? 1;
+            statuses.push({ kw: "paralysie" as Keyword, label: n > 1 ? `Paralysé (${n} tours)` : "Paralysé", color: "#8b5cf6" });
+          }
+          if (creature.hasDivineShield) statuses.push({ kw: "divine_shield" as Keyword, label: "Bouclier divin", color: "#f1c40f" });
+          if (creature.contresortActive) {
+            const n = creature.contresortCharges ?? 1;
+            statuses.push({ kw: "contresort" as Keyword, label: n > 1 ? `Contresort ×${n}` : "Contresort prêt", color: "#3b82f6" });
+          }
+          if ((creature.exclusionCharges ?? 0) > 0) {
+            const n = creature.exclusionCharges!;
+            statuses.push({ kw: "exclusion" as Keyword, label: n > 1 ? `Exclusion ×${n}` : "Exclusion prête", color: "#dc2626" });
+          }
+          if (creature.fureurActive) statuses.push({ kw: "fureur" as Keyword, label: "Fureur", color: "#f97316" });
+          if ((creature.gloireStacks ?? 0) > 0) {
+            statuses.push({ kw: "gloire" as Keyword, label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
+          }
+          // Conquête : information qui vaut toute la partie — l'adversaire
+          // sait que cette carte lui a été prise.
+          if (creature.conqueredFromId) {
+            statuses.push({ kw: "conquete" as Keyword, label: "Conquise au deck adverse", color: "#f87171" });
+          }
+          // Deux états, comme la pastille de coin : le bloc STATUTS reste la
+          // source unique de vérité sur ce qui affecte l'unité, et « Ombre déjà
+          // dépensée » est une information qui vaut jusqu'à la fin de la partie.
+          if (hasOmbre) {
+            statuses.push(creature.ombreRevealed
+              ? { kw: "ombre" as Keyword, label: "Ombre dissipée", color: "#6b7280" }
+              : { kw: "ombre" as Keyword, label: "Ombre (furtif)", color: "#818cf8" });
+          }
+          return statuses;
+  };
 
   return (
     <motion.div
@@ -974,241 +1011,22 @@ function BoardCreature({
         </div>
       </div>
 
-      {/* Hover overlay — anchor content at the top so the title stays
-          visible when the description is taller than the card. With
-          `justifyContent: center` the content was being clipped at both
-          ends (the card has overflow: hidden), hiding the title on
-          long-text cards like spells with long flavor text. */}
-      <div className="no-scrollbar" style={{
-        position: "absolute", inset: 0, zIndex: 4,
-        background: "#0d0d1ab3",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
-        opacity: showOverlay ? 1 : 0,
-        transition: "opacity 0.25s ease",
-        pointerEvents: showOverlay ? "auto" : "none",
-        display: "flex", flexDirection: "column", justifyContent: "flex-start",
-        padding: "12px 8px",
-        gap: 6,
-        overflowY: "auto",
-      }}>
-        {/* Mal d'invocation — petit pip en haut à droite, hors flux */}
-        {creature.hasSummoningSickness && isOwn && (
-          <div title="Mal d'invocation" style={{
-            position: "absolute", top: 4, right: 4, zIndex: 1,
-            fontSize: 11, lineHeight: 1, color: "#94a3b8",
-            textShadow: "0 0 3px #000",
-            pointerEvents: "none",
-          }}>💤</div>
-        )}
-
-        {/* Name */}
-        <div style={{
-          fontSize: 10 * d, color: accentColor, fontWeight: 700,
-          textAlign: "center", fontFamily: "'Cinzel', serif",
-          borderBottom: `1px solid ${accentColor}44`, paddingBottom: 5,
-        }}>{localizeName(card)}</div>
-
-        {/* Race / Clan */}
-        {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 7 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{card.race}</span>}
-            {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
-            {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
-          </div>
-        )}
-
-        {/* Year — affiché en bas-droit du popup, juste le nombre */}
-        {card.card_year && (
-          <div style={{
-            position: "absolute", bottom: 4, right: 6, zIndex: 1,
-            fontSize: 7, color: "#888", fontFamily: "'Crimson Text',serif",
-            pointerEvents: "none",
-          }}>
-            {card.card_year}
-          </div>
-        )}
-
-        {/* Statuts actifs — runtime flags that aren't on the card itself.
-            Only renders when at least one is active so it doesn't take up
-            vertical space on plain creatures. Mirrors the corner pips
-            (poison, paralysie, bouclier, contresort, fureur, gloire, ombre)
-            so the right-click view is the single source of truth for what's
-            currently affecting the creature.
-
-            Les symboles ne sont plus listés ici : chaque statut est l'état d'un
-            POUVOIR et emprunte son icône, si bien qu'en changer une se fait en
-            base et non dans ce commentaire. Seul le mal d'invocation reste un
-            emoji en dur (💤) — ce n'est pas un pouvoir, il n'a pas d'icône. */}
-        {(() => {
-          // Le symbole n'est plus écrit en dur : chaque statut nomme le POUVOIR
-          // dont il est l'état, et KeywordIcon en tire l'icône — override PNG de
-          // la base s'il y en a une, emoji de KEYWORD_SYMBOLS sinon. Même source
-          // que les pastilles de coin et que la liste de capacités ci-dessous,
-          // donc plus de divergence possible entre les trois surfaces.
-          const statuses: { kw: Keyword; label: string; color: string }[] = [];
-          if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
-          if (creature.isParalyzed) {
-            // Entrave X : tours restants, celui en cours compris.
-            const n = creature.paralysisTurnsLeft ?? 1;
-            statuses.push({ kw: "paralysie" as Keyword, label: n > 1 ? `Paralysé (${n} tours)` : "Paralysé", color: "#8b5cf6" });
-          }
-          if (creature.hasDivineShield) statuses.push({ kw: "divine_shield" as Keyword, label: "Bouclier divin", color: "#f1c40f" });
-          if (creature.contresortActive) {
-            const n = creature.contresortCharges ?? 1;
-            statuses.push({ kw: "contresort" as Keyword, label: n > 1 ? `Contresort ×${n}` : "Contresort prêt", color: "#3b82f6" });
-          }
-          if ((creature.exclusionCharges ?? 0) > 0) {
-            const n = creature.exclusionCharges!;
-            statuses.push({ kw: "exclusion" as Keyword, label: n > 1 ? `Exclusion ×${n}` : "Exclusion prête", color: "#dc2626" });
-          }
-          if (creature.fureurActive) statuses.push({ kw: "fureur" as Keyword, label: "Fureur", color: "#f97316" });
-          if ((creature.gloireStacks ?? 0) > 0) {
-            statuses.push({ kw: "gloire" as Keyword, label: `Gloire ×${creature.gloireStacks}`, color: "#d4a800" });
-          }
-          // Conquête : information qui vaut toute la partie — l'adversaire
-          // sait que cette carte lui a été prise.
-          if (creature.conqueredFromId) {
-            statuses.push({ kw: "conquete" as Keyword, label: "Conquise au deck adverse", color: "#f87171" });
-          }
-          // Deux états, comme la pastille de coin : le bloc STATUTS reste la
-          // source unique de vérité sur ce qui affecte l'unité, et « Ombre déjà
-          // dépensée » est une information qui vaut jusqu'à la fin de la partie.
-          if (hasOmbre) {
-            statuses.push(creature.ombreRevealed
-              ? { kw: "ombre" as Keyword, label: "Ombre dissipée", color: "#6b7280" }
-              : { kw: "ombre" as Keyword, label: "Ombre (furtif)", color: "#818cf8" });
-          }
-          if (statuses.length === 0) return null;
-          return (
-            <div style={{
-              display: "flex", flexDirection: "column", gap: 2,
-              padding: "4px 5px",
-              background: "#0d0d1aaa", borderRadius: 4,
-              border: "1px solid #ffffff14",
-            }}>
-              <div style={{ fontSize: 7 * d, color: "#888", fontFamily: "'Cinzel',serif", letterSpacing: 0.5, textAlign: "center", marginBottom: 1 }}>
-                STATUTS
-              </div>
-              {statuses.map(s => (
-                <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 8 * d, color: s.color, fontFamily: "'Crimson Text',serif" }}>
-                  <span style={{ flexShrink: 0, display: "inline-flex" }}>
-                    <KeywordIcon symbol={KEYWORD_SYMBOLS[s.kw]} keyword={s.kw} size={9 * d} />
-                  </span>
-                  <span>{s.label}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
-
-        {/* ORDRE D'AUTEUR : conteneur unique + `order` par ligne (cf. GameCard). */}
-        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0 || composedCapsOf(card.capabilities).length > 0) && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        {/* Capacités detail */}
-        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
-          const grantedX = creature.grantedKeywordX ?? {};
-          const entries = buildKeywordDisplayEntries(card);
-          if (entries.length === 0) return null;
-          return (
-          <div style={{ display: "contents" }}>
-            {entries.map((entry, idx) => {
-              const { kw, mode } = entry;
-              const x = entry.x ?? grantedX[kw];
-              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates, espritCount };
-              const label = vocab.keywordLabelFor(kw, ctx);
-              // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
-              const desc = vocab.keywordDesc(kw, ctx);
-              const modeColor = keywordModeColor(mode);
-              return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: keywordDisplayOrder(card, kw), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                <span style={{ flexShrink: 0, display: "inline-flex" }}><KeywordIcon {...keywordIconFor(kw, entry.instance, neutralisedIds(creature))} size={10} mode={mode} singulier={entry.singulier} /></span>
-                <div>
-                  <div style={{ fontSize: 8 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
-                  {desc && <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
-                  {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                  {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.18} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
-                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
-                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.18} />
-                  {/* Apprentissage : le sort MÉMORISÉ, nommé et survolable —
-                      même pastille que les compagnons. Rendu ici seulement :
-                      une créature en main ou dans un overlay n'en porte jamais
-                      (le sort est effacé à chaque entrée en jeu). Visible des
-                      DEUX joueurs : c'est devenu un pouvoir du plateau. */}
-                  {kw === "apprentissage" && creature.apprentissageSpell && (
-                    <CompagnonsNames cards={[creature.apprentissageSpell.card]} scale={d * 0.18} icon="📖" />
-                  )}
-                </div>
-              </div>
-              );
-            })}
-          </div>
-          );
-        })()}
-
-        {/* Effets composés — détail (icône + texte généré, comme la collection) */}
-        {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "contents" }}>
-            {composedCapsOf(card.capabilities).map((cap, i) => {
-              const ic = composedIcon(cap);
-              const cmode = composedTriggerMode(cap);
-              const nm = vocab.composedName(cap);
-              return (
-                <div key={`cxd-${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
-                    <span style={{ display: "inline-flex", lineHeight: 0 }}>
-                      <KeywordIcon symbol={ic.symbol} size={10} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} />
-                    </span>
-                    <ComposedMarker mode={cmode} size={6} />
-                  </span>
-                  <div>
-                    {nm && <div style={{ fontSize: 8 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
-                    <div style={{ fontSize: 7 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
-                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.18} />
-                    {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : cap.composed?.content === "transformation" ? "🦋" : "📣"} scale={d * 0.18} />}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        </div>
-        )}
-
-        {/* Effect text */}
-        {cleanEffectText(card.effect_text, card.spell_keywords) && (
-          <div style={{
-            padding: 5,
-            background: `${accentColor}11`, borderRadius: 4,
-            border: `1px solid ${accentColor}22`,
-          }}>
-            <p style={{
-              margin: 0, fontSize: 8 * d, color: "#ccc",
-              lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
-            }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
-          </div>
-        )}
-
-        {localizeFlavor(card) && (
-          <p style={{
-            margin: 0, fontSize: 7 * d, color: "#74b9ff77",
-            fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
-            textAlign: "center",
-          }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
-        )}
-
-        {/* Stats recap */}
-        <div style={{
-          display: "flex", justifyContent: "center", gap: 8,
-          fontSize: 8 * d, color: "#555",
-        }}>
-          <span style={{ color: isBuffedAtk ? "#2ecc71" : "#e74c3c" }}>⚔ {creature.currentAttack}</span>
-          <span style={{ color: isDamaged ? "#e74c3c" : isBuffedHp ? "#2ecc71" : "#f1c40f" }}>❤ {creature.currentHealth}/{creature.maxHealth}</span>
-        </div>
-      </div>
+      {/* Descriptif : la carte de la COLLECTION, enrichie de l'état de partie. */}
+      <DetailEnJeu
+        visible={showOverlay}
+        largeur={W - 4}
+        card={card}
+        enJeu={{
+          atk: creature.currentAttack, hp: creature.currentHealth,
+          atkTone: isBuffedAtk ? "buff" : creature.currentAttack < (card.attack ?? 0) ? "debuff" : "neutral",
+          hpTone: isDamaged ? "debuff" : isBuffedHp ? "buff" : "neutral",
+          statuts: statutsEnJeu(),
+          grantedKeywordX: creature.grantedKeywordX ?? undefined,
+          neutralises: neutralisedIds(creature),
+          espritCount: espritCount ?? undefined,
+          apprentissage: creature.apprentissageSpell?.card ?? null,
+        }}
+      />
       </div>{/* close clip-wrapper */}
     </div>
     </motion.div>

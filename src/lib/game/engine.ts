@@ -11707,7 +11707,7 @@ export function getFoiOffer(state: GameState): CardInstance[] {
   if (eligibles.length === 0) return [];
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 4242;
+  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 4242 + graineDePartie(state);
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
@@ -11777,7 +11777,7 @@ export function getConqueteOffer(state: GameState): CardInstance[] {
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11
     + opponent.deck.length * 19 + opponent.hand.length * 23 + opponent.board.length * 29;
-  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 7777;
+  let hash = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 7777 + graineDePartie(state);
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;
@@ -13732,6 +13732,17 @@ const RENFORT_ROYAL_OWNERSHIP_THRESHOLD = 30;
  *
  *  `instanceId` est produit par la RNG semée à la création de l'instance : il
  *  est donc identique chez les deux clients, et le tirage reste reproductible. */
+/** Composante PROPRE À LA PARTIE des graines d'offre (Sélections, Foi,
+ *  Conquête…) : la position de la RNG portée par l'état. Identique chez les deux
+ *  clients et constante pendant toute une action (le champ n'est réécrit qu'en
+ *  fin d'`applyAction`), donc le moteur recalcule la même offre que le client.
+ *  Sans elle, tour + main + deck + mana se répétaient d'une partie à l'autre
+ *  avec les mêmes decks ⇒ mêmes offres. Masquée sur 30 bits pour que la somme
+ *  reste un entier sûr dans le LCG. */
+function graineDePartie(state: GameState): number {
+  return ((state.rngState ?? 0) >>> 2) & 0x3fffffff;
+}
+
 function saltDeSource(seedSalt: string | undefined): number {
   if (!seedSalt) return 0;
   let h = 0;
@@ -14385,7 +14396,7 @@ export function getRenfortRoyalCards(
   // Same deterministic shuffle pattern as getSelectionCards so both
   // clients agree without burning the seeded RNG.
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 999 + saltDeSource(seedSalt);
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 999 + saltDeSource(seedSalt) + graineDePartie(state);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -14446,7 +14457,7 @@ export function getSelectionCards(
 
   // Deterministic seed based on game state — varies each time within a turn
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + saltDeSource(seedSalt);
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + saltDeSource(seedSalt) + graineDePartie(state);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -14516,7 +14527,7 @@ export function getFaveurCard(
   if (vivier.length === 0) return null;
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 2999 + saltDeSource(seedSalt);
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 2999 + saltDeSource(seedSalt) + graineDePartie(state);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -14591,7 +14602,7 @@ export function getTresorCards(
   if (vivier.length === 0) return [];
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 3999 + saltDeSource(seedSalt);
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 3999 + saltDeSource(seedSalt) + graineDePartie(state);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
@@ -14650,7 +14661,7 @@ export function getMagicalSelectionCards(
   if (filtered.length === 0) return [];
 
   const entropy = player.hand.length * 7 + player.board.length * 13 + player.deck.length * 3 + player.graveyard.length * 17 + player.mana * 11;
-  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 1999 + saltDeSource(seedSalt);
+  const seed = state.turnNumber * 1000 + state.currentPlayerIndex * 100 + entropy + 1999 + saltDeSource(seedSalt) + graineDePartie(state);
   let hash = seed;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;

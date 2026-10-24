@@ -44,6 +44,9 @@ export default function useLongPress(
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
+    // Deux doigts = un PINCEMENT (agrandissement du descriptif), jamais un
+    // appui long : le 2e doigt annule le minuteur armé par le premier.
+    if (e.touches.length > 1) { cancel(); startRef.current = null; return; }
     const t = e.touches[0];
     if (!t) return;
     startRef.current = { x: t.clientX, y: t.clientY };
@@ -56,6 +59,7 @@ export default function useLongPress(
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length > 1) { cancel(); startRef.current = null; return; }
     if (!startRef.current) return;
     const t = e.touches[0];
     if (!t) return;

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { titleFontScale } from "@/lib/game/card-title";
 import Image from "next/image";
 import type { CardInstance } from "@/lib/game/types";
-import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -17,14 +17,11 @@ import { useAudioStore } from "@/lib/store/audioStore";
 import SfxEngine from "@/lib/audio/SfxEngine";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
+import DetailEnJeu from "@/components/cards/DetailEnJeu";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
-import CompagnonsNames from "@/components/cards/CompagnonsNames";
-import TokenNames from "@/components/cards/TokenNames";
-import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { CostShield, EquipToken, StatShields, statShieldsReserve } from "@/components/card/CardCounters";
 import { getEquipCost } from "@/lib/game/items";
-import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { RightSlots, additionalCostOf, awakenOf } from "@/components/card/CardTokens";
 
 function playStandardSfx(eventType: string) {
@@ -64,7 +61,7 @@ function MulliganCard({
   interactable: boolean;
 }) {
   const card = cardInstance.card;
-  const { localizeName, localizeFlavor } = useCardText();
+  const { localizeName } = useCardText();
   const vocab = useVocab();
   const isCreature = card.card_type === "creature";
   // OBJET : mêmes écus qu'une unité (son bonus, écrit « +N ») et son coût
@@ -326,145 +323,8 @@ function MulliganCard({
             présence du libellé à gauche. */}
       </div>
 
-      {/* Hover overlay (delayed) */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 3,
-        background: "#0d0d1ab3",
-        backdropFilter: "blur(2px)",
-        WebkitBackdropFilter: "blur(2px)",
-        opacity: showDetails && !isSelected ? 1 : 0,
-        transition: "opacity 0.25s ease",
-        pointerEvents: showDetails && !isSelected ? "auto" : "none",
-        display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: "16px 12px",
-        gap: 8,
-        overflowY: "auto",
-      }}>
-        <div style={{
-          fontSize: 13 * d, color: accentColor, fontWeight: 700,
-          textAlign: "center", fontFamily: "'Cinzel', serif",
-          borderBottom: `1px solid ${accentColor}44`, paddingBottom: 6,
-        }}>{localizeName(card)}</div>
-
-        {/* Race / Clan */}
-        {(card.race || card.clan) && (
-          <div style={{ display: "flex", justifyContent: "center", gap: 5, fontSize: 9 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-            {card.race && <span>{card.race}</span>}
-            {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
-            {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
-          </div>
-        )}
-
-        {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
-          const entries = buildKeywordDisplayEntries(card)
-            .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
-          if (entries.length === 0) return null;
-          return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {entries.map((entry, idx) => {
-              const { kw, x, mode } = entry;
-              const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates };
-              const label = vocab.keywordLabelFor(kw, ctx);
-              // Plus d'annotation de déclencheur : la couleur transmet le moment.
-              const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
-              const desc = vocab.keywordDesc(kw, ctx);
-              const modeColor = keywordModeColor(mode);
-              return (
-              <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 5 }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={KEYWORD_SYMBOLS[kw] || "✦"} size={12} keyword={kw} mode={mode} singulier={entry.singulier} /></span>
-                <div>
-                  <div style={{ fontSize: 10 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
-                  {desc && <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
-                  {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                  {(kw === "compagnons" || kw === "tuteur") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.2} icon={kw === "tuteur" ? "🎓" : undefined} />}
-                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
-                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.2} />
-                </div>
-              </div>
-              );
-            })}
-          </div>
-          );
-        })()}
-
-        {/* Spell keyword detail rows — mirror GameCard so spell cards in
-            mulligan show what they actually do (Impact X, Déferlement…)
-            instead of just a name + flavor text. */}
-        {card.spell_keywords && card.spell_keywords.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {card.spell_keywords.map((spellKw, i) => {
-              const def = SPELL_KEYWORDS[spellKw.id];
-              if (!def) return null;
-              const label = vocab.spellKeywordLabel(spellKw);
-              const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
-              return (
-                <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 5 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={12} keyword={`spell_${spellKw.id}`} mode="spell" /></span>
-                  <div>
-                    <div style={{ fontSize: 10 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
-                    <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
-                    {/* Compagnons (sort) : les cartes liées, nommées. */}
-                    {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.2} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
-                  <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={d * 0.2} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Effets composés — détail (icône + texte généré) */}
-        {composedCapsOf(card.capabilities).length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {composedCapsOf(card.capabilities).map((cap, i) => {
-              const ic = composedIcon(cap);
-              const cmode = composedTriggerMode(cap);
-              const nm = vocab.composedName(cap);
-              return (
-                <div key={`cxd-${i}`} style={{ display: "flex", alignItems: "flex-start", gap: 5 }}>
-                  <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={12} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={7} /></span>
-                  <div>
-                    {nm && <div style={{ fontSize: 10 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
-                    <div style={{ fontSize: 8 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
-                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.2} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {card.effect_text && (
-          <div style={{
-            padding: 6, background: `${accentColor}11`, borderRadius: 5,
-            border: `1px solid ${accentColor}22`,
-          }}>
-            <p style={{
-              margin: 0, fontSize: 10 * d, color: "#ccc",
-              lineHeight: 1.5, fontFamily: "'Crimson Text', serif",
-            }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
-          </div>
-        )}
-
-        {localizeFlavor(card) && (
-          <p style={{
-            margin: 0, fontSize: 9 * d, color: `${accentColor}77`,
-            fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
-            textAlign: "center",
-          }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
-        )}
-
-        <div style={{
-          display: "flex", justifyContent: "center", gap: 8,
-          fontSize: 9 * d, color: "#555",
-        }}>
-          <span>{"💧"} {card.mana_cost}</span>
-          {/* Les coûts additionnels et l'Éveil ne sont plus répétés ici : le
-              recto les porte en jetons (une seule représentation par coût). */}
-          {isCreature && <><span style={{ color: "#e74c3c" }}>{"⚔"} {card.attack}</span><span style={{ color: "#f1c40f" }}>{"❤"} {card.health}</span></>}
-          {isItem && <><span style={{ color: "#e74c3c" }}>{"⚔"} +{card.attack ?? 0}</span><span style={{ color: "#f1c40f" }}>{"❤"} +{card.health ?? 0}</span><span style={{ color: OBJET_TEINTE }}>{"⚒"} {getEquipCost(card)}</span></>}
-        </div>
-      </div>
+      {/* Descriptif : la carte de la COLLECTION (même rendu qu'en partie). */}
+      <DetailEnJeu visible={showDetails && !isSelected} largeur={W - 4} card={card} rayon={12} />
 
       {/* Card back face — flips away to reveal the card underneath */}
       <div

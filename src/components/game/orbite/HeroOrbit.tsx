@@ -5,7 +5,7 @@ import GameCard from "@/components/cards/GameCard";
 import { EXPLORATION_PALIER, MAX_CONQUETE, MAX_EPARGNE, MAX_FOI, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
 import { buildMachineCard } from "@/lib/game/machine";
 import { useGameStore } from "@/lib/store/gameStore";
-import type { Emblem, MachineState } from "@/lib/game/types";
+import type { Card, Emblem, GameState, MachineState } from "@/lib/game/types";
 import CounterIcon from "./counter-icons";
 import CounterMedallion, { MachineGear } from "./CounterMedallion";
 import EmblemDiamond, { EmblemBulle } from "./EmblemDiamond";
@@ -82,10 +82,12 @@ export default function HeroOrbit(props: HeroOrbitProps) {
   );
 
   // ── Emblèmes ──────────────────────────────────────────────────────────────
+  // Lu À L'OUVERTURE de la bulle (getState) : pas d'abonnement, l'orbite ne se
+  // re-rend pas à chaque action pour une carte qu'on ne montre qu'au survol.
   const emblemItems: Item[] = emblems.map((e, i) => ({
     key: `e${i}_${e.abilityId ?? "cx"}`,
     size: TAILLE,
-    bulle: () => <EmblemBulle e={e} porteur={porteur} />,
+    bulle: () => <EmblemBulle e={e} porteur={porteur} carte={carteSource(useGameStore.getState().gameState, e.sourceCardId)} />,
     render: (b) => <EmblemDiamond e={e} size={TAILLE} bulle={b} fireKey={firedEmblems?.includes(i) ? fireKey : null} />,
   }));
 
@@ -254,4 +256,20 @@ function Surplus({ n, group, api, caches }: {
       +{n}
     </div>
   );
+}
+
+/** Carte qui a POSÉ l'emblème, pour la montrer dans la bulle : souvent un sort
+ *  déjà au cimetière, parfois parfois repassé au deck. Cherchée dans toutes les
+ *  zones des deux joueurs, puis dans les pools du match. */
+function carteSource(state: GameState | null, id: number | undefined): Card | null {
+  if (!state || id == null || id < 0) return null;
+  for (const p of state.players) {
+    for (const zone of [p.graveyard, p.board, p.hand, p.deck]) {
+      const c = zone.find((x) => x.card.id === id);
+      if (c) return c.card;
+    }
+  }
+  return state.allSpellsPool?.find((c) => c.id === id)
+    ?? state.factionCardPool?.find((c) => c.id === id)
+    ?? null;
 }

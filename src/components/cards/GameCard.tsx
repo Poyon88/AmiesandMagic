@@ -73,6 +73,27 @@ import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
 import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
+import type { Tone } from "@/components/card/CardCounters";
+
+/** Statut d'une carte EN PARTIE (poison, bouclier, Fureur…) : l'état d'un
+ *  pouvoir, peint avec l'icône de ce pouvoir. */
+export interface StatutEnJeu { kw: string; label: string; color: string }
+
+/** Ce que la partie sait d'une carte et que la collection ignore. Passé par
+ *  les surfaces de jeu (plateau, main, mulligan) pour que leur descriptif soit
+ *  CELUI de la collection, enrichi de l'état courant. */
+export interface CarteEnJeu {
+  /** Caractéristiques COURANTES, peintes dans les écus (teinte bonus/blessure). */
+  atk?: number; hp?: number; atkTone?: Tone; hpTone?: Tone;
+  statuts?: StatutEnJeu[];
+  /** X conféré en jeu à une capacité qui n'en portait pas sur la carte. */
+  grantedKeywordX?: Record<string, number>;
+  /** Capacités neutralisées : icône barrée. */
+  neutralises?: Set<string>;
+  espritCount?: number;
+  /** Sort mémorisé par Apprentissage. */
+  apprentissage?: Card | null;
+}
 
 interface GameCardProps {
   card: Card;
@@ -111,6 +132,9 @@ interface GameCardProps {
    *  overlays pass `getTokenManaCost(card)` so a token shows its re-cast
    *  cost instead of the on-board 0. Omit to show `card.mana_cost`. */
   effectiveManaCost?: number;
+  /** Descriptif EN PARTIE : état courant (statuts, stats, X conférés) en plus,
+   *  et sans les lignes de catalogue (set, date, faction, tirage). */
+  enJeu?: CarteEnJeu;
 }
 
 export default function GameCard({
@@ -130,6 +154,7 @@ export default function GameCard({
   tokens,
   forceRarityFrame = false,
   effectiveManaCost,
+  enJeu,
 }: GameCardProps) {
   const displayedManaCost = effectiveManaCost ?? card.mana_cost;
   const { localizeName, localizeFlavor } = useCardText();
@@ -377,7 +402,7 @@ export default function GameCard({
       />
       {/* ── ATK / PV : écus héraldiques en bas à droite (créatures seulement).
              Carte « catalogue » : valeurs de la définition, ton neutre. ── */}
-      {cadreDroit && <StatShields atk={bonusAtk} hp={bonusPv} bonus={isItem} />}
+      {cadreDroit && <StatShields atk={enJeu?.atk ?? bonusAtk} hp={enJeu?.hp ?? bonusPv} atkTone={enJeu?.atkTone} hpTone={enJeu?.hpTone} bonus={isItem} />}
       {/* ── ÉQUIPEMENT (objets) : sous l'écu de mana — les deux se paient en
              mana. Affiché à 0 aussi : « gratuit » est une information. ── */}
       {isItem && <EquipToken value={getEquipCost(card)} sousLeCout={displayedManaCost > 0} />}
@@ -541,6 +566,7 @@ export default function GameCard({
 
         {/* Print number */}
         {(() => {
+          if (enJeu) return null;
           const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
           return mp ? (
             <span style={{
@@ -587,6 +613,24 @@ export default function GameCard({
           </div>
         )}
 
+        {/* STATUTS (en partie) : ce qui affecte la carte en ce moment. */}
+        {enJeu?.statuts && enJeu.statuts.length > 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 3 * s,
+            padding: `${5 * s}px ${8 * s}px`,
+            background: "#0d0d1acc", borderRadius: 5 * s, border: "1px solid #ffffff1f",
+          }}>
+            {enJeu.statuts.map((st) => (
+              <div key={st.label} style={{ display: "flex", alignItems: "center", gap: 6 * s, fontSize: 12.5 * so, color: st.color, fontFamily: "'Crimson Text',serif", fontWeight: 600 }}>
+                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}>
+                  <KeywordIcon symbol={keywordSymbols[st.kw as keyof typeof keywordSymbols]} keyword={st.kw} size={15 * s} />
+                </span>
+                <span>{st.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ORDRE D'AUTEUR : les trois listes (mots-clés, mécaniques de sort,
             effets composés) partagent un seul conteneur en colonne ; chaque ligne
             porte un `order` (composed-position.ts), ce qui intercale les composés
@@ -601,8 +645,9 @@ export default function GameCard({
           return (
           <div style={{ display: "contents" }}>
             {entries.map((entry, idx) => {
-              const { kw, x, mode, instance } = entry;
-              const ctx = { card, instance, x, tokens: effectiveTokens };
+              const { kw, mode, instance } = entry;
+              const x = entry.x ?? enJeu?.grantedKeywordX?.[kw];
+              const ctx = { card, instance, x, tokens: effectiveTokens, espritCount: enJeu?.espritCount };
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur (« · fin du tour »…) dans le label :
               // la couleur de l'icône/du texte la transmet, le descriptif est allégé.
@@ -619,7 +664,7 @@ export default function GameCard({
               const labelColor = modeColor ?? "#fff";
               return (
               <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
-                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon {...keywordIconFor(kw, entry.instance)} size={18 * s} mode={mode} singulier={entry.singulier} /></span>
+                <span style={{ flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><KeywordIcon {...keywordIconFor(kw, entry.instance, enJeu?.neutralises)} size={18 * s} mode={mode} singulier={entry.singulier} /></span>
                 <div>
                   <div style={{ fontSize: 14 * so, color: labelColor, fontWeight: 700 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
                   {scopeNote && <div style={{ fontSize: 11.5 * so, color: "#9fb0c0", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{scopeNote}</div>}
@@ -628,6 +673,8 @@ export default function GameCard({
                   {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={instance?.linkedCardIds} scale={s} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
                   {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
                   <TokenNames cards={tokenCardsForKeyword(kw, card, effectiveTokens, x)} scale={s} />
+                  {/* Apprentissage : le sort MÉMORISÉ (en partie seulement). */}
+                  {kw === "apprentissage" && enJeu?.apprentissage && <CompagnonsNames cards={[enJeu.apprentissage]} scale={s} icon="📖" />}
                 </div>
               </div>
               );
@@ -716,7 +763,7 @@ export default function GameCard({
           // visibles par-dessus — on lui retire leur largeur à droite.
           ...(cadreDroit ? { paddingRight: `${statShieldsReserve(bonusAtk, bonusPv, isItem)}cqw` } : null),
         }}>
-          {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{vocab.factionName(card.faction)}</span>}
+          {card.faction && !enJeu && <span style={{ color: accentColor, fontWeight: 600 }}>{vocab.factionName(card.faction)}</span>}
           {(() => {
             const align = getEffectiveAlignment(card);
             if (!align) return null;
@@ -733,7 +780,7 @@ export default function GameCard({
         {/* Bas-droite : nom du set, ou mois/année si pas de set, ou rien.
             Position absolue par rapport à l'overlay (qui sert de containing
             block puisqu'il est lui-même position: absolute). */}
-        {(() => {
+        {!enJeu && (() => {
           if (cardSet) {
             return (
               <div style={{

@@ -1,9 +1,10 @@
 "use client";
 
+import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { describeComposedCap, emblemCadence } from "@/lib/game/composed-display";
-import type { Capability, Emblem } from "@/lib/game/types";
+import type { Capability, Card, Emblem } from "@/lib/game/types";
 import { BulleTexte } from "./OrbitTooltip";
 import { lent } from "@/lib/fx/overlayMotion";
 
@@ -33,9 +34,16 @@ export function emblemLabel(e: Emblem): string {
       } as Capability);
 }
 
-export function EmblemBulle({ e, porteur }: { e: Emblem; porteur: "self" | "opponent" }) {
+export function EmblemBulle({ e, porteur, carte }: {
+  e: Emblem;
+  porteur: "self" | "opponent";
+  /** Carte qui a posé l'emblème, quand on la retrouve : son texte complet dit
+   *  ce que le libellé court de l'emblème résume (« la carte désignée »…). */
+  carte?: Card | null;
+}) {
   const montant = e.params?.amount ?? e.params?.attack;
   return (
+    <>
     <BulleTexte
       titre={montant != null && e.abilityId ? `${emblemLabel(e)} · ${montant}` : emblemLabel(e)}
       lignes={[
@@ -51,6 +59,12 @@ export function EmblemBulle({ e, porteur }: { e: Emblem; porteur: "self" | "oppo
         e.sourceName && <span key="s" style={{ opacity: 0.7, fontStyle: "italic" }}>{e.sourceName}</span>,
       ]}
     />
+    {carte && (
+      <div style={{ marginTop: 8, display: "flex", justifyContent: "center" }}>
+        <GameCard card={carte} size="sm" showDetails disableHoverZoom forceRarityFrame />
+      </div>
+    )}
+    </>
   );
 }
 

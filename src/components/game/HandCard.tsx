@@ -10,7 +10,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { REPLI_TEINTE } from "@/lib/game/repli-theme";
-import { KEYWORD_SYMBOLS, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
@@ -30,10 +30,7 @@ import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
-import CompagnonsNames from "@/components/cards/CompagnonsNames";
-import { designatedCardIds } from "@/lib/game/tuteur";
-import TokenNames from "@/components/cards/TokenNames";
-import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
+import DetailEnJeu from "@/components/cards/DetailEnJeu";
 import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
@@ -78,7 +75,7 @@ function HandCard({
   // singleton restent visibles — une carte se lit pareil des deux côtés.
   const card = displayCardOf(cardInstance);
   const t = useTranslations("game");
-  const { localizeName, localizeFlavor } = useCardText();
+  const { localizeName } = useCardText();
   const vocab = useVocab();
   const gameState = useGameStore(s => s.gameState);
   const localPlayerId = useGameStore(s => s.localPlayerId);
@@ -408,6 +405,8 @@ function HandCard({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     longPress.handlers.onTouchStart(e);
+    // Second doigt : pincement du descriptif, pas un glisser.
+    if (e.touches.length > 1) { touchStartRef.current = null; return; }
     lastTapWasTouch.current = true;
     if (!canPlay) return;
     const t = e.touches[0];
@@ -417,6 +416,7 @@ function HandCard({
   };
   const handleTouchMove = (e: React.TouchEvent) => {
     longPress.handlers.onTouchMove(e);
+    if (e.touches.length > 1 && !touchDraggingRef.current) { touchStartRef.current = null; return; }
     if (!touchStartRef.current) return;
     const t = e.touches[0];
     if (!t) return;
@@ -989,164 +989,21 @@ function HandCard({
           </div>
         </div>
 
-        {/* Hover overlay */}
-        <div className="no-scrollbar" style={{
-          position: "absolute", inset: 0, zIndex: 3,
-          background: "#0d0d1ab3",
-          backdropFilter: "blur(2px)",
-          WebkitBackdropFilter: "blur(2px)",
-          opacity: showOverlay ? 1 : 0,
-          transition: "opacity 0.25s ease",
-          pointerEvents: showOverlay ? "auto" : "none",
-          display: "flex", flexDirection: "column", justifyContent: "flex-start",
-          padding: "10px 7px",
-          gap: 5,
-          overflowY: "auto",
-        }}>
-          {/* Name */}
-          <div style={{
-            fontSize: 9 * d, color: accentColor, fontWeight: 700,
-            textAlign: "center", fontFamily: "'Cinzel', serif",
-            borderBottom: `1px solid ${accentColor}44`, paddingBottom: 4,
-          }}>{localizeName(card)}</div>
-
-          {/* Race / Clan */}
-          {(card.race || card.clan) && (
-            <div style={{ display: "flex", justifyContent: "center", gap: 4, fontSize: 6 * d, color: "#888", fontFamily: "'Crimson Text',serif" }}>
-              {card.race && <span>{card.race}</span>}
-              {card.race && card.clan && <span style={{ color: "#555" }}>·</span>}
-              {card.clan && <span style={{ fontStyle: "italic" }}>{vocab.clanName(card.clan)}</span>}
-            </div>
-          )}
-
-          {/* Year — affiché en bas-droit du popup, juste le nombre */}
-          {card.card_year && (
-            <div style={{
-              position: "absolute", bottom: 4, right: 5, zIndex: 1,
-              fontSize: 6, color: "#888", fontFamily: "'Crimson Text',serif",
-              pointerEvents: "none",
-            }}>
-              {card.card_year}
-            </div>
-          )}
-
-          {/* ORDRE D'AUTEUR : conteneur unique + `order` par ligne (cf. GameCard). */}
-          {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0 || (card.spell_keywords?.length ?? 0) > 0 || composedCapsOf(card.capabilities).length > 0) && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {/* Capacités detail */}
-          {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
-            const visible = buildKeywordDisplayEntries(card)
-              .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords));
-            if (visible.length === 0) return null;
-            return (
-            <div style={{ display: "contents" }}>
-              {visible.map((entry, idx) => {
-                const { kw, x, mode } = entry;
-                const ctx = { card, instance: entry.instance, x, tokens: tokenTemplates, espritCount };
-                const label = vocab.keywordLabelFor(kw, ctx);
-                // Plus d'annotation de déclencheur : la couleur transmet le moment.
-                const displayLabel = applyKeywordValueToLabel(kw, label, x, entry.instance);
-                const desc = vocab.keywordDesc(kw, ctx);
-                const modeColor = keywordModeColor(mode);
-                return (
-                <div key={`${kw}-${entry.instanceIdx ?? `legacy-${idx}`}`} style={{ order: (card.card_type === "creature" ? keywordDisplayOrder(card, kw) : grantedKeywordDisplayOrder(card, kw)), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0, lineHeight: 0 }}>
-                    <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={9} mode={mode} singulier={entry.singulier} />
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 7 * d, color: modeColor ?? "#fff", fontWeight: 600 }}>{displayLabel}{(() => { const d = vocab.keywordTrigger(kw, entry.instance); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>
-                    {desc && <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>}
-                    {/* Compagnons : les cartes liées, nommées, avec leur verso au survol. */}
-                    {(kw === "compagnons" || kw === "tuteur" || kw === "transformation") && <CompagnonsNames ids={entry.instance?.linkedCardIds} scale={d * 0.16} icon={kw === "tuteur" ? "🎓" : kw === "transformation" ? "🦋" : undefined} />}
-                  {/* Tokens créés : leur nom seul dans la phrase, leur VERSO au survol. */}
-                  <TokenNames cards={tokenCardsForKeyword(kw, card, tokenTemplates, x)} scale={d * 0.16} />
-                  </div>
-                </div>
-                );
-              })}
-            </div>
-            );
-          })()}
-
-          {/* Spell keyword details */}
-          {card.spell_keywords && card.spell_keywords.length > 0 && (
-            <div style={{ display: "contents" }}>
-              {card.spell_keywords.map((spellKw, i) => {
-                const label = vocab.spellKeywordLabel(spellKw);
-                const desc = vocab.spellKeywordDesc(spellKw, card, tokenTemplates);
-                return (
-                <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                  <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={9} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
-                  <div>
-                    <div style={{ fontSize: 7 * d, color: keywordModeColor("spell") ?? accentColor, fontWeight: 600 }}>{label}</div>
-                    <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
-                    {/* Compagnons (sort) : les cartes liées, nommées. */}
-                    {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={d * 0.16} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
-                  <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, tokenTemplates)} scale={d * 0.16} />
-                  </div>
-                </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Effets composés — détail (icône + texte généré) */}
-          {composedCapsOf(card.capabilities).length > 0 && (
-            <div style={{ display: "contents" }}>
-              {composedCapsOf(card.capabilities).map((cap, i) => {
-                const ic = composedIcon(cap);
-                const cmode = composedTriggerMode(cap);
-                const nm = vocab.composedName(cap);
-                return (
-                  <div key={`cxd-${i}`} style={{ order: composedDisplayOrder(cap), display: "flex", alignItems: "flex-start", gap: 4 }}>
-                    <span style={{ position: "relative", flexShrink: 0, display: "inline-flex", lineHeight: 0 }}><span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} size={9} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span><ComposedMarker mode={cmode} size={6} /></span>
-                    <div>
-                      {nm && <div style={{ fontSize: 7 * d, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 600 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
-                      <div style={{ fontSize: 6 * d, color: "#999", lineHeight: 1.3, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, tokenTemplates)}</div>
-                    <TokenNames cards={tokenCardsForComposed(cap.composed, tokenTemplates)} scale={d * 0.16} />
-                    {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
-                    {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : cap.composed?.content === "transformation" ? "🦋" : "📣"} scale={d * 0.16} />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          </div>
-          )}
-
-          {/* Effect text */}
-          {cleanEffectText(card.effect_text, card.spell_keywords) && (
-          <div style={{
-            padding: 4,
-            background: `${accentColor}11`, borderRadius: 3,
-            border: `1px solid ${accentColor}22`,
-          }}>
-            <p style={{
-              margin: 0, fontSize: 7 * d, color: "#ccc",
-              lineHeight: 1.4, fontFamily: "'Crimson Text', serif",
-            }}>{cleanEffectText(card.effect_text, card.spell_keywords)}</p>
-          </div>
-          )}
-
-          {localizeFlavor(card) && (
-            <p style={{
-              margin: 0, fontSize: 6 * d, color: "#74b9ff77",
-              fontStyle: "italic", lineHeight: 1.3, fontFamily: "'Crimson Text', serif",
-              textAlign: "center",
-            }}>&ldquo;{localizeFlavor(card)}&rdquo;</p>
-          )}
-
-          {/* Stats recap */}
-          <div style={{
-            display: "flex", justifyContent: "center", gap: 6,
-            fontSize: 7 * d, color: "#555",
-          }}>
-            <span style={isCostReduced ? { color: "#2ecc71" } : undefined}>💧 {effectiveManaCost}</span>
-            {isCreature && <><span style={{ color: "#e74c3c" }}>⚔ {displayAttack}</span><span style={{ color: "#f1c40f" }}>❤ {displayHealth}</span></>}
-          </div>
-        </div>
+        {/* Descriptif : la carte de la COLLECTION, coût et stats courants. */}
+        <DetailEnJeu
+          visible={showOverlay}
+          largeur={W - 4}
+          card={card}
+          effectiveManaCost={effectiveManaCost}
+          enJeu={{
+            ...(porteDesStats ? {
+              atk: displayAttack, hp: displayHealth,
+              atkTone: toneFor(displayAttack, card.attack ?? 0),
+              hpTone: toneFor(displayHealth, card.health ?? 0),
+            } : null),
+            espritCount: espritCount ?? undefined,
+          }}
+        />
         </div>{/* close clip-wrapper */}
       </div>
       {touchGhostPos && typeof document !== "undefined" && createPortal(

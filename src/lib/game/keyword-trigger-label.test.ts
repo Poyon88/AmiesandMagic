@@ -145,10 +145,7 @@ describe("Traductions", () => {
 describe("Câblage", () => {
   const RENDERERS = [
     "src/components/cards/GameCard.tsx",
-    "src/components/game/HandCard.tsx",
-    "src/components/game/BoardCreature.tsx",
     "src/components/game/SpellCastOverlay.tsx",
-    "src/components/game/MulliganOverlay.tsx",
   ];
   const lire = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
 
@@ -199,7 +196,7 @@ describe("Câblage", () => {
     // de la carte — l'emblème y est seulement POSÉ, et parlera aux entrées
     // suivantes. Le mode seul ne pouvait pas porter cette distinction, il fallait
     // la capacité entière.
-    expect(AVEC_COMPOSES.length).toBe(4); // tous sauf SpellCastOverlay, qui n'en a pas
+    expect(AVEC_COMPOSES.length).toBe(1); // GameCard ; SpellCastOverlay n'en a pas
     for (const f of AVEC_COMPOSES) expect(lire(f), f).toContain("vocab.composedBadge(cap)");
   });
 

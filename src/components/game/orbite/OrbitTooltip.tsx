@@ -96,6 +96,8 @@ export default function OrbitTooltip({ bulle, side }: { bulle: Bulle | null; sid
   return createPortal(
     <div
       role="tooltip"
+      key={bulle.key}
+      ref={garderDansLEcran}
       style={{
         position: "fixed",
         top: rect.top + rect.height / 2,
@@ -119,6 +121,18 @@ export default function OrbitTooltip({ bulle, side }: { bulle: Bulle | null; sid
     </div>,
     document.body,
   );
+}
+
+/** Bulle centrée sur l'élément mais HAUTE (emblème + carte source) : recalée
+ *  pour ne pas sortir de la fenêtre, en haut comme en bas. */
+function garderDansLEcran(el: HTMLDivElement | null) {
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const marge = 8;
+  let dy = 0;
+  if (r.bottom > window.innerHeight - marge) dy = window.innerHeight - marge - r.bottom;
+  if (r.top + dy < marge) dy = marge - r.top;
+  if (dy) el.style.top = `${parseFloat(el.style.top) + dy}px`;
 }
 
 /** Mise en forme commune : titre en petites capitales dorées, puis lignes. */

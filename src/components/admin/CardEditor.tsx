@@ -141,6 +141,18 @@ const S = {
   manaBtn: (active: boolean) => ({ width: 26, height: 26, borderRadius: "50%", border: `2px solid ${active ? "#4a90d9" : "#ddd"}`, background: active ? "#4a90d9" : "#fff", color: active ? "#fff" : "#888", fontSize: 10, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }) as React.CSSProperties,
 };
 
+/** Liste des capacités de la fiche : colonnes régulières (le panneau s'élargit
+ *  avec l'écran) et puces lisibles — l'ancienne nuée à 8 px se lisait mal. */
+const GRILLE_CAPACITES: React.CSSProperties = {
+  display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(165px, 1fr))", gap: 5, position: "relative",
+};
+const TAILLE_ICONE_PUCE = 24;
+const PUCE_CAPACITE: React.CSSProperties = {
+  flex: 1, minWidth: 0, padding: "4px 8px 4px 4px", borderRadius: 6, cursor: "pointer",
+  fontSize: 11.5, fontFamily: "'Cinzel',serif", lineHeight: 1.2, textAlign: "left",
+  display: "flex", alignItems: "center", gap: 2,
+};
+
 const RARITIES = ["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"];
 const SORTED_KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 /** Capacités de sort dans l'ordre alphabétique FRANÇAIS de leur libellé
@@ -1464,7 +1476,7 @@ export default function CardEditor() {
 
         {/* ── EDIT PANEL ── */}
         {selectedCard && (
-          <div style={{ width: 320, borderLeft: "1px solid #e0e0e0", background: "#fff", overflow: "auto", WebkitOverflowScrolling: "touch", padding: "16px 14px", flexShrink: 0 }}>
+          <div style={{ width: "clamp(320px, 40vw, 620px)", borderLeft: "1px solid #e0e0e0", background: "#fff", overflow: "auto", WebkitOverflowScrolling: "touch", padding: "16px 14px", flexShrink: 0 }}>
             {/* Image preview. A freshly-picked upload (newImagePreview) is a
                 local blob/data URL → render it raw (next/image can't optimise
                 those). The saved illustration is a remote Supabase URL → run it
@@ -1845,7 +1857,7 @@ export default function CardEditor() {
               return (
                 <div style={{ marginBottom: 8, padding: 8, borderRadius: 6, border: "1px solid #9b59b633", background: "#f9f0ff" }}>
                   <div style={{ ...S.label, color: "#9b59b6" }}>{"Capacités d'action"} ({spellKws.length})</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                  <div style={{ ...GRILLE_CAPACITES, marginTop: 4 }}>
                     {SORTED_SPELL_KEYWORDS.map(kwId => {
                       const def = SPELL_KEYWORDS[kwId];
                       const active = spellKws.some(k => k.id === kwId);
@@ -1863,14 +1875,12 @@ export default function CardEditor() {
                         }}
                           title={def.desc}
                           style={{
-                            padding: "2px 6px", borderRadius: 4, cursor: "pointer", fontSize: 8,
-                            fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
+                            ...PUCE_CAPACITE, fontWeight: active ? 700 : 500,
                             background: active ? "#9b59b622" : "#fff",
                             border: `1px solid ${active ? "#9b59b6" : "#e0e0e0"}`,
-                            color: active ? "#9b59b6" : "#888",
-                            display: "inline-flex", alignItems: "center",
+                            color: active ? "#9b59b6" : "#555",
                           }}
-                        ><SpellKwIcon id={kwId} symbol={def.symbol} />{def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
+                        ><SpellKwIcon id={kwId} symbol={def.symbol} size={TAILLE_ICONE_PUCE} />{def.label.replace(" X", "").replace(" +X/+Y", "")}</button>
                       );
                     })}
                   </div>
@@ -2074,7 +2084,7 @@ export default function CardEditor() {
               />
               )}
               {(!isSpell || confereesOuvertes) && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3, position: "relative" }}>
+              <div style={GRILLE_CAPACITES}>
                 {/* Les capacités cochées restent visibles, quelle que soit la recherche. */}
                 {visibleKeywords.filter(kw => ((editFields.keywords as string[]) || []).includes(kw) || correspondRecherche(rechercheKw, KEYWORD_LABELS[kw], kw)).map(kw => {
                   const active = ((editFields.keywords as string[]) || []).includes(kw);
@@ -2084,18 +2094,17 @@ export default function CardEditor() {
                   const grantAll = isSpell && active && keywordGrantScope[kw] === "all_allies";
                   const activeColor = grantAll ? "#27ae60" : "#333";
                   return (
-                    <div key={kw} style={{ position: "relative", display: "inline-flex" }}
+                    <div key={kw} style={{ position: "relative", display: "flex", minWidth: 0 }}
                       onMouseEnter={() => setHoveredKw(kw)}
                       onMouseLeave={() => setHoveredKw(null)}
                     >
                       <button onClick={() => toggleKeyword(kw)} style={{
-                        padding: "2px 6px", borderRadius: 4, fontSize: 8, fontFamily: "'Cinzel',serif", fontWeight: active ? 700 : 400,
+                        ...PUCE_CAPACITE, fontWeight: active ? 700 : 500,
                         border: `1px solid ${active ? activeColor : "#e0e0e0"}`,
                         background: active ? activeColor : "#fafafa",
-                        color: active ? "#fff" : "#888",
-                        cursor: "pointer", display: "inline-flex", alignItems: "center",
+                        color: active ? "#fff" : "#555",
                       }}>
-                        <KwIcon iconKey={kw} symbol={KEYWORD_SYMBOLS[kw]} />{label}
+                        <KwIcon iconKey={kw} symbol={KEYWORD_SYMBOLS[kw]} size={TAILLE_ICONE_PUCE} />{label}
                       </button>
                       {/* SINGULIER — condition ajoutée au déclencheur (tous mots-clés). */}
                       {active && (
@@ -2103,7 +2112,7 @@ export default function CardEditor() {
                           type="button"
                           title="Condition Singulier : ne se déclenche que si le deck de départ ne contient aucune carte en double"
                           onClick={() => setKeywordSingulier(prev => { const n = { ...prev }; if (n[kw]) delete n[kw]; else n[kw] = true; return n; })}
-                          style={{ marginLeft: 1, width: 18, height: 18, borderRadius: 3, background: keywordSingulier[kw] ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: keywordSingulier[kw] ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
+                          style={{ marginLeft: 2, width: 24, height: "auto", alignSelf: "stretch", borderRadius: 4, background: keywordSingulier[kw] ? "#0D9488" : "transparent", border: "1px solid #0D9488", color: keywordSingulier[kw] ? "#fff" : "#0D9488", fontSize: 9, fontWeight: 700, cursor: "pointer", padding: 0, lineHeight: 1, fontFamily: "'Cinzel',serif" }}
                         >S</button>
                       )}
                       {hoveredKw === kw && KEYWORD_DEFS[label]?.desc && (
