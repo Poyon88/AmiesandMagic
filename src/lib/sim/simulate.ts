@@ -2,7 +2,7 @@
 // tout ce qui empêche une simulation fiable : exceptions du moteur, coups
 // refusés (état inchangé), appels à Math.random (non reproductibles), blocages.
 import { applyAction, initializeGame } from "@/lib/game/engine";
-import type { Card, FormatCode, GameAction, GameState, HeroDefinition, TokenTemplate } from "@/lib/game/types";
+import type { Card, FormatCode, GameAction, GameState, HeroDefinition, ReglesPartie, TokenTemplate } from "@/lib/game/types";
 import { objetsDe } from "@/lib/game/items";
 import { isManaSpark } from "@/lib/game/mana-spark";
 import { candidateActions, seededRand, type Rand } from "./random-bot";
@@ -56,6 +56,9 @@ export interface ResultatPartie {
   compteurs: [Partial<Record<Compteur, UsageCompteur>>, Partial<Record<Compteur, UsageCompteur>>];
   objets: [UsageObjets, UsageObjets];
   etincelle: [UsageEtincelle, UsageEtincelle];
+  decouvertes: [UsageDecouverte, UsageDecouverte];
+  /** Fatigue subie par chaque camp en fin de partie (0 = jamais à court de deck). */
+  fatigue: [number, number];
   /** Par camp : ids des cartes PIOCHÉES (passées en main au moins une fois) et
    *  nombre de poses par id — de quoi mesurer l'apport de chaque carte. */
   cartes: [{ piochees: number[]; jouees: Record<number, number> }, { piochees: number[]; jouees: Record<number, number> }];
@@ -88,6 +91,17 @@ export interface OptionsPartie {
   premier?: 0 | 1;
   /** Consigner la chronologie coup par coup (rejeu). */
   journal?: boolean;
+  /** Variantes de règles de la partie (cf. ReglesPartie). */
+  regles?: ReglesPartie;
+}
+
+/** Bilan des DÉCOUVERTES d'un camp (variante un tour sur deux). */
+export interface UsageDecouverte {
+  offres: number;
+  /** Carte retenue d'un autre clan que celui du joueur. */
+  autreClan: number;
+  /** Offre « morte » : aucune des cartes jouable dans les 3 tours qui suivent. */
+  mortes: number;
 }
 
 const nomCarte = (s: GameState, id?: string): string | undefined => {
@@ -180,8 +194,22 @@ export function simulerPartie(
   const etincelle: ResultatPartie["etincelle"] = [
     { recue: false, joueeAuTour: null, manaPerdu: null }, { recue: false, joueeAuTour: null, manaPerdu: null },
   ];
+  const decouvertes: ResultatPartie["decouvertes"] = [{ offres: 0, autreClan: 0, mortes: 0 }, { offres: 0, autreClan: 0, mortes: 0 }];
   const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
     const actif = avant.currentPlayerIndex;
+    const tete = avant.pendingTriggers?.[0];
+    if (tete?.selectionType === "decouverte" && (act.type === "resolve_pending_trigger" || act.type === "auto_resolve_pending_triggers")) {
+      const i = avant.players.findIndex((p) => p.id === tete.controllerId);
+      const p = avant.players[i];
+      const parId = new Map((avant.factionCardPool ?? []).map((c) => [c.id, c]));
+      const offre = (tete.selectionOptionIds ?? []).map((id) => parId.get(id)).filter((c): c is Card => !!c);
+      const choisie = parId.get(act.type === "resolve_pending_trigger" && act.selectionCardId != null
+        ? act.selectionCardId : apres.players[i].hand.at(-1)?.card.id ?? -1);
+      const d = decouvertes[i];
+      d.offres++;
+      if (choisie?.clan && p.identite?.clan && choisie.clan !== p.identite.clan) d.autreClan++;
+      if (offre.length && Math.min(...offre.map((c) => c.mana_cost)) > Math.min(10, p.maxMana + 3)) d.mortes++;
+    }
     if (act.type === "play_card") {
       const p = avant.players[actif];
       const c = [...p.hand, ...p.graveyard, ...(p.eveil ?? []).map((e) => e.instance)].find((x) => x.instanceId === act.cardInstanceId);
@@ -222,7 +250,7 @@ export function simulerPartie(
   };
   let fin: ResultatPartie["fin"] = "limite_actions";
   try {
-    state = initializeGame("p1", "p2", a.cards, b.cards, premier, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, pools.formatCode ?? null);
+    state = initializeGame("p1", "p2", a.cards, b.cards, premier, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, pools.formatCode ?? null, options.regles);
     state.tokenTemplates = pools.tokens;
     state.machineTemplates = pools.machines ?? [];
     noterPioches(state);
@@ -281,7 +309,8 @@ export function simulerPartie(
       inutilises: state!.players[i].hand.filter((c) => c.card.card_type === "item").length
         + objetsDe(state!.players[i]).filter((x) => !x.equippedToInstanceId).length,
     })) as ResultatPartie["objets"],
-    etincelle, cartes, premier, ...(journal ? { journal } : {}),
+    etincelle, decouvertes, cartes, premier, ...(journal ? { journal } : {}),
+    fatigue: [state!.players[0].fatigueDamage, state!.players[1].fatigueDamage],
     winner: w === "p1" ? 0 : w === "p2" ? 1 : null,
   };
 }

@@ -339,6 +339,17 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     });
   }, [gameState, targetingMode, overlayPeeked, localPlayerId, isChoiceMine, choiceAnchor]);
 
+  // DÉCOUVERTE (variante un tour sur deux) : même modale « 1 parmi 3 » que la
+  // Sélection, avec son propre titre et la carte d'un AUTRE clan signalée.
+  const decouverteOverlay = useMemo(() => {
+    const tete = gameState?.pendingTriggers?.[0];
+    if (tete?.selectionType !== "decouverte") return {};
+    const clan = gameState!.players.find(p => p.id === tete.controllerId)?.identite?.clan;
+    const badges: Record<number, string> = {};
+    for (const c of selectionCards) if (clan && c.clan && c.clan !== clan) badges[c.id] = t("discovery_other_clan");
+    return { title: t("discovery_title"), subtitle: t("discovery_subtitle"), badges };
+  }, [gameState, selectionCards, t]);
+
   // Libellé de la désignation d'attaque EN COURS (cf. getOnAttackChoiceSlots).
   const attackPowerLabel = useMemo(() => {
     if (targetingMode !== "attack_power" || !gameState || !selectedAttackerInstanceId) return null;
@@ -2043,6 +2054,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {targetingMode === "selection" && selectionCards.length > 0 && !overlayPeeked && (
         <SelectionOverlay
           cards={selectionCards}
+          {...decouverteOverlay}
           onChoose={(cardId) => {
             const action = selectTarget(String(cardId));
             if (action) broadcast(action);
