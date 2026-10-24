@@ -45,6 +45,16 @@ export const OVERLAY = {
      *  `preImpactMs` pour que les flèches « arrivent » avant les popups. */
     targetGatherMs: 2000,
   },
+  /** Pouvoir de HÉROS — toute l'animation ralentie de 100 % (durées ×2) :
+   *  révélation, halo, anneau, étincelles, fondu et délai avant impact. */
+  heroPower: {
+    /** Facteur appliqué à chaque durée de l'overlay. */
+    slow: 2,
+    /** Fenêtre d'affichage (2 × displayMs). */
+    displayMs: 4000,
+    /** Révélation → début des popups d'impact (2 × OVERLAY_PRE_IMPACT_MS du store). */
+    preImpactMs: 2300,
+  },
 };
 
 // ---- Reveal card (SpellCast + HeroPower shared this byte-for-byte) ----------
@@ -72,6 +82,13 @@ export const spellCardRevealTransition: Transition = {
   duration: OVERLAY.spell.displayMs / 1000,
   times: [0, 0.08, 0.13, 0.6, 1],
   ease: EASE.cardReveal as unknown as Transition["ease"],
+};
+
+/** Variante POUVOIR DE HÉROS : le reveal commun, uniformément ralenti —
+ *  mêmes `times`, durée doublée (entrée comprise, contrairement aux sorts). */
+export const heroPowerCardRevealTransition: Transition = {
+  ...cardRevealTransition,
+  duration: OVERLAY.heroPower.displayMs / 1000,
 };
 
 // ---- Card motion springs (shared by BoardCreature + HandCard) --------------

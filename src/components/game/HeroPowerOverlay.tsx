@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { HeroPowerCastEvent } from "@/lib/store/gameStore";
 import { useHeroText } from "@/i18n/useHeroText";
 import { emitImpact } from "@/lib/fx/impactFx";
-import { OVERLAY, cardRevealInitial, cardRevealAnimate, cardRevealTransition } from "@/lib/fx/overlayMotion";
+import { OVERLAY, cardRevealInitial, cardRevealAnimate, heroPowerCardRevealTransition } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 
 interface HeroPowerOverlayProps {
@@ -39,7 +39,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
 
   useEffect(() => {
     if (!event) return;
-    const timer = setTimeout(onComplete, OVERLAY.displayMs);
+    const timer = setTimeout(onComplete, OVERLAY.heroPower.displayMs);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
 
@@ -54,7 +54,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
           amount: 0, type: "cast", dirX: 0, dirY: 0, big: false, paletteKey: "heropower",
         });
       }
-    }, 150);
+    }, 150 * OVERLAY.heroPower.slow);
     return () => clearTimeout(release);
   }, [event]);
 
@@ -97,22 +97,22 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.25 * OVERLAY.heroPower.slow }}
         >
           {/* Background flash · halo · shockwave ring · orbiting sparkles —
               shared overlay chrome (see OverlayPrimitives). */}
-          <RadialFlash color={color} duration={2.5} />
-          <HaloBloom color={color} size={420} duration={2.6} peakTime={0.18} />
-          <ExpandingRing color={color} size={240} duration={1.3} />
+          <RadialFlash color={color} duration={2.5 * OVERLAY.heroPower.slow} />
+          <HaloBloom color={color} size={420} duration={2.6 * OVERLAY.heroPower.slow} peakTime={0.18} />
+          <ExpandingRing color={color} size={240} duration={1.3 * OVERLAY.heroPower.slow} />
           <OrbitingSparkles
             count={12}
             lightColor={lightColor}
             hexColor={hexColor}
             baseRadius={180}
             spread={70}
-            durBase={1.5}
-            durSpread={0.5}
-            stagger={0.05}
+            durBase={1.5 * OVERLAY.heroPower.slow}
+            durSpread={0.5 * OVERLAY.heroPower.slow}
+            stagger={0.05 * OVERLAY.heroPower.slow}
           />
 
           {/* Card-shaped panel: hero portrait as background + text overlay */}
@@ -133,7 +133,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
             }}
             initial={cardRevealInitial}
             animate={cardRevealAnimate}
-            transition={cardRevealTransition}
+            transition={heroPowerCardRevealTransition}
           >
             <div style={{
               position: "absolute",

@@ -3895,6 +3895,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // a un texte d'effet à lire. Pouvoir de héros / souffle de feu gardent leur
     // cadence d'origine (rien à lire, un ralentissement les rendrait mous).
     if (spellEvent) cursor += OVERLAY.spell.preImpactMs;
+    else if (heroPowerEvent) cursor += OVERLAY.heroPower.preImpactMs;
     else if (hasOverlay) cursor += OVERLAY_PRE_IMPACT_MS;
     else if (isAttack) cursor += ATTACK_LUNGE_PRE_IMPACT_MS;
     else if (powerArrowEvent) cursor += POWER_ARROW_PRE_IMPACT_MS;
