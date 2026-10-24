@@ -76,7 +76,7 @@ export default function HeroPowerOverlay({ event, onComplete }: HeroPowerOverlay
     ? heroText.powerName({ id: event.heroId, power_name: event.powerName }) ?? event.powerName
     : "";
   const powerDescription = event
-    ? heroText.powerDesc({ id: event.heroId, power_description: event.powerDescription }) ?? event.powerDescription
+    ? heroText.powerDesc({ id: event.heroId, power_description: event.powerDescription, power_effect: event.powerEffect }) ?? event.powerDescription
     : "";
 
   return createPortal(

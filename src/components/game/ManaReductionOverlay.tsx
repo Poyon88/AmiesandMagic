@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ManaReductionEvent } from "@/lib/store/gameStore";
-import { overlayRect } from "@/lib/fx/overlayMotion";
+import { overlayRect, lent } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: ManaReductionEvent | null;
   onComplete: () => void;
 }
 
-const DURATION_MS = 1600;
+const DURATION_MS = lent(1600);
 
 // Résout la position (haut de carte) d'une carte de la main depuis son
 // `data-instance-id`. null si la carte n'est plus dans le DOM.

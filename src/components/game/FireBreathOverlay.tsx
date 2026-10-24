@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
-import { findInstanceEl, hashRandom, overlayRect } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, hashRandom, overlayRect, lent } from "@/lib/fx/overlayMotion";
 
 export interface FireBreathEvent {
   attackerInstanceId: string;
@@ -36,7 +36,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
       setSourcePos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     }
 
-    const timer = setTimeout(onComplete, 2200);
+    const timer = setTimeout(onComplete, lent(2200));
     return () => clearTimeout(timer);
   }, [event, onComplete]);
 
@@ -55,7 +55,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
         size: 8 + hashRandom(i, 2) * 12,
         hue: hashRandom(i, 3) * 40,
         light: 55 + hashRandom(i, 4) * 20,
-        dur: 0.8 + hashRandom(i, 5) * 0.6,
+        dur: lent(0.8 + hashRandom(i, 5) * 0.6),
       };
     });
   }, [event]);
@@ -68,8 +68,8 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
       size: 3 + hashRandom(i, 13) * 5,
       hue: hashRandom(i, 14) * 30 + 10,
       light: 60 + hashRandom(i, 15) * 20,
-      dur: 1.2 + hashRandom(i, 16) * 0.6,
-      delay: 0.2 + hashRandom(i, 17) * 0.3,
+      dur: lent(1.2 + hashRandom(i, 16) * 0.6),
+      delay: lent(0.2 + hashRandom(i, 17) * 0.3),
     }));
   }, [event]);
 
@@ -89,7 +89,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: lent(0.3) }}
         >
           {/* Full-screen fire tint flash */}
           <motion.div
@@ -100,7 +100,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.8, 0.4, 0] }}
-            transition={{ duration: 1.8, times: [0, 0.15, 0.5, 1] }}
+            transition={{ duration: lent(1.8), times: [0, 0.15, 0.5, 1] }}
           />
 
           {/* Fire cone expanding from attacker toward opponent board */}
@@ -128,7 +128,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
               }}
               initial={{ scale: 0.3, opacity: 0 }}
               animate={{ scale: [0.3, 1.5, 2.5], opacity: [0, 1, 0] }}
-              transition={{ duration: 1.2, times: [0, 0.3, 1], ease: "easeOut" }}
+              transition={{ duration: lent(1.2), times: [0, 0.3, 1], ease: "easeOut" }}
             />
 
             {/* Dragon emoji label */}
@@ -142,7 +142,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
               }}
               initial={{ scale: 0.5, opacity: 0, y: 10 }}
               animate={{ scale: [0.5, 1.2, 1], opacity: [0, 1, 1, 0], y: [10, -20, -30, -60] }}
-              transition={{ duration: 2, times: [0, 0.15, 0.5, 1], ease: "easeOut" }}
+              transition={{ duration: lent(2), times: [0, 0.15, 0.5, 1], ease: "easeOut" }}
             >
               <div
                 style={{
@@ -180,7 +180,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
                   opacity: [0, 1, 0.8, 0],
                   scale: [0, 1.5, 1, 0],
                 }}
-                transition={{ duration: p.dur, ease: "easeOut", delay: 0.05 + i * 0.03 }}
+                transition={{ duration: p.dur, ease: "easeOut", delay: lent(0.05 + i * 0.03) }}
               />
             ))}
 
@@ -223,7 +223,7 @@ export default function FireBreathOverlay({ event, onComplete }: FireBreathOverl
               }}
               initial={{ scale: 0.3, opacity: 1 }}
               animate={{ scale: 4, opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
+              transition={{ duration: lent(1.2), ease: "easeOut", delay: lent(0.1) }}
             />
           </motion.div>
         </motion.div>

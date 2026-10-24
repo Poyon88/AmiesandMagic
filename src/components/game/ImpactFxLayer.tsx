@@ -20,7 +20,7 @@ import {
   ashFall,
   soulRise,
 } from "@/lib/fx/impactFx";
-import { findInstanceEl, overlayRect } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect, RALENTI_JEU, lent } from "@/lib/fx/overlayMotion";
 
 // Pool size — a hit emits ~40-90 particles; 800 comfortably covers several
 // overlapping hits (Fureur chains, multi-target) without per-emit allocation.
@@ -204,7 +204,9 @@ export default function ImpactFxLayer() {
     };
 
     const frame = (now: number) => {
-      const dt = Math.min((now - lastTimeRef.current) / 1000, 0.05);
+      // Temps SIMULÉ ralenti du facteur global (RALENTI_JEU) : durées de vie,
+      // vitesses et gravité suivent toutes, sans retoucher chaque émetteur.
+      const dt = Math.min((now - lastTimeRef.current) / 1000, 0.05) / RALENTI_JEU;
       lastTimeRef.current = now;
 
       const w = window.innerWidth;
@@ -402,7 +404,7 @@ export default function ImpactFxLayer() {
           big: false,
         });
       }
-    }, 110);
+    }, lent(110));
     return () => clearTimeout(timer);
   }, [summonEvents]);
 

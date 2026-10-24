@@ -50,6 +50,8 @@ export interface HeroDeClan {
   power_name: string | null;
   power_cost: number | null;
   power_description: string | null;
+  /** Effets du pouvoir : son texte en est généré. */
+  power_effect?: unknown;
   /** Illustration du pouvoir — celle que le jeu peint à l'activation. */
   power_image_url: string | null;
   /** Activations autorisées par partie. `null` = illimité. */

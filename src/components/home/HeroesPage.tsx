@@ -10,6 +10,7 @@ import { RARITIES } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
+import PremiumAura, { aAuraPremium } from "@/components/heroes/PremiumAura";
 
 const RARITY_COLOR: Record<string, string> = Object.fromEntries(
   RARITIES.map((r) => [r.id, r.color])
@@ -30,6 +31,7 @@ interface HeroRow {
   thumbnail_url: string | null;
   power_name: string | null;
   power_description: string | null;
+  power_effect?: unknown;
   power_image_url: string | null;
   is_default: boolean;
 }
@@ -343,23 +345,29 @@ function HeroCard({
             className="absolute inset-0 rounded-full border border-am-gold/30 bg-am-bg-1/40 transition-all duration-300 group-hover:border-am-gold/60 group-hover:shadow-[0_0_36px_-6px_rgba(154,107,255,0.5)]"
             aria-hidden="true"
           />
-          <div
-            className="relative w-full h-full"
-            style={{ filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.6))" }}
-          >
-            {hero.thumbnail_url ? (
-              <Image
-                src={hero.thumbnail_url}
-                alt={`${heroText.heroName(hero)} — portrait`}
-                fill
-                sizes="180px"
-                className="object-contain"
-                unoptimized
-              />
-            ) : (
-              <div className="flex items-center justify-center w-full h-full text-am-gold/60 text-5xl" aria-hidden="true">⚔</div>
-            )}
-          </div>
+          {/* Aura des héros LÉGENDAIRES (halo + reflet), comme en partie. */}
+          {(() => {
+            const portrait = (
+              <div
+                className="relative w-[150px] h-[150px] md:w-[180px] md:h-[180px]"
+                style={{ filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.6))" }}
+              >
+                {hero.thumbnail_url ? (
+                  <Image
+                    src={hero.thumbnail_url}
+                    alt={`${heroText.heroName(hero)} — portrait`}
+                    fill
+                    sizes="180px"
+                    className="object-contain"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full text-am-gold/60 text-5xl" aria-hidden="true">⚔</div>
+                )}
+              </div>
+            );
+            return aAuraPremium(hero.rarity) ? <PremiumAura rarete={hero.rarity}>{portrait}</PremiumAura> : portrait;
+          })()}
         </div>
 
         <h2
@@ -391,7 +399,7 @@ function HeroCard({
             <p className="font-display font-semibold text-am-ink text-sm">
               {heroText.powerName(hero)}
             </p>
-            {hero.power_description && (
+            {heroText.powerDesc(hero) && (
               <p className="font-serif text-am-ink-soft text-xs mt-1.5 leading-relaxed">
                 {heroText.powerDesc(hero)}
               </p>
@@ -452,7 +460,7 @@ function HeroPowerPopover({
         {hero.power_name && (
           <p className="font-display font-semibold text-am-ink text-sm">{heroText.powerName(hero)}</p>
         )}
-        {hero.power_description && (
+        {heroText.powerDesc(hero) && (
           <p className="font-serif text-am-ink-soft text-xs mt-1.5 leading-relaxed">
             {heroText.powerDesc(hero)}
           </p>

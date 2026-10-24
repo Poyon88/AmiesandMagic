@@ -2207,9 +2207,11 @@
     "f1_title": "The depth of legends.",
     "f1_desc": "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
     "f2_title": "As many cards as possible, right from the start.",
-    "f2_desc": "Get every classic card of the faction of your choice, free (around 500 cards). And unlock every faction for a fraction of the cost of a traditional TCG.",
+    "f2_desc": "Get every classic card of the faction of your choice, free (over 300 cards). And unlock every faction (around 2,500 cards) for a fraction of the cost of a traditional TCG.",
     "f3_title": "Every Expert deck, a singular work.",
     "f3_desc": "Limited-print cards make every Expert deck unique. A shared quota ensures only your strategy decides.",
+    "f_icons_title": "Readable at a glance.",
+    "f_icons_desc": "Lovingly illustrated, Armies & Magic cards are as readable as they are beautiful: thanks to a colour code of icons unique to each trigger, you grasp their effect at a single glance, without even reading the text.",
     "f4_title": "Mobile, at last worthy of the stakes.",
     "f4_desc": "Tournaments rewarded with rare cards and cash prizes — a level of stakes once reserved for desktop TCGs.",
     "factions_title": "Nine factions. One legend.",
@@ -2986,6 +2988,8 @@
     "label_retard": "Delay"
   },
   "game": {
+    "hero_power_grant": "Grants {kw} to a creature",
+    "hero_power_emblem": "Emblem: {kw}",
     "error_not_authenticated": "Not authenticated",
     "error_match_not_found": "Match not found",
     "error_load_failed": "Failed to load match",

@@ -27,7 +27,7 @@ import { RightSlots, RIGHT_SLOT, additionalCostOf, awakenOf, rightSlotsAriaParts
 import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
-import { SPRINGS } from "@/lib/fx/overlayMotion";
+import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
@@ -137,7 +137,7 @@ function HandCard({
   // stats, violet pour une capacité acquise.
   const isBoost = boost != null;
   const isEmpower = boost === "empower";
-  const boostDur = isEmpower ? 0.75 : 0.6;
+  const boostDur = lent(isEmpower ? 0.75 : 0.6);
   const haloRgb = isEmpower ? "168,85,247" : "234,179,8";
   const haloPeak = isEmpower ? 1.5 : 1.35;
 

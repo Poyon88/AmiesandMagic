@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { TempeteEvent } from "@/lib/store/gameStore";
-import { getInstanceCenter, hashRandom } from "@/lib/fx/overlayMotion";
+import { getInstanceCenter, hashRandom, lent } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: TempeteEvent | null;
@@ -15,10 +15,10 @@ interface Props {
 // origin to its target, IMPACT_MS for the flash. STAGGER_MS spaces the
 // missiles so each is clearly its own projectile (Hearthstone Arcane
 // Missiles cadence).
-const BOLT_MS = 260;
-const IMPACT_MS = 320;
-const STAGGER_MS = 200;
-const TAIL_FADE_MS = 140;
+const BOLT_MS = lent(260);
+const IMPACT_MS = lent(320);
+const STAGGER_MS = lent(200);
+const TAIL_FADE_MS = lent(140);
 
 // Quadratic Bezier path from `(sx, sy)` to `(tx, ty)` with a curved arc
 // — control point sits between them, offset perpendicular by `bulge`.
@@ -121,7 +121,7 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18 }}
+          transition={{ duration: lent(0.18) }}
         >
           <defs>
             {/* One gradient PER missile, aligned to its own origin→target
@@ -152,7 +152,7 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
                 style={{ filter: "blur(3px)" }}
                 initial={{ scale: 0.5, opacity: 0 }}
                 animate={{ scale: [0.5, 1.2, 0.8], opacity: [0, 0.7, 0] }}
-                transition={{ duration: 0.16, delay: Math.max(0, m.delay - 0.1), ease: "easeOut" }}
+                transition={{ duration: lent(0.16), delay: Math.max(0, m.delay - lent(0.1)), ease: "easeOut" }}
               />
               {/* Outer glow trail — wider, soft */}
               <motion.path

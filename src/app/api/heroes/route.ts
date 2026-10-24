@@ -7,6 +7,7 @@ import { ABILITIES } from '@/lib/game/abilities';
 import { validateFactionClan } from '@/lib/validation/faction-clan';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { HERO_HP_MAX, HERO_HP_MIN, pvDeDepartValides } from '@/lib/game/hero-hp';
+import { MAX_EFFETS_POUVOIR } from '@/lib/game/hero-power';
 
 const ALLOWED_POWER_MODES = new Set(['grant_keyword', 'spell_trigger', 'aura', 'composed']);
 
@@ -95,6 +96,24 @@ function validatePowerEffect(
   if (typeof obj.race === 'string' && obj.race.trim()) validated.race = obj.race;
   if (typeof obj.clan === 'string' && obj.clan.trim()) validated.clan = obj.clan;
   return { ok: true, value: validated };
+}
+
+/** Un effet seul (forme historique) ou une LISTE de 1 à 3 effets, chacun validé
+ *  comme un effet seul. Une liste d'un élément est rangée comme l'objet seul. */
+function validatePowerEffects(
+  raw: unknown,
+): { ok: true; value: PowerEffectV2 | PowerEffectV2[] } | { ok: false; error: string } {
+  if (!Array.isArray(raw)) return validatePowerEffect(raw);
+  if (raw.length < 1 || raw.length > MAX_EFFETS_POUVOIR) {
+    return { ok: false, error: `powerEffect : entre 1 et ${MAX_EFFETS_POUVOIR} effets` };
+  }
+  const out: PowerEffectV2[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const v = validatePowerEffect(raw[i]);
+    if (!v.ok) return { ok: false, error: `Effet ${i + 1} : ${v.error}` };
+    out.push(v.value);
+  }
+  return { ok: true, value: out.length === 1 ? out[0] : out };
 }
 
 function validateUsageLimit(raw: unknown): { ok: true; value: number | null } | { ok: false; error: string } {
@@ -220,7 +239,7 @@ export async function POST(request: Request) {
     const fc = validateFactionClan(faction, clan);
     if (!fc.ok) return NextResponse.json({ error: fc.error }, { status: 400 });
 
-    const peVal = validatePowerEffect(power_effect);
+    const peVal = validatePowerEffects(power_effect);
     if (!peVal.ok) return NextResponse.json({ error: peVal.error }, { status: 400 });
 
     const ulVal = validateUsageLimit(power_usage_limit);
@@ -359,7 +378,7 @@ export async function PUT(request: Request) {
     if (typeof power_name === 'string') updates.power_name = power_name;
     if (typeof power_cost === 'number') updates.power_cost = power_cost;
     if (power_effect !== undefined) {
-      const peVal = validatePowerEffect(power_effect);
+      const peVal = validatePowerEffects(power_effect);
       if (!peVal.ok) return NextResponse.json({ error: peVal.error }, { status: 400 });
       updates.power_effect = peVal.value;
     }

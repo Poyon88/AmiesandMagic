@@ -1,7 +1,7 @@
 // Pure DOM animation helpers. Fire-and-forget — no callbacks, the caller
 // schedules follow-up state transitions independently via the animation queue.
 
-import { findInstanceEl } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, lent } from "@/lib/fx/overlayMotion";
 
 function findEl(id: string): HTMLElement | null {
   if (id === "enemy_hero" || id === "friendly_hero") {
@@ -52,7 +52,7 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
     if (settled) return;
     settled = true;
     attackerEl.style.zIndex = origZ;
-  }, 900);
+  }, lent(900));
 
   const finishAll = (...anims: Animation[]) => {
     clearTimeout(fallbackTimer);
@@ -68,7 +68,7 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
       { transform: "translate(0, 0) scale(1) rotate(0deg)" },
       { transform: `translate(${anticX}px, ${anticY}px) scale(0.94) rotate(${tilt * -3}deg)` },
     ],
-    { duration: 130, easing: "cubic-bezier(0.3, 0, 0.7, 0.5)", fill: "forwards" }
+    { duration: lent(130), easing: "cubic-bezier(0.3, 0, 0.7, 0.5)", fill: "forwards" }
   );
 
   antic.onfinish = () => {
@@ -80,7 +80,7 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
         { transform: `translate(${anticX}px, ${anticY}px) scale(0.94) rotate(${tilt * -3}deg)` },
         { transform: `translate(${lungeX}px, ${lungeY}px) scale(1.12) rotate(${tilt * 5}deg)` },
       ],
-      { duration: 230, easing: "cubic-bezier(0.55, 0, 0.9, 0.35)", fill: "forwards" }
+      { duration: lent(230), easing: "cubic-bezier(0.55, 0, 0.9, 0.35)", fill: "forwards" }
     );
 
     lunge.onfinish = () => {
@@ -94,7 +94,7 @@ export function playAttackLunge(attackerInstanceId: string, targetId: string) {
           { transform: `translate(${overshootX}px, ${overshootY}px) scale(0.97) rotate(${tilt * -1.5}deg)`, offset: 0.68 },
           { transform: "translate(0, 0) scale(1) rotate(0deg)", offset: 1 },
         ],
-        { duration: 360, easing: "cubic-bezier(0.34, 1.2, 0.4, 1)", fill: "forwards" }
+        { duration: lent(360), easing: "cubic-bezier(0.34, 1.2, 0.4, 1)", fill: "forwards" }
       );
 
       ret.onfinish = () => finishAll(antic, lunge, ret);

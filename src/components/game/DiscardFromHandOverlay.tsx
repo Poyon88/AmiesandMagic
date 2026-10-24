@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { DiscardFromHandEvent } from "@/lib/store/gameStore";
-import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
+import { CASCADE_EASE, CASCADE_STAGGER, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 // Match the discard phase timing in `gameStore.dispatchAction`
 // (`DISCARD_MS = 1800`). The overlay self-clears at the end of the window so
 // the draw phase can play next.
-const DISPLAY_MS = 1800;
+const DISPLAY_MS = lent(1800);
 
 // Forced-discard popup: shown between the summon and draw phases when a
 // card was forced from a player's hand to their graveyard during the
@@ -60,7 +60,7 @@ export default function DiscardFromHandOverlay({ event, onComplete }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: lent(0.25) }}
         >
           {/* Label */}
           <motion.div

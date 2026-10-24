@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { DamageEvent } from "@/lib/game/types";
 import { isBigHit } from "@/lib/fx/impactFx";
+import { lent } from "@/lib/fx/overlayMotion";
 
 interface DamageOverlayProps {
   events: DamageEvent[];
@@ -40,7 +41,7 @@ function ReducedPopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 0 }}
       animate={{ opacity: [0, 1, 1, 0] }}
-      transition={{ duration: 1.6, times: [0, 0.1, 0.7, 1] }}
+      transition={{ duration: lent(1.6), times: [0, 0.1, 0.7, 1] }}
     >
       <span
         style={{
@@ -183,7 +184,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 2.5, ease: "easeOut" }}
+      transition={{ duration: lent(2.5), ease: "easeOut" }}
     >
       {/* Shield glow ring */}
       <motion.div
@@ -200,7 +201,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ scale: 0.3, opacity: 1 }}
         animate={{ scale: 1.8, opacity: 0 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
+        transition={{ duration: lent(1.2), ease: "easeOut" }}
       />
 
       {/* Inner shield flash */}
@@ -217,7 +218,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ scale: 0.5, opacity: 1 }}
         animate={{ scale: 2, opacity: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: lent(0.8) }}
       />
 
       {/* Rising sparkle particles */}
@@ -242,7 +243,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
             }}
             initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
             animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
-            transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeOut", delay: i * 0.03 }}
+            transition={{ duration: lent(0.8 + Math.random() * 0.4), ease: "easeOut", delay: lent(i * 0.03) }}
           />
         );
       })}
@@ -260,7 +261,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ scale: 2, opacity: 1 }}
         animate={{ scale: 1, opacity: 0 }}
-        transition={{ duration: 2.2, ease: "easeOut" }}
+        transition={{ duration: lent(2.2), ease: "easeOut" }}
       >
         🛡️
       </motion.span>
@@ -281,7 +282,7 @@ function ShieldPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ y: 20, opacity: 1 }}
         animate={{ y: -40, opacity: 0 }}
-        transition={{ duration: 2.0, ease: "easeOut", delay: 0.2 }}
+        transition={{ duration: lent(2.0), ease: "easeOut", delay: lent(0.2) }}
       >
         {event.label ?? "Divine Shield"}
       </motion.span>
@@ -303,7 +304,7 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 2.5, ease: "easeOut" }}
+      transition={{ duration: lent(2.5), ease: "easeOut" }}
     >
       {/* Poison cloud */}
       <motion.div
@@ -319,7 +320,7 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ scale: 0.5, opacity: 1 }}
         animate={{ scale: 2, opacity: 0 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
+        transition={{ duration: lent(1.2), ease: "easeOut" }}
       />
 
       {/* Dripping particles */}
@@ -342,7 +343,7 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
             }}
             initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
             animate={{ x: xSpread, y: yEnd, opacity: 0, scale: 0.5 }}
-            transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeIn", delay: i * 0.05 }}
+            transition={{ duration: lent(0.8 + Math.random() * 0.4), ease: "easeIn", delay: lent(i * 0.05) }}
           />
         );
       })}
@@ -363,7 +364,7 @@ function PoisonPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ y: 0, scale: 1.5, opacity: 1 }}
         animate={{ y: -32, scale: 1, opacity: 0 }}
-        transition={{ duration: 2.4, ease: "easeOut" }}
+        transition={{ duration: lent(2.4), ease: "easeOut" }}
       >
         {format(event)}
       </motion.span>
@@ -391,7 +392,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 3.5, ease: "easeOut" }}
+      transition={{ duration: lent(3.5), ease: "easeOut" }}
     >
       {/* Damage number — punchy impact-frame, crit styling on big hits */}
       <motion.span
@@ -422,7 +423,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           rotate: [-12, big ? 5 : 4, 0, 0],
         }}
         transition={{
-          duration: 3.5,
+          duration: lent(3.5),
           times: [0, 0.12, 0.75, 1],
           ease: ["backOut", "easeOut", "easeIn"],
         }}
@@ -475,7 +476,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
       }}
       initial={{ opacity: 1 }}
       animate={{ opacity: 0 }}
-      transition={{ duration: 2.9 * slowMul, ease: "easeOut" }}
+      transition={{ duration: lent(2.9 * slowMul), ease: "easeOut" }}
     >
       {/* Flash circle */}
       <motion.div
@@ -491,7 +492,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ scale: 0.5, opacity: 1 }}
         animate={{ scale: 1.5, opacity: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: lent(0.6) }}
       />
 
       {/* Particles — skipped for buff/empower (Canvas owns those). */}
@@ -516,7 +517,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
               }}
               initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
               animate={{ x: xSpread, y: yEnd, opacity: 0, scale: 0 }}
-              transition={{ duration: (0.8 + Math.random() * 0.4) * slowMul, ease: "easeOut", delay: i * 0.05 * slowMul }}
+              transition={{ duration: lent((0.8 + Math.random() * 0.4) * slowMul), ease: "easeOut", delay: lent(i * 0.05 * slowMul) }}
             />
           );
         })
@@ -541,7 +542,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
               }}
               initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
               animate={{ x: dx, y: dy, opacity: 0, scale: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: lent(0.8), ease: "easeOut" }}
             />
           );
         })
@@ -563,7 +564,7 @@ function EventPopup({ event }: { event: DamageEvent }) {
         }}
         initial={{ y: 0, scale: 1.5, opacity: 1 }}
         animate={{ y: isPositive ? -36 : -32, scale: 1, opacity: 0 }}
-        transition={{ duration: 2.8 * slowMul, ease: "easeOut" }}
+        transition={{ duration: lent(2.8 * slowMul), ease: "easeOut" }}
       >
         {format(event)}
       </motion.span>

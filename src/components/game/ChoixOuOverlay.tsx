@@ -37,9 +37,9 @@ export default function ChoixOuOverlay({ options, onChoose }: ChoixOuOverlayProp
   });
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, maxWidth: 760, width: "92%" }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "'Cinzel', serif", textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "'Cinzel', serif", textAlign: "center", textShadow: "0 2px 8px rgba(0,0,0,0.95), 0 0 3px #000" }}>
           {t('choix_ou_title')}
         </div>
         <p style={{ fontSize: 14, color: "#bbb", textAlign: "center", fontFamily: "'Crimson Text', serif", marginTop: -12 }}>

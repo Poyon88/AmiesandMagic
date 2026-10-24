@@ -37,6 +37,7 @@ type Dict = {
   f2_title: string; f2_desc: string;
   f3_title: string; f3_desc: string;
   f4_title: string; f4_desc: string;
+  f_icons_title: string; f_icons_desc: string;
   factions_title: string;
   factions_sub: string;
   showcase_title: string;
@@ -183,9 +184,11 @@ interface LandingPageProps {
    *  present the landing card uses the default hero portrait instead
    *  of the generic SVG/PNG icon under `/images/heroes/*`. */
   factionHeroUrls?: Record<string, string>;
+  /** Carte zoomée du bloc « Lisibles d'un coup d'œil » (null ⇒ bloc masqué). */
+  iconCard?: Card | null;
 }
 
-export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingPageProps) {
+export default function LandingPage({ showcaseCards, factionHeroUrls, iconCard }: LandingPageProps) {
   const router = useRouter();
   // Only a boolean threshold drives the navbar chrome now — setting it to
   // the same value bails out of a re-render, so the whole tree no longer
@@ -211,12 +214,14 @@ export default function LandingPage({ showcaseCards, factionHeroUrls }: LandingP
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const features = [
+  const features: Feature[] = [
     { title: txt.f1_title, desc: txt.f1_desc, accent: "sword" },
     { title: txt.f2_title, desc: txt.f2_desc, accent: "cards" },
     { title: txt.f3_title, desc: txt.f3_desc, accent: "crown" },
+    // Juste avant l'arène mobile : la lisibilité des cartes, preuve à l'appui.
+    ...(iconCard ? [{ title: txt.f_icons_title, desc: txt.f_icons_desc, accent: "icons", card: iconCard }] : []),
     { title: txt.f4_title, desc: txt.f4_desc, accent: "trophy" },
-  ] as const;
+  ];
 
   const floatingCards = useMemo(() => showcaseCards.slice(0, 3), [showcaseCards]);
 
@@ -720,10 +725,12 @@ function HeroSection({ txt, floatingCards, onPlay }: HeroSectionProps) {
 
 // ─── Features ──────────────────────────────────────────────────────────────
 
+type Feature = { title: string; desc: string; accent: string; card?: Card };
+
 interface FeaturesSectionProps {
   id?: string;
   title: string;
-  features: readonly { title: string; desc: string; accent: string }[];
+  features: readonly Feature[];
 }
 
 function FeaturesSection({ id, title, features }: FeaturesSectionProps) {
@@ -771,7 +778,7 @@ function FeatureBlock({
   feature,
 }: {
   index: number;
-  feature: { title: string; desc: string; accent: string };
+  feature: Feature;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -789,7 +796,9 @@ function FeatureBlock({
         initial={{ opacity: 0, x: reversed ? 40 : -40 }}
         animate={inView ? { opacity: 1, x: 0 } : {}}
         transition={{ duration: 0.9, ease: "easeOut" }}
-        className="relative aspect-[4/3] md:aspect-[5/4] overflow-hidden rounded-xl border border-[#c8a84e]/15"
+        // Carte vivante : le cadre la laisse déborder au survol (zoom ×1,5 du
+        // carrousel) et passe au-dessus de ses voisins le temps du survol.
+        className={`relative aspect-[4/3] md:aspect-[5/4] ${feature.card ? "overflow-visible z-[3]" : "overflow-hidden"} rounded-xl border border-[#c8a84e]/15`}
         style={{
           background:
             "radial-gradient(ellipse at 50% 40%, rgba(200,168,78,0.10) 0%, rgba(26,26,46,0.6) 50%, rgba(10,10,24,0.9) 100%)",
@@ -797,7 +806,7 @@ function FeatureBlock({
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <FeatureGlyph accent={feature.accent} />
+          {feature.card ? <CarteZoomee card={feature.card} /> : <FeatureGlyph accent={feature.accent} />}
         </div>
         {/* Corner ornaments */}
         <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-[#c8a84e]/50" />
@@ -833,6 +842,32 @@ function FeatureBlock({
           {feature.desc}
         </p>
       </motion.div>
+    </div>
+  );
+}
+
+/** Une carte réelle, ENTIÈRE dans le cadre, au même gabarit que le défilé du
+ *  bas (`md`, 260×364) et à sa taille native. Réduite seulement si le cadre est
+ *  trop petit pour elle (mobile), jamais agrandie. Comme dans le carrousel, le
+ *  survol prolongé l'agrandit et ouvre son détail (appui long sur tablette). */
+function CarteZoomee({ card }: { card: Card }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [echelle, setEchelle] = useState(1);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      const { width, height } = e.contentRect;
+      setEchelle(Math.min(1, (width * 0.9) / 260, (height * 0.9) / 364));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className="relative w-full h-full flex items-center justify-center">
+      <div style={{ transform: `scale(${echelle})`, flexShrink: 0 }}>
+        <GameCard card={card} size="md" />
+      </div>
     </div>
   );
 }

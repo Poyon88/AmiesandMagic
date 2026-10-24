@@ -16,14 +16,14 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { DeckEffectEvent } from "@/lib/store/gameStore";
-import { overlayRect } from "@/lib/fx/overlayMotion";
+import { overlayRect, lent } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: DeckEffectEvent | null;
   onComplete: () => void;
 }
 
-const DURATION_MS = 1500;
+const DURATION_MS = lent(1500);
 
 /** Apparence par capacité. Les teintes reprennent celles des icônes de la forge :
  *  Préincanter est une bougie (or chaud), Fortifier une enclume (bronze). */
@@ -107,7 +107,7 @@ export default function DeckEffectOverlay({ event, onComplete }: Props) {
         key={`halo-${event.timestamp}`}
         initial={{ opacity: 0.75, scale: 0.55 }}
         animate={{ opacity: 0, scale: 1.5 }}
-        transition={{ duration: 0.85, ease: "easeOut" }}
+        transition={{ duration: lent(0.85), ease: "easeOut" }}
         style={{
           position: "fixed",
           left: ancre.x,

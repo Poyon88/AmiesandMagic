@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { TopdeckCostEvent } from "@/lib/store/gameStore";
 import { REPLI_TEINTE, REPLI_RGB } from "@/lib/game/repli-theme";
-import { overlayRect } from "@/lib/fx/overlayMotion";
+import { overlayRect, lent } from "@/lib/fx/overlayMotion";
 
 /** Coût de REPLI : X cartes quittent la main pour le DESSUS du deck.
  *
@@ -21,10 +21,10 @@ import { overlayRect } from "@/lib/fx/overlayMotion";
  *  Ancré sur `[data-cycle-deck]`, la même ancre que l'exil, Cycle éternel et les
  *  effets « deck » — une seule convention pour tout ce qui s'anime au deck. */
 
-const VOL_MS = 780;
-const STAGGER_MS = 140;
+const VOL_MS = lent(780);
+const STAGGER_MS = lent(140);
 /** Marge après le dernier vol avant de rendre la main au store. */
-const QUEUE_MS = 200;
+const QUEUE_MS = lent(200);
 /** Au-delà, on tronque : un repli de 4 cartes ne doit pas monopoliser l'écran. */
 const MAX_VISIBLE = 3;
 
@@ -150,7 +150,7 @@ export default function TopdeckCostOverlay({ event, onComplete }: Props) {
             duration: (VOL_MS + (visibles - 1) * STAGGER_MS) / 1000,
             times: [0, 0.25, 0.72, 1],
             ease: "easeOut",
-            delay: 0.25,
+            delay: lent(0.25),
           }}
         >
           ↥ {t("topdeck_cost_caption", { count: event.count })}

@@ -105,8 +105,10 @@ describe("fin de tour qui pioche une carte à effet — ordre à l'écran", () =
 
     expect(vu).toEqual([
       "dégâts fin de tour",
-      "carte en main",
+      // La carte se révèle AVANT d'arriver en main (arbitrage auteur) : on lit
+      // ce que la pioche déclenche, puis elle rejoint la main et frappe.
       "révélation",
+      "carte en main",
       "dégâts de la pioche",
       "mort du Diablotin",
     ]);

@@ -7,6 +7,7 @@ import GameCard from "@/components/cards/GameCard";
 import { CostShield, StatShields } from "@/components/card/CardCounters";
 import type { Card } from "@/lib/game/types";
 import OrbitLab from "./OrbitLab";
+import AuraLab from "./AuraLab";
 
 const ART = "https://hndskftqdudknsvdunjc.supabase.co/storage/v1/object/public/card-images/forge_1787753041580_z3ma.jpeg";
 
@@ -82,6 +83,7 @@ export default function CardLab() {
         ))}
       </div>
 
+      <AuraLab />
       <OrbitLab />
     </div>
   );

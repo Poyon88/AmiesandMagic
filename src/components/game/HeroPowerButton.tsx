@@ -45,7 +45,7 @@ export default function HeroPowerButton({
   const powerName =
     heroText.powerName({ id: heroDef.id, power_name: heroDef.powerName }) ?? heroDef.powerName;
   const powerDescription =
-    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription }) ??
+    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription, power_effect: heroDef.powerEffect }) ??
     heroDef.powerDescription;
 
   // V2 power system : every power is "active" (must pay the cost). Mode 3

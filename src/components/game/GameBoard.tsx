@@ -59,6 +59,7 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import { onPlaySfxChain } from "@/lib/game/on-play-sfx";
 import useLongPress from "@/hooks/useLongPress";
 import { useScreenShake } from "@/hooks/useScreenShake";
+import { lent } from "@/lib/fx/overlayMotion";
 
 // Fixed design size the board is authored against (16:9). The whole board is a
 // canvas of this size, scaled uniformly to fit the viewport (see boardScale).
@@ -239,7 +240,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // chaque horodatage, on vide l'événement une fois le pulse terminé.
   useEffect(() => {
     if (!emblemFireEvent) return;
-    const t = setTimeout(clearEmblemFireEvent, 1000);
+    const t = setTimeout(clearEmblemFireEvent, lent(1000));
     return () => clearTimeout(t);
   }, [emblemFireEvent, clearEmblemFireEvent]);
 
@@ -432,21 +433,21 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // Auto-clear damage events after animation
   useEffect(() => {
     if (damageEvents.length === 0) return;
-    const timer = setTimeout(clearDamageEvents, 2900);
+    const timer = setTimeout(clearDamageEvents, lent(2900));
     return () => clearTimeout(timer);
   }, [damageEvents, clearDamageEvents]);
 
   // Auto-clear death FX events after the burst has played out.
   useEffect(() => {
     if (deathEvents.length === 0) return;
-    const timer = setTimeout(clearDeathEvents, 2500);
+    const timer = setTimeout(clearDeathEvents, lent(2500));
     return () => clearTimeout(timer);
   }, [deathEvents, clearDeathEvents]);
 
   // Auto-clear summon FX events after the portal burst has played out.
   useEffect(() => {
     if (summonEvents.length === 0) return;
-    const timer = setTimeout(clearSummonEvents, 2500);
+    const timer = setTimeout(clearSummonEvents, lent(2500));
     return () => clearTimeout(timer);
   }, [summonEvents, clearSummonEvents]);
 
@@ -1276,7 +1277,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                     }
                   : { filter: "brightness(1)", boxShadow: "0 0 0px 0px rgba(234,179,8,0)" }
               }
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              transition={{ duration: lent(0.6), ease: "easeOut" }}
             >
               {opponentCardBackUrl ? (
                 <Image

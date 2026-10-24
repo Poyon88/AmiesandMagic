@@ -139,6 +139,7 @@ function HistoryTile({ entry }: { entry: ActionHistoryEntry }) {
         name: entry.hero.heroName,
         power_name: entry.hero.powerName,
         power_description: entry.hero.powerDescription,
+        power_effect: entry.hero.powerEffect,
       }
     : null;
 

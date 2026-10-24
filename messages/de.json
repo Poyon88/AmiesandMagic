@@ -2207,9 +2207,11 @@
     "f1_title": "Die Tiefe der Legenden.",
     "f1_desc": "Armies & Magic verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
     "f2_title": "Maximale Kartenzahl von Anfang an.",
-    "f2_desc": "Erhaltet kostenlos alle klassischen Karten der Fraktion eurer Wahl (etwa 500 Karten). Sichert euch alle Fraktionen für einen Bruchteil der Kosten eines klassischen TCG.",
+    "f2_desc": "Erhaltet kostenlos alle klassischen Karten der Fraktion eurer Wahl (über 300 Karten). Sichert euch alle Fraktionen (rund 2.500 Karten) für einen Bruchteil der Kosten eines klassischen TCG.",
     "f3_title": "Jedes Experten-Deck ein Unikat.",
     "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
+    "f_icons_title": "Auf einen Blick lesbar.",
+    "f_icons_desc": "Liebevoll illustriert, sind die Karten von Armies & Magic ebenso schön wie lesbar: Dank eines Farbcodes der Symbole, der jedem Auslöser eigen ist, erfassen Sie ihre Wirkung auf einen Blick – ganz ohne den Text zu lesen.",
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
     "f4_desc": "Turniere mit seltenen Karten und Geldpreisen — ein Niveau, das bisher den größten Desktop-TCGs vorbehalten war.",
     "factions_title": "Neun Fraktionen. Eine Legende.",
@@ -2986,6 +2988,8 @@
     "label_retard": "Verzögerung"
   },
   "game": {
+    "hero_power_grant": "Verleiht einer Kreatur {kw}",
+    "hero_power_emblem": "Emblem: {kw}",
     "error_not_authenticated": "Nicht authentifiziert",
     "error_match_not_found": "Partie nicht gefunden",
     "error_load_failed": "Partie konnte nicht geladen werden",

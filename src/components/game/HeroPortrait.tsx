@@ -5,6 +5,8 @@ import Image from "next/image";
 import type { HeroState } from "@/lib/game/types";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import { isBigHit } from "@/lib/fx/impactFx";
+import PremiumAura, { aAuraPremium } from "@/components/heroes/PremiumAura";
+import { lent } from "@/lib/fx/overlayMotion";
 
 const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
@@ -66,6 +68,8 @@ export default function HeroPortrait({
     // héros (HeroOrbit) se centre sur elle. L'écu des PV déborde en bas, en
     // absolu, sans agrandir la boîte.
     <div className="relative">
+      {/* Aura des héros LÉGENDAIRES (halo + reflet) autour du seul médaillon. */}
+      <AuraSiLegendaire rarete={hero.heroDefinition?.rarity}>
       <motion.div
         animate={
           damageAmount
@@ -81,7 +85,7 @@ export default function HeroPortrait({
               }
             : { x: 0, filter: "brightness(1) saturate(1)" }
         }
-        transition={{ duration: isBigDmg ? 0.55 : 0.45, ease: "easeOut" }}
+        transition={{ duration: lent(isBigDmg ? 0.55 : 0.45), ease: "easeOut" }}
         style={powerRing
           ? { ...LONG_PRESS_RESET_STYLE, boxShadow: `0 0 0 2px ${validTargetColor}, 0 0 14px 2px ${validTargetColor}66` }
           : LONG_PRESS_RESET_STYLE}
@@ -152,6 +156,7 @@ export default function HeroPortrait({
           style={{ width: "55%", height: "55%", touchAction: "manipulation" }}
         />
       </motion.div>
+      </AuraSiLegendaire>
 
       {/* PV dans l'écu, à cheval sur le bas du médaillon. Rouge sous 10 PV. */}
       <div
@@ -199,4 +204,8 @@ export default function HeroPortrait({
       )}
     </div>
   );
+}
+
+function AuraSiLegendaire({ rarete, children }: { rarete?: string | null; children: React.ReactNode }) {
+  return aAuraPremium(rarete) ? <PremiumAura rarete={rarete}>{children}</PremiumAura> : <>{children}</>;
 }

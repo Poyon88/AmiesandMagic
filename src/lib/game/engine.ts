@@ -8,6 +8,7 @@ import type {
   AttackAction,
   MulliganAction,
   HeroPowerAction,
+  HeroPowerEffect,
   TapActivateAction,
   GameAction,
   SpellEffect,
@@ -68,6 +69,7 @@ import { displayCardOf, isSingletonDeck, syncSingulier, syncSingulierPlayer } fr
 import { creatureScopes, creaturesDePortee, porteeValide, spellScopes } from "./target-scope";
 import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
+import { effetsDuPouvoir, uidEffetPouvoir, cibleEffetPouvoir, selectionEffetPouvoir, choixDeckEffetPouvoir } from "./hero-power";
 
 // ============================================================
 // SEEDED PRNG (mulberry32) — deterministic across clients
@@ -7419,12 +7421,18 @@ function resolveSpellKeywords(
         // Renfort Royal source from factionCardPool ; Sélection magique
         // sources from allSpellsPool. We try both pools so any of the
         // three keywords can resolve regardless of their source.
-        const slotKey = `${kw.id}_0`;
-        const slotVal = ctx.targetMap[slotKey]
-          ?? ctx.targetMap["selection_0"]
-          ?? ctx.targetMap["renfort_royal_0"]
-          ?? ctx.targetMap["selection_magique_0"]
-          ?? ctx.targetMap["tresor_0"];
+        //
+        // Créneau PROPRE au mot-clé d'abord. Repli sur le créneau d'une autre
+        // Sélection (anciens clients : `selection_0` pour tout) UNIQUEMENT si
+        // le sort ne porte pas lui-même ce mot-clé : sinon « Sélection 3 ·
+        // Sélection magique 3 » donnait DEUX fois la carte de la première.
+        const familleSelection = ["selection", "renfort_royal", "selection_magique", "tresor"];
+        const porte = new Set((ctx.card.spell_keywords ?? []).map((k) => k.id));
+        const slotVal = ctx.targetMap[`${kw.id}_0`]
+          ?? familleSelection
+            .filter((id) => id !== kw.id && !porte.has(id as typeof kw.id))
+            .map((id) => ctx.targetMap[`${id}_0`])
+            .find((v) => v != null);
         const selCardId = slotVal ? parseInt(slotVal) : null;
         if (selCardId != null) {
           const chosenCard = ctx.state.factionCardPool?.find(c => c.id === selCardId)
@@ -12337,13 +12345,14 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
 // Validations run in this order: definition exists, not already used this
 // turn, usage limit not exhausted, enough mana. All gated by silent return
 // of the unchanged input state on failure (mirrors legacy useHeroPower).
-/** Carte « sort » synthétique portant l'effet composé d'un pouvoir de héros en
- *  une unique capacité spell_resolution. Utilisée par le calcul des slots de
- *  ciblage ET par la résolution — source unique pour qu'ils ne divergent pas.
- *  uid stable "hp_0" → les clés targetMap concordent entre store et moteur.
- *  Null si le pouvoir n'est pas en mode "composed". */
-export function heroPowerSyntheticCard(heroDef: HeroDefinition): Card | null {
-  const effect = heroDef.powerEffect;
+/** Carte « sort » synthétique portant l'effet composé n°`i` d'un pouvoir de
+ *  héros en une unique capacité spell_resolution. Utilisée par le calcul des
+ *  slots de ciblage ET par la résolution — source unique pour qu'ils ne
+ *  divergent pas. uid `hp_<i>` (l'effet 0 garde l'historique "hp_0") → les clés
+ *  targetMap concordent entre store et moteur, et les déclencheurs de deux
+ *  effets composés ne se confondent pas. Null si cet effet n'est pas composé. */
+export function heroPowerSyntheticCard(heroDef: HeroDefinition, i = 0): Card | null {
+  const effect = effetsDuPouvoir(heroDef)[i];
   if (!effect || effect.mode !== "composed" || !effect.composed) return null;
   return {
     id: -1, name: heroDef.powerName ?? "Pouvoir", mana_cost: heroDef.powerCost,
@@ -12351,20 +12360,21 @@ export function heroPowerSyntheticCard(heroDef: HeroDefinition): Card | null {
     effect_text: heroDef.powerDescription ?? "",
     keywords: [], spell_keywords: null, spell_effects: null, image_url: null,
     capabilities: [{
-      uid: "hp_0", trigger: "spell_resolution", effectKind: "immediate",
+      uid: uidEffetPouvoir(i), trigger: "spell_resolution", effectKind: "immediate",
       abilityId: "_composed", composed: effect.composed,
     }],
   } as Card;
 }
 
-/** Descripteur des slots à CHOISIR par le joueur pour un pouvoir composé
+/** Descripteur des slots à CHOISIR par le joueur pour l'effet composé n°`i`
  *  (homogène : une seule capacité, N cibles de même type). Null quand aucun
  *  picker n'est requis (self / hero-only / random / automatic / all / scatter /
  *  effet sur le contrôleur) — résolu alors avec un targetMap vide. */
 export function heroPowerComposedChoice(
   heroDef: HeroDefinition,
+  i = 0,
 ): { uid: string; count: number; type: SpellTargetType } | null {
-  const synth = heroPowerSyntheticCard(heroDef);
+  const synth = heroPowerSyntheticCard(heroDef, i);
   if (!synth) return null;
   const SELECTABLE: SpellTargetType[] = ["any", "any_creature", "friendly_creature", "enemy_creature", "friendly_graveyard_to_board"];
   const slots = getSpellTargetSlots(synth).filter(s => SELECTABLE.includes(s.type));
@@ -12372,33 +12382,17 @@ export function heroPowerComposedChoice(
   return { uid: slots[0].slot.split("#")[0], count: slots.length, type: slots[0].type };
 }
 
-export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
-  const pool = state.factionCardPool;
-  const allPool = state.allSpellsPool;
-  const newState = cloneStateForAction(state);
-  newState.factionCardPool = pool;
-  newState.allSpellsPool = allPool;
-  const player = newState.players[newState.currentPlayerIndex];
-  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
-  const heroDef = player.hero.heroDefinition;
-
-  if (!heroDef) return state;
-  const effect = heroDef.powerEffect;
-  if (!effect || typeof effect.mode !== "string") return state;
-  if (player.hero.heroPowerUsedThisTurn) return state;
-  const limit = heroDef.powerUsageLimit ?? null;
-  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return state;
-  if (player.mana < heroDef.powerCost) return state;
-
-  player.mana -= heroDef.powerCost;
-  player.hero.heroPowerUsedThisTurn = true;
-  player.hero.heroPowerActivationsUsed = (player.hero.heroPowerActivationsUsed ?? 0) + 1;
-
+/** Résout l'effet n°`i` du pouvoir — le corps historique de useHeroPower, un
+ *  mode à la fois. Les réponses du joueur sont lues PAR EFFET (hero-power.ts). */
+function resoudreEffetPouvoir(
+  newState: GameState, player: PlayerState, opponent: PlayerState,
+  heroDef: HeroDefinition, effect: HeroPowerEffect, i: number, action: HeroPowerAction,
+): void {
   switch (effect.mode) {
     case "grant_keyword": {
       // Mode 1 : add the keyword to the targeted creature. Target can be any
       // creature on either board (per design); heroes are not valid targets.
-      const targetId = action.targetInstanceId;
+      const targetId = cibleEffetPouvoir(action, i);
       if (!targetId) break;
       const target =
         findCreatureOnBoard(player, targetId)
@@ -12474,19 +12468,30 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         // keyword is at index 0 here since the hero power resolves a single
         // instance. Set both for safety.
         const targetMap: Record<string, string> = {};
-        if (action.targetInstanceId) {
-          targetMap.kw_0 = action.targetInstanceId;
-          targetMap.target_0 = action.targetInstanceId;
+        const cible = cibleEffetPouvoir(action, i);
+        if (cible) {
+          targetMap.kw_0 = cible;
+          targetMap.target_0 = cible;
         }
         // Selection / Renfort Royal / Sélection magique : the picker stores
         // the chosen card id in `selectionCardId` ; mirror it into every slot
         // the resolver might read so any of the three keywords resolves.
-        if (action.selectionCardId != null) {
-          const sid = String(action.selectionCardId);
+        const selection = selectionEffetPouvoir(action, i);
+        if (selection != null) {
+          const sid = String(selection);
           targetMap.selection_0 = sid;
           targetMap.renfort_royal_0 = sid;
           targetMap.selection_magique_0 = sid;
           targetMap.tresor_0 = sid;
+        }
+        // Divination / Présage / Creuser : l'index retenu dans la modale de
+        // deck, dans le créneau que lit la forme sort (même conversion que
+        // playCard). Sans réponse, le résolveur tire au hasard comme avant.
+        const choixDeck = choixDeckEffetPouvoir(action, i);
+        if (choixDeck != null) {
+          targetMap.divination_0 = String(choixDeck);
+          targetMap.presage_0 = String(choixDeck);
+          targetMap.creuser_0 = String(choixDeck);
         }
         const ctx: SpellResolutionContext = {
           state: newState,
@@ -12514,7 +12519,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
         };
         resolveSpellKeywords(ctx, [instance]);
       } else {
-        resolveCreatureKeywordAsHeroPower(player, opponent, effect.keywordId, action.targetInstanceId, effect.params);
+        resolveCreatureKeywordAsHeroPower(player, opponent, effect.keywordId, cibleEffetPouvoir(action, i), effect.params);
       }
       // Spell-side effects can kill creatures — clean up deaths so death
       // triggers fire and the board is consistent.
@@ -12543,7 +12548,7 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
       // réutilise EXACTEMENT le chemin sort (carte synthétique → interpréteur
       // composé via targetMap), suivi du même nettoyage post-sort (morts +
       // râles d'agonie ; recalculateAuras ci-dessous complète la parité).
-      const synth = heroPowerSyntheticCard(heroDef);
+      const synth = heroPowerSyntheticCard(heroDef, i);
       if (synth) {
         runComposedCapsForCard(synth, "spell_resolution", null, player, opponent, action.targetMap);
         const pDead = cleanDeadCreatures(player);
@@ -12555,26 +12560,52 @@ export function useHeroPower(state: GameState, action: HeroPowerAction): GameSta
     }
   }
 
+}
+
+export function useHeroPower(state: GameState, action: HeroPowerAction): GameState {
+  const pool = state.factionCardPool;
+  const allPool = state.allSpellsPool;
+  const newState = cloneStateForAction(state);
+  newState.factionCardPool = pool;
+  newState.allSpellsPool = allPool;
+  const player = newState.players[newState.currentPlayerIndex];
+  const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  const heroDef = player.hero.heroDefinition;
+
+  if (!heroDef) return state;
+  const effets = effetsDuPouvoir(heroDef);
+  if (effets.length === 0) return state;
+  if (player.hero.heroPowerUsedThisTurn) return state;
+  const limit = heroDef.powerUsageLimit ?? null;
+  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return state;
+  if (player.mana < heroDef.powerCost) return state;
+
+  player.mana -= heroDef.powerCost;
+  player.hero.heroPowerUsedThisTurn = true;
+  player.hero.heroPowerActivationsUsed = (player.hero.heroPowerActivationsUsed ?? 0) + 1;
+
+  // Un coût, puis chaque effet dans l'ordre d'auteur. Morts et râles d'agonie
+  // sont réglés APRÈS CHAQUE effet, comme entre deux effets d'un sort : le
+  // second voit le plateau que le premier a laissé.
+  effets.forEach((effect, i) => {
+    resoudreEffetPouvoir(newState, player, opponent, heroDef, effect, i, action);
+    const pDead = cleanDeadCreatures(player);
+    const oDead = cleanDeadCreatures(opponent);
+    processDeathTriggers(pDead, player, opponent);
+    processDeathTriggers(oDead, opponent, player);
+    recalculateAuras(player, opponent);
+  });
+
   recalculateAuras(player, opponent);
   newState.lastAction = action;
   checkWinCondition(newState);
   return newState;
 }
 
-export function canUseHeroPower(state: GameState): boolean {
-  const player = state.players[state.currentPlayerIndex];
-  const heroDef = player.hero.heroDefinition;
-  if (!heroDef || !heroDef.powerEffect || typeof heroDef.powerEffect.mode !== "string") return false;
-  if (player.hero.heroPowerUsedThisTurn) return false;
-  const limit = heroDef.powerUsageLimit ?? null;
-  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return false;
-  if (player.mana < heroDef.powerCost) return false;
-  return true;
-}
-
-export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
-  const effect = heroDef.powerEffect;
-  if (!effect || typeof effect.mode !== "string") return false;
+/** L'effet n°`i` demande-t-il une cible au joueur ? */
+export function effetPouvoirACible(heroDef: HeroDefinition, i: number): boolean {
+  const effect = effetsDuPouvoir(heroDef)[i];
+  if (!effect) return false;
   if (effect.mode === "grant_keyword") return true;
   if (effect.mode === "spell_trigger") {
     const spellDef = SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS];
@@ -12583,15 +12614,16 @@ export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
     const creatureTarget = CREATURE_KEYWORD_HERO_POWER_TARGET[effect.keywordId];
     return creatureTarget != null && creatureTarget !== "none";
   }
-  if (effect.mode === "composed") return heroPowerComposedChoice(heroDef) != null;
+  if (effect.mode === "composed") return heroPowerComposedChoice(heroDef, i) != null;
   return false; // aura → no target
 }
 
-export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): string[] {
+/** Cibles possibles de l'effet n°`i` (pour le joueur actif). */
+export function ciblesEffetPouvoir(state: GameState, heroDef: HeroDefinition, i: number): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
-  const effect = heroDef.powerEffect;
-  if (!effect || typeof effect.mode !== "string") return [];
+  const effect = effetsDuPouvoir(heroDef)[i];
+  if (!effect) return [];
 
   if (effect.mode === "grant_keyword") {
     // Any creature, friendly or enemy. Heroes excluded.
@@ -12628,8 +12660,8 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
     return [];
   }
   if (effect.mode === "composed") {
-    const choice = heroPowerComposedChoice(heroDef);
-    const synth = heroPowerSyntheticCard(heroDef);
+    const choice = heroPowerComposedChoice(heroDef, i);
+    const synth = heroPowerSyntheticCard(heroDef, i);
     if (!choice || !synth) return [];
     // Exhumation composée : cibles cimetière filtrées par coût (getSpellTargets
     // ne filtrerait pas). Sinon chemin plateau/héros standard.
@@ -12637,6 +12669,35 @@ export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): 
     return getSpellTargets(state, synth, choice.type);
   }
   return []; // aura → no target
+}
+
+export function canUseHeroPower(state: GameState): boolean {
+  const player = state.players[state.currentPlayerIndex];
+  const heroDef = player.hero.heroDefinition;
+  if (!heroDef) return false;
+  const effets = effetsDuPouvoir(heroDef);
+  if (effets.length === 0) return false;
+  if (player.hero.heroPowerUsedThisTurn) return false;
+  const limit = heroDef.powerUsageLimit ?? null;
+  if (limit !== null && (player.hero.heroPowerActivationsUsed ?? 0) >= limit) return false;
+  if (player.mana < heroDef.powerCost) return false;
+  // Arbitrage auteur : un effet ciblé SANS aucune cible bloque le pouvoir —
+  // on ne paie jamais pour un effet perdu.
+  for (let i = 0; i < effets.length; i++) {
+    if (effetPouvoirACible(heroDef, i) && ciblesEffetPouvoir(state, heroDef, i).length === 0) return false;
+  }
+  return true;
+}
+
+/** Au moins un effet du pouvoir demande-t-il une cible ? */
+export function heroPowerNeedsTarget(heroDef: HeroDefinition): boolean {
+  return effetsDuPouvoir(heroDef).some((_, i) => effetPouvoirACible(heroDef, i));
+}
+
+/** Cibles du PREMIER effet ciblé (façade historique, mono-effet). */
+export function getHeroPowerTargets(state: GameState, heroDef: HeroDefinition): string[] {
+  const i = effetsDuPouvoir(heroDef).findIndex((_, k) => effetPouvoirACible(heroDef, k));
+  return i < 0 ? [] : ciblesEffetPouvoir(state, heroDef, i);
 }
 
 // ============================================================
@@ -14243,7 +14304,12 @@ export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
   if (duClan.length < 2) duClan = communes.filter(c => !id.clan || c.clan === id.clan || !c.clan);
   const autreClan = id.clan ? communes.filter(c => c.clan && c.clan !== id.clan) : [];
 
-  let hash = state.turnNumber * 1000 + state.players.indexOf(player) * 100 + 4999 + saltDeSource(player.id);
+  // Graine propre à la PARTIE : l'état du RNG semé (synchronisé entre les deux
+  // clients, lu sans être consommé). Sans lui, tour + siège + joueur étaient
+  // identiques d'une partie à l'autre : mêmes decks ⇒ mêmes offres, à chaque
+  // partie (« celle-ci arrive toujours en premier »).
+  let hash = (state.turnNumber * 1000 + state.players.indexOf(player) * 100 + 4999 + saltDeSource(player.id)
+    + (rngState >>> 1)) & 0x7fffffff;
   const pseudoRng = () => {
     hash = (hash * 16807 + 12345) & 0x7fffffff;
     return (hash & 0xfffffff) / 0x10000000;

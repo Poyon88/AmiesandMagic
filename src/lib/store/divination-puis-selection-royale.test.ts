@@ -74,7 +74,8 @@ describe("Divination, Présage PUIS Sélection Royale sur un sort", () => {
       type: "play_card",
       deckChoiceIndices: { divination: 2, presage: 0 },
       divinationChoiceIndex: 0,
-      targetMap: { selection_0: String(gardee.id) },
+      // Réponse rangée dans le créneau de SON mot-clé (Sélection Royale).
+      targetMap: { renfort_royal_0: String(gardee.id) },
     });
 
     const apres = applyAction(s, action!);

@@ -19,6 +19,7 @@ import { excludeSpecialSets, excludeNonDiscoverable, onlyPlayable } from "@/lib/
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import { useTranslations } from "next-intl";
+import { effetsDuPouvoir } from "@/lib/game/hero-power";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
 // explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
@@ -48,6 +49,7 @@ interface HeroRow {
   thumbnail_url?: string | null;
   power_image_url?: string | null;
   power_sfx_url?: string | null;
+  rarity?: string | null;
 }
 
 interface MatchData {
@@ -73,6 +75,7 @@ function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
     startingHp: row.starting_hp ?? null,
     glbUrl: row.glb_url ?? null,
     thumbnailUrl: row.thumbnail_url ?? null,
+    rarity: row.rarity ?? null,
     powerImageUrl: row.power_image_url ?? null,
     powerSfxUrl: row.power_sfx_url ?? null,
   };
@@ -390,8 +393,9 @@ export default function GamePage() {
         // passe, le pouvoir serait un no-op (warn moteur) alors que l'admin l'a
         // configuré correctement.
         for (const h of [p1Hero, p2Hero]) {
-          const c = h?.powerEffect?.mode === "composed" ? h.powerEffect.composed : null;
-          for (const id of designatedCardIds(c)) linkedIds.add(id);
+          for (const e of effetsDuPouvoir(h)) {
+            if (e.mode === "composed") for (const id of designatedCardIds(e.composed)) linkedIds.add(id);
+          }
         }
         const loadedCardIds = new Set([...factionCards, ...allSpells].map((c) => c.id));
         const missingLinkedIds = Array.from(linkedIds)

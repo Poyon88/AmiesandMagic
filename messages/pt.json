@@ -2207,9 +2207,11 @@
     "f1_title": "A profundidade das lendas.",
     "f1_desc": "Armies & Magic une a estratégia dos TCGs clássicos a mecânicas pensadas para os campeões de hoje.",
     "f2_title": "Um máximo de cartas desde o início.",
-    "f2_desc": "Obtenha gratuitamente todas as cartas clássicas da facção de sua escolha (cerca de 500 cartas). Tenha acesso a todas as facções por uma fração do custo de um TCG clássico.",
+    "f2_desc": "Obtenha gratuitamente todas as cartas clássicas da facção de sua escolha (mais de 300 cartas). Tenha acesso a todas as facções (cerca de 2.500 cartas) por uma fração do custo de um TCG clássico.",
     "f3_title": "Cada deck Expert, uma obra única.",
     "f3_desc": "As cartas em tiragem limitada tornam cada deck Expert singular. A cota comum garante que só a sua estratégia decide.",
+    "f_icons_title": "Legíveis num relance.",
+    "f_icons_desc": "Ilustradas com esmero, as cartas de Armies & Magic são tão belas quanto legíveis: graças a um código de ícones coloridos próprio de cada gatilho, você entende o efeito delas num simples relance, sem sequer ler o texto.",
     "f4_title": "A arena mobile, finalmente à altura.",
     "f4_desc": "Torneios recompensados com cartas raras e premiações em dinheiro — um nível de disputa até então reservado aos maiores TCGs desktop.",
     "factions_title": "Nove facções. Uma lenda.",
@@ -2986,6 +2988,8 @@
     "label_retard": "Atraso"
   },
   "game": {
+    "hero_power_grant": "Concede {kw} a uma criatura",
+    "hero_power_emblem": "Emblema: {kw}",
     "error_not_authenticated": "Não autenticado",
     "error_match_not_found": "Partida não encontrada",
     "error_load_failed": "Falha ao carregar a partida",

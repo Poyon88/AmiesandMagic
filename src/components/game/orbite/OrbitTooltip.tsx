@@ -56,6 +56,10 @@ export function useBulleHandlers(
   // sont étalées pendant le rendu, où la lecture d'un ref est proscrite.
   const [el, setEl] = useState<HTMLElement | null>(null);
   const lp = useLongPress(() => { if (el) api.ouvrir(key, el, content(), nu); });
+  // Élément DÉMONTÉ sous le curseur (Machine prise : l'engrenage disparaît au
+  // clic) : `onMouseLeave` ne part jamais et la bulle restait à l'écran.
+  const { fermer } = api;
+  useEffect(() => () => fermer(key), [fermer, key]);
   return {
     attacher: setEl,
     consume: lp.consume,

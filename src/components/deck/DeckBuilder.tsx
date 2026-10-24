@@ -1481,7 +1481,7 @@ export default function DeckBuilder({
             <div className="p-3">
               <div className="text-sm font-bold font-[family-name:var(--font-cinzel),serif] text-am-ink">{heroText.heroName(powerPopup.hero)}</div>
               <div className="text-xs text-am-gold font-medium mt-0.5">{heroText.powerName(powerPopup.hero)}</div>
-              {powerPopup.hero.power_description && (
+              {heroText.powerDesc(powerPopup.hero) && (
                 <div className="text-[11px] text-am-ink-soft mt-1 leading-snug font-[family-name:var(--font-crimson),serif] italic">{heroText.powerDesc(powerPopup.hero)}</div>
               )}
               <div className="mt-2">

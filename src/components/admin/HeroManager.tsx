@@ -5,12 +5,14 @@ import { HERO_HP_MAX, HERO_HP_MIN, pvDeDepart } from "@/lib/game/hero-hp";
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
-import type { TokenTemplate, Capability, ComposedEffect } from "@/lib/game/types";
+import type { TokenTemplate, Capability, ComposedEffect, HeroPowerEffect } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
 import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card-engine/constants";
 import { ABILITIES, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
+import { MAX_EFFETS_POUVOIR } from "@/lib/game/hero-power";
+import { decrirePouvoir } from "@/lib/game/hero-power-text";
 import { autoTrimDarkBorders } from "@/lib/card-back-frames";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- utilisé uniquement comme type (typeof RACES[number])
@@ -184,6 +186,12 @@ function GlbPreview({ url }: { url: string }) {
 
 export default function HeroManager() {
   const [heroes, setHeroes] = useState<HeroRow[]>([]);
+  // Filtres de la LISTE des héros (sans effet sur le formulaire au-dessus).
+  const [filtreNom, setFiltreNom] = useState("");
+  const [filtreFaction, setFiltreFaction] = useState("");
+  const [filtreClan, setFiltreClan] = useState("");
+  const [filtreRace, setFiltreRace] = useState("");
+  const [filtreRarete, setFiltreRarete] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -234,6 +242,11 @@ export default function HeroManager() {
   const [powerTokenId, setPowerTokenId] = useState<number | null>(null);
   // null = unlimited
   const [powerUsageLimit, setPowerUsageLimit] = useState<number | null>(null);
+  // Pouvoir à PLUSIEURS effets (3 au plus) : `effets` garde la liste, le
+  // formulaire ci-dessous édite l'effet n°`effetActif`. Vide = un seul effet,
+  // porté par le formulaire.
+  const [effets, setEffets] = useState<Record<string, unknown>[]>([]);
+  const [effetActif, setEffetActif] = useState(0);
   // PV de départ du héros — levier d'équilibrage de son pouvoir (cf. hero-hp.ts).
   const [startingHp, setStartingHp] = useState<number>(HERO_MAX_HP);
 
@@ -404,6 +417,8 @@ export default function HeroManager() {
     setPowerName("");
     setPowerCost(2);
     setPowerMode("grant_keyword");
+    setEffets([]);
+    setEffetActif(0);
     setPowerComposed([defaultHeroComposedCap()]);
     setPowerKeywordId("divine_shield");
     setPowerParamAmount(1);
@@ -435,16 +450,8 @@ export default function HeroManager() {
   // power image) restent vides côté base64 — l'aperçu pointe sur l'URL
   // distante existante, et le PUT n'écrasera ces fichiers que si l'utilisateur
   // re-uploade ou régénère via IA.
-  const loadHeroIntoForm = (hero: HeroRow) => {
-    setName(hero.name ?? "");
-    setFaction(hero.faction ?? "");
-    setRace(hero.race ?? "");
-    setClan(hero.clan ?? "");
-
-    setPowerName(hero.power_name ?? "");
-    setPowerCost(typeof hero.power_cost === "number" ? hero.power_cost : 2);
-    setPowerDescription(hero.power_description ?? "");
-    const pe = (hero.power_effect ?? {}) as Record<string, unknown>;
+  /** Remplit le formulaire d'UN effet de pouvoir (mode, capacité, valeurs). */
+  const chargerEffetDansFormulaire = (pe: Record<string, unknown>) => {
     const mode = pe.mode === "spell_trigger" || pe.mode === "aura" || pe.mode === "composed" ? pe.mode : "grant_keyword";
     setPowerMode(mode as "grant_keyword" | "spell_trigger" | "aura" | "composed");
     // mode "composed" : on charge l'effet composé dans une capacité unique "hp_0".
@@ -461,6 +468,23 @@ export default function HeroManager() {
     setPowerParamAttack(typeof params.attack === "number" ? params.attack : 0);
     setPowerParamHealth(typeof params.health === "number" ? params.health : 0);
     setPowerTokenId(typeof pe.tokenId === "number" ? pe.tokenId : null);
+  };
+
+  const loadHeroIntoForm = (hero: HeroRow) => {
+    setName(hero.name ?? "");
+    setFaction(hero.faction ?? "");
+    setRace(hero.race ?? "");
+    setClan(hero.clan ?? "");
+
+    setPowerName(hero.power_name ?? "");
+    setPowerCost(typeof hero.power_cost === "number" ? hero.power_cost : 2);
+    setPowerDescription(hero.power_description ?? "");
+    // Un objet (forme historique) ou une liste d'effets : le formulaire montre le premier.
+    const liste = (Array.isArray(hero.power_effect) ? hero.power_effect : hero.power_effect ? [hero.power_effect] : [])
+      .slice(0, MAX_EFFETS_POUVOIR) as Record<string, unknown>[];
+    setEffets(liste);
+    setEffetActif(0);
+    chargerEffetDansFormulaire(liste[0] ?? {});
     setPowerUsageLimit(typeof hero.power_usage_limit === "number" ? hero.power_usage_limit : null);
     setStartingHp(pvDeDepart({ startingHp: hero.starting_hp }));
 
@@ -652,7 +676,9 @@ export default function HeroManager() {
           faction: faction || null,
           clan: clan || null,
           powerName: powerName.trim() || null,
-          powerDescription: powerDescription.trim() || null,
+          // Le texte GÉNÉRÉ depuis les effets : c'est lui que le joueur lira.
+          powerDescription: decrirePouvoir(listeEffetsCourante() as unknown as HeroPowerEffect[], tokenTemplates)
+            ?? (powerDescription.trim() || null),
           actionContext: actionContext.trim() || null,
         }),
       });
@@ -749,29 +775,14 @@ export default function HeroManager() {
     }
   };
 
-  const handleSave = async () => {
-    if (!name.trim()) {
-      setError("Nom requis");
-      return;
-    }
-    // En création, le héros doit avoir au moins un visuel (GLB OU
-    // thumbnail) sinon l'in-game tombe sur un placeholder. En édition,
-    // le héros existant en base a déjà ces fichiers — on n'exige rien
-    // de nouveau, l'utilisateur peut juste retoucher des champs texte.
-    if (!isEditing && !glbFile && !thumbnailBase64) {
-      setError("Modèle 3D (GLB) ou image 2D requis");
-      return;
-    }
-    // Build the power effect from the form state.
+  /** L'effet décrit par le formulaire ; null si incomplet (composé vide). */
+  const effetDuFormulaire = (): Record<string, unknown> | null => {
     let powerEffect: Record<string, unknown>;
     if (powerMode === "composed") {
       // Mode 4 : effet composé générique (résolu comme un sort lancé par le
       // héros). On persiste l'unique ComposedEffect ; keywordId est ignoré.
       const composed = powerComposed[0]?.composed;
-      if (!composed) {
-        setError("Effet composé manquant.");
-        return;
-      }
+      if (!composed) return null;
       powerEffect = { mode: "composed", keywordId: "_composed", composed };
     } else {
       // Only include params that the chosen keyword actually consumes (server validates).
@@ -804,6 +815,73 @@ export default function HeroManager() {
         powerEffect.tokenId = powerTokenId;
       }
     }
+
+    return powerEffect;
+  };
+
+  /** Tous les effets, l'effet affiché remplacé par ce que montre le formulaire. */
+  const listeEffetsCourante = (): Record<string, unknown>[] => {
+    const courant = effetDuFormulaire();
+    const base = effets.length ? [...effets] : [{}];
+    if (courant) base[effetActif] = courant;
+    return base.filter((e) => typeof e.mode === "string");
+  };
+  const allerAEffet = (k: number) => {
+    const l = listeEffetsCourante();
+    setEffets(l);
+    setEffetActif(k);
+    chargerEffetDansFormulaire(l[k] ?? {});
+  };
+  const ajouterEffet = () => {
+    const l = listeEffetsCourante();
+    if (l.length >= MAX_EFFETS_POUVOIR) return;
+    l.push({ mode: "spell_trigger", keywordId: "inspiration", params: { amount: 1 } });
+    setEffets(l);
+    setEffetActif(l.length - 1);
+    chargerEffetDansFormulaire(l[l.length - 1]);
+  };
+  const supprimerEffet = () => {
+    const l = listeEffetsCourante();
+    if (l.length <= 1) return;
+    l.splice(effetActif, 1);
+    const k = Math.max(0, effetActif - 1);
+    setEffets(l);
+    setEffetActif(k);
+    chargerEffetDansFormulaire(l[k]);
+  };
+  const deplacerEffet = (d: -1 | 1) => {
+    const l = listeEffetsCourante();
+    const k = effetActif + d;
+    if (k < 0 || k >= l.length) return;
+    [l[effetActif], l[k]] = [l[k], l[effetActif]];
+    setEffets(l);
+    setEffetActif(k); // l'effet affiché suit son déplacement
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setError("Nom requis");
+      return;
+    }
+    // En création, le héros doit avoir au moins un visuel (GLB OU
+    // thumbnail) sinon l'in-game tombe sur un placeholder. En édition,
+    // le héros existant en base a déjà ces fichiers — on n'exige rien
+    // de nouveau, l'utilisateur peut juste retoucher des champs texte.
+    if (!isEditing && !glbFile && !thumbnailBase64) {
+      setError("Modèle 3D (GLB) ou image 2D requis");
+      return;
+    }
+    // Les effets du pouvoir : un objet s'il est seul (forme historique,
+    // compatible), sinon la liste dans l'ordre de résolution.
+    if (!effetDuFormulaire()) {
+      setError("Effet composé manquant.");
+      return;
+    }
+    const listeEffets = listeEffetsCourante();
+    const powerEffect = listeEffets.length === 1 ? listeEffets[0] : listeEffets;
+    // Le texte du pouvoir est GÉNÉRÉ depuis ses effets ; on l'enregistre aussi
+    // en base, où il sert de repli et nourrit le prompt de l'illustration.
+    const descriptionGeneree = decrirePouvoir(powerEffect as unknown as HeroPowerEffect[], tokenTemplates) ?? "";
 
     setSaving(true);
     setError(null);
@@ -851,7 +929,7 @@ export default function HeroManager() {
         power_effect: powerEffect,
         power_usage_limit: powerUsageLimit,
         starting_hp: startingHp,
-        power_description: powerDescription || null,
+        power_description: descriptionGeneree || null,
         glbUrl: publicGlbUrl,
         rarity,
         is_default: rarity === "Commune" ? isDefault : false,
@@ -936,6 +1014,16 @@ export default function HeroManager() {
       </div>
     );
   }
+
+  // Liste filtrée — nom insensible à la casse et aux accents.
+  const sansAccent = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const nomCherche = sansAccent(filtreNom.trim());
+  const herosFiltres = heroes.filter((h) =>
+    (!nomCherche || sansAccent(h.name).includes(nomCherche))
+    && (!filtreFaction || h.faction === filtreFaction)
+    && (!filtreClan || h.clan === filtreClan)
+    && (!filtreRace || h.race === filtreRace)
+    && (!filtreRarete || (h.rarity ?? "Commune") === filtreRarete));
 
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "30px 20px" }}>
@@ -1152,8 +1240,40 @@ export default function HeroManager() {
                     </div>
                   </div>
 
+                  {/* EFFETS du pouvoir : jusqu'à 3, résolus dans l'ordre des onglets. */}
+                  {(() => {
+                    const n = Math.max(1, effets.length);
+                    const onglet = (actif: boolean): React.CSSProperties => ({
+                      padding: "4px 12px", borderRadius: 5, fontSize: 10, fontFamily: "'Cinzel',serif", fontWeight: 700,
+                      cursor: "pointer", border: actif ? "1px solid #333" : "1px solid #d0d0d0",
+                      background: actif ? "#333" : "#fff", color: actif ? "#fff" : "#555",
+                    });
+                    const petit: React.CSSProperties = { ...onglet(false), padding: "4px 8px" };
+                    return (
+                      <div style={{ marginTop: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                        <span style={STYLE.label}>Effets (résolus dans l&apos;ordre) :</span>
+                        {Array.from({ length: n }, (_, k) => (
+                          <button key={k} type="button" style={onglet(k === effetActif)}
+                            onClick={() => k !== effetActif && allerAEffet(k)}>
+                            Effet {k + 1}
+                          </button>
+                        ))}
+                        {n < MAX_EFFETS_POUVOIR && (
+                          <button type="button" style={petit} onClick={ajouterEffet}>+ Ajouter un effet</button>
+                        )}
+                        {n > 1 && (
+                          <>
+                            <button type="button" style={petit} disabled={effetActif === 0} onClick={() => deplacerEffet(-1)} title="Résoudre plus tôt">◀</button>
+                            <button type="button" style={petit} disabled={effetActif === n - 1} onClick={() => deplacerEffet(1)} title="Résoudre plus tard">▶</button>
+                            <button type="button" style={{ ...petit, color: "#c0392b" }} onClick={supprimerEffet}>Supprimer cet effet</button>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   <div style={{ marginTop: 10 }}>
-                    <label style={STYLE.label}>Mode d&apos;activation</label>
+                    <label style={STYLE.label}>Mode d&apos;activation{effets.length > 1 ? ` — effet ${effetActif + 1}` : ""}</label>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
                       {(Object.keys(POWER_MODE_LABELS) as Array<keyof typeof POWER_MODE_LABELS>).map((m) => (
                         <label key={m} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#333", cursor: "pointer" }}>
@@ -1269,23 +1389,10 @@ export default function HeroManager() {
                   </div>
 
                   <div style={{ marginTop: 8 }}>
-                    <label style={STYLE.label}>Description (affichée au clic droit en jeu)</label>
-                    <textarea value={powerDescription}
-                      onChange={(e) => setPowerDescription(e.target.value)}
-                      rows={2}
-                      placeholder="Ex: Donne Bouclier divin à une créature ciblée."
-                      style={STYLE.input} />
-                    <button
-                      type="button"
-                      onClick={() => setPowerDescription(`${modeText}.`)}
-                      style={{
-                        marginTop: 4, padding: "3px 10px", borderRadius: 4,
-                        background: "transparent", border: "1px dashed #c0c0c0", color: "#666",
-                        fontSize: 9, fontFamily: "'Cinzel',serif", cursor: "pointer",
-                      }}
-                    >
-                      Remplir depuis l&apos;aperçu
-                    </button>
+                    <label style={STYLE.label}>Texte du pouvoir (généré depuis les effets, affiché en jeu)</label>
+                    <div style={{ ...STYLE.input, background: "#fafafa", color: "#333", minHeight: 38 }}>
+                      {decrirePouvoir(listeEffetsCourante() as unknown as HeroPowerEffect[], tokenTemplates) ?? "—"}
+                    </div>
                   </div>
                 </div>
               );
@@ -1718,8 +1825,55 @@ export default function HeroManager() {
         )}
       </div>
 
+      {/* Filtres de la liste */}
+      {heroes.length > 0 && (() => {
+        // Options tirées des héros EXISTANTS : on ne propose que ce qui filtre
+        // quelque chose. Les clans se restreignent à la faction choisie.
+        const uniques = (vals: (string | null | undefined)[]) =>
+          [...new Set(vals.filter((v): v is string => !!v))].sort((a, b) => a.localeCompare(b, "fr"));
+        const factions = uniques(heroes.map((h) => h.faction));
+        const clans = uniques(heroes.filter((h) => !filtreFaction || h.faction === filtreFaction).map((h) => h.clan));
+        const races = uniques(heroes.map((h) => h.race));
+        const raretes = RARITIES.filter((r) => heroes.some((h) => (h.rarity ?? "Commune") === r));
+        const actif = filtreNom || filtreFaction || filtreClan || filtreRace || filtreRarete;
+        const champ = (label: string, valeur: string, set: (v: string) => void, options: { v: string; l: string }[]) => (
+          <div style={{ flex: "1 1 150px", minWidth: 0 }}>
+            <label style={STYLE.label}>{label}</label>
+            <select style={STYLE.input} value={valeur} onChange={(e) => set(e.target.value)}>
+              <option value="">Toutes</option>
+              {options.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+            </select>
+          </div>
+        );
+        return (
+          <div style={{ ...STYLE.card, position: "sticky", top: 0, zIndex: 5 }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <div style={{ flex: "2 1 220px", minWidth: 0 }}>
+                <label style={STYLE.label}>Nom</label>
+                <input style={STYLE.input} type="search" placeholder="Rechercher un héros…" value={filtreNom}
+                  onChange={(e) => setFiltreNom(e.target.value)} />
+              </div>
+              {champ("Faction", filtreFaction, (v) => { setFiltreFaction(v); setFiltreClan(""); },
+                factions.map((f) => ({ v: f, l: getFactionDisplayName(f) })))}
+              {champ("Clan", filtreClan, setFiltreClan, clans.map((c) => ({ v: c, l: c })))}
+              {champ("Race", filtreRace, setFiltreRace, races.map((r) => ({ v: r, l: r })))}
+              {champ("Rareté", filtreRarete, setFiltreRarete, raretes.map((r) => ({ v: r, l: r })))}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 6 }}>
+                <span style={{ fontSize: 11, color: "#777", whiteSpace: "nowrap" }}>{herosFiltres.length} / {heroes.length}</span>
+                {actif && (
+                  <button type="button" style={{ ...STYLE.button, background: "#eee", color: "#333" }}
+                    onClick={() => { setFiltreNom(""); setFiltreFaction(""); setFiltreClan(""); setFiltreRace(""); setFiltreRarete(""); }}>
+                    Effacer
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Hero list */}
-      {heroes.map((hero) => (
+      {herosFiltres.map((hero) => (
         <div key={hero.id} style={{
           ...STYLE.card,
           ...(hero.id === editingHeroId
@@ -1860,6 +2014,14 @@ export default function HeroManager() {
           </div>
         </div>
       ))}
+
+      {heroes.length > 0 && herosFiltres.length === 0 && (
+        <div style={STYLE.card}>
+          <p style={{ fontSize: 11, color: "#aaa", textAlign: "center" }}>
+            Aucun héros ne correspond à ces filtres.
+          </p>
+        </div>
+      )}
 
       {heroes.length === 0 && (
         <div style={STYLE.card}>

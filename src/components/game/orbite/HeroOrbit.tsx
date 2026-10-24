@@ -117,6 +117,9 @@ export default function HeroOrbit(props: HeroOrbitProps) {
     key: "conquete", size: TAILLE,
     bulle: () => <BulleTexte titre="Conquête" lignes={[
       `${conquete} sur ${MAX_CONQUETE}`,
+      // Le pouvoir lui-même, lisible des deux côtés : l'adversaire doit savoir
+      // ce qu'une jauge pleine en face lui coûtera.
+      `Les capacités Conquête remplissent la jauge. À ${MAX_CONQUETE}, on vole 1 carte parmi 3 du deck adverse : elle passe en main et appartient au conquérant pour la partie ; la jauge repart à 0.`,
       mine && ((conquete ?? 0) >= MAX_CONQUETE
         ? "Clic : prendre 1 carte parmi 3 du deck adverse"
         : `Cliquable au palier (${MAX_CONQUETE})`),

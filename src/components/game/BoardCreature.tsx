@@ -22,7 +22,7 @@ import RarityFrame from "@/components/cards/RarityFrame";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { isBigHit } from "@/lib/fx/impactFx";
-import { SPRINGS } from "@/lib/fx/overlayMotion";
+import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
@@ -309,7 +309,7 @@ function BoardCreature({
   // Empower (capability gained) is a touch stronger and shimmers.
   const isBoost = !isHit && boostKind != null;
   const isEmpower = boostKind === "empower";
-  const boostDur = isEmpower ? 0.75 : 0.6;
+  const boostDur = lent(isEmpower ? 0.75 : 0.6);
   const boostAnimate = {
     x: 0,
     y: [0, isEmpower ? -6 : -8, 0],
@@ -365,7 +365,7 @@ function BoardCreature({
               "blur(0px) brightness(1.4) saturate(2.6) hue-rotate(70deg)",
               "blur(3px) brightness(0.5) saturate(2) hue-rotate(90deg)",
             ],
-            transition: { duration: 1.0, ease: "easeIn", times: [0, 0.2, 1] },
+            transition: { duration: lent(1.0), ease: "easeIn", times: [0, 0.2, 1] },
           }
         : {
             // Struck dead — a hot flash, then the body comes apart: spins,
@@ -379,27 +379,27 @@ function BoardCreature({
               "blur(0px) brightness(2.4) saturate(0.3)",
               "blur(3px) brightness(0.6) saturate(0)",
             ],
-            transition: { duration: 0.95, ease: "easeIn", times: [0, 0.18, 1] },
+            transition: { duration: lent(0.95), ease: "easeIn", times: [0, 0.18, 1] },
           }
       }
       transition={{
         default: SPRINGS.boardSettle,
-        x: { duration: 0.25, ease: "easeOut" },
+        x: { duration: lent(0.25), ease: "easeOut" },
         // L'invocation atterrit sur un ressort dédié plus vif (le défaut, lourd,
         // la faisait dériver après le flash de portail au lieu d'atterrir avec).
         scale: summoning ? SPRINGS.summon : undefined,
         // Entrée douce : montée en tween lisse (pas le ressort par défaut, qui rebondirait).
-        y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: 0.34, ease: "easeOut" } : undefined,
+        y: isBoost ? { duration: boostDur, ease: "easeOut" } : entering ? { duration: lent(0.34), ease: "easeOut" } : undefined,
         // Snappy squash for the hit reaction (fast in/out), gentle otherwise.
-        scaleX: isHit ? { duration: 0.18, ease: "easeOut", times: [0, 0.35, 1] } : { duration: 0.42, ease: "easeOut" },
-        scaleY: isHit ? { duration: 0.18, ease: "easeOut", times: [0, 0.35, 1] } : { duration: 0.42, ease: "easeOut" },
+        scaleX: isHit ? { duration: lent(0.18), ease: "easeOut", times: [0, 0.35, 1] } : { duration: lent(0.42), ease: "easeOut" },
+        scaleY: isHit ? { duration: lent(0.18), ease: "easeOut", times: [0, 0.35, 1] } : { duration: lent(0.42), ease: "easeOut" },
         rotate: isBoost && isEmpower ? { duration: boostDur, ease: "easeOut" } : undefined,
         // Hit flash snaps to peak in ~15% of the window then decays — a fast
         // onset reads as impact, where the old symmetric ramp peaked mid-way.
         filter: isHit
-          ? { duration: 0.38, ease: "easeOut", times: [0, 0.15, 1] }
-          : { duration: isBoost ? boostDur : 0.32, ease: "easeOut" },
-        opacity: { duration: entering ? 0.4 : 0.3, ease: "easeOut" },
+          ? { duration: lent(0.38), ease: "easeOut", times: [0, 0.15, 1] }
+          : { duration: isBoost ? boostDur : lent(0.32), ease: "easeOut" },
+        opacity: { duration: lent(entering ? 0.4 : 0.3), ease: "easeOut" },
       }}
     >
     {/* Halo de boost — enfle puis s'estompe DERRIÈRE la carte (zIndex -1).

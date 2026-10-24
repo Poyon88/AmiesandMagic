@@ -10,6 +10,7 @@ import { excludeNonDiscoverable, excludeSpecialSets, onlyPlayable } from "@/lib/
 import { isManaSpark } from "@/lib/game/mana-spark";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import type { Card, HeroDefinition } from "@/lib/game/types";
+import { effetsDuPouvoir } from "@/lib/game/hero-power";
 
 export interface Viviers { factionCardPool: Card[]; allSpellsPool: Card[] }
 
@@ -71,8 +72,9 @@ export function viviersDuMatch(
   factionCards.forEach((c) => idsLies(c, lies));
   allSpells.forEach((c) => idsLies(c, lies));
   for (const h of heros) {
-    const composed = h?.powerEffect?.mode === "composed" ? h.powerEffect.composed : null;
-    for (const id of designatedCardIds(composed)) lies.add(id);
+    for (const e of effetsDuPouvoir(h)) {
+      if (e.mode === "composed") for (const id of designatedCardIds(e.composed)) lies.add(id);
+    }
   }
   const charges = new Set([...factionCards, ...allSpells].map((c) => c.id));
   const manquants = [...lies].filter((id) => !charges.has(id)).sort((a, b) => a - b);

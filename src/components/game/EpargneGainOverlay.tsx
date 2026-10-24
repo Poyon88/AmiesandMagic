@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { EpargneGainEvent } from "@/lib/store/gameStore";
-import { overlayRect } from "@/lib/fx/overlayMotion";
+import { overlayRect, lent } from "@/lib/fx/overlayMotion";
 
 import GoldCoin from "@/components/shared/GoldCoin";
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   kind?: "epargne" | "foi" | "conquete" | "exploration" | "invention";
 }
 
-const DURATION_MS = 1500;
+const DURATION_MS = lent(1500);
 
 /** Position du médaillon d'un compteur dans l'orbite du héros. L'orbite est
  *  montée en DOUBLE (héros 2D / 3D) et un exemplaire caché mesure 0×0 : on
@@ -94,7 +94,7 @@ export default function EpargneGainOverlay({ event, onComplete, kind = "epargne"
               }}
               initial={{ opacity: 0.9, scale: 0.8 }}
               animate={{ opacity: 0, scale: 2.4 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
+              transition={{ duration: lent(0.7), ease: "easeOut" }}
             />
             <motion.div
               style={{ position: "absolute", left: p.pos.x, top: p.pos.y, transform: "translate(-50%, -50%)" }}

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { HeroDefinition } from "@/lib/game/types";
 import { useHeroText } from "@/i18n/useHeroText";
+import { effetsDuPouvoir } from "@/lib/game/hero-power";
 
 interface HeroPowerDescriptionOverlayProps {
   heroDef: HeroDefinition;
@@ -25,7 +26,7 @@ export default function HeroPowerDescriptionOverlay({
   const powerName =
     heroText.powerName({ id: heroDef.id, power_name: heroDef.powerName }) ?? heroDef.powerName;
   const powerDescription =
-    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription }) ??
+    heroText.powerDesc({ id: heroDef.id, power_description: heroDef.powerDescription, power_effect: heroDef.powerEffect }) ??
     heroDef.powerDescription;
   // Close on Escape
   useEffect(() => {
@@ -131,7 +132,9 @@ export default function HeroPowerDescriptionOverlay({
             }}
           >
             {(() => {
-              const m = heroDef.powerEffect?.mode;
+              // Plusieurs effets : le badge générique « actif ».
+              const effets = effetsDuPouvoir(heroDef);
+              const m = effets.length === 1 ? effets[0].mode : undefined;
               if (m === "grant_keyword") return t('power_mode_grant_keyword');
               if (m === "spell_trigger") return t('power_mode_spell_trigger');
               if (m === "aura") return t('power_mode_aura');

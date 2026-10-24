@@ -561,7 +561,10 @@ export default function GameCard({
         opacity: showDetails ? 1 : 0,
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
-        display: "flex", flexDirection: "column", justifyContent: "center",
+        // « safe center » : centré quand le texte tient, collé en haut (puis
+        // défilant) quand il déborde — un simple « center » repoussait le
+        // titre sous l'écu de coût et le bas sous les écus ATK / PV.
+        display: "flex", flexDirection: "column", justifyContent: "safe center",
         // Haut et bas dégagés pour les écus restés visibles par-dessus :
         // coût (+ jeton d'équipement d'un objet) en haut, ATK / PV en bas.
         padding: `${detailPadHaut}cqw ${14 * s}px ${cadreDroit ? `${detailPadBas}cqw` : `${16 * s + 2 * spellPointDepth}px`}`,
@@ -709,6 +712,9 @@ export default function GameCard({
           display: "flex", justifyContent: "center", gap: 8 * s, flexWrap: "wrap",
           fontSize: 13 * so, color: "#ccc",
           borderTop: `1px solid ${accentColor}33`, paddingTop: 7 * s,
+          // Dernière ligne : elle peut finir à hauteur des écus ATK / PV, restés
+          // visibles par-dessus — on lui retire leur largeur à droite.
+          ...(cadreDroit ? { paddingRight: `${statShieldsReserve(bonusAtk, bonusPv, isItem)}cqw` } : null),
         }}>
           {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{vocab.factionName(card.faction)}</span>}
           {(() => {

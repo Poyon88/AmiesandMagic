@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { GraveyardAffectEvent } from "@/lib/store/gameStore";
-import { CASCADE_EASE, CASCADE_STAGGER } from "@/lib/fx/overlayMotion";
+import { CASCADE_EASE, CASCADE_STAGGER, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
   onComplete: () => void;
 }
 
-const DISPLAY_MS = 2200;
+const DISPLAY_MS = lent(2200);
 
 export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
   const t = useTranslations("game");
@@ -53,7 +53,7 @@ export default function GraveyardAffectOverlay({ event, onComplete }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: lent(0.25) }}
         >
           {/* Label */}
           <motion.div

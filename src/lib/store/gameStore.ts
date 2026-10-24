@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { regleDecouverteActivee } from "@/lib/game/decouverte";
-import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
+import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, HeroPowerAction, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
+import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import type { DeckPickerKeyword } from "@/lib/game/engine";
 import type { SelectionKwCreature } from "@/lib/game/engine";
 import { useAudioStore } from "./audioStore";
@@ -9,7 +10,7 @@ import { useAudioStore } from "./audioStore";
 export type AlternativeOption = NonNullable<import("@/lib/game/types").PendingTrigger["alternativeOptions"]>[number];
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
-import { findInstanceEl, overlayRect, OVERLAY } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect, OVERLAY, lent } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
 import { composedCapsOf, composedTriggerMode, composedChoicePrompt } from "@/lib/game/composed-display";
 import { getCapabilities } from "@/lib/game/capability-adapter";
@@ -23,9 +24,9 @@ import {
   getSpellSlotTargets,
   getSpellTargetSlots,
   canUseHeroPower,
-  heroPowerNeedsTarget,
-  getHeroPowerTargets,
   heroPowerComposedChoice,
+  ciblesEffetPouvoir,
+  effetPouvoirACible,
   creatureNeedsTarget,
   getCreatureTargets,
   getCreatureComposedChoice,
@@ -54,6 +55,7 @@ import {
   getConqueteOffer,
   getRenfortRoyalCards,
   selectionCardsForKeyword,
+  SELECTION_KWS_CREATURE,
   getMagicalSelectionCards,
   deckAfterDivination,
   deckAfterCreuser,
@@ -134,8 +136,8 @@ function deckPickerState(
  *
  *  C'est LE réglage à toucher pour accélérer ou ralentir l'animation des
  *  boosts ; le son suit automatiquement, il lit les mêmes délais. */
-const SEQ_STEP_MS = 140;
-const SEQ_STEP_BUFF_MS = 550;
+const SEQ_STEP_MS = lent(140);
+const SEQ_STEP_BUFF_MS = lent(550);
 
 const seqStepFor = (type: string): number => (type === "buff" ? SEQ_STEP_BUFF_MS : SEQ_STEP_MS);
 
@@ -528,6 +530,8 @@ export interface HeroPowerCastEvent {
   race: string;
   powerName: string;
   powerDescription: string;
+  // Effets du pouvoir : le texte affiché en est GÉNÉRÉ (useHeroText.powerDesc).
+  powerEffect?: HeroDefinition["powerEffect"];
   // Per-hero illustration for the cast overlay. Falls back to the
   // race-generic image (HERO_IMAGES[race]) in HeroPowerOverlay when null.
   powerImageUrl?: string | null;
@@ -572,6 +576,7 @@ export interface ActionHistoryEntry {
     race: string;
     powerName: string;
     powerDescription: string;
+    powerEffect?: HeroDefinition["powerEffect"];
     powerImageUrl?: string | null;
   };
   // Cible principale : une carte en jeu, ou un héros (POV local).
@@ -703,6 +708,9 @@ interface GameStore {
   // Pouvoir de héros composé en cours de ciblage : uid de la capacité + nombre
   // de cibles à collecter (réutilise creatureComposedCollected pour l'accu).
   pendingHeroPowerComposed: { uid: string; count: number } | null;
+  // Pouvoir de héros en cours de préparation : l'action qui s'accumule (une
+  // réponse par effet) et l'index de l'effet dont on attend la réponse.
+  pouvoirEnCours: { i: number; action: HeroPowerAction } | null;
   // Exhumation composée en cours de ciblage cimetière. `caps` est une FILE : une
   // carte peut porter plusieurs Exhumations composées (une capacité par
   // résurrection, ex. « Légion des Damnés » et ses 3 cx_N), et chacune réclame
@@ -1446,6 +1454,7 @@ function buildHistoryEntries(ctx: {
         race: ctx.heroPowerEvent.race,
         powerName: ctx.heroPowerEvent.powerName,
         powerDescription: ctx.heroPowerEvent.powerDescription,
+        powerEffect: ctx.heroPowerEvent.powerEffect,
         powerImageUrl: ctx.heroPowerEvent.powerImageUrl,
       },
     });
@@ -1561,33 +1570,35 @@ export const useGameStore = create<GameStore>((set, get) => {
     const player = gs.players[gs.currentPlayerIndex];
     const cardInst = carteJouable(player, instanceId);
     if (!cardInst || cardInst.card.card_type !== "spell" || !cardInst.card.spell_keywords) return false;
-    const tryOpen = (kwId: string, getter: (x: number, randomX: boolean, minX?: number) => Card[]): boolean => {
-      const found = cardInst.card.spell_keywords!.find(k => k.id === kwId);
-      if (!found) return false;
+    // UNE Sélection à la fois, dans l'ordre d'auteur, en sautant celles déjà
+    // répondues (même patron que openCreaturePickerIfNeeded) : « Sélection 3 ·
+    // Sélection magique 3 » n'ouvrait que la première, et le moteur rejouait
+    // ce choix pour la seconde.
+    const deja = get().collectedSelectionChoices;
+    for (const found of cardInst.card.spell_keywords) {
+      const kwId = found.id as SelectionKwCreature;
+      if (!(SELECTION_KWS_CREATURE as readonly string[]).includes(kwId) || deja[kwId] != null) continue;
       // Coût de l'offre = X + bonus d'amplification (Chant, tempo), comme à la
       // résolution. Le « ? » ne se résout plus ici : c'est le vivier qui tire
       // un coût par carte, sous ce plafond.
       const x = (found.amount ?? 0)
         + chantBonusForSpell(gs, cardInst.card)
         + tempoBonusForCard(gs, cardInst.card);
-      const choices = getter(x, found.randomX === true, found.minX);
-      if (choices.length === 0) return false;
+      const choices = selectionCardsForKeyword(kwId, gs, x, cardInst.card, undefined, undefined, found.randomX === true, found.minX);
+      // Rien à proposer : on passe à la suivante plutôt que de bloquer.
+      if (choices.length === 0) continue;
       set({
         targetingMode: "selection",
         selectionCards: choices,
+        selectionPickerKeyword: kwId,
         validTargets: [],
         // selectedCardInstanceId stays as-is. collectedTargetMap holds the
         // carry forward so the selection-mode dispatch can merge it in.
         collectedTargetMap: carriedMap,
       });
       return true;
-    };
-    return (
-      tryOpen("selection", (x, alea, min) => getSelectionCards(gs, x, cardInst.card, undefined, alea, undefined, min)) ||
-      tryOpen("selection_magique", (x, alea, min) => getMagicalSelectionCards(gs, x, cardInst.card, undefined, undefined, alea, min)) ||
-      tryOpen("renfort_royal", (x, alea, min) => getRenfortRoyalCards(gs, x, cardInst.card, undefined, undefined, alea, min)) ||
-      tryOpen("tresor", (x, alea, min) => selectionCardsForKeyword("tresor", gs, x, cardInst.card, undefined, undefined, alea, min))
-    );
+    }
+    return false;
   };
 
   /** Pendant de `openSelectionPickerIfNeeded` pour le picker de DECK (Creuser X,
@@ -1662,6 +1673,94 @@ export const useGameStore = create<GameStore>((set, get) => {
       // calcule est exactement ce que la résolution appliquera.
       : (parseXValuesFromEffectText(card.effect_text)["creuser"] ?? 1);
     return base + tempoBonusForCard(gs, card);
+  };
+
+  /** POUVOIR DE HÉROS : avance d'effet en effet à partir de l'effet `from`,
+   *  ouvre ce que l'effet demande (cible, Sélection, modale de deck) et
+   *  s'arrête là ; la réponse rappellera cette fonction sur l'effet suivant.
+   *  Quand aucun effet n'attend plus rien, dispatche l'action accumulée — une
+   *  seule action, un seul coût, toutes les réponses. */
+  const avancerPouvoir = (from: number, action: HeroPowerAction): GameAction | null => {
+    const gs = get().gameState;
+    if (!gs) return null;
+    const player = gs.players[gs.currentPlayerIndex];
+    const heroDef = player.hero.heroDefinition;
+    // Sans définition, rien à préparer : l'action part telle quelle, le moteur tranche.
+    if (!heroDef) {
+      set({ pouvoirEnCours: null, pendingHeroPowerSelection: false, pendingHeroPowerComposed: null });
+      return get().dispatchAction(action);
+    }
+    const effets = effetsDuPouvoir(heroDef);
+    const base = {
+      selectedCardInstanceId: null,
+      selectedAttackerInstanceId: null,
+    };
+    // Cartes que les effets PRÉCÉDENTS auront piochées (Inspiration) : la
+    // modale de deck d'un effet suivant doit montrer le deck tel qu'il sera.
+    let pioches = 0;
+    for (let i = 0; i < from; i++) {
+      const e = effets[i];
+      if (e.mode === "spell_trigger" && e.keywordId === "inspiration") pioches += e.params?.amount ?? 1;
+    }
+    for (let i = from; i < effets.length; i++) {
+      const effect = effets[i];
+      const enCours = { i, action };
+      if (effect.mode === "spell_trigger") {
+        // Sélection et famille : modale de cartes avant résolution.
+        const x = effect.params?.amount ?? 0;
+        // Pour Sélection / Sélection magique, l'alignement est dérivé de la
+        // faction du héros (les heroes définitions portent un faction id).
+        const heroSource = { faction: heroDef.faction ?? null };
+        let choices: Card[] | null = null;
+        if (effect.keywordId === "selection") choices = getSelectionCards(gs, x, heroSource);
+        else if (effect.keywordId === "renfort_royal") choices = getRenfortRoyalCards(gs, x, heroSource);
+        else if (effect.keywordId === "selection_magique") choices = getMagicalSelectionCards(gs, x, heroSource);
+        else if (effect.keywordId === "tresor") choices = selectionCardsForKeyword("tresor", gs, x, heroSource);
+        if (choices !== null && choices.length > 0) {
+          set({ ...base, validTargets: [], targetingMode: "selection", selectionCards: choices,
+            pendingHeroPowerSelection: true, pouvoirEnCours: enCours });
+          return null;
+        }
+        // Divination / Présage / Creuser : la même modale de deck que les sorts.
+        const kw = effect.keywordId;
+        if (kw === "divination" || kw === "presage" || kw === "creuser") {
+          const deck = player.deck.slice(pioches);
+          const picker = deckPickerState(kw, deck, kw === "creuser" ? (effect.params?.amount ?? 1) : 0);
+          if (picker) {
+            set({ ...base, validTargets: [], targetingMode: "divination", ...picker,
+              learnPickerFor: null, deckPickerKeyword: kw, pouvoirEnCours: enCours });
+            return null;
+          }
+        }
+        if (kw === "inspiration") pioches += effect.params?.amount ?? 1;
+      }
+      if (effect.mode === "composed") {
+        const choice = heroPowerComposedChoice(heroDef, i);
+        if (!choice) continue;
+        const cibles = ciblesEffetPouvoir(gs, heroDef, i);
+        // Exhumation composée : picker cimetière au lieu du ciblage plateau.
+        if (choice.type === "friendly_graveyard_to_board") {
+          set({ ...base, validTargets: cibles, targetingMode: "graveyard", creatureComposedCollected: [],
+            pendingComposedGraveyard: {
+              caps: [{ uid: choice.uid, count: Math.min(choice.count, cibles.length) }],
+              capIndex: 0, picked: {}, context: "hero_power",
+            },
+            pouvoirEnCours: enCours });
+          return null;
+        }
+        set({ ...base, validTargets: cibles, targetingMode: "hero_power",
+          pendingHeroPowerComposed: { uid: choice.uid, count: choice.count },
+          creatureComposedCollected: [], pouvoirEnCours: enCours });
+        return null;
+      }
+      if (effetPouvoirACible(heroDef, i)) {
+        set({ ...base, validTargets: ciblesEffetPouvoir(gs, heroDef, i), targetingMode: "hero_power",
+          pendingHeroPowerComposed: null, pouvoirEnCours: enCours });
+        return null;
+      }
+    }
+    set({ pouvoirEnCours: null, pendingHeroPowerSelection: false, pendingHeroPowerComposed: null });
+    return get().dispatchAction(action);
   };
 
   /** Ouvre la PROCHAINE modale de deck de la carte, dans l'ORDRE D'AUTEUR (le
@@ -1799,6 +1898,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   collectedTargetMap: {},
   creatureComposedCollected: [],
   pendingHeroPowerComposed: null,
+  pouvoirEnCours: null,
   pendingComposedGraveyard: null,
   pendingAttackDefenderId: null,
   attackPowerCollected: [],
@@ -2048,6 +2148,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           race: heroDef.race,
           powerName: heroDef.powerName,
           powerDescription: heroDef.powerDescription,
+          powerEffect: heroDef.powerEffect,
           powerImageUrl: heroDef.powerImageUrl ?? null,
           timestamp: Date.now(),
         };
@@ -2173,11 +2274,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // fixe le moment du popup dans le lunge. Le déplacer désynchronise le
     // chiffre de dégâts de l'impact ; pour ralentir, on bouge les trois
     // ensemble en gardant cet écart.
-    const FUREUR_LUNGE_GAP_MS = 1600;       // écart entre deux assauts Fureur successifs
-    const FUREUR_FIRST_DELAY_MS = 1200;     // écart entre l'assaut principal et le 1er assaut Fureur
-    const FUREUR_DAMAGE_DELAY_MS = 1600;    // décalage de base des popups de dégâts (= FIRST + 400)
+    const FUREUR_LUNGE_GAP_MS = lent(1600);       // écart entre deux assauts Fureur successifs
+    const FUREUR_FIRST_DELAY_MS = lent(1200);     // écart entre l'assaut principal et le 1er assaut Fureur
+    const FUREUR_DAMAGE_DELAY_MS = lent(1600);    // décalage de base des popups de dégâts (= FIRST + 400)
     const FUREUR_PHASE_EXTRA_MS = fureurStrikes.length > 0
-      ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + 500
+      ? FUREUR_DAMAGE_DELAY_MS + (fureurStrikes.length - 1) * FUREUR_LUNGE_GAP_MS + lent(500)
       : 0;
 
     // Points séquentiels (scatter / Tempête) : un popup + un burst VFX par point,
@@ -2228,7 +2329,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         delayMs: seqDelais[i],
       };
     });
-    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? seqDernier + 500 : 0;
+    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? seqDernier + lent(500) : 0;
 
     // Sorts relancés (capacité Relancer) : le moteur a enregistré chaque relance
     // dans newState.recastEvents {card, targetIds}, dans l'ordre de relance. On
@@ -3400,19 +3501,19 @@ export const useGameStore = create<GameStore>((set, get) => {
     });
 
     // --- Phase timings ---
-    const OVERLAY_PRE_IMPACT_MS = 1150; // spell / hero-power → impact start (tightened: the card's motion is done by ~600ms, so 1800 left a long dead hold before impact)
-    const POWER_ARROW_PRE_IMPACT_MS = 550; // pouvoir tap sans overlay : laisse la flèche partir avant que les dégâts/bouclier ne s'affichent
-    const ATTACK_LUNGE_PRE_IMPACT_MS = 700; // lunge (~650ms) + short buffer
-    const IMPACT_MS = 1200;
-    const DRAW_MS = 1000;
-    const DEATH_MS = 1000;
-    const SUMMON_MS = 1400;
-    const DISCARD_MS = 1800; // forced-discard popup display time
+    const OVERLAY_PRE_IMPACT_MS = lent(1150); // spell / hero-power → impact start (tightened: the card's motion is done by ~600ms, so 1800 left a long dead hold before impact)
+    const POWER_ARROW_PRE_IMPACT_MS = lent(550); // pouvoir tap sans overlay : laisse la flèche partir avant que les dégâts/bouclier ne s'affichent
+    const ATTACK_LUNGE_PRE_IMPACT_MS = lent(700); // lunge (~650ms) + short buffer
+    const IMPACT_MS = lent(1200);
+    const DRAW_MS = lent(1000);
+    const DEATH_MS = lent(1000);
+    const SUMMON_MS = lent(1400);
+    const DISCARD_MS = lent(1800); // forced-discard popup display time
     // Cost discard runs BEFORE the spell overlay to communicate that the
     // discard is a prerequisite, not a consequence. Shorter than DISCARD_MS
     // so it doesn't drag the cast — the popup visually starts here and
     // continues fading while the spell overlay flies in.
-    const COST_DISCARD_MS = 1000;
+    const COST_DISCARD_MS = lent(1000);
     // Cadence des sorts : pilotée par OVERLAY.spell (cf. overlayMotion), pour
     // que le store et l'overlay ne puissent pas diverger. L'écart entre deux
     // relances vaut désormais la fenêtre de lecture pleine de la carte — avant,
@@ -3472,7 +3573,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Cascade: if multiple targets are hit by the same action, stagger their
     // floating popups by 200ms each so the player can read each one.
-    const STAGGER_MS = 200;
+    const STAGGER_MS = lent(200);
     // Split damage events into impact (direct dégâts/heal/shield/…) and
     // deferred buffs triggered by deaths (Nécrophagie) — the latter must wait
     // until the creatures have actually left for the graveyard.
@@ -3696,7 +3797,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const aPeindre = v.dmg.length > 0 || v.hasDeaths;
       if (!aPeindre) return c;
       setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
-      c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + 500 : 0);
+      c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + lent(500) : 0);
       if (v.hasDeaths) {
         setTimeout(() => set({
           gameState: v.finState,
@@ -3977,6 +4078,16 @@ export const useGameStore = create<GameStore>((set, get) => {
       cursor += DISCARD_MS;
     }
 
+    // La carte piochée se RÉVÈLE avant d'arriver en main (arbitrage auteur) :
+    // on lit d'abord ce que la pioche déclenche, puis la carte rejoint la main
+    // et son effet peint ses dégâts / ses morts.
+    if (drawWave) {
+      for (const reveal of drawTriggerSpells) {
+        setTimeout(() => set({ spellCastEvent: reveal }), cursor);
+        cursor += RECAST_GAP_MS;
+      }
+    }
+
     if (hasDraws) {
       setTimeout(phaseDraws, cursor);
       cursor += DRAW_MS;
@@ -3984,13 +4095,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // --- Ce que l'effet « à la pioche » a provoqué ---------------------------
     //
-    // Enfin dans l'ordre où le moteur l'a vécu : la carte est arrivée en main
-    // (phase ci-dessus), elle se révèle, puis ses dégâts et ses morts tombent.
+    // Dans l'ordre où le moteur l'a vécu : la carte est arrivée en main (phase
+    // ci-dessus), puis ses dégâts et ses morts tombent.
     if (drawWave) {
-      for (const reveal of drawTriggerSpells) {
-        setTimeout(() => set({ spellCastEvent: reveal }), cursor);
-        cursor += RECAST_GAP_MS;
-      }
       const avant = cursor;
       for (const v of vaguesDepuisPioche) cursor = programmerVague(v, cursor);
       // Effet sans dégât ni mort : rien n'a été programmé, mais l'écran est
@@ -4751,7 +4858,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       const selId = get().selectedCardInstanceId;
       set({ creatureComposedCollected: [], pendingComposedGraveyard: null, collectedTargetMap: {} });
       if (context === "hero_power") {
-        return get().dispatchAction({ type: "hero_power", targetMap });
+        const enCours = get().pouvoirEnCours ?? { i: 0, action: { type: "hero_power" as const } };
+        return avancerPouvoir(enCours.i + 1, {
+          ...enCours.action,
+          targetMap: { ...enCours.action.targetMap, ...targetMap },
+        });
       }
       return get().dispatchAction({
         type: "play_card",
@@ -4902,6 +5013,16 @@ export const useGameStore = create<GameStore>((set, get) => {
           ? { learnSpellInstanceId: get().divinationCards[parseInt(targetId) || 0]?.instanceId }
           : {}),
       });
+    } else if (targetingMode === "divination" && get().pouvoirEnCours) {
+      // Modale de deck d'un effet du pouvoir de héros (Divination, Présage,
+      // Creuser) : l'index réel retenu part avec l'action, sous l'index de l'effet.
+      const enCours = get().pouvoirEnCours!;
+      const choix = indexReelDuPicker(parseInt(targetId) || 0, get().deckPickerOrder);
+      set({ deckPickerKeyword: null });
+      return avancerPouvoir(enCours.i + 1, {
+        ...enCours.action,
+        choixDeckEffets: { ...enCours.action.choixDeckEffets, [enCours.i]: choix },
+      });
     } else if (targetingMode === "divination" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs } = get();
       const choiceIndex = indexReelDuPicker(parseInt(targetId) || 0, get().deckPickerOrder);
@@ -4985,13 +5106,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       const cardId = parseInt(targetId) || 0;
       return get().dispatchAction({ type: "spend_epargne", selectionCardId: cardId });
     } else if (targetingMode === "selection" && get().pendingHeroPowerSelection) {
-      // Hero power picker — dispatch a hero_power action with the chosen
-      // card id ; engine.ts mirrors it into targetMap for the selection /
-      // renfort_royal / selection_magique resolver.
+      // Sélection d'un effet du pouvoir : la carte est rangée SOUS L'INDEX de
+      // l'effet (engine.ts la reverse dans les créneaux selection_0…), puis on
+      // passe à l'effet suivant.
       const cardId = parseInt(targetId) || 0;
-      return get().dispatchAction({
-        type: "hero_power",
-        selectionCardId: cardId,
+      const enCours = get().pouvoirEnCours ?? { i: 0, action: { type: "hero_power" as const } };
+      set({ pendingHeroPowerSelection: false });
+      return avancerPouvoir(enCours.i + 1, {
+        ...enCours.action,
+        selectionsEffets: { ...enCours.action.selectionsEffets, [enCours.i]: cardId },
       });
     } else if (targetingMode === "selection" && selectedCardInstanceId) {
       const { pendingBoardPosition, gameState: gs, collectedTargetMap, pendingCreatureChain } = get();
@@ -5006,13 +5129,28 @@ export const useGameStore = create<GameStore>((set, get) => {
         // Réponses de deck données AVANT ce picker (Divination / Présage /
         // Creuser puis Sélection) : elles voyagent aussi, sinon le moteur
         // résoudrait les modales de deck avec l'index 0 par défaut.
+        //
+        // Chaque réponse est rangée sous SON mot-clé, puis la Sélection
+        // suivante du sort s'ouvre ; au départ, une réponse par créneau
+        // `<mot-clé>_0`.
+        const kwSel = get().selectionPickerKeyword ?? "selection";
+        const choixSel = { ...get().collectedSelectionChoices, [kwSel]: cardId };
+        set({ collectedSelectionChoices: choixSel, selectionPickerKeyword: null });
+        if (gs && openSelectionPickerIfNeeded(gs, selectedCardInstanceId, collectedTargetMap)) {
+          return null;
+        }
+        const creneauxSel = Object.fromEntries(
+          Object.entries(choixSel)
+            .filter(([, v]) => v != null)
+            .map(([kw, v]) => [`${kw}_0`, String(v)]),
+        );
         const choixDeck = get().collectedDeckChoices;
         const kwDeck = get().deckPickerKeyword;
         const aDesChoixDeck = Object.keys(choixDeck).length > 0;
         return get().dispatchAction({
           type: "play_card",
           cardInstanceId: selectedCardInstanceId,
-          targetMap: { ...collectedTargetMap, selection_0: String(cardId) },
+          targetMap: { ...collectedTargetMap, ...creneauxSel },
           ...(aDesChoixDeck ? { deckChoiceIndices: choixDeck } : {}),
           // Champ historique : l'index de la DERNIÈRE modale de deck répondue,
           // comme le dispatch direct du mode divination.
@@ -5065,14 +5203,17 @@ export const useGameStore = create<GameStore>((set, get) => {
           });
           return null; // on continue à collecter
         }
-        const targetMap: Record<string, string> = {};
+        const enCours = get().pouvoirEnCours ?? { i: 0, action: { type: "hero_power" as const } };
+        const targetMap: Record<string, string> = { ...enCours.action.targetMap };
         collected.forEach((id, i) => { targetMap[`${pendingHeroPowerComposed.uid}#${i}`] = id; });
         set({ creatureComposedCollected: [], pendingHeroPowerComposed: null });
-        return get().dispatchAction({ type: "hero_power", targetMap });
+        return avancerPouvoir(enCours.i + 1, { ...enCours.action, targetMap });
       }
-      return get().dispatchAction({
-        type: "hero_power",
-        targetInstanceId: targetId,
+      // Cible simple de l'effet en cours, rangée sous son index.
+      const enCours = get().pouvoirEnCours ?? { i: 0, action: { type: "hero_power" as const } };
+      return avancerPouvoir(enCours.i + 1, {
+        ...enCours.action,
+        ciblesEffets: { ...enCours.action.ciblesEffets, [enCours.i]: targetId },
       });
     } else if (targetingMode === "tap") {
       const { pendingTapSourceId, pendingTapInstanceIdx, pendingTapComposedUid } = get();
@@ -5178,6 +5319,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       collectedTargetMap: {},
       creatureComposedCollected: [],
       pendingHeroPowerComposed: null,
+  pouvoirEnCours: null,
       pendingComposedGraveyard: null,
       pendingAttackDefenderId: null,
       attackPowerCollected: [],
@@ -5620,99 +5762,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     // que le joueur n'a pas choisi — sinon il régénère de nouvelles cartes.
     if (get().targetingMode === "selection") return null;
     if (!canUseHeroPower(gameState)) return null;
-
     const player = gameState.players[gameState.currentPlayerIndex];
-    const heroDef = player.hero.heroDefinition;
-    if (!heroDef) return null;
-
-    // Hero powers using selection / renfort_royal / selection_magique need
-    // a card-picker overlay before they can resolve — without it the engine
-    // receives no chosen card and the keyword no-ops. We open the same
-    // selection overlay used by spells/creatures and remember (via
-    // pendingHeroPowerSelection) that the upcoming dispatch is a hero
-    // power, not a play_card.
-    const effect = heroDef.powerEffect;
-    if (effect && effect.mode === "spell_trigger") {
-      const x = effect.params?.amount ?? 0;
-      // Pour Sélection / Sélection magique, l'alignement est dérivé de la
-      // faction du héros (les heroes définitions portent un faction id).
-      const heroSource = { faction: heroDef.faction ?? null };
-      let choices: Card[] | null = null;
-      if (effect.keywordId === "selection") {
-        choices = getSelectionCards(gameState, x, heroSource);
-      } else if (effect.keywordId === "renfort_royal") {
-        choices = getRenfortRoyalCards(gameState, x, heroSource);
-      } else if (effect.keywordId === "selection_magique") {
-        choices = getMagicalSelectionCards(gameState, x, heroSource);
-      } else if (effect.keywordId === "tresor") {
-        choices = selectionCardsForKeyword("tresor", gameState, x, heroSource);
-      }
-      if (choices !== null) {
-        if (choices.length === 0) return null; // no candidates → power fizzles
-        set({
-          selectedCardInstanceId: null,
-          selectedAttackerInstanceId: null,
-          validTargets: [],
-          targetingMode: "selection",
-          selectionCards: choices,
-          pendingHeroPowerSelection: true,
-        });
-        return null;
-      }
-    }
-
-    // Pouvoir composé : si des cibles doivent être choisies, on entre en mode
-    // hero_power en mémorisant le slot (uid + nombre) pour collecter N cibles.
-    // Sinon (self / hero-only / random / automatic / draw / mana / …) → direct.
-    if (effect && effect.mode === "composed") {
-      const choice = heroPowerComposedChoice(heroDef);
-      if (!choice) {
-        return get().dispatchAction({ type: "hero_power" });
-      }
-      // Exhumation composée : picker cimetière (mode "graveyard") au lieu du
-      // ciblage plateau/héros. La cible est dispatchée via pendingComposedGraveyard.
-      if (choice.type === "friendly_graveyard_to_board") {
-        const gravTargets = getHeroPowerTargets(gameState, heroDef);
-        set({
-          selectedCardInstanceId: null,
-          selectedAttackerInstanceId: null,
-          validTargets: gravTargets,
-          targetingMode: "graveyard",
-          creatureComposedCollected: [],
-          pendingComposedGraveyard: {
-            // Un pouvoir de héros n'expose qu'une capacité composée à la fois
-            // (heroPowerComposedChoice) → file à un seul élément.
-            caps: [{ uid: choice.uid, count: Math.min(choice.count, gravTargets.length) }],
-            capIndex: 0,
-            picked: {},
-            context: "hero_power",
-          },
-        });
-        return null;
-      }
-      set({
-        selectedCardInstanceId: null,
-        selectedAttackerInstanceId: null,
-        validTargets: getHeroPowerTargets(gameState, heroDef),
-        targetingMode: "hero_power",
-        pendingHeroPowerComposed: { uid: choice.uid, count: choice.count },
-        creatureComposedCollected: [],
-      });
-      return null;
-    }
-
-    if (heroPowerNeedsTarget(heroDef)) {
-      const targets = getHeroPowerTargets(gameState, heroDef);
-      set({
-        selectedCardInstanceId: null,
-        selectedAttackerInstanceId: null,
-        validTargets: targets,
-        targetingMode: "hero_power",
-      });
-      return null;
-    } else {
-      return get().dispatchAction({ type: "hero_power" });
-    }
+    if (!player.hero.heroDefinition) return null;
+    // Effet par effet (cibles, Sélections, modales de deck), puis un seul dispatch.
+    return avancerPouvoir(0, { type: "hero_power" });
   },
 
   activateLearnedSpell: (creatureInstanceId) => {

@@ -48,10 +48,14 @@ function factionDuHeros(faction: string | null, race: string | null): string | n
   return null;
 }
 
+/** Carte du bloc « Lisibles d'un coup d'œil » : Morcant, Cavalier du Dernier
+ *  Nom, choisi par l'auteur. Absente ⇒ le bloc disparaît, sans erreur. */
+const CARTE_LISIBILITE_ID = 1407;
+
 export default async function Landing() {
   const supabase = await createClient();
 
-  const [{ data: showcaseData }, { data: heroesData }] = await Promise.all([
+  const [{ data: showcaseData }, { data: heroesData }, { data: carteLisibilite }] = await Promise.all([
     supabase
       .from("showcase_cards")
       .select("card_id, sort_order, card:cards(*)")
@@ -68,6 +72,7 @@ export default async function Landing() {
       // l'ordre que rend la base — la page de garde changerait de visage sans
       // qu'on y touche.
       .order("race"),
+    supabase.from("cards").select("*").eq("id", CARTE_LISIBILITE_ID).maybeSingle(),
   ]);
 
   const showcaseCardsFr: Card[] = (showcaseData ?? [])
@@ -79,6 +84,9 @@ export default async function Landing() {
   // système de mots-clés vocab). En FR, court-circuit sans requête.
   const locale = normalizeLocale(await getLocale());
   const showcaseCards = await localizeCardsInPlace(supabase, showcaseCardsFr, locale);
+  const [iconCard] = carteLisibilite
+    ? await localizeCardsInPlace(supabase, [carteLisibilite as unknown as Card], locale)
+    : [null];
 
   // Portrait par faction, par ordre de préférence :
   //   1. le héros désigné DÉFAUT DE FACTION — c'est exactement ce que la case
@@ -102,5 +110,5 @@ export default async function Landing() {
     }
   }
 
-  return <LandingPage showcaseCards={showcaseCards} factionHeroUrls={factionHeroUrls} />;
+  return <LandingPage showcaseCards={showcaseCards} factionHeroUrls={factionHeroUrls} iconCard={iconCard} />;
 }

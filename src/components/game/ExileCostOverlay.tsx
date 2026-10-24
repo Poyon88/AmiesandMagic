@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ExileCostEvent } from "@/lib/store/gameStore";
+import { lent } from "@/lib/fx/overlayMotion";
 
 /** Coût d'EXIL : X cartes quittent le dessus du deck pour payer une carte.
  *
@@ -17,10 +18,10 @@ import type { ExileCostEvent } from "@/lib/store/gameStore";
  *  vers la main, une carte défaussée part au cimetière — celle-ci est détruite,
  *  et le geste doit se lire comme irréversible. */
 
-const TEAR_DURATION_MS = 900;
-const TEAR_STAGGER_MS = 130;
+const TEAR_DURATION_MS = lent(900);
+const TEAR_STAGGER_MS = lent(130);
 /** Marge après la dernière déchirure avant de rendre la main au store. */
-const TAIL_MS = 220;
+const TAIL_MS = lent(220);
 /** Au-delà, on tronque : un exil de 5 cartes ne doit pas monopoliser l'écran. */
 const MAX_VISIBLE = 4;
 

@@ -80,7 +80,8 @@ describe("Verrou des sélecteurs « Sélection »", () => {
 
     expect(dispatched).toBeTruthy();
     expect(dispatched!.type).toBe("hero_power");
-    expect((dispatched! as { selectionCardId?: number }).selectionCardId).toBe(902);
+    // La carte est rangée sous l'index de l'effet du pouvoir (ici le seul, 0).
+    expect((dispatched! as { selectionsEffets?: Record<number, number> }).selectionsEffets?.[0]).toBe(902);
   });
 
   it("activateHeroPower est bloqué pendant qu'un sélecteur est ouvert", () => {

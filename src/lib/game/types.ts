@@ -1562,7 +1562,9 @@ export interface HeroDefinition {
   // Activation cost in mana. Paid every activation (mode 3 included — each
   // payment adds another aura stack).
   powerCost: number;
-  powerEffect: HeroPowerEffect;
+  /** Un effet (forme historique) ou une LISTE d'effets résolus dans l'ordre
+   *  (3 au plus). Toujours lire via `effetsDuPouvoir` (hero-power.ts). */
+  powerEffect: HeroPowerEffect | HeroPowerEffect[];
   powerDescription: string;
   // Max number of activations per game; null = unlimited.
   powerUsageLimit?: number | null;
@@ -1571,6 +1573,8 @@ export interface HeroDefinition {
   startingHp?: number | null;
   glbUrl?: string | null;
   thumbnailUrl?: string | null;
+  /** Rareté du héros — affichage seul (aura des légendaires), hors moteur. */
+  rarity?: string | null;
   powerImageUrl?: string | null;
   /** Bruitage du pouvoir de CE héros. Absent ⇒ repli sur le son global
    *  `hero_power`, commun à tous les héros. */
@@ -2298,6 +2302,13 @@ export interface HeroPowerAction {
   // engine looks the card up in factionCardPool / allSpellsPool and adds
   // it to the caster's hand inside resolveSpellKeywords.
   selectionCardId?: number;
+  /** Pouvoir à PLUSIEURS effets — une réponse par effet, clé = index de
+   *  l'effet. L'effet 0 se rabat sur `targetInstanceId` / `selectionCardId`.
+   *  Les cibles des effets composés vivent dans `targetMap` (`hp_<i>#<n>`). */
+  ciblesEffets?: Record<number, string>;
+  selectionsEffets?: Record<number, number>;
+  /** Index retenu dans la modale de deck (Divination, Présage, Creuser). */
+  choixDeckEffets?: Record<number, number>;
 }
 
 /** Activate one of the source creature's tap-mode keywords. The engine

@@ -17,14 +17,25 @@ export const EASE = {
   out: "easeOut" as const,
 };
 
+// ---- Ralenti global des animations EN PARTIE ---------------------------------
+/** Facteur appliqué à TOUTES les animations en partie (×2 = ralenties de
+ *  100 %) : on n'avait pas le temps de lire les effets. Le séquenceur du store
+ *  (phases, délais entre popups) et les durées des composants lisent ce même
+ *  facteur, pour rester calés l'un sur l'autre. Les sorts (`OVERLAY.spell`) et
+ *  les pouvoirs de héros (`OVERLAY.heroPower`) avaient déjà été ralentis ×2 à
+ *  part : ils n'y sont PAS soumis une seconde fois. */
+export const RALENTI_JEU = 1;
+/** Une durée (ms ou s) ralentie du facteur global. */
+export const lent = (duree: number): number => duree * RALENTI_JEU;
+
 // ---- Timing (seconds unless suffixed Ms) -----------------------------------
 export const OVERLAY = {
   /** Reveal card display window. Kept in lockstep with the store's
    *  OVERLAY_PRE_IMPACT_MS pacing (Lot 1): the card's motion is done well
    *  before this, so the tail is a short fade, not a long static hold. */
-  displayMs: 2000,
+  displayMs: lent(2000),
   /** Container cross-fade in/out. */
-  containerFade: 0.25,
+  containerFade: lent(0.25),
   /** Résolution des SORTS — cadence dédiée, 2× plus lente que le reste des
    *  overlays. Un sort porte du texte à lire (mots-clés + effet), et une carte
    *  qui en relance d'autres (Relancer) enchaîne plusieurs révélations d'affilée :
@@ -101,7 +112,8 @@ export const SPRINGS: Record<"boardSettle" | "handEntry" | "summon", Transition>
   handEntry: { type: "spring", stiffness: 320, damping: 20, mass: 1.1 },
   /** Effect-summon materialisation — snappier & lighter (slight overshoot) so
    *  the creature lands WITH the portal flash instead of drifting in after it. */
-  summon: { type: "spring", stiffness: 420, damping: 26, mass: 0.9 },
+  // Ralenti global : raideur ÷ R², amortissement ÷ R ⇒ même rebond, période ×R.
+  summon: { type: "spring", stiffness: 420 / RALENTI_JEU ** 2, damping: 26 / RALENTI_JEU, mass: 0.9 },
 };
 
 // ---- Card cascade reveals (graveyard / discard) ----------------------------

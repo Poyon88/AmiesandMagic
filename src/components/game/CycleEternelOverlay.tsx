@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { CycleEternelEvent } from "@/lib/store/gameStore";
 import { useCardText } from "./CardTextProvider";
+import { lent } from "@/lib/fx/overlayMotion";
 
 interface CycleEternelOverlayProps {
   event: CycleEternelEvent | null;
@@ -45,8 +46,8 @@ const PALETTES: Record<DeckReturnVariant, {
   },
 };
 
-const ENTRY_DURATION_MS = 1800;
-const ENTRY_STAGGER_MS = 350;
+const ENTRY_DURATION_MS = lent(1800);
+const ENTRY_STAGGER_MS = lent(350);
 
 type Resolved = {
   card: CycleEternelEvent["entries"][number]["card"];
@@ -102,7 +103,7 @@ export default function CycleEternelOverlay({ event, onComplete, variant = "cycl
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: lent(0.2) }}
         >
           {resolved.map((entry) => (
             <CycleEntry key={`${event.timestamp}-${entry.index}`} entry={entry} variant={variant} />
@@ -159,7 +160,7 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
           rotate: 360,
         }}
         transition={{
-          duration: 1.2,
+          duration: lent(1.2),
           times: [0, 0.25, 0.55, 1],
           ease: "easeOut",
           delay,
@@ -263,7 +264,7 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
           scale: [0.7, 1, 1, 0.8],
         }}
         transition={{
-          duration: 1.4,
+          duration: lent(1.4),
           times: [0, 0.2, 0.65, 1],
           ease: "easeOut",
           delay,
@@ -293,8 +294,8 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.4] }}
             transition={{
-              duration: 0.9,
-              delay: delay + 0.5 + i * 0.04,
+              duration: lent(0.9),
+              delay: delay + lent(0.5 + i * 0.04),
               ease: "easeOut",
             }}
           />

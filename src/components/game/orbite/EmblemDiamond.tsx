@@ -5,6 +5,7 @@ import { KEYWORD_SYMBOLS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { describeComposedCap, emblemCadence } from "@/lib/game/composed-display";
 import type { Capability, Emblem } from "@/lib/game/types";
 import { BulleTexte } from "./OrbitTooltip";
+import { lent } from "@/lib/fx/overlayMotion";
 
 /** TYPE d'un emblème, qui décide de sa couleur dans l'orbite.
  *  La durée prime : un emblème composé à durée est d'abord un emblème qui VA
@@ -100,7 +101,7 @@ export default function EmblemDiamond({ e, size, fireKey, bulle }: {
       <div
         key={fireKey ?? "repos"}
         className="absolute inset-0 flex items-center justify-center"
-        style={{ animation: fireKey ? "orbit-fire 0.9s ease-out" : undefined }}
+        style={{ animation: fireKey ? `orbit-fire ${lent(0.9)}s ease-out` : undefined }}
       >
         <div style={{
           width: cote, height: cote, transform: "rotate(45deg)", borderRadius: 4,

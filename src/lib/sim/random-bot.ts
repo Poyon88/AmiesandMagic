@@ -11,12 +11,13 @@
 import {
   canAttack, canPlayCard, canUseHeroPower, creatureNeedsDivination, creatureNeedsGraveyardTarget,
   creatureNeedsTarget, deferredKwTargetIds, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
-  getHeroPowerTargets, getSpellTargetSlots, getValidTargets, heroPowerNeedsTarget,
+  ciblesEffetPouvoir, effetPouvoirACible, getSpellTargetSlots, getValidTargets, heroPowerComposedChoice,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
   canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, getCreatureTapComposedUid,
   getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
+import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import { getEquipCost, objetsDe, peutRecevoirObjet } from "@/lib/game/items";
 import type { GameAction, GameState, PlayerState, SelectionFamilyId, SpellTargetType } from "@/lib/game/types";
 
@@ -120,20 +121,21 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
         .map((slot) => ({ slot, c: slotCandidates(state, slot.type) }))
         .filter((x): x is { slot: typeof x.slot; c: string[] } => x.c !== null);
       if (slots.some((x) => x.c.length === 0)) continue;
-      // Sélection portée par un sort : même offre que la modale du client.
-      let selectionCardId: number | undefined;
+      // Sélections portées par un sort : même offre que la modale du client,
+      // une réponse PAR mot-clé dans son créneau `<mot-clé>_0`.
+      const creneauxSel: Record<string, string> = {};
       for (const kw of SELECTIONS_SORT) {
         const sk = card.spell_keywords?.find((k) => k.id === kw);
         if (!sk) continue;
         const x = (sk.amount ?? 0) + chantBonusForSpell(state, card) + tempoBonusForCard(state, card);
         const choisie = pick(rand, selectionCardsForKeyword(kw, state, x, card, undefined, undefined, sk.randomX === true, sk.minX));
-        if (choisie) { selectionCardId = choisie.id; break; }
+        if (choisie) creneauxSel[`${kw}_0`] = String(choisie.id);
       }
       const premiers = slots.length ? plusieurs(rand, slots[0].c, variantes) : [undefined];
       for (const t0 of premiers) {
-        const targetMap: Record<string, string> = {};
+        const targetMap: Record<string, string> = { ...creneauxSel };
         slots.forEach((x, i) => { targetMap[x.slot.slot] = i === 0 && t0 ? t0 : pick(rand, x.c)!; });
-        out.push({ ...base, targetMap, ...(selectionCardId != null ? { selectionCardId } : {}) });
+        out.push({ ...base, targetMap });
       }
       continue;
     }
@@ -165,11 +167,37 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
 
   const hero = me.hero.heroDefinition;
   if (hero && canUseHeroPower(state)) {
-    if (heroPowerNeedsTarget(hero)) {
-      for (const t of plusieurs(rand, getHeroPowerTargets(state, hero), variantes)) {
-        if (t) out.push({ type: "hero_power", targetInstanceId: t });
-      }
-    } else out.push({ type: "hero_power" });
+    // Une réponse PAR EFFET, comme le client : cible simple, cibles d'effet
+    // composé (`hp_<i>#<n>`), Sélection, modale de deck. Le premier effet
+    // ciblé est décliné en variantes, les autres tirés au hasard.
+    const effets = effetsDuPouvoir(hero);
+    const iVar = effets.findIndex((_, i) => effetPouvoirACible(hero, i));
+    const premiers = iVar >= 0 ? plusieurs(rand, ciblesEffetPouvoir(state, hero, iVar), variantes) : [undefined];
+    for (const t0 of premiers) {
+      const a: Extract<GameAction, { type: "hero_power" }> = { type: "hero_power" };
+      effets.forEach((e, i) => {
+        if (e.mode === "spell_trigger" && (SELECTIONS_SORT as readonly string[]).includes(e.keywordId)) {
+          const choisie = pick(rand, selectionCardsForKeyword(e.keywordId as SelectionFamilyId, state, e.params?.amount ?? 0, { faction: hero.faction ?? null } as never));
+          if (choisie) a.selectionsEffets = { ...a.selectionsEffets, [i]: choisie.id };
+        }
+        if (e.mode === "spell_trigger" && ["divination", "presage", "creuser"].includes(e.keywordId)) {
+          a.choixDeckEffets = { ...a.choixDeckEffets, [i]: Math.floor(rand() * 3) };
+        }
+        if (!effetPouvoirACible(hero, i)) return;
+        const cibles = ciblesEffetPouvoir(state, hero, i);
+        const choix = i === iVar && t0 ? t0 : pick(rand, cibles);
+        if (!choix) return;
+        const compose = heroPowerComposedChoice(hero, i);
+        if (compose) {
+          const tm: Record<string, string> = { ...a.targetMap };
+          for (let n = 0; n < compose.count; n++) tm[`${compose.uid}#${n}`] = n === 0 ? choix : pick(rand, cibles)!;
+          a.targetMap = tm;
+        } else {
+          a.ciblesEffets = { ...a.ciblesEffets, [i]: choix };
+        }
+      });
+      out.push(a);
+    }
   }
 
   out.push({ type: "end_turn" });

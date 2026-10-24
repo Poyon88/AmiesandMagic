@@ -33,6 +33,17 @@ import {
   EXPLORATION_PALIER,
   MAX_EVEIL,
 } from "@/lib/game/constants";
+import { HERO_HP_MIN, HERO_HP_MAX } from "@/lib/game/hero-hp";
+import { regleDecouverteActivee } from "@/lib/game/decouverte";
+import { keywordModeColor } from "@/lib/game/keyword-labels";
+import type { Emblem, KeywordMode } from "@/lib/game/types";
+import { CostShield, EquipToken, StatShields } from "@/components/card/CardCounters";
+import { RightSlots, type CostType } from "@/components/card/CardTokens";
+import ComposedMarker from "@/components/cards/ComposedMarker";
+import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
+import CounterMedallion, { MachineGear } from "@/components/game/orbite/CounterMedallion";
+import CounterIcon, { type CounterKind } from "@/components/game/orbite/counter-icons";
+import EmblemDiamond from "@/components/game/orbite/EmblemDiamond";
 
 // ── Design tokens (Arcane War-Codex design system) ────────────────────────────
 const cinzel = "font-[family-name:var(--font-cinzel),serif]";
@@ -179,6 +190,114 @@ const Hi = ({ children }: { children: React.ReactNode }) => (
   <strong className="text-am-gold-bright font-semibold">{children}</strong>
 );
 
+// ── Visuels de démonstration ──────────────────────────────────────────────────
+// Les écus, jetons, médaillons et losanges ci-dessous sont les COMPOSANTS DU JEU,
+// pas des images : la page suit d'elle-même toute retouche de leur dessin.
+
+/** Gabarit de carte vide (proportions d'une GameCard) : conteneur de taille pour
+ *  les écus, dimensionnés en cqw comme sur une vraie carte. */
+function Demo({ legende, children, pointe = false, petite = false }: {
+  legende: string; children: React.ReactNode; pointe?: boolean; petite?: boolean;
+}) {
+  const w = petite ? 96 : 124;
+  return (
+    <figure className="m-0 flex flex-col items-center" style={{ width: w + 24 }}>
+      <div style={{
+        position: "relative", width: w, height: Math.round(w * 1.4), containerType: "inline-size",
+        background: "linear-gradient(160deg, #24243c, #0d0d1a)",
+        border: pointe ? "none" : "2px solid #3d3d5c", borderRadius: pointe ? 0 : 8,
+        clipPath: pointe ? "polygon(0 0, 100% 0, 100% 92%, 50% 100%, 0 92%)" : undefined,
+      }}>
+        {children}
+      </div>
+      <figcaption className={`${crimson} italic text-am-ink-soft mt-2 text-center leading-tight`} style={{ fontSize: 13 }}>
+        {legende}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Élément d'orbite isolé, avec sa légende. */
+function Pastille({ legende, children }: { legende: string; children: React.ReactNode }) {
+  return (
+    <figure className="m-0 flex flex-col items-center" style={{ width: 96 }}>
+      <div className="flex items-center justify-center" style={{ height: 56 }}>{children}</div>
+      <figcaption className={`${crimson} italic text-am-ink-soft mt-1 text-center leading-tight`} style={{ fontSize: 13 }}>
+        {legende}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Une même icône de capacité, déclinée par déclencheur et par marqueur. */
+function IconeDemo({ mode, compose = false, toutes = false, singulier = false, barree = false }: {
+  mode?: KeywordMode; compose?: boolean; toutes?: boolean; singulier?: boolean; barree?: boolean;
+}) {
+  return (
+    <span className="shrink-0 inline-flex items-center justify-center rounded-[var(--am-r-sm)] bg-am-bg-0 border border-am-gold/30"
+      style={{ width: 40, height: 40 }}>
+      <span style={{ position: "relative", display: "inline-flex", lineHeight: 0 }}>
+        <KeywordIcon symbol="💥" keyword="impact" size={26} mode={mode} singulier={singulier} barred={barree} />
+        {compose && <ComposedMarker mode={mode} size={9} />}
+        {toutes && <AllAlliesMarker size={11} color={keywordModeColor(mode)} />}
+      </span>
+    </span>
+  );
+}
+
+function Marqueur({ icone, nom, children }: { icone: React.ReactNode; nom: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 am-gild-border rounded-[var(--am-r-md)] bg-am-bg-1 px-3 py-2.5">
+      {icone}
+      <div className="min-w-0">
+        <div className={`${cinzel} text-am-gold-bright font-semibold`} style={{ fontSize: 14 }}>{nom}</div>
+        <div className={`${crimson} text-am-ink-soft leading-snug`} style={{ fontSize: 14 }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Poignées de bulle neutres : sur cette page, les éléments d'orbite sont des
+ *  illustrations, leur texte est écrit juste à côté. */
+const BULLE_INERTE = { attacher: () => {}, consume: () => false, handlers: {} };
+
+const COUTS_DEMO: { type: CostType; legende: string }[] = [
+  { type: "vie", legende: "Vie : 2 PV" },
+  { type: "defausse", legende: "Défausse : 2 cartes" },
+  { type: "sacrifice", legende: "Sacrifice : 2 alliés" },
+  { type: "exil", legende: "Exil : 2 cartes du deck" },
+  { type: "repli", legende: "Repli : 2 cartes remises" },
+];
+
+const COMPTEURS_DEMO: { kind: CounterKind; teinte: string; total: number; valeur: number; legende: string }[] = [
+  { kind: "epargne", teinte: "var(--orbit-epargne)", total: MAX_EPARGNE, valeur: 4, legende: "Épargne" },
+  { kind: "foi", teinte: "var(--orbit-foi)", total: MAX_FOI, valeur: 3, legende: "Foi" },
+  { kind: "conquete", teinte: "var(--orbit-conquete)", total: MAX_CONQUETE, valeur: 2, legende: "Conquête" },
+  { kind: "exploration", teinte: "var(--orbit-exploration)", total: EXPLORATION_PALIER, valeur: 1, legende: "Exploration" },
+];
+
+const EMBLEMES_DEMO: { e: Emblem; legende: string }[] = [
+  { e: { abilityId: "commandement", params: { amount: 1 }, stacks: 1 }, legende: "Permanent" },
+  { e: { abilityId: "terreur", stacks: 1, duration: 2 }, legende: "À durée (2 tours)" },
+  { e: { composed: { content: "deal_damage", magnitude: { x: 1 }, target: { entity: "hero", count: 1, side: "enemy", location: "board", designation: "automatic" } }, trigger: "on_end_of_turn", stacks: 2 }, legende: "Déclenché, posé 2 fois" },
+  { e: { abilityId: "terreur", stacks: 1, malediction: true }, legende: "Malédiction adverse" },
+];
+
+const DECLENCHEURS_DEMO: { mode?: KeywordMode; nom: string; quand: string }[] = [
+  { nom: "Blanc — permanent", quand: "Passif, aura ou râle d'agonie : actif tant que la carte est là." },
+  { mode: "entry", nom: "Jaune — entrée en jeu / action", quand: "Quand la créature arrive en jeu, ou quand l'action se résout." },
+  { mode: "tap", nom: "Orange — activation", quand: "Pouvoir que vous déclenchez en cliquant la créature, une fois par tour (pas le tour de son arrivée, sauf Traque)." },
+  { mode: "attack", nom: "Magenta — à l'attaque", quand: "Chaque fois que la créature attaque, avant les dégâts du combat." },
+  { mode: "death", nom: "Rouge sombre — à la mort", quand: "Quand la créature meurt." },
+  { mode: "wound", nom: "Vert citron — blessure", quand: "Quand la créature est blessée sans mourir (une fois par tour)." },
+  { mode: "low_hp", nom: "Violet — sous 15 PV", quand: "Quand votre héros passe sous 15 points de vie." },
+  { mode: "start_of_turn", nom: "Argent — début du tour", quand: "Au début de chacun de vos tours." },
+  { mode: "end_of_turn", nom: "Vert — fin du tour", quand: "À la fin de chacun de vos tours." },
+  { mode: "return", nom: "Bleu — retour en main", quand: "Quand la carte revient dans votre main." },
+  { mode: "draw", nom: "Cyan — à la pioche", quand: "Quand vous piochez cette carte." },
+  { mode: "delay", nom: "Ambre — retard X", quand: "Une seule fois, au début de votre X-ième tour suivant (1 à 3)." },
+];
+
 // ── Beginner guide (complete) ─────────────────────────────────────────────────
 function BeginnerGuide() {
   const tt = useTranslations("tutorial");
@@ -186,23 +305,67 @@ function BeginnerGuide() {
     <>
       <Section title={tt('goal_title')}>
         <P>
-          Chaque joueur incarne un <Hi>héros</Hi> qui démarre avec <Hi>{HERO_MAX_HP} points de vie</Hi>. Vous gagnez
+          Chaque joueur incarne un <Hi>héros</Hi> qui démarre avec <Hi>{HERO_HP_MIN} à {HERO_HP_MAX} points de
+          vie</Hi> selon le héros ({HERO_MAX_HP} le plus souvent) : un pouvoir puissant se paie de quelques PV en
+          moins, un pouvoir modeste se compense par quelques PV en plus. Vous gagnez
           la partie en réduisant les points de vie du héros adverse à <Hi>0</Hi>. Pour cela, vous invoquez des
           créatures et jouez des actions.
         </P>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <Stat value={`${HERO_MAX_HP} PV`} label={tt('stat_hero_start')} />
+          <Stat value={`${HERO_HP_MIN}–${HERO_HP_MAX} PV`} label={tt('stat_hero_start')} />
           <Stat value={`${FIRST_PLAYER_HAND_SIZE} ou ${STARTING_HAND_SIZE} cartes`} label={tt('stat_starting_hand')} />
           <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_growth')} />
           <Stat value={`${MAX_BOARD_SIZE}`} label={tt('stat_max_board')} />
         </div>
       </Section>
 
+      <Section title="Lire une carte">
+        <P>
+          Tous les chiffres d'une carte ont une place fixe, la même en main, sur le terrain et dans la bulle de
+          détail qui s'ouvre au survol (ou à l'appui long sur tablette) — celle-ci ajoute le texte des capacités
+          sans jamais recouvrir les écus.
+        </P>
+        <div className="flex flex-wrap justify-center gap-6 my-5">
+          <Demo legende="Créature : coût 4, attaque 3, PV 5">
+            <CostShield value={4} />
+            <StatShields atk={3} hp={5} />
+          </Demo>
+          <Demo legende="Action : coût seul, pointe basse" pointe>
+            <CostShield value={2} />
+          </Demo>
+          <Demo legende="Objet : coût de pose, coût d'équipement, bonus">
+            <CostShield value={2} />
+            <EquipToken value={1} />
+            <StatShields atk={2} hp={1} bonus />
+          </Demo>
+        </div>
+        <Bullets items={[
+          <><Hi>Écu bleu, en haut à gauche</Hi> : le coût en mana. Un chiffre bleu clair signale un coût réduit.</>,
+          <><Hi>Écus du bas, à droite</Hi> : l'attaque (rouge) et les points de vie (vert) d'une créature. Un chiffre
+            vert signale un bonus, un chiffre rouge une valeur diminuée.</>,
+          <><Hi>Jetons en haut à droite</Hi> : les coûts additionnels et l'éveil (détaillés plus bas). Survolez-en un
+            pour lire ce qu'il demande.</>,
+          <><Hi>Barre du bas</Hi> : une icône par capacité, teintée selon son déclencheur (voir « Les déclencheurs »).</>,
+        ]} />
+        <P>
+          Les <Hi>objets</Hi> sont le troisième type de carte. Ils occupent une place du terrain mais restent
+          inertes : ni attaquables, ni comptés comme des unités. On paie leur coût pour les poser, puis leur
+          <Hi> coût d'équipement</Hi> (le cartouche sous le mana) pour les fixer sur une créature alliée — une seule
+          par créature — qui reçoit alors leurs bonus « +X/+Y » et leurs capacités. On peut les rééquiper à
+          volonté, en repayant ce coût ; si le porteur meurt, l'objet reste en jeu, déséquipé.
+        </P>
+      </Section>
+
       <Section title={tt('turn_title')}>
         <P>{tt('turn_intro')}</P>
         <Bullets items={[
           <>Votre <Hi>mana maximum augmente de 1</Hi> (jusqu'à {MAX_MANA}), puis votre mana est entièrement rechargé.</>,
-          <>Vous <Hi>piochez 1 carte</Hi>.</>,
+          regleDecouverteActivee()
+            ? <>Vous <Hi>piochez 1 carte</Hi> — sauf <Hi>un tour sur deux</Hi> (vos 2ᵉ, 4ᵉ, 6ᵉ tours…) : la pioche
+              est alors remplacée par une <Hi>découverte</Hi>. Vous choisissez 1 carte parmi 3 Communes de coûts
+              variés, 2 de votre clan et 1 d'un autre clan de votre faction. La carte est créée pour vous : votre
+              deck n'est pas entamé.</>
+            : <>Vous <Hi>piochez 1 carte</Hi>.</>,
           <>Vos créatures se « réveillent » : elles peuvent de nouveau attaquer ce tour-ci.</>,
           <>Vous jouez autant de cartes que votre mana le permet, vous attaquez, puis vous passez la main.</>,
         ]} />
@@ -238,8 +401,8 @@ function BeginnerGuide() {
         <P>
           Une action produit un effet immédiat puis part au <Hi>cimetière</Hi>. Certaines actions nécessitent une
           <Hi> cible</Hi> (une créature, un héros…). Une action peut aussi <Hi>conférer une capacité de
-          créature</Hi> — à une créature ciblée (icône <span className="text-am-ink">blanche</span>) ou à
-          toutes vos unités alliées (icône <span className="text-am-jade">verte</span>).
+          créature</Hi> — à une créature ciblée, ou à toutes vos unités alliées (icône marquée d'un
+          « A »).
         </P>
         <P>
           Certaines cartes, actions comme créatures, posent un <Hi>emblème</Hi> : un effet permanent attaché à un
@@ -264,11 +427,73 @@ function BeginnerGuide() {
         <P>{tt('combat_see_full_list')}</P>
       </Section>
 
+      <Section title="Les déclencheurs : couleurs et marqueurs">
+        <P>
+          La <Hi>couleur</Hi> d'une icône de capacité dit <Hi>quand</Hi> elle agit. Une icône <Hi>blanche</Hi> est un
+          effet permanent : un passif (Vol, Provocation…), une aura ou un râle d'agonie. Toutes les autres se
+          déclenchent à un moment précis :
+        </P>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+          {DECLENCHEURS_DEMO.map(({ mode, nom, quand }) => (
+            <div key={nom} className="flex items-start gap-3 am-gild-border rounded-[var(--am-r-md)] bg-am-bg-1 px-3 py-2.5">
+              <IconeDemo mode={mode} />
+              <div className="min-w-0">
+                <div className={`${cinzel} font-semibold`} style={{ fontSize: 14, color: (mode && keywordModeColor(mode)) || "#fff" }}>{nom}</div>
+                <div className={`${crimson} text-am-ink-soft leading-snug`} style={{ fontSize: 14 }}>{quand}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <P>Quelques marqueurs complètent l'icône :</P>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+          <Marqueur icone={<IconeDemo mode="death" compose />} nom="✦ Effet composé">
+            Une étincelle en haut à droite, de la couleur du déclencheur. L'effet est assemblé à partir d'un
+            déclencheur, d'un contenu et d'une cible — par exemple « À la mort : inflige 2 dégâts à toutes les
+            créatures ennemies ». Son texte exact est dans la bulle de détail.
+          </Marqueur>
+          <Marqueur icone={<IconeDemo mode="entry" toutes />} nom="« A » : toutes les créatures">
+            Un « A » en bas à gauche : au lieu d'une cible choisie, la capacité frappe toutes les créatures d'un camp
+            (ou des deux). Sur une action, il signale une capacité conférée à toutes vos unités.
+          </Marqueur>
+          <Marqueur icone={<span className="inline-flex items-center gap-1"><IconeDemo mode="spell" compose /><span className={`${cinzel} text-am-ink-soft font-bold`}>/</span><IconeDemo mode="spell" compose /></span>} nom="« / » : l'un OU l'autre">
+            Deux effets composés séparés par une barre forment un choix : à la résolution, vous n'en jouez
+            qu'un, celui que vous désignez.
+          </Marqueur>
+          <Marqueur icone={<IconeDemo mode="entry" singulier />} nom="Icône bicolore : Singulier">
+            Turquoise d'un côté, couleur du déclencheur de l'autre : la capacité n'agit que si votre deck de départ
+            n'avait aucun doublon (voir plus bas).
+          </Marqueur>
+          <Marqueur icone={<IconeDemo barree />} nom="Icône barrée : neutralisée">
+            Un trait rouge : la capacité a été rendue muette par une Neutralisation adverse.
+          </Marqueur>
+          <Marqueur icone={<span className="inline-flex items-center gap-1"><IconeDemo mode="entry" /><span className={`${cinzel} font-black`} style={{ color: "#FFE05C", fontSize: 17 }}>2</span></span>} nom="Chiffre : la valeur X">
+            Le nombre accolé à l'icône est la valeur X (ou X/Y) de la capacité sur cette carte. Un « ? » annonce une
+            valeur tirée au hasard.
+          </Marqueur>
+        </div>
+        <P>
+          Quand un effet vous demande un <Hi>choix</Hi> — une cible, une carte parmi plusieurs —, c'est toujours
+          son <Hi>propriétaire</Hi> qui choisit, même pendant le tour adverse. Vous disposez de <Hi>15 secondes</Hi>,
+          pendant lesquelles le chrono du tour est suspendu ; faute de réponse, le jeu tranche au hasard. Un choix
+          déclenché « à l'attaque » se règle <Hi>avant</Hi> le combat.
+        </P>
+      </Section>
+
       <Section title={tt('hero_title')}>
         <P>
-          Au-delà de ses {HERO_MAX_HP} PV, votre héros possède un <Hi>pouvoir</Hi> utilisable <Hi>une fois par
-          tour</Hi> en payant son coût en mana. Selon le héros, il peut conférer une capacité à une créature,
-          déclencher un effet d'action, ou activer une <Hi>aura</Hi> persistante (par ex. renforcer toutes vos unités).
+          Chaque héros a ses propres <Hi>points de vie de départ</Hi> ({HERO_HP_MIN} à {HERO_HP_MAX}), qui sont aussi
+          son <Hi>maximum</Hi> : aucun soin ne le fait remonter au-delà. Le seuil « Sous 15 PV » reste le même pour
+          tous les héros.
+        </P>
+        <P>
+          Votre héros possède un <Hi>pouvoir</Hi> utilisable <Hi>une fois par tour</Hi> en payant son coût en mana.
+          Selon le héros, il peut conférer une capacité à une créature, déclencher un effet d'action, ou poser
+          un <Hi>emblème</Hi> persistant (par ex. renforcer toutes vos unités).
+        </P>
+        <P>
+          Autour de son portrait gravite l'<Hi>orbite</Hi> du héros : ses emblèmes (losanges) et ses compteurs
+          (médaillons), présentés plus bas. Chaque élément s'explique au survol ; ceux du héros adverse sont
+          visibles aussi, en miroir.
         </P>
       </Section>
 
@@ -285,6 +510,17 @@ function BeginnerGuide() {
           <><Hi>Exil</Hi> : N cartes sont retirées du <Hi>dessus de votre deck</Hi>, définitivement. Un prix payé sur votre avenir.</>,
           <><Hi>Repli</Hi> : vous replacez N cartes de votre main <Hi>sur le dessus de votre deck</Hi>, dans l'ordre que vous choisissez — la dernière posée sera la première repiochée. Un coût de tempo, pas de cartes : vous les reverrez.</>,
         ]} />
+        <div className="flex flex-wrap justify-center gap-4 mt-5 mb-6">
+          {COUTS_DEMO.map(({ type, legende }) => (
+            <Demo key={type} legende={legende} petite>
+              <CostShield value={3} />
+              <RightSlots cost={{ type, value: 2 }} />
+            </Demo>
+          ))}
+          <Demo legende="Éveil : 2 points versés sur 5" petite>
+            <RightSlots awaken={{ total: 5, paid: 2 }} />
+          </Demo>
+        </div>
         <P>
           L'<Hi>éveil</Hi> est à part : c'est le seul coût <Hi>alternatif</Hi>, qui <Hi>remplace</Hi> le mana au lieu
           de s'y ajouter. Une carte à coût d'éveil peut être mise en éveil depuis votre main, gratuitement, dans une
@@ -294,9 +530,24 @@ function BeginnerGuide() {
         </P>
       </Section>
 
-      <Section title={tt('counters_title')}>
+      <Section title="Les compteurs et les emblèmes">
+        <div className="flex flex-wrap justify-center gap-5 mb-6">
+          {COMPTEURS_DEMO.map(({ kind, teinte, total, valeur, legende }) => (
+            <Pastille key={kind} legende={legende}>
+              <CounterMedallion size={48} teinte={teinte} total={total} valeur={valeur} ecu={valeur}
+                ariaLabel={legende} bulle={BULLE_INERTE}>
+                <CounterIcon kind={kind} />
+              </CounterMedallion>
+            </Pastille>
+          ))}
+          <Pastille legende="Machine (Invention)">
+            <MachineGear size={48} total={MAX_INVENTIONS_MACHINE} inventions={2} ariaLabel="Machine" bulle={BULLE_INERTE} />
+          </Pastille>
+        </div>
         <P>
-          Plusieurs capacités alimentent des <Hi>compteurs</Hi> personnels, affichés à côté de votre mana. Ils ne se
+          Plusieurs capacités alimentent des <Hi>compteurs</Hi> personnels : des médaillons ronds dans l'orbite de
+          votre héros, avec une jauge dorée et leur valeur exacte dans l'écu en coin. Un compteur n'apparaît que
+          lorsqu'il dépasse 0, et son halo pulse quand vous pouvez le dépenser. Ils ne se
           dépensent pas en mana : l'Épargne, la Foi et la Conquête ouvrent, d'un clic sur le compteur, une
           <Hi>découverte</Hi> — vous voyez trois cartes et en prenez une en main. L'Exploration se règle toute seule, et
           l'Invention construit une machine.
@@ -308,6 +559,20 @@ function BeginnerGuide() {
           <><Hi>Invention +X/+Y</Hi> : chaque Invention ajoute +X/+Y à <Hi>votre machine</Hi> (0/1 au départ), et parfois une capacité avec son déclencheur — deux fois la même capacité au même déclencheur additionnent leurs valeurs. La machine coûte 1 mana par Invention, {MAX_INVENTIONS_MACHINE} au plus. Survolez le compteur ⚙️ pour la voir, cliquez-le pour la prendre en main : la suivante repart de zéro.</>,
           <><Hi>Exploration</Hi> (palier {EXPLORATION_PALIER}) : le seul compteur qui ne se clique pas. Chaque fois qu'il atteint {EXPLORATION_PALIER}, vous <Hi>piochez une carte</Hi> aussitôt et {EXPLORATION_PALIER} points sont retirés — le reste est conservé, si bien qu'un gros gain peut faire piocher deux cartes. Il disparaît tant qu'il est vide.</>,
         ]} />
+        <div className="flex flex-wrap justify-center gap-5 mt-7 mb-5">
+          {EMBLEMES_DEMO.map(({ e, legende }) => (
+            <Pastille key={legende} legende={legende}>
+              <EmblemDiamond e={e} size={46} bulle={BULLE_INERTE} />
+            </Pastille>
+          ))}
+        </div>
+        <P>
+          Les <Hi>emblèmes</Hi> sont des losanges, colorés selon leur nature : <Hi>ardoise</Hi> pour un effet
+          permanent, <Hi>brun</Hi> pour un effet à durée — des points dorés comptent les tours restants, le dernier
+          vire à l'orange —, <Hi>bleu</Hi> pour un emblème qui réagit à un événement (fin de tour, attaque, mort…).
+          Un <Hi>liseré rouge</Hi> signale une malédiction posée par l'adversaire, et « ×N » un emblème posé
+          plusieurs fois.
+        </P>
       </Section>
 
       <Section title={tt('singulier_title')}>
@@ -357,7 +622,7 @@ function TcgGuide() {
     <>
       <Section title={tt('tcg_numbers_title')}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Stat value={`${HERO_MAX_HP}`} label={tt('stat_hero_hp')} />
+          <Stat value={`${HERO_HP_MIN}–${HERO_HP_MAX}`} label={tt('stat_hero_hp')} />
           <Stat value={`${DECK_SIZE}`} label={tt('stat_deck_exact')} />
           <Stat value={`${FIRST_PLAYER_HAND_SIZE}–${STARTING_HAND_SIZE} → ${MAX_HAND_SIZE}`} label={tt('stat_hand_range')} />
           <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_per_turn')} />
@@ -366,7 +631,9 @@ function TcgGuide() {
 
       <Section title={tt('tcg_gameloop_title')}>
         <Bullets items={[
-          <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>.</>,
+          <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>{regleDecouverteActivee() && <> — un tour sur deux (vos tours pairs), <Hi>découverte</Hi> à la place : 1 Commune parmi 3 (2 de votre clan, 1 d'un autre clan de la faction), créée hors deck</>}.</>,
+          <>PV de départ <Hi>propres à chaque héros</Hi> ({HERO_HP_MIN}–{HERO_HP_MAX}, {HERO_MAX_HP} par défaut), qui sont aussi son plafond de soin. « Sous 15 PV » reste absolu.</>,
+          <>Tout choix revient au <Hi>propriétaire</Hi> de l'effet, même hors de son tour : fenêtre de <Hi>15 s</Hi>, chrono suspendu, hasard à défaut. Les choix « à l'attaque » se règlent avant le combat.</>,
           <>Victoire : héros adverse à <Hi>0 PV</Hi>. Deck vide → <Hi>fatigue</Hi> croissante.</>,
           <>Terrain et main plafonnés à <Hi>{MAX_BOARD_SIZE}</Hi>.</>,
           <>Le joueur en second reçoit une <Hi>Étincelle de mana</Hi> (+1 mana au tour 1).</>,
@@ -404,7 +671,9 @@ function TcgGuide() {
           <>Compteurs (clic = découverte 1 parmi 3) : <Hi>Épargne</Hi> (≤ {MAX_EPARGNE}, vidée, cartes du jeu de coût ≤ compteur), <Hi>Foi</Hi> (≤ {MAX_FOI}, cartes de SON deck, seul le coût pris est défalqué), <Hi>Conquête</Hi> (palier {MAX_CONQUETE}, carte du deck ADVERSE volée pour la partie), <Hi>Invention</Hi> (machine 0/1 améliorée pièce par pièce, 1 mana par Invention, {MAX_INVENTIONS_MACHINE} au plus, clic = en main).</>,
           <><Hi>Singulier</Hi> : condition sur une capacité — active seulement si le deck de départ n'a aucun doublon (figé au lancement). <Hi>Emblème</Hi> : effet permanent posé sur un joueur, survit à sa source.</>,
           <>Réductions de coût : <Hi>Canalisation</Hi> (actions, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
-          <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible (blanc) ou à tous les alliés (vert).</>,
+          <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible, ou à toutes vos unités (marqueur « A »).</>,
+          <><Hi>Objets</Hi> : 3ᵉ type de carte, hors deck. Occupent une place du terrain, inertes ; coût de pose + <Hi>coût d'équipement</Hi> rejouable, un seul par créature alliée, restent en jeu à la mort du porteur.</>,
+          <>Couleur d'icône = déclencheur : blanc permanent, <span style={{ color: keywordModeColor("entry")! }}>jaune</span> entrée/action, <span style={{ color: keywordModeColor("tap")! }}>orange</span> activation, <span style={{ color: keywordModeColor("attack")! }}>magenta</span> attaque, <span style={{ color: keywordModeColor("death")! }}>rouge</span> mort, <span style={{ color: keywordModeColor("wound")! }}>citron</span> blessure, <span style={{ color: keywordModeColor("low_hp")! }}>violet</span> sous 15 PV, <span style={{ color: keywordModeColor("start_of_turn")! }}>argent</span> début de tour, <span style={{ color: keywordModeColor("end_of_turn")! }}>vert</span> fin de tour, <span style={{ color: keywordModeColor("return")! }}>bleu</span> retour en main, <span style={{ color: keywordModeColor("draw")! }}>cyan</span> pioche, <span style={{ color: keywordModeColor("delay")! }}>ambre</span> Retard X. Marqueurs : <Hi>✦</Hi> effet composé, <Hi>A</Hi> toutes les créatures, <Hi>/</Hi> choix OU, bicolore Singulier, barré neutralisé.</>,
         ]} />
       </Section>
     </>
