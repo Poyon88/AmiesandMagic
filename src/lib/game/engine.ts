@@ -874,6 +874,14 @@ function getKwX(ci: CardInstance, kw: Keyword, mode: import("./types").KeywordMo
   return getCardKwX(ci.card, kw, mode, defaultX);
 }
 
+/** X de Souffle de feu : la valeur de la capacité (forge), sinon l'ancien
+ *  repli — crochet du texte d'effet, puis moitié du coût. */
+function souffleDeFeuX(attacker: CardInstance): number {
+  const legacy = parseXValuesFromEffectText(attacker.card.effect_text)["souffle_de_feu"]
+    || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
+  return getKwX(attacker, "souffle_de_feu" as Keyword, undefined, legacy);
+}
+
 /** COÛT OPTIONNEL — convention UNIQUE du moteur pour les capacités dont le X
  *  désigne un coût (Rappel, Exhumation, Appel du clan, Sélections, Faveur,
  *  Trésor, Invocation, le Y de Déchainement) : X absent ou ≤ 0 ⇒ N'IMPORTE
@@ -8164,9 +8172,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
   if (effectiveTarget === "enemy_hero") {
     // Souffle de feu X: X dégâts à toutes les unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
-      const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
-      const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
-      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
+      [...opponent.board].forEach(c => dealDamageToCreature(c, souffleDeFeuX(attacker), false, false, attacker));
     }
 
     dealDamageToHero(opponent.hero, attackPower, attacker);
@@ -8222,6 +8228,18 @@ export function attack(state: GameState, action: AttackAction): GameState {
       return newState;
     }
 
+    // Souffle de feu X : X dégâts à toutes les unités ennemies, cible incluse,
+    // AVANT l'échange — le souffle précède la morsure. Il retire donc un
+    // Bouclier divin avant que les dégâts de combat ne frappent (il était
+    // appliqué après : le Bouclier de la Phalange absorbait l'attaque, et le
+    // souffle ne faisait que le retirer ensuite). Même ordre que sur un héros.
+    if (hasKw(attacker, "souffle_de_feu")) {
+      [...opponent.board].forEach(c => dealDamageToCreature(c, souffleDeFeuX(attacker), false, false, attacker));
+    }
+    // Cible abattue par le souffle : l'attaque est dépensée, sans échange ni
+    // riposte (même règle que la cible tuée par un pouvoir d'attaque).
+    const cibleTombeeAuSouffle = target.currentHealth <= 0;
+
     const attackerHasPrecision = hasKw(attacker, "precision");
 
     // Première Frappe: attacker deals damage first; target only
@@ -8238,7 +8256,9 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // pas de surplus, conforme à l'esprit du keyword).
     const attackerHasTrample = hasKw(attacker, "pietinement");
 
-    if (hasFirstStrike) {
+    if (cibleTombeeAuSouffle) {
+      // Rien à échanger.
+    } else if (hasFirstStrike) {
       const targetHpBefore = target.currentHealth;
       dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker, undefined, true);
 
@@ -8275,15 +8295,6 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Poison et Paralysie : posés par dealDamageToCreature (tous les dégâts d'une créature).
     }
 
-    // Souffle de feu X: X dégâts à toutes les unités ennemies (cible incluse,
-    // en plus des dégâts de combat — cohérent avec le bloc "attaque héros"
-    // et avec la description abilities.ts: "toutes les unités ennemies").
-    if (hasKw(attacker, "souffle_de_feu")) {
-      const fireXVals = parseXValuesFromEffectText(attacker.card.effect_text);
-      const fireX = fireXVals["souffle_de_feu"] || Math.max(1, Math.floor(attacker.card.mana_cost / 2));
-      [...opponent.board].forEach(c => dealDamageToCreature(c, fireX, false, false, attacker));
-    }
-
     // Drain de vie (attaquant ET défenseur) : plus de bloc dédié ici — les deux
     // sont centralisés dans dealDamageToCreature, qui reçoit déjà `attacker`
     // puis `target` comme source des deux volets de l'échange. Le soin porte
@@ -8291,7 +8302,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // non plus sur l'ATK brute.
 
     // Liaison de vie: damage taken shared with enemy hero
-    if (hasKw(target, "liaison_de_vie")) {
+    if (!cibleTombeeAuSouffle && hasKw(target, "liaison_de_vie")) {
       dealDamageToHero(player.hero, attackPower, target);
     }
 
@@ -8309,7 +8320,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Gloire qui récompense la survie à ces échanges (+X/+Y permanent).
     // Defender side: chain hits enemies on the attacker's board.
     const playerHeroIdx = newState.players.indexOf(player);
-    runFureurChain(target, player.board, player.hero, `__hero_${playerHeroIdx}__`, null, newState);
+    if (!cibleTombeeAuSouffle) runFureurChain(target, player.board, player.hero, `__hero_${playerHeroIdx}__`, null, newState);
     // Attacker side: first strike excludes the original combat target
     // ("attaque une AUTRE créature"); subsequent strikes pick any live enemy.
     const opponentHeroIdx = newState.players.indexOf(opponent);
