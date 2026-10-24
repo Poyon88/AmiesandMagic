@@ -145,7 +145,7 @@ export function CostShield({ value, discounted = false, title }: { value: number
   const two = String(shown).length > 1;
   const g = SHIELD_GEOMETRY.cost;
   return (
-    <div style={{ position: "absolute", left: `${g.left}cqw`, top: `${g.top}cqw`, zIndex: 3 }}>
+    <div style={{ position: "absolute", left: `${g.left}cqw`, top: `${g.top}cqw`, zIndex: 3, pointerEvents: "auto" }}>
       <Shield
         value={shown}
         clip={CLIP_COST}
@@ -218,7 +218,7 @@ export function EquipToken({ value, sousLeCout = true }: { value: number; sousLe
       {...props("eq")}
       aria-label={shown > 0 ? `Équiper : ${shown} mana, à chaque équipement` : "Équiper : gratuit"}
       style={{
-        cursor: "help",
+        cursor: "help", pointerEvents: "auto",
         position: "absolute", left: `${c.left}cqw`,
         top: `${sousLeCout ? c.top + c.size + e.gap : c.top}cqw`,
         width: `${c.size}cqw`, height: `${e.height}cqw`,

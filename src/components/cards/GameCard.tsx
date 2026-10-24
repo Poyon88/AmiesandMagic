@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import type { Card, CardSet, TokenTemplate } from "@/lib/game/types";
-import { CostShield, EquipToken, StatShields, cardAriaLabel, statShieldsReserve } from "@/components/card/CardCounters";
+import { CostShield, EquipToken, StatShields, cardAriaLabel, statShieldsReserve, SHIELD_GEOMETRY } from "@/components/card/CardCounters";
 import { getEquipCost } from "@/lib/game/items";
 import { OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { RightSlots, additionalCostOf, awakenOf, rightSlotsAriaParts } from "@/components/card/CardTokens";
@@ -231,6 +231,11 @@ export default function GameCard({
   // inner card) scales together with it. Without that, a 1.5× card would
   // grow past a frame that stayed at its original size.
   const isZoomed = !disabled && !disableHoverZoom && hovered;
+  // Marges du survol détaillé, en cqw comme les écus qu'elles dégagent.
+  const detailPadHaut = isItem
+    ? SHIELD_GEOMETRY.cost.top + SHIELD_GEOMETRY.cost.size + SHIELD_GEOMETRY.equip.gap + SHIELD_GEOMETRY.equip.height + 1.5
+    : SHIELD_GEOMETRY.cost.top + SHIELD_GEOMETRY.cost.size + 1.5;
+  const detailPadBas = SHIELD_GEOMETRY.stat.bottom + SHIELD_GEOMETRY.stat.height + 1.5;
   // Écu d'Éveil : progression fournie (zone d'éveil) ou jauge vide (catalogue, main).
   const awakenAffiche = eveil ?? awakenOf(card, 0);
 
@@ -347,6 +352,11 @@ export default function GameCard({
              (vie, défausse, sacrifice, exil, repli, éveil) restent en pastilles,
              en JETONS à droite (Éveil d'abord, coût additionnel ensuite), et le
              badge « ×N » de la collection descend d'un cran par jeton. ── */}
+      {/* Écus et jetons dans une couche AU-DESSUS du survol détaillé (z 3) :
+          coût, coûts additionnels et caractéristiques restent à leur place
+          habituelle quand le texte de la carte s'affiche. La couche laisse
+          passer les clics ; les jetons réactivent les leurs pour leurs bulles. */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 4, pointerEvents: "none" }}>
       <CostShield
         value={displayedManaCost}
         discounted={effectiveManaCost != null && effectiveManaCost < card.mana_cost}
@@ -371,6 +381,7 @@ export default function GameCard({
       {/* ── ÉQUIPEMENT (objets) : sous l'écu de mana — les deux se paient en
              mana. Affiché à 0 aussi : « gratuit » est une information. ── */}
       {isItem && <EquipToken value={getEquipCost(card)} sousLeCout={displayedManaCost > 0} />}
+      </div>
 
       {/* ── Card name — top bar (ocre, 2 lignes, ombre). Padding horizontal
              pour dégager les badges de coût (haut-gauche) et count (haut-droit). ── */}
@@ -551,7 +562,9 @@ export default function GameCard({
         transition: "opacity 0.25s ease",
         pointerEvents: showDetails ? "auto" : "none",
         display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: `${16 * s}px ${14 * s}px ${cadreDroit ? 16 * s : 16 * s + 2 * spellPointDepth}px`,
+        // Haut et bas dégagés pour les écus restés visibles par-dessus :
+        // coût (+ jeton d'équipement d'un objet) en haut, ATK / PV en bas.
+        padding: `${detailPadHaut}cqw ${14 * s}px ${cadreDroit ? `${detailPadBas}cqw` : `${16 * s + 2 * spellPointDepth}px`}`,
         gap: 8 * s,
         overflowY: "auto",
       }}>
@@ -709,9 +722,6 @@ export default function GameCard({
               </span>
             );
           })()}
-          <span style={{ color: "#74b9ff" }}>💧{displayedManaCost}</span>
-          {isCreature && <><span style={{ color: "#e74c3c" }}>⚔{card.attack}</span><span style={{ color: "#f1c40f" }}>❤{card.health}</span></>}
-          {isItem && <><span style={{ color: "#e74c3c" }}>⚔+{bonusAtk}</span><span style={{ color: "#f1c40f" }}>❤+{bonusPv}</span><span style={{ color: OBJET_TEINTE }}>⚒{getEquipCost(card)}</span></>}
         </div>
 
         {/* Bas-droite : nom du set, ou mois/année si pas de set, ou rien.
