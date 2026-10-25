@@ -831,6 +831,61 @@ function ciblesOnPlay(
     : [chosen];
 }
 
+/** Capacités dont le BONUS +X/+Y a un bénéficiaire réglable (cf.
+ *  KeywordInstance.recipient) : une autre unité alliée (défaut), elle-même, ou
+ *  toutes les autres (portée « toutes »). */
+const BONUS_A_BENEFICIAIRE = new Set<string>(["renforcement", "discipline"]);
+
+/** Le bonus va-t-il à UNE AUTRE unité DÉSIGNÉE ? C'est le défaut, comme sur la
+ *  forme sort ; faux pour « elle-même » (`recipient: "self"`) et sous la portée
+ *  « toutes », qui ne désigne personne. */
+export function bonusVersAutre(
+  inst: Pick<KeywordInstance, "id" | "recipient" | "targetScope"> | null | undefined,
+): boolean {
+  return !!inst && BONUS_A_BENEFICIAIRE.has(inst.id) && inst.recipient !== "self"
+    && !porteeValide(inst.targetScope, creatureScopes(inst.id));
+}
+
+/** Instance À L'ENTRÉE (sans mode) d'un mot-clé, si la carte en porte une. */
+function instanceOnPlay(card: Card, kw: Keyword): KeywordInstance | undefined {
+  return card.keyword_instances?.find(i => i.id === kw && !i.mode);
+}
+
+/** Bonus +X/+Y de Renforcement / Discipline À L'ENTRÉE, selon le bénéficiaire. */
+function bonusOnPlay(
+  source: CardInstance, kw: Keyword, x: number, y: number, chosen: string | undefined,
+  owner: PlayerState, opponent: PlayerState,
+): void {
+  if (!bonusVersAutre(instanceOnPlay(source.card, kw)) && !porteeOnPlay(source.card, kw)) {
+    applyRenforcementSelf(source, x, y);
+    return;
+  }
+  for (const tid of ciblesOnPlay(source, kw, chosen, owner, opponent)) {
+    const t = tid && tid !== source.instanceId ? owner.board.find(c => c.instanceId === tid) : undefined;
+    if (t) applyRenforcementSelf(t, x, y);
+  }
+}
+
+/** Bonus +X/+Y de Renforcement / Discipline hors entrée (activation, mort, fin
+ *  de tour, attaque…) : cible explicite (désignée, ou choix différé résolu),
+ *  sinon choix différé / tirage pour « une autre unité », sinon elle-même. La
+ *  portée « toutes » est interceptée en amont (resolveCuratedKeywordEffect). */
+function bonusHorsEntree(
+  kw: Keyword, source: CardInstance, owner: PlayerState, opponent: PlayerState,
+  targetInstanceId: string | undefined, inst: KeywordInstance | undefined, x: number, y: number,
+): void {
+  const buff = (c: CardInstance) => withComposedMode(inst?.mode, () => applyRenforcementSelf(c, x, y));
+  const allie = (id: string | null | undefined) =>
+    id ? owner.board.find(c => c.instanceId === id && c.instanceId !== source.instanceId) : undefined;
+  if (targetInstanceId) { const t = allie(targetInstanceId); if (t) buff(t); return; }
+  if (bonusVersAutre(inst)) {
+    const t = allie(deferOrRandomTarget(kw, source, owner, opponent, inst, x, y));
+    if (t) buff(t);
+    return;
+  }
+  buff(source);
+}
+
 /** MALÉDICTION — marque `target` pour l'exil au début du tour de son
  *  propriétaire. La source ne mémorisait qu'UNE victime ; la portée « toutes »
  *  range les suivantes dans `maledictionExtraIds`. */
@@ -1493,6 +1548,16 @@ function designationCiblee(composed: import("./types").ComposedEffect): boolean 
   return composed.target?.designation === "choice";
 }
 
+/** L'effet doit-il SUSPENDRE la partie pour faire désigner ses cibles ?
+ *  « Au choix » seulement, hors « soi-même » (déterministe), et hors « toutes » :
+ *  le pool entier est atteint, il n'y a rien à choisir — les actions le
+ *  traitaient déjà ainsi (frameNeedsChoice exige un nombre). Sans cette garde,
+ *  un emblème « toutes les cartes du cimetière, au choix » attendait des clics
+ *  qui ne servaient à rien. */
+function attendUnChoix(target: import("./types").TargetSpec | undefined): boolean {
+  return target?.designation === "choice" && target.entity !== "self" && target.count !== "all";
+}
+
 /** SILENCE — l'unité perd tout et retombe à ses valeurs imprimées.
  *
  *  Corps PARTAGÉ par la mécanique de sort curée et le contenu composé
@@ -1989,6 +2054,21 @@ function resolveComposedEffect(
           ?? incinerationVictim(chosen[0], owner, opponent);
       if (spec?.location === "graveyard" && chosen.length > 0) {
         resolveIncinerationChosen(victim, chosen, x);
+      } else if (spec?.location === "graveyard" && (spec.count === "all" || spec.designation !== "choice")) {
+        // Cible qui DÉCRIT les cartes (nombre, nature, appartenance, coût) :
+        // le tirage se fait dans ce pool, et non dans tout le cimetière.
+        // « Toutes » vide le pool entier, X n'est alors plus un plafond — sans
+        // cela, « toutes les cartes de votre cimetière » n'en recyclait qu'une.
+        // « Toutes » n'a rien à désigner : « au choix » n'y bloque plus rien.
+        // Bord indifférent ⇒ les DEUX cimetières, chaque carte repartant sous
+        // le deck de son propriétaire (et non plus le seul cimetière adverse).
+        const pool = composedTargetPool(spec, owner, opponent);
+        const n = spec.count === "all" ? pool.length : x;
+        const ids = shuffleArray(pool).slice(0, n).map(c => c.instanceId);
+        for (const p of [owner, opponent]) {
+          const siens = ids.filter(id => p.graveyard.some(c => c.instanceId === id));
+          if (siens.length > 0) resolveIncinerationChosen(p, siens, siens.length);
+        }
       } else {
         resolveIncineration(victim, x);
       }
@@ -2531,7 +2611,7 @@ function runComposedCapsForCard(
     // selectComposedTargets (toujours la première unité). Même nuance que le
     // « OU » : l'effet passe après les autres effets du même moment.
     if (!chosen && DECLENCHEURS_A_CHOIX_DIFFERE.has(trigger)
-      && cap.composed!.target?.designation === "choice" && cap.composed!.target?.entity !== "self") {
+      && attendUnChoix(cap.composed!.target)) {
       frameSink.push(...buildComposedFrames(card, trigger, source, owner.id, targetMap, fallbackTargetId,
         { only: (c) => c.uid === cap.uid }));
       continue;
@@ -4583,7 +4663,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       // Cible « au choix » non-self : même pause que pour une créature. L'id du
       // déclencheur porte l'indice de l'emblème, seule identité stable dont on
       // dispose sans source en jeu.
-      if (emblem.composed.target?.designation === "choice" && emblem.composed.target?.entity !== "self") {
+      if (attendUnChoix(emblem.composed.target)) {
         const trig: import("./types").PendingTrigger = {
           id: `emblem_${step.emblemIndex}${spec.emblemIdSuffix}`,
           controllerId: actif.id,
@@ -4713,7 +4793,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
     // `entity: "self"` vise toujours la source → jamais mis en file de choix
     // (déterministe, cf. régression Ours Maudit). Un « au choix » non-self avec
     // au moins une cible éligible met la séquence en pause.
-    if (cap.composed.target?.designation === "choice" && cap.composed.target?.entity !== "self") {
+    if (attendUnChoix(cap.composed.target)) {
       const trig: import("./types").PendingTrigger = {
         id: `${creature.instanceId}#${cap.uid}`,
         controllerId: actif.id,
@@ -5487,10 +5567,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
     }
 
-    // Renforcement (invocation) : la créature se buffe elle-même de +X/+Y.
+    // Renforcement (invocation) : +X/+Y à la créature elle-même (défaut), à
+    // une autre unité alliée désignée, ou à toutes les autres (portée « toutes »).
     if (hasKwOnPlay(cardInstance, "renforcement")) {
-      const rf = cardInstance.card.keyword_instances?.find(i => i.id === "renforcement" && !i.mode);
-      applyRenforcementSelf(cardInstance, rf?.x ?? 0, rf?.y ?? 0);
+      const rf = instanceOnPlay(cardInstance.card, "renforcement");
+      bonusOnPlay(cardInstance, "renforcement", rf?.x ?? 0, rf?.y ?? 0, action.targetInstanceId, player, opponent);
     }
 
     // Discipline (invocation) : Renforcement d'elle-même SOUS CONDITION de
@@ -5504,7 +5585,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // (Seconde vie), où les réductions de main ne s'appliquent pas.
     if (hasKwOnPlay(cardInstance, "discipline")) {
       const { x, y } = disciplineValues(cardInstance, undefined);
-      if (boardIsDisciplined(player, manaCost)) applyRenforcementSelf(cardInstance, x, y);
+      if (boardIsDisciplined(player, manaCost)) bonusOnPlay(cardInstance, "discipline", x, y, action.targetInstanceId, player, opponent);
     }
 
     // Apprentissage (invocation) : la créature retire un sort de la main et le
@@ -10708,9 +10789,9 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "renforcement": {
-      // Tap / mort / retour / fin de tour : +X/+Y permanent à la source elle-même.
-      withComposedMode(inst?.mode, () =>
-        applyRenforcementSelf(source, inst?.x ?? 0, inst?.y ?? 0));
+      // Tap / mort / retour / fin de tour / attaque… : +X/+Y permanent au
+      // bénéficiaire réglé (cf. bonusHorsEntree).
+      bonusHorsEntree(kw, source, owner, opponent, targetInstanceId, inst, inst?.x ?? 0, inst?.y ?? 0);
       return;
     }
     case "discipline": {
@@ -10722,9 +10803,13 @@ function resolveCuratedKeywordEffect(
       // participe donc plus au test, et le gain part avec elle. Ce n'est pas un
       // oubli — Renforcement a exactement la même limite, et l'auteur l'a
       // validée en connaissance de cause.
-      const { x, y } = disciplineValues(source, inst?.mode);
+      //
+      // Le bénéficiaire suit le même réglage que Renforcement. Choix différé :
+      // X/Y voyagent dans le déclencheur (instance synthétique), et la parité
+      // est relue au moment du choix.
+      const v = disciplineValues(source, inst?.mode);
       if (boardIsDisciplined(owner, effectiveManaCost(source, owner))) {
-        withComposedMode(inst?.mode, () => applyRenforcementSelf(source, x, y));
+        bonusHorsEntree(kw, source, owner, opponent, targetInstanceId, inst, inst?.x ?? v.x, inst?.y ?? v.y);
       }
       return;
     }
@@ -11500,6 +11585,8 @@ export function deferredKwTargetIds(
       return controller.board.map(c => c.instanceId);
     case "tactique":
     case "sacrifice":
+    case "renforcement":
+    case "discipline":
       return controller.board.filter(c => c.instanceId !== sourceInstanceId).map(c => c.instanceId);
     case "mimique":
     case "metamorphose":
@@ -12289,8 +12376,12 @@ export function autoResolvePendingTriggers(state: GameState, action?: AutoResolv
  *  the switch in `getTapActivateTargets` but operates without a state
  *  reference — used by UI shortcuts (double-click activates a tap kw
  *  only when no picker is needed). */
-export function tapKeywordNeedsTarget(kw: Keyword): boolean {
+export function tapKeywordNeedsTarget(kw: Keyword, inst?: KeywordInstance): boolean {
   switch (kw) {
+    // Selon l'instance : sur elle-même, rien à désigner.
+    case "renforcement":
+    case "discipline":
+      return bonusVersAutre(inst);
     case "vampirisme":
     case "remontee":
     case "impact":
@@ -12310,7 +12401,7 @@ export function tapKeywordNeedsTarget(kw: Keyword): boolean {
 
 /** Targets eligible for a tap-mode activation of `kw`. Returns null when
  *  the keyword doesn't need a picker (auto-resolves on activation). */
-export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInstanceId?: string): string[] | null {
+export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInstanceId?: string, inst?: KeywordInstance): string[] | null {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   // Activation d'une capacité de créature (tap) : Transcendance (immunité aux
@@ -12331,6 +12422,11 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
     case "impact":
       // Créature OU héros, tout bord.
       return impactTargetIds(player, opponent);
+    case "renforcement":
+    case "discipline":
+      return bonusVersAutre(inst)
+        ? deferredKwTargetIds(kw, player, opponent, sourceInstanceId ?? null)
+        : null;
     case "affaiblissement":
     case "benediction":
     case "tactique":
@@ -13363,6 +13459,8 @@ export function creatureNeedsTarget(card: Card): boolean {
   // shouldn't trigger the on-summon picker.
   // Portée « toutes » : la capacité se passe de cible, le picker ne s'ouvre pas pour elle.
   if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw) && !porteeOnPlay(card, kw))) return true;
+  // Renforcement / Discipline ne ciblent que tournés vers une AUTRE unité.
+  if ([...BONUS_A_BENEFICIAIRE].some(kw => cardHasKwOnPlay(card, kw as Keyword) && bonusVersAutre(instanceOnPlay(card, kw as Keyword)))) return true;
   // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
   return !!firstOnPlayComposedChoiceCap(card);
 }
@@ -13421,6 +13519,9 @@ export function getOnAttackChoiceSlots(
   }
   (attacker.card.keyword_instances ?? []).forEach((inst, i) => {
     if (inst.mode !== "attack") return;
+    // Renforcement / Discipline ne désignent quelqu'un que tournés vers une
+    // autre unité (ni « elle-même », ni « toutes »).
+    if (BONUS_A_BENEFICIAIRE.has(inst.id) && !bonusVersAutre(inst)) return;
     const targets = deferredKwTargetIds(inst.id, player, opponent, attacker.instanceId);
     if (targets.length > 0) slots.push({ key: `kw_${i}`, targets, kw: inst.id });
   });
@@ -13491,6 +13592,11 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       case "sacrifice":
       case "benediction":
       case "tactique":
+        return player.board.map(c => c.instanceId);
+      case "renforcement":
+      case "discipline":
+        // Sur elle-même : aucune cible, on passe au mot-clé suivant.
+        if (!bonusVersAutre(instanceOnPlay(card, kw))) continue;
         return player.board.map(c => c.instanceId);
       case "corruption":
       case "malediction":

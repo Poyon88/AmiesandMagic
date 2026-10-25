@@ -63,6 +63,10 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   corruption: ["all_enemies"],
   domination: ["all_enemies"],
   benediction: ["all_allies"],
+  // Renforcement / Discipline : une autre unité désignée par défaut, ou
+  // elle-même (KeywordInstance.recipient) ; « toutes » = toutes les AUTRES.
+  renforcement: ["all_allies"],
+  discipline: ["all_allies"],
   // Neutralisation : une ennemie ciblée, ou toutes (aura continue).
   neutralisation: ["all_enemies"],
   tactique: ["all_allies"],
@@ -99,9 +103,9 @@ export function creaturesDePortee(
 
 /** Libellés FR (repli des clés `vocab.target_scope.*`). */
 export const TARGET_SCOPE_FR: Record<TargetScope, string> = {
-  all_enemies: "toutes les créatures ennemies",
-  all_allies: "toutes les créatures alliées",
-  all: "toutes les créatures",
+  all_enemies: "toutes les unités ennemies",
+  all_allies: "toutes les unités alliées",
+  all: "toutes les unités",
 };
 
 /** Forme courte, pour les sélecteurs de la forge. */
@@ -138,6 +142,23 @@ export function composedScope(cap: Pick<Capability, "composed"> | null | undefin
   return t.side === "ally" ? "all_allies" : t.side === "enemy" ? "all_enemies" : "all";
 }
 
+// ─── affichage : le « S » d'une capacité tournée vers soi ──────────────────
+
+/** Libellé lu par les lecteurs d'écran sur le « S ». */
+export const SOI_ARIA_FR = "Sur elle-même";
+
+/** Renforcement / Discipline d'une créature réglés sur « elle-même » : le bonus
+ *  ne va pas à une autre unité, comme le voudrait la forme sort. */
+export function kwInstanceSoi(inst: Pick<KeywordInstance, "id" | "recipient" | "targetScope"> | null | undefined): boolean {
+  return !!inst && (inst.id === "renforcement" || inst.id === "discipline")
+    && inst.recipient === "self" && !porteeValide(inst.targetScope, creatureScopes(inst.id));
+}
+
+/** Effet COMPOSÉ qui se vise lui-même (cible « Soi-même »). */
+export function composedSoi(cap: Pick<Capability, "composed"> | null | undefined): boolean {
+  return cap?.composed?.target?.entity === "self";
+}
+
 /** Libellé lu par les lecteurs d'écran sur le « A ». */
 export function scopeAriaLabel(scope: TargetScope): string {
   return TARGET_SCOPE_FR[scope].charAt(0).toUpperCase() + TARGET_SCOPE_FR[scope].slice(1);
@@ -154,9 +175,9 @@ export function scopeAriaLabel(scope: TargetScope): string {
 
 /** Groupe nominal de la portée, sans préposition (« Inflige X dégâts à {cibles} »). */
 export const TARGET_SCOPE_CIBLES_FR: Record<TargetScope, string> = {
-  all_enemies: "toutes les créatures ennemies",
-  all_allies: "toutes les créatures alliées",
-  all: "toutes les créatures des deux camps",
+  all_enemies: "toutes les unités ennemies",
+  all_allies: "toutes les unités alliées",
+  all: "toutes les unités des deux camps",
 };
 
 const DESC_TOUTES_COMMUNES: Record<string, string> = {
@@ -166,13 +187,14 @@ const DESC_TOUTES_COMMUNES: Record<string, string> = {
   remontee: "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
   corruption: "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
   domination: "Prend le contrôle de {cibles}, dans la limite des places.",
+  benediction: "Soigne complètement {cibles}.",
 };
 
 /** Variantes « toutes » des mots-clés de SORT (repli FR). */
 export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
   ...DESC_TOUTES_COMMUNES,
   poison: "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
-  siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par créature touchée.",
+  siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
   entrave: "Paralyse {cibles} pendant X tour(s).",
   execution: "Détruit {cibles}.",
   silence: "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
@@ -185,12 +207,32 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
  *  n'y figure pas : sa description dit déjà sa portée ({neutralise_cible}). */
 export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   ...DESC_TOUTES_COMMUNES,
-  benediction: "Soigne complètement {cibles}.",
   malediction: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
-  tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par créature).",
+  tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
   vampirisme: "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
-  devoration: "Détruit {cibles} ; cette créature gagne définitivement leur ATK et leurs PV.",
+  devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
+  // La source est exclue de la portée : « autres » le dit, {cibles} ne le
+  // dirait pas.
+  renforcement: "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
+  discipline: "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
+  // Pas des portées : variantes « elle-même » (KeywordInstance.recipient
+  // "self", marqueur « S »), rangées ici pour voyager avec les autres gabarits
+  // jusqu'au catalogue (vocab.target_scope.creature.*).
+  renforcement_soi: "Gagne +X ATK et +Y PV de façon permanente.",
+  discipline_soi: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
 };
+
+/** Gabarit de Renforcement / Discipline quand le bonus va à la créature
+ *  ELLE-MÊME (KeywordInstance.recipient "self") ; null sinon — la description
+ *  ordinaire parle alors d'une autre unité désignée. */
+export function recipientDescTemplate(
+  kw: string,
+  recipient: "self" | undefined,
+  t?: (key: string) => string | undefined,
+): string | null {
+  if ((kw !== "renforcement" && kw !== "discipline") || recipient !== "self") return null;
+  return t?.(`vocab.target_scope.creature.${kw}_soi`) ?? CREATURE_SCOPE_DESC_FR[`${kw}_soi`];
+}
 
 /** Gabarit « toutes » d'une capacité, `{cibles}` déjà résolu. null si la
  *  capacité n'a pas de portée valide ou pas de variante (description ordinaire). */

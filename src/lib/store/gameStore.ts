@@ -311,6 +311,7 @@ function pendingTriggerOverlay(
     remontee: "🔼 Remontée — choisissez l'unité à renvoyer en main",
     affaiblissement: `🔻 Affaiblissement — choisissez la créature ennemie à affaiblir${t.x != null ? ` (-${t.x}/-${t.y ?? 0})` : ""}`,
     benediction: "✝️ Bénédiction — choisissez l'unité alliée à soigner entièrement",
+    renforcement: `⬆️ Renforcement — choisissez l'unité alliée qui reçoit${t.x != null ? ` +${t.x}/+${t.y ?? 0}` : " le bonus"}`,
     tactique: `📋 Tactique — choisissez l'allié qui reçoit ${t.x ?? 1} capacité(s) permanente(s) au hasard`,
     sacrifice: "💔 Sacrifice — choisissez l'allié à sacrifier",
     permutation: "🔀 Permutation — choisissez la créature ennemie dont échanger les PV",
@@ -5890,7 +5891,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Portée « toutes » : pas de cible à désigner, l'activation part aussitôt.
     const targets = porteeValide(instance.targetScope, creatureScopes(instance.id))
       ? null
-      : getTapActivateTargets(gameState, instance.id, sourceInstanceId);
+      : getTapActivateTargets(gameState, instance.id, sourceInstanceId, instance);
     if (targets && targets.length > 0) {
       set({
         selectedCardInstanceId: null,

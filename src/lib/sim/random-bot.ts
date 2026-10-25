@@ -256,7 +256,7 @@ export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): 
     if (!peutActiverPouvoir(src)) continue;
     (src.card.keyword_instances ?? []).forEach((inst, idx) => {
       if (inst.mode !== "tap") return;
-      const cibles = getTapActivateTargets(state, inst.id, src.instanceId);
+      const cibles = getTapActivateTargets(state, inst.id, src.instanceId, inst);
       if (cibles === null) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx });
       else for (const t of plusieurs(rand, cibles, variantes)) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx, targetInstanceId: t });
     });

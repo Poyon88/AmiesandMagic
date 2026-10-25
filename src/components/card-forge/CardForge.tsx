@@ -18,7 +18,7 @@ import Link from "next/link";
 import { generateCardStats, buildId } from "@/lib/card-engine/generator";
 import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
-import ComposedEffectsEditor, { ScopeButtons } from "./ComposedEffectsEditor";
+import ComposedEffectsEditor, { BONUS_BENEFICIAIRE_FORGE, RecipientButtons, ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
 import { applyBalanceOverrides, type BalanceOverrides } from "@/lib/card-engine/balance";
 import CostListEditor from "./CostListEditor";
@@ -177,6 +177,8 @@ interface ForgeCard {
   keywordYValues?: Record<string, number>;
   keywordGrantScope?: Record<string, "all_allies">;
   keywordTargetScope?: Record<string, TargetScope>;
+  /** Renforcement / Discipline donnés à elle-même (libellé forge → "self"). */
+  keywordRecipient?: Record<string, "self">;
   keywordNeutralise?: string;
   ability: string;
   flavorText: string;
@@ -1847,6 +1849,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // Unité : portée « toutes » d'une capacité CIBLÉE (libellé forge → portée).
   // Absente = une cible. Persistée dans keyword_instances[i].targetScope.
   const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
+  // Unité : Renforcement / Discipline donnés à ELLE-MÊME (libellé → "self").
+  // Absent = à une autre unité désignée, comme le sort. Persisté dans
+  // keyword_instances[i].recipient.
+  const [keywordRecipient, setKeywordRecipient] = useState<Record<string, "self">>({});
   // Recherche dans la grille des capacités (plus d'une centaine de puces).
   const [rechercheKw, setRechercheKw] = useState("");
   // Conférer (mot-clé créature paramétrique) : ability conférée choisie, et son
@@ -1977,6 +1983,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       modes: keywordModes,
       grantScopes: keywordGrantScope,
       targetScopes: keywordTargetScope,
+      recipients: porteStats ? keywordRecipient : {},
       isSpellCard,
       singulier: keywordSingulier,
       randomX: keywordRandomX,
@@ -2051,6 +2058,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     },
     keywordGrantScope: !porteStats ? keywordGrantScope : undefined,
     keywordTargetScope: porteStats ? keywordTargetScope : undefined,
+    keywordRecipient: porteStats ? keywordRecipient : undefined,
     keywordNeutralise: neutraliseAbilityId || undefined,
     ability: manualAbility,
     flavorText: manualFlavorText,
@@ -2586,6 +2594,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setKeywordModes({}); setKeywordSingulier({}); setKeywordDelay({}); setKeywordRandomX({}); setKeywordMinX({});
     setKeywordGrantScope({});
     setKeywordTargetScope({});
+    setKeywordRecipient({});
     setSpellKeywords([]);
     setSpellEffectsData(null);
     setComposedCaps([]);
@@ -2739,6 +2748,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         modes: keywordModes,
         grantScopes: keywordGrantScope,
         targetScopes: keywordTargetScope,
+        recipients: porteStats ? keywordRecipient : {},
         isSpellCard,
         singulier: keywordSingulier,
         randomX: keywordRandomX,
@@ -2869,7 +2879,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -4026,6 +4036,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                               if (selected) {
                                 setKeywordGrantScope(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordTargetScope(prev => { const next = { ...prev }; delete next[id]; return next; });
+                                setKeywordRecipient(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordSingulier(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordRandomX(prev => { const next = { ...prev }; delete next[id]; return next; });
                                 setKeywordMinX(prev => { const next = { ...prev }; delete next[id]; return next; });
@@ -4190,7 +4201,20 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             )}
                             {/* Portée « toutes » — unités, capacités ciblées seulement
                                 (cf. lib/game/target-scope.ts). Peint le « A ». */}
-                            {selected && porteStats && creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "").length > 0 && (
+                            {/* Renforcement / Discipline : une autre (défaut) / elle-même / toutes les autres. */}
+                            {selected && porteStats && BONUS_BENEFICIAIRE_FORGE.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && (
+                              <span style={{ marginLeft: 4 }}>
+                                <RecipientButtons
+                                  value={keywordTargetScope[id] === "all_allies" ? "all_allies" : keywordRecipient[id] === "self" ? "self" : "target"}
+                                  onChange={(v) => {
+                                    setKeywordTargetScope(prev => { const next = { ...prev }; if (v === "all_allies") next[id] = "all_allies"; else delete next[id]; return next; });
+                                    setKeywordRecipient(prev => { const next = { ...prev }; if (v === "self") next[id] = "self"; else delete next[id]; return next; });
+                                  }}
+                                  tr={tf}
+                                />
+                              </span>
+                            )}
+                            {selected && porteStats && !BONUS_BENEFICIAIRE_FORGE.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "").length > 0 && (
                               <span style={{ marginLeft: 4 }}>
                                 <ScopeButtons
                                   value={porteeValide(keywordTargetScope[id], creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? ""))}

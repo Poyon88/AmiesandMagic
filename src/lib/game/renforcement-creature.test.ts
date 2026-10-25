@@ -17,7 +17,7 @@ describe("Renforcement +X/+Y — créature (self-buff)", () => {
     const c = mkInstance(mkCard({
       name: "Colosse", mana_cost: 3, attack: 2, health: 2,
       keywords: ["renforcement"],
-      keyword_instances: [{ id: "renforcement", x: 2, y: 3 }],
+      keyword_instances: [{ id: "renforcement", x: 2, y: 3, recipient: "self" }],
     }));
     const next = applyAction(s, play(s, c));
     const onBoard = next.players[0].board.find(u => u.card.name === "Colosse")!;
@@ -31,7 +31,7 @@ describe("Renforcement +X/+Y — créature (self-buff)", () => {
     const c = mkInstance(mkCard({
       name: "Colosse", mana_cost: 3, attack: 2, health: 2,
       keywords: ["renforcement"],
-      keyword_instances: [{ id: "renforcement", x: 3, y: 0 }],
+      keyword_instances: [{ id: "renforcement", x: 3, y: 0, recipient: "self" }],
     }));
     const next = applyAction(s, play(s, c));
     recalculateAuras(next.players[0], next.players[1]);
@@ -44,7 +44,7 @@ describe("Renforcement +X/+Y — créature (self-buff)", () => {
     const c = mkInstance(mkCard({
       name: "Colosse", mana_cost: 3, attack: 1, health: 1,
       keywords: ["renforcement"],
-      keyword_instances: [{ id: "renforcement", x: 1, y: 1 }],
+      keyword_instances: [{ id: "renforcement", x: 1, y: 1, recipient: "self" }],
     }));
     const next = applyAction(s, play(s, c));
     // La créature est bien arrivée sur le plateau (buffée), pas restée en attente.

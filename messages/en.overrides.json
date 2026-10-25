@@ -109,6 +109,11 @@
         "desc": "Shuffles a random item{forge_cout} into your deck — neutral{forge_align}",
         "desc_any": "Shuffles a random item{forge_cout_libre} into your deck — neutral{forge_align}"
       }
+    },
+    "composed": {
+      "incin": {
+        "deck_both": "their owner's deck"
+      }
     }
   }
 }

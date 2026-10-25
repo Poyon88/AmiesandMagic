@@ -180,6 +180,30 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
   "content.exploration": "ajoute {x} à votre compteur d'Exploration",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
+  // Incinération dont la cible DÉCRIT les cartes recyclées (cimetière visé,
+  // nombre, nature, filtres) : « remet toutes les cartes de votre cimetière
+  // sous votre deck ». {cartes} porte nombre + nature + filtres + désignation.
+  "content.incineration_cible": "remet {cartes} {zone} sous {deck}",
+  "incin.zone_ally": "de votre cimetière",
+  "incin.zone_enemy": "du cimetière adverse",
+  "incin.zone_any": "d'un cimetière",
+  "incin.zone_both": "des deux cimetières",
+  "incin.deck_ally": "votre deck",
+  "incin.deck_enemy": "le deck adverse",
+  "incin.deck_any": "le deck de son propriétaire",
+  "incin.deck_both": "le deck de leur propriétaire",
+  "incin.card_all": "toutes les cartes",
+  "incin.card_one": "une carte",
+  "incin.card_n": "{n} cartes",
+  "incin.unit_all": "toutes les unités",
+  "incin.unit_one": "une unité",
+  "incin.unit_n": "{n} unités",
+  "incin.spell_all": "toutes les actions",
+  "incin.spell_one": "une action",
+  "incin.spell_n": "{n} actions",
+  "incin.item_all": "tous les objets",
+  "incin.item_one": "un objet",
+  "incin.item_n": "{n} objets",
   "content.occurrences": "{n} fois : ",
   "content.alternative": "Au choix : ",
   "content.devoration": "dévore",
@@ -813,6 +837,50 @@ function describeRetourDiffere(target: TargetSpec, t?: SafeT): string {
   });
 }
 
+/** Incinération dont la cible désigne des cartes d'un CIMETIÈRE : la cible est
+ *  le complément direct (les cartes recyclées), le camp dit à la fois d'où
+ *  elles partent et sous quel deck elles vont. Le générique « à toutes les
+ *  unités alliées du cimetière » collé derrière « remet X cartes » se
+ *  contredisait (X contre « toutes ») et appelait « unités » des actions.
+ *
+ *  Nombre : « toutes » vide le pool ; sinon c'est X qui compte (cf. moteur).
+ *  null hors cimetière (cible héros = l'ancienne écriture, inchangée). */
+function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
+  const tg0 = eff.target;
+  if (!tg0) return null;
+  // Cible HÉROS : le héros ne sert qu'à nommer le cimetière, le moteur y tire X
+  // cartes au hasard — même phrase que « X cartes au hasard » de ce camp.
+  const tg: TargetSpec = tg0.entity === "hero"
+    ? { ...tg0, entity: "unit", cardKind: undefined, count: 1, designation: "random", location: "graveyard", membership: undefined, maxCost: undefined, keywordId: undefined }
+    : tg0;
+  if (tg.location !== "graveyard") return null;
+  if (tg.entity === "both" || tg.entity === "self" || tg.entity === "damage_source") return null;
+  const x = eff.magnitude?.x ?? 1;
+  // Nature : une seule famille se nomme (« unités », « actions », « objets ») ;
+  // un mélange se lit « cartes ».
+  const nature = tg.entity === "item" ? "item"
+    : tg.entity === "unit_or_item" ? "card"
+    : tg.cardKind === "creature" ? "unit"
+    : tg.cardKind === "spell" ? "spell"
+    : "card";
+  const all = tg.count === "all";
+  const nombre = all ? frag(t, `incin.${nature}_all`)
+    : x === 1 ? frag(t, `incin.${nature}_one`)
+    : frag(t, `incin.${nature}_n`, { n: amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX) });
+  const mtxt = filtreLabel(tg, t);
+  const costTxt = tg.maxCost != null ? frag(t, "target.max_cost", { n: tg.maxCost }) : "";
+  const desTxt = all ? "" : tg.designation === "choice" ? frag(t, "target.des_choice") : frag(t, "target.des_random");
+  // Bord indifférent : les DEUX cimetières (cf. moteur), sauf cible héros où
+  // le joueur désigne UN cimetière en cliquant un héros.
+  const camp = tg.side === "ally" ? "ally" : tg.side === "enemy" ? "enemy"
+    : tg0.entity === "hero" ? "any" : "both";
+  return frag(t, "content.incineration_cible", {
+    cartes: [nombre, mtxt && `(${mtxt})`, costTxt, desTxt].filter(Boolean).join(" "),
+    zone: frag(t, `incin.zone_${camp}`),
+    deck: frag(t, `incin.deck_${camp}`),
+  });
+}
+
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
 const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence", "transformation"]);
@@ -1011,6 +1079,7 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
   const body = selfBody
     ?? describeScatter(eff, t)
     ?? (eff.content === "retour_differe" && eff.target ? describeRetourDiffere(eff.target, t) : null)
+    ?? (eff.content === "incineration" ? describeIncineration(eff, t) : null)
     ?? [
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),

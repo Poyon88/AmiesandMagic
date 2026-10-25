@@ -110,7 +110,7 @@ const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "s
  *  (Déchainement : c'est son Y, traité à part). */
 const CONTENUS_COUT_X = new Set<ComposedEffectContent>(["selection", "selection_magique", "renfort_royal", "tresor", "faveur", "invocation", "exhumation", "appel", "appel_supreme", "forge"]);
 
-const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "retour_differe", "silence", "exhumation", "rappel"]);
+const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "retour_differe", "silence", "exhumation", "rappel", "incineration"]);
 
 
 /** Contenus où le type de carte n'offre que « Unités » (défaut) ou « Objets » :
@@ -1134,6 +1134,43 @@ export default function ComposedEffectsEditor({
         <button onClick={addComposed} style={{ order: POWER_ORDER_LAST, marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
       )}
     </div>
+  );
+}
+
+/** Capacités de créature dont le bonus a un bénéficiaire réglable (ids moteur). */
+export const BONUS_BENEFICIAIRE_FORGE: ReadonlySet<string> = new Set(["renforcement", "discipline"]);
+
+/** Bénéficiaire d'un RENFORCEMENT / d'une DISCIPLINE de créature : une autre
+ *  unité alliée désignée (défaut, comme la forme sort), elle-même (« S »), ou
+ *  toutes les autres (« A »). Trois réglages exclusifs, stockés comme
+ *  `recipient: "self"` / `targetScope`. */
+export type RenforcementBeneficiaire = "self" | "target" | "all_allies";
+export function RecipientButtons({ value, onChange, tr }: {
+  value: RenforcementBeneficiaire;
+  onChange: (v: RenforcementBeneficiaire) => void;
+  tr: (key: string) => string;
+}) {
+  const choix: RenforcementBeneficiaire[] = ["target", "self", "all_allies"];
+  return (
+    <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap", maxWidth: "100%" }}>
+      {choix.map((c) => {
+        const actif = value === c;
+        return (
+          <button key={c} type="button" onClick={() => onChange(c)}
+            title={c === "all_allies" ? tr("target_scope_hint_all_allies") : undefined}
+            style={{
+              fontSize: 10, padding: "2px 6px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap",
+              border: `1px solid ${actif ? "#8a6d3b" : "#ccc"}`,
+              background: actif ? "#8a6d3b" : "#fff", color: actif ? "#fff" : "#555",
+              fontWeight: actif ? 700 : 400,
+            }}>
+            {c === "self" ? <><b>S</b> {tr("target_scope_self")}</>
+              : c === "target" ? tr("target_scope_target")
+              : <><b>A</b> {tr("target_scope_all_allies")}</>}
+          </button>
+        );
+      })}
+    </span>
   );
 }
 

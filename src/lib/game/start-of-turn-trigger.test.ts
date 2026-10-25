@@ -232,7 +232,7 @@ describe("Début de tour — mot-clé curé en mode start_of_turn", () => {
     const s = etat();
     const c = mkInstance(mkCard({
       name: "Sentinelle", attack: 1, health: 1, keywords: ["renforcement"],
-      keyword_instances: [{ id: "renforcement", x: 2, y: 1, mode: "start_of_turn" }],
+      keyword_instances: [{ id: "renforcement", x: 2, y: 1, mode: "start_of_turn", recipient: "self" }],
       effect_text: "Renforcement +2/+1",
     }));
     s.players[1].board.push(c);

@@ -424,11 +424,11 @@
       },
       "renforcement": {
         "label": "Stärkung +X/+Y",
-        "desc": "Erhält dauerhaft +X ATK und +Y LP."
+        "desc": "Verleiht einer anderen verbündeten Zieleinheit dauerhaft +X ANG und +Y LP."
       },
       "discipline": {
         "label": "Disziplin +X/+Y",
-        "desc": "Wenn alle deine im Spiel befindlichen Kreaturen Kosten derselben Parität wie die ihren haben, erhält sie dauerhaft +X ATK und +Y LP."
+        "desc": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y."
       },
       "esprit_de_corps": {
         "label": "Korpsgeist",
@@ -823,8 +823,8 @@
         "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck"
       },
       "benediction": {
-        "label": "Segen",
-        "desc": "Heilt die Zieleinheit vollständig."
+        "label": "Segnung",
+        "desc": "Heilt eine ausgewählte verbündete Einheit vollständig."
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "forge": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von höchstens {x} zufällig in dein Deck",
         "forge_range": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von {min} bis {x} zufällig in dein Deck",
         "forge_any": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} zufällig in dein Deck",
-        "forge_any_min": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von mindestens {min} zufällig in dein Deck"
+        "forge_any_min": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von mindestens {min} zufällig in dein Deck",
+        "incineration_cible": "legt {cartes} {zone} unter {deck}"
       },
       "self": {
         "transformation": "verwandelt sich",
@@ -1098,6 +1099,28 @@
         "times": "{x} Mal 1 {unit}, jedes Mal",
         "target_both": "an ein zufälliges {side} Ziel (Einheit oder Held)",
         "target_unit": "an eine zufällige {side} Einheit"
+      },
+      "incin": {
+        "zone_ally": "aus deinem Friedhof",
+        "zone_enemy": "aus dem gegnerischen Friedhof",
+        "zone_any": "aus einem Friedhof",
+        "deck_ally": "dein Deck",
+        "deck_enemy": "das gegnerische Deck",
+        "deck_any": "das Deck des Besitzers",
+        "card_all": "alle Karten",
+        "card_one": "eine Karte",
+        "card_n": "{n} Karten",
+        "unit_all": "alle Einheiten",
+        "unit_one": "eine Einheit",
+        "unit_n": "{n} Einheiten",
+        "spell_all": "alle Aktionen",
+        "spell_one": "eine Aktion",
+        "spell_n": "{n} Aktionen",
+        "item_all": "alle Gegenstände",
+        "item_one": "einen Gegenstand",
+        "item_n": "{n} Gegenstände",
+        "zone_both": "beider Friedhöfe",
+        "deck_both": "das Deck ihres Besitzers"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
         "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
-        "siphon": "Fügt {cibles} X Schaden zu und heilt Ihren Helden um X pro getroffener Kreatur.",
+        "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
         "execution": "Zerstört {cibles}.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles} und setzt ihre Werte auf die Ausgangswerte zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
-        "guerison": "Stellt {cibles} X LP wieder her."
+        "guerison": "Stellt {cibles} X LP wieder her.",
+        "benediction": "Heilt {cibles} vollständig."
       },
       "creature": {
         "impact": "Fügt {cibles} X Schaden zu.",
@@ -2109,14 +2133,18 @@
         "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
         "malediction": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
-        "tactique": "Verleiht {cibles} dauerhaft X ihrer zufällig ausgewählten permanenten Fähigkeiten (eine Ziehung pro Kreatur).",
+        "tactique": "Verleiht {cibles} dauerhaft X zufällig gezogene seiner permanenten Fähigkeiten (eine Ziehung pro Einheit).",
         "vampirisme": "Stiehlt {cibles} X LP und fügt sie den LP dieser Einheit hinzu.",
-        "devoration": "Zerstört {cibles}; diese Kreatur erhält dauerhaft deren ATK und LP."
+        "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
+        "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
+        "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
+        "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
+        "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP."
       },
       "cibles": {
-        "all_enemies": "alle gegnerischen Kreaturen",
-        "all_allies": "alle verbündeten Kreaturen",
-        "all": "alle Kreaturen beider Seiten"
+        "all_enemies": "alle feindlichen Einheiten",
+        "all_allies": "alle verbündeten Einheiten",
+        "all": "alle Einheiten beider Seiten"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "Alle gegnerischen",
     "target_scope_all_allies": "Alle verbündeten",
     "target_scope_all": "Alle (beide Seiten)",
-    "target_scope_hint_all_enemies": "Trifft alle gegnerischen Kreaturen anstelle eines gewählten Ziels (weder Helden noch Gegenstände).",
-    "target_scope_hint_all_allies": "Trifft alle verbündeten Kreaturen anstelle eines gewählten Ziels (weder Helden noch Gegenstände).",
-    "target_scope_hint_all": "Trifft alle Kreaturen beider Seiten anstelle eines gewählten Ziels (weder Helden noch Gegenstände).",
+    "target_scope_hint_all_enemies": "Trifft alle feindlichen Einheiten statt eines gewählten Ziels (weder Helden noch Gegenstände).",
+    "target_scope_hint_all_allies": "Trifft alle verbündeten Einheiten statt eines gewählten Ziels (weder Helden noch Gegenstände).",
+    "target_scope_hint_all": "Trifft alle Einheiten beider Seiten statt eines gewählten Ziels (weder Helden noch Gegenstände).",
     "content_deal_damage": "Schaden verursachen",
     "content_heal": "Heilen",
     "content_buff": "Buff +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "Verzögerung X (Beginn des X-ten folgenden Zuges)",
     "retard_turns_title": "Verzögerung: Anzahl der Züge bis zur Auslösung",
     "retard_spell_title": "Verzögerung: der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkers ausgelöst, Ziel wird dann gewählt",
-    "label_retard": "Verzögerung"
+    "label_retard": "Verzögerung",
+    "target_scope_self": "Sie selbst"
   },
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",

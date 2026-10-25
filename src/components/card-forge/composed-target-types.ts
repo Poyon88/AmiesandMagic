@@ -3,9 +3,9 @@
 // stocké en base — aucun champ nouveau. Module pur, testé à part.
 import type { ComposedEffectContent, TargetSpec } from "@/lib/game/types";
 
-/** Contenus capables de viser une ACTION (hors plateau) : seul le Rappel sait
- *  en ramener une. Ailleurs, le moteur ne garde que les unités. */
-export const ACTION_TARGET_CONTENTS = new Set<ComposedEffectContent>(["rappel"]);
+/** Contenus capables de viser une ACTION (hors plateau) : le Rappel en ramène
+ *  une, l'Incinération en recycle. Ailleurs, le moteur ne garde que les unités. */
+export const ACTION_TARGET_CONTENTS = new Set<ComposedEffectContent>(["rappel", "incineration"]);
 
 /** Case du sélecteur « Type » des cibles. */
 export type TypeCible = "unit" | "spell" | "item" | "hero" | "self" | "damage_source";

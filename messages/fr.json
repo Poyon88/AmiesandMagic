@@ -429,11 +429,11 @@
       },
       "renforcement": {
         "label": "Renforcement +X/+Y",
-        "desc": "Gagne +X ATK et +Y PV de façon permanente."
+        "desc": "Donne +X ATK et +Y PV de façon permanente à une autre unité alliée ciblée."
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente."
+        "desc": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à une autre unité alliée ciblée."
       },
       "esprit_de_corps": {
         "label": "Esprit de corps",
@@ -570,6 +570,10 @@
       "poison": {
         "label": "Poison",
         "desc": "Les unités blessées perdent 1 PV par tour."
+      },
+      "benediction": {
+        "label": "Bénédiction",
+        "desc": "Soigne complètement une unité alliée ciblée."
       },
       "pillage": {
         "label": "Pillage X",
@@ -821,10 +825,6 @@
       "tuteur": {
         "label": "Tuteur",
         "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
-      },
-      "benediction": {
-        "label": "Bénédiction",
-        "desc": "Soigne complètement une créature alliée ciblée."
       }
     },
     "composed": {
@@ -927,6 +927,7 @@
         "conquete": "ajoute {x} à votre compteur de Conquête",
         "exploration": "ajoute {x} à votre compteur d'Exploration",
         "incineration": "remet {x} cartes du cimetière visé sous son deck",
+        "incineration_cible": "remet {cartes} {zone} sous {deck}",
         "occurrences": "{n} fois : ",
         "alternative": "Au choix : ",
         "devoration": "dévore",
@@ -1024,6 +1025,28 @@
         "on_draw": ", qui se déclenchera à sa pioche",
         "on_low_hp": ", qui se déclenchera sous 15 PV",
         "on_wound": ", qui se déclenchera quand elle sera blessée sans mourir"
+      },
+      "incin": {
+        "zone_ally": "de votre cimetière",
+        "zone_enemy": "du cimetière adverse",
+        "zone_any": "d'un cimetière",
+        "zone_both": "des deux cimetières",
+        "deck_ally": "votre deck",
+        "deck_enemy": "le deck adverse",
+        "deck_any": "le deck de son propriétaire",
+        "deck_both": "le deck de leur propriétaire",
+        "card_all": "toutes les cartes",
+        "card_one": "une carte",
+        "card_n": "{n} cartes",
+        "unit_all": "toutes les unités",
+        "unit_one": "une unité",
+        "unit_n": "{n} unités",
+        "spell_all": "toutes les actions",
+        "spell_one": "une action",
+        "spell_n": "{n} actions",
+        "item_all": "tous les objets",
+        "item_one": "un objet",
+        "item_n": "{n} objets"
       },
       "pool": {
         "race": " de race {v}",
@@ -2091,8 +2114,9 @@
         "remontee": "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
         "corruption": "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
         "domination": "Prend le contrôle de {cibles}, dans la limite des places.",
+        "benediction": "Soigne complètement {cibles}.",
         "poison": "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
-        "siphon": "Inflige X dégâts à {cibles} et soigne votre héros de X par créature touchée.",
+        "siphon": "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
         "entrave": "Paralyse {cibles} pendant X tour(s).",
         "execution": "Détruit {cibles}.",
         "silence": "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
@@ -2109,14 +2133,18 @@
         "domination": "Prend le contrôle de {cibles}, dans la limite des places.",
         "benediction": "Soigne complètement {cibles}.",
         "malediction": "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
-        "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par créature).",
+        "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
         "vampirisme": "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
-        "devoration": "Détruit {cibles} ; cette créature gagne définitivement leur ATK et leurs PV."
+        "devoration": "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
+        "renforcement": "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
+        "discipline": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
+        "renforcement_soi": "Gagne +X ATK et +Y PV de façon permanente.",
+        "discipline_soi": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente."
       },
       "cibles": {
-        "all_enemies": "toutes les créatures ennemies",
-        "all_allies": "toutes les créatures alliées",
-        "all": "toutes les créatures des deux camps"
+        "all_enemies": "toutes les unités ennemies",
+        "all_allies": "toutes les unités alliées",
+        "all": "toutes les unités des deux camps"
       }
     },
     "cost_help": {
@@ -2493,12 +2521,13 @@
     "label_neutralised_ability": "CAPACITÉ NEUTRALISÉE",
     "neutralisation_hint": "Muette chez l'ennemie ciblée (ou chez toutes, avec la portée « Toutes ennemies ») tant que la porteuse est en jeu.",
     "target_scope_target": "Cible",
+    "target_scope_self": "Elle-même",
     "target_scope_all_enemies": "Toutes ennemies",
     "target_scope_all_allies": "Toutes alliées",
     "target_scope_all": "Toutes (2 camps)",
-    "target_scope_hint_all_enemies": "Frappe toutes les créatures ennemies au lieu d'une cible choisie (ni héros ni objets).",
-    "target_scope_hint_all_allies": "Frappe toutes les créatures alliées au lieu d'une cible choisie (ni héros ni objets).",
-    "target_scope_hint_all": "Frappe toutes les créatures des deux camps au lieu d'une cible choisie (ni héros ni objets).",
+    "target_scope_hint_all_enemies": "Frappe toutes les unités ennemies au lieu d'une cible choisie (ni héros ni objets).",
+    "target_scope_hint_all_allies": "Frappe toutes les unités alliées au lieu d'une cible choisie (ni héros ni objets).",
+    "target_scope_hint_all": "Frappe toutes les unités des deux camps au lieu d'une cible choisie (ni héros ni objets).",
     "content_deal_damage": "Infliger des dégâts",
     "content_heal": "Soigner",
     "content_buff": "Buff +X/+Y",

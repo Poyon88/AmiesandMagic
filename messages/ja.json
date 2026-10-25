@@ -424,11 +424,11 @@
       },
       "renforcement": {
         "label": "強化 +X/+Y",
-        "desc": "ATKを+X、HPを+Y永続的に得る。"
+        "desc": "対象の他の味方ユニット1体に、永続的に+X ATKと+Y HPを与える。"
       },
       "discipline": {
         "label": "規律 +X/+Y",
-        "desc": "場にいる自分のクリーチャーがすべてこのクリーチャーと同じ偶奇のコストを持つ場合、永続的に+X ATK/+Y HPを得る。"
+        "desc": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、対象の味方ユニット1体(このユニットを除く)に+X/+Yを永続的に与える。"
       },
       "esprit_de_corps": {
         "label": "団結心",
@@ -824,7 +824,7 @@
       },
       "benediction": {
         "label": "祝福",
-        "desc": "対象のユニットを完全に回復する。"
+        "desc": "対象の味方ユニット1体を完全に回復する。"
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "forge": "中立または自分の陣営のアイテム{filter}を、コスト{x}以下でランダムにデッキに混ぜる",
         "forge_range": "中立または自分の陣営のアイテム{filter}を、コスト{min}から{x}の範囲でランダムにデッキに混ぜる",
         "forge_any": "中立または自分の陣営のアイテム{filter}を、ランダムにデッキに混ぜる",
-        "forge_any_min": "中立または自分の陣営のアイテム{filter}を、コスト{min}以上でランダムにデッキに混ぜる"
+        "forge_any_min": "中立または自分の陣営のアイテム{filter}を、コスト{min}以上でランダムにデッキに混ぜる",
+        "incineration_cible": "{zone}{cartes}を{deck}の下に戻す"
       },
       "self": {
         "transformation": "変身する",
@@ -1098,6 +1099,28 @@
         "times": "{x}回、毎回1{unit}を",
         "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
         "target_unit": "ランダムな{side}ユニット1体に"
+      },
+      "incin": {
+        "zone_ally": "あなたの墓地の",
+        "zone_enemy": "相手の墓地の",
+        "zone_any": "いずれかの墓地の",
+        "deck_ally": "あなたのデッキ",
+        "deck_enemy": "相手のデッキ",
+        "deck_any": "その持ち主のデッキ",
+        "card_all": "すべてのカード",
+        "card_one": "カード1枚",
+        "card_n": "カード{n}枚",
+        "unit_all": "すべてのユニット",
+        "unit_one": "ユニット1体",
+        "unit_n": "ユニット{n}体",
+        "spell_all": "すべてのアクション",
+        "spell_one": "アクション1枚",
+        "spell_n": "アクション{n}枚",
+        "item_all": "すべてのアイテム",
+        "item_one": "アイテム1つ",
+        "item_n": "アイテム{n}つ",
+        "zone_both": "両方の墓地の",
+        "deck_both": "その持ち主のデッキ"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
         "domination": "場の空きがある限り、{cibles}を支配下に置く。",
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
-        "siphon": "{cibles}にXダメージを与え、命中したクリーチャー1体につきXだけ自分のヒーローを回復する。",
+        "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
         "execution": "{cibles}を破壊する。",
         "silence": "{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
-        "guerison": "{cibles}のHPをX回復する。"
+        "guerison": "{cibles}のHPをX回復する。",
+        "benediction": "{cibles}を完全に回復する。"
       },
       "creature": {
         "impact": "{cibles}にXダメージを与える。",
@@ -2109,14 +2133,18 @@
         "domination": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
         "malediction": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
-        "tactique": "このクリーチャーの永続能力のうちランダムに選ばれたX個を、{cibles}に永久に付与する（クリーチャー1体につき1回抽選）。",
+        "tactique": "{cibles}に、自身の永続能力からランダムにX個を永続的に付与する(ユニットごとに1回抽選)。",
         "vampirisme": "{cibles}からHPをX奪い、このユニットのHPに加える。",
-        "devoration": "{cibles}を破壊する。このクリーチャーはそれらのATKとHPを永久に得る。"
+        "devoration": "{cibles}を破壊する。このユニットはそれらのATKとHPを永続的に得る。",
+        "renforcement": "他のすべての味方ユニットに、ATK+XとHP+Yを永続的に与える。",
+        "discipline": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、他のすべての味方ユニットに+X/+Yを永続的に与える。",
+        "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
+        "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。"
       },
       "cibles": {
-        "all_enemies": "敵のすべてのクリーチャー",
-        "all_allies": "味方のすべてのクリーチャー",
-        "all": "両陣営のすべてのクリーチャー"
+        "all_enemies": "すべての敵ユニット",
+        "all_allies": "すべての味方ユニット",
+        "all": "両陣営のすべてのユニット"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "敵全体",
     "target_scope_all_allies": "味方全体",
     "target_scope_all": "全体(両陣営)",
-    "target_scope_hint_all_enemies": "選択した対象の代わりに、敵の全クリーチャーに命中する(ヒーローとアイテムを除く)。",
-    "target_scope_hint_all_allies": "選択した対象の代わりに、味方の全クリーチャーに命中する(ヒーローとアイテムを除く)。",
-    "target_scope_hint_all": "選択した対象の代わりに、両陣営の全クリーチャーに命中する(ヒーローとアイテムを除く)。",
+    "target_scope_hint_all_enemies": "選んだ対象の代わりに、すべての敵ユニットを攻撃する(ヒーローとアイテムは対象外)。",
+    "target_scope_hint_all_allies": "選んだ対象の代わりに、すべての味方ユニットを攻撃する(ヒーローとアイテムは対象外)。",
+    "target_scope_hint_all": "選んだ対象の代わりに、両陣営のすべてのユニットを攻撃する(ヒーローとアイテムは対象外)。",
     "content_deal_damage": "ダメージを与える",
     "content_heal": "回復する",
     "content_buff": "バフ +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "遅延X（X回後のターン開始時）",
     "retard_turns_title": "遅延：発動までのターン数",
     "retard_spell_title": "遅延：使用者のX回後のターン開始時に発動し、その時に対象を選ぶ",
-    "label_retard": "遅延"
+    "label_retard": "遅延",
+    "target_scope_self": "自身"
   },
   "game": {
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",

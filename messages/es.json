@@ -424,11 +424,11 @@
       },
       "renforcement": {
         "label": "Refuerzo +X/+Y",
-        "desc": "Gana +X ATK y +Y PV de forma permanente."
+        "desc": "Otorga +X ATQ y +Y PV de forma permanente a otra unidad aliada objetivo."
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Si todas tus criaturas en juego tienen un coste de la misma paridad que la suya, gana +X ATQ y +Y PV de forma permanente."
+        "desc": "Si todos los costes de tu tablero tienen la misma paridad que el suyo, otorga +X/+Y permanente a otra unidad aliada objetivo."
       },
       "esprit_de_corps": {
         "label": "Espíritu de cuerpo",
@@ -824,7 +824,7 @@
       },
       "benediction": {
         "label": "Bendición",
-        "desc": "Cura completamente a la unidad objetivo."
+        "desc": "Cura por completo a una unidad aliada objetivo."
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "forge": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {x} como máximo, al azar",
         "forge_range": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} a {x}, al azar",
         "forge_any": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter}, al azar",
-        "forge_any_min": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} como mínimo, al azar"
+        "forge_any_min": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} como mínimo, al azar",
+        "incineration_cible": "devuelve {cartes} {zone} bajo {deck}"
       },
       "self": {
         "transformation": "se transforma",
@@ -1098,6 +1099,28 @@
         "times": "{x} veces 1 {unit}, cada vez",
         "target_both": "a un objetivo {side} aleatorio (unidad o héroe)",
         "target_unit": "a una unidad {side} aleatoria"
+      },
+      "incin": {
+        "zone_ally": "de tu cementerio",
+        "zone_enemy": "del cementerio rival",
+        "zone_any": "de un cementerio",
+        "deck_ally": "tu mazo",
+        "deck_enemy": "el mazo rival",
+        "deck_any": "el mazo de su propietario",
+        "card_all": "todas las cartas",
+        "card_one": "una carta",
+        "card_n": "{n} cartas",
+        "unit_all": "todas las unidades",
+        "unit_one": "una unidad",
+        "unit_n": "{n} unidades",
+        "spell_all": "todas las acciones",
+        "spell_one": "una acción",
+        "spell_n": "{n} acciones",
+        "item_all": "todos los objetos",
+        "item_one": "un objeto",
+        "item_n": "{n} objetos",
+        "zone_both": "de ambos cementerios",
+        "deck_both": "el mazo de su propietario"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
         "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
         "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
-        "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada criatura alcanzada.",
+        "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada unidad alcanzada.",
         "entrave": "Paraliza a {cibles} durante X turno(s).",
         "execution": "Destruye a {cibles}.",
         "silence": "Elimina todas las palabras clave de {cibles} y restablece sus estadísticas a su valor original.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
-        "guerison": "Restaura X PV a {cibles}."
+        "guerison": "Restaura X PV a {cibles}.",
+        "benediction": "Cura por completo a {cibles}."
       },
       "creature": {
         "impact": "Inflige X de daño a {cibles}.",
@@ -2109,14 +2133,18 @@
         "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
         "benediction": "Cura completamente a {cibles}.",
         "malediction": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
-        "tactique": "Asigna permanentemente X de sus capacidades permanentes, elegidas al azar, a {cibles} (un sorteo por criatura).",
+        "tactique": "Otorga permanentemente X de sus habilidades permanentes, elegidas al azar, a {cibles} (un sorteo por unidad).",
         "vampirisme": "Roba X PV a {cibles} y los añade a los PV de esta unidad.",
-        "devoration": "Destruye a {cibles}; esta criatura gana permanentemente su ATQ y sus PV."
+        "devoration": "Destruye a {cibles}; esta unidad gana permanentemente su ATQ y su PV.",
+        "renforcement": "Otorga +X ATQ y +Y PV de forma permanente a todas las demás unidades aliadas.",
+        "discipline": "Si todos los costes de tu tablero tienen la misma paridad que el suyo, otorga +X/+Y permanente a todas las demás unidades aliadas.",
+        "renforcement_soi": "Gana +X ATQ y +Y PV de forma permanente.",
+        "discipline_soi": "Si todas tus criaturas en juego tienen un coste con la misma paridad que el suyo, gana +X ATQ y +Y PV de forma permanente."
       },
       "cibles": {
-        "all_enemies": "todas las criaturas enemigas",
-        "all_allies": "todas las criaturas aliadas",
-        "all": "todas las criaturas de ambos bandos"
+        "all_enemies": "todas las unidades enemigas",
+        "all_allies": "todas las unidades aliadas",
+        "all": "todas las unidades de ambos bandos"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "Todas enemigas",
     "target_scope_all_allies": "Todas aliadas",
     "target_scope_all": "Todas (2 bandos)",
-    "target_scope_hint_all_enemies": "Golpea a todas las criaturas enemigas en lugar de un objetivo elegido (ni héroes ni objetos).",
-    "target_scope_hint_all_allies": "Golpea a todas las criaturas aliadas en lugar de un objetivo elegido (ni héroes ni objetos).",
-    "target_scope_hint_all": "Golpea a todas las criaturas de ambos bandos en lugar de un objetivo elegido (ni héroes ni objetos).",
+    "target_scope_hint_all_enemies": "Golpea a todas las unidades enemigas en lugar de a un objetivo elegido (ni héroes ni objetos).",
+    "target_scope_hint_all_allies": "Golpea a todas las unidades aliadas en lugar de a un objetivo elegido (ni héroes ni objetos).",
+    "target_scope_hint_all": "Golpea a todas las unidades de ambos bandos en lugar de a un objetivo elegido (ni héroes ni objetos).",
     "content_deal_damage": "Infligir daño",
     "content_heal": "Curar",
     "content_buff": "Buff +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "Retardo X (inicio del X-ésimo turno siguiente)",
     "retard_turns_title": "Retardo: número de turnos antes de activarse",
     "retard_spell_title": "Retardo: el efecto se activa al inicio del X-ésimo turno siguiente del lanzador, objetivo elegido entonces",
-    "label_retard": "Retardo"
+    "label_retard": "Retardo",
+    "target_scope_self": "Ella misma"
   },
   "game": {
     "hero_power_grant": "Otorga {kw} a una criatura",

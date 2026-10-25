@@ -71,7 +71,7 @@ import CompagnonsNames from "./CompagnonsNames";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import TokenNames from "./TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
-import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { SOI_ARIA_FR, TARGET_SCOPE_FR, composedScope, composedSoi, kwInstanceScope, kwInstanceSoi, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 import type { Tone } from "@/components/card/CardCounters";
 
@@ -493,6 +493,7 @@ export default function GameCard({
                     <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={33 * icoS} fill mode={mode} singulier={entry.singulier} />
                   </span>
                   {portee && <AllAlliesMarker size={13 * icoS} color={modeColor} label={scopeAriaLabel(portee)} />}
+                  {kwInstanceSoi(instance ?? card.keyword_instances?.find((k) => k.id === kw)) && <AllAlliesMarker letter="S" size={13 * icoS} color={modeColor} label={SOI_ARIA_FR} />}
                 </span>
                 {keywordBadgeValue(kw, x, instance) != null && <span style={{ fontSize: 15 * s, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{keywordBadgeValue(kw, x, instance)}</span>}
               </div>
@@ -560,6 +561,7 @@ export default function GameCard({
                   </span>
                   <ComposedMarker mode={cmode} size={11 * icoS} />
                   {composedScope(cap) && <AllAlliesMarker size={13 * icoS} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
+                  {composedSoi(cap) && <AllAlliesMarker letter="S" size={13 * icoS} color={keywordModeColor(cmode)} label={SOI_ARIA_FR} />}
                 </span>
                 {val && <span style={{ fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 * s }}>{val}</span>}
                 {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}

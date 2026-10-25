@@ -230,8 +230,8 @@ function Pastille({ legende, children }: { legende: string; children: React.Reac
 }
 
 /** Une même icône de capacité, déclinée par déclencheur et par marqueur. */
-function IconeDemo({ mode, compose = false, toutes = false, singulier = false, barree = false }: {
-  mode?: KeywordMode; compose?: boolean; toutes?: boolean; singulier?: boolean; barree?: boolean;
+function IconeDemo({ mode, compose = false, toutes = false, soi = false, singulier = false, barree = false }: {
+  mode?: KeywordMode; compose?: boolean; toutes?: boolean; soi?: boolean; singulier?: boolean; barree?: boolean;
 }) {
   return (
     <span className="shrink-0 inline-flex items-center justify-center rounded-[var(--am-r-sm)] bg-am-bg-0 border border-am-gold/30"
@@ -240,6 +240,7 @@ function IconeDemo({ mode, compose = false, toutes = false, singulier = false, b
         <KeywordIcon symbol="💥" keyword="impact" size={26} mode={mode} singulier={singulier} barred={barree} />
         {compose && <ComposedMarker mode={mode} size={9} />}
         {toutes && <AllAlliesMarker size={11} color={keywordModeColor(mode)} />}
+        {soi && <AllAlliesMarker letter="S" size={11} color={keywordModeColor(mode)} label="Sur elle-même" />}
       </span>
     </span>
   );
@@ -451,9 +452,13 @@ function BeginnerGuide() {
             déclencheur, d'un contenu et d'une cible — par exemple « À la mort : inflige 2 dégâts à toutes les
             créatures ennemies ». Son texte exact est dans la bulle de détail.
           </Marqueur>
-          <Marqueur icone={<IconeDemo mode="entry" toutes />} nom="« A » : toutes les créatures">
-            Un « A » en bas à gauche : au lieu d'une cible choisie, la capacité frappe toutes les créatures d'un camp
+          <Marqueur icone={<IconeDemo mode="entry" toutes />} nom="« A » : toutes les unités">
+            Un « A » en bas à gauche : au lieu d'une cible choisie, la capacité frappe toutes les unités d'un camp
             (ou des deux). Sur une action, il signale une capacité conférée à toutes vos unités.
+          </Marqueur>
+          <Marqueur icone={<IconeDemo mode="entry" soi />} nom="« S » : sur elle-même">
+            Un « S » au même endroit : la capacité s'applique à l'unité qui la porte, et non à une autre unité
+            comme sur une action — par exemple un Renforcement que la créature se donne à elle-même.
           </Marqueur>
           <Marqueur icone={<span className="inline-flex items-center gap-1"><IconeDemo mode="spell" compose /><span className={`${cinzel} text-am-ink-soft font-bold`}>/</span><IconeDemo mode="spell" compose /></span>} nom="« / » : l'un OU l'autre">
             Deux effets composés séparés par une barre forment un choix : à la résolution, vous n'en jouez
@@ -673,7 +678,7 @@ function TcgGuide() {
           <>Réductions de coût : <Hi>Canalisation</Hi> (actions, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
           <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible, ou à toutes vos unités (marqueur « A »).</>,
           <><Hi>Objets</Hi> : 3ᵉ type de carte, hors deck. Occupent une place du terrain, inertes ; coût de pose + <Hi>coût d'équipement</Hi> rejouable, un seul par créature alliée, restent en jeu à la mort du porteur.</>,
-          <>Couleur d'icône = déclencheur : blanc permanent, <span style={{ color: keywordModeColor("entry")! }}>jaune</span> entrée/action, <span style={{ color: keywordModeColor("tap")! }}>orange</span> activation, <span style={{ color: keywordModeColor("attack")! }}>magenta</span> attaque, <span style={{ color: keywordModeColor("death")! }}>rouge</span> mort, <span style={{ color: keywordModeColor("wound")! }}>citron</span> blessure, <span style={{ color: keywordModeColor("low_hp")! }}>violet</span> sous 15 PV, <span style={{ color: keywordModeColor("start_of_turn")! }}>argent</span> début de tour, <span style={{ color: keywordModeColor("end_of_turn")! }}>vert</span> fin de tour, <span style={{ color: keywordModeColor("return")! }}>bleu</span> retour en main, <span style={{ color: keywordModeColor("draw")! }}>cyan</span> pioche, <span style={{ color: keywordModeColor("delay")! }}>ambre</span> Retard X. Marqueurs : <Hi>✦</Hi> effet composé, <Hi>A</Hi> toutes les créatures, <Hi>/</Hi> choix OU, bicolore Singulier, barré neutralisé.</>,
+          <>Couleur d'icône = déclencheur : blanc permanent, <span style={{ color: keywordModeColor("entry")! }}>jaune</span> entrée/action, <span style={{ color: keywordModeColor("tap")! }}>orange</span> activation, <span style={{ color: keywordModeColor("attack")! }}>magenta</span> attaque, <span style={{ color: keywordModeColor("death")! }}>rouge</span> mort, <span style={{ color: keywordModeColor("wound")! }}>citron</span> blessure, <span style={{ color: keywordModeColor("low_hp")! }}>violet</span> sous 15 PV, <span style={{ color: keywordModeColor("start_of_turn")! }}>argent</span> début de tour, <span style={{ color: keywordModeColor("end_of_turn")! }}>vert</span> fin de tour, <span style={{ color: keywordModeColor("return")! }}>bleu</span> retour en main, <span style={{ color: keywordModeColor("draw")! }}>cyan</span> pioche, <span style={{ color: keywordModeColor("delay")! }}>ambre</span> Retard X. Marqueurs : <Hi>✦</Hi> effet composé, <Hi>A</Hi> toutes les unités, <Hi>S</Hi> sur elle-même, <Hi>/</Hi> choix OU, bicolore Singulier, barré neutralisé.</>,
         ]} />
       </Section>
     </>

@@ -171,6 +171,10 @@ export interface BuildKeywordInstancesInput {
    *  lib/game/target-scope.ts). Ignorée sur un sort et sur une capacité qui ne
    *  l'accepte pas. */
   targetScopes?: Record<string, TargetScope>;
+  /** Renforcement / Discipline d'une unité, par libellé : "self" ⇒ le bonus
+   *  va à elle-même (absent ⇒ à une autre unité alliée désignée). Ignoré sur
+   *  un sort, et sous la portée « toutes », qui prime. */
+  recipients?: Record<string, "self">;
   /** SINGULIER par libellé : condition ajoutée au déclencheur. Un mot-clé qui
    *  n'aurait sinon rien à stocker (à l'invocation, sans X) produit quand même
    *  une instance `{ id, singulier: true }` — c'est elle qui porte la condition. */
@@ -189,7 +193,7 @@ export interface BuildKeywordInstancesInput {
 /** Construit les `keyword_instances` à persister. Fonction PURE — aucun accès à
  *  l'état React — pour être testable et réutilisable côté tokens. */
 export function buildKeywordInstances(input: BuildKeywordInstancesInput): KeywordInstance[] {
-  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, targetScopes = {}, delays = {}, extras = {} } = input;
+  const { labels, xValues = {}, yValues = {}, modes = {}, grantScopes = {}, isSpellCard = false, singulier = {}, randomX = {}, minX = {}, targetScopes = {}, recipients = {}, delays = {}, extras = {} } = input;
 
   return labels
     .map((label): KeywordInstance | null => {
@@ -200,6 +204,7 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // stocker produit quand même une instance, c'est elle qui la porte.
       const scope = isSpellCard ? undefined : porteeValide(targetScopes[label], creatureScopes(id));
       if (scope) inst = { ...(inst ?? { id }), targetScope: scope };
+      else if (!isSpellCard && (id === "renforcement" || id === "discipline") && recipients[label] === "self") inst = { ...(inst ?? { id }), recipient: "self" };
       // Retard X : le nombre de tours voyage avec le mode "delay".
       if (!isSpellCard && modes[label] === "delay") inst = { ...(inst ?? { id }), mode: "delay", delay: clampRetard(delays[label] ?? 1) };
       if (singulier[label] !== true) return inst;

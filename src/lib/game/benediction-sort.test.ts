@@ -34,4 +34,32 @@ describe("Bénédiction — forme sort", () => {
     expect(apres.currentHealth).toBe(6);
     expect(apres.isPoisoned).toBe(false);
   });
+
+  it("portée « toutes alliées » : soigne chaque unité alliée, jamais l'ennemie", () => {
+    const s = mkState();
+    const a = mkInstance(mkCard({ name: "Allié A", attack: 2, health: 5 }));
+    const b = mkInstance(mkCard({ name: "Allié B", attack: 2, health: 4 }));
+    const e = mkInstance(mkCard({ name: "Ennemi", attack: 2, health: 5 }));
+    a.currentHealth = 1; b.currentHealth = 2; b.isPoisoned = true; e.currentHealth = 1;
+    s.players[0].board.push(a, b);
+    s.players[1].board.push(e);
+    const p = mkInstance(mkCard({
+      name: "Lumière", card_type: "spell", attack: null, health: null, mana_cost: 0,
+      spell_keywords: [{ id: "benediction", targetScope: "all_allies" } as SpellKeywordInstance],
+    }));
+    s.players[0].hand.push(p);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: p.instanceId } as GameAction);
+    const pv = (i: 0 | 1, n: string) => st.players[i].board.find(c => c.card.name === n)!;
+    expect(pv(0, "Allié A").currentHealth).toBe(5);
+    expect(pv(0, "Allié B").currentHealth).toBe(4);
+    expect(pv(0, "Allié B").isPoisoned).toBe(false);
+    expect(pv(1, "Ennemi").currentHealth).toBe(1);
+  });
+
+  it("texte : unité, et « toutes les unités alliées » en portée toutes", () => {
+    expect(getSpellKeywordDesc({ id: "benediction" } as SpellKeywordInstance))
+      .toBe("Soigne complètement une unité alliée ciblée.");
+    expect(getSpellKeywordDesc({ id: "benediction", targetScope: "all_allies" } as SpellKeywordInstance))
+      .toBe("Soigne complètement toutes les unités alliées.");
+  });
 });

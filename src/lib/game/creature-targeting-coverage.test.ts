@@ -62,7 +62,19 @@ describe("cohérence des deux listes de ciblage de créature", () => {
     expect(cibles).toContain("retour_differe");
   });
 
-  it.each(casesDeGetCreatureTargets())(
+  // RENFORCEMENT / DISCIPLINE ne ciblent que selon leur INSTANCE (bénéficiaire « une autre
+  // unité ») : le mettre dans la liste globale ouvrirait le picker pour une
+  // créature qui se renforce elle-même. `creatureNeedsTarget` le traite donc à
+  // part — on vérifie que cette branche existe bien.
+  const CIBLAGE_PAR_INSTANCE = new Set(["renforcement", "discipline"]);
+
+  it("Renforcement / Discipline : le picker s'ouvre par leur branche dédiée de creatureNeedsTarget", () => {
+    const debut = SOURCE.indexOf("export function creatureNeedsTarget");
+    const corps = SOURCE.slice(debut, SOURCE.indexOf("\n}\n", debut));
+    expect(corps).toContain('bonusVersAutre(instanceOnPlay(card, kw as Keyword))');
+  });
+
+  it.each(casesDeGetCreatureTargets().filter((kw) => !CIBLAGE_PAR_INSTANCE.has(kw)))(
     "« %s » sait se faire cibler ET ouvre bien le picker",
     (kw) => {
       expect(

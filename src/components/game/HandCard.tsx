@@ -31,7 +31,7 @@ import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import DetailEnJeu from "@/components/cards/DetailEnJeu";
-import { TARGET_SCOPE_FR, composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { SOI_ARIA_FR, TARGET_SCOPE_FR, composedScope, composedSoi, kwInstanceScope, kwInstanceSoi, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 interface HandCardProps {
@@ -913,6 +913,7 @@ function HandCard({
                         <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                           <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={20} fill mode={mode} singulier={entry.singulier} />
                           {portee && <AllAlliesMarker size={8} color={modeColor} label={scopeAriaLabel(portee)} />}
+                          {kwInstanceSoi(entry.instance ?? card.keyword_instances?.find((k) => k.id === kw)) && <AllAlliesMarker letter="S" size={8} color={modeColor} label={SOI_ARIA_FR} />}
                         </span>
                       </span>
                       {keywordBadgeValue(kw, x, entry.instance) != null && <span style={{ fontSize: 12, fontWeight: 900, color: modeColor ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${modeColor ?? accentColor}, ${TEXT_CONTRAST_HALO}` }}>{keywordBadgeValue(kw, x, entry.instance)}</span>}
@@ -978,6 +979,7 @@ function HandCard({
                     </span>
                     <ComposedMarker mode={cmode} size={10} />
                     {composedScope(cap) && <AllAlliesMarker size={8} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
+                    {composedSoi(cap) && <AllAlliesMarker letter="S" size={8} color={keywordModeColor(cmode)} label={SOI_ARIA_FR} />}
                   </span>
                   {val && <span style={{ fontSize: 12, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${tint}, ${TEXT_CONTRAST_HALO}`, marginLeft: 1 }}>{val}</span>}
                   {/* « / » du groupe OU : les branches s'excluent, la rangée doit le montrer. */}

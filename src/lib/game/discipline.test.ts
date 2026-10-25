@@ -32,7 +32,7 @@ function disciplinee(opts: {
   return mkInstance(mkCard({
     name, mana_cost, attack, health,
     keywords: ["discipline"] as never,
-    keyword_instances: [{ id: "discipline", x, y, ...(mode ? { mode } : {}) }] as never,
+    keyword_instances: [{ id: "discipline", x, y, recipient: "self", ...(mode ? { mode } : {}) }] as never,
   }));
 }
 

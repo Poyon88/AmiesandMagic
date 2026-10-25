@@ -424,11 +424,11 @@
       },
       "renforcement": {
         "label": "强化 +X/+Y",
-        "desc": "永久获得+X攻击力和+Y生命值。"
+        "desc": "永久使另一个被选中的友方单位获得 +X 攻击力和 +Y 生命值。"
       },
       "discipline": {
         "label": "纪律 +X/+Y",
-        "desc": "若你场上所有随从的费用奇偶性与其相同，永久获得+X攻击力和+Y生命值。"
+        "desc": "如果你场上所有单位的费用与其奇偶性相同,则永久给予一个被选中的其他友方单位+X/+Y。"
       },
       "esprit_de_corps": {
         "label": "团队精神",
@@ -824,7 +824,7 @@
       },
       "benediction": {
         "label": "祝福",
-        "desc": "使目标单位完全恢复生命值。"
+        "desc": "完全治疗一个被选中的友方单位。"
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "forge": "随机将一件中立或你的阵营{filter}、费用至多为{x}的物品混入你的牌堆",
         "forge_range": "随机将一件中立或你的阵营{filter}、费用为{min}到{x}的物品混入你的牌堆",
         "forge_any": "随机将一件中立或你的阵营{filter}的物品混入你的牌堆",
-        "forge_any_min": "随机将一件中立或你的阵营{filter}、费用至少为{min}的物品混入你的牌堆"
+        "forge_any_min": "随机将一件中立或你的阵营{filter}、费用至少为{min}的物品混入你的牌堆",
+        "incineration_cible": "将{zone}{cartes}放回{deck}底部"
       },
       "self": {
         "transformation": "自身变形",
@@ -1098,6 +1099,28 @@
         "times": "{x} 次，每次 1 点 {unit}，每次随机",
         "target_both": "对一个随机 {side} 目标（单位或英雄）",
         "target_unit": "对一个随机 {side} 单位"
+      },
+      "incin": {
+        "zone_ally": "你墓地中的",
+        "zone_enemy": "对手墓地中的",
+        "zone_any": "某个墓地中的",
+        "deck_ally": "你的牌库",
+        "deck_enemy": "对手的牌库",
+        "deck_any": "其所有者的牌库",
+        "card_all": "所有卡牌",
+        "card_one": "一张卡牌",
+        "card_n": "{n} 张卡牌",
+        "unit_all": "所有单位",
+        "unit_one": "一个单位",
+        "unit_n": "{n} 个单位",
+        "spell_all": "所有行动",
+        "spell_one": "一张行动",
+        "spell_n": "{n} 张行动",
+        "item_all": "所有物品",
+        "item_one": "一件物品",
+        "item_n": "{n} 件物品",
+        "zone_both": "双方的墓地",
+        "deck_both": "其所有者的牌组"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
         "domination": "在场地上限内，获得对{cibles}的控制权。",
         "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
-        "siphon": "对{cibles}造成X点伤害，并根据每个受创生物为您的英雄回复X点生命值。",
+        "siphon": "对{cibles}造成 X 点伤害,并为你的英雄每个被命中的单位恢复 X 点生命。",
         "entrave": "使{cibles}麻痹X回合。",
         "execution": "消灭{cibles}。",
         "silence": "移除{cibles}的所有关键词，并将其属性恢复为初始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
-        "guerison": "为{cibles}恢复X点生命值。"
+        "guerison": "为{cibles}恢复X点生命值。",
+        "benediction": "完全治疗{cibles}。"
       },
       "creature": {
         "impact": "对{cibles}造成X点伤害。",
@@ -2109,14 +2133,18 @@
         "domination": "在场地上限内，获得对{cibles}的控制权。",
         "benediction": "完全治愈{cibles}。",
         "malediction": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
-        "tactique": "从其永久技能中随机抽取X项，永久赋予{cibles}（每个生物各抽取一次）。",
+        "tactique": "永久将 X 项随机抽取的常驻能力赋予{cibles}(每个单位各抽取一次)。",
         "vampirisme": "从{cibles}处窃取X点生命值，并将其加到此单位的生命值上。",
-        "devoration": "消灭{cibles}；此生物永久获得它们的攻击力和生命值。"
+        "devoration": "消灭{cibles};该单位永久获得它们的攻击力和生命值。",
+        "renforcement": "永久给予所有其他友方单位 +X 攻击力和 +Y 生命值。",
+        "discipline": "如果你场上所有单位的费用与其奇偶性相同,则永久给予所有其他友方单位+X/+Y。",
+        "renforcement_soi": "永久获得 +X 攻击力和 +Y 生命值。",
+        "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。"
       },
       "cibles": {
-        "all_enemies": "所有敌方生物",
-        "all_allies": "所有友方生物",
-        "all": "双方所有生物"
+        "all_enemies": "所有敌方单位",
+        "all_allies": "所有友方单位",
+        "all": "双方所有单位"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "所有敌方",
     "target_scope_all_allies": "所有我方",
     "target_scope_all": "所有（双方）",
-    "target_scope_hint_all_enemies": "对所有敌方随从造成效果，而非选定的单个目标（不含英雄和物品）。",
-    "target_scope_hint_all_allies": "对所有我方随从造成效果，而非选定的单个目标（不含英雄和物品）。",
-    "target_scope_hint_all": "对双方所有随从造成效果，而非选定的单个目标（不含英雄和物品）。",
+    "target_scope_hint_all_enemies": "攻击所有敌方单位,而非选定的单个目标(不包括英雄和物品)。",
+    "target_scope_hint_all_allies": "攻击所有友方单位,而非选定的单个目标(不包括英雄和物品)。",
+    "target_scope_hint_all": "攻击双方所有单位,而非选定的单个目标(不包括英雄和物品)。",
     "content_deal_damage": "造成伤害",
     "content_heal": "治疗",
     "content_buff": "增益 +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "延迟X（之后第X个回合开始时）",
     "retard_turns_title": "延迟：触发前的回合数",
     "retard_spell_title": "延迟：效果在施法者之后第X个回合开始时触发，届时选择目标",
-    "label_retard": "延迟"
+    "label_retard": "延迟",
+    "target_scope_self": "自身"
   },
   "game": {
     "hero_power_grant": "赋予一个生物{kw}",

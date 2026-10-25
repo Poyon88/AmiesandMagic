@@ -11,9 +11,14 @@
  *
  *  `color` = la couleur de la CAPACITÉ (celle de son déclencheur, blanc pour
  *  un passif) : le « A » fait partie de l'icône, il n'a pas sa propre teinte. */
-export default function AllAlliesMarker({ size = 9, color, label = "Tous les alliés" }: {
+export default function AllAlliesMarker({ size = 9, color, label = "Tous les alliés", letter = "A" }: {
   size?: number;
   color?: string | null;
+  /** « S » (Self / Soi) : la capacité s'applique à la créature ELLE-MÊME au
+   *  lieu d'une autre unité — Renforcement / Discipline réglés sur « elle-même »,
+   *  effet composé visant « soi-même ». Même coin que le « A » : les deux
+   *  réglages s'excluent, ils ne se superposent jamais. */
+  letter?: "A" | "S";
   /** Portée « toutes » d'une capacité ciblée : le « A » vaut aussi pour les
    *  ennemies ou les deux camps, seul le libellé lu change. */
   label?: string;
@@ -36,7 +41,7 @@ export default function AllAlliesMarker({ size = 9, color, label = "Tous les all
         textShadow: "0 0 1px #000, 0 0 1.5px #000, 0 0 3px rgba(0,0,0,0.7)",
       }}
     >
-      A
+      {letter}
     </span>
   );
 }

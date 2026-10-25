@@ -424,11 +424,11 @@
       },
       "renforcement": {
         "label": "Potenziamento +X/+Y",
-        "desc": "Guadagna +X ATK e +Y PV in modo permanente."
+        "desc": "Conferisce in modo permanente +X ATK e +Y PV a un'altra unità alleata bersaglio."
       },
       "discipline": {
         "label": "Disciplina +X/+Y",
-        "desc": "Se tutte le vostre creature in gioco hanno un costo della stessa parità del suo, guadagna +X ATT e +Y PV in modo permanente."
+        "desc": "Se tutti i costi della tua plancia hanno la stessa parità del suo, dona +X/+Y permanente a un'altra unità alleata bersaglio."
       },
       "esprit_de_corps": {
         "label": "Spirito di corpo",
@@ -824,7 +824,7 @@
       },
       "benediction": {
         "label": "Benedizione",
-        "desc": "Cura completamente l'unità bersaglio."
+        "desc": "Cura completamente un'unità alleata bersaglio."
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "forge": "mescola nel tuo mazzo un oggetto neutrale o del tuo allineamento{filter} di costo massimo {x}, a caso",
         "forge_range": "mescola nel tuo mazzo un oggetto neutrale o del tuo allineamento{filter} di costo da {min} a {x}, a caso",
         "forge_any": "mescola nel tuo mazzo un oggetto neutrale o del tuo allineamento{filter}, a caso",
-        "forge_any_min": "mescola nel tuo mazzo un oggetto neutrale o del tuo allineamento{filter} di costo minimo {min}, a caso"
+        "forge_any_min": "mescola nel tuo mazzo un oggetto neutrale o del tuo allineamento{filter} di costo minimo {min}, a caso",
+        "incineration_cible": "rimette {cartes} {zone} sotto {deck}"
       },
       "self": {
         "transformation": "si trasforma",
@@ -1098,6 +1099,28 @@
         "times": "{x} volte 1 {unit}, ogni volta",
         "target_both": "a un bersaglio {side} casuale (unità o eroe)",
         "target_unit": "a un'unità {side} casuale"
+      },
+      "incin": {
+        "zone_ally": "del tuo cimitero",
+        "zone_enemy": "del cimitero avversario",
+        "zone_any": "di un cimitero",
+        "deck_ally": "il tuo mazzo",
+        "deck_enemy": "il mazzo avversario",
+        "deck_any": "il mazzo del suo proprietario",
+        "card_all": "tutte le carte",
+        "card_one": "una carta",
+        "card_n": "{n} carte",
+        "unit_all": "tutte le unità",
+        "unit_one": "un'unità",
+        "unit_n": "{n} unità",
+        "spell_all": "tutte le azioni",
+        "spell_one": "un'azione",
+        "spell_n": "{n} azioni",
+        "item_all": "tutti gli oggetti",
+        "item_one": "un oggetto",
+        "item_n": "{n} oggetti",
+        "zone_both": "dei due cimiteri",
+        "deck_both": "il mazzo del loro proprietario"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
         "domination": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
         "poison": "Avvelena {cibles}: perdono 1 PV a ogni fine turno.",
-        "siphon": "Infligge X danni a {cibles} e cura il tuo eroe di X per ogni creatura colpita.",
+        "siphon": "Infligge X danni a {cibles} e cura il tuo eroe di X per ogni unità colpita.",
         "entrave": "Paralizza {cibles} per X turno/i.",
         "execution": "Distrugge {cibles}.",
         "silence": "Rimuove tutte le parole chiave da {cibles} e riporta le loro statistiche al valore originale.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se tutte le tue creature in gioco hanno un costo della stessa parità di quello di questa azione, +X/+Y a {cibles}.",
-        "guerison": "Ripristina X PV a {cibles}."
+        "guerison": "Ripristina X PV a {cibles}.",
+        "benediction": "Cura completamente {cibles}."
       },
       "creature": {
         "impact": "Infligge X danni a {cibles}.",
@@ -2109,14 +2133,18 @@
         "domination": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
         "benediction": "Cura completamente {cibles}.",
         "malediction": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
-        "tactique": "Assegna definitivamente X delle sue capacità permanenti, estratte a caso, a {cibles} (un'estrazione per creatura).",
+        "tactique": "Assegna definitivamente X delle sue abilità permanenti, scelte a caso, a {cibles} (un'estrazione per unità).",
         "vampirisme": "Ruba X PV a {cibles} e li aggiunge ai PV di questa unità.",
-        "devoration": "Distrugge {cibles}; questa creatura ottiene definitivamente il loro ATT e i loro PV."
+        "devoration": "Distrugge {cibles}; questa unità ottiene definitivamente il loro ATT e i loro PV.",
+        "renforcement": "Conferisce +X ATK e +Y PV in modo permanente a tutte le altre unità alleate.",
+        "discipline": "Se tutti i costi della tua plancia hanno la stessa parità del suo, dona +X/+Y permanente a tutte le altre unità alleate.",
+        "renforcement_soi": "Ottiene +X ATK e +Y PV in modo permanente.",
+        "discipline_soi": "Se tutte le tue creature in gioco hanno un costo della stessa parità del suo, ottiene +X ATK e +Y PV in modo permanente."
       },
       "cibles": {
-        "all_enemies": "tutte le creature nemiche",
-        "all_allies": "tutte le creature alleate",
-        "all": "tutte le creature di entrambi gli schieramenti"
+        "all_enemies": "tutte le unità nemiche",
+        "all_allies": "tutte le unità alleate",
+        "all": "tutte le unità di entrambi gli schieramenti"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "Tutte nemiche",
     "target_scope_all_allies": "Tutte alleate",
     "target_scope_all": "Tutte (2 schieramenti)",
-    "target_scope_hint_all_enemies": "Colpisce tutte le creature nemiche invece di un bersaglio scelto (né eroi né oggetti).",
-    "target_scope_hint_all_allies": "Colpisce tutte le creature alleate invece di un bersaglio scelto (né eroi né oggetti).",
-    "target_scope_hint_all": "Colpisce tutte le creature di entrambi gli schieramenti invece di un bersaglio scelto (né eroi né oggetti).",
+    "target_scope_hint_all_enemies": "Colpisce tutte le unità nemiche invece di un bersaglio scelto (né eroi né oggetti).",
+    "target_scope_hint_all_allies": "Colpisce tutte le unità alleate invece di un bersaglio scelto (né eroi né oggetti).",
+    "target_scope_hint_all": "Colpisce tutte le unità di entrambi gli schieramenti invece di un bersaglio scelto (né eroi né oggetti).",
     "content_deal_damage": "Infliggere danni",
     "content_heal": "Curare",
     "content_buff": "Buff +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "Ritardo X (inizio del X-esimo turno successivo)",
     "retard_turns_title": "Ritardo: numero di turni prima dell'attivazione",
     "retard_spell_title": "Ritardo: l'effetto si attiva all'inizio del X-esimo turno successivo di chi lo lancia, bersaglio scelto in quel momento",
-    "label_retard": "Ritardo"
+    "label_retard": "Ritardo",
+    "target_scope_self": "Se stessa"
   },
   "game": {
     "hero_power_grant": "Conferisce {kw} a una creatura",

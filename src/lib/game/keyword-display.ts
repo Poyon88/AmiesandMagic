@@ -9,7 +9,7 @@ import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, 
 import { SINGULIER_COLOR } from "./singulier";
 import { getClanForm } from "@/lib/card-engine/race-forms";
 import type { TargetScope } from "./types";
-import { scopedDescTemplate } from "./target-scope";
+import { recipientDescTemplate, scopedDescTemplate } from "./target-scope";
 import {
   convocationPrefix,
   formatConvocationToken,
@@ -198,7 +198,9 @@ export function describeKeyword(
     && (kw === "dechainement" ? (ctx.instance != null && ctx.instance.y == null) : ctx.x == null);
   // Portée « toutes » : variante de la phrase qui parle de toutes les créatures
   // du camp au lieu d'une cible (cf. target-scope.ts).
-  const tmpl = scopedDescTemplate("creature", kw, ctx.instance?.targetScope, t) ?? template(kw, t, coutLibre);
+  const tmpl = scopedDescTemplate("creature", kw, ctx.instance?.targetScope, t)
+    ?? recipientDescTemplate(kw, ctx.instance?.recipient, t)
+    ?? template(kw, t, coutLibre);
   if (!tmpl) return null;
   const s = resolveMarkers(tmpl, kw, ctx, t, TOKEN_RESOLVERS);
 

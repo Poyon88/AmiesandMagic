@@ -21,7 +21,7 @@ import ComposedMarker from '@/components/cards/ComposedMarker';
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import type { Capability } from '@/lib/game/types';
 import type { SpellKeywordInstance, TokenTemplate } from '@/lib/game/types';
-import { TARGET_SCOPE_FR, composedScope, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { SOI_ARIA_FR, TARGET_SCOPE_FR, composedScope, composedSoi, creatureScopes, porteeValide, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
@@ -175,6 +175,8 @@ interface CardData {
   // Unité : portée « toutes » d'une capacité CIBLÉE (FR-label keyed), cf.
   // lib/game/target-scope.ts. Peint le « A » et la note de portée.
   keywordTargetScope?: Record<string, TargetScope>;
+  /** Renforcement / Discipline donnés à elle-même (libellé → "self"). */
+  keywordRecipient?: Record<string, "self">;
   /** Neutralisation : id moteur de la capacité visée (icône barrée). */
   keywordNeutralise?: string;
   ability: string;
@@ -237,6 +239,9 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
       // Unité : portée « toutes » → variante de la description.
       : card?.keywordTargetScope?.[kw]
       ? ({ targetScope: card.keywordTargetScope[kw] } as const)
+      // Renforcement / Discipline donnés à elle-même (marqueur « S »).
+      : card?.keywordRecipient?.[kw]
+      ? ({ recipient: card.keywordRecipient[kw] } as const)
       : null,
     x: card?.keywordXValues?.[kw] ?? null,
     // Sélection au hasard : la description peint « coût ≤ 1 à X ».
@@ -465,6 +470,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15 * s, height: 15 * s, flexShrink: 0 }}>
                     <KeywordIcon {...forgeIcon(kw)} size={15 * s} fill />
                     {portee && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(portee)} />}
+                    {!portee && grantScope == null && card!.keywordRecipient?.[kw] === "self" && <AllAlliesMarker letter="S" size={7 * s} color={"#fff"} label={SOI_ARIA_FR} />}
                   </span>
                   {badgeText != null && (
                     <span style={{
@@ -539,6 +545,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                     <span style={{ display: "inline-flex", lineHeight: 0 }}><KeywordIcon symbol={ic.symbol} keyword={ic.keyword} mode={cmode} singulier={cap.singulier} /></span>
                     <ComposedMarker mode={cmode} size={8 * s} />
                     {composedScope(cap) && <AllAlliesMarker size={7 * s} color="#fff" label={scopeAriaLabel(composedScope(cap)!)} />}
+                    {composedSoi(cap) && <AllAlliesMarker letter="S" size={7 * s} color={"#fff"} label={SOI_ARIA_FR} />}
                   </span>
                   {val && <span style={{ fontSize: 10 * s, fontWeight: 900, color: keywordModeColor(composedTriggerMode(cap)) ?? "#fff", fontFamily: "'Cinzel',serif", textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`, marginLeft: -3 * s }}>{val}</span>}
                 </div>

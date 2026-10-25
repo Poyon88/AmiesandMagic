@@ -16,7 +16,7 @@ import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { SEUIL_DECK_THRESHOLD } from "@/lib/game/constants";
 import type { Card, Capability, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, TokenTemplate } from "@/lib/game/types";
-import ComposedEffectsEditor, { ScopeButtons } from "@/components/card-forge/ComposedEffectsEditor";
+import ComposedEffectsEditor, { BONUS_BENEFICIAIRE_FORGE, RecipientButtons, ScopeButtons } from "@/components/card-forge/ComposedEffectsEditor";
 import { useTranslations } from "next-intl";
 import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
@@ -226,6 +226,9 @@ export default function CardEditor() {
   const [rechercheKw, setRechercheKw] = useState("");
   // Unité : portée « toutes » d'une capacité CIBLÉE (id moteur → portée).
   const [keywordTargetScope, setKeywordTargetScope] = useState<Record<string, TargetScope>>({});
+  // Unité : Renforcement / Discipline donnés à ELLE-MÊME (id moteur → "self").
+  // Absent = à une autre unité désignée, comme le sort.
+  const [keywordRecipient, setKeywordRecipient] = useState<Record<string, "self">>({});
   // Neutralisation : capacité rendue muette chez l'ennemi (grantAbilityId).
   const [neutraliseAbilityId, setNeutraliseAbilityId] = useState<string>("");
 
@@ -496,6 +499,7 @@ export default function CardEditor() {
     const planchers: Record<string, number> = {};
     const grantScopes: Record<string, "all_allies"> = {};
     const targetScopes: Record<string, TargetScope> = {};
+    const recipients: Record<string, "self"> = {};
     let neutraliseLoaded = "";
     let dcRandomYLoaded = false;
     let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
@@ -516,6 +520,7 @@ export default function CardEditor() {
       if (inst.x != null) parsedX[inst.id] = inst.x;
       if (inst.grantScope === "all_allies") grantScopes[inst.id] = "all_allies";
       if (inst.targetScope) targetScopes[inst.id] = inst.targetScope;
+      if (inst.recipient === "self") recipients[inst.id] = "self";
       if (inst.id === "neutralisation") neutraliseLoaded = inst.grantAbilityId ?? "";
       if (inst.id === "renforcement_multiple") {
         rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
@@ -555,6 +560,7 @@ export default function CardEditor() {
     setKeywordXValues(parsedX);
     setKeywordGrantScope(grantScopes);
     setKeywordTargetScope(targetScopes);
+    setKeywordRecipient(recipients);
     setNeutraliseAbilityId(neutraliseLoaded);
     setComposedCaps((card.capabilities ?? []).filter((c) => c.composed));
 
@@ -879,7 +885,10 @@ export default function CardEditor() {
         .map((inst, i): KeywordInstance | null => {
           const id = activeKeywords[i];
           const scope = isSpellCard ? undefined : porteeValide(keywordTargetScope[id], creatureScopes(id));
-          return scope ? { ...(inst ?? { id: id as Keyword }), targetScope: scope } : inst;
+          if (scope) return { ...(inst ?? { id: id as Keyword }), targetScope: scope };
+          // Renforcement / Discipline donnés à elle-même (la portée prime).
+          if (!isSpellCard && BONUS_BENEFICIAIRE_FORGE.has(id) && keywordRecipient[id] === "self") return { ...(inst ?? { id: id as Keyword }), recipient: "self" };
+          return inst;
         })
         .map((inst, i): KeywordInstance | null => {
           const id = activeKeywords[i];
@@ -980,7 +989,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -2314,6 +2323,16 @@ export default function CardEditor() {
                     {ciblees.map(kw => (
                       <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{KEYWORD_LABELS[kw as Keyword] ?? kw}</span>
+                        {BONUS_BENEFICIAIRE_FORGE.has(kw) ? (
+                          <RecipientButtons
+                            value={keywordTargetScope[kw] === "all_allies" ? "all_allies" : keywordRecipient[kw] === "self" ? "self" : "target"}
+                            onChange={(v) => {
+                              setKeywordTargetScope(prev => { const next = { ...prev }; if (v === "all_allies") next[kw] = "all_allies"; else delete next[kw]; return next; });
+                              setKeywordRecipient(prev => { const next = { ...prev }; if (v === "self") next[kw] = "self"; else delete next[kw]; return next; });
+                            }}
+                            tr={tForge}
+                          />
+                        ) : (
                         <ScopeButtons
                           value={porteeValide(keywordTargetScope[kw], creatureScopes(kw))}
                           options={creatureScopes(kw)}
@@ -2324,6 +2343,7 @@ export default function CardEditor() {
                           })}
                           tr={tForge}
                         />
+                        )}
                       </div>
                     ))}
                   </div>

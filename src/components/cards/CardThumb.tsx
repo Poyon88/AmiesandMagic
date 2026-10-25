@@ -25,7 +25,7 @@ import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, 
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import ComposedMarker from "@/components/cards/ComposedMarker";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
-import { composedScope, kwInstanceScope, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
+import { SOI_ARIA_FR, composedScope, composedSoi, kwInstanceScope, kwInstanceSoi, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
 
 /** Glyphe texte d'un coût additionnel — la vignette n'a pas la place d'une
@@ -84,6 +84,7 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
             <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
               <KeywordIcon {...keywordIconFor(kw, entry.instance)} size={box * 0.6} fill mode={mode} singulier={entry.singulier} light />
               {portee && <AllAlliesMarker size={box * 0.4} color={color} label={scopeAriaLabel(portee)} />}
+              {isCreature && kwInstanceSoi(instance) && <AllAlliesMarker letter="S" size={box * 0.4} color={color} label={SOI_ARIA_FR} />}
             </span>
             {val != null && <span style={{ ...badge, color: color ?? "#fff" }}>{val}</span>}
           </span>
@@ -112,6 +113,7 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
               <KeywordIcon symbol={ic.symbol} size={box * 0.6} keyword={ic.keyword} fill mode={cmode} singulier={cap.singulier} light />
               <ComposedMarker mode={cmode} size={box * 0.3} />
               {composedScope(cap) && <AllAlliesMarker size={box * 0.4} color={keywordModeColor(cmode)} label={scopeAriaLabel(composedScope(cap)!)} />}
+              {composedSoi(cap) && <AllAlliesMarker letter="S" size={box * 0.4} color={keywordModeColor(cmode)} label={SOI_ARIA_FR} />}
             </span>
             {val && <span style={{ ...badge, color: keywordModeColor(cmode) ?? "#fff" }}>{val}</span>}
           </span>

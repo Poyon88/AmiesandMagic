@@ -429,11 +429,11 @@
       },
       "renforcement": {
         "label": "Strengthen +X/+Y",
-        "desc": "Permanently gains +X ATK and +Y HP."
+        "desc": "Permanently gives +X ATK and +Y HP to another targeted allied unit."
       },
       "discipline": {
         "label": "Discipline +X/+Y",
-        "desc": "If all your creatures in play have a cost of the same parity as this one's, gains +X ATK and +Y HP permanently."
+        "desc": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to another targeted allied unit."
       },
       "esprit_de_corps": {
         "label": "Camaraderie",
@@ -824,7 +824,7 @@
       },
       "benediction": {
         "label": "Blessing",
-        "desc": "Fully heals the targeted unit."
+        "desc": "Fully heals a targeted allied unit."
       }
     },
     "composed": {
@@ -960,7 +960,8 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action"
+        "dechainement_one_any": "plays a random action",
+        "incineration_cible": "puts {cartes} {zone} under {deck}"
       },
       "self": {
         "transformation": "transforms",
@@ -1098,6 +1099,28 @@
         "times": "{x} times 1 {unit}, each time",
         "target_both": "to a random {side} target (unit or hero)",
         "target_unit": "to a random {side} unit"
+      },
+      "incin": {
+        "zone_ally": "from your graveyard",
+        "zone_enemy": "from the enemy graveyard",
+        "zone_any": "from a graveyard",
+        "deck_ally": "your deck",
+        "deck_enemy": "the enemy deck",
+        "deck_any": "its owner's deck",
+        "card_all": "all cards",
+        "card_one": "a card",
+        "card_n": "{n} cards",
+        "unit_all": "all units",
+        "unit_one": "a unit",
+        "unit_n": "{n} units",
+        "spell_all": "all actions",
+        "spell_one": "an action",
+        "spell_n": "{n} actions",
+        "item_all": "all items",
+        "item_one": "an item",
+        "item_n": "{n} items",
+        "zone_both": "both graveyards",
+        "deck_both": "their owner's deck"
       }
     },
     "factions": {
@@ -2092,13 +2115,14 @@
         "corruption": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
         "domination": "Takes control of {cibles}, up to the available slots.",
         "poison": "Poisons {cibles}: they lose 1 HP at the end of each turn.",
-        "siphon": "Deals X damage to {cibles} and heals your hero for X per creature hit.",
+        "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
         "execution": "Destroys {cibles}.",
         "silence": "Removes all keywords from {cibles} and restores their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
-        "guerison": "Restores X HP to {cibles}."
+        "guerison": "Restores X HP to {cibles}.",
+        "benediction": "Fully heals {cibles}."
       },
       "creature": {
         "impact": "Deals X damage to {cibles}.",
@@ -2109,14 +2133,18 @@
         "domination": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
         "malediction": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
-        "tactique": "Permanently assigns X of its permanent abilities, chosen at random, to {cibles} (one draw per creature).",
+        "tactique": "Permanently grants X of its permanent abilities, chosen at random, to {cibles} (one draw per unit).",
         "vampirisme": "Steals X HP from {cibles} and adds it to this unit's HP.",
-        "devoration": "Destroys {cibles}; this creature permanently gains their ATK and HP."
+        "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
+        "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
+        "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
+        "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
+        "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP."
       },
       "cibles": {
-        "all_enemies": "all enemy creatures",
-        "all_allies": "all allied creatures",
-        "all": "all creatures on both sides"
+        "all_enemies": "all enemy units",
+        "all_allies": "all allied units",
+        "all": "all units on both sides"
       }
     },
     "cost_help": {
@@ -2496,9 +2524,9 @@
     "target_scope_all_enemies": "All enemies",
     "target_scope_all_allies": "All allies",
     "target_scope_all": "All (both sides)",
-    "target_scope_hint_all_enemies": "Hits all enemy creatures instead of a chosen target (neither heroes nor Items).",
-    "target_scope_hint_all_allies": "Hits all allied creatures instead of a chosen target (neither heroes nor Items).",
-    "target_scope_hint_all": "Hits all creatures on both sides instead of a chosen target (neither heroes nor Items).",
+    "target_scope_hint_all_enemies": "Strikes all enemy units instead of a chosen target (no heroes or items).",
+    "target_scope_hint_all_allies": "Strikes all allied units instead of a chosen target (no heroes or items).",
+    "target_scope_hint_all": "Strikes all units on both sides instead of a chosen target (no heroes or items).",
     "content_deal_damage": "Deal damage",
     "content_heal": "Heal",
     "content_buff": "Buff +X/+Y",
@@ -2989,7 +3017,8 @@
     "trigger_on_delay": "Delay X (start of the X-th following turn)",
     "retard_turns_title": "Delay: number of turns before it triggers",
     "retard_spell_title": "Delay: the effect triggers at the start of the caster's X-th following turn, target chosen then",
-    "label_retard": "Delay"
+    "label_retard": "Delay",
+    "target_scope_self": "Itself"
   },
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",

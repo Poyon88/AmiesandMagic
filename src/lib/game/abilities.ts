@@ -242,7 +242,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     desc: "Soigne complètement l'unité ciblée.",
     applicable_to: ["creature", "spell"],
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
-    spell: { desc: "Soigne complètement une créature alliée ciblée.", params: [], needsTarget: true, targetType: "friendly_creature" },
+    spell: { desc: "Soigne complètement une unité alliée ciblée.", params: [], needsTarget: true, targetType: "friendly_creature" },
   },
   bravoure: {
     id: "bravoure", label: "Bravoure", symbol: "🦁",
@@ -1104,11 +1104,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   renforcement: {
     id: "renforcement", label: "Renforcement +X/+Y", symbol: "⬆️",
-    desc: "Action : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même.",
+    desc: "+X/+Y permanent à une autre unité alliée ciblée (une créature peut aussi se le donner à elle-même, ou à toutes les autres).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 8, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Gagne +X ATK et +Y PV de façon permanente.",
+      desc: "Donne +X ATK et +Y PV de façon permanente à une autre unité alliée ciblée.",
     },
     spell: { desc: "+X/+Y à une créature alliée ciblée.", params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature" },
   },
@@ -1129,13 +1129,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // puisqu'Entraide se recalcule sur le plateau courant.
   discipline: {
     id: "discipline", label: "Discipline +X/+Y", symbol: "🎖️",
-    desc: "Action : +X/+Y à une créature alliée. Créature : +X/+Y à elle-même. Uniquement si tous les coûts de votre plateau ont la même parité que le sien.",
+    desc: "+X/+Y permanent à une autre unité alliée ciblée (une créature peut aussi se le donner à elle-même, ou à toutes les autres). Uniquement si tous les coûts de votre plateau ont la même parité que le sien.",
     applicable_to: ["creature", "spell"],
     creature: {
       // ~⅔ de Renforcement (8 / +4) : même effet, mais sous une condition que
       // le plateau peut rompre à tout moment. À réajuster après essai.
       cost: 5, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+      // Tournure resserrée : la phrase complète dépassait 120 caractères. La
+      // variante « elle-même » (target-scope.ts) garde le texte d'origine.
+      desc: "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à une autre unité alliée ciblée.",
     },
     spell: {
       desc: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à une créature alliée ciblée.",

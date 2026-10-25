@@ -339,6 +339,13 @@ export interface KeywordInstance {
   /** Capacité CIBLÉE d'une créature (Impact, Affaiblissement…) : portée
    *  « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
   targetScope?: TargetScope;
+  /** RENFORCEMENT / DISCIPLINE d'une créature : à qui va le bonus. Absent ⇒
+   *  une AUTRE unité alliée désignée, comme la forme sort ; "self" ⇒ la
+   *  créature elle-même (marqueur « S » sur la carte — c'était le seul
+   *  comportement avant 2026-10-25, les cartes d'alors ont été migrées en
+   *  "self"). La portée « toutes » (`targetScope: "all_allies"`) le donne à
+   *  toutes les autres unités alliées et prime sur ce champ. */
+  recipient?: "self";
   /** Mot-clé "conferer" : id de l'ability conférée à la/aux cible(s).
    *  Mot-clé "invention" : capacité ajoutée à la MACHINE (optionnelle). */
   grantAbilityId?: string;
