@@ -226,6 +226,7 @@ export type SpellKeywordId =
   | "renforcement"
   | "discipline"
   | "guerison"
+  | "benediction"
   | "invocation"
   | "invocations_multiples"
   | "inspiration"

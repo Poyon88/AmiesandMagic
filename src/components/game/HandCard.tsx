@@ -995,6 +995,8 @@ function HandCard({
           largeur={W - 4}
           card={card}
           effectiveManaCost={effectiveManaCost}
+          onAwaken={onSuspendEveil && !isCostPaymentMode ? onSuspendEveil : undefined}
+          awakenTitle={t('eveil_suspend', { count: card.eveil_cost ?? 0 })}
           enJeu={{
             ...(porteDesStats ? {
               atk: displayAttack, hp: displayHealth,

@@ -821,6 +821,10 @@
         "label": "Forja X",
         "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente",
         "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente"
+      },
+      "benediction": {
+        "label": "Bênção",
+        "desc": "Cura completamente a unidade alvo."
       }
     },
     "composed": {

@@ -821,6 +821,10 @@
         "label": "Forge X",
         "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck",
         "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck"
+      },
+      "benediction": {
+        "label": "Segen",
+        "desc": "Heilt die Zieleinheit vollständig."
       }
     },
     "composed": {

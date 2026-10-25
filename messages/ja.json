@@ -821,6 +821,10 @@
         "label": "鍛造X",
         "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる",
         "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "対象のユニットを完全に回復する。"
       }
     },
     "composed": {

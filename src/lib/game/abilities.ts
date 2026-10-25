@@ -240,8 +240,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   benediction: {
     id: "benediction", label: "Bénédiction", symbol: "✝️",
     desc: "Soigne complètement l'unité ciblée.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
+    spell: { desc: "Soigne complètement une créature alliée ciblée.", params: [], needsTarget: true, targetType: "friendly_creature" },
   },
   bravoure: {
     id: "bravoure", label: "Bravoure", symbol: "🦁",

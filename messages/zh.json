@@ -821,6 +821,10 @@
         "label": "熔铸 X",
         "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆",
         "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "使目标单位完全恢复生命值。"
       }
     },
     "composed": {

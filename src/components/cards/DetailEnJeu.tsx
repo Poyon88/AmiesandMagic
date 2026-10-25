@@ -28,8 +28,12 @@ const KEYFRAMES = "@keyframes am-detail-en-jeu { from { opacity: 0 } to { opacit
 
 const ecart = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
 
-export default function DetailEnJeu({ visible, largeur, card, enJeu, effectiveManaCost, rayon = 10 }: {
+export default function DetailEnJeu({ visible, largeur, card, enJeu, effectiveManaCost, rayon = 10, onAwaken, awakenTitle }: {
   visible: boolean;
+  /** Écu d'Éveil cliquable (carte en main) — le bouton reste actif même dans
+   *  la copie agrandie, dont il réactive seul les pointeurs. */
+  onAwaken?: () => void;
+  awakenTitle?: string;
   /** Largeur intérieure de la carte hôte, en px CSS non zoomés. */
   largeur: number;
   card: Card;
@@ -93,7 +97,8 @@ export default function DetailEnJeu({ visible, largeur, card, enJeu, effectiveMa
 
   const carte = (zoom: number) => (
     <div style={{ zoom }}>
-      <GameCard card={card} size="md" showDetails disableHoverZoom enJeu={enJeu ?? {}} effectiveManaCost={effectiveManaCost} />
+      <GameCard card={card} size="md" showDetails disableHoverZoom enJeu={enJeu ?? {}} effectiveManaCost={effectiveManaCost}
+        onAwaken={onAwaken} awakenTitle={awakenTitle} />
     </div>
   );
 

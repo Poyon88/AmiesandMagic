@@ -821,6 +821,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
+      "benediction": {
+        "label": "Blessing",
+        "desc": "Fully heals the targeted unit."
       }
     },
     "composed": {

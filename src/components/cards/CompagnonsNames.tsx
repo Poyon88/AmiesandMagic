@@ -40,6 +40,20 @@ interface Props {
   nameOf?: (c: Card) => string;
 }
 
+/** Ramène l'aperçu dans l'écran : ancré au-dessus de la pastille, il sortait
+ *  par le haut (ou le côté) quand la pastille était haut placée — le bas de la
+ *  carte, ses caractéristiques comprises, restait alors caché. */
+function dansLEcran(el: HTMLDivElement | null) {
+  if (!el) return;
+  const MARGE = 8;
+  const r = el.getBoundingClientRect();
+  let dx = 0, dy = 0;
+  if (r.top < MARGE) dy = MARGE - r.top;
+  if (r.left < MARGE) dx = MARGE - r.left;
+  else if (r.right > window.innerWidth - MARGE) dx = window.innerWidth - MARGE - r.right;
+  if (dx || dy) el.style.translate = `${dx}px ${dy}px`;
+}
+
 export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", nameOf }: Props) {
   // Le hook est appelé inconditionnellement (règle des hooks) ; sans `ids` il
   // renvoie une liste vide et ne déclenche aucune requête.
@@ -118,10 +132,15 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
             left: ancre.x,
             top: ancre.y - 8,
             transform: "translate(-50%, -100%)",
-            zIndex: 200, // au-dessus des versos et des modales de choix
+            // Au-dessus des versos, des modales de choix ET du descriptif
+            // agrandi d'une carte en partie (DetailEnJeu, z 220) qui porte
+            // justement la pastille survolée.
+            zIndex: 240,
             pointerEvents: "none",
             filter: "drop-shadow(0 10px 26px rgba(0,0,0,0.75))",
           }}
+          key={survolee.id}
+          ref={dansLEcran}
         >
           {/* `showDetails` : c'est le VERSO qu'on veut montrer, pas l'illustration. */}
           <GameCard card={survolee} size="md" showDetails disableHoverZoom forceRarityFrame />

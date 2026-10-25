@@ -135,6 +135,10 @@ interface GameCardProps {
   /** Descriptif EN PARTIE : état courant (statuts, stats, X conférés) en plus,
    *  et sans les lignes de catalogue (set, date, faction, tirage). */
   enJeu?: CarteEnJeu;
+  /** Main en partie : l'écu d'Éveil devient le bouton « mettre en éveil »
+   *  (le descriptif recouvre la carte de main, dont l'écu est alors caché). */
+  onAwaken?: () => void;
+  awakenTitle?: string;
 }
 
 export default function GameCard({
@@ -155,6 +159,8 @@ export default function GameCard({
   forceRarityFrame = false,
   effectiveManaCost,
   enJeu,
+  onAwaken,
+  awakenTitle,
 }: GameCardProps) {
   const displayedManaCost = effectiveManaCost ?? card.mana_cost;
   const { localizeName, localizeFlavor } = useCardText();
@@ -390,6 +396,8 @@ export default function GameCard({
       <RightSlots
         awaken={awakenAffiche}
         cost={additionalCostOf(card, card.name)}
+        onAwaken={onAwaken}
+        awakenTitle={awakenTitle}
         after={count !== undefined ? (
           <div style={{
             width: "12cqw", height: "12cqw", borderRadius: "50%",

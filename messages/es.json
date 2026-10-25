@@ -821,6 +821,10 @@
         "label": "Forja X",
         "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar",
         "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar"
+      },
+      "benediction": {
+        "label": "Bendición",
+        "desc": "Cura completamente a la unidad objetivo."
       }
     },
     "composed": {

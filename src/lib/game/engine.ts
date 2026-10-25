@@ -7043,6 +7043,15 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "benediction": {
+        // Même effet que la capacité de créature : PV remis au maximum, poison
+        // retiré, sur une créature ALLIÉE ciblée.
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId);
+          if (target) { target.currentHealth = target.maxHealth; target.isPoisoned = false; }
+        }
+        break;
+      }
       case "poison": {
         // Spell-side Poison: tags the targeted enemy creature as
         // poisoned. The end-of-turn tick (see startTurn) deals the
