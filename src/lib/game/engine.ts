@@ -1417,6 +1417,26 @@ function porteMotCle(c: CardInstance, id: string): boolean {
   return getCapabilities(c.card).some((cap) => cap.abilityId === id || cap.abilityId === alias);
 }
 
+/** Contenus composés dont la cible peut viser des ACTIONS hors plateau (la
+ *  forge leur propose la case Action) : une entité « unit » sans nature y vaut
+ *  unités + actions. Miroir de ACTION_TARGET_CONTENTS côté forge. */
+const CONTENUS_CIBLANT_ACTIONS: ReadonlySet<string> = new Set(["rappel", "incineration"]);
+
+/** Cible EFFECTIVE d'un effet composé. Hors plateau (main, deck, cimetière),
+ *  une entité « unit » sans nature ramène toutes les cartes non-objets, actions
+ *  comprises — voulu pour Rappel et Incinération, faux pour tous les autres
+ *  contenus, où la forge n'offre que la case Unité : « Consécration des armes »
+ *  conférait Pureté +5/+5 aux actions du deck. Ces contenus-là ne visent donc
+ *  que les créatures. */
+function cibleComposee(
+  composed: import("./types").ComposedEffect,
+): import("./types").TargetSpec | undefined {
+  const t = composed.target;
+  if (!t || t.cardKind || CONTENUS_CIBLANT_ACTIONS.has(composed.content)) return t;
+  if (t.location === "board" || !visesUnites(t.entity)) return t;
+  return { ...t, cardKind: "creature" };
+}
+
 function composedTargetPool(
   spec: import("./types").TargetSpec,
   owner: PlayerState,
@@ -1840,12 +1860,13 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   // source a pu quitter le plateau entre-temps.
   if (trigger.frameId) {
     const frame = frameEnAttente(state, trigger.frameId);
-    const spec = frame?.composed?.target;
+    const spec = frame?.composed ? cibleComposee(frame.composed) : undefined;
     return spec ? composedChoiceTargetIds(spec, controller, other, frame!.trigger === "spell_resolution") : [];
   }
   // EMBLÈME : pas de source en jeu, la spec vient de l'emblème lui-même.
   if (trigger.emblemIndex != null) {
-    const spec = (controller.emblems ?? [])[trigger.emblemIndex]?.composed?.target;
+    const emb = (controller.emblems ?? [])[trigger.emblemIndex]?.composed;
+    const spec = emb ? cibleComposee(emb) : undefined;
     return spec ? composedTargetIds(spec, controller, other) : [];
   }
   // SORT RETARDÉ : les cibles de son premier créneau, vues du lanceur.
@@ -1858,7 +1879,7 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   const source = controller.board.find(c => c.instanceId === trigger.sourceInstanceId);
   if (!source) return [];
   const cap = getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed);
-  const spec = cap?.composed?.target;
+  const spec = cap?.composed ? cibleComposee(cap.composed) : undefined;
   if (!spec) return [];
   return composedTargetIds(spec, controller, other);
 }
@@ -2371,7 +2392,7 @@ function resolveComposedEffect(
     default: break;
   }
 
-  const target = composed.target;
+  const target = cibleComposee(composed);
   if (!target) return;
 
   // "self" : la créature source elle-même — déterministe, ni pool ni choix.
@@ -9707,7 +9728,7 @@ function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
   const owner = state.players.find(p => p.id === frame.ownerId);
   const opponent = state.players.find(p => p.id !== frame.ownerId);
   if (!owner || !opponent) return false;
-  return composedChoiceTargetIds(frame.composed.target, owner, opponent, frame.trigger === "spell_resolution").length > 0;
+  return composedChoiceTargetIds(cibleComposee(frame.composed)!, owner, opponent, frame.trigger === "spell_resolution").length > 0;
 }
 
 /** Contenus composés « auto-suppression » : sautés en mode valeur (Déclenchement

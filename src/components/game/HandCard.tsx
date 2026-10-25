@@ -10,7 +10,7 @@ import type { CardInstance } from "@/lib/game/types";
 import { useGameStore } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { REPLI_TEINTE } from "@/lib/game/repli-theme";
-import { buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeursAffichees, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
@@ -887,8 +887,12 @@ function HandCard({
             {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
               return buildKeywordDisplayEntries(card)
                 .filter((e) => !isCreatureKwShadowedBySpell(e.kw, card.spell_keywords))
-                .map((entry, idx) => {
-                  const { kw, x, mode } = entry;
+                .map((rawEntry, idx) => {
+                  const { kw, mode } = rawEntry;
+                  // Dons reçus en main ou au deck (Pureté conférée…) : X/Y sur l'unité.
+                  const v = valeursAffichees(kw, rawEntry.x, rawEntry.instance, cardInstance.grantedKeywordX, cardInstance.grantedKeywordY);
+                  const x = v.x;
+                  const entry = { ...rawEntry, instance: v.instance };
                   const hasImg = !!iconOverrides[keywordIconFor(kw, entry.instance).keyword];
                   const modeColor = keywordModeColor(mode);
                   // On a spell, keywords are CONFERRED — "all allies" gets a
@@ -1006,6 +1010,8 @@ function HandCard({
               hpTone: toneFor(displayHealth, card.health ?? 0),
             } : null),
             espritCount: espritCount ?? undefined,
+            grantedKeywordX: cardInstance.grantedKeywordX,
+            grantedKeywordY: cardInstance.grantedKeywordY,
           }}
         />
         </div>{/* close clip-wrapper */}

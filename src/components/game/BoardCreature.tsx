@@ -9,7 +9,7 @@ import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
 import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
-import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeursAffichees, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
 import { OBJET_TEINTE, OBJET_RGB, OBJET_GLYPHE } from "@/lib/game/objet-theme";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -947,10 +947,11 @@ function BoardCreature({
         {/* Keywords + Stats — single row */}
         <div style={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
           {(card.keywords.length > 0 || (card.keyword_instances?.length ?? 0) > 0) && (() => {
-            const grantedX = creature.grantedKeywordX ?? {};
-            return buildKeywordDisplayEntries(card).map((entry, idx) => {
-              const { kw, mode } = entry;
-              const x = entry.x ?? grantedX[kw];
+            return buildKeywordDisplayEntries(card).map((rawEntry, idx) => {
+              const { kw, mode } = rawEntry;
+              const v = valeursAffichees(kw, rawEntry.x, rawEntry.instance, creature.grantedKeywordX, creature.grantedKeywordY);
+              const x = v.x;
+              const entry = { ...rawEntry, instance: v.instance };
               const hasImg = !!iconOverrides[keywordIconFor(kw, entry.instance).keyword];
               const modeColor = keywordModeColor(mode);
               const tint = modeColor ?? accentColor;
@@ -1024,6 +1025,7 @@ function BoardCreature({
           hpTone: isDamaged ? "debuff" : isBuffedHp ? "buff" : "neutral",
           statuts: statutsEnJeu(),
           grantedKeywordX: creature.grantedKeywordX ?? undefined,
+          grantedKeywordY: creature.grantedKeywordY ?? undefined,
           neutralises: neutralisedIds(creature),
           espritCount: espritCount ?? undefined,
           apprentissage: creature.apprentissageSpell?.card ?? null,

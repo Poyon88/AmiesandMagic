@@ -52,7 +52,7 @@ function loadSetRegistry(): Promise<CardSet[]> {
     });
   return _setRegistryPromise;
 }
-import { KEYWORD_SYMBOLS as keywordSymbols, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
+import { KEYWORD_SYMBOLS as keywordSymbols, cleanEffectText, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, applyKeywordValueToLabel, valeursAffichees, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -88,6 +88,8 @@ export interface CarteEnJeu {
   statuts?: StatutEnJeu[];
   /** X conféré en jeu à une capacité qui n'en portait pas sur la carte. */
   grantedKeywordX?: Record<string, number>;
+  /** Y conféré en jeu (second membre des paires +X/+Y). */
+  grantedKeywordY?: Record<string, number>;
   /** Capacités neutralisées : icône barrée. */
   neutralises?: Set<string>;
   espritCount?: number;
@@ -655,8 +657,8 @@ export default function GameCard({
           return (
           <div style={{ display: "contents" }}>
             {entries.map((entry, idx) => {
-              const { kw, mode, instance } = entry;
-              const x = entry.x ?? enJeu?.grantedKeywordX?.[kw];
+              const { kw, mode } = entry;
+              const { x, instance } = valeursAffichees(kw, entry.x, entry.instance, enJeu?.grantedKeywordX, enJeu?.grantedKeywordY);
               const ctx = { card, instance, x, tokens: effectiveTokens, espritCount: enJeu?.espritCount };
               const label = vocab.keywordLabelFor(kw, ctx);
               // Plus d'annotation de déclencheur (« · fin du tour »…) dans le label :

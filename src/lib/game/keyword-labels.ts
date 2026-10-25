@@ -588,6 +588,24 @@ export function keywordBadgeValue(
   return `${sign}${x ?? inst?.x ?? 0}/${sign}${inst?.y ?? 0}`;
 }
 
+/** Valeurs à PEINDRE pour une capacité, dons compris. Une capacité reçue par
+ *  un don (sort, effet composé, pouvoir) n'a souvent pas d'instance sur la
+ *  carte : son X et son Y vivent dans `grantedKeywordX/Y` de l'unité. Sans
+ *  eux, « Pureté +5/+5 » conférée s'affichait « +0/+0 » en main et « +5/+0 »
+ *  sur le plateau. La valeur écrite sur la carte reste prioritaire. */
+export function valeursAffichees(
+  kw: Keyword,
+  x: number | undefined,
+  inst: KeywordInstance | undefined,
+  grantedX?: Record<string, number>,
+  grantedY?: Record<string, number>,
+): { x: number | undefined; instance: KeywordInstance | undefined } {
+  const xx = x ?? grantedX?.[kw];
+  const y = grantedY?.[kw];
+  if (y == null || inst?.y != null) return { x: xx, instance: inst };
+  return { x: xx, instance: { ...(inst ?? { id: kw }), y } as KeywordInstance };
+}
+
 /** Injecte la valeur dans un libellé DÉJÀ résolu/localisé (les appelants passent
  *  par la couche `vocab`, qu'il ne faut pas court-circuiter) : « Gloire +2/+1 »,
  *  « Carnage 3 », « Provocation ».
