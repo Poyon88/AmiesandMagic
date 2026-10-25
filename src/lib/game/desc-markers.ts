@@ -94,13 +94,6 @@ export const MARKERS_FR: Record<string, string> = {
   "lycanthrope": "un token X/X",
   "ability": "une capacité",
   "scope": "à une unité alliée (ou à toutes)",
-  // Portée d'un Renforcement multiple : clan, race, ou rien (= toutes).
-  // L'espace de tête vit DANS le fragment : la portée « toutes » est vide, et
-  // un espace figé dans le gabarit laisserait « à vos créatures .ature ».
-  "rm_scope": " de la race ou du clan choisi",
-  "rm_scope_race": " de race {v}",
-  "rm_scope_clan": " du clan {v}",
-  "rm_scope_all": "",
   "scope_target": "à une unité alliée",
   // Esprit de corps EN PARTIE : phrase entièrement recomposée (et non un
   // fragment inséré), pour que le joueur lise le total sans avoir à le
@@ -166,7 +159,7 @@ export function singulierLabel(t?: SafeT): string {
 
 // Race ciblée par CE mot-clé. Priorité à l'instance (Appel Suprême, Sélection
 // stockent leur cible sur l'instance), puis au champ dédié d'Entraide, puis à
-// la race de la carte elle-même (Loyauté, Martyr…).
+// la race de la carte elle-même (Loyauté, Totem…).
 function targetRace(kw: string, ctx: MarkerCtx): string | null | undefined {
   if (kw === "entraide") return ctx.card?.entraide_race ?? ctx.instance?.race;
   return ctx.instance?.race ?? ctx.card?.race;
@@ -245,15 +238,6 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
   // Hommes-Bêtes) ». Les coûts identiques sont groupés, comme Convocations
   // multiples groupe les tokens identiques. Sans liste saisie, on retombe sur
   // le repli générique.
-  // Renforcement multiple : « de race X », « du clan Y », ou RIEN quand aucune
-  // restriction n'est saisie — le bonus vise alors toutes vos créatures.
-  rm_scope: (_kw, ctx, t) => {
-    const clan = ctx.instance?.clan;
-    if (clan) return (marker("rm_scope_clan", t) ?? "").replace(/\{v\}/g, clan);
-    const race = ctx.instance?.race;
-    if (race) return (marker("rm_scope_race", t) ?? "").replace(/\{v\}/g, race);
-    return marker("rm_scope_all", t) ?? "";
-  },
   invocations: (_kw, ctx, t) => {
     const list = (ctx.instance?.costs ?? []).filter((n) => typeof n === "number" && n > 0);
     if (list.length === 0) return null;

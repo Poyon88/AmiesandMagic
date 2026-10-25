@@ -344,10 +344,6 @@
         "label": "Ciclo eterno",
         "desc": "Adicione uma cópia desta carta ao seu deck; se ela for comprada, coloque-a diretamente em jogo."
       },
-      "martyr": {
-        "label": "Mártir",
-        "desc": "+1/+1 permanente aos seus {race_pl} em jogo."
-      },
       "instinct_de_meute": {
         "label": "Instinto de matilha X",
         "desc": "+X/+X se um aliado {faction_de} morreu neste turno."
@@ -386,6 +382,11 @@
         "label": "Favor X",
         "desc": "Adiciona à mão uma carta comum {alignment} de custo X, aleatoriamente.",
         "desc_any": "Adiciona à mão uma comum {alignment}, aleatoriamente."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente.",
+        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente."
       },
       "selection_magique": {
         "label": "Seleção Mágica X",
@@ -503,10 +504,6 @@
         "label": "Reviravolta",
         "desc": "Devolve uma unidade alvo à mão de seu proprietário original."
       },
-      "renforcement_multiple": {
-        "label": "Reforço Múltiplo",
-        "desc": "+X/+Y às suas criaturas{rm_scope}."
-      },
       "entrainement": {
         "label": "Treinamento X",
         "desc": "+X/+X às suas criaturas {faction_de} na mão."
@@ -551,11 +548,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
-      },
-      "forge": {
-        "label": "Forja X",
-        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente.",
-        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente."
       }
     },
     "spell_keywords": {
@@ -570,6 +562,10 @@
       "poison": {
         "label": "Veneno",
         "desc": "As unidades feridas perdem 1 PV por turno."
+      },
+      "benediction": {
+        "label": "Bênção",
+        "desc": "Cura completamente uma unidade aliada alvo."
       },
       "pillage": {
         "label": "Pilhagem X",
@@ -642,6 +638,11 @@
         "label": "Seleção X",
         "desc": "Revela 3 comuns {alignment} de custo X; adicione uma à mão",
         "desc_any": "Revela 3 comuns {alignment}; adicione uma à mão"
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente",
+        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente"
       },
       "faveur": {
         "label": "Favor X",
@@ -769,10 +770,6 @@
         "label": "Retorno",
         "desc": "Devolve uma unidade ou objeto alvo à mão do seu dono original."
       },
-      "renforcement_multiple": {
-        "label": "Reforço Múltiplo",
-        "desc": "+X/+Y às suas criaturas{rm_scope}."
-      },
       "entrainement": {
         "label": "Treinamento X",
         "desc": "+X/+X às suas criaturas {faction_de} na mão."
@@ -816,15 +813,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
-      },
-      "forge": {
-        "label": "Forja X",
-        "desc": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout}, aleatoriamente",
-        "desc_any": "Mistura em seu deck um objeto neutro{forge_align}{forge_cout_libre}, aleatoriamente"
-      },
-      "benediction": {
-        "label": "Bênção",
-        "desc": "Cura completamente uma unidade aliada alvo."
       }
     },
     "composed": {
@@ -927,6 +915,7 @@
         "conquete": "adiciona {x} ao seu contador de Conquista",
         "exploration": "adiciona {x} ao seu contador de Exploração",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
+        "incineration_cible": "devolve {cartes} {zone} para {deck}",
         "occurrences": "{n} vezes: ",
         "alternative": "À escolha: ",
         "devoration": "devora",
@@ -949,6 +938,10 @@
         "selection_magique_any": "revela 3 ações{filter} e guarda uma na mão",
         "renfort_royal_any": "revela 3 cartas da coleção{filter} e guarda uma na mão",
         "tresor_any": "revela 3 objetos{filter} e guarda um na mão",
+        "forge": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo até {x}, aleatoriamente",
+        "forge_range": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} a {x}, aleatoriamente",
+        "forge_any": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter}, aleatoriamente",
+        "forge_any_min": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} no mínimo, aleatoriamente",
         "invocation_any": "invoca uma criatura aleatória{filter}",
         "invocation_item_any": "coloca em jogo um objeto aleatório{filter}",
         "exhumation_any": "ressuscita {who} do seu cemitério",
@@ -956,12 +949,7 @@
         "appel_any": "coloca em jogo a 1ª unidade do seu baralho",
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
-        "dechainement_one_any": "joga uma ação aleatória",
-        "forge": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo até {x}, aleatoriamente",
-        "forge_range": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} a {x}, aleatoriamente",
-        "forge_any": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter}, aleatoriamente",
-        "forge_any_min": "mistura em seu deck um objeto neutro ou do seu alinhamento{filter} de custo {min} no mínimo, aleatoriamente",
-        "incineration_cible": "devolve {cartes} {zone} para {deck}"
+        "dechainement_one_any": "joga uma ação aleatória"
       },
       "self": {
         "transformation": "se transforma",
@@ -1025,6 +1013,28 @@
         "on_draw": ", que se ativará quando ela for comprada",
         "on_low_hp": ", que se ativará abaixo de 15 PV",
         "on_wound": ", que se ativará quando ela for ferida sem morrer"
+      },
+      "incin": {
+        "zone_ally": "do seu cemitério",
+        "zone_enemy": "do cemitério adversário",
+        "zone_any": "de um cemitério",
+        "zone_both": "dos dois cemitérios",
+        "deck_ally": "o seu deck",
+        "deck_enemy": "o deck adversário",
+        "deck_any": "o deck do seu dono",
+        "deck_both": "o deck do dono de cada uma",
+        "card_all": "todas as cartas",
+        "card_one": "uma carta",
+        "card_n": "{n} cartas",
+        "unit_all": "todas as unidades",
+        "unit_one": "uma unidade",
+        "unit_n": "{n} unidades",
+        "spell_all": "todas as ações",
+        "spell_one": "uma ação",
+        "spell_n": "{n} ações",
+        "item_all": "todos os objetos",
+        "item_one": "um objeto",
+        "item_n": "{n} objetos"
       },
       "pool": {
         "race": " da raça {v}",
@@ -1099,28 +1109,6 @@
         "times": "{x} vezes 1 {unit}, a cada vez",
         "target_both": "a um alvo {side} aleatório (unidade ou herói)",
         "target_unit": "a uma unidade {side} aleatória"
-      },
-      "incin": {
-        "zone_ally": "do seu cemitério",
-        "zone_enemy": "do cemitério adversário",
-        "zone_any": "de um cemitério",
-        "deck_ally": "o seu deck",
-        "deck_enemy": "o deck adversário",
-        "deck_any": "o deck do seu dono",
-        "card_all": "todas as cartas",
-        "card_one": "uma carta",
-        "card_n": "{n} cartas",
-        "unit_all": "todas as unidades",
-        "unit_one": "uma unidade",
-        "unit_n": "{n} unidades",
-        "spell_all": "todas as ações",
-        "spell_one": "uma ação",
-        "spell_n": "{n} ações",
-        "item_all": "todos os objetos",
-        "item_one": "um objeto",
-        "item_n": "{n} objetos",
-        "zone_both": "dos dois cemitérios",
-        "deck_both": "o deck do dono de cada uma"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "um token X/X",
       "ability": "uma habilidade",
       "scope": "a uma unidade aliada (ou a todas)",
-      "rm_scope": " da raça ou do clã escolhido",
-      "rm_scope_race": " da raça {v}",
-      "rm_scope_clan": " do clã {v}",
-      "rm_scope_all": "",
       "scope_target": "a uma unidade aliada",
       "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
       "scope_all": "a todas as suas unidades",
@@ -2114,6 +2098,7 @@
         "remontee": "Devolve {cibles} à mão de seu proprietário original.",
         "corruption": "Converte {cibles} para o seu lado até o final do turno, dentro do limite de espaços; elas ganham Perseguição.",
         "domination": "Assume o controle de {cibles}, dentro do limite de espaços.",
+        "benediction": "Cura completamente {cibles}.",
         "poison": "Envenena {cibles}: elas perdem 1 PV a cada final de turno.",
         "siphon": "Causa X de dano a {cibles} e cura seu herói em X por unidade atingida.",
         "entrave": "Paralisa {cibles} por X turno(s).",
@@ -2121,8 +2106,7 @@
         "silence": "Remove todas as palavras-chave de {cibles} e restaura seus atributos aos valores originais.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o desta ação, +X/+Y a {cibles}.",
-        "guerison": "Restaura X PV a {cibles}.",
-        "benediction": "Cura completamente {cibles}."
+        "guerison": "Restaura X PV a {cibles}."
       },
       "creature": {
         "impact": "Inflige X de dano a {cibles}.",
@@ -2150,7 +2134,7 @@
     "cost_help": {
       "vie": {
         "title": "Custo em vida {n}",
-        "desc": "Além do mana, seu herói perde {n} PV ao jogar esta carta. Não é permitido se o deixar com 0 PV."
+        "desc": "Além do mana, seu herói perde {n} PV quando você joga esta carta. Impossível se isso o fizesse cair a 0 PV."
       },
       "defausse": {
         "title": "Descarte {n}",
@@ -2159,28 +2143,28 @@
       },
       "sacrifice": {
         "title": "Sacrifício {n}",
-        "desc_one": "Além do mana, sacrifique uma de suas criaturas em jogo, à sua escolha.",
-        "desc_many": "Além do mana, sacrifique {n} de suas criaturas em jogo, à sua escolha."
+        "desc_one": "Além do mana, sacrifique uma das suas criaturas em jogo, à sua escolha.",
+        "desc_many": "Além do mana, sacrifique {n} das suas criaturas em jogo, à sua escolha."
       },
       "exil": {
         "title": "Exílio {n}",
-        "desc_one": "Além do mana, a carta do topo do seu deck é exilada: ela sai da partida. Não é permitido se o deck estiver vazio.",
-        "desc_many": "Além do mana, as {n} cartas do topo do seu deck são exiladas: elas saem da partida. Seu deck precisa ter pelo menos {n} cartas."
+        "desc_one": "Além do mana, a carta do topo do seu deck é exilada: ela sai da partida. Impossível se o seu deck estiver vazio.",
+        "desc_many": "Além do mana, as {n} cartas do topo do seu deck são exiladas: elas saem da partida. É preciso ter pelo menos {n} cartas no seu deck."
       },
       "repli": {
         "title": "Recolocação {n}",
-        "desc_one": "Além do mana, coloque uma carta da sua mão, à sua escolha, no topo do deck.",
-        "desc_many": "Além do mana, coloque {n} cartas da sua mão, à sua escolha, no topo do deck. A primeira escolhida fica no topo."
+        "desc_one": "Além do mana, recoloque uma carta da sua mão, à sua escolha, no topo do seu deck.",
+        "desc_many": "Além do mana, recoloque {n} cartas da sua mão, à sua escolha, no topo do seu deck. A primeira escolhida fica no topo."
       },
       "eveil": {
         "title": "Despertar {n}",
-        "desc": "Em vez de jogá-la, você pode colocar esta carta em despertar. Depois paga seus {n} pontos com seu mana, 1 ponto por mana, durante seus turnos. No último ponto, ela entra em jogo como se você a tivesse jogado.",
-        "remaining": "Faltam {left} de {n} pontos a pagar."
+        "desc": "Em vez de jogá-la, você pode colocar esta carta em despertar. Depois, você paga seus {n} pontos com o seu mana, 1 ponto por mana, durante os seus turnos. No último ponto, ela entra em jogo como se você a tivesse jogado.",
+        "remaining": "Ainda faltam {left} pontos de {n}."
       },
       "equipement": {
-        "title": "Equipar {n}",
-        "desc": "Com o objeto em jogo, equipá-lo em uma de suas criaturas custa {n} de mana. O custo é pago a cada equipamento, mudanças incluídas.",
-        "desc_free": "Com o objeto em jogo, equipá-lo em uma de suas criaturas é gratuito, mudanças incluídas."
+        "title": "Equipamento {n}",
+        "desc": "Com o objeto em jogo, equipá-lo em uma das suas criaturas custa {n} de mana. O custo é pago a cada equipamento, inclusive ao mover.",
+        "desc_free": "Com o objeto em jogo, equipá-lo em uma das suas criaturas é grátis, inclusive ao mover."
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "HABILIDADE NEUTRALIZADA",
     "neutralisation_hint": "Silenciada na inimiga alvo (ou em todas, com o alcance \"Todas inimigas\") enquanto a portadora estiver em jogo.",
     "target_scope_target": "Alvo",
+    "target_scope_self": "Ela mesma",
     "target_scope_all_enemies": "Todas inimigas",
     "target_scope_all_allies": "Todas aliadas",
     "target_scope_all": "Todas (2 lados)",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "PALAVRAS-CHAVE DE AÇÃO",
     "token_to_summon": "TOKEN A INVOCAR",
     "config_below_tokens": "Config em «Tokens a invocar» abaixo",
-    "targeted_race_clan": "RAÇA / CLÃ ALVO",
     "targeted_race": "RAÇA ALVO",
     "required": "obrigatório",
     "choose_race": "-- Escolher uma raça --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "TOKEN DE TRANSFORMAÇÃO",
     "target_race_label": "RAÇA-ALVO",
     "required_caps_f": "Obrigatória",
-    "atk_is_x": "(o +ATK = o valor X)",
     "neg_atk_is_x": "(o -ATK = o valor X)",
     "spell_cost_y": "CUSTO DAS AÇÕES (Y)",
     "spell_count_is_x": "(o número de ações = o valor X)",
@@ -2774,14 +2757,11 @@
     "x_value_title": "Valor X",
     "targets_label2": "ALVO(S)",
     "one_target": "1 alvo",
-    "rm_config_label": "+PV (Y) E RAÇA / CLÃ ALVO",
-    "atk_equals_x": "(+ATQ = X)",
     "neg_atk_equals_x": "(-ATQ = X)",
     "on_self": "(em si mesmo)",
     "add_ability": "+ Adicionar uma habilidade :",
     "choose_dash": "-- escolher --",
     "no_ability_add_effect": "Nenhuma habilidade. Adicione um efeito ou uma habilidade a conferir abaixo.",
-    "race_clan_label": "RAÇA / CLÃ",
     "race_label": "RAÇA",
     "race_dash": "-- Raça --",
     "confer_prefix": "Conferir :",
@@ -2998,6 +2978,8 @@
     "content_appel_supreme": "Chamado Supremo (baralho → mão, a mais cara)",
     "content_tuteur": "Tutor (cartas designadas → mão)",
     "content_transformation": "Transformar em carta designada",
+    "content_forge": "Forja (1 objeto misturado no deck)",
+    "forge_min_hint": "Custo mínimo do objeto forjado (limite inferior A). O custo máximo é X; X vazio = qualquer custo.",
     "transformation_card_hint": "Cada unidade visada se torna esta carta; com várias cartas, cada uma sorteia a sua aleatoriamente. Ela recupera sua forma original ao deixar o campo.",
     "content_epargne": "Poupança (contador)",
     "content_foi": "Fé (contador)",
@@ -3010,15 +2992,12 @@
     "content_silence": "Silêncio (retira tudo ao alvo)",
     "content_dechainement": "Desencadeamento X/Y (ações aleatórias)",
     "content_selection_magique": "Seleção mágica (1 ação entre 3)",
-    "content_forge": "Forja (1 objeto misturado no deck)",
-    "forge_min_hint": "Custo mínimo do objeto forjado (limite inferior A). O custo máximo é X; X vazio = qualquer custo.",
     "tab_style_guides": "Guias de estilo",
     "mode_title_delay": "Atraso X: uma única vez, no início do X-ésimo turno seguinte, se a unidade ainda estiver em jogo",
-    "trigger_on_delay": "Atraso X (início do X-ésimo turno seguinte)",
-    "retard_turns_title": "Atraso: número de turnos antes do disparo",
-    "retard_spell_title": "Atraso: o efeito dispara no início do X-ésimo turno seguinte de quem o lançou, alvo escolhido nesse momento",
-    "label_retard": "Atraso",
-    "target_scope_self": "Ela mesma"
+    "trigger_on_delay": "Atraso X (no início do X-ésimo turno seguinte)",
+    "retard_turns_title": "Atraso: número de turnos antes do acionamento",
+    "retard_spell_title": "Atraso: o efeito é acionado no início do X-ésimo turno seguinte do conjurador, com o alvo escolhido nesse momento",
+    "label_retard": "Atraso"
   },
   "game": {
     "hero_power_grant": "Concede {kw} a uma criatura",
@@ -3034,9 +3013,9 @@
     "close": "Fechar",
     "settings": "Configurações",
     "choose_card": "Escolha uma carta",
-    "attack_choice_target": "⚔️ {label} — escolha um alvo",
+    "attack_choice_target": "⚔️ {label} — escolha o alvo",
     "attack_power_label": "Poder de ataque",
-    "opponent_choosing": "⏳ O adversário está escolhendo…",
+    "opponent_choosing": "⏳ O oponente está fazendo uma escolha…",
     "no_creatures": "Nenhuma criatura",
     "drag_hint": "Arraste suas cartas aqui para jogá-las",
     "drop_hint": "Solte para jogar a criatura",
@@ -3463,7 +3442,7 @@
     "retired": "Retirada",
     "excluded": "Excluída",
     "deck_unavailable": "{count, plural, one {# carta indisponível} other {# cartas indisponíveis}}",
-    "cannot_add": "Carta indisponível: não pode ser adicionada a um deck",
+    "cannot_add": "Carta indisponível: ela não pode entrar em um deck",
     "reason": "Motivo: {reason}"
   }
 }

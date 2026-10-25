@@ -411,7 +411,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "dedoublement",
   "exhumation", "heritage_du_cimetiere",
   "traque_du_destin", "sang_mele", "fierte_du_clan", "solidarite", "lycanthropie", "entraide",
-  "cycle_eternel", "martyr", "instinct_de_meute", "totem", "appel_du_clan", "appel_supreme", "rassemblement",
+  "cycle_eternel", "instinct_de_meute", "totem", "appel_du_clan", "appel_supreme", "rassemblement",
   "pacte_de_sang", "souffle_de_feu", "domination", "resurrection", "transcendance",
   "vampirisme",
   "selection",
@@ -437,7 +437,6 @@ export const ALL_KEYWORDS: Keyword[] = [
   "inspiration", "afflux", "epargne", "foi", "conquete", "exploration", "invention", "seconde_vie", "incineration", "devoration", "creuser", "retour_differe",
   "concentration",
   "remontee",
-  "renforcement_multiple",
   "entrainement",
   "fortifier",
   "preincanter",
@@ -478,7 +477,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   vampirisme: "Vampirisme X",
   traque_du_destin: "Traque du destin X", sang_mele: "Sang mêlé",
   fierte_du_clan: "Fierté du clan", solidarite: "Solidarité X", entraide: "Entraide",
-  cycle_eternel: "Cycle éternel", martyr: "Martyr",
+  cycle_eternel: "Cycle éternel",
   instinct_de_meute: "Instinct de meute X", totem: "Totem",
   appel_du_clan: "Appel du clan X", appel_supreme: "Appel Suprême", rassemblement: "Rassemblement X",
   invocations_multiples: "Invocations multiples",
@@ -504,7 +503,6 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé",
   concentration: "Concentration X",
   remontee: "Remontée",
-  renforcement_multiple: "Renforcement multiple",
   entrainement: "Entrainement X",
   fortifier: "Fortifier +X/+Y",
   preincanter: "Préincanter X",
@@ -535,7 +533,7 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 // ─── Valeurs affichées : X simple vs PAIRE de stats ────────────────────────
 //
 // La plupart des mots-clés scalables portent un seul nombre (« Carnage 3 »).
-// Quatre portent une PAIRE : Renforcement +X/+Y, Renforcement multiple,
+// Certains portent une PAIRE : Renforcement +X/+Y, Discipline,
 // Affaiblissement -X/-Y et Gloire +X/+Y. Le côté SORT savait déjà les rendre
 // « +2/+2 » (cf. spell_keywords, qui a des champs attack/health dédiés) ; le
 // côté CRÉATURE, lui, n'affichait que le X — une Gloire +2/+1 s'affichait « 2 »,
@@ -543,12 +541,11 @@ export function getKeywordDisplayLabel(kw: Keyword, t?: SafeT): string {
 // source unique du formatage côté créature, pour que tous les rendus (badges de
 // carte, infobulles, listes) restent d'accord.
 //
-// Liste EXPLICITE, et non une regex sur le libellé : `renforcement_multiple`
-// s'affiche « Renforcement multiple », sans marqueur +X/+Y, alors qu'il porte
-// bien une paire. Une détection par libellé le manquait silencieusement — et
-// aurait aussi cassé sur toute locale reformulant le marqueur.
+// Liste EXPLICITE, et non une regex sur le libellé : un libellé sans marqueur
+// +X/+Y peut porter une paire, et une détection par libellé casserait sur
+// toute locale reformulant le marqueur.
 const STAT_PAIR_KEYWORDS: ReadonlySet<string> = new Set([
-  "gloire", "renforcement", "renforcement_multiple", "affaiblissement",
+  "gloire", "renforcement", "affaiblissement",
   "force_des_ancetres", "seuil_sacrificiel", "purete", "fortifier",
   "discipline",
 ]);
@@ -601,7 +598,7 @@ export function keywordBadgeValue(
  *
  *  Deux formes de libellé cohabitent chez les paires : celles qui portent le
  *  marqueur (« Gloire +X/+Y ») où l'on SUBSTITUE, et celles qui ne l'ont pas
- *  (« Renforcement multiple », et toute locale qui reformule) où l'on SUFFIXE.
+ *  (toute locale qui reformule) où l'on SUFFIXE.
  *  Dans les deux cas la valeur finit visible — jamais avalée. */
 export function applyKeywordValueToLabel(
   kw: Keyword,
@@ -659,7 +656,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   vampirisme: "🧛",
   traque_du_destin: "🔮", sang_mele: "🧬",
   fierte_du_clan: "🏰", solidarite: "🤜", entraide: "🤝",
-  cycle_eternel: "♻️", martyr: "⚱️",
+  cycle_eternel: "♻️",
   instinct_de_meute: "🐺", totem: "🗿",
   appel_du_clan: "📯", appel_supreme: "🎺", rassemblement: "🏴",
   invocations_multiples: "📣✨",
@@ -688,7 +685,6 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   fortifier: "🛠️",
   preincanter: "🕯️",
   remontee: "🔼",
-  renforcement_multiple: "⏫",
   conferer: "✋",
   declenchement: "🔂",
   dechainement: "🌋",

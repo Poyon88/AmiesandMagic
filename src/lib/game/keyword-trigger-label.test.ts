@@ -72,8 +72,8 @@ describe("Les râles d'agonie intrinsèques", () => {
     expect(keywordTriggerLabel(kw as Keyword)).toBe("Mort");
   });
 
-  it("il y en a bien huit — le scan n'est pas à vide", () => {
-    expect(DEATH_NATURE_IDS.size).toBe(8);
+  it("il y en a bien sept — le scan n'est pas à vide", () => {
+    expect(DEATH_NATURE_IDS.size).toBe(7);
   });
 
   it("un mode explicite reste prioritaire sur cette correction", () => {

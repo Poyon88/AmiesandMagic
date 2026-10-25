@@ -82,7 +82,6 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   renfort_royal: { content: "renfort_royal", magnitude: { x: 1 } },
   tresor: { content: "tresor", magnitude: { x: 1 } },
   // Le X/Y et la race/clan sont saisis ensuite dans la ligne (appartenance).
-  renforcement_multiple: { content: "buff", magnitude: { x: 1, y: 1 }, target: board({ count: "all", side: "ally", designation: "automatic" }) },
 };
 
 /** Entrée « Conférer » générique : c'est elle qui remplace le picker legacy,

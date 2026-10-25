@@ -27,7 +27,6 @@ import MachinePartEditor, { type MachinePartValue } from "./MachinePartEditor";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import type { CardType, Keyword, KeywordMode, SpellKeywordInstance, SpellComposableEffects, CardSet, GameFormat, TokenTemplate, ConvocationTokenDef } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
-import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ABILITIES, abilityIconKeys, COUT_OPTIONNEL, creatureEngineId, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS, isItemAuthorable, isTokenAuthorable, tokenRequiresMode, TOKEN_FIRING_MODES, type AbilityDef } from "@/lib/game/abilities";
@@ -241,7 +240,7 @@ function Btn({ onClick, label, color }: { onClick: () => void; label: string; co
   );
 }
 
-// Couples +X/+Y dont le second membre a un état React DÉDIÉ (rmY, afY, rfY, glY,
+// Couples +X/+Y dont le second membre a un état React DÉDIÉ (afY, rfY, glY,
 // dcY, fdaY) et un panneau écrit à la main. Tous les AUTRES couples du registre
 // sont pilotés génériquement par `keywordYValues` + le panneau dérivé.
 //
@@ -250,13 +249,13 @@ function Btn({ onClick, label, color }: { onClick: () => void; label: string; co
 // piège — sans traitement générique, Pureté et Seuil Sacrificiel n'avaient
 // AUCUN champ +PV dans la forge et repartaient avec le défaut moteur y = 1.
 const XY_LABELS_Y_DEDIE: ReadonlySet<string> = new Set([
-  "Renforcement multiple", "Affaiblissement -X/-Y", "Renforcement +X/+Y",
+  "Affaiblissement -X/-Y", "Renforcement +X/+Y",
   "Gloire +X/+Y", "Déchainement X/Y", "Force des ancêtres +X/+Y",
 ]);
 
 /** Couples dont le panneau dédié porte DÉJÀ le X : le laisser aussi sur la puce
- *  donnerait deux champs pour la même valeur. Les autres (Renforcement multiple,
- *  Affaiblissement, Déchainement) gardent leur X sur la puce. */
+ *  donnerait deux champs pour la même valeur. Les autres (Affaiblissement,
+ *  Déchainement) gardent leur X sur la puce. */
 const XY_LABELS_X_DANS_PANNEAU: ReadonlySet<string> = new Set([
   "Renforcement +X/+Y", "Gloire +X/+Y", "Force des ancêtres +X/+Y",
 ]);
@@ -1888,8 +1887,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [convocationTokens, setConvocationTokens] = useState<ConvocationTokenDef[]>([]);
   const [lycanthropieTokenId, setLycanthropieTokenId] = useState<number | null>(null);
   const [entraideRace, setEntraideRace] = useState<string>("");
-  // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé (le +X = la valeur X).
-  const [rmY, setRmY] = useState<number>(1);
   // Affaiblissement -X/-Y (créature) : le -PV (Y) dédié (le -ATK = la valeur X générique).
   const [afY, setAfY] = useState<number>(1);
   // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié (le +ATK = la valeur X).
@@ -1909,8 +1906,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   // ajoutée au registre depuis passe par cette grille, et son champ apparaît
   // donc à l'écran sans une ligne de code de plus (cf. XY_LABELS_Y_DEDIE).
   const [keywordYValues, setKeywordYValues] = useState<Record<string, number>>({});
-  const [rmRace, setRmRace] = useState<string>("");
-  const [rmClan, setRmClan] = useState<string>("");
   // Appel Suprême : race ciblée fixée sur la carte (créature). Persistée dans
   // keyword_instances[i].race (créature) / spell_keywords[i].race (sort).
   const [cardSetId, setCardSetId] = useState<number | null>(null);
@@ -1990,7 +1985,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       minX: keywordMinX,
       delays: keywordDelay,
       extras: {
-        rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
+        afY, rfY, dcY, dcRandomY, glY, fdaY,
         invocCosts, invocRace, invocFaction,
         conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId,
         compagnonsCardIds, tuteurCardIds, transformationCardIds, inventionPart,
@@ -2050,7 +2045,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       ...keywordYValues,
       "Gloire +X/+Y": glY,
       "Renforcement +X/+Y": rfY,
-      "Renforcement multiple": rmY,
       "Affaiblissement -X/-Y": afY,
       // Y vidé (null) : pas de Y — l'aperçu affiche alors le seul nombre.
       ...(dcY != null ? { "Déchainement X/Y": dcY } : {}),
@@ -2364,7 +2358,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         yValues: tokenYValues,
         modes: tokenModes,
         extras: {
-          rmY: tokenYValues["Renforcement multiple"],
           afY: tokenYValues["Affaiblissement -X/-Y"],
           rfY: tokenYValues["Renforcement +X/+Y"],
           dcY: tokenYValues["Déchainement X/Y"],
@@ -2431,7 +2424,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualPower(2); setManualAbility(""); setManualFlavorText("");
     setManualIllustrationPrompt(""); setManualStyleGuideId(null); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordDelay({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
-    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setRmRace(""); setRmClan(""); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
+    setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
     setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
@@ -2600,10 +2593,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setComposedCaps([]);
     setDeclenchementTriggers([]);
     // Paramètres Y / race / faction portés par des états dédiés
-    setRmY(1); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1);
+    setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1);
     setKeywordYValues({});
     setCardDiscoverable(true);
-    setRmRace(""); setRmClan("");
     setInvocCosts([]); setInvocRace(""); setInvocFaction("");
     setCompagnonsCardIds([]);
     setTuteurCardIds([]);
@@ -2755,7 +2747,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
         minX: keywordMinX,
         delays: keywordDelay,
         extras: {
-          rmY, rmRace, rmClan, afY, rfY, dcY, dcRandomY, glY, fdaY,
+          afY, rfY, dcY, dcRandomY, glY, fdaY,
           invocCosts, invocRace, invocFaction,
           conferAbilityId, conferX, conferY, declenchementTriggers, neutraliseAbilityId,
           compagnonsCardIds, tuteurCardIds, transformationCardIds, inventionPart,
@@ -2879,7 +2871,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     } finally {
       setSaving(false);
     }
-  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, keywordYValues, rmY, afY, rfY, glY, dcY, dcRandomY, fdaY, rmRace, rmClan, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
+  }, [cardImages, type, spellKeywords, spellEffectsData, convocationTokenId, convocationTokens, cardSetId, cardYear, cardMonth, lycanthropieTokenId, entraideRace, sfxPlayFile, sfxDeathFile, sfxExileFile, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, keywordYValues, afY, rfY, glY, dcY, dcRandomY, fdaY, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps, conferAbilityId, conferX, conferY, inventionPart, declenchementTriggers, neutraliseAbilityId, resetCardForm]);
 
   const [generatingImage, setGeneratingImage] = useState(false);
   // Modèle d'image IMPOSÉ pour comparer deux rendus sur la même carte. Vide =
@@ -3812,16 +3804,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                   <MachinePartEditor value={kw} onChange={p => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, ...p } : k))} />
                                 </div>
                               )}
-                              {kw.id === "renforcement_multiple" && (
-                                <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                                  <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('targeted_race_clan')}</label>
-                                  <RaceClanPicker
-                                    race={kw.race ?? ""}
-                                    clan={kw.clan ?? ""}
-                                    onChange={(r, c) => setSpellKeywords(prev => prev.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
-                                  />
-                                </div>
-                              )}
                               {kw.id === "appel_supreme" && (
                                 <div style={{ flexBasis: "100%", marginTop: 2 }}>
                                   <label style={{ fontSize: 7, color: "#10b981", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>{tf('targeted_race')} {!kw.race && <span style={{ color: "#e74c3c" }}>· {tf('required')}</span>}</label>
@@ -4280,21 +4262,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             <option key={r} value={r}>{r}</option>
                           ))}
                         </select>
-                      </div>
-                    )}
-                    {/* Renforcement multiple — +Y (PV) et race/clan ciblé (le +X = la valeur X) */}
-                    {manualKeywords.includes("Renforcement multiple") && (
-                      <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: "1px solid #cfe0f5", background: "#eef5ff" }}>
-                        <div style={{ fontSize: 8, color: "#2c5d99", letterSpacing: 1, fontWeight: 700, marginBottom: 4 }}>⏫ RENFORCEMENT MULTIPLE</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
-                          <input type="number" min={0} max={20} value={rmY}
-                            onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
-                            style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }}
-                          />
-                          <span style={{ fontSize: 8, color: "#888" }}>{tf('atk_is_x')}</span>
-                        </div>
-                        <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                       </div>
                     )}
                     {/* Affaiblissement — -PV (Y) dédié (le -ATK = la valeur X) */}
@@ -4876,16 +4843,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 <option value="">{tf('choose_race')}</option>
                                 {getAllRaces().sort().map(r => <option key={r} value={r}>{r}</option>)}
                               </select>
-                            </div>
-                          )}
-                          {label === "Renforcement multiple" && (
-                            <div style={{ marginTop: 8 }}>
-                              <div style={{ ...labelStyle, color: "#2c5d99", marginBottom: 3 }}>⏫ {tf('rm_config_label')} <span style={{ color: "#888", fontWeight: 400 }}>{tf('atk_equals_x')}</span></div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                                <span style={{ fontSize: 9, color: "#27ae60" }}>+PV</span>
-                                <input type="number" min={0} max={20} value={rmY} onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))} style={{ width: 44, padding: "2px 6px", borderRadius: 4, border: cardBorder, fontSize: 10, textAlign: "center", fontFamily: "'Cinzel',serif" }} />
-                              </div>
-                              <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
                             </div>
                           )}
                           {label === "Affaiblissement -X/-Y" && (

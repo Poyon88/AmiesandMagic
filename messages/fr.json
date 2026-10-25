@@ -344,10 +344,6 @@
         "label": "Cycle éternel",
         "desc": "Ajoutez une copie de cette carte dans votre deck ; si elle est piochée, mettez-la directement en jeu."
       },
-      "martyr": {
-        "label": "Martyr",
-        "desc": "+1/+1 permanent à vos {race_pl} en jeu."
-      },
       "instinct_de_meute": {
         "label": "Instinct de meute X",
         "desc": "+X/+X si un allié {faction_de} est mort ce tour."
@@ -507,10 +503,6 @@
       "remontee": {
         "label": "Remontée",
         "desc": "Renvoie une unité ciblée dans la main de son propriétaire d'origine."
-      },
-      "renforcement_multiple": {
-        "label": "Renforcement multiple",
-        "desc": "+X/+Y à vos créatures{rm_scope}."
       },
       "entrainement": {
         "label": "Entrainement X",
@@ -777,10 +769,6 @@
       "remontee": {
         "label": "Remontée",
         "desc": "Renvoie une unité ou un objet ciblé dans la main de son propriétaire d'origine."
-      },
-      "renforcement_multiple": {
-        "label": "Renforcement multiple",
-        "desc": "+X/+Y à vos créatures{rm_scope}."
       },
       "entrainement": {
         "label": "Entrainement X",
@@ -2044,10 +2032,6 @@
       "lycanthrope": "un token X/X",
       "ability": "une capacité",
       "scope": "à une unité alliée (ou à toutes)",
-      "rm_scope": " de la race ou du clan choisi",
-      "rm_scope_race": " de race {v}",
-      "rm_scope_clan": " du clan {v}",
-      "rm_scope_all": "",
       "scope_target": "à une unité alliée",
       "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
       "scope_all": "à toutes vos unités",
@@ -2702,7 +2686,6 @@
     "spell_keywords_label": "MOTS-CLÉS D'ACTION",
     "token_to_summon": "TOKEN À INVOQUER",
     "config_below_tokens": "Config dans « Tokens à invoquer » ci-dessous",
-    "targeted_race_clan": "RACE / CLAN CIBLÉ",
     "targeted_race": "RACE CIBLÉE",
     "required": "requise",
     "choose_race": "-- Choisir une race --",
@@ -2732,7 +2715,6 @@
     "transformation_token": "TOKEN DE TRANSFORMATION",
     "target_race_label": "RACE CIBLE",
     "required_caps_f": "Requise",
-    "atk_is_x": "(le +ATK = la valeur X)",
     "neg_atk_is_x": "(le -ATK = la valeur X)",
     "spell_cost_y": "COÛT DES ACTIONS (Y)",
     "spell_count_is_x": "(le nombre d'actions = la valeur X)",
@@ -2775,14 +2757,11 @@
     "x_value_title": "Valeur X",
     "targets_label2": "CIBLE(S)",
     "one_target": "1 cible",
-    "rm_config_label": "+PV (Y) ET RACE / CLAN CIBLÉ",
-    "atk_equals_x": "(+ATK = X)",
     "neg_atk_equals_x": "(-ATK = X)",
     "on_self": "(sur soi)",
     "add_ability": "+ Ajouter une capacité :",
     "choose_dash": "-- choisir --",
     "no_ability_add_effect": "Aucune capacité. Ajoutez un effet ou une capacité à conférer ci-dessous.",
-    "race_clan_label": "RACE / CLAN",
     "race_label": "RACE",
     "race_dash": "-- Race --",
     "confer_prefix": "Conférer :",

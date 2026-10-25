@@ -36,7 +36,7 @@ function encodageDuCouple(abilityId: string, mode: string) {
 }
 
 /** Les capacités qui déclarent les DEUX encodages. */
-const A_DOUBLE_ENCODAGE = ["renforcement", "affaiblissement", "renforcement_multiple", "fortifier"];
+const A_DOUBLE_ENCODAGE = ["renforcement", "affaiblissement", "fortifier"];
 
 describe("Encodage du couple selon le mode", () => {
   it.each(A_DOUBLE_ENCODAGE)("« %s » est bien à double encodage", (id) => {
@@ -59,16 +59,6 @@ describe("Encodage du couple selon le mode", () => {
     expect(c).toContain("amount");
     expect(c).not.toContain("attack");
     expect(c).not.toContain("health");
-  });
-
-  it("Renforcement multiple n'expose pas de Y hors déclenchement de sort", () => {
-    // Asymétrie PRÉEXISTANTE, pas introduite ici : XY_ABILITY_IDS se déduit du
-    // marqueur « +X/+Y » du libellé, et « Renforcement multiple » n'en porte pas
-    // alors qu'il est bien une paire. En mode don ou aura, son +PV reste donc
-    // hors de portée de l'éditeur de héros. Consigné plutôt que corrigé au
-    // passage : c'est un autre sujet, avec ses propres effets de bord.
-    expect(encodageDuCouple("renforcement_multiple", "grant_keyword").champs).toEqual(["amount"]);
-    expect(encodageDuCouple("renforcement_multiple", "spell_trigger").champs).toEqual(["attack", "health"]);
   });
 
   it("jamais quatre champs, quel que soit le mode", () => {

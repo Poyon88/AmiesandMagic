@@ -129,7 +129,7 @@ export function keywordTriggerLabel(
  *
  *  Miroir de `defaultDisplayMode` (keyword-labels) à une correction près, qui
  *  est tout l'intérêt de cette fonction : les capacités « à la mort »
- *  INTRINSÈQUES (Carnage, Héritage, Maléfice, Martyr, Pacte de sang,
+ *  INTRINSÈQUES (Carnage, Héritage, Maléfice, Pacte de sang,
  *  Résurrection, Cycle éternel, Sacrifice démoniaque) sont stockées sans mode.
  *  `defaultDisplayMode` les laisse neutres pour garder leur ICÔNE blanche —
  *  choix d'affichage assumé — mais les annoncer « Permanent » serait faux :

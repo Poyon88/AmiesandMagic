@@ -2972,7 +2972,7 @@ function createCardInstance(card: Card): CardInstance {
     necrophagiePVBonus: 0,
     richesseATKBonus: 0,
     richessePVBonus: 0,
-    martyrATKBonus: 0, devorationATKBonus: 0, devorationPVBonus: 0,
+    devorationATKBonus: 0, devorationPVBonus: 0,
     persecutionX: 0,
     riposteX: 0,
     carnageX: 0,
@@ -3019,7 +3019,7 @@ function makeDedoublementClone(source: CardInstance): CardInstance {
 // CONSERVANT ses bonus permanents accumulés au lieu de la recréer à neuf.
 // Ce qui est conservé : `card` (qui porte déjà les buffs génériques de sorts,
 // cf. content "buff"), tous les champs de bonus permanents (+ATK/+PV trackés,
-// valeurs X, summonBonusATK, martyr/necrophagie/richesse/loyauté/instinct) et
+// valeurs X, summonBonusATK, necrophagie/richesse/loyauté/instinct) et
 // les mots-clés accordés (grantedKeywordX). Ce qui est réinitialisé : les états
 // transitoires/de tour, les bonus d'aura/temporaires (recalculés par
 // recalculateAuras une fois sur le plateau) et la propriété volée.
@@ -3029,7 +3029,7 @@ function makeDedoublementClone(source: CardInstance): CardInstance {
 // recomposée par recalculateAuras à partir des champs ATK conservés.
 /** Stats EFFECTIVES « permanentes » d'une instance = base de la carte + tous les
  *  bonus +ATK/+PV CONSERVÉS à travers les zones (loyauté, summon, nécrophagie,
- *  richesse, martyr, instinct). EXCLUT les bonus transitoires recalculés sur le
+ *  richesse, instinct). EXCLUT les bonus transitoires recalculés sur le
  *  plateau (auras, fureur). Source unique : recompose les stats en
  *  sortie de zone (returnInstanceToPlay) ET pilote l'affichage hors-plateau
  *  (cimetière / main) pour qu'il reflète l'état réel — au même titre que les
@@ -3038,7 +3038,7 @@ export function persistentStats(inst: CardInstance): { attack: number; health: n
   return {
     attack: (inst.card.attack ?? 0)
       + inst.loyauteATKBonus + inst.summonBonusATK + inst.necrophagieATKBonus
-      + inst.richesseATKBonus + inst.martyrATKBonus + inst.instinctDeMeuteATKBonus
+      + inst.richesseATKBonus + inst.instinctDeMeuteATKBonus
       + inst.devorationATKBonus,
     health: (inst.card.health ?? 1)
       + inst.loyautePVBonus + inst.necrophagiePVBonus + inst.richessePVBonus
@@ -3051,7 +3051,7 @@ export function persistentStats(inst: CardInstance): { attack: number; health: n
  *   - les buffs cuits dans `card` (Renforcement, Gloire, Entrainement, buff
  *     composé, Affaiblissement) → restaurés depuis `baseAttack`/`baseHealth` ;
  *   - les bonus permanents suivis (loyauté, invocation, nécrophagie, richesse,
- *     martyr, instinct de meute, dévoration) → remis à zéro.
+ *     instinct de meute, dévoration) → remis à zéro.
  *
  *  Ce qui n'est PAS touché : les bonus d'AURA (`auraHealthBonus` de
  *  Commandement, `sangMeleHealthBonus`, `forceAncetresHealthBonus`). Ils
@@ -3078,7 +3078,6 @@ function stripBoostsToBase(inst: CardInstance): void {
   inst.necrophagiePVBonus = 0;
   inst.richesseATKBonus = 0;
   inst.richessePVBonus = 0;
-  inst.martyrATKBonus = 0;
   inst.instinctDeMeuteATKBonus = 0;
   inst.devorationATKBonus = 0;
   inst.devorationPVBonus = 0;
@@ -3778,7 +3777,6 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.summonBonusATK;
     atk += c.necrophagieATKBonus;
     atk += c.richesseATKBonus;
-    atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     atk += c.devorationATKBonus;
     atk += bonusObjetDe(player, c).atk;
@@ -3790,7 +3788,6 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     atk += c.summonBonusATK;
     atk += c.necrophagieATKBonus;
     atk += c.richesseATKBonus;
-    atk += c.martyrATKBonus;
     atk += c.instinctDeMeuteATKBonus;
     atk += c.devorationATKBonus;
     atk += bonusObjetDe(opponent, c).atk;
@@ -5560,13 +5557,6 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
-    // Renforcement multiple (invocation) : +X/+Y à vos créatures de la race/clan
-    // ciblé (lu depuis l'instance on-play du mot-clé). Source exclue.
-    if (hasKwOnPlay(cardInstance, "renforcement_multiple")) {
-      const rm = cardInstance.card.keyword_instances?.find(i => i.id === "renforcement_multiple" && !i.mode);
-      if (rm) applyRenforcementMultiple(player, rm.x ?? 0, rm.y ?? 0, rm.race, rm.clan, cardInstance.instanceId);
-    }
-
     // Renforcement (invocation) : +X/+Y à la créature elle-même (défaut), à
     // une autre unité alliée désignée, ou à toutes les autres (portée « toutes »).
     if (hasKwOnPlay(cardInstance, "renforcement")) {
@@ -5802,7 +5792,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Affaiblissement -X/-Y (invocation) : -X ATK / -Y PV à la créature ennemie
-    // ciblée. X/Y lus depuis keyword_instances (comme renforcement_multiple).
+    // ciblée. X/Y lus depuis keyword_instances.
     if (hasKwOnPlay(cardInstance, "affaiblissement")) for (const tid of ciblesOnPlay(cardInstance, "affaiblissement", action.targetInstanceId, player, opponent)) {
       const inst = cardInstance.card.keyword_instances?.find(i => i.id === "affaiblissement" && !i.mode);
       const target = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
@@ -7268,11 +7258,6 @@ function resolveSpellKeywords(
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) applyAffaiblissement(target, kw.attack ?? 0, kw.health ?? 0);
         }
-        break;
-      }
-      case "renforcement_multiple": {
-        // +X/+Y à toutes les créatures du lanceur de la race/clan ciblé.
-        applyRenforcementMultiple(ctx.caster, kw.attack ?? 0, kw.health ?? 0, kw.race, kw.clan);
         break;
       }
       case "entrainement": {
@@ -10231,7 +10216,7 @@ function runDeclenchement(
 }
 
 /** Résout les déclencheurs de mort D'UNE créature (Maléfice, Carnage, Héritage,
- *  Résurrection, Pacte de sang, Martyr, Cycle éternel, auto-renvoi, instances
+ *  Résurrection, Pacte de sang, Cycle éternel, auto-renvoi, instances
  *  curated mode death, composés on_death, Nécrophagie). Extrait de l'ancienne
  *  boucle de processDeathTriggers. `owner` = contrôleur de la créature morte. */
 function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: PlayerState): void {
@@ -10326,20 +10311,6 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
         const token = createCardInstance(tokenCard);
         token.hasSummoningSickness = !hasKw(token, "charge");
         owner.board.push(token);
-      }
-    }
-
-    // Martyr: toutes les unités de même race gagnent +1/+1 permanent.
-    // ATK is tracked via martyrATKBonus so recalculateAuras() preserves it
-    // — assigning to currentAttack alone gets erased on the next pass.
-    if (hasKw(c, "martyr") && c.card.race) {
-      for (const ally of owner.board) {
-        if (ally.card.race === c.card.race) {
-          ally.martyrATKBonus += 1;
-          ally.currentAttack += 1;
-          ally.currentHealth += 1;
-          ally.maxHealth += 1;
-        }
       }
     }
 
@@ -10485,7 +10456,7 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
  *  when extending the list. Source is the creature carrying the keyword
  *  (already dead for on-death; still alive for on-tap). */
 // Renforcement (créature) : +X/+Y PERMANENT à la créature elle-même (buff cuit
-// dans `card`, comme le sort renforcement / applyRenforcementMultiple, pour
+// dans `card`, comme le sort renforcement, pour
 // survivre à recalculateAuras et persister en main/cimetière).
 function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
   inst.card = { ...inst.card, attack: (inst.card.attack ?? 0) + x, health: (inst.card.health ?? 0) + y };
@@ -10625,35 +10596,9 @@ function resolveEspritDeCorps(source: CardInstance, owner: PlayerState): void {
   }
 }
 
-// Renforcement multiple : +X/+Y permanent à toutes les créatures du contrôleur
-// de la race ou du clan ciblé (clan prioritaire). La source est exclue. Même
-// pattern de buff permanent que le sort "renforcement" (modifie card + stats).
-function applyRenforcementMultiple(
-  controller: PlayerState,
-  x: number,
-  y: number,
-  race?: string | null,
-  clan?: string | null,
-  sourceInstanceId?: string | null,
-): void {
-  for (const ally of controller.board) {
-    if (sourceInstanceId && ally.instanceId === sourceInstanceId) continue;
-    // Ni race ni clan ⇒ TOUTES les créatures alliées. Le repli était `false`,
-    // c'est-à-dire « personne » : un Renforcement multiple sans cible désignée
-    // ne faisait rien du tout, d'où la validation serveur qui l'interdisait.
-    const match = clan ? ally.card.clan === clan : (race ? ally.card.race === race : true);
-    if (!match) continue;
-    ally.card = { ...ally.card, attack: (ally.card.attack ?? 0) + x, health: (ally.card.health ?? 0) + y };
-    ally.currentAttack += x;
-    ally.currentHealth += y;
-    ally.maxHealth += y;
-    ally.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
-  }
-}
-
 /** Entrainement X : +X/+X à toutes les créatures EN MAIN du contrôleur de la
  *  même faction que la source (snapshot au moment du déclenchement). Buff cuit
- *  dans `card.attack/health` (patron permanent, cf. applyRenforcementMultiple)
+ *  dans `card.attack/health` (patron permanent, cf. applyRenforcementSelf)
  *  → il persiste ensuite quand la carte est jouée. Les cartes en main sont des
  *  CardInstance affichés avec current*, d'où la mise à jour de current/max. */
 function applyEntrainement(
@@ -10780,14 +10725,6 @@ function resolveCuratedKeywordEffect(
     return;
   }
   switch (kw) {
-    case "renforcement_multiple": {
-      // Tap / mort / retour : lit +X/+Y et race/clan depuis l'instance du mot-clé.
-      // withComposedMode(inst.mode) : pose le mode ambiant pour que le buff
-      // estampille lastBuffMode (teinte du popup par la couleur de l'effet).
-      withComposedMode(inst?.mode, () =>
-        applyRenforcementMultiple(owner, inst?.x ?? 0, inst?.y ?? 0, inst?.race, inst?.clan, source.instanceId));
-      return;
-    }
     case "renforcement": {
       // Tap / mort / retour / fin de tour / attaque… : +X/+Y permanent au
       // bénéficiaire réglé (cf. bonusHorsEntree).

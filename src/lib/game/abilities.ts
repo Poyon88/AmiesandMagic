@@ -78,7 +78,7 @@ export interface AbilityTriggerMeta {
    *  `hasCapability(id)` quel que soit le déclencheur ; son `trigger` est donc
    *  purement cosmétique/taxonomique. */
   automatic?: boolean;
-  /** true ⇒ effet intrinsèque « à la mort » (carnage, héritage, martyr…).
+  /** true ⇒ effet intrinsèque « à la mort » (carnage, héritage…).
    *  Câblé dans processDeathTriggers via `hasKw` (any). */
   deathNature?: boolean;
   /** true ⇒ capacité « multi-mode curée » : peut être authorée en on_play /
@@ -807,12 +807,6 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Race" },
   },
-  martyr: {
-    id: "martyr", label: "Martyr", symbol: "⚱️",
-    desc: "+1/+1 permanent à vos {race_pl} en jeu.",
-    applicable_to: ["creature"],
-    creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Race" },
-  },
   instinct_de_meute: {
     id: "instinct_de_meute", label: "Instinct de meute X", symbol: "🐺",
     desc: "+X/+X si un allié {faction_de} est mort ce tour.",
@@ -1418,19 +1412,6 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: [], needsTarget: true, targetType: "any_creature_or_item",
     },
   },
-  renforcement_multiple: {
-    id: "renforcement_multiple", label: "Renforcement multiple", symbol: "⏫",
-    desc: "+X/+Y à vos créatures{rm_scope}.",
-    applicable_to: ["creature", "spell"],
-    creature: {
-      cost: 16, costPerX: 6, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
-      desc: "+X/+Y à vos créatures{rm_scope}.",
-    },
-    spell: {
-      desc: "+X/+Y à vos créatures{rm_scope}.",
-      params: ["attack", "health"], needsTarget: false,
-    },
-  },
   entrainement: {
     id: "entrainement", label: "Entrainement X", symbol: "🏋️",
     desc: "+X/+X à vos créatures {faction_de} en main.",
@@ -1845,7 +1826,7 @@ export function creatureEngineId(a: AbilityDef): string {
  *  des appels `hasKwOnPlay` et du switch `resolveCuratedKeywordEffect`. */
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "entrainement", "inspiration", "afflux",
-  "ombre_du_passe", "pillage", "prescience", "remontee", "renforcement_multiple",
+  "ombre_du_passe", "pillage", "prescience", "remontee",
   "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
@@ -1998,7 +1979,7 @@ export function itemRequiresMode(engineId: string): boolean {
  *  on_death ; le label de déclencheur est cosmétique (le moteur les trouve par
  *  id quel que soit le trigger). */
 export const DEATH_NATURE_IDS: ReadonlySet<string> = new Set([
-  "carnage", "heritage", "malefice", "martyr", "pacte_de_sang",
+  "carnage", "heritage", "malefice", "pacte_de_sang",
   "resurrection", "cycle_eternel", "sacrifice_demoniaque",
 ]);
 

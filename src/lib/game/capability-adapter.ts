@@ -259,7 +259,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
     }
 
     let params: Capability["params"];
-    if (id === "renforcement_multiple" || id === "gloire") {
+    if (id === "gloire") {
       // x = bonus ATK (+X), y = bonus PV (+Y).
       params = pruneParams({ attack: x, health: inst.y });
     } else {
@@ -318,7 +318,7 @@ function deriveCreatureCapabilities(card: Card): Capability[] {
 // RESTE à brancher avant la phase F (suppression des colonnes legacy) : les
 // résolveurs d'effets curés mort/tap/retour (resolveCuratedKeywordEffect et ses
 // appelants qui lisent keyword_instances), la lecture `charge` de
-// createCardInstance, et les lectures directes de renforcement_multiple. Ces
+// createCardInstance. Ces
 // chemins lisent des colonnes que la forge continue de peupler jusqu'en phase D,
 // donc restent cohérents d'ici là.
 

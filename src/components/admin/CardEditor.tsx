@@ -21,7 +21,6 @@ import { useTranslations } from "next-intl";
 import CostListEditor from "@/components/card-forge/CostListEditor";
 import LinkedCardsPicker from "@/components/card-forge/LinkedCardsPicker";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
-import RaceClanPicker from "@/components/admin/RaceClanPicker";
 import { COUT_OPTIONNEL, RANDOM_X_ABILITY_IDS } from "@/lib/game/abilities";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
@@ -292,11 +291,6 @@ export default function CardEditor() {
   const [printsResult, setPrintsResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
-  // Renforcement multiple (créature) : +Y (PV) et race/clan ciblé. Le +X (ATK)
-  // réutilise keywordXValues ; ces 3 champs sont sérialisés dans keyword_instances.
-  const [rmY, setRmY] = useState<number>(1);
-  const [rmRace, setRmRace] = useState<string>("");
-  const [rmClan, setRmClan] = useState<string>("");
   // Renforcement +X/+Y (créature, self-buff) : le +PV (Y) dédié. Le +ATK (X)
   // réutilise keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [rfY, setRfY] = useState<number>(1);
@@ -502,7 +496,7 @@ export default function CardEditor() {
     const recipients: Record<string, "self"> = {};
     let neutraliseLoaded = "";
     let dcRandomYLoaded = false;
-    let rmYLoaded = 1, rmRaceLoaded = "", rmClanLoaded = "", rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
+    let rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
     let invYLoaded = 1;
     let inventionLoaded: MachinePartValue = {};
     let invocCostsLoaded: number[] = [];
@@ -522,9 +516,6 @@ export default function CardEditor() {
       if (inst.targetScope) targetScopes[inst.id] = inst.targetScope;
       if (inst.recipient === "self") recipients[inst.id] = "self";
       if (inst.id === "neutralisation") neutraliseLoaded = inst.grantAbilityId ?? "";
-      if (inst.id === "renforcement_multiple") {
-        rmYLoaded = inst.y ?? 1; rmRaceLoaded = inst.race ?? ""; rmClanLoaded = inst.clan ?? "";
-      }
       if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
       if (inst.id === "discipline") dscYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
@@ -547,7 +538,7 @@ export default function CardEditor() {
       if (inst.id === "tuteur") tuteurLoaded = inst.linkedCardIds ?? [];
       if (inst.id === "transformation") transformationLoaded = (inst.linkedCardIds ?? []).slice(0, 1);
     }
-    setRmY(rmYLoaded); setRmRace(rmRaceLoaded); setRmClan(rmClanLoaded); setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded); setInvY(invYLoaded); setInventionPart(inventionLoaded);
+    setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded); setInvY(invYLoaded); setInventionPart(inventionLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setTuteurCardIds(tuteurLoaded);
@@ -788,10 +779,6 @@ export default function CardEditor() {
           if (id === "neutralisation" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), ...(neutraliseAbilityId ? { grantAbilityId: neutraliseAbilityId } : {}) };
           }
-          // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
-          if (id === "renforcement_multiple" && !isSpellCard) {
-            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rmY, ...(rmRace ? { race: rmRace } : {}), ...(rmClan ? { clan: rmClan } : {}) };
-          }
           // Renforcement +X/+Y (créature, self-buff) : porte +X (ATK) / +Y (PV) ; toujours émis.
           if (id === "renforcement" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: rfY };
@@ -989,7 +976,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, neutraliseAbilityId, rmY, rmRace, rmClan, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, neutraliseAbilityId, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -2002,16 +1989,6 @@ export default function CardEditor() {
                             <MachinePartEditor value={kw} onChange={p => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, ...p } : k))} />
                           </div>
                         )}
-                        {kw.id === "renforcement_multiple" && (
-                          <div style={{ flexBasis: "100%", marginTop: 2 }}>
-                            <label style={{ fontSize: 7, color: "#2c5d99", letterSpacing: 1, fontFamily: "'Cinzel',serif" }}>RACE / CLAN CIBLÉ</label>
-                            <RaceClanPicker
-                              race={kw.race ?? ""}
-                              clan={kw.clan ?? ""}
-                              onChange={(r, c) => setSpellKws(spellKws.map((k, i) => i === idx ? { ...k, race: r || undefined, clan: c || undefined } : k))}
-                            />
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -2558,22 +2535,6 @@ export default function CardEditor() {
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
-              </div>
-            )}
-
-            {((editFields.keywords as string[]) || []).includes("renforcement_multiple") && porteStats && (
-              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, background: "#eef5ff", border: "1px solid #cfe0f5" }}>
-                <div style={{ ...S.label, color: "#2c5d99", marginBottom: 6 }}>⏫ Renforcement multiple — +PV (Y) & cible</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 9, color: "#27ae60" }}>+PV (Y)</span>
-                  <input
-                    type="number" min={0} max={20} value={rmY}
-                    onChange={e => setRmY(Math.max(0, parseInt(e.target.value) || 0))}
-                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #cfe0f5", fontSize: 11, textAlign: "center" }}
-                  />
-                  <span style={{ fontSize: 9, color: "#888" }}>(le +ATK = la valeur X ci-dessus)</span>
-                </div>
-                <RaceClanPicker race={rmRace} clan={rmClan} onChange={(r, c) => { setRmRace(r); setRmClan(c); }} />
               </div>
             )}
 

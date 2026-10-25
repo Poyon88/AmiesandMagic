@@ -546,13 +546,6 @@ export default function ComposedEffectsEditor({
                   <MachinePartEditor value={kw} onChange={(p) => patchCurated(idx, p)} />
                 </>
               )}
-              {kw.id === "renforcement_multiple" && (
-                <>
-                  <span style={labelStyle}>{tr('race_clan_label')}</span>
-                  <RaceClanPicker race={kw.race ?? ""} clan={kw.clan ?? ""}
-                    onChange={(r, c) => patchCurated(idx, { race: r || undefined, clan: c || undefined })} />
-                </>
-              )}
               {kw.id === "invocations_multiples" && (
                 <>
                   <span style={labelStyle}>{tr('invocation_costs_label')}</span>

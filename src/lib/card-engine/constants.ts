@@ -94,7 +94,6 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Savant": ALL_MODES,
   "Combustion": ALL_MODES,
   "Remontée": ALL_MODES,
-  "Renforcement multiple": ALL_MODES,
   "Entrainement X": ALL_MODES,
   // Effets « deck » (Fortifier / Préincanter) : la cible vit dans le deck du
   // contrôleur, aucun ciblage ni source en jeu requise → tous les déclencheurs.
@@ -536,7 +535,7 @@ export const FACTIONS: Record<string, {
       },
     },
     clanProfiles: {
-      "Les Enfants du Soleil": { statWeights: { atk: 1.10, def: 0.95 }, likelyKeywords: { "Sacrifice": 0.55, "Héritage X": 0.50, "Martyr": 0.45, "Bravoure": 0.45, "Bénédiction": 0.40, "Convocation X": 0.40 } },
+      "Les Enfants du Soleil": { statWeights: { atk: 1.10, def: 0.95 }, likelyKeywords: { "Sacrifice": 0.55, "Héritage X": 0.50, "Bravoure": 0.45, "Bénédiction": 0.40, "Convocation X": 0.40 } },
       "Les Seigneurs des Dunes": { statWeights: { atk: 1.05, def: 1.00 }, likelyKeywords: { "Pillage X": 0.55, "Traque": 0.50, "Esquive": 0.50, "Célérité": 0.45, "Résistance X": 0.45, "Persécution X": 0.40 } },
       "Le Royaume des Masques": { statWeights: { atk: 0.90, def: 1.15 }, likelyKeywords: { "Convocation X": 0.60, "Divination": 0.50, "Prescience X": 0.45, "Augure": 0.45, "Bénédiction": 0.40, "Totem": 0.40, "Régénération X": 0.35 } },
       "Les Fils du Volcan": { statWeights: { atk: 1.25, def: 0.85 }, likelyKeywords: { "Combustion": 0.60, "Fureur": 0.55, "Gloire +X/+Y": 0.50, "Souffle de feu X": 0.45, "Bravoure": 0.45, "Raid": 0.40, "Sacrifice": 0.40, "Célérité": 0.35 } },

@@ -54,14 +54,6 @@ describe("buildKeywordInstances — couples X/Y", () => {
       .toEqual([{ id: "force_des_ancetres", x: 1, y: 1 }]);
   });
 
-  it("Renforcement multiple porte race et clan quand ils sont fournis", () => {
-    expect(buildKeywordInstances({
-      labels: ["Renforcement multiple"],
-      xValues: { "Renforcement multiple": 1 },
-      extras: { rmY: 2, rmRace: "elves", rmClan: "Combe Verte" },
-    })).toEqual([{ id: "renforcement_multiple", x: 1, y: 2, race: "elves", clan: "Combe Verte" }]);
-  });
-
   it("côté SORT, Renforcement passe par la branche générique (pas de Y forcé)", () => {
     // La branche dédiée est gardée par `!isSpellCard` : sur un sort, le +Y
     // vient de spell_keywords, pas de l'instance.

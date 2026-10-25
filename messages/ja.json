@@ -344,10 +344,6 @@
         "label": "永遠の輪廻",
         "desc": "このカードのコピーをデッキに加える。それが引かれた場合、直接場に出す。"
       },
-      "martyr": {
-        "label": "殉教者",
-        "desc": "場の{race_pl}に永続的に+1/+1。"
-      },
       "instinct_de_meute": {
         "label": "群れの本能 X",
         "desc": "{faction_de}の味方がこのターン死亡していれば+X/+X。"
@@ -386,6 +382,11 @@
         "label": "寵愛X",
         "desc": "コストXの{alignment}のコモンをランダムに1枚、手札に加える。",
         "desc_any": "{alignment}のコモンをランダムに1枚手札に加える。"
+      },
+      "forge": {
+        "label": "鍛造X",
+        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる。",
+        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる。"
       },
       "selection_magique": {
         "label": "魔法選択 X",
@@ -440,8 +441,8 @@
       },
       "apprentissage": {
         "label": "習得 X",
-        "desc": "手札からコストX以下のアクションを1枚取り除いて記憶する:このクリーチャーはマナを支払わずにそれをプレイできる。",
-        "desc_any": "手札からアクションを1枚取り除いて記憶する:このクリーチャーはマナを支払わずにそれをプレイできる。"
+        "desc": "コストX以下のアクションを手札から取り除いて記憶する。このクリーチャーはマナを支払わずにそれをプレイできる。",
+        "desc_any": "アクションを手札から1枚取り除いて記憶する。このクリーチャーはマナを支払わずにそれをプレイできる。"
       },
       "impact": {
         "label": "衝撃 X",
@@ -503,10 +504,6 @@
         "label": "帰還",
         "desc": "対象のユニットを元の所有者の手札に戻す。"
       },
-      "renforcement_multiple": {
-        "label": "集団強化",
-        "desc": "自分の{rm_scope}クリーチャーに+X/+Y。"
-      },
       "entrainement": {
         "label": "訓練 X",
         "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
@@ -551,11 +548,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "forge": {
-        "label": "鍛造X",
-        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる。",
-        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる。"
       }
     },
     "spell_keywords": {
@@ -570,6 +562,10 @@
       "poison": {
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP-1。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "対象の味方ユニット1体を完全に回復する。"
       },
       "pillage": {
         "label": "略奪 X",
@@ -642,6 +638,11 @@
         "label": "選択 X",
         "desc": "コストXの{alignment}のコモンを3枚公開し、そのうち1枚を手札に加える",
         "desc_any": "{alignment}のコモン3枚を公開し、その中から1枚を手札に加える"
+      },
+      "forge": {
+        "label": "鍛造X",
+        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる",
+        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる"
       },
       "faveur": {
         "label": "寵愛X",
@@ -769,10 +770,6 @@
         "label": "帰還",
         "desc": "対象のユニットまたはアイテムを、元の所有者の手札に戻す。"
       },
-      "renforcement_multiple": {
-        "label": "集団強化",
-        "desc": "自分の{rm_scope}クリーチャーに+X/+Y。"
-      },
       "entrainement": {
         "label": "鍛錬 X",
         "desc": "手札にある自分の{faction_de}クリーチャーに+X/+X。"
@@ -816,15 +813,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "forge": {
-        "label": "鍛造X",
-        "desc": "中立{forge_align}のアイテム{forge_cout}を1枚、ランダムにあなたのデッキに混ぜる",
-        "desc_any": "中立{forge_align}のアイテム{forge_cout_libre}を1枚、ランダムにあなたのデッキに混ぜる"
-      },
-      "benediction": {
-        "label": "祝福",
-        "desc": "対象の味方ユニット1体を完全に回復する。"
       }
     },
     "composed": {
@@ -842,7 +830,7 @@
         "on_draw": "引かれたとき",
         "on_low_hp": "HP15未満",
         "on_wound": "負傷",
-        "on_delay": "遅延{d}"
+        "on_delay": "遅延 {d}"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -927,6 +915,7 @@
         "conquete": "征服カウンターに{x}を加える",
         "exploration": "探索カウンターに{x}を加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
+        "incineration_cible": "{zone}{cartes}を{deck}の下に戻す",
         "occurrences": "{n}回: ",
         "alternative": "選択: ",
         "devoration": "捕食する",
@@ -949,6 +938,10 @@
         "selection_magique_any": "アクション{filter}を3枚公開し、その中から1枚を手札に加える",
         "renfort_royal_any": "コレクションカード{filter}を3枚公開し、その中から1枚を手札に加える",
         "tresor_any": "アイテム{filter}を3枚公開し、その中から1枚を手札に加える",
+        "forge": "中立または自分の陣営のアイテム{filter}を、コスト{x}以下でランダムにデッキに混ぜる",
+        "forge_range": "中立または自分の陣営のアイテム{filter}を、コスト{min}から{x}の範囲でランダムにデッキに混ぜる",
+        "forge_any": "中立または自分の陣営のアイテム{filter}を、ランダムにデッキに混ぜる",
+        "forge_any_min": "中立または自分の陣営のアイテム{filter}を、コスト{min}以上でランダムにデッキに混ぜる",
         "invocation_any": "ランダムなクリーチャー{filter}を1体召喚する",
         "invocation_item_any": "ランダムなアイテム{filter}を1つ場に出す",
         "exhumation_any": "墓地から{who}を蘇生する",
@@ -956,12 +949,7 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
-        "forge": "中立または自分の陣営のアイテム{filter}を、コスト{x}以下でランダムにデッキに混ぜる",
-        "forge_range": "中立または自分の陣営のアイテム{filter}を、コスト{min}から{x}の範囲でランダムにデッキに混ぜる",
-        "forge_any": "中立または自分の陣営のアイテム{filter}を、ランダムにデッキに混ぜる",
-        "forge_any_min": "中立または自分の陣営のアイテム{filter}を、コスト{min}以上でランダムにデッキに混ぜる",
-        "incineration_cible": "{zone}{cartes}を{deck}の下に戻す"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
       },
       "self": {
         "transformation": "変身する",
@@ -1025,6 +1013,28 @@
         "on_draw": "、ドロー時に発動する",
         "on_low_hp": "、HPが15を下回ると発動する",
         "on_wound": "、致命傷を受けずに負傷した時に発動する"
+      },
+      "incin": {
+        "zone_ally": "あなたの墓地の",
+        "zone_enemy": "相手の墓地の",
+        "zone_any": "いずれかの墓地の",
+        "zone_both": "両方の墓地の",
+        "deck_ally": "あなたのデッキ",
+        "deck_enemy": "相手のデッキ",
+        "deck_any": "その持ち主のデッキ",
+        "deck_both": "その持ち主のデッキ",
+        "card_all": "すべてのカード",
+        "card_one": "カード1枚",
+        "card_n": "カード{n}枚",
+        "unit_all": "すべてのユニット",
+        "unit_one": "ユニット1体",
+        "unit_n": "ユニット{n}体",
+        "spell_all": "すべてのアクション",
+        "spell_one": "アクション1枚",
+        "spell_n": "アクション{n}枚",
+        "item_all": "すべてのアイテム",
+        "item_one": "アイテム1つ",
+        "item_n": "アイテム{n}つ"
       },
       "pool": {
         "race": "（種族：{v}）",
@@ -1099,28 +1109,6 @@
         "times": "{x}回、毎回1{unit}を",
         "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
         "target_unit": "ランダムな{side}ユニット1体に"
-      },
-      "incin": {
-        "zone_ally": "あなたの墓地の",
-        "zone_enemy": "相手の墓地の",
-        "zone_any": "いずれかの墓地の",
-        "deck_ally": "あなたのデッキ",
-        "deck_enemy": "相手のデッキ",
-        "deck_any": "その持ち主のデッキ",
-        "card_all": "すべてのカード",
-        "card_one": "カード1枚",
-        "card_n": "カード{n}枚",
-        "unit_all": "すべてのユニット",
-        "unit_one": "ユニット1体",
-        "unit_n": "ユニット{n}体",
-        "spell_all": "すべてのアクション",
-        "spell_one": "アクション1枚",
-        "spell_n": "アクション{n}枚",
-        "item_all": "すべてのアイテム",
-        "item_one": "アイテム1つ",
-        "item_n": "アイテム{n}つ",
-        "zone_both": "両方の墓地の",
-        "deck_both": "その持ち主のデッキ"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "X/Xのトークン",
       "ability": "能力",
       "scope": "味方ユニット1体（または全体）に",
-      "rm_scope": "選択した種族またはクランの",
-      "rm_scope_race": "{v}種族の",
-      "rm_scope_clan": "{v}クランの",
-      "rm_scope_all": "",
       "scope_target": "味方ユニット1体に",
       "edc_compte": "{n}回、ランダムで+1 ATKまたは+1 HPを得る(既に場に出ている「団結心」持ちの{clan_de}クリーチャー1体につき1回)。",
       "scope_all": "あなたの全ユニットに",
@@ -2089,7 +2073,7 @@
         "low_hp": "HPが{n}以下のとき",
         "spell": "アクションの解決時",
         "wound": "致命傷を受けずに負傷した時",
-        "delay": "遅延が終わったとき"
+        "delay": "遅延の終了時に"
       }
     },
     "triggers": {
@@ -2104,7 +2088,7 @@
       "draw": "ドロー時",
       "low_hp": "HP{n}以下",
       "wound": "負傷",
-      "delay": "遅延{d}"
+      "delay": "遅延 {d}"
     },
     "target_scope": {
       "spell": {
@@ -2114,6 +2098,7 @@
         "remontee": "{cibles}を元の持ち主の手札に戻す。",
         "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
         "domination": "場の空きがある限り、{cibles}を支配下に置く。",
+        "benediction": "{cibles}を完全に回復する。",
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
         "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
@@ -2121,8 +2106,7 @@
         "silence": "{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
-        "guerison": "{cibles}のHPをX回復する。",
-        "benediction": "{cibles}を完全に回復する。"
+        "guerison": "{cibles}のHPをX回復する。"
       },
       "creature": {
         "impact": "{cibles}にXダメージを与える。",
@@ -2150,7 +2134,7 @@
     "cost_help": {
       "vie": {
         "title": "ライフコスト {n}",
-        "desc": "マナに加えて、このカードを使うとヒーローが{n}PVを失う。ヒーローのPVが0になる場合は使えない。"
+        "desc": "マナに加えて、このカードをプレイするとき、あなたのヒーローは{n}HPを失う。0HPになる場合はプレイできない。"
       },
       "defausse": {
         "title": "捨て札 {n}",
@@ -2164,23 +2148,23 @@
       },
       "exil": {
         "title": "追放 {n}",
-        "desc_one": "マナに加えて、デッキの一番上のカードが追放され、ゲームから取り除かれる。デッキが空なら使えない。",
-        "desc_many": "マナに加えて、デッキの上から{n}枚のカードが追放され、ゲームから取り除かれる。デッキに{n}枚以上必要。"
+        "desc_one": "マナに加えて、デッキの一番上のカードが追放される（ゲームから取り除かれる）。デッキが空の場合はプレイできない。",
+        "desc_many": "マナに加えて、デッキの上から{n}枚のカードが追放される（ゲームから取り除かれる）。デッキに{n}枚以上のカードが必要。"
       },
       "repli": {
         "title": "リプレイス {n}",
-        "desc_one": "マナに加えて、手札から好きなカードを1枚デッキの一番上に戻す。",
-        "desc_many": "マナに加えて、手札から好きなカードを{n}枚デッキの上に戻す。最初に選んだカードが一番上になる。"
+        "desc_one": "マナに加えて、手札から好きなカードを1枚選び、デッキの一番上に戻す。",
+        "desc_many": "マナに加えて、手札から好きなカードを{n}枚選び、デッキの一番上に戻す。最初に選んだカードが一番上になる。"
       },
       "eveil": {
         "title": "覚醒 {n}",
-        "desc": "使う代わりに、このカードを覚醒状態にできる。その後、自分のターンにマナ1につき1ポイントずつ、{n}ポイントを支払う。最後のポイントで、使ったときと同じように場に出る。",
-        "remaining": "残り{left}/{n}ポイント。"
+        "desc": "このカードはプレイする代わりに覚醒状態にできる。以後、自分のターン中にマナで{n}ポイントを支払う（1マナにつき1ポイント）。最後のポイントを支払うと、プレイしたかのように場に出る。",
+        "remaining": "{n}ポイント中、あと{left}ポイント支払う必要がある。"
       },
       "equipement": {
         "title": "装備 {n}",
-        "desc": "アイテムが場に出た後、自分のクリーチャーに装備するには{n}マナかかる。付け替えを含め、装備するたびに支払う。",
-        "desc_free": "アイテムが場に出た後、自分のクリーチャーへの装備は付け替えを含めて無料。"
+        "desc": "アイテムが場に出たら、それをあなたのクリーチャー1体に装備するのに{n}マナかかる。コストは移動を含め、装備のたびに支払う。",
+        "desc_free": "アイテムが場に出たら、それをあなたのクリーチャー1体に装備するのは無料。移動も含む。"
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "無力化された能力",
     "neutralisation_hint": "このカードが場に出ている間、対象の敵ユニット（範囲が「敵全体」の場合はすべての敵ユニット）の能力を沈黙させる。",
     "target_scope_target": "対象",
+    "target_scope_self": "自身",
     "target_scope_all_enemies": "敵全体",
     "target_scope_all_allies": "味方全体",
     "target_scope_all": "全体(両陣営)",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "アクションキーワード",
     "token_to_summon": "召喚するトークン",
     "config_below_tokens": "下の「召喚するトークン」で設定",
-    "targeted_race_clan": "対象種族 / クラン",
     "targeted_race": "対象種族",
     "required": "必須",
     "choose_race": "-- 種族を選択 --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "変身トークン",
     "target_race_label": "対象種族",
     "required_caps_f": "必須",
-    "atk_is_x": "（＋ATK＝X値）",
     "neg_atk_is_x": "（－ATK＝X値）",
     "spell_cost_y": "アクションコスト（Y）",
     "spell_count_is_x": "（アクションの数 = X の値）",
@@ -2774,14 +2757,11 @@
     "x_value_title": "X の値",
     "targets_label2": "対象",
     "one_target": "対象1体",
-    "rm_config_label": "+HP（Y）および対象の種族／クラン",
-    "atk_equals_x": "（+ATK = X）",
     "neg_atk_equals_x": "（-ATK = X）",
     "on_self": "（自身に）",
     "add_ability": "＋能力を追加：",
     "choose_dash": "-- 選択 --",
     "no_ability_add_effect": "能力なし。以下に付与するエフェクトまたは能力を追加してください。",
-    "race_clan_label": "種族 / クラン",
     "race_label": "種族",
     "race_dash": "-- 種族 --",
     "confer_prefix": "付与：",
@@ -2998,6 +2978,8 @@
     "content_appel_supreme": "至高の招集（デッキ→手札、最高コスト）",
     "content_tuteur": "チューター（指定カード→手札）",
     "content_transformation": "指定されたカードに変身",
+    "content_forge": "鍛造（デッキに混ぜるアイテム1つ）",
+    "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。",
     "transformation_card_hint": "対象となった各ユニットはこのカードに変身します。カードが複数枚指定されている場合、それぞれがランダムに1枚を引きます。盤面を離れると元の姿に戻ります。",
     "content_epargne": "貯蓄（カウンター）",
     "content_foi": "信仰（カウンター）",
@@ -3010,15 +2992,12 @@
     "content_silence": "沈黙（対象から全て取り除く）",
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
     "content_selection_magique": "魔法選択（3枚から1つのアクション）",
-    "content_forge": "鍛造（デッキに混ぜるアイテム1つ）",
-    "forge_min_hint": "鍛造されるアイテムの最低コスト（下限A）。最大コストはXです。Xが空欄の場合、コストは無制限です。",
     "tab_style_guides": "スタイルガイド",
-    "mode_title_delay": "遅延X：X回後の自分のターン開始時に一度だけ発動（ユニットが場に残っている場合）",
-    "trigger_on_delay": "遅延X（X回後のターン開始時）",
+    "mode_title_delay": "遅延 X：ユニットがまだ場にいる場合、X回後のターン開始時に一度だけ発動",
+    "trigger_on_delay": "遅延 X（X回後のターン開始時）",
     "retard_turns_title": "遅延：発動までのターン数",
-    "retard_spell_title": "遅延：使用者のX回後のターン開始時に発動し、その時に対象を選ぶ",
-    "label_retard": "遅延",
-    "target_scope_self": "自身"
+    "retard_spell_title": "遅延：効果は使用者のX回後のターン開始時に発動し、対象はその時点で選ばれる",
+    "label_retard": "遅延"
   },
   "game": {
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",
@@ -3035,7 +3014,7 @@
     "settings": "設定",
     "choose_card": "カードを選んでください",
     "attack_choice_target": "⚔️ {label} — 対象を選んでください",
-    "attack_power_label": "攻撃時能力",
+    "attack_power_label": "攻撃力",
     "opponent_choosing": "⏳ 相手が選択中…",
     "no_creatures": "クリーチャーなし",
     "drag_hint": "カードをここにドラッグしてプレイ",
@@ -3048,7 +3027,7 @@
     "selection_title": "🎴 選択",
     "selection_subtitle": "手札に加えるカードを選んでください",
     "discovery_title": "🔭 発見",
-    "discovery_subtitle": "このターンのドロー：カードを1枚選んでください",
+    "discovery_subtitle": "今ターンのドロー：カードを1枚選んでください",
     "discovery_other_clan": "別のクラン",
     "power_hero_activated": "ヒーロー能力を発動しました",
     "power_used_this_turn": "このターン使用済み",
@@ -3460,10 +3439,10 @@
   "cardStatus": {
     "draft": "下書き",
     "playable": "使用可能",
-    "retired": "一時停止",
-    "excluded": "禁止",
-    "deck_unavailable": "使用できないカード {count} 枚",
-    "cannot_add": "使用できないカードです。デッキに追加できません",
+    "retired": "除外済み",
+    "excluded": "使用不可",
+    "deck_unavailable": "{count, plural, one {使用不可のカード#枚} other {使用不可のカード#枚}}",
+    "cannot_add": "使用不可のカード：デッキに入れることはできません",
     "reason": "理由：{reason}"
   }
 }

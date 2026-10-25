@@ -257,11 +257,6 @@ export async function POST(request: Request) {
       if (!rc.race) return NextResponse.json({ error: 'Entraide : race cible requise.' }, { status: 400 });
     }
 
-    // Renforcement multiple : race et clan sont désormais FACULTATIFS — sans
-    // eux, le bonus s'applique à toutes les créatures alliées. La validation
-    // qui les exigeait n'avait de sens que parce que le moteur ne savait pas
-    // traiter ce cas (il ne buffait alors personne).
-
     // Garde anti-homonyme (création ET renommage). Volontairement AVANT tout
     // upload : un refus ne doit pas laisser d'image ni de SFX orphelins dans le
     // storage. `allowDuplicateName` permet à l'admin de forcer en connaissance

@@ -83,7 +83,7 @@ function expand<K extends string>(counts: Record<K, number>, rng: Rng): K[] {
 export const CAPACITES_A_REGLAGE: ReadonlySet<string> = new Set([
   "entraide", "transformation", "convocation", "convocation_simple", "invocation_multiple", "invocations_multiples",
   "lycanthropie", "compagnons", "tuteur", "conferer", "neutralisation", "declenchement", "invention",
-  "renforcement_multiple", "pauvrete",
+  "pauvrete",
 ]);
 
 /** Côté SORT, ces capacités ne font qu'amplifier les AUTRES valeurs de l'action

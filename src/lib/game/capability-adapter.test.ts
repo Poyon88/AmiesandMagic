@@ -229,19 +229,6 @@ describe("deriveCapabilities — créatures", () => {
     expect(caps).toHaveLength(2);
   });
 
-  it("renforcement_multiple : x→attack, y→health, race/clan reportés", () => {
-    const c = card({
-      keywords: ["renforcement_multiple"] as Card["keywords"],
-      keyword_instances: [
-        { id: "renforcement_multiple", x: 2, y: 3, race: "elfes", clan: "sylvains" },
-      ] as KeywordInstance[],
-    });
-    const [cap] = deriveCapabilities(c);
-    expect(cap.params).toEqual({ attack: 2, health: 3 });
-    expect(cap.race).toBe("elfes");
-    expect(cap.clan).toBe("sylvains");
-  });
-
   it("entraide : race lue depuis card.entraide_race", () => {
     const c = card({
       keywords: ["entraide"] as Card["keywords"],
@@ -347,7 +334,7 @@ describe("registre — métadonnées de taxonomie", () => {
   // ce dernier est déjà porté par la couleur du texte sur la carte. Les pouvoirs
   // multi-mode ne doivent donc jamais préfixer leur desc par une mention
   // générique de déclenchement ("Selon le déclenchement", "Au déclenchement"…).
-  // Garde-fou pour les futurs mots-clés (cf. Entrainement / Renforcement multiple).
+  // Garde-fou pour les futurs mots-clés (cf. Entrainement).
   it("aucune desc ne mentionne un déclencheur générique", () => {
     const FORBIDDEN = /selon le déclenchement|au déclenchement|selon le mode|selon le déclencheur/i;
     for (const a of Object.values(ABILITIES)) {

@@ -271,7 +271,7 @@ Certaines factions différencient leurs races par un profil de pouvoirs propre (
 
 | Clan | Inspiration | Style | Identité | Pouvoirs signature |
 |---|---|---|---|---|
-| 🌞 **Les Enfants du Soleil** | Incas | 1.10/0.95 | Moteur à sacrifice | Sacrifice (0.55), Héritage X (0.50), Martyr (0.45), Bravoure (0.45), Bénédiction (0.40), Convocation X (0.40) |
+| 🌞 **Les Enfants du Soleil** | Incas | 1.10/0.95 | Moteur à sacrifice | Sacrifice (0.55), Héritage X (0.50), Bravoure (0.45), Bénédiction (0.40), Convocation X (0.40) |
 | 🏜️ **Les Seigneurs des Dunes** | Touaregs | 1.05/1.00 | Harceleur-pilleur | Pillage X (0.55), Traque (0.50), Esquive (0.50), Célérité (0.45), Résistance X (0.45), Persécution X (0.40) |
 | 🎭 **Le Royaume des Masques** | Yoruba/Bénin | 0.90/1.15 | Invocateur-soutien | Convocation X (0.60), Divination (0.50), Prescience X (0.45), Augure (0.45), Bénédiction (0.40), Totem (0.40), Régénération (0.35) |
 | 🌋 **Les Fils du Volcan** | Polynésie | 1.25/0.85 | Feu tribal agressif | Combustion (0.60), Fureur (0.55), Gloire +X/+Y (0.50), Souffle de feu X (0.45), Bravoure (0.45), Raid (0.40), Sacrifice (0.40), Célérité (0.35) |
@@ -452,7 +452,6 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | 🩸 Pacte de sang | 4 | Invoque deux tokens 1/1 de sa race. |
 | 👹 Sacrifice démoniaque X | 3 | Répartit X réductions de coût (−1) parmi vos Démons en main. |
 | ♻️ Cycle éternel | — | Ajoute une copie d'elle-même au deck ; si piochée, entre directement en jeu. |
-| ⚱️ Martyr | — | Toutes vos unités de même race gagnent +1/+1 permanent. |
 
 ### 8.4 Synergies de race / clan / deck (auras et conditions)
 
@@ -500,7 +499,6 @@ Les cartes **datées** (séries limitées / éditions forgées) existent en nomb
 | Capacité | Effet |
 |---|---|
 | 🔼 Remontée | Renvoie une unité ciblée dans la main de son propriétaire. |
-| ⏫ Renforcement multiple | +X/+Y à toutes vos créatures d'une race/clan choisi (clan prioritaire). |
 | 🏋️ Entrainement X | +X/+X à vos créatures **en main** de la même faction (tous déclencheurs). |
 | 🎯 Concentration X | Remplace chaque sort en main par un sort aléatoire de coût +X (réduit de X). |
 | 🌩️ Tempête X | X dégâts répartis aléatoirement entre les unités ennemies. |

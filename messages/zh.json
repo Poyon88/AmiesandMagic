@@ -344,10 +344,6 @@
         "label": "永恒轮回",
         "desc": "在你的牌库中加入这张卡的一个复制；若被抽到，直接将其置入场上。"
       },
-      "martyr": {
-        "label": "殉道者",
-        "desc": "你场上的{race_pl}永久获得+1/+1。"
-      },
       "instinct_de_meute": {
         "label": "群狼本能 X",
         "desc": "如果一个{faction_de}盟友本回合死亡，则+X/+X。"
@@ -386,6 +382,11 @@
         "label": "恩宠X",
         "desc": "随机将一张费用为X的{alignment}普通卡加入手牌。",
         "desc_any": "随机将一张{alignment}普通卡加入手牌。"
+      },
+      "forge": {
+        "label": "熔铸 X",
+        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆。",
+        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆。"
       },
       "selection_magique": {
         "label": "魔法抉择 X",
@@ -440,8 +441,8 @@
       },
       "apprentissage": {
         "label": "修习 X",
-        "desc": "从你的手牌中移除一张费用≤X的行动并将其记忆：该生物无需支付法力即可打出该行动。",
-        "desc_any": "从你的手牌中移除一张行动并将其记忆：该生物无需支付法力即可打出该行动。"
+        "desc": "从你的手牌中移除一张费用≤X的行动牌并将其记忆：该生物可以不支付法力值直接打出它。",
+        "desc_any": "从你的手牌中移除一张行动牌并将其记忆：该生物可以不支付法力值直接打出它。"
       },
       "impact": {
         "label": "冲击 X",
@@ -503,10 +504,6 @@
         "label": "回弹",
         "desc": "将目标单位返回其原始拥有者的手牌。"
       },
-      "renforcement_multiple": {
-        "label": "群体强化",
-        "desc": "使你的{rm_scope}生物获得+X/+Y。"
-      },
       "entrainement": {
         "label": "训练 X",
         "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
@@ -551,11 +548,6 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
-      "forge": {
-        "label": "熔铸 X",
-        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆。",
-        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆。"
       }
     },
     "spell_keywords": {
@@ -570,6 +562,10 @@
       "poison": {
         "label": "中毒",
         "desc": "受伤单位每回合失去1点生命值。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "完全治疗一个被选中的友方单位。"
       },
       "pillage": {
         "label": "掠夺 X",
@@ -642,6 +638,11 @@
         "label": "甄选 X",
         "desc": "展示3张费用为X的{alignment}普通卡；将其中一张加入手牌",
         "desc_any": "展示3张{alignment}普通卡；从中选一张加入手牌"
+      },
+      "forge": {
+        "label": "熔铸 X",
+        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆",
+        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆"
       },
       "faveur": {
         "label": "恩宠X",
@@ -769,10 +770,6 @@
         "label": "归还",
         "desc": "将目标单位或物品送回其原拥有者的手牌。"
       },
-      "renforcement_multiple": {
-        "label": "群体强化",
-        "desc": "使你的{rm_scope}生物获得+X/+Y。"
-      },
       "entrainement": {
         "label": "训练 X",
         "desc": "使你手牌中的{faction_de}生物获得+X/+X。"
@@ -816,15 +813,6 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
-      },
-      "forge": {
-        "label": "熔铸 X",
-        "desc": "随机将一件中立{forge_align}{forge_cout}的物品混入你的牌堆",
-        "desc_any": "随机将一件中立{forge_align}{forge_cout_libre}的物品混入你的牌堆"
-      },
-      "benediction": {
-        "label": "祝福",
-        "desc": "完全治疗一个被选中的友方单位。"
       }
     },
     "composed": {
@@ -842,7 +830,7 @@
         "on_draw": "被抽到时",
         "on_low_hp": "生命值低于15",
         "on_wound": "受伤",
-        "on_delay": "延迟{d}"
+        "on_delay": "延迟 {d}"
       },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
@@ -927,6 +915,7 @@
         "conquete": "为你的征服计数器增加{x}",
         "exploration": "为你的探索计数器增加{x}",
         "incineration": "将目标墓地中的{x}张卡牌放回其牌库底",
+        "incineration_cible": "将{zone}{cartes}放回{deck}底部",
         "occurrences": "{n} 次：",
         "alternative": "择一：",
         "devoration": "吞噬",
@@ -949,6 +938,10 @@
         "selection_magique_any": "展示3张行动牌{filter}，并保留其中一张加入手牌",
         "renfort_royal_any": "展示你收藏中的3张卡牌{filter}，并保留其中一张加入手牌",
         "tresor_any": "展示3件物品{filter}，并保留其中一件加入手牌",
+        "forge": "随机将一件中立或你的阵营{filter}、费用至多为{x}的物品混入你的牌堆",
+        "forge_range": "随机将一件中立或你的阵营{filter}、费用为{min}到{x}的物品混入你的牌堆",
+        "forge_any": "随机将一件中立或你的阵营{filter}的物品混入你的牌堆",
+        "forge_any_min": "随机将一件中立或你的阵营{filter}、费用至少为{min}的物品混入你的牌堆",
         "invocation_any": "召唤一个随机生物{filter}",
         "invocation_item_any": "放置一个随机物品{filter}",
         "exhumation_any": "从你的墓地中复活{who}",
@@ -956,12 +949,7 @@
         "appel_any": "将你牌库中的首个单位置入场上",
         "appel_item_any": "将你牌库中的首个物品置入场上",
         "dechainement_any": "打出{x}张随机行动牌",
-        "dechainement_one_any": "打出一张随机行动牌",
-        "forge": "随机将一件中立或你的阵营{filter}、费用至多为{x}的物品混入你的牌堆",
-        "forge_range": "随机将一件中立或你的阵营{filter}、费用为{min}到{x}的物品混入你的牌堆",
-        "forge_any": "随机将一件中立或你的阵营{filter}的物品混入你的牌堆",
-        "forge_any_min": "随机将一件中立或你的阵营{filter}、费用至少为{min}的物品混入你的牌堆",
-        "incineration_cible": "将{zone}{cartes}放回{deck}底部"
+        "dechainement_one_any": "打出一张随机行动牌"
       },
       "self": {
         "transformation": "自身变形",
@@ -1025,6 +1013,28 @@
         "on_draw": "，将在其被抽到时触发",
         "on_low_hp": "，将在生命值低于15点时触发",
         "on_wound": "，将在其受伤但未死亡时触发"
+      },
+      "incin": {
+        "zone_ally": "你墓地中的",
+        "zone_enemy": "对手墓地中的",
+        "zone_any": "某个墓地中的",
+        "zone_both": "双方的墓地",
+        "deck_ally": "你的牌库",
+        "deck_enemy": "对手的牌库",
+        "deck_any": "其所有者的牌库",
+        "deck_both": "其所有者的牌组",
+        "card_all": "所有卡牌",
+        "card_one": "一张卡牌",
+        "card_n": "{n} 张卡牌",
+        "unit_all": "所有单位",
+        "unit_one": "一个单位",
+        "unit_n": "{n} 个单位",
+        "spell_all": "所有行动",
+        "spell_one": "一张行动",
+        "spell_n": "{n} 张行动",
+        "item_all": "所有物品",
+        "item_one": "一件物品",
+        "item_n": "{n} 件物品"
       },
       "pool": {
         "race": "种族为{v}的",
@@ -1099,28 +1109,6 @@
         "times": "{x} 次，每次 1 点 {unit}，每次随机",
         "target_both": "对一个随机 {side} 目标（单位或英雄）",
         "target_unit": "对一个随机 {side} 单位"
-      },
-      "incin": {
-        "zone_ally": "你墓地中的",
-        "zone_enemy": "对手墓地中的",
-        "zone_any": "某个墓地中的",
-        "deck_ally": "你的牌库",
-        "deck_enemy": "对手的牌库",
-        "deck_any": "其所有者的牌库",
-        "card_all": "所有卡牌",
-        "card_one": "一张卡牌",
-        "card_n": "{n} 张卡牌",
-        "unit_all": "所有单位",
-        "unit_one": "一个单位",
-        "unit_n": "{n} 个单位",
-        "spell_all": "所有行动",
-        "spell_one": "一张行动",
-        "spell_n": "{n} 张行动",
-        "item_all": "所有物品",
-        "item_one": "一件物品",
-        "item_n": "{n} 件物品",
-        "zone_both": "双方的墓地",
-        "deck_both": "其所有者的牌组"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "一个X/X指示物",
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
-      "rm_scope": "所选种族或氏族的",
-      "rm_scope_race": "{v}种族的",
-      "rm_scope_clan": "{v}氏族的",
-      "rm_scope_all": "",
       "scope_target": "给一个友方单位",
       "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
       "scope_all": "给你所有的单位",
@@ -2089,7 +2073,7 @@
         "low_hp": "生命值低于{n}点时",
         "spell": "行动结算时",
         "wound": "当它受伤但未死亡时",
-        "delay": "延迟结束时"
+        "delay": "在其延迟结束时"
       }
     },
     "triggers": {
@@ -2104,7 +2088,7 @@
       "draw": "抽牌",
       "low_hp": "生命值低于{n}点",
       "wound": "受伤",
-      "delay": "延迟{d}"
+      "delay": "延迟 {d}"
     },
     "target_scope": {
       "spell": {
@@ -2114,6 +2098,7 @@
         "remontee": "将{cibles}送回其原主人的手牌。",
         "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
         "domination": "在场地上限内，获得对{cibles}的控制权。",
+        "benediction": "完全治疗{cibles}。",
         "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
         "siphon": "对{cibles}造成 X 点伤害,并为你的英雄每个被命中的单位恢复 X 点生命。",
         "entrave": "使{cibles}麻痹X回合。",
@@ -2121,8 +2106,7 @@
         "silence": "移除{cibles}的所有关键词，并将其属性恢复为初始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
-        "guerison": "为{cibles}恢复X点生命值。",
-        "benediction": "完全治疗{cibles}。"
+        "guerison": "为{cibles}恢复X点生命值。"
       },
       "creature": {
         "impact": "对{cibles}造成X点伤害。",
@@ -2150,37 +2134,37 @@
     "cost_help": {
       "vie": {
         "title": "生命代价 {n}",
-        "desc": "除法力外，打出此牌时你的英雄失去{n}点生命。若会使英雄降至0点生命则不能打出。"
+        "desc": "除法力值外，打出此牌时你的英雄会失去 {n} 点生命值。若会使其生命值降至 0 则无法打出。"
       },
       "defausse": {
         "title": "弃牌 {n}",
-        "desc_one": "除法力外，从手牌中弃掉一张你选择的牌。",
-        "desc_many": "除法力外，从手牌中弃掉{n}张你选择的牌。"
+        "desc_one": "除法力值外，还需从你的手牌中弃掉一张牌（自选）。",
+        "desc_many": "除法力值外，还需从你的手牌中弃掉 {n} 张牌（自选）。"
       },
       "sacrifice": {
         "title": "献祭 {n}",
-        "desc_one": "除法力外，献祭一个你在场上的生物（由你选择）。",
-        "desc_many": "除法力外，献祭{n}个你在场上的生物（由你选择）。"
+        "desc_one": "除法力值外，还需牺牲你场上的一个生物（自选）。",
+        "desc_many": "除法力值外，还需牺牲你场上的 {n} 个生物（自选）。"
       },
       "exil": {
         "title": "放逐 {n}",
-        "desc_one": "除法力外，你牌库顶的一张牌被放逐，离开游戏。牌库为空时不能打出。",
-        "desc_many": "除法力外，你牌库顶的{n}张牌被放逐，离开游戏。牌库中至少需要{n}张牌。"
+        "desc_one": "除法力值外，你牌组顶部的一张牌将被放逐：它会离开本局游戏。若你的牌组为空则无法打出。",
+        "desc_many": "除法力值外，你牌组顶部的 {n} 张牌将被放逐：它们会离开本局游戏。你的牌组中至少需要有 {n} 张牌。"
       },
       "repli": {
         "title": "回置 {n}",
-        "desc_one": "除法力外，将一张你选择的手牌放回牌库顶。",
-        "desc_many": "除法力外，将{n}张你选择的手牌放回牌库顶。最先选择的那张位于最上面。"
+        "desc_one": "除法力值外，还需将你手牌中的一张牌（自选）放回牌组顶部。",
+        "desc_many": "除法力值外，还需将你手牌中的 {n} 张牌（自选）放回牌组顶部。最先选择的牌最终位于最上方。"
       },
       "eveil": {
         "title": "觉醒 {n}",
-        "desc": "你可以不打出此牌，而是让它进入觉醒。之后在你的回合中用法力支付其{n}点，每点法力支付1点。支付最后一点时，它如同被你打出一样进场。",
-        "remaining": "还需支付{left}/{n}点。"
+        "desc": "你可以选择不打出此牌，而是使其进入觉醒状态。之后在你的回合中，用法力值注入其 {n} 点，每点法力值注入 1 点。注入最后一点时，它会如同你打出般进入战场。",
+        "remaining": "还需注入 {left} 点，共 {n} 点。"
       },
       "equipement": {
         "title": "装备 {n}",
-        "desc": "物品进场后，将其装备给你的一个生物需要{n}点法力。每次装备（包括转移）都需支付。",
-        "desc_free": "物品进场后，将其装备给你的一个生物免费，包括转移。"
+        "desc": "物品进入战场后，将其装备到你的一个生物上需花费 {n} 点法力值。每次装备都需支付该费用，包括转移装备。",
+        "desc_free": "物品进入战场后，将其装备到你的一个生物上是免费的，包括转移装备。"
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "已中和能力",
     "neutralisation_hint": "只要持有者在场，即可使目标敌方单位（或搭配“所有敌方”范围时的全部敌方单位）保持沉默。",
     "target_scope_target": "目标",
+    "target_scope_self": "自身",
     "target_scope_all_enemies": "所有敌方",
     "target_scope_all_allies": "所有我方",
     "target_scope_all": "所有（双方）",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "行动关键词",
     "token_to_summon": "待召唤衍生物",
     "config_below_tokens": "在下方\"待召唤衍生物\"中配置",
-    "targeted_race_clan": "目标种族／阵营",
     "targeted_race": "目标种族",
     "required": "必填",
     "choose_race": "-- 选择种族 --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "变形衍生物",
     "target_race_label": "目标种族",
     "required_caps_f": "必填",
-    "atk_is_x": "（+攻击 = X值）",
     "neg_atk_is_x": "（-攻击 = X值）",
     "spell_cost_y": "行动费用 (Y)",
     "spell_count_is_x": "（行动数量 = X值）",
@@ -2774,14 +2757,11 @@
     "x_value_title": "X 值",
     "targets_label2": "目标",
     "one_target": "1 个目标",
-    "rm_config_label": "+生命值（Y）及目标种族/阵营",
-    "atk_equals_x": "（+攻击力 = X）",
     "neg_atk_equals_x": "（-攻击力 = X）",
     "on_self": "（作用于自身）",
     "add_ability": "+ 添加能力：",
     "choose_dash": "-- 请选择 --",
     "no_ability_add_effect": "暂无能力。请在下方添加效果或赋予能力。",
-    "race_clan_label": "种族 / 氏族",
     "race_label": "种族",
     "race_dash": "-- 种族 --",
     "confer_prefix": "赋予：",
@@ -2998,6 +2978,8 @@
     "content_appel_supreme": "至高召唤（牌库→手牌，费用最高）",
     "content_tuteur": "导师（指定卡牌→手牌）",
     "content_transformation": "转变为指定卡牌",
+    "content_forge": "熔铸（1件物品混入牌堆）",
+    "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。",
     "transformation_card_hint": "每个目标单位都会变为该卡牌；若有多张卡牌，每个单位将各自随机抽取一张。当其离开场地时，会恢复原本的形态。",
     "content_epargne": "储蓄（计数）",
     "content_foi": "信仰（计数）",
@@ -3010,15 +2992,12 @@
     "content_silence": "沉默（移除目标的一切）",
     "content_dechainement": "释放X/Y（随机行动）",
     "content_selection_magique": "魔法抉择（从3张中选1张行动）",
-    "content_forge": "熔铸（1件物品混入牌堆）",
-    "forge_min_hint": "熔铸物品的最低费用（下限A）。最高费用为X；X为空表示不限费用。",
     "tab_style_guides": "风格指南",
-    "mode_title_delay": "延迟X：在之后第X个己方回合开始时触发一次（单位仍在场时）",
-    "trigger_on_delay": "延迟X（之后第X个回合开始时）",
+    "mode_title_delay": "延迟 X：仅触发一次，在之后第 X 个回合开始时，若该单位仍在场上",
+    "trigger_on_delay": "延迟 X（在之后第 X 个回合开始时）",
     "retard_turns_title": "延迟：触发前的回合数",
-    "retard_spell_title": "延迟：效果在施法者之后第X个回合开始时触发，届时选择目标",
-    "label_retard": "延迟",
-    "target_scope_self": "自身"
+    "retard_spell_title": "延迟：效果在施放者之后第 X 个回合开始时触发，目标在那时选择",
+    "label_retard": "延迟"
   },
   "game": {
     "hero_power_grant": "赋予一个生物{kw}",
@@ -3035,8 +3014,8 @@
     "settings": "设置",
     "choose_card": "选择一张卡牌",
     "attack_choice_target": "⚔️ {label} — 选择目标",
-    "attack_power_label": "攻击能力",
-    "opponent_choosing": "⏳ 对手正在选择…",
+    "attack_power_label": "攻击力",
+    "opponent_choosing": "⏳ 对手正在做出选择……",
     "no_creatures": "无生物",
     "drag_hint": "将卡牌拖至此处以出牌",
     "drop_hint": "松开以召唤生物",
@@ -3048,7 +3027,7 @@
     "selection_title": "🎴 选牌",
     "selection_subtitle": "选择一张牌加入手牌",
     "discovery_title": "🔭 发现",
-    "discovery_subtitle": "本回合抽牌：选择一张卡牌",
+    "discovery_subtitle": "本回合你的抽牌：请选择一张牌",
     "discovery_other_clan": "其他氏族",
     "power_hero_activated": "英雄技能已发动",
     "power_used_this_turn": "本回合已使用",
@@ -3063,7 +3042,7 @@
     "power_activations_unlimited": "发动次数：无限",
     "power_activations_used": "发动次数：{used} / {limit}",
     "power_usage_limit": "上限：最多 {limit} 次",
-    "hero_starting_hp": "初始生命 {hp}",
+    "hero_starting_hp": "初始生命值 {hp}",
     "power_close_hint": "按 Esc 或点击区域外关闭",
     "divination_traque_title": "🔮 命运追踪",
     "divination_title": "🔍 占卜",
@@ -3460,10 +3439,10 @@
   "cardStatus": {
     "draft": "草稿",
     "playable": "可用",
-    "retired": "暂停使用",
-    "excluded": "禁用",
-    "deck_unavailable": "{count} 张不可用的卡牌",
-    "cannot_add": "不可用的卡牌：无法加入卡组",
+    "retired": "已撤下",
+    "excluded": "已排除",
+    "deck_unavailable": "{count, plural, one {# 张卡牌不可用} other {# 张卡牌不可用}}",
+    "cannot_add": "卡牌不可用：无法加入牌组",
     "reason": "原因：{reason}"
   }
 }

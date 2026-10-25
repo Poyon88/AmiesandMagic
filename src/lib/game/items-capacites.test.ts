@@ -173,7 +173,7 @@ describe("Arbitrage : quelles capacités sur un objet", () => {
   });
 
   it("les râles d'agonie passent : le porteur mourra", () => {
-    for (const id of ["carnage", "martyr", "resurrection"]) {
+    for (const id of ["carnage", "resurrection"]) {
       expect(isItemAuthorable(id), id).toBe(true);
     }
   });

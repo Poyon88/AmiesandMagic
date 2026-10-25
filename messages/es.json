@@ -344,10 +344,6 @@
         "label": "Ciclo eterno",
         "desc": "Añade una copia de esta carta a tu mazo; si es robada, colócala directamente en juego."
       },
-      "martyr": {
-        "label": "Mártir",
-        "desc": "+1/+1 permanente a tus {race_pl} en juego."
-      },
       "instinct_de_meute": {
         "label": "Instinto de manada X",
         "desc": "+X/+X si un aliado {faction_de} murió este turno."
@@ -386,6 +382,11 @@
         "label": "Favor X",
         "desc": "Añade a la mano una común {alignment} de coste X, al azar.",
         "desc_any": "Añade a tu mano una común {alignment}, al azar."
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar.",
+        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar."
       },
       "selection_magique": {
         "label": "Selección mágica X",
@@ -503,10 +504,6 @@
         "label": "Remontada",
         "desc": "Devuelve una unidad objetivo a la mano de su propietario original."
       },
-      "renforcement_multiple": {
-        "label": "Refuerzo múltiple",
-        "desc": "+X/+Y a tus criaturas{rm_scope}."
-      },
       "entrainement": {
         "label": "Entrenamiento X",
         "desc": "+X/+X a tus criaturas {faction_de} en la mano."
@@ -551,11 +548,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "forge": {
-        "label": "Forja X",
-        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar.",
-        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar."
       }
     },
     "spell_keywords": {
@@ -570,6 +562,10 @@
       "poison": {
         "label": "Veneno",
         "desc": "Las unidades heridas pierden 1 PV por turno."
+      },
+      "benediction": {
+        "label": "Bendición",
+        "desc": "Cura por completo a una unidad aliada objetivo."
       },
       "pillage": {
         "label": "Pillaje X",
@@ -642,6 +638,11 @@
         "label": "Selección X",
         "desc": "Revela 3 comunes {alignment} de coste X; añade una a la mano",
         "desc_any": "Revela 3 comunes {alignment}; añade una a tu mano"
+      },
+      "forge": {
+        "label": "Forja X",
+        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar",
+        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar"
       },
       "faveur": {
         "label": "Favor X",
@@ -769,10 +770,6 @@
         "label": "Retorno",
         "desc": "Devuelve una unidad o un objeto objetivo a la mano de su propietario original."
       },
-      "renforcement_multiple": {
-        "label": "Refuerzo múltiple",
-        "desc": "+X/+Y a tus criaturas{rm_scope}."
-      },
       "entrainement": {
         "label": "Entrenamiento X",
         "desc": "+X/+X a tus criaturas {faction_de} en la mano."
@@ -816,15 +813,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "forge": {
-        "label": "Forja X",
-        "desc": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout}, al azar",
-        "desc_any": "Mezcla en tu mazo un objeto neutral{forge_align}{forge_cout_libre}, al azar"
-      },
-      "benediction": {
-        "label": "Bendición",
-        "desc": "Cura por completo a una unidad aliada objetivo."
       }
     },
     "composed": {
@@ -842,7 +830,7 @@
         "on_draw": "Al robarse",
         "on_low_hp": "Menos de 15 PV",
         "on_wound": "Herida",
-        "on_delay": "Retardo {d}"
+        "on_delay": "Retraso {d}"
       },
       "content": {
         "deal_damage_one": "inflige {x} daño",
@@ -927,6 +915,7 @@
         "conquete": "añade {x} a tu contador de Conquista",
         "exploration": "añade {x} a tu contador de Exploración",
         "incineration": "devuelve {x} cartas del cementerio objetivo bajo su mazo",
+        "incineration_cible": "devuelve {cartes} {zone} bajo {deck}",
         "occurrences": "{n} veces: ",
         "alternative": "A elegir: ",
         "devoration": "devora",
@@ -949,6 +938,10 @@
         "selection_magique_any": "revela 3 acciones{filter} y conserva una en tu mano",
         "renfort_royal_any": "revela 3 cartas de colección{filter} y conserva una en tu mano",
         "tresor_any": "revela 3 objetos{filter} y conserva uno en tu mano",
+        "forge": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {x} como máximo, al azar",
+        "forge_range": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} a {x}, al azar",
+        "forge_any": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter}, al azar",
+        "forge_any_min": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} como mínimo, al azar",
         "invocation_any": "invoca una criatura aleatoria{filter}",
         "invocation_item_any": "coloca un objeto aleatorio{filter}",
         "exhumation_any": "resucita a {who} de tu cementerio",
@@ -956,12 +949,7 @@
         "appel_any": "pone en juego la 1ª unidad de tu mazo",
         "appel_item_any": "pone en juego el 1er objeto de tu mazo",
         "dechainement_any": "juega {x} acciones aleatorias",
-        "dechainement_one_any": "juega una acción aleatoria",
-        "forge": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {x} como máximo, al azar",
-        "forge_range": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} a {x}, al azar",
-        "forge_any": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter}, al azar",
-        "forge_any_min": "mezcla en tu mazo un objeto neutral o de tu alineamiento{filter} de coste {min} como mínimo, al azar",
-        "incineration_cible": "devuelve {cartes} {zone} bajo {deck}"
+        "dechainement_one_any": "juega una acción aleatoria"
       },
       "self": {
         "transformation": "se transforma",
@@ -1025,6 +1013,28 @@
         "on_draw": ", que se activará al robarla",
         "on_low_hp": ", que se activará por debajo de 15 PV",
         "on_wound": ", que se activará cuando resulte herida sin morir"
+      },
+      "incin": {
+        "zone_ally": "de tu cementerio",
+        "zone_enemy": "del cementerio rival",
+        "zone_any": "de un cementerio",
+        "zone_both": "de ambos cementerios",
+        "deck_ally": "tu mazo",
+        "deck_enemy": "el mazo rival",
+        "deck_any": "el mazo de su propietario",
+        "deck_both": "el mazo de su propietario",
+        "card_all": "todas las cartas",
+        "card_one": "una carta",
+        "card_n": "{n} cartas",
+        "unit_all": "todas las unidades",
+        "unit_one": "una unidad",
+        "unit_n": "{n} unidades",
+        "spell_all": "todas las acciones",
+        "spell_one": "una acción",
+        "spell_n": "{n} acciones",
+        "item_all": "todos los objetos",
+        "item_one": "un objeto",
+        "item_n": "{n} objetos"
       },
       "pool": {
         "race": " de raza {v}",
@@ -1099,28 +1109,6 @@
         "times": "{x} veces 1 {unit}, cada vez",
         "target_both": "a un objetivo {side} aleatorio (unidad o héroe)",
         "target_unit": "a una unidad {side} aleatoria"
-      },
-      "incin": {
-        "zone_ally": "de tu cementerio",
-        "zone_enemy": "del cementerio rival",
-        "zone_any": "de un cementerio",
-        "deck_ally": "tu mazo",
-        "deck_enemy": "el mazo rival",
-        "deck_any": "el mazo de su propietario",
-        "card_all": "todas las cartas",
-        "card_one": "una carta",
-        "card_n": "{n} cartas",
-        "unit_all": "todas las unidades",
-        "unit_one": "una unidad",
-        "unit_n": "{n} unidades",
-        "spell_all": "todas las acciones",
-        "spell_one": "una acción",
-        "spell_n": "{n} acciones",
-        "item_all": "todos los objetos",
-        "item_one": "un objeto",
-        "item_n": "{n} objetos",
-        "zone_both": "de ambos cementerios",
-        "deck_both": "el mazo de su propietario"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "un token X/X",
       "ability": "una habilidad",
       "scope": "a una unidad aliada (o a todas)",
-      "rm_scope": " de la raza o clan elegido",
-      "rm_scope_race": " de raza {v}",
-      "rm_scope_clan": " del clan {v}",
-      "rm_scope_all": "",
       "scope_target": "a una unidad aliada",
       "edc_compte": "Gana {n} veces +1 ATQ o +1 PV al azar (1 por cada criatura {clan_de} con Espíritu de cuerpo ya jugada).",
       "scope_all": "a todas tus unidades",
@@ -2089,7 +2073,7 @@
         "low_hp": "con menos de {n} PV",
         "spell": "al resolverse la acción",
         "wound": "cuando resulta herida sin morir",
-        "delay": "al vencer su Retardo"
+        "delay": "al término de su Retraso"
       }
     },
     "triggers": {
@@ -2104,7 +2088,7 @@
       "draw": "Robo",
       "low_hp": "Con menos de {n} PV",
       "wound": "Herida",
-      "delay": "Retardo {d}"
+      "delay": "Retraso {d}"
     },
     "target_scope": {
       "spell": {
@@ -2114,6 +2098,7 @@
         "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
         "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
         "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
+        "benediction": "Cura por completo a {cibles}.",
         "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
         "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada unidad alcanzada.",
         "entrave": "Paraliza a {cibles} durante X turno(s).",
@@ -2121,8 +2106,7 @@
         "silence": "Elimina todas las palabras clave de {cibles} y restablece sus estadísticas a su valor original.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
-        "guerison": "Restaura X PV a {cibles}.",
-        "benediction": "Cura por completo a {cibles}."
+        "guerison": "Restaura X PV a {cibles}."
       },
       "creature": {
         "impact": "Inflige X de daño a {cibles}.",
@@ -2150,12 +2134,12 @@
     "cost_help": {
       "vie": {
         "title": "Coste en vida {n}",
-        "desc": "Además del maná, tu héroe pierde {n} PV al jugar esta carta. No se permite si lo dejaría a 0 PV."
+        "desc": "Además del maná, tu héroe pierde {n} PV cuando juegas esta carta. Imposible si eso lo dejara en 0 PV."
       },
       "defausse": {
         "title": "Descarte {n}",
-        "desc_one": "Además del maná, descarta una carta de tu mano a tu elección.",
-        "desc_many": "Además del maná, descarta {n} cartas de tu mano a tu elección."
+        "desc_one": "Además del maná, descarta una carta de tu mano, a tu elección.",
+        "desc_many": "Además del maná, descarta {n} cartas de tu mano, a tu elección."
       },
       "sacrifice": {
         "title": "Sacrificio {n}",
@@ -2164,23 +2148,23 @@
       },
       "exil": {
         "title": "Exilio {n}",
-        "desc_one": "Además del maná, la carta superior de tu mazo es exiliada: sale de la partida. No se permite si tu mazo está vacío.",
-        "desc_many": "Además del maná, las {n} cartas superiores de tu mazo son exiliadas: salen de la partida. Tu mazo debe tener al menos {n} cartas."
+        "desc_one": "Además del maná, la carta de arriba de tu mazo es exiliada: sale de la partida. Imposible si tu mazo está vacío.",
+        "desc_many": "Además del maná, las {n} cartas de arriba de tu mazo son exiliadas: salen de la partida. Se necesitan al menos {n} cartas en tu mazo."
       },
       "repli": {
         "title": "Repliegue {n}",
-        "desc_one": "Además del maná, pon una carta de tu mano a tu elección encima de tu mazo.",
-        "desc_many": "Además del maná, pon {n} cartas de tu mano a tu elección encima de tu mazo. La primera elegida queda encima."
+        "desc_one": "Además del maná, devuelve una carta de tu mano, a tu elección, encima de tu mazo.",
+        "desc_many": "Además del maná, devuelve {n} cartas de tu mano, a tu elección, encima de tu mazo. La primera que elijas queda arriba del todo."
       },
       "eveil": {
         "title": "Despertar {n}",
-        "desc": "En lugar de jugarla, puedes poner esta carta en despertar. Luego pagas sus {n} puntos con tu maná, 1 punto por maná, durante tus turnos. Con el último punto entra en juego como si la hubieras jugado.",
+        "desc": "En lugar de jugarla, puedes poner esta carta en despertar. Después pagas sus {n} puntos con tu maná, 1 punto por maná, durante tus turnos. Al pagar el último punto, entra en juego como si la hubieras jugado.",
         "remaining": "Quedan {left} puntos por pagar de {n}."
       },
       "equipement": {
-        "title": "Equipar {n}",
-        "desc": "Una vez el objeto en juego, equiparlo a una de tus criaturas cuesta {n} de maná. El coste se paga cada vez que lo equipas, cambios incluidos.",
-        "desc_free": "Una vez el objeto en juego, equiparlo a una de tus criaturas es gratis, cambios incluidos."
+        "title": "Equipamiento {n}",
+        "desc": "Una vez que el objeto está en juego, equiparlo a una de tus criaturas cuesta {n} de maná. El coste se paga en cada equipamiento, incluido el cambio de portador.",
+        "desc_free": "Una vez que el objeto está en juego, equiparlo a una de tus criaturas es gratis, incluido el cambio de portador."
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "HABILIDAD NEUTRALIZADA",
     "neutralisation_hint": "Silenciada en la enemiga objetivo (o en todas, con el alcance «Todas enemigas») mientras la portadora esté en juego.",
     "target_scope_target": "Objetivo",
+    "target_scope_self": "Ella misma",
     "target_scope_all_enemies": "Todas enemigas",
     "target_scope_all_allies": "Todas aliadas",
     "target_scope_all": "Todas (2 bandos)",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "PALABRAS CLAVE DE ACCIÓN",
     "token_to_summon": "TOKEN A INVOCAR",
     "config_below_tokens": "Config en «Tokens a invocar» abajo",
-    "targeted_race_clan": "RAZA / CLAN OBJETIVO",
     "targeted_race": "RAZA OBJETIVO",
     "required": "requerida",
     "choose_race": "-- Elegir una raza --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "TOKEN DE TRANSFORMACIÓN",
     "target_race_label": "RAZA OBJETIVO",
     "required_caps_f": "Requerida",
-    "atk_is_x": "(el +ATK = el valor X)",
     "neg_atk_is_x": "(el -ATK = el valor X)",
     "spell_cost_y": "COSTE DE LAS ACCIONES (Y)",
     "spell_count_is_x": "(el número de acciones = el valor X)",
@@ -2774,14 +2757,11 @@
     "x_value_title": "Valor X",
     "targets_label2": "OBJETIVO(S)",
     "one_target": "1 objetivo",
-    "rm_config_label": "+PV (Y) Y RAZA / CLAN OBJETIVO",
-    "atk_equals_x": "(+ATQ = X)",
     "neg_atk_equals_x": "(-ATQ = X)",
     "on_self": "(sobre sí mismo)",
     "add_ability": "+ Añadir una habilidad:",
     "choose_dash": "-- elegir --",
     "no_ability_add_effect": "Sin habilidades. Añade un efecto o una habilidad a conferir a continuación.",
-    "race_clan_label": "RAZA / CLAN",
     "race_label": "RAZA",
     "race_dash": "-- Raza --",
     "confer_prefix": "Conferir:",
@@ -2998,6 +2978,8 @@
     "content_appel_supreme": "Llamada Suprema (mazo → mano, la más cara)",
     "content_tuteur": "Tutor (cartas designadas → mano)",
     "content_transformation": "Transformar en carta designada",
+    "content_forge": "Forja (1 objeto mezclado en el mazo)",
+    "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste.",
     "transformation_card_hint": "Cada unidad objetivo se convierte en esta carta; con varias cartas, cada una obtiene la suya al azar. Recupera su forma original al abandonar el tablero.",
     "content_epargne": "Ahorro (contador)",
     "content_foi": "Fe (contador)",
@@ -3010,15 +2992,12 @@
     "content_silence": "Silencio (despoja al objetivo)",
     "content_dechainement": "Desenfreno X/Y (acciones aleatorias)",
     "content_selection_magique": "Selección mágica (1 acción de entre 3)",
-    "content_forge": "Forja (1 objeto mezclado en el mazo)",
-    "forge_min_hint": "Coste mínimo del objeto forjado (límite inferior A). El coste máximo es X; X vacío = cualquier coste.",
     "tab_style_guides": "Guías de estilo",
-    "mode_title_delay": "Retardo X: una sola vez, al inicio del X-ésimo turno siguiente, si la unidad sigue en juego",
-    "trigger_on_delay": "Retardo X (inicio del X-ésimo turno siguiente)",
-    "retard_turns_title": "Retardo: número de turnos antes de activarse",
-    "retard_spell_title": "Retardo: el efecto se activa al inicio del X-ésimo turno siguiente del lanzador, objetivo elegido entonces",
-    "label_retard": "Retardo",
-    "target_scope_self": "Ella misma"
+    "mode_title_delay": "Retraso X: una sola vez, al comienzo del X-ésimo turno siguiente, si la unidad sigue en juego",
+    "trigger_on_delay": "Retraso X (al comienzo del X-ésimo turno siguiente)",
+    "retard_turns_title": "Retraso: número de turnos antes de que se active",
+    "retard_spell_title": "Retraso: el efecto se activa al comienzo del X-ésimo turno siguiente del lanzador, con el objetivo elegido en ese momento",
+    "label_retard": "Retraso"
   },
   "game": {
     "hero_power_grant": "Otorga {kw} a una criatura",
@@ -3034,9 +3013,9 @@
     "close": "Cerrar",
     "settings": "Ajustes",
     "choose_card": "Elige una carta",
-    "attack_choice_target": "⚔️ {label} — elige un objetivo",
+    "attack_choice_target": "⚔️ {label} — elige el objetivo",
     "attack_power_label": "Poder de ataque",
-    "opponent_choosing": "⏳ Tu oponente está eligiendo…",
+    "opponent_choosing": "⏳ El adversario está eligiendo…",
     "no_creatures": "Sin criaturas",
     "drag_hint": "Arrastra tus cartas aquí para jugarlas",
     "drop_hint": "Suelta para jugar la criatura",
@@ -3463,7 +3442,7 @@
     "retired": "Retirada",
     "excluded": "Excluida",
     "deck_unavailable": "{count, plural, one {# carta no disponible} other {# cartas no disponibles}}",
-    "cannot_add": "Carta no disponible: no puede añadirse a un mazo",
+    "cannot_add": "Carta no disponible: no puede entrar en un mazo",
     "reason": "Motivo: {reason}"
   }
 }

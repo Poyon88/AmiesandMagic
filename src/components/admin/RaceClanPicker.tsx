@@ -10,7 +10,7 @@ const CLANS_BY_FACTION: { faction: string; clans: string[] }[] = Object.keys(FAC
   .filter((g) => g.clans.length > 0);
 
 /** Sélecteur Race + Clan, chacun optionnel et choisissable SEUL.
- *  Utilisé par « Renforcement multiple », le filtre de pool et l'appartenance
+ *  Utilisé par le filtre de pool et l'appartenance
  *  d'une cible dans les deux forges. Le clan prime sur la race côté moteur.
  *
  *  - race choisie ⇒ la liste des clans se restreint à ceux de cette race ;

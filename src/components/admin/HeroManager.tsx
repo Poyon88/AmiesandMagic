@@ -1140,8 +1140,8 @@ export default function HeroManager() {
               //     (l'instance construite par useHeroPower, cf. la branche
               //     fortifier de resolveSpellKeywords).
               //
-              // Quatre capacités déclarent les DEUX (Renforcement, Affaiblissement,
-              // Renforcement multiple, Fortifier) : l'éditeur affichait donc quatre
+              // Trois capacités déclarent les DEUX (Renforcement, Affaiblissement,
+              // Fortifier) : l'éditeur affichait donc quatre
               // champs pour un seul couple, dont deux que le mode choisi n'allait
               // jamais lire — et l'aperçu se trompait de source, annonçant
               // « Fortifier +0/+0 » pendant que la description disait +1/+1.

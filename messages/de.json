@@ -344,10 +344,6 @@
         "label": "Ewiger Kreislauf",
         "desc": "Fügt eurem Deck eine Kopie dieser Karte hinzu; wird sie gezogen, kommt sie direkt ins Spiel."
       },
-      "martyr": {
-        "label": "Märtyrer",
-        "desc": "+1/+1 dauerhaft für eure {race_pl} im Spiel."
-      },
       "instinct_de_meute": {
         "label": "Rudelinstinkt X",
         "desc": "+X/+X, wenn ein Verbündeter {faction_de} in dieser Runde gestorben ist."
@@ -386,6 +382,11 @@
         "label": "Gunst X",
         "desc": "Fügt eine zufällige gewöhnliche Karte {alignment} mit Kosten X zur Hand hinzu.",
         "desc_any": "Fügt zufällig eine gewöhnliche Karte {alignment} zur Hand hinzu."
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck.",
+        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck."
       },
       "selection_magique": {
         "label": "Magische Auswahl X",
@@ -440,8 +441,8 @@
       },
       "apprentissage": {
         "label": "Lehre X",
-        "desc": "Entfernt eine Aktion mit Kosten ≤ X aus deiner Hand und merkt sie sich: Die Kreatur kann sie ohne Mana spielen.",
-        "desc_any": "Entfernt eine Aktion aus deiner Hand und merkt sie sich: Die Kreatur kann sie ohne Mana spielen."
+        "desc": "Entfernt eine Aktion mit Kosten ≤ X aus deiner Hand und merkt sie sich: Die Kreatur kann sie spielen, ohne Mana zu bezahlen.",
+        "desc_any": "Entfernt eine Aktion aus deiner Hand und merkt sie sich: Die Kreatur kann sie spielen, ohne Mana zu bezahlen."
       },
       "impact": {
         "label": "Wucht X",
@@ -503,10 +504,6 @@
         "label": "Aufschwung",
         "desc": "Gibt eine gezielte Einheit in die Hand ihres ursprünglichen Besitzers zurück."
       },
-      "renforcement_multiple": {
-        "label": "Mehrfachstärkung",
-        "desc": "+X/+Y für deine Kreaturen{rm_scope}."
-      },
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
@@ -551,11 +548,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "forge": {
-        "label": "Forge X",
-        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck.",
-        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck."
       }
     },
     "spell_keywords": {
@@ -570,6 +562,10 @@
       "poison": {
         "label": "Gift",
         "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
+      },
+      "benediction": {
+        "label": "Segnung",
+        "desc": "Heilt eine ausgewählte verbündete Einheit vollständig."
       },
       "pillage": {
         "label": "Plünderung X",
@@ -642,6 +638,11 @@
         "label": "Auswahl X",
         "desc": "Deckt 3 gewöhnliche Karten {alignment} mit Kosten X auf; fügt eine davon zur Hand hinzu",
         "desc_any": "Deckt 3 gewöhnliche Karten {alignment} auf; nimm eine davon auf die Hand"
+      },
+      "forge": {
+        "label": "Forge X",
+        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck",
+        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck"
       },
       "faveur": {
         "label": "Gunst X",
@@ -769,10 +770,6 @@
         "label": "Rückzug",
         "desc": "Schickt eine anvisierte Einheit oder einen anvisierten Gegenstand zurück in die Hand des ursprünglichen Besitzers."
       },
-      "renforcement_multiple": {
-        "label": "Mehrfachstärkung",
-        "desc": "+X/+Y für deine Kreaturen{rm_scope}."
-      },
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X für deine Kreaturen {faction_de} auf der Hand."
@@ -816,15 +813,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "forge": {
-        "label": "Forge X",
-        "desc": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout} zufällig in dein Deck",
-        "desc_any": "Mischt einen neutralen Gegenstand{forge_align}{forge_cout_libre} zufällig in dein Deck"
-      },
-      "benediction": {
-        "label": "Segnung",
-        "desc": "Heilt eine ausgewählte verbündete Einheit vollständig."
       }
     },
     "composed": {
@@ -927,6 +915,7 @@
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "exploration": "erhöht deinen Erkundungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
+        "incineration_cible": "legt {cartes} {zone} unter {deck}",
         "occurrences": "{n}-mal: ",
         "alternative": "Wahlweise: ",
         "devoration": "verschlingt",
@@ -949,6 +938,10 @@
         "selection_magique_any": "deckt 3 Aktionen{filter} auf und behält eine davon auf der Hand",
         "renfort_royal_any": "deckt 3 Sammlungskarten{filter} auf und behält eine davon auf der Hand",
         "tresor_any": "deckt 3 Gegenstände{filter} auf und behält einen davon auf der Hand",
+        "forge": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von höchstens {x} zufällig in dein Deck",
+        "forge_range": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von {min} bis {x} zufällig in dein Deck",
+        "forge_any": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} zufällig in dein Deck",
+        "forge_any_min": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von mindestens {min} zufällig in dein Deck",
         "invocation_any": "beschwört eine zufällige Kreatur{filter}",
         "invocation_item_any": "legt einen zufälligen Gegenstand{filter}",
         "exhumation_any": "erweckt {who} aus deinem Friedhof",
@@ -956,12 +949,7 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion",
-        "forge": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von höchstens {x} zufällig in dein Deck",
-        "forge_range": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von {min} bis {x} zufällig in dein Deck",
-        "forge_any": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} zufällig in dein Deck",
-        "forge_any_min": "mischt einen neutralen Gegenstand oder einen Gegenstand deiner Ausrichtung{filter} mit Kosten von mindestens {min} zufällig in dein Deck",
-        "incineration_cible": "legt {cartes} {zone} unter {deck}"
+        "dechainement_one_any": "spielt eine zufällige Aktion"
       },
       "self": {
         "transformation": "verwandelt sich",
@@ -1025,6 +1013,28 @@
         "on_draw": ", das ausgelöst wird, wenn sie gezogen wird",
         "on_low_hp": ", das unter 15 LP ausgelöst wird",
         "on_wound": ", das ausgelöst wird, wenn sie verwundet wird, ohne zu sterben"
+      },
+      "incin": {
+        "zone_ally": "aus deinem Friedhof",
+        "zone_enemy": "aus dem gegnerischen Friedhof",
+        "zone_any": "aus einem Friedhof",
+        "zone_both": "beider Friedhöfe",
+        "deck_ally": "dein Deck",
+        "deck_enemy": "das gegnerische Deck",
+        "deck_any": "das Deck des Besitzers",
+        "deck_both": "das Deck ihres Besitzers",
+        "card_all": "alle Karten",
+        "card_one": "eine Karte",
+        "card_n": "{n} Karten",
+        "unit_all": "alle Einheiten",
+        "unit_one": "eine Einheit",
+        "unit_n": "{n} Einheiten",
+        "spell_all": "alle Aktionen",
+        "spell_one": "eine Aktion",
+        "spell_n": "{n} Aktionen",
+        "item_all": "alle Gegenstände",
+        "item_one": "einen Gegenstand",
+        "item_n": "{n} Gegenstände"
       },
       "pool": {
         "race": " der Rasse {v}",
@@ -1099,28 +1109,6 @@
         "times": "{x} Mal 1 {unit}, jedes Mal",
         "target_both": "an ein zufälliges {side} Ziel (Einheit oder Held)",
         "target_unit": "an eine zufällige {side} Einheit"
-      },
-      "incin": {
-        "zone_ally": "aus deinem Friedhof",
-        "zone_enemy": "aus dem gegnerischen Friedhof",
-        "zone_any": "aus einem Friedhof",
-        "deck_ally": "dein Deck",
-        "deck_enemy": "das gegnerische Deck",
-        "deck_any": "das Deck des Besitzers",
-        "card_all": "alle Karten",
-        "card_one": "eine Karte",
-        "card_n": "{n} Karten",
-        "unit_all": "alle Einheiten",
-        "unit_one": "eine Einheit",
-        "unit_n": "{n} Einheiten",
-        "spell_all": "alle Aktionen",
-        "spell_one": "eine Aktion",
-        "spell_n": "{n} Aktionen",
-        "item_all": "alle Gegenstände",
-        "item_one": "einen Gegenstand",
-        "item_n": "{n} Gegenstände",
-        "zone_both": "beider Friedhöfe",
-        "deck_both": "das Deck ihres Besitzers"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "ein X/X-Token",
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
-      "rm_scope": " der gewählten Rasse oder des gewählten Klans",
-      "rm_scope_race": " der Rasse {v}",
-      "rm_scope_clan": " des Klans {v}",
-      "rm_scope_all": "",
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
       "scope_all": "auf alle deine Einheiten",
@@ -2089,7 +2073,7 @@
         "low_hp": "unter {n} LP",
         "spell": "bei der Auflösung der Aktion",
         "wound": "wenn sie verwundet wird, ohne zu sterben",
-        "delay": "wenn ihre Verzögerung abläuft"
+        "delay": "nach Ablauf seiner Verzögerung"
       }
     },
     "triggers": {
@@ -2114,6 +2098,7 @@
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
         "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
         "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
+        "benediction": "Heilt {cibles} vollständig.",
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
         "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
@@ -2121,8 +2106,7 @@
         "silence": "Entfernt alle Schlüsselwörter von {cibles} und setzt ihre Werte auf die Ausgangswerte zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
-        "guerison": "Stellt {cibles} X LP wieder her.",
-        "benediction": "Heilt {cibles} vollständig."
+        "guerison": "Stellt {cibles} X LP wieder her."
       },
       "creature": {
         "impact": "Fügt {cibles} X Schaden zu.",
@@ -2150,37 +2134,37 @@
     "cost_help": {
       "vie": {
         "title": "Lebenskosten {n}",
-        "desc": "Zusätzlich zum Mana verliert dein Held {n} LP, wenn du diese Karte spielst. Nicht erlaubt, wenn er dadurch auf 0 LP fiele."
+        "desc": "Zusätzlich zum Mana verliert dein Held {n} LP, wenn du diese Karte spielst. Nicht möglich, wenn er dadurch auf 0 LP fallen würde."
       },
       "defausse": {
         "title": "Abwerfen {n}",
-        "desc_one": "Zusätzlich zum Mana wirfst du eine Karte deiner Wahl aus der Hand ab.",
-        "desc_many": "Zusätzlich zum Mana wirfst du {n} Karten deiner Wahl aus der Hand ab."
+        "desc_one": "Wirf zusätzlich zum Mana eine Karte deiner Wahl aus deiner Hand ab.",
+        "desc_many": "Wirf zusätzlich zum Mana {n} Karten deiner Wahl aus deiner Hand ab."
       },
       "sacrifice": {
         "title": "Opfer {n}",
-        "desc_one": "Zusätzlich zum Mana opferst du eine deiner Kreaturen im Spiel, nach deiner Wahl.",
-        "desc_many": "Zusätzlich zum Mana opferst du {n} deiner Kreaturen im Spiel, nach deiner Wahl."
+        "desc_one": "Opfere zusätzlich zum Mana eine deiner Kreaturen im Spiel nach Wahl.",
+        "desc_many": "Opfere zusätzlich zum Mana {n} deiner Kreaturen im Spiel nach Wahl."
       },
       "exil": {
         "title": "Exil {n}",
-        "desc_one": "Zusätzlich zum Mana wird die oberste Karte deines Decks verbannt: Sie verlässt das Spiel. Nicht erlaubt, wenn dein Deck leer ist.",
+        "desc_one": "Zusätzlich zum Mana wird die oberste Karte deines Decks verbannt: Sie verlässt die Partie. Nicht möglich, wenn dein Deck leer ist.",
         "desc_many": "Zusätzlich zum Mana werden die obersten {n} Karten deines Decks verbannt: Sie verlassen das Spiel. Dein Deck muss mindestens {n} Karten enthalten."
       },
       "repli": {
         "title": "Rückzug {n}",
-        "desc_one": "Zusätzlich zum Mana legst du eine Karte deiner Wahl aus der Hand oben auf dein Deck.",
-        "desc_many": "Zusätzlich zum Mana legst du {n} Karten deiner Wahl aus der Hand oben auf dein Deck. Die zuerst gewählte liegt oben."
+        "desc_one": "Lege zusätzlich zum Mana eine Karte deiner Wahl aus deiner Hand oben auf dein Deck zurück.",
+        "desc_many": "Lege zusätzlich zum Mana {n} Karten deiner Wahl aus deiner Hand oben auf dein Deck zurück. Die zuerst gewählte Karte liegt am Ende ganz oben."
       },
       "eveil": {
         "title": "Erwachen {n}",
-        "desc": "Statt sie zu spielen, kannst du diese Karte erwachen lassen. Danach zahlst du ihre {n} Punkte mit deinem Mana, 1 Punkt pro Mana, in deinen Zügen. Mit dem letzten Punkt kommt sie ins Spiel, als hättest du sie gespielt.",
+        "desc": "Statt sie zu spielen, kannst du diese Karte erwecken. Du zahlst dann während deiner Züge ihre {n} Punkte mit deinem Mana, 1 Punkt pro Mana. Beim letzten Punkt kommt sie ins Spiel, als hättest du sie gespielt.",
         "remaining": "Noch {left} von {n} Punkten zu zahlen."
       },
       "equipement": {
-        "title": "Ausrüsten {n}",
-        "desc": "Sobald der Gegenstand im Spiel ist, kostet das Ausrüsten einer deiner Kreaturen {n} Mana. Die Kosten fallen bei jedem Ausrüsten an, Umrüsten eingeschlossen.",
-        "desc_free": "Sobald der Gegenstand im Spiel ist, ist das Ausrüsten einer deiner Kreaturen kostenlos, Umrüsten eingeschlossen."
+        "title": "Ausrüstung {n}",
+        "desc": "Sobald der Gegenstand im Spiel ist, kostet es {n} Mana, ihn an einer deiner Kreaturen auszurüsten. Die Kosten fallen bei jeder Ausrüstung an, auch beim Verschieben.",
+        "desc_free": "Sobald der Gegenstand im Spiel ist, ist das Ausrüsten an einer deiner Kreaturen kostenlos, auch beim Verschieben."
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "NEUTRALISIERTE FÄHIGKEIT",
     "neutralisation_hint": "Stumm bei der gezielten gegnerischen Einheit (oder bei allen, mit der Reichweite „Alle gegnerischen“), solange die Trägereinheit im Spiel ist.",
     "target_scope_target": "Ziel",
+    "target_scope_self": "Sie selbst",
     "target_scope_all_enemies": "Alle gegnerischen",
     "target_scope_all_allies": "Alle verbündeten",
     "target_scope_all": "Alle (beide Seiten)",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "AKTIONS-SCHLÜSSELWÖRTER",
     "token_to_summon": "ZU BESCHWÖRENDER TOKEN",
     "config_below_tokens": "Konfig. unter „Zu beschwörende Tokens\" unten",
-    "targeted_race_clan": "GEZIELTE RASSE / KLAN",
     "targeted_race": "GEZIELTE RASSE",
     "required": "erforderlich",
     "choose_race": "-- Rasse auswählen --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "TRANSFORMATIONS-TOKEN",
     "target_race_label": "ZIELRASSE",
     "required_caps_f": "Erforderlich",
-    "atk_is_x": "(+ATK = Wert X)",
     "neg_atk_is_x": "(-ATK = Wert X)",
     "spell_cost_y": "AKTIONSKOSTEN (Y)",
     "spell_count_is_x": "(Anzahl der Aktionen = Wert X)",
@@ -2774,14 +2757,11 @@
     "x_value_title": "Wert X",
     "targets_label2": "ZIEL(E)",
     "one_target": "1 Ziel",
-    "rm_config_label": "+LP (Y) UND ZIEL-RASSE / -CLAN",
-    "atk_equals_x": "(+ATK = X)",
     "neg_atk_equals_x": "(-ATK = X)",
     "on_self": "(auf sich selbst)",
     "add_ability": "+ Fähigkeit hinzufügen:",
     "choose_dash": "-- auswählen --",
     "no_ability_add_effect": "Keine Fähigkeit. Füge unten einen Effekt oder eine zu verleihende Fähigkeit hinzu.",
-    "race_clan_label": "RASSE / CLAN",
     "race_label": "RASSE",
     "race_dash": "-- Rasse --",
     "confer_prefix": "Verleihen:",
@@ -2998,6 +2978,8 @@
     "content_appel_supreme": "Höchster Ruf (Deck → Hand, die teuerste)",
     "content_tuteur": "Tutor (benannte Karten → Hand)",
     "content_transformation": "In festgelegte Karte verwandeln",
+    "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
+    "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten.",
     "transformation_card_hint": "Jede anvisierte Einheit wird zu dieser Karte; bei mehreren Karten erhält jede zufällig ihre eigene. Sie nimmt ihre ursprüngliche Form wieder an, sobald sie das Spielfeld verlässt.",
     "content_epargne": "Ersparnis (Zähler)",
     "content_foi": "Glaube (Zähler)",
@@ -3010,15 +2992,12 @@
     "content_silence": "Stille (nimmt dem Ziel alles)",
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
     "content_selection_magique": "Magische Auswahl (1 Aktion von 3)",
-    "content_forge": "Forge (1 Gegenstand zufällig ins Deck gemischt)",
-    "forge_min_hint": "Mindestkosten des geschmiedeten Gegenstands (Untergrenze A). Die Höchstkosten sind X; X leer = beliebige Kosten.",
     "tab_style_guides": "Stilrichtlinien",
-    "mode_title_delay": "Verzögerung X: einmalig, zu Beginn des X-ten folgenden Zuges, falls die Einheit noch im Spiel ist",
-    "trigger_on_delay": "Verzögerung X (Beginn des X-ten folgenden Zuges)",
+    "mode_title_delay": "Verzögerung X: nur einmal, zu Beginn des X-ten folgenden Zuges, wenn die Einheit noch im Spiel ist",
+    "trigger_on_delay": "Verzögerung X (zu Beginn des X-ten folgenden Zuges)",
     "retard_turns_title": "Verzögerung: Anzahl der Züge bis zur Auslösung",
-    "retard_spell_title": "Verzögerung: der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkers ausgelöst, Ziel wird dann gewählt",
-    "label_retard": "Verzögerung",
-    "target_scope_self": "Sie selbst"
+    "retard_spell_title": "Verzögerung: Der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkenden ausgelöst, das Ziel wird erst dann gewählt",
+    "label_retard": "Verzögerung"
   },
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",
@@ -3034,9 +3013,9 @@
     "close": "Schließen",
     "settings": "Einstellungen",
     "choose_card": "Wähle eine Karte",
-    "attack_choice_target": "⚔️ {label} — wähle ein Ziel",
+    "attack_choice_target": "⚔️ {label} — Ziel wählen",
     "attack_power_label": "Angriffskraft",
-    "opponent_choosing": "⏳ Dein Gegner trifft eine Wahl…",
+    "opponent_choosing": "⏳ Der Gegner trifft eine Wahl…",
     "no_creatures": "Keine Kreaturen",
     "drag_hint": "Ziehe deine Karten hierher, um sie zu spielen",
     "drop_hint": "Loslassen, um die Kreatur zu spielen",
@@ -3048,7 +3027,7 @@
     "selection_title": "🎴 Auswahl",
     "selection_subtitle": "Wähle eine Karte, die deiner Hand hinzugefügt wird",
     "discovery_title": "🔭 Entdeckung",
-    "discovery_subtitle": "Dein Zug dieser Runde: Wähle eine Karte",
+    "discovery_subtitle": "Deine Karten dieses Zuges: Wähle eine Karte",
     "discovery_other_clan": "Anderer Clan",
     "power_hero_activated": "Heldenfähigkeit aktiviert",
     "power_used_this_turn": "Diesen Zug bereits genutzt",
@@ -3462,8 +3441,8 @@
     "playable": "Spielbar",
     "retired": "Zurückgezogen",
     "excluded": "Ausgeschlossen",
-    "deck_unavailable": "{count, plural, one {# nicht verfügbare Karte} other {# nicht verfügbare Karten}}",
-    "cannot_add": "Nicht verfügbare Karte: Sie kann keinem Deck hinzugefügt werden",
+    "deck_unavailable": "{count, plural, one {# Karte nicht verfügbar} other {# Karten nicht verfügbar}}",
+    "cannot_add": "Karte nicht verfügbar: Sie kann keinem Deck hinzugefügt werden",
     "reason": "Grund: {reason}"
   }
 }

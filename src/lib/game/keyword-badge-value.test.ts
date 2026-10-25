@@ -9,10 +9,9 @@ import { describe, expect, it } from "vitest";
 import { applyKeywordValueToLabel, isStatPairKeyword, keywordBadgeValue } from "./keyword-labels";
 
 describe("isStatPairKeyword", () => {
-  it("reconnaît les quatre mots-clés en paire de stats", () => {
+  it("reconnaît les mots-clés en paire de stats", () => {
     expect(isStatPairKeyword("gloire")).toBe(true);
     expect(isStatPairKeyword("renforcement")).toBe(true);
-    expect(isStatPairKeyword("renforcement_multiple")).toBe(true);
     expect(isStatPairKeyword("affaiblissement")).toBe(true);
   });
 
@@ -67,11 +66,6 @@ describe("applyKeywordValueToLabel", () => {
 
   it("libellé sans marqueur (locale divergente) → la valeur est suffixée, jamais avalée", () => {
     expect(applyKeywordValueToLabel("gloire", "栄光", 2, { id: "gloire", x: 2, y: 1 })).toBe("栄光 +2/+1");
-  });
-
-  it("Renforcement multiple : libellé sans marqueur en FR aussi → suffixé", () => {
-    expect(applyKeywordValueToLabel("renforcement_multiple", "Renforcement multiple", 2, { id: "renforcement_multiple", x: 2, y: 2 }))
-      .toBe("Renforcement multiple +2/+2");
   });
 
   it("mot-clé à X simple : ancien comportement « Carnage 3 » préservé", () => {

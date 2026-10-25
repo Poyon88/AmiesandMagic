@@ -344,10 +344,6 @@
         "label": "Eternal Cycle",
         "desc": "Adds a copy of this card to your deck; if drawn, put it directly into play."
       },
-      "martyr": {
-        "label": "Martyr",
-        "desc": "Permanent +1/+1 to your {race_pl} in play."
-      },
       "instinct_de_meute": {
         "label": "Pack Instinct X",
         "desc": "+X/+X if a {faction_de} ally died this turn."
@@ -444,7 +440,7 @@
         "desc": "Reveals the top 3 cards in random order; choose the top one to take into hand, then shuffle the deck."
       },
       "apprentissage": {
-        "label": "Apprenticeship X",
+        "label": "Learning X",
         "desc": "Removes an action with cost ≤ X from your hand and memorizes it: the creature can play it without paying mana.",
         "desc_any": "Removes an action from your hand and memorizes it: the creature can play it without paying mana."
       },
@@ -508,10 +504,6 @@
         "label": "Comeback",
         "desc": "Return a targeted unit to its owner's hand."
       },
-      "renforcement_multiple": {
-        "label": "Multi-Strengthen",
-        "desc": "+X/+Y to your creatures{rm_scope}."
-      },
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X to your {faction_de} creatures in hand."
@@ -570,6 +562,10 @@
       "poison": {
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
+      },
+      "benediction": {
+        "label": "Blessing",
+        "desc": "Fully heals a targeted allied unit."
       },
       "pillage": {
         "label": "Pillage X",
@@ -774,10 +770,6 @@
         "label": "Recall",
         "desc": "Returns a targeted unit or item to its original owner's hand."
       },
-      "renforcement_multiple": {
-        "label": "Mass Reinforcement",
-        "desc": "+X/+Y to your creatures{rm_scope}."
-      },
       "entrainement": {
         "label": "Training X",
         "desc": "+X/+X to your {faction_de} creatures in hand."
@@ -821,10 +813,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
-      "benediction": {
-        "label": "Blessing",
-        "desc": "Fully heals a targeted allied unit."
       }
     },
     "composed": {
@@ -927,6 +915,7 @@
         "conquete": "adds {x} to your Conquest counter",
         "exploration": "adds {x} to your Exploration counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
+        "incineration_cible": "puts {cartes} {zone} under {deck}",
         "occurrences": "{n} times: ",
         "alternative": "One of: ",
         "devoration": "devours",
@@ -960,8 +949,7 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action",
-        "incineration_cible": "puts {cartes} {zone} under {deck}"
+        "dechainement_one_any": "plays a random action"
       },
       "self": {
         "transformation": "transforms",
@@ -1025,6 +1013,28 @@
         "on_draw": ", which will trigger when it is drawn",
         "on_low_hp": ", which will trigger below 15 HP",
         "on_wound": ", which will trigger when it is wounded without dying"
+      },
+      "incin": {
+        "zone_ally": "from your graveyard",
+        "zone_enemy": "from the enemy graveyard",
+        "zone_any": "from a graveyard",
+        "zone_both": "both graveyards",
+        "deck_ally": "your deck",
+        "deck_enemy": "the enemy deck",
+        "deck_any": "its owner's deck",
+        "deck_both": "their owner's deck",
+        "card_all": "all cards",
+        "card_one": "a card",
+        "card_n": "{n} cards",
+        "unit_all": "all units",
+        "unit_one": "a unit",
+        "unit_n": "{n} units",
+        "spell_all": "all actions",
+        "spell_one": "an action",
+        "spell_n": "{n} actions",
+        "item_all": "all items",
+        "item_one": "an item",
+        "item_n": "{n} items"
       },
       "pool": {
         "race": " of race {v}",
@@ -1099,28 +1109,6 @@
         "times": "{x} times 1 {unit}, each time",
         "target_both": "to a random {side} target (unit or hero)",
         "target_unit": "to a random {side} unit"
-      },
-      "incin": {
-        "zone_ally": "from your graveyard",
-        "zone_enemy": "from the enemy graveyard",
-        "zone_any": "from a graveyard",
-        "deck_ally": "your deck",
-        "deck_enemy": "the enemy deck",
-        "deck_any": "its owner's deck",
-        "card_all": "all cards",
-        "card_one": "a card",
-        "card_n": "{n} cards",
-        "unit_all": "all units",
-        "unit_one": "a unit",
-        "unit_n": "{n} units",
-        "spell_all": "all actions",
-        "spell_one": "an action",
-        "spell_n": "{n} actions",
-        "item_all": "all items",
-        "item_one": "an item",
-        "item_n": "{n} items",
-        "zone_both": "both graveyards",
-        "deck_both": "their owner's deck"
       }
     },
     "factions": {
@@ -2044,10 +2032,6 @@
       "lycanthrope": "an X/X token",
       "ability": "an ability",
       "scope": "to an allied unit (or to all)",
-      "rm_scope": " of the chosen race or clan",
-      "rm_scope_race": " of race {v}",
-      "rm_scope_clan": " of clan {v}",
-      "rm_scope_all": "",
       "scope_target": "to an allied unit",
       "edc_compte": "Gains {n} times +1 ATK or +1 HP at random (1 per creature {clan_de} with Camaraderie already played).",
       "scope_all": "to all your units",
@@ -2089,7 +2073,7 @@
         "low_hp": "below {n} HP",
         "spell": "when the action resolves",
         "wound": "when it is wounded without dying",
-        "delay": "when its Delay expires"
+        "delay": "after its Delay"
       }
     },
     "triggers": {
@@ -2114,6 +2098,7 @@
         "remontee": "Returns {cibles} to their original owner's hand.",
         "corruption": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
         "domination": "Takes control of {cibles}, up to the available slots.",
+        "benediction": "Fully heals {cibles}.",
         "poison": "Poisons {cibles}: they lose 1 HP at the end of each turn.",
         "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
@@ -2121,8 +2106,7 @@
         "silence": "Removes all keywords from {cibles} and restores their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
-        "guerison": "Restores X HP to {cibles}.",
-        "benediction": "Fully heals {cibles}."
+        "guerison": "Restores X HP to {cibles}."
       },
       "creature": {
         "impact": "Deals X damage to {cibles}.",
@@ -2150,27 +2134,27 @@
     "cost_help": {
       "vie": {
         "title": "Life cost {n}",
-        "desc": "On top of mana, your hero loses {n} HP when you play this card. Not allowed if it would bring your hero to 0 HP."
+        "desc": "In addition to mana, your hero loses {n} HP when you play this card. Not possible if it would reduce them to 0 HP."
       },
       "defausse": {
         "title": "Discard {n}",
-        "desc_one": "On top of mana, discard a card of your choice from your hand.",
-        "desc_many": "On top of mana, discard {n} cards of your choice from your hand."
+        "desc_one": "In addition to mana, discard a card of your choice from your hand.",
+        "desc_many": "In addition to mana, discard {n} cards of your choice from your hand."
       },
       "sacrifice": {
         "title": "Sacrifice {n}",
-        "desc_one": "On top of mana, sacrifice one of your creatures in play, of your choice.",
-        "desc_many": "On top of mana, sacrifice {n} of your creatures in play, of your choice."
+        "desc_one": "In addition to mana, sacrifice one of your creatures in play, of your choice.",
+        "desc_many": "In addition to mana, sacrifice {n} of your creatures in play, of your choice."
       },
       "exil": {
         "title": "Exile {n}",
-        "desc_one": "On top of mana, the top card of your deck is exiled: it leaves the game. Not allowed if your deck is empty.",
-        "desc_many": "On top of mana, the top {n} cards of your deck are exiled: they leave the game. Your deck must hold at least {n} cards."
+        "desc_one": "In addition to mana, the top card of your deck is exiled: it leaves the game. Not possible if your deck is empty.",
+        "desc_many": "In addition to mana, the top {n} cards of your deck are exiled: they leave the game. You need at least {n} cards in your deck."
       },
       "repli": {
         "title": "Retreat {n}",
-        "desc_one": "On top of mana, put a card of your choice from your hand on top of your deck.",
-        "desc_many": "On top of mana, put {n} cards of your choice from your hand on top of your deck. The first one chosen ends up on top."
+        "desc_one": "In addition to mana, put a card of your choice from your hand back on top of your deck.",
+        "desc_many": "In addition to mana, put {n} cards of your choice from your hand back on top of your deck. The first one chosen ends up on top."
       },
       "eveil": {
         "title": "Awakening {n}",
@@ -2179,8 +2163,8 @@
       },
       "equipement": {
         "title": "Equip {n}",
-        "desc": "Once the item is in play, equipping it to one of your creatures costs {n} mana. The cost is paid every time you equip it, moves included.",
-        "desc_free": "Once the item is in play, equipping it to one of your creatures is free, moves included."
+        "desc": "Once the item is in play, equipping it to one of your creatures costs {n} mana. The cost is paid each time it is equipped, including when moved.",
+        "desc_free": "Once the item is in play, equipping it to one of your creatures is free, including when moved."
       }
     }
   },
@@ -2521,6 +2505,7 @@
     "label_neutralised_ability": "NEUTRALIZED ABILITY",
     "neutralisation_hint": "Silenced on the targeted enemy (or on all, with the \"All enemies\" range) as long as the bearer is in play.",
     "target_scope_target": "Target",
+    "target_scope_self": "Itself",
     "target_scope_all_enemies": "All enemies",
     "target_scope_all_allies": "All allies",
     "target_scope_all": "All (both sides)",
@@ -2630,7 +2615,7 @@
     "tab_icons": "Icons",
     "tab_sets": "Sets",
     "tab_formats": "Formats",
-    "tab_bulk": "Assisted creation",
+    "tab_bulk": "Assisted Creation",
     "tab_budget": "Budget",
     "tab_schema": "Schema",
     "tab_prints": "Series",
@@ -2701,7 +2686,6 @@
     "spell_keywords_label": "ACTION KEYWORDS",
     "token_to_summon": "TOKEN TO SUMMON",
     "config_below_tokens": "Configure in \"Tokens to Summon\" below",
-    "targeted_race_clan": "TARGETED RACE / CLAN",
     "targeted_race": "TARGETED RACE",
     "required": "required",
     "choose_race": "-- Choose a race --",
@@ -2731,7 +2715,6 @@
     "transformation_token": "TRANSFORMATION TOKEN",
     "target_race_label": "TARGET RACE",
     "required_caps_f": "Required",
-    "atk_is_x": "(+ATK = X value)",
     "neg_atk_is_x": "(-ATK = X value)",
     "spell_cost_y": "ACTION COST (Y)",
     "spell_count_is_x": "(the number of actions = value X)",
@@ -2774,14 +2757,11 @@
     "x_value_title": "X Value",
     "targets_label2": "TARGET(S)",
     "one_target": "1 target",
-    "rm_config_label": "+HP (Y) AND TARGETED RACE / CLAN",
-    "atk_equals_x": "(+ATK = X)",
     "neg_atk_equals_x": "(-ATK = X)",
     "on_self": "(on self)",
     "add_ability": "+ Add an ability:",
     "choose_dash": "-- choose --",
     "no_ability_add_effect": "No abilities. Add an effect or an ability to confer below.",
-    "race_clan_label": "RACE / CLAN",
     "race_label": "RACE",
     "race_dash": "-- Race --",
     "confer_prefix": "Confer:",
@@ -3012,13 +2992,12 @@
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
     "content_selection_magique": "Magic Selection (1 Action out of 3)",
-    "tab_style_guides": "Style guides",
-    "mode_title_delay": "Delay X: once, at the start of the X-th following turn, if the unit is still in play",
-    "trigger_on_delay": "Delay X (start of the X-th following turn)",
+    "tab_style_guides": "Style Guides",
+    "mode_title_delay": "Delay X: only once, at the start of the Xth following turn, if the unit is still in play",
+    "trigger_on_delay": "Delay X (at the start of the Xth following turn)",
     "retard_turns_title": "Delay: number of turns before it triggers",
-    "retard_spell_title": "Delay: the effect triggers at the start of the caster's X-th following turn, target chosen then",
-    "label_retard": "Delay",
-    "target_scope_self": "Itself"
+    "retard_spell_title": "Delay: the effect triggers at the start of the caster's Xth following turn, with the target chosen at that time",
+    "label_retard": "Delay"
   },
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",
@@ -3034,9 +3013,9 @@
     "close": "Close",
     "settings": "Settings",
     "choose_card": "Choose a card",
-    "attack_choice_target": "⚔️ {label} — choose a target",
-    "attack_power_label": "Attack power",
-    "opponent_choosing": "⏳ Your opponent is choosing…",
+    "attack_choice_target": "⚔️ {label} — choose the target",
+    "attack_power_label": "Attack Power",
+    "opponent_choosing": "⏳ The opponent is making a choice…",
     "no_creatures": "No creatures",
     "drag_hint": "Drag your cards here to play them",
     "drop_hint": "Release to play the creature",
@@ -3150,7 +3129,7 @@
     "presage_subtitle": "Which one is the top card of your deck?",
     "presage_hit": "Well spotted — it joins your hand.",
     "presage_miss": "Missed. The correct card is highlighted in green.",
-    "apprentissage_title": "📖 Apprenticeship",
+    "apprentissage_title": "📖 Learning",
     "apprentissage_subtitle": "Which action should the creature memorize?",
     "foi_title": "✨ Faith",
     "foi_subtitle": "Choose a card to put in your hand. Its cost is deducted from your Faith; the rest is kept.",
@@ -3461,9 +3440,9 @@
     "draft": "Draft",
     "playable": "Playable",
     "retired": "Retired",
-    "excluded": "Banned",
+    "excluded": "Excluded",
     "deck_unavailable": "{count, plural, one {# unavailable card} other {# unavailable cards}}",
-    "cannot_add": "Unavailable card: it cannot be added to a deck",
+    "cannot_add": "Card unavailable: it cannot be added to a deck",
     "reason": "Reason: {reason}"
   }
 }

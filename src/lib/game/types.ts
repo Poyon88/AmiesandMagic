@@ -34,7 +34,7 @@ export type Keyword =
   // Tier 2 — Deck / Race / Clan
   | "traque_du_destin" | "sang_mele" | "fierte_du_clan" | "solidarite" | "lycanthropie" | "entraide"
   // Tier 3 — Deck / Race / Clan / Mixte
-  | "cycle_eternel" | "martyr" | "instinct_de_meute" | "totem" | "appel_du_clan" | "appel_supreme" | "rassemblement"
+  | "cycle_eternel" | "instinct_de_meute" | "totem" | "appel_du_clan" | "appel_supreme" | "rassemblement"
   // Tier 4
   | "pacte_de_sang" | "souffle_de_feu" | "domination" | "resurrection" | "transcendance"
   | "vampirisme"
@@ -144,8 +144,6 @@ export type Keyword =
   // +1 ATK ou +1 PV au HASARD, autant de fois qu'il y a d'AUTRES créatures
   // Esprit de corps du même clan déjà posées depuis la main par le contrôleur.
   | "esprit_de_corps"
-  // Polymorphic — +X/+Y to all controller's creatures of a selected race/clan
-  | "renforcement_multiple"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
   | "entrainement"
   // Polymorphic — +X/+Y PERMANENT à la 1re créature du DECK du propriétaire en
@@ -263,7 +261,6 @@ export type SpellKeywordId =
   | "domination"
   | "corruption"
   | "remontee"
-  | "renforcement_multiple"
   | "pillage"
   | "entrainement"
   | "fortifier"
@@ -324,12 +321,11 @@ export interface KeywordInstance {
   /** RETARD X (mode "delay") : nombre de tours avant le déclenchement (1–3). */
   delay?: number;
   x?: number;
-  /** Renforcement multiple : bonus de PV (+Y). `x` porte le bonus d'ATK (+X). */
+  /** Second membre d'une paire +X/+Y (Renforcement, Discipline…). */
   y?: number;
-  /** Renforcement multiple : race ciblée (les créatures du contrôleur de cette
-   *  race gagnent +X/+Y). `clan` prime sur `race` quand il est défini. */
+  /** Race ciblée, pour les capacités qui en portent une. `clan` prime. */
   race?: string;
-  /** Renforcement multiple : clan ciblé (prioritaire sur `race`). */
+  /** Clan ciblé (prioritaire sur `race`). */
   clan?: string;
   /** Spell-only. When a creature keyword is carried by a SPELL, the spell
    *  CONFERS it to creature(s) on cast. `grantScope` chooses the recipients:
@@ -392,10 +388,10 @@ export interface SpellKeywordInstance {
   /** Portée « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
   targetScope?: TargetScope;
   amount?: number;   // X value for impact, deferlement, siphon, entrave (tours de paralysie), guerison, inspiration, afflux, pillage, cataclysme, invocation (coût de la créature invoquée)
-  attack?: number;   // for renforcement, renforcement_multiple — et repli legacy d'invocation (ex-token X/Y : X devient le coût)
-  health?: number;   // for renforcement, renforcement_multiple — legacy invocation (ignoré)
-  race?: string;     // legacy invocation (race du token, ignoré) and renforcement_multiple (race ciblée)
-  clan?: string;     // for renforcement_multiple (clan ciblé, prioritaire sur race)
+  attack?: number;   // for renforcement — et repli legacy d'invocation (ex-token X/Y : X devient le coût)
+  health?: number;   // for renforcement — legacy invocation (ignoré)
+  race?: string;     // legacy invocation (race du token, ignoré) and race ciblée
+  clan?: string;     // clan ciblé, prioritaire sur race
   token_id?: number | null; // legacy invocation — ancien id token_templates (ignoré depuis la refonte)
   /** invocations_multiples : coût en mana de CHAQUE invocation, dans l'ordre. */
   costs?: number[];
@@ -565,10 +561,10 @@ export interface Capability {
    *  KeywordInstance.x / SpellKeywordInstance.amount) ; `y` = second membre du
    *  couple quand `x` porte le premier (mots-clés créature à couple : Gloire
    *  +X/+Y — cf. XY_ABILITY_IDS, calqué sur KeywordInstance.x/y) ;
-   *  `attack`/`health` = paire +X/+Y (renforcement, renforcement_multiple,
+   *  `attack`/`health` = paire +X/+Y (renforcement,
    *  invocation). */
   params?: { x?: number; y?: number; attack?: number; health?: number; randomX?: boolean; randomY?: boolean; minX?: number };
-  /** Race/clan ciblé (renforcement_multiple, entraide, race du token). */
+  /** Race/clan ciblé (entraide, race du token). */
   race?: string;
   clan?: string;
   /** Référence token (convocation / invocation / convocation_simple). */
@@ -1385,10 +1381,6 @@ export interface CardInstance {
   // Richesse: permanent buff tracker (+X/+X per discard, any player)
   richesseATKBonus: number;
   richessePVBonus: number;
-  // Martyr (death-trigger from same-race ally): permanent ATK bonus
-  // tracked separately from currentAttack so recalculateAuras() doesn't
-  // erase it on its next pass.
-  martyrATKBonus: number;
   /** DÉVORATION : ATK et PV absorbés définitivement sur les unités dévorées.
    *  Champs dédiés — et non une mutation directe de currentAttack — parce que
    *  recalculateAuras reconstruit les stats à chaque recalcul depuis
@@ -1550,8 +1542,8 @@ export interface HeroPowerEffect {
   params?: { amount?: number; amountY?: number; attack?: number; health?: number };
   // FK to token_templates.id when keywordId === "convocation".
   tokenId?: number | null;
-  // Race/clan ciblé pour les capacités qui en portent une (Appel Suprême,
-  // Renforcement multiple…) lorsqu'elles sont déclenchées par un pouvoir.
+  // Race/clan ciblé pour les capacités qui en portent une (Appel Suprême…)
+  // lorsqu'elles sont déclenchées par un pouvoir.
   race?: string;
   clan?: string;
 }

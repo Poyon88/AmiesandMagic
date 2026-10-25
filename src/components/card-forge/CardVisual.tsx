@@ -131,7 +131,6 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Traque du destin X": "🔮",
   "Cycle éternel":    "♻️",
   "Sang mêlé":        "🧬",
-  "Martyr":           "⚱️",
   "Instinct de meute X": "🐺",
   "Totem":            "🗿",
   "Fierté du clan":   "🏰",
@@ -165,7 +164,7 @@ interface CardData {
   /** Plancher A du « ? » par libellé : l'aperçu peint « A à X » et « A–X ». */
   keywordMinX?: Record<string, number>;
   /** Mots-clés « paire de stats » (Gloire +X/+Y, Renforcement +X/+Y,
-   *  Renforcement multiple, Affaiblissement -X/-Y) : le +Y dédié, keyé comme
+   *  Affaiblissement -X/-Y) : le +Y dédié, keyé comme
    *  keywordXValues (libellé forge). Sans lui l'aperçu n'affiche que le X, ce
    *  qui laisse croire que le bonus de PV n'existe pas. */
   keywordYValues?: Record<string, number>;
@@ -276,8 +275,8 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
     const label = vocab.keywordLabelFor(id as never, ctx as never);
     // Paire de stats (+X/+Y / -X/-Y) : on peint « +2/+1 », pas le seul X. On
     // interroge le jeu par ID MOTEUR (isStatPairKeyword) plutôt que de tester le
-    // libellé forge : « Renforcement multiple » ne porte aucun marqueur alors
-    // qu'il est bien une paire, et une regex sur le libellé le manquerait.
+    // libellé forge : un libellé sans marqueur peut porter une paire, et une
+    // regex sur le libellé le manquerait.
     const isPair = isStatPairKeyword(id as never);
     const badgeText = isPair
       ? `${kw.includes("-X/-Y") ? "-" : "+"}${xVal ?? 0}/${kw.includes("-X/-Y") ? "-" : "+"}${card?.keywordYValues?.[kw] ?? 0}`

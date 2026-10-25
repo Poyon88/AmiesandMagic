@@ -18,8 +18,8 @@ describe("describeKeyword — valeurs concrètes", () => {
   });
 
   it("emploie le pluriel après déterminant", () => {
-    expect(describeKeyword("martyr", { card: card({ race: "Démons" }) }))
-      .toBe("+1/+1 permanent à vos Démons en jeu.");
+    expect(describeKeyword("totem", { card: card({ race: "Démons" }) }))
+      .toBe("Gagne les capacités de vos Démons en jeu.");
   });
 
   it("Entraide lit entraide_race, pas la race de la carte", () => {

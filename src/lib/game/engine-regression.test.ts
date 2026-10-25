@@ -137,7 +137,9 @@ function buildLibrary() {
       effect_text: "[Héritage 1]",
       race: "humains",
     }),
-    martyr: creature("Martyr", 3, 2, 2, { keywords: ["martyr"], race: "humains" }),
+    // Ex-Martyr (capacité retirée le 2026-10-25) : la carte reste pour garder
+    // la composition des decks, donc la partie scriptée, identique.
+    martyr: creature("Martyr", 3, 2, 2, { race: "humains" }),
     necro: creature("Goule", 4, 2, 5, { keywords: ["necrophagie"], race: "morts_vivants" }),
     inspiration: creature("Sage", 4, 2, 3, {
       keywords: ["inspiration"],
@@ -296,7 +298,6 @@ function compactInstance(ci: GameState["players"][0]["board"][0]) {
     auraHealthBonus: ci.auraHealthBonus,
     necrophagieATKBonus: ci.necrophagieATKBonus,
     necrophagiePVBonus: ci.necrophagiePVBonus,
-    martyrATKBonus: ci.martyrATKBonus,
     persecutionX: ci.persecutionX,
     riposteX: ci.riposteX,
     carnageX: ci.carnageX,

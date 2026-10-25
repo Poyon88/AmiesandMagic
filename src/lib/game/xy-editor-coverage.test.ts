@@ -61,7 +61,7 @@ describe("couverture des capacités +X/+Y dans l'éditeur", () => {
       labels: [label],
       xValues: { [label]: 4 },
       yValues: { [label]: 7 },
-      extras: { rmY: 7, afY: 7, rfY: 7, dcY: 7, glY: 7, fdaY: 7 },
+      extras: { afY: 7, rfY: 7, dcY: 7, glY: 7, fdaY: 7 },
     });
     expect(instance, `instance construite pour ${label}`).toBeTruthy();
     expect(instance.id).toBe(id);

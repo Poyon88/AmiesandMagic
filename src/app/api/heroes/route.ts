@@ -91,7 +91,7 @@ function validatePowerEffect(
     }
     validated.tokenId = obj.tokenId;
   }
-  // Race/clan ciblé (Appel Suprême, Renforcement multiple…) — conservés tels
+  // Race/clan ciblé (Appel Suprême…) — conservés tels
   // quels pour que le moteur les reçoive via le SpellKeywordInstance synthétisé.
   if (typeof obj.race === 'string' && obj.race.trim()) validated.race = obj.race;
   if (typeof obj.clan === 'string' && obj.clan.trim()) validated.clan = obj.clan;

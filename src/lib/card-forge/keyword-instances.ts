@@ -74,7 +74,7 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Traque du destin X": "traque_du_destin", "Sang mêlé": "sang_mele",
   "Fierté du clan": "fierte_du_clan", "Solidarité X": "solidarite",
   "Entraide (Race)": "entraide",
-  "Cycle éternel": "cycle_eternel", "Martyr": "martyr",
+  "Cycle éternel": "cycle_eternel",
   "Instinct de meute X": "instinct_de_meute", "Totem": "totem",
   "Appel du clan X": "appel_du_clan", "Appel Suprême": "appel_supreme", "Rassemblement X": "rassemblement",
   "Sélection X": "selection",
@@ -115,8 +115,6 @@ export const GAME_TO_FORGE_KEYWORD: Record<string, string> = {
  *  l'éditeur de tokens n'en renseigne qu'une partie, et un mot-clé dont la
  *  donnée manque est écarté en amont (cf. TOKEN_UNSUPPORTED_IDS). */
 export interface ForgeKeywordExtras {
-  /** Renforcement multiple : +Y PV, et filtres race/clan facultatifs. */
-  rmY?: number; rmRace?: string; rmClan?: string;
   /** Seconds membres des capacités à couple X/Y. */
   afY?: number; rfY?: number; dcY?: number | null; glY?: number; fdaY?: number;
   /** Déchainement : « ? » sur Y (coût plafond, 1 à Y). */
@@ -150,7 +148,7 @@ export interface ForgeKeywordExtras {
  *  `y`, et le moteur lui appliquait son défaut 1 en silence (Pureté et Seuil
  *  Sacrificiel ont vécu ainsi). */
 const XY_IDS_A_BRANCHE_DEDIEE: ReadonlySet<string> = new Set([
-  "renforcement_multiple", "affaiblissement", "renforcement",
+  "affaiblissement", "renforcement",
   "dechainement", "gloire", "force_des_ancetres", "invention",
 ]);
 
@@ -220,10 +218,6 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // persister sa portée même sans mode ni X. « target » est le défaut → pas
       // de champ.
       const grantScope = isSpellCard && grantScopes[label] === "all_allies" ? "all_allies" as const : undefined;
-      // Renforcement multiple (créature) : porte +X/+Y et race/clan ; toujours émis.
-      if (id === "renforcement_multiple" && !isSpellCard) {
-        return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: extras.rmY ?? 0, ...(extras.rmRace ? { race: extras.rmRace } : {}), ...(extras.rmClan ? { clan: extras.rmClan } : {}) };
-      }
       // Affaiblissement (créature) : porte -X (ATK, valeur générique) / -Y (PV dédié).
       if (id === "affaiblissement" && !isSpellCard) {
         return { id, ...(mode ? { mode } : {}), x: x ?? 0, y: extras.afY ?? 0 };
