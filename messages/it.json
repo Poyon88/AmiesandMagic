@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "Tutore",
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
+      },
+      "execution": {
+        "label": "Esecuzione",
+        "desc": "Distrugge un'unità nemica bersaglio."
+      },
+      "silence": {
+        "label": "Silenzio",
+        "desc": "Rimuove tutte le parole chiave da un'altra unità bersaglio e riporta le sue statistiche al valore originale."
+      },
+      "guerison": {
+        "label": "Guarigione X",
+        "desc": "Ripristina X PV a un'altra unità alleata bersaglio o al tuo eroe."
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "Guarigione X",
-        "desc": "Ripristina X PV a un bersaglio"
+        "desc": "Ripristina X PV a un'unità alleata o al tuo eroe."
       },
       "seconde_vie": {
         "label": "Seconda vita X",
@@ -1073,6 +1085,8 @@
         "both_one": "a un bersaglio (unità o eroe){side}",
         "both_side_ally": "alleati",
         "both_side_enemy": "nemici",
+        "both_side_ally_one": "alleato",
+        "both_side_enemy_one": "nemico",
         "count_all": "a tutte le unità",
         "count_one": "a un'unità",
         "count_n": "a {n} unità",
@@ -2102,11 +2116,11 @@
         "poison": "Avvelena {cibles}: perdono 1 PV a ogni fine turno.",
         "siphon": "Infligge X danni a {cibles} e cura il tuo eroe di X per ogni unità colpita.",
         "entrave": "Paralizza {cibles} per X turno/i.",
-        "execution": "Distrugge {cibles}.",
-        "silence": "Rimuove tutte le parole chiave da {cibles} e riporta le loro statistiche al valore originale.",
+        "execution": "Distrugge {cibles}, oggetti compresi.",
+        "silence": "Rimuove tutte le parole chiave da {cibles}, oggetti compresi, e riporta le loro statistiche al valore originale.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se tutte le tue creature in gioco hanno un costo della stessa parità di quello di questa azione, +X/+Y a {cibles}.",
-        "guerison": "Ripristina X PV a {cibles}."
+        "guerison": "Ripristina X PV a {cibles} e al tuo eroe."
       },
       "creature": {
         "impact": "Infligge X danni a {cibles}.",
@@ -2123,7 +2137,12 @@
         "renforcement": "Conferisce +X ATK e +Y PV in modo permanente a tutte le altre unità alleate.",
         "discipline": "Se tutti i costi della tua plancia hanno la stessa parità del suo, dona +X/+Y permanente a tutte le altre unità alleate.",
         "renforcement_soi": "Ottiene +X ATK e +Y PV in modo permanente.",
-        "discipline_soi": "Se tutte le tue creature in gioco hanno un costo della stessa parità del suo, ottiene +X ATK e +Y PV in modo permanente."
+        "discipline_soi": "Se tutte le tue creature in gioco hanno un costo della stessa parità del suo, ottiene +X ATK e +Y PV in modo permanente.",
+        "execution": "Distrugge {cibles}, oggetti compresi.",
+        "silence": "Rimuove tutte le parole chiave da {cibles}, oggetti compresi, e riporta le loro statistiche al valore originale.",
+        "guerison": "Ripristina X PV a tutte le altre unità alleate e al tuo eroe.",
+        "silence_soi": "Perde tutte le sue parole chiave e le sue statistiche tornano al valore originale.",
+        "guerison_soi": "Recupera X PV."
       },
       "cibles": {
         "all_enemies": "tutte le unità nemiche",

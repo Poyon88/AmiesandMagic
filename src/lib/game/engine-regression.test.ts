@@ -193,6 +193,10 @@ function pickTargetForType(state: GameState, type: SpellTargetType): string | un
       return opp.board[0]?.instanceId;
     case "friendly_creature":
       return me.board[0]?.instanceId;
+    // Guérison : camp allié seulement depuis 2026-10-27 (elle soignait ici
+    // jusque-là la première créature ADVERSE, via "any").
+    case "friendly_any":
+      return me.board[0]?.instanceId ?? "friendly_hero";
     case "friendly_graveyard":
     case "friendly_graveyard_to_board":
       return me.graveyard.find((c) => c.card.card_type === "creature")?.instanceId;

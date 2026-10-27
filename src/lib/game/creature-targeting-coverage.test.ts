@@ -66,12 +66,20 @@ describe("cohérence des deux listes de ciblage de créature", () => {
   // unité ») : le mettre dans la liste globale ouvrirait le picker pour une
   // créature qui se renforce elle-même. `creatureNeedsTarget` le traite donc à
   // part — on vérifie que cette branche existe bien.
-  const CIBLAGE_PAR_INSTANCE = new Set(["renforcement", "discipline"]);
+  // Même chose pour Silence et Guérison (« elle-même » possible) ; Exécution
+  // passe par la même branche que ses deux sœurs.
+  const CIBLAGE_PAR_INSTANCE = new Set(["renforcement", "discipline", "execution", "silence", "guerison"]);
 
   it("Renforcement / Discipline : le picker s'ouvre par leur branche dédiée de creatureNeedsTarget", () => {
     const debut = SOURCE.indexOf("export function creatureNeedsTarget");
     const corps = SOURCE.slice(debut, SOURCE.indexOf("\n}\n", debut));
     expect(corps).toContain('bonusVersAutre(instanceOnPlay(card, kw as Keyword))');
+  });
+
+  it("Exécution / Silence / Guérison : le picker s'ouvre par leur branche dédiée de creatureNeedsTarget", () => {
+    const debut = SOURCE.indexOf("export function creatureNeedsTarget");
+    const corps = SOURCE.slice(debut, SOURCE.indexOf("\n}\n", debut));
+    expect(corps).toContain("ACTIONS_CIBLEES_DE_CREATURE.some(");
   });
 
   it.each(casesDeGetCreatureTargets().filter((kw) => !CIBLAGE_PAR_INSTANCE.has(kw)))(

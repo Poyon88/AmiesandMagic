@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
+      },
+      "execution": {
+        "label": "処刑",
+        "desc": "対象の敵ユニット1体を破壊する。"
+      },
+      "silence": {
+        "label": "沈黙",
+        "desc": "他の対象ユニット1体の全キーワードを除去し、ステータスを元の値に戻す。"
+      },
+      "guerison": {
+        "label": "回復 X",
+        "desc": "他の対象の味方ユニット1体またはあなたのヒーローのHPをX回復する。"
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "回復 X",
-        "desc": "対象のPVをX回復する"
+        "desc": "味方ユニット1体またはあなたのヒーローのHPをX回復する。"
       },
       "seconde_vie": {
         "label": "第二の生X",
@@ -1073,6 +1085,8 @@
         "both_one": "対象1体（ユニットまたはヒーロー）{side}に",
         "both_side_ally": "味方の",
         "both_side_enemy": "敵の",
+        "both_side_ally_one": "味方の",
+        "both_side_enemy_one": "敵の",
         "count_all": "すべてのユニットに",
         "count_one": "ユニット1体に",
         "count_n": "{n}体のユニットに",
@@ -2102,11 +2116,11 @@
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
         "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
-        "execution": "{cibles}を破壊する。",
-        "silence": "{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
+        "execution": "{cibles}をアイテムも含めて破壊する。",
+        "silence": "{cibles}（アイテムを含む）からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
-        "guerison": "{cibles}のHPをX回復する。"
+        "guerison": "{cibles}とあなたのヒーローのHPをX回復する。"
       },
       "creature": {
         "impact": "{cibles}にXダメージを与える。",
@@ -2123,7 +2137,12 @@
         "renforcement": "他のすべての味方ユニットに、ATK+XとHP+Yを永続的に与える。",
         "discipline": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、他のすべての味方ユニットに+X/+Yを永続的に与える。",
         "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
-        "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。"
+        "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。",
+        "execution": "{cibles}をアイテムも含めて破壊する。",
+        "silence": "{cibles}（アイテムを含む）からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
+        "guerison": "他のすべての味方ユニットとあなたのヒーローのHPをX回復する。",
+        "silence_soi": "自身のすべてのキーワードを失い、ステータスが元の値に戻る。",
+        "guerison_soi": "HPをX回復する。"
       },
       "cibles": {
         "all_enemies": "すべての敵ユニット",

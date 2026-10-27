@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "execution": {
+        "label": "处决",
+        "desc": "消灭一个目标敌方单位。"
+      },
+      "silence": {
+        "label": "沉默",
+        "desc": "移除另一个目标单位的所有关键词，并将其属性恢复为初始值。"
+      },
+      "guerison": {
+        "label": "治愈 X",
+        "desc": "为另一个目标友方单位或你的英雄恢复 X 点生命值。"
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "治愈 X",
-        "desc": "为目标恢复 X PV"
+        "desc": "为一个友方单位或你的英雄恢复 X 点生命值。"
       },
       "seconde_vie": {
         "label": "重生X",
@@ -1073,6 +1085,8 @@
         "both_one": "对一个目标（单位或英雄）{side}",
         "both_side_ally": "我方",
         "both_side_enemy": "敌方",
+        "both_side_ally_one": "我方",
+        "both_side_enemy_one": "敌方",
         "count_all": "对所有单位",
         "count_one": "对一个单位",
         "count_n": "对 {n} 个单位",
@@ -2102,11 +2116,11 @@
         "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
         "siphon": "对{cibles}造成 X 点伤害,并为你的英雄每个被命中的单位恢复 X 点生命。",
         "entrave": "使{cibles}麻痹X回合。",
-        "execution": "消灭{cibles}。",
-        "silence": "移除{cibles}的所有关键词，并将其属性恢复为初始值。",
+        "execution": "消灭{cibles}，包括物品。",
+        "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
-        "guerison": "为{cibles}恢复X点生命值。"
+        "guerison": "为{cibles}和你的英雄恢复X点生命值。"
       },
       "creature": {
         "impact": "对{cibles}造成X点伤害。",
@@ -2123,7 +2137,12 @@
         "renforcement": "永久给予所有其他友方单位 +X 攻击力和 +Y 生命值。",
         "discipline": "如果你场上所有单位的费用与其奇偶性相同,则永久给予所有其他友方单位+X/+Y。",
         "renforcement_soi": "永久获得 +X 攻击力和 +Y 生命值。",
-        "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。"
+        "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。",
+        "execution": "消灭{cibles}，包括物品。",
+        "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
+        "guerison": "为其他所有友方单位和你的英雄恢复X点生命值。",
+        "silence_soi": "失去自身所有关键词，属性恢复为初始值。",
+        "guerison_soi": "恢复 X 点生命值。"
       },
       "cibles": {
         "all_enemies": "所有敌方单位",

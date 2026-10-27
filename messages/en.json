@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
+      "execution": {
+        "label": "Execution",
+        "desc": "Destroys a targeted enemy unit."
+      },
+      "silence": {
+        "label": "Silence",
+        "desc": "Removes all keywords from another targeted unit and resets its stats to their original values."
+      },
+      "guerison": {
+        "label": "Healing X",
+        "desc": "Restores X HP to another targeted friendly unit or to your hero."
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "Healing X",
-        "desc": "Restores X HP to a target."
+        "desc": "Restores X HP to a friendly unit or to your hero."
       },
       "seconde_vie": {
         "label": "Second Life X",
@@ -1073,6 +1085,8 @@
         "both_one": "to a target (unit or hero){side}",
         "both_side_ally": "friendly",
         "both_side_enemy": "enemy",
+        "both_side_ally_one": "friendly",
+        "both_side_enemy_one": "enemy",
         "count_all": "to all units",
         "count_one": "to one unit",
         "count_n": "to {n} units",
@@ -2102,11 +2116,11 @@
         "poison": "Poisons {cibles}: they lose 1 HP at the end of each turn.",
         "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
-        "execution": "Destroys {cibles}.",
-        "silence": "Removes all keywords from {cibles} and restores their stats to their original values.",
+        "execution": "Destroys {cibles}, items included.",
+        "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
-        "guerison": "Restores X HP to {cibles}."
+        "guerison": "Restores X HP to {cibles} and to your hero."
       },
       "creature": {
         "impact": "Deals X damage to {cibles}.",
@@ -2123,7 +2137,12 @@
         "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
         "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
         "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
-        "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP."
+        "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
+        "execution": "Destroys {cibles}, items included.",
+        "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
+        "guerison": "Restores X HP to all other friendly units and to your hero.",
+        "silence_soi": "Loses all its keywords and its stats return to their original values.",
+        "guerison_soi": "Recovers X HP."
       },
       "cibles": {
         "all_enemies": "all enemy units",

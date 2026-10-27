@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "Tuteur",
         "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
+      },
+      "execution": {
+        "label": "Exécution",
+        "desc": "Détruit une unité ennemie ciblée."
+      },
+      "silence": {
+        "label": "Silence",
+        "desc": "Retire tous les mots-clés d'une autre unité ciblée et ramène ses stats à leur valeur d'origine."
+      },
+      "guerison": {
+        "label": "Guérison X",
+        "desc": "Restaure X PV à une autre unité alliée ciblée ou à votre héros."
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "Guérison X",
-        "desc": "Restaure X PV à une cible"
+        "desc": "Restaure X PV à une unité alliée ou à votre héros."
       },
       "seconde_vie": {
         "label": "Seconde vie X",
@@ -1073,6 +1085,8 @@
         "both_one": "à une cible (unité ou héros){side}",
         "both_side_ally": "alliés",
         "both_side_enemy": "ennemis",
+        "both_side_ally_one": "alliée",
+        "both_side_enemy_one": "ennemie",
         "count_all": "à toutes les unités",
         "count_one": "à une unité",
         "count_n": "à {n} unités",
@@ -2102,11 +2116,11 @@
         "poison": "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
         "siphon": "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
         "entrave": "Paralyse {cibles} pendant X tour(s).",
-        "execution": "Détruit {cibles}.",
-        "silence": "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
+        "execution": "Détruit {cibles}, objets compris.",
+        "silence": "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
         "renforcement": "+X/+Y à {cibles}.",
         "discipline": "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
-        "guerison": "Restaure X PV à {cibles}."
+        "guerison": "Restaure X PV à {cibles} et à votre héros."
       },
       "creature": {
         "impact": "Inflige X dégâts à {cibles}.",
@@ -2123,7 +2137,12 @@
         "renforcement": "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
         "discipline": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
         "renforcement_soi": "Gagne +X ATK et +Y PV de façon permanente.",
-        "discipline_soi": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente."
+        "discipline_soi": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+        "execution": "Détruit {cibles}, objets compris.",
+        "silence": "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
+        "guerison": "Restaure X PV à toutes les autres unités alliées et à votre héros.",
+        "silence_soi": "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
+        "guerison_soi": "Récupère X PV."
       },
       "cibles": {
         "all_enemies": "toutes les unités ennemies",

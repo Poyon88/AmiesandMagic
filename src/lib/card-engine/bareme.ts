@@ -83,8 +83,28 @@ export const RARETE_FIXEE: Record<string, number> = {
   "Commune": 1.0, "Peu Commune": 1.1, "Rare": 1.2, "Épique": 1.3, "Légendaire": 1.4,
 };
 
-/** Barème produit par le calibrage (fichier versionné). */
-export const BAREME_CALIBRE = generated as unknown as Bareme;
+/** Capacités dont le coût est LIÉ par l'auteur à celui d'une autre capacité, à
+ *  X fixé : Silence vaut Impact 2 (2026-10-27). Le calibrage le donnait quasi
+ *  gratuit (0,2 point), faute de cartes où il serait seul. Le lien suit les
+ *  recalibrages d'Impact ; une surcharge explicite de l'onglet Budget prime. */
+export const CAPACITES_LIEES: Record<string, { a: string; x: number }> = {
+  silence: { a: "impact", x: 2 },
+};
+
+/** Recopie dans `b` le coût des capacités liées (base = base + x × perX de la
+ *  capacité de référence, sans part variable). `sauf` : ids laissés tels quels. */
+export function appliquerLiaisons(b: Bareme, sauf: ReadonlySet<string> = new Set()): Bareme {
+  const capacites = { ...b.capacites };
+  for (const [id, { a, x }] of Object.entries(CAPACITES_LIEES)) {
+    const ref = capacites[a];
+    if (!ref || sauf.has(id)) continue;
+    capacites[id] = { base: Math.round((ref.base + x * ref.perX) * 100) / 100, perX: 0, perY: 0, n: capacites[id]?.n ?? 0 };
+  }
+  return { ...b, capacites };
+}
+
+/** Barème produit par le calibrage (fichier versionné), liaisons appliquées. */
+export const BAREME_CALIBRE = appliquerLiaisons(generated as unknown as Bareme);
 
 let courant: Bareme = BAREME_CALIBRE;
 
@@ -110,7 +130,9 @@ function fusion<T>(base: T, ov: unknown): T {
 
 /** Repart TOUJOURS du barème calibré, puis applique les écarts. */
 export function applyBaremeOverrides(ov: BaremeOverrides | null | undefined): Bareme {
-  courant = ov ? fusion(BAREME_CALIBRE, ov) : BAREME_CALIBRE;
+  // Une capacité liée surchargée à la main garde la valeur de l'auteur ; sinon
+  // elle suit la capacité de référence, surchargée ou non.
+  courant = ov ? appliquerLiaisons(fusion(BAREME_CALIBRE, ov), new Set(Object.keys(ov.capacites ?? {}))) : BAREME_CALIBRE;
   return courant;
 }
 

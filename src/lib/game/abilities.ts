@@ -1087,13 +1087,27 @@ export const ABILITIES: Record<string, AbilityDef> = {
   execution: {
     id: "execution", label: "Exécution", symbol: "☠️",
     desc: "Détruit une créature ou un objet ciblé",
-    applicable_to: ["spell"],
+    applicable_to: ["creature", "spell"],
+    // Forme créature : une unité ENNEMIE désignée (« A » : toutes les unités et
+    // tous les objets ennemis). Capacité d'unité ⇒ Transcendance ne protège pas.
+    creature: {
+      cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain",
+      desc: "Détruit une unité ennemie ciblée.",
+    },
     spell: { params: [], needsTarget: true, targetType: "any_creature_or_item" },
   },
   silence: {
     id: "silence", label: "Silence", symbol: "🤫",
     desc: "Retire tous les mots-clés d'une créature ciblée et ramène ses stats à leur valeur d'origine ; sur un objet, retire ses mots-clés et laisse ses caractéristiques",
-    applicable_to: ["spell"],
+    applicable_to: ["creature", "spell"],
+    // Forme créature : une autre unité désignée, de n'importe quel camp ;
+    // « elle-même » (« S ») pour effacer ses propres malus ; « A » : toutes les
+    // unités et tous les objets du camp choisi. Coût de l'auteur : celui
+    // d'Impact 2 (cf. CAPACITES_LIEES, barème).
+    creature: {
+      cost: 14, costPerX: 0, se: 3.0, minTier: 2, scalable: false, zone: "Terrain",
+      desc: "Retire tous les mots-clés d'une autre unité ciblée et ramène ses stats à leur valeur d'origine.",
+    },
     spell: { params: [], needsTarget: true, targetType: "any_creature_or_item" },
   },
   renforcement: {
@@ -1189,9 +1203,16 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   guerison: {
     id: "guerison", label: "Guérison X", symbol: "💚",
-    desc: "Restaure X PV à une cible",
-    applicable_to: ["spell"],
-    spell: { params: ["amount"], needsTarget: true, targetType: "any" },
+    desc: "Restaure X PV à une unité alliée ou à votre héros",
+    applicable_to: ["creature", "spell"],
+    // Camp ALLIÉ seulement, sous ses deux formes (arbitrage 2026-10-27) : une
+    // unité alliée ou le héros allié ; « A » = toutes les unités alliées ET le
+    // héros allié. Forme créature : « S » pour se soigner elle-même.
+    creature: {
+      cost: 3, costPerX: 2, se: 1.5, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Restaure X PV à une autre unité alliée ciblée ou à votre héros.",
+    },
+    spell: { params: ["amount"], needsTarget: true, targetType: "friendly_any" },
   },
   seconde_vie: {
     id: "seconde_vie", label: "Seconde vie X", symbol: "🕰️",
@@ -1835,6 +1856,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "forge",
   "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration", "invention",
   "incineration", "creuser", "retour_differe", "devoration",
+  "execution", "silence", "guerison",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.
   "fortifier", "preincanter", "compagnons", "tuteur", "presage",

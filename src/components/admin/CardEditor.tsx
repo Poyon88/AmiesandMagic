@@ -2302,9 +2302,10 @@ export default function CardEditor() {
                         <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{KEYWORD_LABELS[kw as Keyword] ?? kw}</span>
                         {BONUS_BENEFICIAIRE_FORGE.has(kw) ? (
                           <RecipientButtons
-                            value={keywordTargetScope[kw] === "all_allies" ? "all_allies" : keywordRecipient[kw] === "self" ? "self" : "target"}
+                            options={creatureScopes(kw)}
+                            value={porteeValide(keywordTargetScope[kw], creatureScopes(kw)) ?? (keywordRecipient[kw] === "self" ? "self" : "target")}
                             onChange={(v) => {
-                              setKeywordTargetScope(prev => { const next = { ...prev }; if (v === "all_allies") next[kw] = "all_allies"; else delete next[kw]; return next; });
+                              setKeywordTargetScope(prev => { const next = { ...prev }; if (v !== "self" && v !== "target") next[kw] = v; else delete next[kw]; return next; });
                               setKeywordRecipient(prev => { const next = { ...prev }; if (v === "self") next[kw] = "self"; else delete next[kw]; return next; });
                             }}
                             tr={tForge}

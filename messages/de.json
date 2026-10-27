@@ -548,6 +548,18 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "execution": {
+        "label": "Hinrichtung",
+        "desc": "Zerstört eine anvisierte feindliche Einheit."
+      },
+      "silence": {
+        "label": "Stille",
+        "desc": "Entfernt alle Schlüsselwörter einer anderen Zieleinheit und setzt ihre Werte auf die Ausgangswerte zurück."
+      },
+      "guerison": {
+        "label": "Heilung X",
+        "desc": "Stellt einer anderen verbündeten Zieleinheit oder deinem Helden X LP wieder her."
       }
     },
     "spell_keywords": {
@@ -720,7 +732,7 @@
       },
       "guerison": {
         "label": "Heilung X",
-        "desc": "Stellt einer Zieleinheit X LP wieder her."
+        "desc": "Stellt einer verbündeten Einheit oder deinem Helden X LP wieder her."
       },
       "seconde_vie": {
         "label": "Zweites Leben X",
@@ -1073,6 +1085,8 @@
         "both_one": "einem Ziel (Einheit oder Held){side}",
         "both_side_ally": "verbündeten",
         "both_side_enemy": "feindlichen",
+        "both_side_ally_one": "verbündeten",
+        "both_side_enemy_one": "feindlichen",
         "count_all": "an alle Einheiten",
         "count_one": "an eine Einheit",
         "count_n": "an {n} Einheiten",
@@ -2102,11 +2116,11 @@
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
         "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
-        "execution": "Zerstört {cibles}.",
-        "silence": "Entfernt alle Schlüsselwörter von {cibles} und setzt ihre Werte auf die Ausgangswerte zurück.",
+        "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
+        "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
-        "guerison": "Stellt {cibles} X LP wieder her."
+        "guerison": "Stellt {cibles} und deinem Helden X LP wieder her."
       },
       "creature": {
         "impact": "Fügt {cibles} X Schaden zu.",
@@ -2123,7 +2137,12 @@
         "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
         "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
         "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
-        "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP."
+        "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
+        "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
+        "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
+        "guerison": "Stellt allen anderen verbündeten Einheiten und deinem Helden X LP wieder her.",
+        "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren zu den Ausgangswerten zurück.",
+        "guerison_soi": "Erhält X LP zurück."
       },
       "cibles": {
         "all_enemies": "alle feindlichen Einheiten",

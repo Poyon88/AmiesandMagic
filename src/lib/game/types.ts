@@ -130,6 +130,12 @@ export type Keyword =
   | "remontee"
   // Polymorphic — X damage to a chosen creature OR hero (any side), multi-trigger
   | "impact"
+  // Polymorphes (2026-10-27) — formes créature des actions ciblées : détruit une
+  // unité ennemie ; réduit une unité au silence ; soigne X une unité alliée ou
+  // le héros allié. Portée « toutes » et « elle-même » selon l'instance.
+  | "execution"
+  | "silence"
+  | "guerison"
   // Polymorphic — summon a random collection creature of cost X (same alignment, current format)
   | "invocation"
   // Polymorphic — plusieurs Invocations d'un coup, le coût de CHACUNE étant fixé
@@ -335,7 +341,8 @@ export interface KeywordInstance {
   /** Capacité CIBLÉE d'une créature (Impact, Affaiblissement…) : portée
    *  « toutes » au lieu d'une cible choisie. Cf. TargetScope. */
   targetScope?: TargetScope;
-  /** RENFORCEMENT / DISCIPLINE d'une créature : à qui va le bonus. Absent ⇒
+  /** RENFORCEMENT / DISCIPLINE / SILENCE / GUÉRISON d'une créature : à qui va
+   *  l'effet. Absent ⇒
    *  une AUTRE unité alliée désignée, comme la forme sort ; "self" ⇒ la
    *  créature elle-même (marqueur « S » sur la carte — c'était le seul
    *  comportement avant 2026-10-25, les cartes d'alors ont été migrées en

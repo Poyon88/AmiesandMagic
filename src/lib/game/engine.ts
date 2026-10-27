@@ -66,7 +66,7 @@ import {
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
 import { displayCardOf, isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
-import { creatureScopes, creaturesDePortee, porteeValide, spellScopes } from "./target-scope";
+import { ciblesDePortee, creatureScopes, creaturesDePortee, kwInstanceSoi, porteeValide, spellScopes } from "./target-scope";
 import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 import { effetsDuPouvoir, uidEffetPouvoir, cibleEffetPouvoir, selectionEffetPouvoir, choixDeckEffetPouvoir } from "./hero-power";
@@ -5826,6 +5826,17 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       applyImpactTo(tid, getKwX(cardInstance, "impact", undefined, 1), cardInstance, player, opponent);
     }
 
+    // Exécution / Silence / Guérison X (invocation) : la cible choisie, la
+    // créature elle-même (« S »), ou toute la portée (« A », objets ou héros
+    // allié compris — cf. ciblesDePortee).
+    for (const kw of ACTIONS_CIBLEES_DE_CREATURE) if (hasKwOnPlay(cardInstance, kw)) {
+      const scope = porteeOnPlay(cardInstance.card, kw);
+      const cibles = scope ? ciblesDePortee(kw, scope, player, opponent, cardInstance.instanceId)
+        : kwInstanceSoi(instanceOnPlay(cardInstance.card, kw)) ? [cardInstance.instanceId]
+        : [action.targetInstanceId];
+      for (const tid of cibles) applyActionCibleeDeCreature(kw, tid, getKwX(cardInstance, kw, undefined, 1), player, opponent);
+    }
+
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
 
     // Permutation: échange les PV de deux unités (une alliée, une ennemie)
@@ -6570,6 +6581,14 @@ function pickRandomTarget(
     case "friendly_hero":
       candidates.push("friendly_hero");
       break;
+    case "friendly_any":
+      candidates.push("friendly_hero");
+      player.board.forEach(c => candidates.push(c.instanceId));
+      break;
+    case "enemy_any":
+      candidates.push("enemy_hero");
+      opponent.board.forEach(c => candidates.push(c.instanceId));
+      break;
     case "enemy_creature":
       opponent.board.forEach(c => candidates.push(c.instanceId));
       break;
@@ -7078,8 +7097,10 @@ function resolveSpellKeywords(
     // creaturesDePortee) ; une créature morte en cours de route est sautée par
     // le `find` de chaque mécanique.
     const scope = porteeValide(kw.targetScope, spellScopes(kw.id));
+    // Exécution / Silence y ajoutent les objets du camp, Guérison le héros
+    // allié (cf. ciblesDePortee).
     const targetIds: (string | undefined)[] = scope
-      ? creaturesDePortee(scope, ctx.caster, ctx.opponent).map(c => c.instanceId)
+      ? ciblesDePortee(kw.id, scope, ctx.caster, ctx.opponent)
       : [slot ? (ctx.targetMap[slot] ?? ctx.targetMap["target_0"]) : undefined];
 
     for (const targetId of targetIds) {
@@ -7299,15 +7320,8 @@ function resolveSpellKeywords(
         break;
       }
       case "guerison": {
-        const amount = kw.amount ?? 0;
-        if (targetId === "enemy_hero") {
-          soignerHeros(ctx.opponent.hero, amount);
-        } else if (targetId === "friendly_hero") {
-          soignerHeros(ctx.caster.hero, amount);
-        } else if (targetId) {
-          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-          if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + amount);
-        }
+        // Camp ALLIÉ seulement (2026-10-27) : unité alliée ou héros allié.
+        applyGuerisonTo(targetId, kw.amount ?? 0, ctx.caster);
         break;
       }
       case "invocation": {
@@ -7994,6 +8008,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
 
 function requiresPlayerSelection(targetType: SpellTargetType): boolean {
   return targetType === "any" || targetType === "any_creature" || targetType === "any_creature_or_item"
+    || targetType === "friendly_any" || targetType === "enemy_any"
     || targetType === "friendly_creature" || targetType === "enemy_creature"
     || targetType === "friendly_graveyard" || targetType === "friendly_graveyard_to_board";
 }
@@ -10735,17 +10750,27 @@ function resolveCuratedKeywordEffect(
   // effet ; la source est exclue.
   const scope = porteeValide(inst?.targetScope, creatureScopes(kw));
   if (scope && !targetInstanceId) {
-    const cibles = creaturesDePortee(scope, owner, opponent, source.instanceId);
+    const cibles = ciblesDePortee(kw, scope, owner, opponent, source.instanceId);
     const precedent = porteeEnCours;
     porteeEnCours = true;
     try {
-      for (const c of cibles) resolveCuratedKeywordEffect(kw, x, source, owner, opponent, c.instanceId, inst);
+      for (const id of cibles) resolveCuratedKeywordEffect(kw, x, source, owner, opponent, id, inst);
     } finally {
       porteeEnCours = precedent;
     }
     return;
   }
   switch (kw) {
+    case "execution":
+    case "silence":
+    case "guerison": {
+      // Cible explicite (activation, choix différé, portée), sinon elle-même
+      // (« S »), sinon choix différé au propriétaire — au hasard à l'attaque.
+      const tid = targetInstanceId
+        ?? (kwInstanceSoi(inst) ? source.instanceId : deferOrRandomTarget(kw, source, owner, opponent, inst, inst?.x ?? x) ?? undefined);
+      if (tid) applyActionCibleeDeCreature(kw, tid, inst?.x ?? x, owner, opponent);
+      return;
+    }
     case "renforcement": {
       // Tap / mort / retour / fin de tour / attaque… : +X/+Y permanent au
       // bénéficiaire réglé (cf. bonusHorsEntree).
@@ -11535,6 +11560,10 @@ export function deferredKwTargetIds(
       return remonteeTargetIds(controller, other, sourceInstanceId);
     case "impact":
       return impactTargetIds(controller, other);
+    case "execution":
+    case "silence":
+    case "guerison":
+      return actionCibleeTargetIds(kw, controller, other, sourceInstanceId);
     case "affaiblissement":
     case "permutation":
     case "malediction":
@@ -12340,6 +12369,11 @@ export function tapKeywordNeedsTarget(kw: Keyword, inst?: KeywordInstance): bool
     case "renforcement":
     case "discipline":
       return bonusVersAutre(inst);
+    // Elle-même (« S ») : rien à désigner.
+    case "silence":
+    case "guerison":
+      return !kwInstanceSoi(inst);
+    case "execution":
     case "vampirisme":
     case "remontee":
     case "impact":
@@ -12369,9 +12403,16 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
       !hasKw(c, "invisible")
       && !(hasKw(c, "ombre") && !c.ombreRevealed)
     );
+  // Portée « toutes » ou « elle-même » : l'activation part sans cible (le bot
+  // aléatoire désignait sinon une cible, qui court-circuitait la portée).
+  if (inst && (porteeValide(inst.targetScope, creatureScopes(inst.id)) || kwInstanceSoi(inst))) return null;
   switch (kw) {
     case "vampirisme":
       return filterTargetable(opponent.board).map(c => c.instanceId);
+    case "execution":
+    case "silence":
+    case "guerison":
+      return actionCibleeTargetIds(kw, player, opponent, sourceInstanceId ?? null);
     case "remontee":
       // N'importe quelle unité des deux plateaux (hors source / Ancré / non-ciblable).
       return [...player.board, ...opponent.board]
@@ -12710,6 +12751,8 @@ export function ciblesEffetPouvoir(state: GameState, heroDef: HeroDefinition, i:
           return opponent.board.map(c => c.instanceId);
         case "friendly_creature":
           return player.board.map(c => c.instanceId);
+        case "friendly_any":
+          return [...player.board.map(c => c.instanceId), "friendly_hero"];
         case "any_creature":
           return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId)];
         case "any_creature_or_item":
@@ -13419,6 +13462,8 @@ export function creatureNeedsTarget(card: Card): boolean {
   if (card.keywords.some(kw => CREATURE_TARGETING_KEYWORDS.includes(kw) && cardHasKwOnPlay(card, kw) && !porteeOnPlay(card, kw))) return true;
   // Renforcement / Discipline ne ciblent que tournés vers une AUTRE unité.
   if ([...BONUS_A_BENEFICIAIRE].some(kw => cardHasKwOnPlay(card, kw as Keyword) && bonusVersAutre(instanceOnPlay(card, kw as Keyword)))) return true;
+  // Exécution / Silence / Guérison : sauf « toutes » et « elle-même ».
+  if (ACTIONS_CIBLEES_DE_CREATURE.some(kw => cardHasKwOnPlay(card, kw) && !porteeOnPlay(card, kw) && !kwInstanceSoi(instanceOnPlay(card, kw)))) return true;
   // Effet composé à l'entrée en désignation "au choix" (1 cible unité, plateau).
   return !!firstOnPlayComposedChoiceCap(card);
 }
@@ -13480,6 +13525,9 @@ export function getOnAttackChoiceSlots(
     // Renforcement / Discipline ne désignent quelqu'un que tournés vers une
     // autre unité (ni « elle-même », ni « toutes »).
     if (BONUS_A_BENEFICIAIRE.has(inst.id) && !bonusVersAutre(inst)) return;
+    // Portée « toutes » ou « elle-même » : personne à désigner — une cible
+    // explicite court-circuiterait la portée et ne frapperait qu'une unité.
+    if (porteeValide(inst.targetScope, creatureScopes(inst.id)) || kwInstanceSoi(inst)) return;
     const targets = deferredKwTargetIds(inst.id, player, opponent, attacker.instanceId);
     if (targets.length > 0) slots.push({ key: `kw_${i}`, targets, kw: inst.id });
   });
@@ -13519,6 +13567,56 @@ function applyImpactTo(targetId: string | undefined, x: number, source: CardInst
   if (target) dealDamageToCreature(target, x, false, true, source, false);
 }
 
+/** Formes CRÉATURE des actions ciblées Exécution, Silence et Guérison X
+ *  (2026-10-27). Capacités d'unité : Transcendance, qui ne protège que des
+ *  actions, n'y fait rien — Invisible et Ombre écartent seulement du CIBLAGE. */
+const ACTIONS_CIBLEES_DE_CREATURE = ["execution", "silence", "guerison"] as const;
+
+/** Cibles désignables : Exécution, une unité ennemie ; Silence, une autre unité
+ *  de n'importe quel camp ; Guérison, une autre unité alliée ou le héros allié.
+ *  Les objets ne se visent qu'en portée « toutes » (ciblesDePortee). */
+export function actionCibleeTargetIds(
+  kw: Keyword, controller: PlayerState, other: PlayerState, sourceInstanceId: string | null,
+): string[] {
+  const targetable = (c: CardInstance) => !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed);
+  const autresAllies = controller.board.filter(c => c.instanceId !== sourceInstanceId).map(c => c.instanceId);
+  switch (kw) {
+    case "execution": return other.board.filter(targetable).map(c => c.instanceId);
+    case "silence": return [...autresAllies, ...other.board.filter(targetable).map(c => c.instanceId)];
+    case "guerison": return [...autresAllies, "friendly_hero"];
+    default: return [];
+  }
+}
+
+/** Applique l'effet à UNE cible : unité (des deux camps), objet en jeu (portée
+ *  « toutes »), ou héros allié pour Guérison. */
+function applyActionCibleeDeCreature(
+  kw: Keyword, targetId: string | undefined, x: number, controller: PlayerState, other: PlayerState,
+): void {
+  if (!targetId) return;
+  if (kw === "guerison") { applyGuerisonTo(targetId, x, controller); return; }
+  const target = findCreatureOnBoard(controller, targetId) ?? findCreatureOnBoard(other, targetId);
+  if (kw === "execution") {
+    // Mise à 0 des PV : la mort suit son traitement normal, râles compris.
+    if (target) target.currentHealth = 0;
+    else detruireObjet(controller, other, targetId);
+    return;
+  }
+  if (kw === "silence") {
+    if (target) { appliquerSilence(target); recalculateAuras(controller, other); }
+    else silencierObjet(controller, other, targetId);
+  }
+}
+
+/** Guérison X, action comme capacité : camp ALLIÉ seulement — le héros allié
+ *  ("friendly_hero", relatif à `controller`) ou une unité alliée. */
+function applyGuerisonTo(targetId: string | undefined, x: number, controller: PlayerState): void {
+  if (!targetId || x <= 0) return;
+  if (targetId === "friendly_hero") { soignerHeros(controller.hero, x); return; }
+  const target = findCreatureOnBoard(controller, targetId);
+  if (target) target.currentHealth = Math.min(target.maxHealth, target.currentHealth + x);
+}
+
 export function getCreatureTargets(state: GameState, card: Card): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
@@ -13538,6 +13636,12 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
     // Portée « toutes » : la capacité ne cible pas, elle ne dicte pas le pool.
     if (!cardHasKwOnPlay(card, kw) || porteeOnPlay(card, kw)) continue;
     switch (kw) {
+      case "execution":
+      case "silence":
+      case "guerison":
+        // Sur elle-même : aucune cible, on passe au mot-clé suivant.
+        if (kwInstanceSoi(instanceOnPlay(card, kw))) continue;
+        return actionCibleeTargetIds(kw, player, opponent, null);
       case "neutralisation": {
         // Seules les ennemies qui PORTENT la capacité visée — lue sur la vue
         // d'affichage, pour compter celle qu'une autre porteuse neutralise déjà.

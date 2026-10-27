@@ -298,6 +298,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.both_one": "à une cible (unité ou héros){side}",
   "target.both_side_ally": "alliés",
   "target.both_side_enemy": "ennemis",
+  "target.both_side_ally_one": "alliée",
+  "target.both_side_enemy_one": "ennemie",
   "target.count_all": "à toutes les unités",
   "target.count_one": "à une unité",
   "target.count_n": "à {n} unités",
@@ -944,10 +946,15 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   if (t.entity === "damage_source") return frag(tr, `${p}.damage_source`);
   if (t.entity === "hero") return t.side === "ally" ? frag(tr, `${p}.hero_ally`) : frag(tr, `${p}.hero_enemy`);
   if (t.entity === "both") {
-    const sideTxt = t.side === "ally" ? frag(tr, "target.both_side_ally") : t.side === "enemy" ? frag(tr, "target.both_side_enemy") : "";
-    return t.count === "all"
-      ? frag(tr, `${p}.both_all`, { side: sideTxt }).replace(/\s+$/, "")
-      : frag(tr, `${p}.both_one`, { side: sideTxt ? ` ${sideTxt}` : "" });
+    if (t.count === "all") {
+      const sideTxt = t.side === "ally" ? frag(tr, "target.both_side_ally") : t.side === "enemy" ? frag(tr, "target.both_side_enemy") : "";
+      return frag(tr, `${p}.both_all`, { side: sideTxt }).replace(/\s+$/, "");
+    }
+    // Une seule cible : l'adjectif s'accorde au singulier (« une cible … ennemie »),
+    // et le hasard se dit comme pour les unités — il manquait au texte.
+    const sideTxt = t.side === "ally" ? frag(tr, "target.both_side_ally_one") : t.side === "enemy" ? frag(tr, "target.both_side_enemy_one") : "";
+    const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random") : "";
+    return [frag(tr, `${p}.both_one`, { side: sideTxt ? ` ${sideTxt}` : "" }), desTxt].filter(Boolean).join(" ");
   }
   const many = t.count === "all" || (typeof t.count === "number" && t.count > 1);
   // Répartition au hasard hors dégâts/soin (ceux-là passent par describeScatter) :

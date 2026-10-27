@@ -52,6 +52,8 @@ function slotCandidates(state: GameState, type: SpellTargetType): string[] | nul
     case "any_creature": case "any_creature_or_item": return [...ids(opp), ...ids(me)];
     case "enemy_creature": return ids(opp);
     case "friendly_creature": return ids(me);
+    case "friendly_any": return ["friendly_hero", ...ids(me)];
+    case "enemy_any": return ["enemy_hero", ...ids(opp)];
     case "friendly_graveyard": case "friendly_graveyard_to_board":
       return me.graveyard.filter((c) => c.card.card_type === "creature").map((c) => c.instanceId);
     default: return null; // zone / sans cible

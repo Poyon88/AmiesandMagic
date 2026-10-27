@@ -26,7 +26,7 @@ import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spe
 import { getAllRaces, FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
-import { porteeValide, spellScopes } from "@/lib/game/target-scope";
+import { BENEFICIAIRE_REGLABLE, porteeValide, spellScopes } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import MachinePartEditor from "./MachinePartEditor";
 import RetardSelect from "./RetardSelect";
@@ -1130,27 +1130,30 @@ export default function ComposedEffectsEditor({
   );
 }
 
-/** Capacités de créature dont le bonus a un bénéficiaire réglable (ids moteur). */
-export const BONUS_BENEFICIAIRE_FORGE: ReadonlySet<string> = new Set(["renforcement", "discipline"]);
+/** Capacités de créature dont le bénéficiaire est réglable (ids moteur). */
+export const BONUS_BENEFICIAIRE_FORGE: ReadonlySet<string> = BENEFICIAIRE_REGLABLE;
 
-/** Bénéficiaire d'un RENFORCEMENT / d'une DISCIPLINE de créature : une autre
- *  unité alliée désignée (défaut, comme la forme sort), elle-même (« S »), ou
- *  toutes les autres (« A »). Trois réglages exclusifs, stockés comme
- *  `recipient: "self"` / `targetScope`. */
-export type RenforcementBeneficiaire = "self" | "target" | "all_allies";
-export function RecipientButtons({ value, onChange, tr }: {
+/** Bénéficiaire d'une capacité de créature réglable (Renforcement, Discipline,
+ *  Silence, Guérison) : une autre unité désignée (défaut, comme la forme sort),
+ *  elle-même (« S »), ou l'une des portées « toutes » (« A ») ouvertes à la
+ *  capacité. Réglages exclusifs, stockés comme `recipient: "self"` /
+ *  `targetScope`. */
+export type RenforcementBeneficiaire = "self" | "target" | TargetScope;
+export function RecipientButtons({ value, onChange, tr, options = ["all_allies"] }: {
   value: RenforcementBeneficiaire;
   onChange: (v: RenforcementBeneficiaire) => void;
   tr: (key: string) => string;
+  /** Portées « toutes » proposées (défaut : alliées, celle de Renforcement). */
+  options?: TargetScope[];
 }) {
-  const choix: RenforcementBeneficiaire[] = ["target", "self", "all_allies"];
+  const choix: RenforcementBeneficiaire[] = ["target", "self", ...options];
   return (
     <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap", maxWidth: "100%" }}>
       {choix.map((c) => {
         const actif = value === c;
         return (
           <button key={c} type="button" onClick={() => onChange(c)}
-            title={c === "all_allies" ? tr("target_scope_hint_all_allies") : undefined}
+            title={c === "self" || c === "target" ? undefined : tr(`target_scope_hint_${c}`)}
             style={{
               fontSize: 10, padding: "2px 6px", borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap",
               border: `1px solid ${actif ? "#8a6d3b" : "#ccc"}`,
@@ -1159,7 +1162,7 @@ export function RecipientButtons({ value, onChange, tr }: {
             }}>
             {c === "self" ? <><b>S</b> {tr("target_scope_self")}</>
               : c === "target" ? tr("target_scope_target")
-              : <><b>A</b> {tr("target_scope_all_allies")}</>}
+              : <><b>A</b> {tr(`target_scope_${c}`)}</>}
           </button>
         );
       })}

@@ -15,7 +15,7 @@
 
 import { CREATURE_LABEL_TO_ENGINE_ID, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import type { CapabilityTrigger, Keyword, KeywordInstance, KeywordMode } from "@/lib/game/types";
-import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import { BENEFICIAIRE_REGLABLE, creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import { clampRetard } from "@/lib/game/retard";
 import type { TargetScope } from "@/lib/game/types";
 
@@ -169,9 +169,9 @@ export interface BuildKeywordInstancesInput {
    *  lib/game/target-scope.ts). Ignorée sur un sort et sur une capacité qui ne
    *  l'accepte pas. */
   targetScopes?: Record<string, TargetScope>;
-  /** Renforcement / Discipline d'une unité, par libellé : "self" ⇒ le bonus
-   *  va à elle-même (absent ⇒ à une autre unité alliée désignée). Ignoré sur
-   *  un sort, et sous la portée « toutes », qui prime. */
+  /** Renforcement / Discipline / Silence / Guérison d'une unité, par libellé :
+   *  "self" ⇒ l'effet va à elle-même (absent ⇒ à une autre unité désignée).
+   *  Ignoré sur un sort, et sous la portée « toutes », qui prime. */
   recipients?: Record<string, "self">;
   /** SINGULIER par libellé : condition ajoutée au déclencheur. Un mot-clé qui
    *  n'aurait sinon rien à stocker (à l'invocation, sans X) produit quand même
@@ -202,7 +202,7 @@ export function buildKeywordInstances(input: BuildKeywordInstancesInput): Keywor
       // stocker produit quand même une instance, c'est elle qui la porte.
       const scope = isSpellCard ? undefined : porteeValide(targetScopes[label], creatureScopes(id));
       if (scope) inst = { ...(inst ?? { id }), targetScope: scope };
-      else if (!isSpellCard && (id === "renforcement" || id === "discipline") && recipients[label] === "self") inst = { ...(inst ?? { id }), recipient: "self" };
+      else if (!isSpellCard && BENEFICIAIRE_REGLABLE.has(id) && recipients[label] === "self") inst = { ...(inst ?? { id }), recipient: "self" };
       // Retard X : le nombre de tours voyage avec le mode "delay".
       if (!isSpellCard && modes[label] === "delay") inst = { ...(inst ?? { id }), mode: "delay", delay: clampRetard(delays[label] ?? 1) };
       if (singulier[label] !== true) return inst;

@@ -3,8 +3,10 @@
 // Une capacité ciblée (Impact, Entrave, Affaiblissement, Remontée…) peut, au
 // choix de l'auteur, frapper TOUTES les créatures d'un camp au lieu d'une cible
 // désignée. Chaque créature reçoit l'effet ENTIER — Siphon et Vampirisme rendent
-// donc X par créature touchée. Seules les créatures sont visées : ni héros, ni
-// objets, même pour les capacités qui savent viser ceux-ci en mode ciblé.
+// donc X par créature touchée. Seules les créatures sont visées, sauf deux
+// exceptions voulues par l'auteur (2026-10-27) : Exécution et Silence frappent
+// AUSSI les objets du camp, Guérison soigne AUSSI le héros allié
+// (cf. ciblesDePortee).
 //
 // Ce module est la SOURCE UNIQUE de trois questions, lues par le moteur, la
 // forge et le rendu des cartes :
@@ -27,7 +29,8 @@ const SORTS_HORS_PORTEE = new Set<string>(["rappel", "exhumation", "incineration
 function campsDuType(t: SpellTargetType | undefined): TargetScope[] {
   switch (t) {
     case "enemy_creature": return ["all_enemies"];
-    case "friendly_creature": return ["all_allies"];
+    case "friendly_creature":
+    case "friendly_any": return ["all_allies"];
     case "any":
     case "any_creature":
     case "any_creature_or_item": return TOUS_CAMPS;
@@ -70,6 +73,10 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   // Neutralisation : une ennemie ciblée, ou toutes (aura continue).
   neutralisation: ["all_enemies"],
   tactique: ["all_allies"],
+  // Formes créature des actions ciblées (2026-10-27).
+  execution: ["all_enemies"],
+  silence: TOUS_CAMPS,
+  guerison: ["all_allies"],
 };
 
 export function creatureScopes(id: string): TargetScope[] {
@@ -99,6 +106,31 @@ export function creaturesDePortee(
     : scope === "all_allies" ? [owner.board]
     : [opponent.board, owner.board];
   return camps.flatMap((b) => b.filter((c) => c.instanceId !== exclude));
+}
+
+/** Capacités dont la portée « toutes » frappe AUSSI les objets du camp visé. */
+const PORTEE_AVEC_OBJETS = new Set<string>(["execution", "silence"]);
+/** Capacités dont la portée « toutes » touche AUSSI le héros allié. */
+const PORTEE_AVEC_HEROS_ALLIE = new Set<string>(["guerison"]);
+
+/** Ids désignés par la portée d'une capacité : les créatures (cf.
+ *  creaturesDePortee), puis les objets en jeu du camp pour Exécution et
+ *  Silence, puis la sentinelle "friendly_hero" (relative à `owner`) pour
+ *  Guérison. Même instantané : rien d'arrivé en cours de résolution. */
+export function ciblesDePortee(
+  id: string,
+  scope: TargetScope,
+  owner: PlayerState,
+  opponent: PlayerState,
+  exclude?: string,
+): string[] {
+  const ids = creaturesDePortee(scope, owner, opponent, exclude).map((c) => c.instanceId);
+  if (PORTEE_AVEC_OBJETS.has(id)) {
+    const camps = scope === "all_enemies" ? [opponent] : scope === "all_allies" ? [owner] : [opponent, owner];
+    for (const p of camps) for (const o of p.items ?? []) ids.push(o.instanceId);
+  }
+  if (PORTEE_AVEC_HEROS_ALLIE.has(id) && scope !== "all_enemies") ids.push("friendly_hero");
+  return ids;
 }
 
 /** Libellés FR (repli des clés `vocab.target_scope.*`). */
@@ -147,10 +179,15 @@ export function composedScope(cap: Pick<Capability, "composed"> | null | undefin
 /** Libellé lu par les lecteurs d'écran sur le « S ». */
 export const SOI_ARIA_FR = "Sur elle-même";
 
-/** Renforcement / Discipline d'une créature réglés sur « elle-même » : le bonus
- *  ne va pas à une autre unité, comme le voudrait la forme sort. */
+/** Capacités de créature dont le BÉNÉFICIAIRE est réglable : une autre unité
+ *  désignée (défaut), elle-même (`recipient: "self"`, « S »), ou toutes
+ *  (portée « A »). Source unique du moteur, de la forge et du rendu. */
+export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "silence", "guerison"]);
+
+/** Capacité de créature réglée sur « elle-même » (« S ») : l'effet ne va pas à
+ *  une autre unité, comme le voudrait la forme sort. */
 export function kwInstanceSoi(inst: Pick<KeywordInstance, "id" | "recipient" | "targetScope"> | null | undefined): boolean {
-  return !!inst && (inst.id === "renforcement" || inst.id === "discipline")
+  return !!inst && BENEFICIAIRE_REGLABLE.has(inst.id)
     && inst.recipient === "self" && !porteeValide(inst.targetScope, creatureScopes(inst.id));
 }
 
@@ -196,11 +233,11 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
   poison: "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
   siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
   entrave: "Paralyse {cibles} pendant X tour(s).",
-  execution: "Détruit {cibles}.",
-  silence: "Retire tous les mots-clés de {cibles} et ramène leurs stats à leur valeur d'origine.",
+  execution: "Détruit {cibles}, objets compris.",
+  silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   renforcement: "+X/+Y à {cibles}.",
   discipline: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
-  guerison: "Restaure X PV à {cibles}.",
+  guerison: "Restaure X PV à {cibles} et à votre héros.",
 };
 
 /** Variantes « toutes » des mots-clés de CRÉATURE (repli FR). Neutralisation
@@ -211,6 +248,10 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
   vampirisme: "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
   devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
+  execution: "Détruit {cibles}, objets compris.",
+  silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
+  // Source exclue, comme pour Renforcement : « autres ».
+  guerison: "Restaure X PV à toutes les autres unités alliées et à votre héros.",
   // La source est exclue de la portée : « autres » le dit, {cibles} ne le
   // dirait pas.
   renforcement: "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
@@ -220,6 +261,8 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   // jusqu'au catalogue (vocab.target_scope.creature.*).
   renforcement_soi: "Gagne +X ATK et +Y PV de façon permanente.",
   discipline_soi: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+  silence_soi: "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
+  guerison_soi: "Récupère X PV.",
 };
 
 /** Gabarit de Renforcement / Discipline quand le bonus va à la créature
@@ -230,7 +273,7 @@ export function recipientDescTemplate(
   recipient: "self" | undefined,
   t?: (key: string) => string | undefined,
 ): string | null {
-  if ((kw !== "renforcement" && kw !== "discipline") || recipient !== "self") return null;
+  if (!BENEFICIAIRE_REGLABLE.has(kw) || recipient !== "self") return null;
   return t?.(`vocab.target_scope.creature.${kw}_soi`) ?? CREATURE_SCOPE_DESC_FR[`${kw}_soi`];
 }
 

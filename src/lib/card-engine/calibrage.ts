@@ -16,7 +16,7 @@ import type { Card } from "@/lib/game/types";
 import { getCapabilities } from "@/lib/game/capability-adapter";
 import { ABILITIES } from "@/lib/game/abilities";
 import { ADDITIONAL_COST_POINTS, STAT_COST } from "./constants";
-import { RARETE_FIXEE, type Bareme, type CoutLineaire } from "./bareme";
+import { appliquerLiaisons, RARETE_FIXEE, type Bareme, type CoutLineaire } from "./bareme";
 import { budgetCarte, facteurBudget, RETARD_A_PRIORI, termesCarte, valeurParametre, type CarteNotee } from "./card-points";
 
 export type CarteCalibree = CarteNotee & Pick<Card, "id" | "name"> & Partial<Pick<Card, "race" | "clan" | "faction">>;
@@ -284,6 +284,8 @@ export function calibrer(cartes: CarteCalibree[], opts: { iterations?: number; t
     }
   }
   presence = ajusterLineaire(b, a0, lignes, tau);
+  // Coûts liés par l'auteur (Silence = Impact 2) : écrits après l'ajustement.
+  b.capacites = appliquerLiaisons(b).capacites;
 
   for (const [k, n] of presence) {
     const [fam, a, champ] = k.split(".");

@@ -4187,9 +4187,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                             {selected && porteStats && BONUS_BENEFICIAIRE_FORGE.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && (
                               <span style={{ marginLeft: 4 }}>
                                 <RecipientButtons
-                                  value={keywordTargetScope[id] === "all_allies" ? "all_allies" : keywordRecipient[id] === "self" ? "self" : "target"}
+                                  options={creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "")}
+                                  value={porteeValide(keywordTargetScope[id], creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "")) ?? (keywordRecipient[id] === "self" ? "self" : "target")}
                                   onChange={(v) => {
-                                    setKeywordTargetScope(prev => { const next = { ...prev }; if (v === "all_allies") next[id] = "all_allies"; else delete next[id]; return next; });
+                                    setKeywordTargetScope(prev => { const next = { ...prev }; if (v !== "self" && v !== "target") next[id] = v; else delete next[id]; return next; });
                                     setKeywordRecipient(prev => { const next = { ...prev }; if (v === "self") next[id] = "self"; else delete next[id]; return next; });
                                   }}
                                   tr={tf}

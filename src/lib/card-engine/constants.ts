@@ -88,6 +88,11 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // Impact / Remontée à l'attaque : cible au hasard (pas de picker possible
   // dans le flux synchrone) ; les autres modes gardent leur picker différé.
   "Impact X": ALL_MODES,
+  // Formes créature des actions ciblées (2026-10-27) : picker différé hors
+  // entrée, cible au hasard à l'attaque, comme Impact.
+  "Exécution": ALL_MODES,
+  "Silence": ALL_MODES,
+  "Guérison X": ALL_MODES,
   "Prescience X": ALL_MODES,
   "Suprématie": ALL_MODES,
   "Ombre du passé": ALL_MODES,

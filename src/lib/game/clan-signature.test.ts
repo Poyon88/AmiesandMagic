@@ -100,14 +100,15 @@ describe("Les effets COMPOSÉS comptent aussi", () => {
   it("se range sous la capacité INCARNÉE, pas sous une rubrique « composé »", () => {
     const s = signatureFromCards([compose("paralyze"), compose("heal")]);
     expect(s.map((e) => e.id).sort()).toEqual(["entrave", "guerison"]);
-    expect(s.every((e) => e.spell)).toBe(true);
   });
 
   it("respecte le registre d'une capacité propre à un support", () => {
-    // `entrave` et `guerison` n'existent QUE côté sort : ils ne doivent pas
-    // basculer du côté créature, où ils n'ont ni icône ni traduction.
+    // `entrave` n'existe QUE côté sort : il ne doit pas basculer du côté
+    // créature, où il n'a ni icône ni traduction. `guerison`, polymorphe depuis
+    // 2026-10-27, se compte comme les autres capacités partagées.
     const s = signatureFromCards([compose("paralyze"), compose("heal")]);
-    expect(s.every((e) => e.spell)).toBe(true);
+    expect(s.find((e) => e.id === "entrave")?.spell).toBe(true);
+    expect(s.find((e) => e.id === "guerison")?.spell).toBe(false);
   });
 
   it("une carte ne compte qu'UNE fois, mot-clé ET composé confondus", () => {
