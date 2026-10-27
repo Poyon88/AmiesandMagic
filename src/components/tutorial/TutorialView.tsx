@@ -478,7 +478,7 @@ function BeginnerGuide() {
         </div>
         <P>
           Quand un effet vous demande un <Hi>choix</Hi> — une cible, une carte parmi plusieurs —, c'est toujours
-          son <Hi>propriétaire</Hi> qui choisit, même pendant le tour adverse. Vous disposez de <Hi>15 secondes</Hi>,
+          son <Hi>propriétaire</Hi> qui choisit, même pendant le tour adverse. Vous disposez de <Hi>20 secondes</Hi>,
           pendant lesquelles le chrono du tour est suspendu ; faute de réponse, le jeu tranche au hasard. Un choix
           déclenché « à l'attaque » se règle <Hi>avant</Hi> le combat.
         </P>
@@ -638,7 +638,7 @@ function TcgGuide() {
         <Bullets items={[
           <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>{regleDecouverteActivee() && <> — un tour sur deux (vos tours pairs), <Hi>découverte</Hi> à la place : 1 Commune parmi 3 (2 de votre clan, 1 d'un autre clan de la faction), créée hors deck</>}.</>,
           <>PV de départ <Hi>propres à chaque héros</Hi> ({HERO_HP_MIN}–{HERO_HP_MAX}, {HERO_MAX_HP} par défaut), qui sont aussi son plafond de soin. « Sous 15 PV » reste absolu.</>,
-          <>Tout choix revient au <Hi>propriétaire</Hi> de l'effet, même hors de son tour : fenêtre de <Hi>15 s</Hi>, chrono suspendu, hasard à défaut. Les choix « à l'attaque » se règlent avant le combat.</>,
+          <>Tout choix revient au <Hi>propriétaire</Hi> de l'effet, même hors de son tour : fenêtre de <Hi>20 s</Hi>, chrono suspendu, hasard à défaut. Les choix « à l'attaque » se règlent avant le combat.</>,
           <>Victoire : héros adverse à <Hi>0 PV</Hi>. Deck vide → <Hi>fatigue</Hi> croissante.</>,
           <>Terrain et main plafonnés à <Hi>{MAX_BOARD_SIZE}</Hi>.</>,
           <>Le joueur en second reçoit une <Hi>Étincelle de mana</Hi> (+1 mana au tour 1).</>,

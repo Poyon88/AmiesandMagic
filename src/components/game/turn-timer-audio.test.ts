@@ -1,10 +1,10 @@
 // Cadrage sonore du chrono : QUAND l'alarme des 15 secondes doit sonner.
 //
 // Deux horloges se partagent le composant depuis l'ajout de la fenêtre de choix
-// (`CHOICE_TIMER_SECONDS`) : celle du TOUR (90 s) et celle du CHOIX (15 s). Or
+// (`CHOICE_TIMER_SECONDS`) : celle du TOUR (90 s) et celle du CHOIX (20 s). Or
 // l'alarme se déclenche quand le compteur passe sous `WARNING_THRESHOLD`, qui
-// vaut exactement la durée de la seconde — l'alerte partait donc dès la première
-// seconde de chaque fenêtre de choix, alors que le joueur avait tout son temps,
+// tombe à l'intérieur de la seconde — l'alerte partait donc au beau milieu de
+// chaque fenêtre de choix, alors que le joueur avait tout son temps,
 // et la musique se coupait puis reprenait à chaque ouverture.
 //
 // Ce fichier verrouille la RÈGLE, indépendamment du rendu React : l'alarme
@@ -27,12 +27,18 @@ function alarmShouldFire(opts: { isMyTurn: boolean; inChoice: boolean; timeLeft:
   return opts.timeLeft <= WARNING_THRESHOLD;
 }
 
-describe("le piège : la fenêtre de choix naît déjà sous le seuil", () => {
-  it("la durée d'un choix n'excède pas le seuil d'alerte — d'où le faux positif", () => {
-    // Si un jour CHOICE_TIMER_SECONDS repassait au-dessus du seuil, la garde
-    // `inChoice` deviendrait superflue ; tant que ce n'est pas le cas, elle est
-    // load-bearing. Ce test documente la raison de son existence.
-    expect(CHOICE_TIMER_SECONDS).toBeLessThanOrEqual(WARNING_THRESHOLD);
+describe("le piège : la fenêtre de choix franchit le seuil d'alerte", () => {
+  it("le seuil tombe à l'intérieur d'une fenêtre de choix — d'où le faux positif", () => {
+    // Fenêtre de 20 s, seuil à 15 : sans la garde `inChoice`, l'alarme
+    // sonnerait au bout de 5 s de réflexion. Ce test documente la raison de
+    // son existence.
+    expect(CHOICE_TIMER_SECONDS).toBeGreaterThanOrEqual(WARNING_THRESHOLD);
+  });
+
+  it("aucune alarme quand la fenêtre de choix passe sous le seuil", () => {
+    expect(alarmShouldFire({
+      isMyTurn: true, inChoice: true, timeLeft: WARNING_THRESHOLD, alreadyFired: false,
+    })).toBe(false);
   });
 
   it("aucune alarme à l'ouverture d'une fenêtre de choix", () => {

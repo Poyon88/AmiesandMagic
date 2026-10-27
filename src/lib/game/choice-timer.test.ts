@@ -63,13 +63,13 @@ describe("Quel chrono s'applique", () => {
 
   it("déclencheur en attente mais horodatage absent : repli sur le chrono de tour", () => {
     // Même prudence que TurnTimer : sans ancre de choix, on n'invente pas de
-    // fenêtre de 15 s qui serait déjà écoulée.
+    // fenêtre de 20 s qui serait déjà écoulée.
     expect(ancrageDuBadge({ ...base, choixAMoi: true, targetingMode: "pending_trigger", pendingTriggers: 1 }))
       .toEqual({ startedAt: 1000, seconds: TURN_TIMER_SECONDS });
   });
 
   it("le chrono de choix est bien plus court que celui du tour", () => {
-    // Ce qui justifie de le rendre visible : 15 s passent vite.
+    // Ce qui justifie de le rendre visible : 20 s passent vite.
     expect(CHOICE_TIMER_SECONDS).toBeLessThan(TURN_TIMER_SECONDS);
   });
 });

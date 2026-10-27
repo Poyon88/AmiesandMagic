@@ -100,7 +100,7 @@ export const TURN_TIMER_SECONDS = 90;
  *  se rabattre sur son reliquat laissait alors ~0 seconde — la modale
  *  s'affichait puis le repli aléatoire tranchait à la place du joueur. Repart
  *  de zéro à chaque nouveau choix. */
-export const CHOICE_TIMER_SECONDS = 15;
+export const CHOICE_TIMER_SECONDS = 20;
 // Compte à rebours du mulligan (par client). À 0 → confirmation automatique de
 // la sélection courante (garder tout si rien n'est sélectionné).
 export const MULLIGAN_TIMER_SECONDS = 45;
