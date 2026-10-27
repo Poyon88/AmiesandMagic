@@ -70,6 +70,7 @@ import { ciblesDePortee, creatureScopes, creaturesDePortee, kwInstanceSoi, porte
 import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 import { effetsDuPouvoir, uidEffetPouvoir, cibleEffetPouvoir, selectionEffetPouvoir, choixDeckEffetPouvoir } from "./hero-power";
+import { cardRaces, hasRace, sharesRace } from "./races";
 
 // ============================================================
 // SEEDED PRNG (mulberry32) — deterministic across clients
@@ -1482,7 +1483,7 @@ function composedTargetPool(
   if (m && (m.faction?.length || m.race?.length || m.clan?.length)) {
     pool = pool.filter((c) =>
       (!m.faction?.length || m.faction.includes(c.card.faction ?? "")) &&
-      (!m.race?.length || m.race.includes(c.card.race ?? "")) &&
+      (!m.race?.length || cardRaces(c.card).some(r => m.race!.includes(r))) &&
       (!m.clan?.length || m.clan.includes(c.card.clan ?? "")));
   }
   // Plafond de COÛT, cumulatif avec l'appartenance (ET logique). Testé sur
@@ -3973,7 +3974,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     for (const c of board) {
       const hasSangMele = hasKw(c, "sang_mele");
       const uniqueRaces = hasSangMele
-        ? new Set(board.filter(a => a !== c && a.card.race).map(a => a.card.race)).size
+        ? new Set(board.filter(a => a !== c).flatMap(a => cardRaces(a.card))).size
         : 0;
       if (hasSangMele) c.currentAttack += uniqueRaces;
       const oldHP = c.sangMeleHealthBonus;
@@ -4071,7 +4072,7 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     for (const c of board) {
       if (hasKw(c, "totem") && c.card.race) {
         const sameRaceKeywords = board
-          .filter(a => a !== c && a.card.race === c.card.race)
+          .filter(a => a !== c && sharesRace(a.card, c.card))
           .flatMap(a => a.card.keywords);
         const newKeywords = [...new Set([...c.card.keywords, ...sameRaceKeywords])];
         if (newKeywords.length !== c.card.keywords.length) {
@@ -5513,7 +5514,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Loyauté: +1 ATK et +1 PV permanent par allié de même race (effet d'invocation)
     if (hasKwOnPlay(cardInstance, "loyaute") && cardInstance.card.race) {
-      const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
+      const sameRaceCount = player.board.filter(a => a !== cardInstance && sharesRace(a.card, cardInstance.card)).length;
       if (sameRaceCount > 0) {
         cardInstance.loyauteATKBonus = sameRaceCount;
         cardInstance.loyautePVBonus = sameRaceCount;
@@ -5915,7 +5916,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Catalyse: réduit de 1 le coût en mana des unités de même race en main
     if (hasKwOnPlay(cardInstance, "catalyse") && cardInstance.card.race) {
       for (const handCard of player.hand) {
-        if (handCard.card.race === cardInstance.card.race && handCard.card.card_type === "creature") {
+        if (sharesRace(handCard.card, cardInstance.card) && handCard.card.card_type === "creature") {
           handCard.card = { ...handCard.card, mana_cost: Math.max(0, handCard.card.mana_cost - 1) };
         }
       }
@@ -5940,7 +5941,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Ombre du passé: +1 ATK et +1 PV par unité de même race au cimetière
     if (hasKwOnPlay(cardInstance, "ombre_du_passe") && cardInstance.card.race) {
-      const graveCount = player.graveyard.filter(c => c.card.race === cardInstance.card.race && c.card.card_type === "creature").length;
+      const graveCount = player.graveyard.filter(c => sharesRace(c.card, cardInstance.card) && c.card.card_type === "creature").length;
       cardInstance.summonBonusATK += graveCount;
       cardInstance.currentAttack += graveCount;
       cardInstance.currentHealth += graveCount;
@@ -6092,7 +6093,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Solidarité X: piochez X cartes si 2+ alliés de même race
     if (hasKwOnPlay(cardInstance, "solidarite") && cardInstance.card.race) {
-      const sameRaceCount = player.board.filter(a => a !== cardInstance && a.card.race === cardInstance.card.race).length;
+      const sameRaceCount = player.board.filter(a => a !== cardInstance && sharesRace(a.card, cardInstance.card)).length;
       if (sameRaceCount >= 2) {
         const solXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
         const x = solXVals["solidarite"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 3));
@@ -6146,7 +6147,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const count = Math.min(x, player.deck.length);
       const revealed = player.deck.splice(0, count);
       for (const c of revealed) {
-        if (c.card.race === cardInstance.card.race && c.card.card_type === "creature" && player.hand.length < MAX_HAND_SIZE) {
+        if (sharesRace(c.card, cardInstance.card) && c.card.card_type === "creature" && player.hand.length < MAX_HAND_SIZE) {
           player.hand.push(c);
         } else {
           player.graveyard.push(c);
@@ -7629,12 +7630,11 @@ function resolveSpellKeywords(
         // The spell uses its host card's race — a Rassemblement spell with no
         // race assigned is a no-op (same fail-safe as the creature side).
         const x = kw.amount ?? 1;
-        const race = ctx.card.race;
-        if (!race || ctx.caster.deck.length === 0) break;
+        if (!ctx.card.race || ctx.caster.deck.length === 0) break;
         const count = Math.min(x, ctx.caster.deck.length);
         const revealed = ctx.caster.deck.splice(0, count);
         for (const c of revealed) {
-          if (c.card.race === race && c.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
+          if (sharesRace(c.card, ctx.card) && c.card.card_type === "creature" && ctx.caster.hand.length < MAX_HAND_SIZE) {
             ctx.caster.hand.push(c);
           } else {
             ctx.caster.graveyard.push(c);
@@ -7747,7 +7747,7 @@ function evaluateCondition(ctx: SpellResolutionContext, cond: SpellCondition): b
       const targetId = ctx.targetMap[simple.target_slot];
       if (!targetId) return false;
       const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
-      return target?.card.race === (simple.value as string);
+      return hasRace(target?.card, simple.value as string);
     }
     case "faction_match": {
       if (!simple.target_slot) return false;
@@ -9698,7 +9698,7 @@ function distributeDemonCostReductions(player: PlayerState, x: number) {
   for (let i = 0; i < x; i++) {
     const reducible = player.hand.filter(
       (c) =>
-        c.card.race === "Démons" &&
+        hasRace(c.card, "Démons") &&
         Math.max(0, getTokenManaCost(c.card) - (c.manaCostReduction ?? 0)) > 1,
     );
     if (reducible.length === 0) break;
@@ -10960,7 +10960,7 @@ function resolveCuratedKeywordEffect(
       // +1/+1 par unité de même race au cimetière (la source est exclue du
       // décompte — utile en mode mort où elle vient d'y être placée).
       if (!source.card.race) break;
-      const n = owner.graveyard.filter(c => c.instanceId !== source.instanceId && c.card.race === source.card.race && c.card.card_type === "creature").length;
+      const n = owner.graveyard.filter(c => c.instanceId !== source.instanceId && sharesRace(c.card, source.card) && c.card.card_type === "creature").length;
       source.summonBonusATK += n;
       source.currentAttack += n;
       source.currentHealth += n;
@@ -11171,7 +11171,7 @@ function resolveCuratedKeywordEffect(
     case "loyaute": {
       // +1 ATK / +1 PV par allié de même race (recompte au déclenchement).
       if (!source.card.race) return;
-      const n = owner.board.filter(a => a.instanceId !== source.instanceId && a.card.race === source.card.race).length;
+      const n = owner.board.filter(a => a.instanceId !== source.instanceId && sharesRace(a.card, source.card)).length;
       if (n > 0) {
         source.loyauteATKBonus += n;
         source.loyautePVBonus += n;
@@ -11183,7 +11183,7 @@ function resolveCuratedKeywordEffect(
     case "catalyse": {
       if (!source.card.race) return;
       for (const handCard of owner.hand) {
-        if (handCard.card.race === source.card.race && handCard.card.card_type === "creature") {
+        if (sharesRace(handCard.card, source.card) && handCard.card.card_type === "creature") {
           handCard.card = { ...handCard.card, mana_cost: Math.max(0, handCard.card.mana_cost - 1) };
         }
       }
@@ -11219,7 +11219,7 @@ function resolveCuratedKeywordEffect(
     }
     case "solidarite": {
       if (!source.card.race) return;
-      const sameRace = owner.board.filter(a => a.instanceId !== source.instanceId && a.card.race === source.card.race).length;
+      const sameRace = owner.board.filter(a => a.instanceId !== source.instanceId && sharesRace(a.card, source.card)).length;
       if (sameRace >= 2) {
         const xS = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["solidarite"] || Math.max(1, Math.floor(source.card.mana_cost / 3)));
         for (let i = 0; i < xS; i++) drawCard(owner);
@@ -11250,7 +11250,7 @@ function resolveCuratedKeywordEffect(
       const count = Math.min(xR, owner.deck.length);
       const revealed = owner.deck.splice(0, count);
       for (const c of revealed) {
-        if (c.card.race === source.card.race && c.card.card_type === "creature" && owner.hand.length < MAX_HAND_SIZE) {
+        if (sharesRace(c.card, source.card) && c.card.card_type === "creature" && owner.hand.length < MAX_HAND_SIZE) {
           owner.hand.push(c);
         } else {
           owner.graveyard.push(c);
@@ -14390,7 +14390,7 @@ function resolveDechainement(
  *  `capabilities` seuls compte aussi. */
 function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
   if (!filter) return true;
-  if (filter.race && card.race !== filter.race) return false;
+  if (filter.race && !hasRace(card, filter.race)) return false;
   if (filter.faction && card.faction !== filter.faction) return false;
   if (filter.clan && card.clan !== filter.clan) return false;
   if (filter.cardType && card.card_type !== filter.cardType) return false;

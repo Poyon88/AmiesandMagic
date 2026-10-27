@@ -48,6 +48,7 @@ import { ALL_KEYWORDS, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { ALL_SPELL_KEYWORDS } from "@/lib/game/spell-keywords";
 import type { SpellKeywordInstance } from "@/lib/game/types";
 import { cardHasAbility } from "@/lib/game/ability-filter";
+import { cardRaces, hasRace } from "@/lib/game/races";
 const KEYWORDS = [...ALL_KEYWORDS].sort((a, b) => KEYWORD_LABELS[a].localeCompare(KEYWORD_LABELS[b], "fr"));
 // Mots-clés de SORT seuls (non partagés avec une forme créature) : les
 // polymorphes (même id des deux côtés, ex. rassemblement) sont déjà couverts
@@ -107,7 +108,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
 
   const races = useMemo(() => {
     const set = new Set<string>();
-    cards.forEach(c => { if (c.race) set.add(c.race); });
+    cards.forEach(c => { for (const r of cardRaces(c)) set.add(r); });
     return Array.from(set).sort();
   }, [cards]);
 
@@ -182,7 +183,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
         return false;
       if (expertOnly && (card.rarity ?? "Commune") === "Commune")
         return false;
-      if (raceFilter !== null && card.race !== raceFilter)
+      if (raceFilter !== null && !hasRace(card, raceFilter))
         return false;
       if (clanFilter === NO_CLAN_KEY) {
         if (card.clan) return false;

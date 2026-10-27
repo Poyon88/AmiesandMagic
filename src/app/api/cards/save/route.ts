@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { LIMITED_PRINT_COUNTS, alignementAEnregistrer } from '@/lib/card-engine/constants';
-import { validateRace } from '@/lib/validation/faction-clan';
+import { validateRace, validateRace2 } from '@/lib/validation/faction-clan';
 import { deriveCapabilities } from '@/lib/game/capability-adapter';
 import type { Capability, Card, CardStatus } from '@/lib/game/types';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
@@ -84,7 +84,7 @@ export async function GET() {
   // nous-mêmes les BROUILLONS pour qui n'est ni admin ni testeur.
   const { data: profil } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).maybeSingle();
   const voitBrouillons = profil?.role === 'admin' || profil?.role === 'testeur';
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id, created_at';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id, created_at';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
         'name', 'mana_cost', 'card_type', 'attack', 'health',
         'effect_text', 'flavor_text', 'illustration_prompt',
         'keywords', 'keyword_instances', 'spell_keywords', 'spell_effects',
-        'faction', 'race', 'clan', 'rarity', 'card_alignment',
+        'faction', 'race', 'race2', 'clan', 'rarity', 'card_alignment',
         'convocation_token_id', 'convocation_tokens',
         'lycanthropie_token_id', 'entraide_race',
         'set_id', 'card_year', 'card_month',
@@ -191,6 +191,21 @@ export async function POST(request: Request) {
       }
       const invalide = validerChampsVoix(patch);
       if (invalide) return NextResponse.json({ error: invalide }, { status: 400 });
+      // Seconde race : validée contre la race principale, celle du patch ou,
+      // à défaut, celle déjà en base. Une race principale vidée emporte la seconde.
+      if ('race2' in patch || ('race' in patch && !patch.race)) {
+        let race = patch.race as string | null | undefined;
+        if (!('race' in patch)) {
+          const { data: courante } = await supabaseAdmin.from('cards').select('race').eq('id', updateId).single();
+          race = courante?.race;
+        }
+        if (!race) patch.race2 = null;
+        else if ('race2' in patch) {
+          const r2 = validateRace2(patch.race2, race);
+          if (!r2.ok) return NextResponse.json({ error: r2.error }, { status: 400 });
+          patch.race2 = r2.race;
+        }
+      }
       if ('status' in patch) {
         if (!estStatutValide(patch.status)) {
           return NextResponse.json({ error: `status invalide : ${String(patch.status)}` }, { status: 400 });
@@ -250,6 +265,9 @@ export async function POST(request: Request) {
     // and must be a known race. Other constraints (card.race / faction)
     // don't apply — Entraide can target any race, regardless of the host
     // card's own race.
+    const race2 = validateRace2(card?.race2 ?? null, card?.race || null);
+    if (!race2.ok) return NextResponse.json({ error: race2.error }, { status: 400 });
+
     const carriesEntraide = Array.isArray(card?.keywords) && card.keywords.includes('entraide');
     if (carriesEntraide) {
       const rc = validateRace(card.entraide_race ?? null, null);
@@ -316,6 +334,7 @@ export async function POST(request: Request) {
       spell_effects: card.spell_effects || null,
       faction: card.faction || null,
       race: card.race || null,
+      race2: race2.race,
       clan: card.clan || null,
       convocation_token_id: card.convocation_token_id ?? null,
       convocation_tokens: card.convocation_tokens || null,

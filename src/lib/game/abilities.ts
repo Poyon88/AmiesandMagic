@@ -25,6 +25,7 @@ import type {
   SpellKeywordId,
   SpellTargetType,
 } from "./types";
+import { hasRace } from "./races";
 
 export type KeywordZone = "Terrain" | "Cimetière" | "Main" | "Mixte" | "Deck" | "Race" | "Clan";
 
@@ -1812,7 +1813,7 @@ export function getEntraideReduction(card: Card, board: CardInstance[]): number 
   if (!card.keywords.includes("entraide")) return 0;
   const targetRace = card.entraide_race;
   if (!targetRace) return 0;
-  return board.filter((c) => c.card.race === targetRace).length;
+  return board.filter((c) => hasRace(c.card, targetRace)).length;
 }
 
 /** Base mana cost used when a card is played from the hand (and displayed in
