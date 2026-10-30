@@ -5993,3 +5993,37 @@ export const useGameStore = create<GameStore>((set, get) => {
   },
   });
 });
+
+// VIVIERS — filet de sécurité. Les viviers (pools de cartes, gabarits de
+// jetons et de machines) sont chargés UNE fois par match et écartés des copies
+// d'état (snapshots, frontières d'animation). Un état qui arrive sans eux les
+// perd pour TOUTE la suite de la partie, et sans un bruit : Sélections,
+// Invocations, Faveur, Déchainement ne produisent plus rien. Vu en partie le
+// 2026-10-30 (Parchemin Retrouvé puis Vœu de protection, les deux joueurs à
+// partir du même instant), sans que la fuite ait pu être reproduite.
+//
+// On retient donc les derniers viviers vus et on les ré-attache, par référence,
+// à tout état qui arrive sans — en le signalant, pour trouver la fuite.
+type Viviers = Pick<GameState, "factionCardPool" | "allSpellsPool" | "tokenTemplates" | "machineTemplates">;
+let viviersRetenus: Viviers | null = null;
+useGameStore.subscribe((s) => {
+  const gs = s.gameState;
+  if (!gs) return;
+  if (gs.factionCardPool?.length || gs.allSpellsPool?.length) {
+    viviersRetenus = {
+      factionCardPool: gs.factionCardPool,
+      allSpellsPool: gs.allSpellsPool,
+      tokenTemplates: gs.tokenTemplates ?? viviersRetenus?.tokenTemplates,
+      machineTemplates: gs.machineTemplates ?? viviersRetenus?.machineTemplates,
+    };
+    return;
+  }
+  if (!viviersRetenus) return;
+  console.warn("[viviers] état sans viviers — ré-attachés", { tour: gs.turnNumber, derniereAction: gs.lastAction?.type });
+  // Mutation EN PLACE : les viviers sont statiques, hors empreinte de synchro
+  // (stateHash), et le prochain applyAction lit cet objet-là.
+  gs.factionCardPool = viviersRetenus.factionCardPool;
+  gs.allSpellsPool = viviersRetenus.allSpellsPool;
+  gs.tokenTemplates ??= viviersRetenus.tokenTemplates;
+  gs.machineTemplates ??= viviersRetenus.machineTemplates;
+});
