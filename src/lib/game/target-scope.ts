@@ -70,6 +70,7 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   // elle-même (KeywordInstance.recipient) ; « toutes » = toutes les AUTRES.
   renforcement: ["all_allies"],
   discipline: ["all_allies"],
+  usurpation: ["all_allies"],
   // Neutralisation : une ennemie ciblée, ou toutes (aura continue).
   neutralisation: ["all_enemies"],
   tactique: ["all_allies"],
@@ -182,7 +183,7 @@ export const SOI_ARIA_FR = "Sur elle-même";
 /** Capacités de créature dont le BÉNÉFICIAIRE est réglable : une autre unité
  *  désignée (défaut), elle-même (`recipient: "self"`, « S »), ou toutes
  *  (portée « A »). Source unique du moteur, de la forge et du rendu. */
-export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "silence", "guerison"]);
+export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "usurpation", "silence", "guerison"]);
 
 /** Capacité de créature réglée sur « elle-même » (« S ») : l'effet ne va pas à
  *  une autre unité, comme le voudrait la forme sort. */
@@ -237,6 +238,7 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
   silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   renforcement: "+X/+Y à {cibles}.",
   discipline: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
+  usurpation: "+X/+Y à {cibles} par carte adverse que vous avez jouée.",
   guerison: "Restaure X PV à {cibles} et à votre héros.",
 };
 
@@ -256,11 +258,13 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   // dirait pas.
   renforcement: "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
   discipline: "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
+  usurpation: "Donne +X/+Y permanent à toutes les autres unités alliées par carte adverse que vous avez jouée.",
   // Pas des portées : variantes « elle-même » (KeywordInstance.recipient
   // "self", marqueur « S »), rangées ici pour voyager avec les autres gabarits
   // jusqu'au catalogue (vocab.target_scope.creature.*).
   renforcement_soi: "Gagne +X ATK et +Y PV de façon permanente.",
   discipline_soi: "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+  usurpation_soi: "Gagne +X ATK et +Y PV de façon permanente par carte adverse que vous avez jouée.",
   silence_soi: "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
   guerison_soi: "Récupère X PV.",
 };

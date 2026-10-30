@@ -431,6 +431,10 @@
         "label": "纪律 +X/+Y",
         "desc": "如果你场上所有单位的费用与其奇偶性相同,则永久给予一个被选中的其他友方单位+X/+Y。"
       },
+      "usurpation": {
+        "label": "篡夺 +X/+Y",
+        "desc": "你每打出过一张对手的牌，永久给予一个被选中的其他友方单位+X/+Y。"
+      },
       "esprit_de_corps": {
         "label": "团队精神",
         "desc": "场上每有一张已打出、拥有团队精神的{clan_de}随从，随机获得+1攻击力或+1生命值。"
@@ -726,6 +730,10 @@
         "label": "纪律 +X/+Y",
         "desc": "如果你场上所有生物的费用奇偶性都与此行动相同，则目标友方生物获得+X/+Y。"
       },
+      "usurpation": {
+        "label": "篡夺 +X/+Y",
+        "desc": "你每打出过一张对手的牌，目标友方生物获得+X/+Y。"
+      },
       "affaiblissement": {
         "label": "弱化 -X/-Y",
         "desc": "对目标敌方生物给予 -X ATK 和 -Y PV。"
@@ -849,6 +857,7 @@
         "deal_damage_many": "造成 {x} 点伤害",
         "heal": "恢复 {x} PV",
         "buff": "给予 +{x}/+{y}",
+        "usurpation": "每打出过一张对手的牌，给予 +{x}/+{y}",
         "debuff": "给予 -{x}/-{y}",
         "destroy": "消灭",
         "bounce": "返回手牌",
@@ -969,6 +978,7 @@
         "deal_damage_many": "对自身造成{x}点伤害",
         "heal": "为自身恢复{x}点生命值",
         "buff": "为自身赋予+{x}/+{y}",
+        "usurpation": "每打出过一张对手的牌，为自身赋予+{x}/+{y}",
         "debuff": "对自身造成-{x}/-{y}",
         "destroy": "自我摧毁",
         "bounce": "将自身弹回手牌",
@@ -981,6 +991,7 @@
         "deal_damage": "选择一个目标造成伤害",
         "heal": "选择一个治疗目标",
         "buff": "选择一个强化的生物",
+        "usurpation": "选择一个强化的生物",
         "debuff": "选择一个削弱的生物",
         "destroy": "选择一个消灭的生物",
         "bounce": "选择一个返回手牌的生物",
@@ -2049,6 +2060,7 @@
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
       "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
+      "usurpation_actuel": "已打出的对手牌：{n} 张 — 当前 +{x}/+{y}。",
       "scope_all": "给你所有的单位",
       "machine_part": "及{ability}",
       "machine_part_timed": "及{ability}（{timing}）",
@@ -2121,6 +2133,7 @@
         "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
+        "usurpation": "你每打出过一张对手的牌，{cibles}获得+X/+Y。",
         "guerison": "为{cibles}和你的英雄恢复X点生命值。"
       },
       "creature": {
@@ -2137,8 +2150,10 @@
         "devoration": "消灭{cibles};该单位永久获得它们的攻击力和生命值。",
         "renforcement": "永久给予所有其他友方单位 +X 攻击力和 +Y 生命值。",
         "discipline": "如果你场上所有单位的费用与其奇偶性相同,则永久给予所有其他友方单位+X/+Y。",
+        "usurpation": "你每打出过一张对手的牌，永久给予所有其他友方单位+X/+Y。",
         "renforcement_soi": "永久获得 +X 攻击力和 +Y 生命值。",
         "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。",
+        "usurpation_soi": "你每打出过一张对手的牌，永久获得 +X 攻击力和 +Y 生命值。",
         "execution": "消灭{cibles}，包括物品。",
         "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
         "guerison": "为其他所有友方单位和你的英雄恢复X点生命值。",
@@ -2535,6 +2550,7 @@
     "content_deal_damage": "造成伤害",
     "content_heal": "治疗",
     "content_buff": "增益 +X/+Y",
+    "content_usurpation": "篡夺 +X/+Y（每打出过一张对手的牌）",
     "content_debuff": "减益 -X/-Y",
     "content_destroy": "消灭",
     "content_bounce": "弹回手牌",

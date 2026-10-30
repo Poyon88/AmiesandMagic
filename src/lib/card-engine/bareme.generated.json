@@ -935,6 +935,12 @@
       "perY": 0.99,
       "n": 10
     },
+    "usurpation": {
+      "base": 3.3,
+      "perX": 2.4,
+      "perY": 1.4,
+      "n": 0
+    },
     "esprit_de_corps": {
       "base": 2.69,
       "perX": 0,
@@ -1200,6 +1206,12 @@
       "perX": 2.76,
       "perY": 1.76,
       "n": 31
+    },
+    "usurpation": {
+      "base": 4.3,
+      "perX": 1.9,
+      "perY": 1.2,
+      "n": 0
     },
     "debuff": {
       "base": 9.1,

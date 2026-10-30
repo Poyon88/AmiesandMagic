@@ -7,6 +7,7 @@ import { getKeywordDisplayLabel, KEYWORD_LABELS } from "@/lib/game/keyword-label
 import { getSpellKeywordLabel, getSpellKeywordDesc, formatConvocationTokens, formatConvocationToken, convocationPrefix } from "@/lib/game/spell-keywords";
 import { describeKeyword, describeKeywordLabel, keywordScopeNote, keywordTriggerBadge, triggerBadge, type TriggerBadge, type KeywordDescCtx } from "@/lib/game/keyword-display";
 import { composedBadge, composedKeywordName, describeComposedCap } from "@/lib/game/composed-display";
+import { usurpationNote } from "@/lib/game/desc-markers";
 import {
   getAlignmentLabel,
   getClanName,
@@ -88,6 +89,8 @@ export interface Vocab {
     statOverride?: number | null,
   ) => string | null;
   convocationPrefix: (content: string) => string;
+  /** Usurpation en partie : « Cartes adverses jouées : N — actuellement +A/+B. » */
+  usurpationNote: (n: number, x: number, y: number) => string;
 }
 
 // Nombre max de races affichées entre parenthèses dans un libellé de sélecteur.
@@ -188,6 +191,7 @@ export function useVocab(): Vocab {
         statOverride?: number | null,
       ) => formatConvocationToken(tokenId, registry, statOverride, safe),
       convocationPrefix: (content: string) => convocationPrefix(content, safe),
+      usurpationNote: (n: number, x: number, y: number) => usurpationNote(n, x, y, safe),
     }),
     [safe],
   );

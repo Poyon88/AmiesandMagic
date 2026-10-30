@@ -93,6 +93,8 @@ export interface CarteEnJeu {
   /** Capacités neutralisées : icône barrée. */
   neutralises?: Set<string>;
   espritCount?: number;
+  /** Usurpation : cartes adverses jouées qui comptent pour cette carte. */
+  usurpationCount?: number;
   /** Sort mémorisé par Apprentissage. */
   apprentissage?: Card | null;
 }
@@ -688,6 +690,8 @@ export default function GameCard({
                   <TokenNames cards={tokenCardsForKeyword(kw, card, effectiveTokens, x)} scale={s} />
                   {/* Apprentissage : le sort MÉMORISÉ (en partie seulement). */}
                   {kw === "apprentissage" && enJeu?.apprentissage && <CompagnonsNames cards={[enJeu.apprentissage]} scale={s} icon="📖" />}
+                  {/* Usurpation : le gain du moment (en partie seulement). */}
+                  {kw === "usurpation" && (enJeu?.usurpationCount ?? 0) > 0 && <div style={{ fontSize: 11.5 * so, color: "#e8c56a", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{vocab.usurpationNote(enJeu!.usurpationCount!, x ?? 0, instance?.y ?? 0)}</div>}
                 </div>
               </div>
               );
@@ -708,6 +712,7 @@ export default function GameCard({
                 <div>
                   <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
+                  {spellKw.id === "usurpation" && (enJeu?.usurpationCount ?? 0) > 0 && <div style={{ fontSize: 11.5 * so, color: "#e8c56a", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{vocab.usurpationNote(enJeu!.usurpationCount!, spellKw.attack ?? 0, spellKw.health ?? 0)}</div>}
                   {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
                   {(spellKw.id === "compagnons" || spellKw.id === "tuteur") && <CompagnonsNames ids={spellKw.linkedCardIds} scale={s} icon={spellKw.id === "tuteur" ? "🎓" : undefined} />}
                   <TokenNames cards={tokenCardsForKeyword(spellKw.id, card, effectiveTokens)} scale={s} />
@@ -731,6 +736,7 @@ export default function GameCard({
                   <div>
                     {nm && <div style={{ fontSize: 14 * so, color: keywordModeColor(cmode) ?? "#fff", fontWeight: 700 }}>{nm}{(() => { const d = vocab.composedBadge(cap); return d ? <span style={{ color: d.color }}> ({d.label})</span> : null; })()}</div>}
                     <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{vocab.composedDesc(cap, effectiveTokens)}</div>
+                    {cap.composed?.content === "usurpation" && (enJeu?.usurpationCount ?? 0) > 0 && <div style={{ fontSize: 11.5 * so, color: "#e8c56a", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{vocab.usurpationNote(enJeu!.usurpationCount!, cap.composed.magnitude?.x ?? 0, cap.composed.magnitude?.y ?? 0)}</div>}
                     <TokenNames cards={tokenCardsForComposed(cap.composed, effectiveTokens)} scale={s} />
                     {/* Invocation DÉSIGNÉE : la carte nommée, verso au survol. */}
                     {designatedCardIds(cap.composed).length > 0 && <CompagnonsNames ids={designatedCardIds(cap.composed)} icon={cap.composed?.content === "tuteur" ? "🎓" : cap.composed?.content === "transformation" ? "🦋" : "📣"} scale={s} />}

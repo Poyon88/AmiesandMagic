@@ -431,6 +431,10 @@
         "label": "Discipline +X/+Y",
         "desc": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to another targeted allied unit."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "Gives permanent +X/+Y to another targeted allied unit for each opponent's card you have played."
+      },
       "esprit_de_corps": {
         "label": "Camaraderie",
         "desc": "Gains +1 ATK or +1 HP at random per creature {clan_de} with Camaraderie already played."
@@ -726,6 +730,10 @@
         "label": "Discipline +X/+Y",
         "desc": "If all your creatures in play have a cost of the same parity as this action's, +X/+Y to a targeted allied creature."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "+X/+Y to a targeted allied creature for each opponent's card you have played."
+      },
       "affaiblissement": {
         "label": "Weakening -X/-Y",
         "desc": "Gives -X ATK and -Y HP to a targeted enemy creature."
@@ -849,6 +857,7 @@
         "deal_damage_many": "deals {x} damage",
         "heal": "restores {x} HP",
         "buff": "grants +{x}/+{y}",
+        "usurpation": "grants, for each opponent's card played, +{x}/+{y}",
         "debuff": "inflicts -{x}/-{y}",
         "destroy": "destroys",
         "bounce": "returns to hand",
@@ -969,6 +978,7 @@
         "deal_damage_many": "deals {x} damage to itself",
         "heal": "heals itself for {x} HP",
         "buff": "grants itself +{x}/+{y}",
+        "usurpation": "grants itself +{x}/+{y} for each opponent's card played",
         "debuff": "inflicts -{x}/-{y} on itself",
         "destroy": "destroys itself",
         "bounce": "returns itself to hand",
@@ -981,6 +991,7 @@
         "deal_damage": "choose a target to damage",
         "heal": "choose a target to heal",
         "buff": "choose a creature to strengthen",
+        "usurpation": "choose a creature to strengthen",
         "debuff": "choose a creature to weaken",
         "destroy": "choose a creature to destroy",
         "bounce": "choose a creature to return to hand",
@@ -2049,6 +2060,7 @@
       "scope": "to an allied unit (or to all)",
       "scope_target": "to an allied unit",
       "edc_compte": "Gains {n} times +1 ATK or +1 HP at random (1 per creature {clan_de} with Camaraderie already played).",
+      "usurpation_actuel": "Opponent's cards played: {n} — currently +{x}/+{y}.",
       "scope_all": "to all your units",
       "machine_part": " and {ability}",
       "machine_part_timed": " and {ability} ({timing})",
@@ -2121,6 +2133,7 @@
         "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
+        "usurpation": "+X/+Y to {cibles} for each opponent's card you have played.",
         "guerison": "Restores X HP to {cibles} and to your hero."
       },
       "creature": {
@@ -2137,8 +2150,10 @@
         "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
         "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
         "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
+        "usurpation": "Permanently gives +X/+Y to all other allied units for each opponent's card you have played.",
         "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
         "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
+        "usurpation_soi": "Permanently gains +X ATK and +Y HP for each opponent's card you have played.",
         "execution": "Destroys {cibles}, items included.",
         "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
         "guerison": "Restores X HP to all other friendly units and to your hero.",
@@ -2535,6 +2550,7 @@
     "content_deal_damage": "Deal damage",
     "content_heal": "Heal",
     "content_buff": "Buff +X/+Y",
+    "content_usurpation": "Usurpation +X/+Y (per opponent's card played)",
     "content_debuff": "Debuff -X/-Y",
     "content_destroy": "Destroy",
     "content_bounce": "Return to hand",

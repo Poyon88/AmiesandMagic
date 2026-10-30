@@ -150,6 +150,10 @@ export type Keyword =
   // +1 ATK ou +1 PV au HASARD, autant de fois qu'il y a d'AUTRES créatures
   // Esprit de corps du même clan déjà posées depuis la main par le contrôleur.
   | "esprit_de_corps"
+  // +X/+Y PAR CARTE ADVERSE (vrai propriétaire = l'adversaire) que le
+  // contrôleur a jouée depuis la main pendant la partie. Bénéficiaire réglable
+  // comme Renforcement ; gain figé au déclenchement.
+  | "usurpation"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
   | "entrainement"
   // Polymorphic — +X/+Y PERMANENT à la 1re créature du DECK du propriétaire en
@@ -229,6 +233,7 @@ export type SpellKeywordId =
   | "silence"
   | "renforcement"
   | "discipline"
+  | "usurpation"
   | "guerison"
   | "benediction"
   | "invocation"
@@ -706,6 +711,9 @@ export type ComposedEffectContent =
   // Alimente le compteur d'Exploration du contrôleur (palier
   // EXPLORATION_PALIER, pioche automatique). Même contrat.
   | "exploration"
+  // USURPATION : +X/+Y à chaque unité visée, multiplié par le nombre de cartes
+  // ADVERSES que le contrôleur a jouées depuis la main (cf. usurpationCount).
+  | "usurpation"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
   | "incineration"
@@ -1373,6 +1381,11 @@ export interface CardInstance {
    *  Optionnel : les instances sérialisées avant l'ajout du champ n'en
    *  disposent pas (lire avec `?? false`). */
   espritDeCorpsCounted?: boolean;
+  /** USURPATION : cette instance, carte ADVERSE posée depuis la main, a
+   *  elle-même incrémenté `PlayerState.usurpationPlayed`. Elle s'exclut donc de
+   *  son propre décompte, à tous ses déclencheurs — même contrat que
+   *  `espritDeCorpsCounted`. Optionnel (lire avec `?? false`). */
+  usurpationCounted?: boolean;
   /** APPRENTISSAGE — le sort que cette créature a MÉMORISÉ.
    *
    *  On garde l'INSTANCE retirée de la main, pas une `Card` nue : elle porte
@@ -1810,6 +1823,12 @@ export interface PlayerState {
    *  Optionnel : les snapshots `match_state` d'avant l'ajout ne le portent pas
    *  (lire avec `?? 0`). */
   espritDeCorpsPlayed?: Record<string, number>;
+  /** USURPATION : nombre de cartes ADVERSES (vrai propriétaire = l'adversaire :
+   *  conquises, volées puis renvoyées en main…) que ce joueur a JOUÉES depuis la
+   *  main depuis le début de la partie, tous types confondus. Historique : ne
+   *  redescend jamais. Même contrat de synchro qu'`espritDeCorpsPlayed`.
+   *  Optionnel (lire avec `?? 0`). */
+  usurpationPlayed?: number;
   /** TEMPO (Lune, Soleil) : combien de cartes ce joueur a-t-il JOUÉES depuis le
    *  début de SON tour. Remis à zéro par `startTurn` pour le joueur qui entre.
    *  Lune se déclenche quand ce compteur est non nul, Soleil quand il est nul.

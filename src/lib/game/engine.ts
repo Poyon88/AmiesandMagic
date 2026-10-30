@@ -835,7 +835,7 @@ function ciblesOnPlay(
 /** Capacités dont le BONUS +X/+Y a un bénéficiaire réglable (cf.
  *  KeywordInstance.recipient) : une autre unité alliée (défaut), elle-même, ou
  *  toutes les autres (portée « toutes »). */
-const BONUS_A_BENEFICIAIRE = new Set<string>(["renforcement", "discipline"]);
+const BONUS_A_BENEFICIAIRE = new Set<string>(["renforcement", "discipline", "usurpation"]);
 
 /** Le bonus va-t-il à UNE AUTRE unité DÉSIGNÉE ? C'est le défaut, comme sur la
  *  forme sort ; faux pour « elle-même » (`recipient: "self"`) et sous la portée
@@ -874,13 +874,16 @@ function bonusOnPlay(
 function bonusHorsEntree(
   kw: Keyword, source: CardInstance, owner: PlayerState, opponent: PlayerState,
   targetInstanceId: string | undefined, inst: KeywordInstance | undefined, x: number, y: number,
+  // Valeurs emportées par un choix DIFFÉRÉ, quand elles diffèrent du gain
+  // appliqué (Usurpation : le X/Y par carte, multiplié au moment du choix).
+  differe: { x: number; y: number } = { x, y },
 ): void {
   const buff = (c: CardInstance) => withComposedMode(inst?.mode, () => applyRenforcementSelf(c, x, y));
   const allie = (id: string | null | undefined) =>
     id ? owner.board.find(c => c.instanceId === id && c.instanceId !== source.instanceId) : undefined;
   if (targetInstanceId) { const t = allie(targetInstanceId); if (t) buff(t); return; }
   if (bonusVersAutre(inst)) {
-    const t = allie(deferOrRandomTarget(kw, source, owner, opponent, inst, x, y));
+    const t = allie(deferOrRandomTarget(kw, source, owner, opponent, inst, differe.x, differe.y));
     if (t) buff(t);
     return;
   }
@@ -1692,6 +1695,15 @@ function applyComposedToUnit(
       u.currentAttack += x; u.currentHealth += y; u.maxHealth += y;
       u.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
       break;
+    case "usurpation": {
+      // Le buff, multiplié par les cartes adverses jouées par le contrôleur. Un
+      // SORT est joué sans instance source et n'est compté qu'après sa
+      // résolution : il ne se compte pas ; une créature s'exclut par son drapeau.
+      const n = usurpationCount(owner, source);
+      if (n === 0) break;
+      applyRenforcementSelf(u, x * n, y * n);
+      break;
+    }
     case "debuff":
       // Réduction PERMANENTE, symétrique du buff : on cuit la baisse dans
       // `u.card` (comme malédiction pour l'ATK). Sans ça, recalculateAuras et
@@ -5188,6 +5200,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // sort sans cible…) rendent l'état d'ORIGINE et non ce clone : une carte
   // refusée ne compte donc pas.
   player.cardsPlayedThisTurn = (player.cardsPlayedThisTurn ?? 0) + 1;
+  // USURPATION — une carte adverse JOUÉE depuis la main (l'éveil en fait
+  // partie : la carte a quitté la main au premier paiement). Ni Seconde vie
+  // (cimetière) ni sort mémorisé (relance). Un SORT n'est compté qu'APRÈS sa
+  // résolution (cf. la branche sort) : sa résolution ne voit que son instance
+  // nue, et ne doit pas se compter elle-même.
+  const usurpationJouee = !fromGraveyard && !apprenante;
+  if (usurpationJouee && card.card_type !== "spell") compterUsurpation(player, cardInstance);
 
   player.mana -= manaCost;
   // Pay life cost directly — armor protects from damage, not voluntary
@@ -5598,6 +5617,15 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "discipline")) {
       const { x, y } = disciplineValues(cardInstance, undefined);
       if (boardIsDisciplined(player, manaCost)) bonusOnPlay(cardInstance, "discipline", x, y, action.targetInstanceId, player, opponent);
+    }
+
+    // Usurpation (invocation) : +X/+Y par carte adverse déjà jouée, au
+    // bénéficiaire réglé. La créature elle-même, si elle est une carte adverse,
+    // vient de se compter (point de non-retour) et s'en retranche.
+    if (hasKwOnPlay(cardInstance, "usurpation")) {
+      const { x, y } = usurpationValues(cardInstance, undefined);
+      const n = usurpationCount(player, cardInstance);
+      if (n > 0) bonusOnPlay(cardInstance, "usurpation", x * n, y * n, action.targetInstanceId, player, opponent);
     }
 
     // Apprentissage (invocation) : la créature retire un sort de la main et le
@@ -6311,6 +6339,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // sans effet.
     if ((opponent.contresort ?? 0) > 0) {
       opponent.contresort = (opponent.contresort ?? 0) - 1;
+      // Contré, il a bel et bien été JOUÉ : il compte pour Usurpation.
+      if (usurpationJouee) compterUsurpation(player, cardInstance);
       player.graveyard.push(cardInstance);
       newState.lastAction = action;
       return newState;
@@ -6319,6 +6349,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     const counterUnit = opponent.board.find(c => chargesDeGarde(c, "contresort") > 0);
     if (counterUnit) {
       consommerGarde(counterUnit, "contresort");
+      if (usurpationJouee) compterUsurpation(player, cardInstance);
       // Spell is countered — goes to graveyard without effect
       player.graveyard.push(cardInstance);
       newState.lastAction = action;
@@ -6374,6 +6405,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // comme pour un sort relancé : « gratuit » n'est pas « de coût 0 ».
     const coutDeLaCarte = apprenante ? effectiveManaCost(cardInstance, player) : manaCost;
     const ctx = resolveSpellCard(newState, player, opponent, card, targetMap, action.targetInstanceId, coutDeLaCarte, tempoAmount);
+    // Usurpation : compté une fois résolu, pour que sa propre Usurpation ne se
+    // compte pas — et avant les morts, que les râles d'agonie le voient joué.
+    if (usurpationJouee) compterUsurpation(player, cardInstance);
 
     // Morts causées par les phases 2/3, les composés et le repli legacy.
     settleSpellDeaths(ctx);
@@ -7292,6 +7326,18 @@ function resolveSpellKeywords(
         const target = findCreatureOnBoard(ctx.caster, targetId);
         if (!target) break;
         applyRenforcementSelf(target, kw.attack ?? 0, kw.health ?? 0);
+        break;
+      }
+      // Usurpation (sort) : Renforcement de l'alliée ciblée, multiplié par les
+      // cartes adverses déjà jouées par le lanceur. Le sort lui-même n'est
+      // compté qu'après sa résolution (playCard) : il ne se compte donc pas.
+      case "usurpation": {
+        if (!targetId) break;
+        const n = usurpationCount(ctx.caster);
+        if (n === 0) break;
+        const target = findCreatureOnBoard(ctx.caster, targetId);
+        if (!target) break;
+        applyRenforcementSelf(target, (kw.attack ?? 0) * n, (kw.health ?? 0) * n);
         break;
       }
       case "affaiblissement": {
@@ -10549,6 +10595,53 @@ function disciplineValues(source: CardInstance, mode: import("./types").KeywordM
   };
 }
 
+// ─── Usurpation +X/+Y : le compteur de cartes adverses jouées ───────────────
+//
+// Un Renforcement MULTIPLIÉ : +X/+Y par carte ADVERSE que le contrôleur a jouée
+// depuis la main depuis le début de la partie. Comme Discipline, ce n'est pas
+// une aura — le multiplicateur est lu au déclenchement et le gain est définitif,
+// cumulatif d'un déclenchement à l'autre.
+
+/** La carte appartient-elle à l'ADVERSAIRE de `joueur` ? Vrai propriétaire
+ *  (`trueOwnerId` : volée puis revenue en main) ou carte prise dans son deck
+ *  (`conqueredFromId` : Conquête, qui remet `trueOwnerId` à null pour que le
+ *  conquérant en reste propriétaire pour les zones). */
+export function estCarteAdverse(
+  inst: Pick<CardInstance, "trueOwnerId" | "conqueredFromId">,
+  joueur: Pick<PlayerState, "id">,
+): boolean {
+  return (inst.trueOwnerId != null && inst.trueOwnerId !== joueur.id)
+    || (inst.conqueredFromId != null && inst.conqueredFromId !== joueur.id);
+}
+
+/** Incrémente l'historique d'Usurpation si `inst`, que `joueur` vient de JOUER
+ *  depuis la main, est une carte adverse. Le drapeau posé sur l'instance
+ *  l'exclut de son propre décompte (cf. usurpationCount). */
+function compterUsurpation(joueur: PlayerState, inst: CardInstance): void {
+  if (!estCarteAdverse(inst, joueur)) return;
+  joueur.usurpationPlayed = (joueur.usurpationPlayed ?? 0) + 1;
+  inst.usurpationCounted = true;
+}
+
+/** Nombre de cartes adverses jouées par `owner` qui comptent pour `source` :
+ *  l'historique complet, moins la source elle-même si elle s'y est comptée. */
+export function usurpationCount(
+  owner: Pick<PlayerState, "usurpationPlayed">,
+  source?: Pick<CardInstance, "usurpationCounted"> | null,
+): number {
+  return Math.max(0, (owner.usurpationPlayed ?? 0) - (source?.usurpationCounted ? 1 : 0));
+}
+
+/** +X/+Y de l'instance d'Usurpation portée par `source` (par carte comptée),
+ *  repli sur les valeurs conférées puis sur 0/0 — même contrat que Discipline. */
+function usurpationValues(source: CardInstance, mode: import("./types").KeywordMode | undefined): { x: number; y: number } {
+  const inst = source.card.keyword_instances?.find(i => i.id === "usurpation" && i.mode === mode);
+  return {
+    x: inst?.x ?? source.grantedKeywordX["usurpation"] ?? 0,
+    y: inst?.y ?? source.grantedKeywordY?.["usurpation"] ?? 0,
+  };
+}
+
 // Gloire +X/+Y : récompense permanente d'une survie à des dégâts de combat.
 // Réutilise exactement le buff de Renforcement (stats cuites dans `card`), donc
 // le gain survit à recalculateAuras et au passage en main/cimetière. En
@@ -10794,6 +10887,21 @@ function resolveCuratedKeywordEffect(
       if (boardIsDisciplined(owner, effectiveManaCost(source, owner))) {
         bonusHorsEntree(kw, source, owner, opponent, targetInstanceId, inst, inst?.x ?? v.x, inst?.y ?? v.y);
       }
+      return;
+    }
+    case "usurpation": {
+      // Mort / attaque / tap / retour / fin de tour / pioche / PV bas : le
+      // compteur est un historique du JOUEUR, lu à cet instant (il a pu grossir
+      // depuis l'arrivée de la source). Chaque déclenchement AJOUTE son gain.
+      //
+      // Choix différé : le déclencheur emporte le X/Y PAR CARTE, et le
+      // multiplicateur est relu au moment du choix — l'instance synthétique
+      // repasse ici avec sa cible, sans quoi le gain serait multiplié deux fois.
+      const v = usurpationValues(source, inst?.mode);
+      const parCarte = { x: inst?.x ?? v.x, y: inst?.y ?? v.y };
+      const n = usurpationCount(owner, source);
+      if (n === 0) return;
+      bonusHorsEntree(kw, source, owner, opponent, targetInstanceId, inst, parCarte.x * n, parCarte.y * n, parCarte);
       return;
     }
     case "esprit_de_corps": {
@@ -11574,6 +11682,7 @@ export function deferredKwTargetIds(
     case "sacrifice":
     case "renforcement":
     case "discipline":
+    case "usurpation":
       return controller.board.filter(c => c.instanceId !== sourceInstanceId).map(c => c.instanceId);
     case "mimique":
     case "metamorphose":
@@ -12368,6 +12477,7 @@ export function tapKeywordNeedsTarget(kw: Keyword, inst?: KeywordInstance): bool
     // Selon l'instance : sur elle-même, rien à désigner.
     case "renforcement":
     case "discipline":
+    case "usurpation":
       return bonusVersAutre(inst);
     // Elle-même (« S ») : rien à désigner.
     case "silence":
@@ -12423,6 +12533,7 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
       return impactTargetIds(player, opponent);
     case "renforcement":
     case "discipline":
+    case "usurpation":
       return bonusVersAutre(inst)
         ? deferredKwTargetIds(kw, player, opponent, sourceInstanceId ?? null)
         : null;
@@ -13657,6 +13768,7 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return player.board.map(c => c.instanceId);
       case "renforcement":
       case "discipline":
+      case "usurpation":
         // Sur elle-même : aucune cible, on passe au mot-clé suivant.
         if (!bonusVersAutre(instanceOnPlay(card, kw))) continue;
         return player.board.map(c => c.instanceId);

@@ -431,6 +431,10 @@
         "label": "Disciplina +X/+Y",
         "desc": "Se todos os custos do seu tabuleiro tiverem a mesma paridade que o dela, concede +X/+Y permanente a outra unidade aliada alvo."
       },
+      "usurpation": {
+        "label": "Usurpação +X/+Y",
+        "desc": "Concede +X/+Y permanente a outra unidade aliada alvo por cada carta do adversário que você jogou."
+      },
       "esprit_de_corps": {
         "label": "Espírito de Corpo",
         "desc": "Ganha +1 ATK ou +1 PV aleatoriamente por criatura {clan_de} com Espírito de Corpo já jogada."
@@ -726,6 +730,10 @@
         "label": "Disciplina +X/+Y",
         "desc": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o desta ação, +X/+Y para uma criatura aliada alvo."
       },
+      "usurpation": {
+        "label": "Usurpação +X/+Y",
+        "desc": "+X/+Y para uma criatura aliada alvo por cada carta do adversário que você jogou."
+      },
       "affaiblissement": {
         "label": "Enfraquecimento -X/-Y",
         "desc": "Concede -X ATK e -Y PV a uma criatura inimiga alvo."
@@ -849,6 +857,7 @@
         "deal_damage_many": "causa {x} de dano",
         "heal": "cura {x} PV",
         "buff": "concede +{x}/+{y}",
+        "usurpation": "concede, por cada carta do adversário jogada, +{x}/+{y}",
         "debuff": "aplica -{x}/-{y}",
         "destroy": "destrói",
         "bounce": "devolve à mão",
@@ -969,6 +978,7 @@
         "deal_damage_many": "sofre {x} de dano",
         "heal": "cura-se em {x} PV",
         "buff": "concede a si mesmo +{x}/+{y}",
+        "usurpation": "concede a si mesmo +{x}/+{y} por cada carta do adversário jogada",
         "debuff": "sofre -{x}/-{y}",
         "destroy": "destrói-se",
         "bounce": "retorna à mão",
@@ -981,6 +991,7 @@
         "deal_damage": "escolha um alvo para atacar",
         "heal": "escolha um alvo para curar",
         "buff": "escolha uma criatura para fortalecer",
+        "usurpation": "escolha uma criatura para fortalecer",
         "debuff": "escolha uma criatura para enfraquecer",
         "destroy": "escolha uma criatura para destruir",
         "bounce": "escolha uma criatura para devolver à mão",
@@ -2049,6 +2060,7 @@
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
       "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
+      "usurpation_actuel": "Cartas do adversário jogadas: {n} — atualmente +{x}/+{y}.",
       "scope_all": "a todas as suas unidades",
       "machine_part": " e {ability}",
       "machine_part_timed": " e {ability} ({timing})",
@@ -2121,6 +2133,7 @@
         "silence": "Remove todas as palavras-chave de {cibles}, objetos incluídos, e restaura seus atributos aos valores originais.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o desta ação, +X/+Y a {cibles}.",
+        "usurpation": "+X/+Y para {cibles} por cada carta do adversário que você jogou.",
         "guerison": "Restaura X PV a {cibles} e ao seu herói."
       },
       "creature": {
@@ -2137,8 +2150,10 @@
         "devoration": "Destrói {cibles}; esta unidade ganha permanentemente seu ATQ e seus PV.",
         "renforcement": "Concede +X ATK e +Y PV permanentemente a todas as outras unidades aliadas.",
         "discipline": "Se todos os custos do seu tabuleiro tiverem a mesma paridade que o dela, concede +X/+Y permanente a todas as outras unidades aliadas.",
+        "usurpation": "Concede +X/+Y permanentemente a todas as outras unidades aliadas por cada carta do adversário que você jogou.",
         "renforcement_soi": "Ganha +X ATQ e +Y PV de forma permanente.",
         "discipline_soi": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o dela, ganha +X ATQ e +Y PV de forma permanente.",
+        "usurpation_soi": "Ganha +X ATQ e +Y PV de forma permanente por cada carta do adversário que você jogou.",
         "execution": "Destrói {cibles}, objetos incluídos.",
         "silence": "Remove todas as palavras-chave de {cibles}, objetos incluídos, e restaura seus atributos aos valores originais.",
         "guerison": "Restaura X PV a todas as outras unidades aliadas e ao seu herói.",
@@ -2535,6 +2550,7 @@
     "content_deal_damage": "Causar dano",
     "content_heal": "Curar",
     "content_buff": "Buff +X/+Y",
+    "content_usurpation": "Usurpação +X/+Y (por carta do adversário jogada)",
     "content_debuff": "Debuff -X/-Y",
     "content_destroy": "Destruir",
     "content_bounce": "Devolver à mão",

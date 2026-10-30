@@ -1153,6 +1153,33 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
     },
   },
+  // Usurpation : Renforcement MULTIPLIÉ par le nombre de cartes ADVERSES que le
+  // contrôleur a jouées depuis la main pendant la partie (Conquête en tête,
+  // mais aussi toute carte dont le vrai propriétaire est l'adversaire). Mêmes
+  // deux faces et même bénéficiaire réglable que Renforcement / Discipline.
+  //
+  // Arbitrages de l'auteur (2026-10-30) : uniquement les cartes JOUÉES (une
+  // unité prise sur le plateau ne compte pas), tous types, historique de partie
+  // (PlayerState.usurpationPlayed, ne redescend jamais), la carte porteuse ne se
+  // compte pas elle-même, gain FIGÉ au déclenchement et CUMULATIF d'un
+  // déclenchement à l'autre, sans plafond. Pas une aura : sa place est dans
+  // CURATED_MULTIMODE_IDS, pas dans recalculateAuras.
+  usurpation: {
+    id: "usurpation", label: "Usurpation +X/+Y", symbol: "⚜️",
+    desc: "+X/+Y permanent à une autre unité alliée ciblée par carte adverse que vous avez jouée (ou à elle-même, ou à toutes les autres).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      // Plus bas que Discipline (5 / +3) : le compteur dépend de cartes
+      // adverses jouées, donc de Conquête, et reste à 0 dans un deck qui n'en
+      // prend pas. À réajuster après essai en partie.
+      cost: 4, costPerX: 3, se: 2.0, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Donne +X/+Y permanent à une autre unité alliée ciblée par carte adverse que vous avez jouée.",
+    },
+    spell: {
+      desc: "+X/+Y à une créature alliée ciblée par carte adverse que vous avez jouée.",
+      params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
+    },
+  },
   // Esprit de corps : récompense l'accumulation de porteurs d'un MÊME CLAN au
   // fil de la partie. À chaque déclenchement, la créature gagne un point par
   // AUTRE créature Esprit de corps du même clan que son contrôleur a posée
@@ -1849,7 +1876,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "entrainement", "inspiration", "afflux",
   "ombre_du_passe", "pillage", "prescience", "remontee",
-  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "esprit_de_corps", "impact",
+  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "usurpation", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",

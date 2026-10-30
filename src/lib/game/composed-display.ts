@@ -39,6 +39,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.deal_damage_many": "inflige {x} dégâts",
   "content.heal": "soigne {x} PV",
   "content.buff": "octroie +{x}/+{y}",
+  "content.usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
   "content.debuff": "inflige -{x}/-{y}",
   "content.destroy": "détruit",
   "content.bounce": "renvoie en main",
@@ -261,6 +262,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "self.deal_damage_many": "s'inflige {x} dégâts",
   "self.heal": "se soigne de {x} PV",
   "self.buff": "s'octroie +{x}/+{y}",
+  "self.usurpation": "s'octroie +{x}/+{y} par carte adverse jouée",
   "self.debuff": "s'inflige -{x}/-{y}",
   "self.destroy": "se détruit",
   "self.bounce": "se renvoie en main",
@@ -340,6 +342,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.deal_damage": "choisissez une cible à blesser",
   "choice.heal": "choisissez une cible à soigner",
   "choice.buff": "choisissez une créature à renforcer",
+  "choice.usurpation": "choisissez une créature à renforcer",
   "choice.debuff": "choisissez une créature à affaiblir",
   "choice.destroy": "choisissez une créature à détruire",
   "choice.bounce": "choisissez une créature à renvoyer en main",
@@ -378,7 +381,7 @@ export function composedValueText(cap: Capability): string | null {
   if (cap.composed!.content === "dechainement") {
     return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
   }
-  if (cap.composed!.content === "buff" || cap.composed!.content === "debuff" || grantedXY) {
+  if (cap.composed!.content === "buff" || cap.composed!.content === "usurpation" || cap.composed!.content === "debuff" || grantedXY) {
     return (m.x != null || m.y != null) ? `${m.x ?? 0}/${m.y ?? 0}` : null;
   }
   return (m.x != null && m.x > 0) ? xNumeral(m.x) : null;
@@ -444,6 +447,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
+    case "usurpation": return { symbol: KEYWORD_SYMBOLS.usurpation, keyword: "usurpation" };
     case "exploration": return { symbol: KEYWORD_SYMBOLS.exploration, keyword: "exploration" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
@@ -671,6 +675,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "deal_damage": return frag(t, x > 1 ? "content.deal_damage_many" : "content.deal_damage_one", { x: xAff });
     case "heal": return frag(t, "content.heal", { x: xAff });
     case "buff": return frag(t, "content.buff", { x: xAff, y: yAff });
+    case "usurpation": return frag(t, "content.usurpation", { x: xAff, y: yAff });
     case "debuff": return frag(t, "content.debuff", { x: xAff, y: yAff });
     case "destroy": return frag(t, "content.destroy");
     case "bounce": return frag(t, "content.bounce");
@@ -809,6 +814,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "deal_damage": return frag(t, x > 1 ? "self.deal_damage_many" : "self.deal_damage_one", { x: xAff });
     case "heal": return frag(t, "self.heal", { x: xAff });
     case "buff": return frag(t, "self.buff", { x: xAff, y: yAff });
+    case "usurpation": return frag(t, "self.usurpation", { x: xAff, y: yAff });
     case "debuff": return frag(t, "self.debuff", { x: xAff, y: yAff });
     case "destroy": return frag(t, "self.destroy");
     case "bounce": return frag(t, "self.bounce");
@@ -1150,7 +1156,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "heal", "buff", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
+  const key = ["deal_damage", "heal", "buff", "usurpation", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);

@@ -431,6 +431,10 @@
         "label": "Disziplin +X/+Y",
         "desc": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "Verleiht einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt."
+      },
       "esprit_de_corps": {
         "label": "Korpsgeist",
         "desc": "Erhält nach dem Zufallsprinzip +1 ATK oder +1 LP pro bereits gespielter Kreatur {clan_de} mit Korpsgeist."
@@ -726,6 +730,10 @@
         "label": "Disziplin +X/+Y",
         "desc": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, erhält eine anvisierte verbündete Kreatur +X/+Y."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "Eine anvisierte verbündete Kreatur erhält +X/+Y für jede gegnerische Karte, die Ihr gespielt habt."
+      },
       "affaiblissement": {
         "label": "Schwächung -X/-Y",
         "desc": "Gibt einer feindlichen Zielkreatur -X ATK und -Y LP."
@@ -849,6 +857,7 @@
         "deal_damage_many": "verursacht {x} Schaden",
         "heal": "heilt {x} LP",
         "buff": "gewährt +{x}/+{y}",
+        "usurpation": "gewährt für jede gespielte gegnerische Karte +{x}/+{y}",
         "debuff": "verursacht -{x}/-{y}",
         "destroy": "vernichtet",
         "bounce": "zurück auf die Hand",
@@ -969,6 +978,7 @@
         "deal_damage_many": "fügt sich selbst {x} Schaden zu",
         "heal": "heilt sich selbst um {x} LP",
         "buff": "verleiht sich selbst +{x}/+{y}",
+        "usurpation": "verleiht sich selbst +{x}/+{y} für jede gespielte gegnerische Karte",
         "debuff": "fügt sich selbst -{x}/-{y} zu",
         "destroy": "zerstört sich selbst",
         "bounce": "kehrt auf die Hand zurück",
@@ -981,6 +991,7 @@
         "deal_damage": "wähle ein Ziel zum Angreifen",
         "heal": "wähle ein Ziel zum Heilen",
         "buff": "wähle eine Kreatur zum Stärken",
+        "usurpation": "wähle eine Kreatur zum Stärken",
         "debuff": "wähle eine Kreatur zum Schwächen",
         "destroy": "wähle eine Kreatur zum Zerstören",
         "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
@@ -2049,6 +2060,7 @@
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal nach dem Zufallsprinzip +1 ATK oder +1 LP (1 pro bereits gespielter Kreatur {clan_de} mit Korpsgeist).",
+      "usurpation_actuel": "Gespielte gegnerische Karten: {n} — derzeit +{x}/+{y}.",
       "scope_all": "auf alle deine Einheiten",
       "machine_part": " und {ability}",
       "machine_part_timed": " und {ability} ({timing})",
@@ -2121,6 +2133,7 @@
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
+        "usurpation": "{cibles} erhalten +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
         "guerison": "Stellt {cibles} und deinem Helden X LP wieder her."
       },
       "creature": {
@@ -2137,8 +2150,10 @@
         "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
         "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
         "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
+        "usurpation": "Gibt allen anderen verbündeten Einheiten dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
         "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
         "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
+        "usurpation_soi": "Erhält dauerhaft +X ANG und +Y LP für jede gegnerische Karte, die Ihr gespielt habt.",
         "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
         "guerison": "Stellt allen anderen verbündeten Einheiten und deinem Helden X LP wieder her.",
@@ -2535,6 +2550,7 @@
     "content_deal_damage": "Schaden verursachen",
     "content_heal": "Heilen",
     "content_buff": "Buff +X/+Y",
+    "content_usurpation": "Usurpation +X/+Y (je gespielte gegnerische Karte)",
     "content_debuff": "Debuff -X/-Y",
     "content_destroy": "Zerstören",
     "content_bounce": "Auf die Hand zurückschicken",

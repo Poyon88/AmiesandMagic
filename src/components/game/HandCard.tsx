@@ -14,7 +14,7 @@ import { buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeur
 import { displayCardOf } from "@/lib/game/singulier";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
-import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints } from "@/lib/game/engine";
+import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints, usurpationCount } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -105,6 +105,13 @@ function HandCard({
     const owner = gameState?.players.find(p => p.id === localPlayerId);
     return owner ? espritDeCorpsPoints(owner, card, cardInstance) : null;
   }, [gameState, localPlayerId, card, cardInstance]);
+
+  // Usurpation : en main, la carte ne s'est pas encore comptée — le nombre est
+  // celui qu'elle lira en arrivant (un sort n'est compté qu'après résolution).
+  const usurpationN = useMemo(() => {
+    const owner = gameState?.players.find(p => p.id === localPlayerId);
+    return owner ? usurpationCount(owner, cardInstance) : null;
+  }, [gameState, localPlayerId, cardInstance]);
 
   const isCostPaymentMode = targetingMode === "cost_payment";
   const isPendingCostSource = pendingCostCard?.instanceId === cardInstance.instanceId;
@@ -1010,6 +1017,7 @@ function HandCard({
               hpTone: toneFor(displayHealth, card.health ?? 0),
             } : null),
             espritCount: espritCount ?? undefined,
+            usurpationCount: usurpationN ?? undefined,
             grantedKeywordX: cardInstance.grantedKeywordX,
             grantedKeywordY: cardInstance.grantedKeywordY,
           }}

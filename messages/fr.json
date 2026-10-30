@@ -431,6 +431,10 @@
         "label": "Discipline +X/+Y",
         "desc": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à une autre unité alliée ciblée."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "Donne +X/+Y permanent à une autre unité alliée ciblée par carte adverse que vous avez jouée."
+      },
       "esprit_de_corps": {
         "label": "Esprit de corps",
         "desc": "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée."
@@ -726,6 +730,10 @@
         "label": "Discipline +X/+Y",
         "desc": "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à une créature alliée ciblée."
       },
+      "usurpation": {
+        "label": "Usurpation +X/+Y",
+        "desc": "+X/+Y à une créature alliée ciblée par carte adverse que vous avez jouée."
+      },
       "affaiblissement": {
         "label": "Affaiblissement -X/-Y",
         "desc": "Donne -X ATK et -Y PV à une créature ennemie ciblée."
@@ -849,6 +857,7 @@
         "deal_damage_many": "inflige {x} dégâts",
         "heal": "soigne {x} PV",
         "buff": "octroie +{x}/+{y}",
+        "usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
         "debuff": "inflige -{x}/-{y}",
         "destroy": "détruit",
         "bounce": "renvoie en main",
@@ -969,6 +978,7 @@
         "deal_damage_many": "s'inflige {x} dégâts",
         "heal": "se soigne de {x} PV",
         "buff": "s'octroie +{x}/+{y}",
+        "usurpation": "s'octroie +{x}/+{y} par carte adverse jouée",
         "debuff": "s'inflige -{x}/-{y}",
         "destroy": "se détruit",
         "bounce": "se renvoie en main",
@@ -981,6 +991,7 @@
         "deal_damage": "choisissez une cible à blesser",
         "heal": "choisissez une cible à soigner",
         "buff": "choisissez une créature à renforcer",
+        "usurpation": "choisissez une créature à renforcer",
         "debuff": "choisissez une créature à affaiblir",
         "destroy": "choisissez une créature à détruire",
         "bounce": "choisissez une créature à renvoyer en main",
@@ -2049,6 +2060,7 @@
       "scope": "à une unité alliée (ou à toutes)",
       "scope_target": "à une unité alliée",
       "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
+      "usurpation_actuel": "Cartes adverses jouées : {n} — actuellement +{x}/+{y}.",
       "scope_all": "à toutes vos unités",
       "machine_part": " et {ability}",
       "machine_part_timed": " et {ability} ({timing})",
@@ -2121,6 +2133,7 @@
         "silence": "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
         "renforcement": "+X/+Y à {cibles}.",
         "discipline": "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
+        "usurpation": "+X/+Y à {cibles} par carte adverse que vous avez jouée.",
         "guerison": "Restaure X PV à {cibles} et à votre héros."
       },
       "creature": {
@@ -2137,8 +2150,10 @@
         "devoration": "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
         "renforcement": "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
         "discipline": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
+        "usurpation": "Donne +X/+Y permanent à toutes les autres unités alliées par carte adverse que vous avez jouée.",
         "renforcement_soi": "Gagne +X ATK et +Y PV de façon permanente.",
         "discipline_soi": "Si toutes vos créatures en jeu ont un coût de même parité que le sien, gagne +X ATK et +Y PV de façon permanente.",
+        "usurpation_soi": "Gagne +X ATK et +Y PV de façon permanente par carte adverse que vous avez jouée.",
         "execution": "Détruit {cibles}, objets compris.",
         "silence": "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
         "guerison": "Restaure X PV à toutes les autres unités alliées et à votre héros.",
@@ -2535,6 +2550,7 @@
     "content_deal_damage": "Infliger des dégâts",
     "content_heal": "Soigner",
     "content_buff": "Buff +X/+Y",
+    "content_usurpation": "Usurpation +X/+Y (par carte adverse jouée)",
     "content_debuff": "Debuff -X/-Y",
     "content_destroy": "Détruire",
     "content_bounce": "Renvoyer en main",

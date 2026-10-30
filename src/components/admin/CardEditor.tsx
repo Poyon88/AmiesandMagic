@@ -301,6 +301,9 @@ export default function CardEditor() {
   // couple ATK/PV, donc même panneau dédié — le +ATK (X) réutilise
   // keywordXValues, le +PV (Y) vit ici.
   const [dscY, setDscY] = useState<number>(1);
+  // Usurpation +X/+Y (créature) : même couple que Discipline, PAR carte adverse
+  // jouée. Le +ATK (X) réutilise keywordXValues, le +PV (Y) vit ici.
+  const [usY, setUsY] = useState<number>(1);
   // Gloire +X/+Y (créature) : le +PV (Y) dédié. Le +ATK (X) réutilise
   // keywordXValues ; sérialisé dans keyword_instances comme la Forge.
   const [glY, setGlY] = useState<number>(1);
@@ -501,7 +504,7 @@ export default function CardEditor() {
     const recipients: Record<string, "self"> = {};
     let neutraliseLoaded = "";
     let dcRandomYLoaded = false;
-    let rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1;
+    let rfYLoaded = 1, afYLoaded = 1, glYLoaded = 1, dcYLoaded: number | null = 1, fdaYLoaded = 1, ssYLoaded = 1, purYLoaded = 1, foYLoaded = 1, dscYLoaded = 1, usYLoaded = 1;
     let invYLoaded = 1;
     let inventionLoaded: MachinePartValue = {};
     let invocCostsLoaded: number[] = [];
@@ -523,6 +526,7 @@ export default function CardEditor() {
       if (inst.id === "neutralisation") neutraliseLoaded = inst.grantAbilityId ?? "";
       if (inst.id === "renforcement") rfYLoaded = inst.y ?? 1;
       if (inst.id === "discipline") dscYLoaded = inst.y ?? 1;
+      if (inst.id === "usurpation") usYLoaded = inst.y ?? 1;
       if (inst.id === "affaiblissement") afYLoaded = inst.y ?? 1;
       if (inst.id === "gloire") glYLoaded = inst.y ?? 1;
       if (inst.id === "dechainement") { dcYLoaded = inst.y ?? null; dcRandomYLoaded = inst.randomY === true; }
@@ -543,7 +547,7 @@ export default function CardEditor() {
       if (inst.id === "tuteur") tuteurLoaded = inst.linkedCardIds ?? [];
       if (inst.id === "transformation") transformationLoaded = (inst.linkedCardIds ?? []).slice(0, 1);
     }
-    setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded); setInvY(invYLoaded); setInventionPart(inventionLoaded);
+    setRfY(rfYLoaded); setAfY(afYLoaded); setGlY(glYLoaded); setDcY(dcYLoaded); setDcRandomY(dcRandomYLoaded); setFdaY(fdaYLoaded); setSsY(ssYLoaded); setPurY(purYLoaded); setFoY(foYLoaded); setDscY(dscYLoaded); setUsY(usYLoaded); setInvY(invYLoaded); setInventionPart(inventionLoaded);
     setInvocCosts(invocCostsLoaded); setInvocRace(invocRaceLoaded); setInvocFaction(invocFactionLoaded);
     setCompagnonsCardIds(compagnonsLoaded);
     setTuteurCardIds(tuteurLoaded);
@@ -794,6 +798,10 @@ export default function CardEditor() {
           if (id === "discipline" && !isSpellCard) {
             return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: dscY };
           }
+          // Usurpation +X/+Y (créature) : même couple, par carte adverse jouée.
+          if (id === "usurpation" && !isSpellCard) {
+            return { id: id as Keyword, ...(mode ? { mode } : {}), x: x ?? 0, y: usY };
+          }
           // Gloire +X/+Y : porte +X (ATK) / +Y (PV) ; toujours émise. Émise aussi
           // sur un SORT qui la confère — la forge le fait déjà, et sans ça une
           // ré-édition ici retombait sur la branche générique {id, x} : le +Y
@@ -984,7 +992,7 @@ export default function CardEditor() {
       console.warn("[card-save] refresh failed after successful save:", err);
     }
     setSaving(false);
-  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, neutraliseAbilityId, rfY, dscY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
+  }, [selectedCard, editFields, porteStats, newImageFile, sfxPlayFile, clearSfxPlay, keywordXValues, keywordModes, keywordSingulier, keywordDelay, keywordRandomX, keywordMinX, keywordGrantScope, keywordTargetScope, keywordRecipient, neutraliseAbilityId, rfY, dscY, usY, afY, glY, dcY, dcRandomY, fdaY, ssY, purY, foY, invY, inventionPart, invocCosts, invocRace, invocFaction, compagnonsCardIds, tuteurCardIds, transformationCardIds, composedCaps]);
 
   // Delete
   const handleDelete = useCallback(async (id: number) => {
@@ -2186,7 +2194,7 @@ export default function CardEditor() {
                 // Ces mots-clés portent un +X/+Y (ou -X/-Y) : leur X vit dans un
                 // bloc dédié à deux champs plus bas, pas dans ce panneau à un
                 // seul champ — qui laisserait croire qu'ils n'ont qu'une valeur.
-                if ((kw === "renforcement" || kw === "discipline" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && porteStats) return false;
+                if ((kw === "renforcement" || kw === "discipline" || kw === "usurpation" || kw === "affaiblissement" || kw === "gloire" || kw === "dechainement" || kw === "force_des_ancetres") && porteStats) return false;
                 return label && KEYWORD_DEFS[label]?.scalable;
               });
               if (activeScalable.length === 0) return null;
@@ -2597,6 +2605,28 @@ export default function CardEditor() {
                     type="number" min={0} max={20} value={dscY}
                     onChange={e => setDscY(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #c8d4e6", fontSize: 11, textAlign: "center" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Usurpation +X/+Y — Renforcement multiplié par les cartes adverses
+                jouées depuis la main pendant la partie. */}
+            {((editFields.keywords as string[]) || []).includes("usurpation") && porteStats && (
+              <div style={{ marginBottom: 8, padding: "8px 10px", borderRadius: 6, border: "1px solid #e6d8b0", background: "#fff9e8" }}>
+                <div style={{ ...S.label, color: "#7a5a12", marginBottom: 6 }}>⚜️ USURPATION (PAR CARTE ADVERSE JOUÉE)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 9, color: "#9a7420" }}>+ATK (X)</span>
+                  <input
+                    type="number" min={0} max={20} value={keywordXValues["usurpation"] ?? 1}
+                    onChange={e => setKeywordXValues(prev => ({ ...prev, ["usurpation"]: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e6d8b0", fontSize: 11, textAlign: "center" }}
+                  />
+                  <span style={{ fontSize: 9, color: "#9a7420" }}>+PV (Y)</span>
+                  <input
+                    type="number" min={0} max={20} value={usY}
+                    onChange={e => setUsY(Math.max(0, parseInt(e.target.value) || 0))}
+                    style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e6d8b0", fontSize: 11, textAlign: "center" }}
                   />
                 </div>
               </div>

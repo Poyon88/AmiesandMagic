@@ -28,7 +28,7 @@ const EQUIVALENCE_COMPOSE: Record<string, string> = {
   bounce: "boomerang", paralyze: "entrave", grant_keyword: "conferer", transformation: "metamorphose",
   appel: "appel_du_clan", poison: "poison", exhumation: "exhumation", rappel: "rappel",
   invocation: "invocation", appel_supreme: "appel_supreme", tuteur: "tuteur", epargne: "epargne",
-  foi: "foi", conquete: "conquete", exploration: "exploration", incineration: "incineration",
+  foi: "foi", conquete: "conquete", usurpation: "usurpation", exploration: "exploration", incineration: "incineration",
   devoration: "devoration", tactique: "tactique", retour_differe: "retour_differe", silence: "silence",
   dechainement: "dechainement", selection: "selection", selection_magique: "selection_magique",
   faveur: "faveur", renfort_royal: "renfort_royal", tresor: "tresor", forge: "forge",

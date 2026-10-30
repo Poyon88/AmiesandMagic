@@ -104,6 +104,9 @@ export const MARKERS_FR: Record<string, string> = {
   // resterait littéral à l'écran.
   "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
   "scope_all": "à toutes vos unités",
+  // Usurpation EN PARTIE : ce que la capacité donnerait si elle se
+  // déclenchait maintenant, sous sa description (cf. usurpationNote).
+  "usurpation_actuel": "Cartes adverses jouées : {n} — actuellement +{x}/+{y}.",
   // Invention : la capacité que la pièce ajoute à la machine, avec son
   // déclencheur SUR LA MACHINE. Vide quand l'Invention n'apporte que des stats.
   "machine_part": " et {ability}",
@@ -328,4 +331,14 @@ export function resolveMarkers(
     s = s.replace(/Y/g, aleaY ? plageAleatoire(y, t) : String(y));
   }
   return s;
+}
+
+/** USURPATION en partie : ligne affichée sous la description — le nombre de
+ *  cartes adverses jouées qui comptent, et le gain que cela donnerait
+ *  maintenant (X/Y PAR CARTE multipliés). */
+export function usurpationNote(n: number, x: number, y: number, t?: SafeT): string {
+  return (marker("usurpation_actuel", t) ?? "")
+    .replace("{n}", String(n))
+    .replace("{x}", String(x * n))
+    .replace("{y}", String(y * n));
 }

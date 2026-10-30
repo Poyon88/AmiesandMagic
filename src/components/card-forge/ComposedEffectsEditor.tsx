@@ -35,6 +35,8 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
   { v: "heal", l: "Soigner", target: "unit_or_hero" },
   { v: "buff", l: "Buff +X/+Y", target: "unit", xy: true },
+  // Usurpation : le buff, multiplié par les cartes adverses jouées.
+  { v: "usurpation", l: "Usurpation +X/+Y (par carte adverse jouée)", target: "unit", xy: true },
   { v: "debuff", l: "Debuff -X/-Y", target: "unit", xy: true },
   { v: "destroy", l: "Détruire", target: "unit" },
   { v: "bounce", l: "Renvoyer en main", target: "unit" },

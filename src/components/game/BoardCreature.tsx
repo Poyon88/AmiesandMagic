@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance, GameAction, Keyword } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
-import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, usurpationCount, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeursAffichees, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
@@ -169,6 +169,13 @@ function BoardCreature({
     if (!s.gameState) return null;
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
     return owner ? espritDeCorpsPoints(owner, creature.card, creature) : null;
+  });
+  // Usurpation : cartes adverses jouées par le CONTRÔLEUR, la créature exclue
+  // si elle s'y est comptée elle-même.
+  const usurpationN = useGameStore(s => {
+    if (!s.gameState) return null;
+    const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
+    return owner ? usurpationCount(owner, creature) : null;
   });
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
@@ -1028,6 +1035,7 @@ function BoardCreature({
           grantedKeywordY: creature.grantedKeywordY ?? undefined,
           neutralises: neutralisedIds(creature),
           espritCount: espritCount ?? undefined,
+          usurpationCount: usurpationN ?? undefined,
           apprentissage: creature.apprentissageSpell?.card ?? null,
         }}
       />

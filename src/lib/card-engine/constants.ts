@@ -82,6 +82,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // avait été livrée sans, donc authorable à l'invocation UNIQUEMENT alors que
   // le moteur savait déjà tout faire.
   "Discipline +X/+Y": ALL_MODES,
+  "Usurpation +X/+Y": ALL_MODES,
   "Esprit de corps": ALL_MODES,
   // Tuteur : effet « main », la source n'a pas besoin d'être en jeu → tous.
   "Tuteur": ALL_MODES,
