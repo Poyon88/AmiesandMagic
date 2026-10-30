@@ -2165,6 +2165,9 @@
         "execution": "Destruye a {cibles}, objetos incluidos.",
         "silence": "Elimina todas las palabras clave de {cibles}, objetos incluidos, y restablece sus estadísticas a su valor original.",
         "guerison": "Restaura X PV a todas las demás unidades aliadas y a tu héroe.",
+        "purete": "Mientras tu cementerio esté vacío, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
+        "force_des_ancetres": "Mientras tu cementerio contenga 7 o más criaturas, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
+        "seuil_sacrificiel": "Mientras tu mazo tenga 25 cartas o menos, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "silence_soi": "Pierde todas sus palabras clave y sus estadísticas vuelven a su valor original.",
         "guerison_soi": "Recupera X PV."
       },

@@ -1141,14 +1141,17 @@ export const BONUS_BENEFICIAIRE_FORGE: ReadonlySet<string> = BENEFICIAIRE_REGLAB
  *  capacité. Réglages exclusifs, stockés comme `recipient: "self"` /
  *  `targetScope`. */
 export type RenforcementBeneficiaire = "self" | "target" | TargetScope;
-export function RecipientButtons({ value, onChange, tr, options = ["all_allies"] }: {
+export function RecipientButtons({ value, onChange, tr, options = ["all_allies"], sansCible = false }: {
   value: RenforcementBeneficiaire;
   onChange: (v: RenforcementBeneficiaire) => void;
   tr: (key: string) => string;
   /** Portées « toutes » proposées (défaut : alliées, celle de Renforcement). */
   options?: TargetScope[];
+  /** Auras conditionnelles : pas d'« autre unité désignée », seulement
+   *  elle-même (défaut) ou les portées « toutes ». */
+  sansCible?: boolean;
 }) {
-  const choix: RenforcementBeneficiaire[] = ["target", "self", ...options];
+  const choix: RenforcementBeneficiaire[] = [...(sansCible ? [] : ["target" as const]), "self", ...options];
   return (
     <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap", maxWidth: "100%" }}>
       {choix.map((c) => {

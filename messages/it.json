@@ -2165,6 +2165,9 @@
         "execution": "Distrugge {cibles}, oggetti compresi.",
         "silence": "Rimuove tutte le parole chiave da {cibles}, oggetti compresi, e riporta le loro statistiche al valore originale.",
         "guerison": "Ripristina X PV a tutte le altre unità alleate e al tuo eroe.",
+        "purete": "Finché il tuo cimitero è vuoto, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
+        "force_des_ancetres": "Finché il tuo cimitero contiene 7 o più creature, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
+        "seuil_sacrificiel": "Finché il tuo mazzo contiene 25 carte o meno, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
         "silence_soi": "Perde tutte le sue parole chiave e le sue statistiche tornano al valore originale.",
         "guerison_soi": "Recupera X PV."
       },

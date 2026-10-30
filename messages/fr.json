@@ -2165,6 +2165,9 @@
         "execution": "Détruit {cibles}, objets compris.",
         "silence": "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
         "guerison": "Restaure X PV à toutes les autres unités alliées et à votre héros.",
+        "purete": "Tant que votre cimetière est vide, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
+        "force_des_ancetres": "Tant que votre cimetière compte 7 créatures ou plus, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
+        "seuil_sacrificiel": "Tant que votre deck compte 25 cartes ou moins, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
         "silence_soi": "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
         "guerison_soi": "Récupère X PV."
       },

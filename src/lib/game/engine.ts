@@ -3484,6 +3484,40 @@ function seuilSacrificielValues(inst: CardInstance): { x: number; y: number } {
   return { x: Math.max(0, x), y: Math.max(0, y) };
 }
 
+/** Une aura conditionnelle +X/+Y (Force des ancêtres, Pureté, Seuil
+ *  Sacrificiel) appliquée aux deux plateaux — cf. recalculateAuras. Chaque
+ *  source active donne son X/Y à elle-même, ou, en portée « toutes », à toutes
+ *  les AUTRES unités alliées ; plusieurs sources s'additionnent. */
+function auraConditionnelle(
+  player: PlayerState, opponent: PlayerState, kw: Keyword,
+  champ: "forceAncetresHealthBonus" | "pureteHealthBonus" | "seuilSacrificielHealthBonus",
+  valeurs: (inst: CardInstance) => { x: number; y: number },
+  condition: (owner: PlayerState) => boolean,
+): void {
+  for (const board of [player.board, opponent.board]) {
+    const owner = board === player.board ? player : opponent;
+    const sources = condition(owner) ? board.filter(s => hasKw(s, kw)) : [];
+    for (const c of board) {
+      let x = 0, y = 0;
+      for (const s of sources) {
+        const toutes = porteeValide(s.card.keyword_instances?.find(i => i.id === kw)?.targetScope, creatureScopes(kw)) === "all_allies";
+        if (toutes ? s === c : s !== c) continue;
+        const v = valeurs(s);
+        x += v.x; y += v.y;
+      }
+      if (x > 0) c.currentAttack += x;
+      const oldHP = c[champ] ?? 0;
+      if (y !== oldHP) {
+        const diff = y - oldHP;
+        c.maxHealth += diff;
+        c.currentHealth += diff;
+        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
+        c[champ] = y;
+      }
+    }
+  }
+}
+
 /** Pose un EMBLÈME sur un joueur, ou empile une pose supplémentaire du même.
  *
  *  Point d'entrée UNIQUE : pouvoir de héros (mode aura) comme capacité de carte
@@ -4010,84 +4044,25 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
     }
   }
 
-  // Force des ancêtres +X/+Y : tant que le cimetière du PROPRIÉTAIRE compte
-  // FORCE_ANCETRES_GRAVEYARD_THRESHOLD créatures ou plus, l'unité gagne
-  // +X ATK / +Y PV. Aura DYNAMIQUE (modèle Sang mêlé) : l'ATK est ré-ajoutée
-  // ici (reset en tête de fonction), les PV suivent via
-  // forceAncetresHealthBonus avec diff pour monter/descendre quand la
-  // condition bascule (Exhumation / Résurrection vident le cimetière), avec
-  // la garde « ne pas tuer par retrait d'aura ». La réconciliation tourne
-  // pour TOUTE créature : sans le mot-clé (Silence) le bonus visé vaut 0 et
-  // les PV retombent.
-  for (const board of [player.board, opponent.board]) {
-    const owner = board === player.board ? player : opponent;
-    const graveCreatures = owner.graveyard.filter(g => g.card.card_type === "creature").length;
-    const conditionMet = graveCreatures >= FORCE_ANCETRES_GRAVEYARD_THRESHOLD;
-    for (const c of board) {
-      const active = conditionMet && hasKw(c, "force_des_ancetres");
-      const { x, y } = active ? forceAncetresValues(c) : { x: 0, y: 0 };
-      if (x > 0) c.currentAttack += x;
-      const oldHP = c.forceAncetresHealthBonus ?? 0;
-      if (y !== oldHP) {
-        const diff = y - oldHP;
-        c.maxHealth += diff;
-        c.currentHealth += diff;
-        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
-        c.forceAncetresHealthBonus = y;
-      }
-    }
-  }
-
-  // Pureté +X/+Y : miroir de Force des ancêtres — le bonus tient tant que le
-  // cimetière du propriétaire est VIDE, et tombe à la première carte qui y
-  // arrive. « Vide » au sens strict : sorts compris, pas seulement les
-  // créatures — c'est ce qui distingue Pureté d'un simple seuil bas.
-  // Même comptabilité par différentiel que sa jumelle : l'ATK est ré-ajoutée ici
-  // (reset en tête de fonction), les PV suivent via `pureteHealthBonus` pour
-  // monter ET redescendre, avec la garde « ne pas tuer par retrait d'aura ».
-  for (const board of [player.board, opponent.board]) {
-    const owner = board === player.board ? player : opponent;
-    const conditionMet = owner.graveyard.length === 0;
-    for (const c of board) {
-      const active = conditionMet && hasKw(c, "purete");
-      const { x, y } = active ? pureteValues(c) : { x: 0, y: 0 };
-      if (x > 0) c.currentAttack += x;
-      const oldHP = c.pureteHealthBonus ?? 0;
-      if (y !== oldHP) {
-        const diff = y - oldHP;
-        c.maxHealth += diff;
-        c.currentHealth += diff;
-        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
-        c.pureteHealthBonus = y;
-      }
-    }
-  }
-
-  // Seuil Sacrificiel +X/+Y : jumelle de Force des ancêtres, adossée au DECK.
-  // Tant que le deck du PROPRIÉTAIRE est descendu à SEUIL_DECK_THRESHOLD cartes
-  // ou moins, l'unité gagne +X ATK / +Y PV. Même comptabilité par différentiel :
-  // l'ATK est ré-ajoutée ici (reset en tête de fonction), les PV suivent via
-  // seuilSacrificielHealthBonus pour monter ET redescendre — le seuil se
-  // refranchit dans les deux sens, Incinération et Retour différé remettant des
-  // cartes sous le deck. La réconciliation tourne pour TOUTE créature : sans le
-  // mot-clé (Silence) le bonus visé vaut 0 et les PV retombent.
-  for (const board of [player.board, opponent.board]) {
-    const owner = board === player.board ? player : opponent;
-    const conditionMet = owner.deck.length <= SEUIL_DECK_THRESHOLD;
-    for (const c of board) {
-      const active = conditionMet && hasKw(c, "seuil_sacrificiel");
-      const { x, y } = active ? seuilSacrificielValues(c) : { x: 0, y: 0 };
-      if (x > 0) c.currentAttack += x;
-      const oldHP = c.seuilSacrificielHealthBonus ?? 0;
-      if (y !== oldHP) {
-        const diff = y - oldHP;
-        c.maxHealth += diff;
-        c.currentHealth += diff;
-        if (c.currentHealth < 1 && y < oldHP) c.currentHealth = 1; // don't kill via aura removal
-        c.seuilSacrificielHealthBonus = y;
-      }
-    }
-  }
+  // Auras conditionnelles +X/+Y — Force des ancêtres (cimetière d'au moins
+  // FORCE_ANCETRES_GRAVEYARD_THRESHOLD créatures), Pureté (cimetière VIDE, sorts
+  // compris) et Seuil Sacrificiel (deck à SEUIL_DECK_THRESHOLD cartes ou moins).
+  // Condition lue sur le PROPRIÉTAIRE du plateau. Aura DYNAMIQUE (modèle Sang
+  // mêlé) : l'ATK est ré-ajoutée ici (reset en tête de fonction), les PV suivent
+  // via le champ `…HealthBonus` par différentiel, pour monter ET redescendre,
+  // avec la garde « ne pas tuer par retrait d'aura ». La réconciliation tourne
+  // pour TOUTE créature : sans source active (Silence, condition rompue) le
+  // bonus visé vaut 0 et les PV retombent.
+  //
+  // PORTÉE (arbitrage de l'auteur, 2026-10-30) : par défaut la porteuse en
+  // profite elle-même (« S ») ; en portée « toutes » (« A »), ce sont toutes les
+  // AUTRES unités alliées, comme Renforcement. Plusieurs sources s'additionnent.
+  auraConditionnelle(player, opponent, "force_des_ancetres", "forceAncetresHealthBonus", forceAncetresValues,
+    (o) => o.graveyard.filter(g => g.card.card_type === "creature").length >= FORCE_ANCETRES_GRAVEYARD_THRESHOLD);
+  auraConditionnelle(player, opponent, "purete", "pureteHealthBonus", pureteValues,
+    (o) => o.graveyard.length === 0);
+  auraConditionnelle(player, opponent, "seuil_sacrificiel", "seuilSacrificielHealthBonus", seuilSacrificielValues,
+    (o) => o.deck.length <= SEUIL_DECK_THRESHOLD);
 
   // Totem: gagne les capacités de toutes les unités de même race alliées
   for (const board of [player.board, opponent.board]) {

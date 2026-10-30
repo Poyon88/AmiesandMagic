@@ -2165,6 +2165,9 @@
         "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
         "guerison": "Stellt allen anderen verbündeten Einheiten und deinem Helden X LP wieder her.",
+        "purete": "Solange euer Friedhof leer ist, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
+        "force_des_ancetres": "Solange euer Friedhof 7 oder mehr Kreaturen enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
+        "seuil_sacrificiel": "Solange euer Deck 25 Karten oder weniger enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren zu den Ausgangswerten zurück.",
         "guerison_soi": "Erhält X LP zurück."
       },

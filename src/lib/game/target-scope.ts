@@ -71,6 +71,11 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   renforcement: ["all_allies"],
   discipline: ["all_allies"],
   usurpation: ["all_allies"],
+  // Auras conditionnelles : elle-même par défaut (« S »), ou toutes les AUTRES
+  // unités alliées tant que la condition tient (« A »).
+  purete: ["all_allies"],
+  force_des_ancetres: ["all_allies"],
+  seuil_sacrificiel: ["all_allies"],
   // Neutralisation : une ennemie ciblée, ou toutes (aura continue).
   neutralisation: ["all_enemies"],
   tactique: ["all_allies"],
@@ -185,11 +190,17 @@ export const SOI_ARIA_FR = "Sur elle-même";
  *  (portée « A »). Source unique du moteur, de la forge et du rendu. */
 export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "usurpation", "silence", "guerison"]);
 
+/** AURAS conditionnelles (Pureté, Force des ancêtres, Seuil Sacrificiel) :
+ *  elles-mêmes par DÉFAUT (« S »), ou toutes les autres unités alliées (« A »).
+ *  Pas d'« autre unité désignée » : une aura n'a pas de cible durable. */
+export const AURA_SOI_OU_TOUTES: ReadonlySet<string> = new Set(["purete", "force_des_ancetres", "seuil_sacrificiel"]);
+
 /** Capacité de créature réglée sur « elle-même » (« S ») : l'effet ne va pas à
- *  une autre unité, comme le voudrait la forme sort. */
+ *  une autre unité, comme le voudrait la forme sort. Une aura conditionnelle
+ *  l'est dès qu'elle n'est pas en portée « toutes ». */
 export function kwInstanceSoi(inst: Pick<KeywordInstance, "id" | "recipient" | "targetScope"> | null | undefined): boolean {
-  return !!inst && BENEFICIAIRE_REGLABLE.has(inst.id)
-    && inst.recipient === "self" && !porteeValide(inst.targetScope, creatureScopes(inst.id));
+  if (!inst || porteeValide(inst.targetScope, creatureScopes(inst.id))) return false;
+  return AURA_SOI_OU_TOUTES.has(inst.id) || (BENEFICIAIRE_REGLABLE.has(inst.id) && inst.recipient === "self");
 }
 
 /** Effet COMPOSÉ qui se vise lui-même (cible « Soi-même »). */
@@ -254,6 +265,10 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   // Source exclue, comme pour Renforcement : « autres ».
   guerison: "Restaure X PV à toutes les autres unités alliées et à votre héros.",
+  // Auras conditionnelles en portée « toutes » (source exclue : « autres »).
+  purete: "Tant que votre cimetière est vide, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
+  force_des_ancetres: "Tant que votre cimetière compte 7 créatures ou plus, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
+  seuil_sacrificiel: "Tant que votre deck compte 25 cartes ou moins, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
   // La source est exclue de la portée : « autres » le dit, {cibles} ne le
   // dirait pas.
   renforcement: "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",

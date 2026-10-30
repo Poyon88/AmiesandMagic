@@ -30,7 +30,7 @@ import { movePowerUnified, unifiedPowerList } from "@/lib/card-forge/power-order
 import { positionAfterExisting } from "@/lib/game/composed-position";
 import { describeComposedCap } from "@/lib/game/composed-display";
 import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
-import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import { AURA_SOI_OU_TOUTES, creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 import { cardHasAbility } from "@/lib/game/ability-filter";
@@ -2327,7 +2327,15 @@ export default function CardEditor() {
                     {ciblees.map(kw => (
                       <div key={kw} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 9, fontFamily: "'Cinzel',serif", fontWeight: 600, color: "#333", flex: 1 }}>{KEYWORD_LABELS[kw as Keyword] ?? kw}</span>
-                        {BONUS_BENEFICIAIRE_FORGE.has(kw) ? (
+                        {AURA_SOI_OU_TOUTES.has(kw) ? (
+                          <RecipientButtons
+                            sansCible
+                            options={creatureScopes(kw)}
+                            value={porteeValide(keywordTargetScope[kw], creatureScopes(kw)) ?? "self"}
+                            onChange={(v) => setKeywordTargetScope(prev => { const next = { ...prev }; if (v !== "self" && v !== "target") next[kw] = v; else delete next[kw]; return next; })}
+                            tr={tForge}
+                          />
+                        ) : BONUS_BENEFICIAIRE_FORGE.has(kw) ? (
                           <RecipientButtons
                             options={creatureScopes(kw)}
                             value={porteeValide(keywordTargetScope[kw], creatureScopes(kw)) ?? (keywordRecipient[kw] === "self" ? "self" : "target")}

@@ -2165,6 +2165,9 @@
         "execution": "Destroys {cibles}, items included.",
         "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
         "guerison": "Restores X HP to all other friendly units and to your hero.",
+        "purete": "While your graveyard is empty, all other allied units gain +X ATK and +Y HP.",
+        "force_des_ancetres": "While your graveyard holds 7 or more creatures, all other allied units gain +X ATK and +Y HP.",
+        "seuil_sacrificiel": "While your deck holds 25 cards or fewer, all other allied units gain +X ATK and +Y HP.",
         "silence_soi": "Loses all its keywords and its stats return to their original values.",
         "guerison_soi": "Recovers X HP."
       },

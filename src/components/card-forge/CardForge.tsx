@@ -42,7 +42,7 @@ import BudgetDetail from "@/components/card-forge/BudgetDetail";
 import CardEditor from "@/components/admin/CardEditor";
 import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
-import { creatureScopes, porteeValide } from "@/lib/game/target-scope";
+import { AURA_SOI_OU_TOUTES, creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import NeutralisationPicker from "./NeutralisationPicker";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
@@ -4221,7 +4221,19 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                                 />
                               </span>
                             )}
-                            {selected && porteStats && !BONUS_BENEFICIAIRE_FORGE.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "").length > 0 && (
+                            {/* Auras conditionnelles : elle-même (défaut, « S ») ou toutes les autres alliées (« A »). */}
+                            {selected && porteStats && AURA_SOI_OU_TOUTES.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && (
+                              <span style={{ marginLeft: 4 }}>
+                                <RecipientButtons
+                                  sansCible
+                                  options={creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "")}
+                                  value={porteeValide(keywordTargetScope[id], creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "")) ?? "self"}
+                                  onChange={(v) => setKeywordTargetScope(prev => { const next = { ...prev }; if (v !== "self" && v !== "target") next[id] = v; else delete next[id]; return next; })}
+                                  tr={tf}
+                                />
+                              </span>
+                            )}
+                            {selected && porteStats && !BONUS_BENEFICIAIRE_FORGE.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && !AURA_SOI_OU_TOUTES.has(FORGE_TO_GAME_KEYWORD[id] ?? "") && creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? "").length > 0 && (
                               <span style={{ marginLeft: 4 }}>
                                 <ScopeButtons
                                   value={porteeValide(keywordTargetScope[id], creatureScopes(FORGE_TO_GAME_KEYWORD[id] ?? ""))}
