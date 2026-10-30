@@ -1542,6 +1542,21 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: { params: [], needsTarget: false },
   },
+  // Canon X : tout sur UNE unité ennemie au hasard. Moins de contrôle
+  // qu'Impact (au choix, héros compris), d'où un coût plus bas. Les formes
+  // action et composée ne sont PAS des mots-clés : c'est le préréglage composé
+  // « 1 unité ennemie au hasard » (spell-effect-catalog), que composedIcon
+  // reconnaît et nomme Canon. Arbitrages de l'auteur (2026-10-30) : Ombre et
+  // Invisible touchables (le hasard ne cible pas), rien sans unité ennemie.
+  canon: {
+    id: "canon", label: "Canon X", symbol: "💣",
+    desc: "Inflige X dégâts à une unité ennemie au hasard.",
+    applicable_to: ["creature"],
+    creature: {
+      cost: 4, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Inflige X dégâts à une unité ennemie au hasard.",
+    },
+  },
   tempete: {
     id: "tempete", label: "Tempête X", symbol: "🌩️",
     desc: "Inflige X dégâts répartis aléatoirement entre les unités ennemies.",
@@ -1876,7 +1891,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "entrainement", "inspiration", "afflux",
   "ombre_du_passe", "pillage", "prescience", "remontee",
-  "savant", "suprematie", "tempete", "vampirisme", "cataclysme", "renforcement", "discipline", "usurpation", "esprit_de_corps", "impact",
+  "savant", "suprematie", "tempete", "canon", "vampirisme", "cataclysme", "renforcement", "discipline", "usurpation", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",

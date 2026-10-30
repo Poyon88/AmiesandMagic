@@ -902,6 +902,16 @@ function maudire(source: CardInstance, target: CardInstance): void {
   if (!extra.includes(target.instanceId)) source.maledictionExtraIds = [...extra, target.instanceId];
 }
 
+/** CANON X — l'effet composé « X dégâts à une unité ennemie au hasard ». Source
+ *  unique de la mécanique : la capacité de créature le résout tel quel, et la
+ *  forge l'insère comme préréglage pour les formes action et composée. */
+export function canonPreset(x: number): import("./types").ComposedEffect {
+  return {
+    content: "deal_damage", magnitude: { x },
+    target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "random" },
+  };
+}
+
 /** Look up the X value for a specific keyword/mode pair. Prefers the
  *  KeywordInstance.x field when present, else falls back to bracket
  *  notation parsed from effect_text (legacy storage). Returns
@@ -6208,6 +6218,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
 
+    // Canon X — invocation : X dégâts à une unité ennemie au hasard, par le
+    // préréglage composé (tirage semé, Ombre touchable, rien sans cible).
+    if (hasKwOnPlay(cardInstance, "canon")) {
+      resolveComposedEffect(canonPreset(getKwX(cardInstance, "canon", undefined, 1)), cardInstance, player, opponent,
+        undefined, false, { trigger: "on_play" });
+    }
+
     // Cataclysme X — invocation : X dégâts (plein, déterministe) à TOUTES les
     // créatures des deux camps, la source COMPRISE (elle est sur player.board).
     if (hasKwOnPlay(cardInstance, "cataclysme")) {
@@ -11211,6 +11228,14 @@ function resolveCuratedKeywordEffect(
       drawCard(owner);
       drawCard(owner);
       break;
+    }
+    case "canon": {
+      // Mort / attaque / fin de tour / activation… : même préréglage composé
+      // qu'à l'invocation. La source peut avoir quitté le plateau (mode mort) :
+      // elle reste l'auteur des dégâts (Riposte, Poison, Touché mortel).
+      resolveComposedEffect(canonPreset(inst?.x ?? x), source, owner, opponent, undefined, false,
+        { trigger: keywordModeToTrigger(inst?.mode) });
+      return;
     }
     case "tempete": {
       // Inflige X dégâts répartis un par un sur les créatures ennemies

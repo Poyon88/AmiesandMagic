@@ -415,6 +415,10 @@
         "label": "Storm X",
         "desc": "Deals X damage randomly distributed among enemy units."
       },
+      "canon": {
+        "label": "Cannon X",
+        "desc": "Deals X damage to a random enemy unit."
+      },
       "cataclysme": {
         "label": "Cataclysm X",
         "desc": "Deals X damage to all creatures (allied AND enemy)."
@@ -2642,6 +2646,8 @@
     "designation_scatter": "Randomly distributed (with replacement)",
     "designation_automatic": "Automatic",
     "add_composed_effect": "+ Add a Composed Effect",
+    "add_canon_effect": "+ Cannon X",
+    "add_canon_effect_title": "Adds an effect \"X damage to a random enemy unit\"",
     "tab_forge": "Forge",
     "tab_capacities": "Abilities",
     "tab_edition": "Edition",

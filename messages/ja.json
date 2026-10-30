@@ -415,6 +415,10 @@
         "label": "嵐 X",
         "desc": "敵ユニットにランダムに分配してX点のダメージを与える。"
       },
+      "canon": {
+        "label": "大砲 X",
+        "desc": "ランダムな敵ユニット1体にXダメージを与える。"
+      },
       "cataclysme": {
         "label": "大災害 X",
         "desc": "すべてのクリーチャー(味方・敵とも)にX点のダメージを与える。"
@@ -2642,6 +2646,8 @@
     "designation_scatter": "ランダムに分配（復元あり）",
     "designation_automatic": "自動",
     "add_composed_effect": "＋複合エフェクトを追加",
+    "add_canon_effect": "+ 大砲 X",
+    "add_canon_effect_title": "「ランダムな敵ユニット1体にXダメージ」の効果を追加",
     "tab_forge": "フォージ",
     "tab_capacities": "能力",
     "tab_edition": "編集",

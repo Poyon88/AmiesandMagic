@@ -66,6 +66,10 @@ export type Keyword =
   | "seuil_sacrificiel"
   // Tier 2 — AoE random damage
   | "tempete"
+  // X dégâts d'un bloc à UNE unité ennemie tirée au hasard (jamais le héros).
+  // Résolu par le préréglage composé `canonPreset` : même mécanique que la
+  // forme action et que l'effet composé de même forme.
+  | "canon"
   // Tier 2 — AoE full damage to BOTH boards (allies + enemies)
   | "cataclysme"
   // Tier 2 — targeted enemy debuff -X/-Y

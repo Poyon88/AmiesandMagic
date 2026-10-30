@@ -74,6 +74,7 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   // défaut) — le flux d'attaque ne peut pas ouvrir de picker.
   "Vampirisme X": ALL_MODES,
   "Tempête X": ALL_MODES,
+  "Canon X": ALL_MODES,
   "Cataclysme X": ALL_MODES,
   "Renforcement +X/+Y": ALL_MODES,
   // Discipline et Esprit de corps sont des Renforcements conditionnés : le

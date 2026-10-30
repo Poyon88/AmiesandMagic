@@ -1085,6 +1085,12 @@
       "perY": 4,
       "n": 91
     },
+    "canon": {
+      "base": 1.4,
+      "perX": 3.4,
+      "perY": 3.4,
+      "n": 0
+    },
     "cataclysme": {
       "base": 12.04,
       "perX": 6.31,

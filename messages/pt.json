@@ -415,6 +415,10 @@
         "label": "Tempestade X",
         "desc": "Inflige X de dano distribuído aleatoriamente entre as unidades inimigas."
       },
+      "canon": {
+        "label": "Canhão X",
+        "desc": "Causa X de dano a uma unidade inimiga aleatória."
+      },
       "cataclysme": {
         "label": "Cataclismo X",
         "desc": "Inflige X de dano a todas as criaturas (aliadas E inimigas)."
@@ -2642,6 +2646,8 @@
     "designation_scatter": "Distribuído aleatoriamente (com reposição)",
     "designation_automatic": "Automático",
     "add_composed_effect": "+ Adicionar um efeito composto",
+    "add_canon_effect": "+ Canhão X",
+    "add_canon_effect_title": "Adiciona um efeito «X de dano a uma unidade inimiga aleatória»",
     "tab_forge": "Forja",
     "tab_capacities": "Capacidades",
     "tab_edition": "Edição",

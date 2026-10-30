@@ -415,6 +415,10 @@
         "label": "风暴 X",
         "desc": "对敌方单位随机分配，共造成X点伤害。"
       },
+      "canon": {
+        "label": "火炮 X",
+        "desc": "对一个随机敌方单位造成X点伤害。"
+      },
       "cataclysme": {
         "label": "灾变 X",
         "desc": "对所有生物（包括友方和敌方）造成X点伤害。"
@@ -2642,6 +2646,8 @@
     "designation_scatter": "随机分配（可重复）",
     "designation_automatic": "自动",
     "add_composed_effect": "+ 添加复合效果",
+    "add_canon_effect": "+ 火炮 X",
+    "add_canon_effect_title": "添加效果“对一个随机敌方单位造成X点伤害”",
     "tab_forge": "锻造",
     "tab_capacities": "能力",
     "tab_edition": "编辑",
