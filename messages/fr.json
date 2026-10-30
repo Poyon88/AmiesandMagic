@@ -702,6 +702,10 @@
         "label": "Impact X",
         "desc": "Inflige X dégâts à une cible (créature ou héros, n'importe quel bord)."
       },
+      "canon": {
+        "label": "Canon X",
+        "desc": "Inflige X dégâts à une unité ennemie au hasard."
+      },
       "deferlement": {
         "label": "Déferlement X",
         "desc": "Inflige X dégâts à toutes les créatures ennemies"
@@ -2646,8 +2650,6 @@
     "designation_scatter": "Réparti au hasard (avec remise)",
     "designation_automatic": "Automatique",
     "add_composed_effect": "+ Ajouter un effet composé",
-    "add_canon_effect": "+ Canon X",
-    "add_canon_effect_title": "Ajoute un effet « X dégâts à une unité ennemie au hasard »",
     "tab_forge": "Forge",
     "tab_capacities": "Capacités",
     "tab_edition": "Édition",

@@ -22,7 +22,7 @@ import { ABILITIES, creatureEngineId, getCapabilityTriggers, RANDOM_X_ABILITY_ID
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
-import { CANON_ENTRY, buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
+import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
 import { getAllRaces, FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
@@ -376,15 +376,6 @@ export default function ComposedEffectsEditor({
     trigger: isUnit ? (pourToken ? triggers[0]?.v ?? "on_death" : "on_play") : "spell_resolution",
     effectKind: "immediate", abilityId: "_composed",
     composed: { content: "deal_damage", magnitude: { x: 1 }, target: { ...DEFAULT_TARGET } },
-  }]);
-  // Raccourci « Canon X » : le préréglage « 1 unité ennemie au hasard », même
-  // déclencheur par défaut qu'un effet ajouté à la main.
-  const addCanon = () => onChange([...value, {
-    ...positionNouveau,
-    uid: `c_${Math.random().toString(36).slice(2, 9)}`,
-    trigger: isUnit ? (pourToken ? triggers[0]?.v ?? "on_death" : "on_play") : "spell_resolution",
-    effectKind: "immediate", abilityId: "_composed",
-    composed: instantiatePreset(CANON_ENTRY),
   }]);
   const removeComposed = (idx: number) => onChange(value.filter((_, i) => i !== idx));
   const patchCap = (idx: number, p: Partial<Capability>) => onChange(value.map((c, i) => i === idx ? { ...c, ...p } : c));
@@ -1135,10 +1126,7 @@ export default function ComposedEffectsEditor({
           />
         </div>
       ) : !singleEffect && (
-        <div style={{ order: POWER_ORDER_LAST, marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={addComposed} style={{ padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
-          <button onClick={addCanon} title={tr('add_canon_effect_title')} style={{ padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_canon_effect')}</button>
-        </div>
+        <button onClick={addComposed} style={{ order: POWER_ORDER_LAST, marginTop: 4, padding: "5px 12px", borderRadius: 6, border: "1px dashed #b8a36a", background: "#fffdf6", color: "#8a6d3b", fontSize: 11, fontFamily: "'Cinzel',serif", cursor: "pointer" }}>{tr('add_composed_effect')}</button>
       )}
     </div>
   );

@@ -702,6 +702,10 @@
         "label": "冲击 X",
         "desc": "对一个目标（生物或英雄，任意一侧）造成X点伤害。"
       },
+      "canon": {
+        "label": "火炮 X",
+        "desc": "对一个随机敌方单位造成X点伤害。"
+      },
       "deferlement": {
         "label": "横扫 X",
         "desc": "对所有敌方生物造成X点伤害。"
@@ -2646,8 +2650,6 @@
     "designation_scatter": "随机分配（可重复）",
     "designation_automatic": "自动",
     "add_composed_effect": "+ 添加复合效果",
-    "add_canon_effect": "+ 火炮 X",
-    "add_canon_effect_title": "添加效果“对一个随机敌方单位造成X点伤害”",
     "tab_forge": "锻造",
     "tab_capacities": "能力",
     "tab_edition": "编辑",

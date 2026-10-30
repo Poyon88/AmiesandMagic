@@ -129,17 +129,9 @@ export const TRANSFORMATION_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "transformation", cardIds: [], target: board({}) },
 };
 
-/** Entrée « Canon X » : X dégâts à UNE unité ennemie au hasard. Canon n'est
- *  pas un mot-clé de sort — sa forme action EST ce préréglage composé (même
- *  forme que `canonPreset` côté moteur), que composedIcon nomme « Canon ». */
-export const CANON_ENTRY: SpellEffectCatalogEntry = {
-  kind: "composed", id: "canon", label: "Canon X (1 unité ennemie au hasard)", symbol: "💣",
-  preset: { content: "deal_damage", magnitude: { x: 1 }, target: board({ designation: "random" }) },
-};
-
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY, CANON_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

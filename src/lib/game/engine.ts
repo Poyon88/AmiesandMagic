@@ -7177,6 +7177,17 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "canon": {
+        // UNE unité ennemie au hasard prend tout (jamais le héros, rien sans
+        // cible). Ombre et Invisible touchables : le hasard ne cible pas.
+        // Transcendance, elle, immunise contre les sorts : exclue du tirage
+        // plutôt que de gâcher le tir. Précision perce comme pour Tempête.
+        const pool = ctx.opponent.board.filter(u => u.currentHealth > 0 && !hasKw(u, "transcendance"));
+        if (pool.length === 0) break;
+        const target = pool[Math.floor(rng() * pool.length)];
+        dealDamageToCreature(target, kw.amount ?? 0, spellPierces, true, ctx.caster.hero);
+        break;
+      }
       case "deferlement": {
         const amount = kw.amount ?? 0;
         [...ctx.opponent.board].forEach(c => dealDamageToCreature(c, amount, spellPierces, true, ctx.caster.hero));

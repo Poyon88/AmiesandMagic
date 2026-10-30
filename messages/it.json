@@ -702,6 +702,10 @@
         "label": "Impatto X",
         "desc": "Infligge X danni a un bersaglio (creatura o eroe, qualsiasi schieramento)."
       },
+      "canon": {
+        "label": "Cannone X",
+        "desc": "Infligge X danni a un'unità nemica a caso."
+      },
       "deferlement": {
         "label": "Ondata X",
         "desc": "Infligge X danni a tutte le creature nemiche"
@@ -2646,8 +2650,6 @@
     "designation_scatter": "Distribuito a caso (con reinserimento)",
     "designation_automatic": "Automatico",
     "add_composed_effect": "+ Aggiungi un effetto composto",
-    "add_canon_effect": "+ Cannone X",
-    "add_canon_effect_title": "Aggiunge un effetto «X danni a un'unità nemica a caso»",
     "tab_forge": "Forgia",
     "tab_capacities": "Capacità",
     "tab_edition": "Edizione",

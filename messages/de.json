@@ -702,6 +702,10 @@
         "label": "Einschlag X",
         "desc": "Fügt einem Ziel (Kreatur oder Held, beliebige Seite) X Schaden zu."
       },
+      "canon": {
+        "label": "Kanone X",
+        "desc": "Fügt einer zufälligen gegnerischen Einheit X Schaden zu."
+      },
       "deferlement": {
         "label": "Ansturm X",
         "desc": "Fügt allen feindlichen Kreaturen X Schaden zu."
@@ -2646,8 +2650,6 @@
     "designation_scatter": "Zufällig verteilt (mit Zurücklegen)",
     "designation_automatic": "Automatisch",
     "add_composed_effect": "+ Zusammengesetzten Effekt hinzufügen",
-    "add_canon_effect": "+ Kanone X",
-    "add_canon_effect_title": "Fügt einen Effekt „X Schaden an einer zufälligen gegnerischen Einheit“ hinzu",
     "tab_forge": "Schmiede",
     "tab_capacities": "Fähigkeiten",
     "tab_edition": "Edition",

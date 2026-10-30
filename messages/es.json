@@ -702,6 +702,10 @@
         "label": "Impacto X",
         "desc": "Inflige X de daño a un objetivo (criatura o héroe, cualquier bando)."
       },
+      "canon": {
+        "label": "Cañón X",
+        "desc": "Inflige X de daño a una unidad enemiga al azar."
+      },
       "deferlement": {
         "label": "Oleada X",
         "desc": "Inflige X de daño a todas las criaturas enemigas."
@@ -2646,8 +2650,6 @@
     "designation_scatter": "Repartido al azar (con reemplazo)",
     "designation_automatic": "Automático",
     "add_composed_effect": "+ Añadir un efecto compuesto",
-    "add_canon_effect": "+ Cañón X",
-    "add_canon_effect_title": "Añade un efecto «X de daño a una unidad enemiga al azar»",
     "tab_forge": "Forja",
     "tab_capacities": "Capacidades",
     "tab_edition": "Edición",

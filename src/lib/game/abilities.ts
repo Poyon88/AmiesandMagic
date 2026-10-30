@@ -1543,19 +1543,20 @@ export const ABILITIES: Record<string, AbilityDef> = {
     spell: { params: [], needsTarget: false },
   },
   // Canon X : tout sur UNE unité ennemie au hasard. Moins de contrôle
-  // qu'Impact (au choix, héros compris), d'où un coût plus bas. Les formes
-  // action et composée ne sont PAS des mots-clés : c'est le préréglage composé
-  // « 1 unité ennemie au hasard » (spell-effect-catalog), que composedIcon
-  // reconnaît et nomme Canon. Arbitrages de l'auteur (2026-10-30) : Ombre et
+  // qu'Impact (au choix, héros compris), d'où un coût plus bas. Deux faces,
+  // comme Tempête : créature (préréglage composé canonPreset) et action (mot-clé
+  // de sort, sans cible à désigner). Un effet composé de même forme est nommé
+  // Canon par composedIcon. Arbitrages de l'auteur (2026-10-30) : Ombre et
   // Invisible touchables (le hasard ne cible pas), rien sans unité ennemie.
   canon: {
     id: "canon", label: "Canon X", symbol: "💣",
     desc: "Inflige X dégâts à une unité ennemie au hasard.",
-    applicable_to: ["creature"],
+    applicable_to: ["creature", "spell"],
     creature: {
       cost: 4, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Terrain",
       desc: "Inflige X dégâts à une unité ennemie au hasard.",
     },
+    spell: { params: ["amount"], needsTarget: false },
   },
   tempete: {
     id: "tempete", label: "Tempête X", symbol: "🌩️",

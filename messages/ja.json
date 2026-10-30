@@ -702,6 +702,10 @@
         "label": "衝撃 X",
         "desc": "対象1体（クリーチャーまたはヒーロー、どちらの陣営も可）にXダメージを与える。"
       },
+      "canon": {
+        "label": "大砲 X",
+        "desc": "ランダムな敵ユニット1体にXダメージを与える。"
+      },
       "deferlement": {
         "label": "殲滅 X",
         "desc": "敵クリーチャー全体にXダメージを与える。"
@@ -2646,8 +2650,6 @@
     "designation_scatter": "ランダムに分配（復元あり）",
     "designation_automatic": "自動",
     "add_composed_effect": "＋複合エフェクトを追加",
-    "add_canon_effect": "+ 大砲 X",
-    "add_canon_effect_title": "「ランダムな敵ユニット1体にXダメージ」の効果を追加",
     "tab_forge": "フォージ",
     "tab_capacities": "能力",
     "tab_edition": "編集",

@@ -3,17 +3,19 @@
 // Arbitrages de l'auteur (2026-10-30), verrouillés ici :
 //   1. jamais le héros, et rien du tout sans unité ennemie ;
 //   2. Ombre / Invisible touchables — le hasard ne cible pas ;
-//   3. une seule mécanique : le préréglage composé `canonPreset`, partagé par
-//      la capacité de créature, la forme action et l'effet composé ;
+//   3. deux faces comme Tempête : capacité de créature (préréglage composé
+//      `canonPreset`) et vrai mot-clé d'action, sans cible à désigner ; un effet
+//      composé de même forme est nommé Canon ;
 //   4. l'objet passe Canon à son porteur (transfert), sans code dédié.
 import { describe, expect, it } from "vitest";
 import { applyAction, canonPreset, initRNG } from "./engine";
 import { composedIcon, composedKeywordName } from "./composed-display";
-import { CANON_ENTRY, instantiatePreset } from "@/lib/card-forge/spell-effect-catalog";
+import { buildSpellEffectCatalog } from "@/lib/card-forge/spell-effect-catalog";
+import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS } from "./spell-keywords";
 import { isItemAuthorable } from "./abilities";
 import { HERO_MAX_HP } from "./constants";
 import { mkCard, mkInstance, mkState } from "./test-harness";
-import type { Capability, CardInstance, GameAction, GameState, Keyword, KeywordInstance, KeywordMode } from "./types";
+import type { Capability, CardInstance, GameAction, GameState, Keyword, KeywordInstance, KeywordMode, SpellKeywordInstance } from "./types";
 
 const ennemie = (name: string, health = 5, kws: string[] = []) =>
   mkInstance(mkCard({ name, attack: 1, health, keywords: kws as Keyword[] }));
@@ -152,21 +154,23 @@ describe("forme OBJET — transférée au porteur", () => {
   });
 });
 
-describe("forme ACTION et composée — le préréglage", () => {
-  const sortCanon = (x: number) => {
-    const composed = instantiatePreset(CANON_ENTRY);
-    composed.magnitude = { x };
-    return mkInstance(mkCard({
-      name: "Bordée", card_type: "spell", mana_cost: 0, attack: null, health: null,
-      capabilities: [{ uid: "c", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed } as Capability],
-    }));
-  };
+describe("forme ACTION — mot-clé d'action", () => {
+  const sortCanon = (amount: number, extra: SpellKeywordInstance[] = []) => mkInstance(mkCard({
+    name: "Bordée", card_type: "spell", mana_cost: 0, attack: null, health: null,
+    spell_keywords: [{ id: "canon", amount }, ...extra] as SpellKeywordInstance[],
+  }));
 
-  it("le préréglage de la forge EST canonPreset", () => {
-    expect(instantiatePreset(CANON_ENTRY).target).toEqual(canonPreset(1).target);
+  it("vrai mot-clé d'action, sans cible à désigner", () => {
+    expect(SPELL_KEYWORDS.canon.needsTarget).toBe(false);
+    expect(SPELL_KEYWORDS.canon.params).toEqual(["amount"]);
   });
 
-  it("l'action touche une seule unité ennemie, jamais le héros", () => {
+  it("proposé tel quel dans la forge (« + Effet : »), pas en effet composé", () => {
+    const entree = buildSpellEffectCatalog(ALL_SPELL_KEYWORDS).filter(e => e.id === "canon");
+    expect(entree.map(e => e.kind)).toEqual(["curated"]);
+  });
+
+  it("une seule unité ennemie prend tout, jamais le héros", () => {
     const s = mkState();
     s.players[1].board.push(ennemie("A"), ennemie("B"));
     const st = jouer(s, sortCanon(3));
@@ -174,10 +178,56 @@ describe("forme ACTION et composée — le préréglage", () => {
     expect(st.players[1].hero.hp).toBe(HERO_MAX_HP);
   });
 
+  it("aucune unité ennemie ⇒ rien", () => {
+    const st = jouer(mkState(), sortCanon(3));
+    expect(st.players[1].hero.hp).toBe(HERO_MAX_HP);
+  });
+
+  it("une unité dans l'OMBRE peut être touchée", () => {
+    const s = mkState();
+    s.players[1].board.push(ennemie("Tapie", 5, ["ombre"]));
+    expect(pertes(jouer(s, sortCanon(2)))).toEqual([2]);
+  });
+
+  it("Transcendance (immunité aux sorts) est écartée du tirage", () => {
+    // Sur 20 graines : le tir ne se perd JAMAIS sur l'unité immunisée.
+    for (let graine = 1; graine <= 20; graine++) {
+      const s = mkState();
+      s.rngState = graine;
+      s.players[1].board.push(ennemie("Sainte", 5, ["transcendance"]), ennemie("Mortelle"));
+      const st = jouer(s, sortCanon(2));
+      expect(st.players[1].board.map(c => [c.card.name, c.maxHealth - c.currentHealth]))
+        .toEqual([["Sainte", 0], ["Mortelle", 2]]);
+    }
+  });
+
+  it("Précision perce la Résistance, comme pour Tempête", () => {
+    const s = mkState();
+    s.players[1].board.push(ennemie("Cuirassée", 5, ["resistance"]));
+    const sans = pertes(jouer(s, sortCanon(3)))[0];
+    const s2 = mkState();
+    s2.players[1].board.push(ennemie("Cuirassée", 5, ["resistance"]));
+    const avec = pertes(jouer(s2, sortCanon(3, [{ id: "precision" } as SpellKeywordInstance])))[0];
+    expect(sans).toBe(2); // Résistance 1 par défaut
+    expect(avec).toBe(3);
+  });
+});
+
+describe("forme COMPOSÉE — reconnue et nommée", () => {
   it("la forme est reconnue et nommée « Canon »", () => {
     const cap = { uid: "c", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: canonPreset(2) } as Capability;
     expect(composedIcon(cap)).toEqual({ symbol: "💣", keyword: "canon" });
     expect(composedKeywordName(cap)).toBe("Canon");
+  });
+
+  it("un composé de cette forme touche une seule unité ennemie", () => {
+    const s = mkState();
+    s.players[1].board.push(ennemie("A"), ennemie("B"));
+    const sort = mkInstance(mkCard({
+      name: "Salve", card_type: "spell", mana_cost: 0, attack: null, health: null,
+      capabilities: [{ uid: "c", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed", composed: canonPreset(3) } as Capability],
+    }));
+    expect([...pertes(jouer(s, sort))].sort()).toEqual([0, 3]);
   });
 
   it("les autres dégâts au hasard restent Tempête", () => {

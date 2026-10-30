@@ -702,6 +702,10 @@
         "label": "Impact X",
         "desc": "Deal X damage to a target (creature or hero, either side)."
       },
+      "canon": {
+        "label": "Cannon X",
+        "desc": "Deals X damage to a random enemy unit."
+      },
       "deferlement": {
         "label": "Surge X",
         "desc": "Deal X damage to all enemy creatures."
@@ -2646,8 +2650,6 @@
     "designation_scatter": "Randomly distributed (with replacement)",
     "designation_automatic": "Automatic",
     "add_composed_effect": "+ Add a Composed Effect",
-    "add_canon_effect": "+ Cannon X",
-    "add_canon_effect_title": "Adds an effect \"X damage to a random enemy unit\"",
     "tab_forge": "Forge",
     "tab_capacities": "Abilities",
     "tab_edition": "Edition",

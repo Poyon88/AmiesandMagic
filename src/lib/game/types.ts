@@ -227,6 +227,8 @@ export interface SpellEffect {
 
 export type SpellKeywordId =
   | "impact"
+  // X dégâts à UNE unité ennemie au hasard (pas de cible à désigner).
+  | "canon"
   | "deferlement"
   // Modificateur global : après résolution, le sort est remélangé dans le deck
   // de son lanceur au lieu d'aller au cimetière (il n'y transite jamais).
