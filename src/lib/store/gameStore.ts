@@ -3499,6 +3499,11 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingTapInstanceIdx: null,
       pendingTapComposedUid: null,
       pendingEquipItemId: null,
+      // Même remise à zéro que le chemin rapide : ces réponses appartiennent à
+      // l'action qui vient de partir, pas à la suivante.
+      pendingCreatureChain: null,
+      collectedSelectionChoices: {},
+      selectionPickerKeyword: null,
       // Posé avant les phases : la créature jouée monte en phase d'impact avec
       // `entering` vrai → entrée douce. Réécrit à chaque action donc auto-reset.
       entryEvents: playedCreatureId ? [playedCreatureId] : [],
@@ -4306,6 +4311,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       opts?.ciblageSeulement
         ? null
         : get().dispatchAction({ type: "play_card", cardInstanceId: instanceId });
+
+    // Réponses d'une pose PRÉCÉDENTE remises à zéro, comme dans
+    // `playCardDirect` : un sort à Sélection résolu par le chemin animé les
+    // laissait en place, et la Sélection suivante se croyait déjà répondue —
+    // « Souvenir Préservé » relancé par Seconde vie partait sans modale.
+    set({ collectedDeckChoices: {}, deckPickerKeyword: null, collectedSelectionChoices: {}, selectionPickerKeyword: null });
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = carteJouable(player, instanceId);

@@ -20,7 +20,7 @@ describe("Seconde vie d'un sort à Sélection", () => {
     });
   });
 
-  it("relancé du cimetière, ouvre la Sélection magique et donne la carte", () => {
+  function etat() {
     const s = mkState();
     s.allSpellsPool = [action("S1", 1), action("S2", 2), action("S3", 1), action("S4", 2)];
     const souvenir = mkInstance(mkCard({
@@ -35,7 +35,11 @@ describe("Seconde vie d'un sort à Sélection", () => {
     s.players[0].hand = [];
     s.players[0].graveyard = [souvenir];
     useGameStore.setState({ gameState: s, localPlayerId: "P1" });
+    return { s, souvenir };
+  }
 
+  it("relancé du cimetière, ouvre la Sélection magique et donne la carte", () => {
+    const { s, souvenir } = etat();
     const r = useGameStore.getState().selectCardInHand(souvenir.instanceId);
     const st = useGameStore.getState();
     expect(r).toBeNull();
@@ -45,5 +49,16 @@ describe("Seconde vie d'un sort à Sélection", () => {
     expect(a).toMatchObject({ type: "play_card", targetMap: { selection_magique_0: String(prise.id) } });
     const apres = applyAction(s, { ...a!, fromGraveyard: true } as never);
     expect(apres.players[0].hand.map((c) => c.card.name)).toContain(prise.name);
+  });
+
+  // Vu en partie (action 48 puis 49) : Souvenir joué DEPUIS LA MAIN, sa
+  // Sélection répondue, puis relancé par Seconde vie. La réponse de la pose
+  // précédente restait dans le store (le chemin animé ne la vidait pas) : la
+  // Sélection se croyait répondue, aucune modale, sort parti sans choix.
+  it("une réponse restée d'une pose précédente ne court-circuite pas la modale", () => {
+    const { souvenir } = etat();
+    useGameStore.setState({ collectedSelectionChoices: { selection_magique: 2950 } });
+    expect(useGameStore.getState().selectCardInHand(souvenir.instanceId)).toBeNull();
+    expect(useGameStore.getState().targetingMode).toBe("selection");
   });
 });
