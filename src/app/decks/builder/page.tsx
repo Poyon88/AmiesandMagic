@@ -91,7 +91,9 @@ export default async function DeckBuilderPage({
   // cartes possédées, sinon une carte visible ici serait refusée à la sauvegarde.
   const factionUnlocks = await readFactionUnlocks(supabase, user.id);
 
-  const isTester = profile?.role === "testeur";
+  // Même règle que la collection et la liste des decks : admin et testeur
+  // disposent de tout le catalogue pour monter des decks de test.
+  const isTester = profile?.role === "testeur" || profile?.role === "admin";
   const printCardIds = (ownedPrints ?? []).map(r => r.card_id);
   const collectedCardIds = [...new Set([
     ...(userCollection ?? []).map(r => r.card_id),
