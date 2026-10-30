@@ -7,6 +7,11 @@ interface KeywordIconStore {
    *  internes hétérogènes des PNG custom pour uniformiser leur taille apparente. */
   scales: Record<string, number>;
   loaded: boolean;
+  /** URLs d'icônes dont l'image est CHARGÉE. Une icône teintée est un carré
+   *  de couleur découpé par un masque CSS : tant que l'image du masque n'est
+   *  pas arrivée, Chrome peint le carré plein. KeywordIcon garde donc l'emoji
+   *  de repli tant que son URL n'est pas ici. */
+  ready: Record<string, true>;
   /** Loads overrides once (no-op if already loaded). */
   fetchOverrides: () => Promise<void>;
   /** Forces a refetch regardless of `loaded` — call after the forge uploads or
@@ -15,6 +20,38 @@ interface KeywordIconStore {
 }
 
 export const useKeywordIconStore = create<KeywordIconStore>((set, get) => {
+  // Requête EN COURS, partagée. Sans elle, chaque KeywordIcon monté avant la
+  // première réponse relançait son propre fetch (`loaded` n'est vrai qu'à
+  // l'arrivée) : ~1 900 appels identiques en ouvrant la collection.
+  let enCours: Promise<void> | null = null;
+
+  // Préchargement des images, publié par lots : un `set` par image ferait
+  // re-rendre chaque icône de la page à chaque arrivée.
+  let lot: string[] = [];
+  let minuterie: ReturnType<typeof setTimeout> | null = null;
+  const publier = () => {
+    minuterie = null;
+    const prets = { ...get().ready };
+    for (const url of lot) prets[url] = true;
+    lot = [];
+    set({ ready: prets });
+  };
+  const precharger = (urls: string[]) => {
+    if (typeof Image === "undefined") return; // rendu serveur
+    for (const url of new Set(urls)) {
+      if (get().ready[url]) continue;
+      const img = new Image();
+      // Même mode que le chargement du masque CSS (CORS), pour que le navigateur
+      // réutilise l'image au lieu de la retélécharger.
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        lot.push(url);
+        if (!minuterie) minuterie = setTimeout(publier, 120);
+      };
+      img.src = url;
+    }
+  };
+
   const doFetch = async () => {
     try {
       const res = await fetch('/api/keyword-icons');
@@ -35,6 +72,7 @@ export const useKeywordIconStore = create<KeywordIconStore>((set, get) => {
         if (scaleMap[key] == null && scaleMap[sibling] != null) scaleMap[key] = scaleMap[sibling];
       }
       set({ overrides: map, scales: scaleMap, loaded: true });
+      precharger(Object.values(map));
     } catch {
       set({ loaded: true });
     }
@@ -44,9 +82,11 @@ export const useKeywordIconStore = create<KeywordIconStore>((set, get) => {
     overrides: {},
     scales: {},
     loaded: false,
+    ready: {},
     fetchOverrides: async () => {
       if (get().loaded) return;
-      await doFetch();
+      enCours ??= doFetch().finally(() => { enCours = null; });
+      await enCours;
     },
     reload: doFetch,
   };

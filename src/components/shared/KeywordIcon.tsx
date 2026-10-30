@@ -89,13 +89,15 @@ function KeywordIconBase({
   light?: boolean;
   tint?: string;
 }) {
-  const { overrides, scales, loaded, fetchOverrides } = useKeywordIconStore();
+  const { overrides, scales, loaded, ready, fetchOverrides } = useKeywordIconStore();
 
   useEffect(() => {
     if (!loaded) fetchOverrides();
   }, [loaded, fetchOverrides]);
 
-  const overrideUrl = keyword ? overrides[keyword] : undefined;
+  // L'icône importée ne remplace l'emoji qu'une fois son image CHARGÉE : avant,
+  // le masque CSS laisserait voir un carré de couleur plein.
+  const overrideUrl = keyword && overrides[keyword] && ready[overrides[keyword]] ? overrides[keyword] : undefined;
   const effectiveSymbol = overrideUrl ?? symbol;
 
   // Facteur d'échelle par icône (normalisation des marges internes des PNG).
