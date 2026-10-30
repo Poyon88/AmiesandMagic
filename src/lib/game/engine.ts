@@ -4440,8 +4440,17 @@ export function endTurn(state: GameState): GameState {
   // son choix avant de pouvoir rendre la main (la garde du store le retient
   // déjà, mais le rejeu d'actions entre directement ici).
   if (state.startOfTurnQueue !== undefined) {
-    console.warn("[start-turn] end_turn ignoré : un début de tour est encore en pause sur un choix");
-    return state;
+    if ((state.pendingTriggers?.length ?? 0) > 0) {
+      console.warn("[start-turn] end_turn ignoré : un début de tour est encore en pause sur un choix");
+      return state;
+    }
+    // Pause ORPHELINE : la file est encore définie mais plus aucun choix ne la
+    // retient (le choix a disparu sans que la file soit reprise). Vu en partie
+    // le 2026-10-30 : `startOfTurnQueue: []`, aucun pendingTrigger — END TURN
+    // refusé pour toujours. On termine le début de tour, puis on enchaîne.
+    console.warn("[start-turn] début de tour en pause sans choix : reprise avant la fin de tour");
+    state = advanceStartOfTurn(cloneStateForAction(state));
+    if (state.startOfTurnQueue !== undefined || (state.pendingTriggers?.length ?? 0) > 0) return state;
   }
   const pool = state.factionCardPool;
   const allPool = state.allSpellsPool;
