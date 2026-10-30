@@ -23,6 +23,7 @@ import {
   needsTarget,
   getSpellSlotTargets,
   getSpellTargetSlots,
+  requiresPlayerSelection,
   canUseHeroPower,
   heroPowerComposedChoice,
   ciblesEffetPouvoir,
@@ -4463,11 +4464,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // collected targetMap into the final dispatch.
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
-      const selectableSlots = slots.filter(s =>
-        s.type === "any" || s.type === "any_creature" || s.type === "any_creature_or_item"
-        || s.type === "friendly_creature" || s.type === "enemy_creature"
-        || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
-      );
+      const selectableSlots = slots.filter(s => requiresPlayerSelection(s.type));
 
       if (selectableSlots.length === 0) {
         // No player selection needed — play directly
@@ -5593,11 +5590,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
       const slots = getSpellTargetSlots(card.card);
-      const selectableSlots = slots.filter(s =>
-        s.type === "any" || s.type === "any_creature" || s.type === "any_creature_or_item"
-        || s.type === "friendly_creature" || s.type === "enemy_creature"
-        || s.type === "friendly_graveyard" || s.type === "friendly_graveyard_to_board"
-      );
+      const selectableSlots = slots.filter(s => requiresPlayerSelection(s.type));
       if (selectableSlots.length > 0) {
         const firstSlot = selectableSlots[0];
         if (firstSlot.type === "friendly_graveyard" || firstSlot.type === "friendly_graveyard_to_board") {

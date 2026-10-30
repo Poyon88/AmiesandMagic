@@ -8055,7 +8055,10 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
 // NEW SPELL SYSTEM — TARGETING
 // ============================================================
 
-function requiresPlayerSelection(targetType: SpellTargetType): boolean {
+/** Créneaux de sort dont la cible est DÉSIGNÉE par le joueur. Source unique :
+ *  le store filtre ses créneaux cliquables avec elle (sa copie locale avait
+ *  oublié `friendly_any` / `enemy_any` — Holy Light partait sans cible). */
+export function requiresPlayerSelection(targetType: SpellTargetType): boolean {
   return targetType === "any" || targetType === "any_creature" || targetType === "any_creature_or_item"
     || targetType === "friendly_any" || targetType === "enemy_any"
     || targetType === "friendly_creature" || targetType === "enemy_creature"
