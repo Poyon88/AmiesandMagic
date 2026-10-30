@@ -3193,7 +3193,9 @@
     "eveil_max": "最多{count}",
     "eveil_max_hint": "最后一点就是进场本身：它单独支付，并同时选择目标。",
     "choix_ou_title": "⚖️ 二者择一",
-    "choix_ou_subtitle": "这些效果中只有一个会结算。"
+    "choix_ou_subtitle": "这些效果中只有一个会结算。",
+    "activation_menu_title": "要激活哪个能力？",
+    "activation_learned": "施放{name}"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

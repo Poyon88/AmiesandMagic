@@ -3193,7 +3193,9 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "L'ultimo punto è l'entrata in gioco: si paga a parte, insieme alla scelta dei bersagli.",
     "choix_ou_title": "⚖️ A scelta",
-    "choix_ou_subtitle": "Solo uno di questi effetti si risolverà."
+    "choix_ou_subtitle": "Solo uno di questi effetti si risolverà.",
+    "activation_menu_title": "Quale potere attivare?",
+    "activation_learned": "Lancia {name}"
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",

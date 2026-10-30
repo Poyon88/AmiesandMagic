@@ -3193,7 +3193,9 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "The last point is the card entering play: it is paid separately, along with target selection.",
     "choix_ou_title": "⚖️ Choose one",
-    "choix_ou_subtitle": "Only one of these effects will resolve."
+    "choix_ou_subtitle": "Only one of these effects will resolve.",
+    "activation_menu_title": "Which power to activate?",
+    "activation_learned": "Cast {name}"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

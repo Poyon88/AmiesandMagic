@@ -3193,7 +3193,9 @@
     "eveil_max": "máx {count}",
     "eveil_max_hint": "O último ponto é a entrada em jogo: paga-se à parte, junto com a escolha dos alvos.",
     "choix_ou_title": "⚖️ À escolha",
-    "choix_ou_subtitle": "Só um destes efeitos será resolvido."
+    "choix_ou_subtitle": "Só um destes efeitos será resolvido.",
+    "activation_menu_title": "Qual poder ativar?",
+    "activation_learned": "Lançar {name}"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

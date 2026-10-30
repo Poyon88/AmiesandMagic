@@ -13540,6 +13540,35 @@ export function getCreatureTapComposedUid(card: Card): string | null {
   return cap?.uid ?? null;
 }
 
+/** Un pouvoir activable d'une créature : mot-clé en mode « tap » (par son rang
+ *  dans `keyword_instances`, ce qu'attend `tap_activate.instanceIdx`), effet
+ *  composé `on_activation` (par uid), ou sort mémorisé par Apprentissage. */
+export type PouvoirActivable =
+  | { kind: "keyword"; instanceIdx: number; instance: KeywordInstance }
+  | { kind: "composed"; uid: string; cap: import("./types").Capability }
+  | { kind: "learned" };
+
+/** TOUS les pouvoirs activables de la créature, dans l'ordre d'affichage de la
+ *  carte : mots-clés, puis effets composés, puis le sort appris. Une seule
+ *  activation par tour (l'activation engage la créature) : quand il y en a
+ *  plusieurs, le joueur choisit lequel utiliser.
+ *
+ *  Le sort appris n'est listé que si `creatureCanCastLearnedSpell` l'autorise
+ *  (mana, coûts, cible) — sinon le menu proposerait un choix refusé. */
+export function pouvoirsActivables(state: GameState | null, inst: CardInstance): PouvoirActivable[] {
+  const out: PouvoirActivable[] = [];
+  (inst.card.keyword_instances ?? []).forEach((instance, instanceIdx) => {
+    if (instance.mode === "tap") out.push({ kind: "keyword", instanceIdx, instance });
+  });
+  if (inst.card.card_type === "creature") {
+    for (const cap of getCapabilities(inst.card)) {
+      if (composeExecutable(cap) && cap.trigger === "on_activation") out.push({ kind: "composed", uid: cap.uid, cap });
+    }
+  }
+  if (state && inst.apprentissageSpell && creatureCanCastLearnedSpell(state, inst.instanceId)) out.push({ kind: "learned" });
+  return out;
+}
+
 /** Cibles valides pour l'activation d'un effet composé (uid) en désignation
  *  "au choix", 1 cible unité plateau. null = pas de ciblage interactif requis
  *  (hasard / toutes / héros / multi → résolus côté moteur). */

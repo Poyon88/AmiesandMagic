@@ -3193,7 +3193,9 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "Le dernier point est l'entrée en jeu : il se paie à part, avec le choix des cibles.",
     "choix_ou_title": "⚖️ Au choix",
-    "choix_ou_subtitle": "Un seul de ces effets se résoudra."
+    "choix_ou_subtitle": "Un seul de ces effets se résoudra.",
+    "activation_menu_title": "Quel pouvoir activer ?",
+    "activation_learned": "Lancer {name}"
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",

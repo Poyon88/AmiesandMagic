@@ -7,7 +7,7 @@ import Image from "next/image";
 import type { CardInstance, GameAction, Keyword } from "@/lib/game/types";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { primaryThresholdGlow } from "@/lib/game/threshold-glow";
-import { tapKeywordNeedsTarget, getCreatureTapComposedUid, espritDeCorpsPoints, usurpationCount, creatureCanCastLearnedSpell, peutActiverPouvoir } from "@/lib/game/engine";
+import { tapKeywordNeedsTarget, espritDeCorpsPoints, usurpationCount, peutActiverPouvoir, pouvoirsActivables, type PouvoirActivable } from "@/lib/game/engine";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { KEYWORD_SYMBOLS, buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeursAffichees, TEXT_CONTRAST_HALO } from "@/lib/game/keyword-labels";
 import { displayCardOf } from "@/lib/game/singulier";
@@ -26,6 +26,7 @@ import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import DetailEnJeu from "@/components/cards/DetailEnJeu";
+import MenuActivation from "./MenuActivation";
 import { SOI_ARIA_FR, composedScope, composedSoi, creatureScopes, kwInstanceScope, kwInstanceSoi, porteeValide, scopeAriaLabel } from "@/lib/game/target-scope";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
@@ -192,25 +193,13 @@ function BoardCreature({
   // First tap-mode keyword instance the player can activate right now.
   // Returns the index inside `keywordInstances`; null when no eligible
   // instance is present (legacy creature, none in tap mode, etc.).
-  const tapInstanceIdx = (() => {
-    const list = card.keyword_instances ?? [];
-    for (let i = 0; i < list.length; i++) {
-      if (list[i].mode === "tap") return i;
-    }
-    return null;
-  })();
-  // Effet composé activable (on_activation) — uid, ou null. Utilisé si aucun
-  // keyword tap classique n'est présent.
-  const tapComposedUid = getCreatureTapComposedUid(card);
-  // APPRENTISSAGE — troisième forme de pouvoir activable : lancer le sort
-  // mémorisé. Le prédicat moteur vérifie tout (engagement, mal d'invocation,
-  // mana, coûts additionnels, cible disponible) — c'est LUI qui fait autorité,
-  // et non une reconstitution locale qui finirait par diverger et laisserait un
-  // bouton actif sur une activation que le moteur refuse.
-  const peutLancerSortAppris = useGameStore((s) => {
-    if (!s.gameState || !creature.apprentissageSpell) return false;
-    return creatureCanCastLearnedSpell(s.gameState, creature.instanceId);
-  });
+  // TOUS les pouvoirs activables (mots-clés « tap », effets composés « à
+  // l'activation », sort appris) : un seul ⇒ le bouton l'active directement ;
+  // plusieurs ⇒ il ouvre le menu d'activation. L'état complet est lu parce que
+  // le sort appris dépend du mana et des cibles (creatureCanCastLearnedSpell).
+  const gameStateCourant = useGameStore((s) => s.gameState);
+  const pouvoirs = useMemo(() => pouvoirsActivables(gameStateCourant, creature), [gameStateCourant, creature]);
+  const [menuActivation, setMenuActivation] = useState(false);
   const activateLearnedSpell = useGameStore((s) => s.activateLearnedSpell);
   // Base eligibility (engine-level: own + turn + not animating + not
   // already tapped + no sickness + has a tap instance). The Activer
@@ -226,8 +215,15 @@ function BoardCreature({
     && isMyTurn
     && !isAnimating
     && peutActiverPouvoir(creature)
-    && (tapInstanceIdx !== null || tapComposedUid !== null || peutLancerSortAppris);
+    && pouvoirs.length > 0;
   const canActivateTap = baseEligibleForTap && targetingMode === "none";
+  // Active UN pouvoir par le chemin existant (ciblage et coûts compris).
+  const activerPouvoir = (p: PouvoirActivable) => {
+    setMenuActivation(false);
+    if (p.kind === "keyword") onAction?.(activateTap(creature.instanceId, p.instanceIdx));
+    else if (p.kind === "composed") onAction?.(activateTapComposed(creature.instanceId, p.uid));
+    else onAction?.(activateLearnedSpell(creature.instanceId));
+  };
   // Resolve token template image: instance cards spawned by the engine
   // carry token_id when they originate from a saved template; fall back to
   // race lookup for legacy spawns (spell-keyword "invocation", etc.).
@@ -493,20 +489,16 @@ function BoardCreature({
         // the preceding single click flips targetingMode to "attack",
         // which would otherwise cancel the double-click trigger.
         if (!baseEligibleForTap) return;
-        if (tapInstanceIdx !== null) {
-          const instance = card.keyword_instances?.[tapInstanceIdx];
-          if (!instance) return;
+        // Plusieurs pouvoirs : le raccourci ne choisit pas à la place du joueur.
+        if (pouvoirs.length > 1) { setMenuActivation(true); return; }
+        const seul = pouvoirs[0];
+        if (seul.kind === "keyword") {
+          const instance = seul.instance;
           if (tapKeywordNeedsTarget(instance.id, instance) && !porteeValide(instance.targetScope, creatureScopes(instance.id))) return;
-          onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
-        } else if (peutLancerSortAppris) {
-          // Le sort appris ouvre lui-même ses fenêtres de coût et de ciblage
-          // s'il en a besoin — rien à filtrer ici, contrairement aux pouvoirs
-          // curés dont on doit écarter ceux qui réclament une cible.
-          onAction?.(activateLearnedSpell(creature.instanceId));
-        } else if (tapComposedUid) {
-          // activateTapComposed ouvre le sélecteur si une cible est requise.
-          onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
         }
+        // Le sort appris et l'effet composé ouvrent eux-mêmes leurs fenêtres de
+        // coût et de ciblage s'il en faut.
+        activerPouvoir(seul);
       }}
       onMouseEnter={() => {
         onMouseEnter?.();
@@ -580,15 +572,15 @@ function BoardCreature({
           targeting / cost-payment / animation flow is in progress.
           Rendered OUTSIDE the clip-wrapper below so its `top: -22`
           offset isn't clipped by `overflow: hidden`. */}
-      {canActivateTap && (tapInstanceIdx !== null || tapComposedUid !== null || peutLancerSortAppris) && (
+      {canActivateTap && menuActivation && pouvoirs.length > 1 && (
+        <MenuActivation creature={creature} pouvoirs={pouvoirs} onPick={activerPouvoir} onClose={() => setMenuActivation(false)} />
+      )}
+      {canActivateTap && pouvoirs.length > 0 && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (tapInstanceIdx !== null) onAction?.(activateTap(creature.instanceId, tapInstanceIdx));
-            else if (tapComposedUid) onAction?.(activateTapComposed(creature.instanceId, tapComposedUid));
-            // Apprentissage en DERNIER : une créature qui porte un autre pouvoir
-            // activable garde le sien, le sort appris ne le confisque pas.
-            else if (peutLancerSortAppris) onAction?.(activateLearnedSpell(creature.instanceId));
+            if (pouvoirs.length > 1) setMenuActivation(v => !v);
+            else activerPouvoir(pouvoirs[0]);
           }}
           style={{
             position: "absolute",
@@ -611,7 +603,7 @@ function BoardCreature({
           }}
           title="Engage cette créature pour activer sa capacité tap"
         >
-          ⟲ Activer
+          ⟲ Activer{pouvoirs.length > 1 ? ` (${pouvoirs.length})` : ""}
         </button>
       )}
 

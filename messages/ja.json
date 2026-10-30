@@ -3193,7 +3193,9 @@
     "eveil_max": "最大{count}",
     "eveil_max_hint": "最後の1点は場に出ることそのものです。対象の選択とあわせて、別に支払います。",
     "choix_ou_title": "⚖️ いずれかを選択",
-    "choix_ou_subtitle": "これらの効果のうち1つだけが解決される。"
+    "choix_ou_subtitle": "これらの効果のうち1つだけが解決される。",
+    "activation_menu_title": "どの能力を起動しますか？",
+    "activation_learned": "{name}を唱える"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

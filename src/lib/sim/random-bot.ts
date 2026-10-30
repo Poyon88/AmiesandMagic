@@ -13,7 +13,7 @@ import {
   creatureNeedsTarget, deferredKwTargetIds, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
   ciblesEffetPouvoir, effetPouvoirACible, getSpellTargetSlots, getValidTargets, heroPowerComposedChoice,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
-  canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, getCreatureTapComposedUid,
+  canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, pouvoirsActivables,
   getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
@@ -262,8 +262,11 @@ export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): 
       if (cibles === null) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx });
       else for (const t of plusieurs(rand, cibles, variantes)) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: idx, targetInstanceId: t });
     });
-    const uid = getCreatureTapComposedUid(src.card);
-    if (uid) {
+    // TOUS les effets composés activables, et plus seulement le premier : le
+    // joueur choisit lequel utiliser dans le menu d'activation.
+    for (const p of pouvoirsActivables(state, src)) {
+      if (p.kind !== "composed") continue;
+      const uid = p.uid;
       const cibles = getComposedTapTargets(state, src.card, uid);
       if (!cibles || cibles.length === 0) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: -1, composedUid: uid });
       else for (const t of plusieurs(rand, cibles, variantes)) out.push({ type: "tap_activate", sourceInstanceId: src.instanceId, instanceIdx: -1, composedUid: uid, targetInstanceId: t });

@@ -3193,7 +3193,9 @@
     "eveil_max": "máx {count}",
     "eveil_max_hint": "El último punto es la entrada en juego: se paga aparte, junto con la elección de objetivos.",
     "choix_ou_title": "⚖️ A elegir",
-    "choix_ou_subtitle": "Solo uno de estos efectos se resolverá."
+    "choix_ou_subtitle": "Solo uno de estos efectos se resolverá.",
+    "activation_menu_title": "¿Qué poder activar?",
+    "activation_learned": "Lanzar {name}"
   },
   "tutorial": {
     "page_eyebrow": "Aprende el arte del duelo",

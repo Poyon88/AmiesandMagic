@@ -3193,7 +3193,9 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "Der letzte Punkt ist das Ins-Spiel-Kommen: Er wird separat gezahlt, zusammen mit der Zielwahl.",
     "choix_ou_title": "⚖️ Wähle eines",
-    "choix_ou_subtitle": "Nur einer dieser Effekte wird ausgeführt."
+    "choix_ou_subtitle": "Nur einer dieser Effekte wird ausgeführt.",
+    "activation_menu_title": "Welche Fähigkeit aktivieren?",
+    "activation_learned": "{name} wirken"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",
