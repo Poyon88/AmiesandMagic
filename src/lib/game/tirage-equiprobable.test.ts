@@ -20,22 +20,21 @@ const vivier = (over: Partial<Card> = {}) => [
 
 const N = 300;
 
-describe("Découverte — chaque carte à chances égales", () => {
-  it("les coûts sortent en proportion de leur profondeur, sans doublon", () => {
-    let hauts = 0, total = 0;
-    for (let i = 0; i < N; i++) {
+// La DÉCOUVERTE ne tire plus librement depuis le 2026-11-01 : un coût C commun
+// aux deux joueurs (cf. decouverte-cout.test.ts). Le tirage libre n'y reste
+// qu'en dernier repli, quand aucun coût ne tient.
+describe("Découverte — repli sur un vivier où aucun coût ne tient", () => {
+  it("une seule carte par coût : tirage libre, sans doublon", () => {
+    for (let i = 0; i < 50; i++) {
       const s = mkState();
       s.rngState = 11 + i * 7919;
       s.turnNumber = 3 + (i % 5) * 2;
-      s.factionCardPool = vivier({ faction: "Humains", clan: "Aube" });
+      s.factionCardPool = [commune(9700, 2, { faction: "Humains", clan: "Aube" }), commune(9701, 5, { faction: "Humains", clan: "Aube" }), commune(9702, 8, { faction: "Humains", clan: "Aube" })];
       s.players[0].identite = { faction: "Humains", clan: "Aube" };
       const offre = offreDecouverte(s, s.players[0]);
+      expect(offre.length).toBeGreaterThan(0);
       expect(new Set(offre.map(c => c.id)).size).toBe(offre.length);
-      for (const c of offre) { total++; if (c.mana_cost === 8) hauts++; }
     }
-    // 1/6 ≈ 0,17 (l'ancien tirage par coût donnait ≈ 0,5).
-    expect(hauts / total).toBeGreaterThan(0.08);
-    expect(hauts / total).toBeLessThan(0.28);
   });
 });
 

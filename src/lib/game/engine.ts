@@ -44,7 +44,7 @@ import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, ge
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
-import { estTourDeDecouverte, identiteDuDeck } from "./decouverte";
+import { coutAutreClan, coutValideLePlusProche, estTourDeDecouverte, identiteDuDeck, rangDeDecouverte, tirerCoutDecouverte } from "./decouverte";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -3352,6 +3352,9 @@ export function initializeGame(
   regles?: import("./types").ReglesPartie,
 ): GameState {
   if (seed !== undefined) initRNG(seed);
+  // Graine de PARTIE de la découverte : l'état du RNG semé AVANT tout tirage,
+  // donc identique chez les deux clients et propre à chaque partie.
+  if (regles?.decouverteAlternee) regles = { ...regles, graineDecouverte: rngState >>> 0 };
   const p1Deck = createDeckInstances(player1Cards);
   const p2Deck = createDeckInstances(player2Cards);
   // Le joueur qui COMMENCE reçoit une carte de moins (cf. startingHandSizeFor).
@@ -14699,23 +14702,55 @@ function offreSelection(
   return retenus;
 }
 
-/** OFFRE DE DÉCOUVERTE (variante, cf. decouverte.ts) : 3 Communes de coûts
- *  aléatoires — 2 du clan de référence du joueur, 1 de sa faction mais d'un
- *  AUTRE clan. Chaque carte est tirée uniformément dans son sous-vivier
- *  (régime « tout coût » d'offreSelection) : un coût sort en proportion du
- *  nombre de cartes qui le portent.
- *
- *  Sous-vivier trop maigre : le clan se complète par les cartes sans clan de la
- *  faction, et l'« autre clan » absent laisse sa place à une 3e carte du clan.
- *  Germe semé sur le tour et le joueur, sans consommer la RNG partagée. */
-export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
+/** Sous-viviers de découverte d'un joueur : Communes de sa faction de
+ *  référence (objets exclus), celles de son clan et celles des AUTRES clans.
+ *  Clan trop maigre : il se complète par les cartes sans clan de la faction. */
+function viviersDecouverte(state: GameState, player: PlayerState): { duClan: Card[]; autreClan: Card[] } | null {
   const id = player.identite;
   const pool = state.factionCardPool;
-  if (!id || !pool?.length) return [];
+  if (!id || !pool?.length) return null;
   const communes = pool.filter(c => c.rarity === "Commune" && c.faction === id.faction && c.card_type !== "item");
   let duClan = id.clan ? communes.filter(c => c.clan === id.clan) : communes;
   if (duClan.length < 2) duClan = communes.filter(c => !id.clan || c.clan === id.clan || !c.clan);
   const autreClan = id.clan ? communes.filter(c => c.clan && c.clan !== id.clan) : [];
+  return { duClan, autreClan };
+}
+
+/** Le coût C tient-il pour ces viviers ? 2 cartes du clan à C, et 1 d'un autre
+ *  clan à C+1 — sauf faction sans autre clan, où le clan fournit tout. */
+function coutDecouverteValide(v: { duClan: Card[]; autreClan: Card[] }, c: number): boolean {
+  if (v.duClan.filter(x => x.mana_cost === c).length < 2) return false;
+  return v.autreClan.length === 0 || v.autreClan.some(x => x.mana_cost === coutAutreClan(c));
+}
+
+/** Coût C de la découverte qui s'ouvre, et REPLI des clans incomplets.
+ *  1. C tiré dans la table du rang (decouverte.ts), le même pour les deux ;
+ *  2. s'il ne tient pas, le coût le plus proche qui tient pour les DEUX joueurs
+ *     — la symétrie est l'objet même de la règle ;
+ *  3. faute de coût commun, le plus proche qui tient pour CE joueur ;
+ *  4. faute de tout, `null` : l'offre retombe sur le tirage libre d'avant. */
+export function coutDeDecouverte(state: GameState, player: PlayerState): number | null {
+  const tire = tirerCoutDecouverte(rangDeDecouverte(state.turnNumber), state.regles?.graineDecouverte ?? 0);
+  const mien = viviersDecouverte(state, player);
+  if (!mien) return null;
+  const autres = state.players.filter(p => p !== player).map(p => viviersDecouverte(state, p))
+    .filter((v): v is NonNullable<typeof v> => v != null);
+  return coutValideLePlusProche(tire, c => coutDecouverteValide(mien, c) && autres.every(v => coutDecouverteValide(v, c)))
+    ?? coutValideLePlusProche(tire, c => coutDecouverteValide(mien, c));
+}
+
+/** OFFRE DE DÉCOUVERTE (variante, cf. decouverte.ts) : 2 Communes du clan de
+ *  référence au coût C, 1 Commune d'un AUTRE clan de la faction au coût C+1
+ *  (cf. coutDeDecouverte). Faction sans autre clan : 3 cartes du clan à C.
+ *
+ *  Aucun coût ne tient (vivier presque vide) : tirage libre d'avant la refonte,
+ *  chaque carte uniformément dans son sous-vivier.
+ *
+ *  Germe semé sur le tour et le joueur, sans consommer la RNG partagée. */
+export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
+  const v = viviersDecouverte(state, player);
+  if (!v) return [];
+  const { duClan, autreClan } = v;
 
   // Graine propre à la PARTIE : l'état du RNG semé (synchronisé entre les deux
   // clients, lu sans être consommé). Sans lui, tour + siège + joueur étaient
@@ -14735,6 +14770,13 @@ export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
     }
     return out;
   };
+
+  const c = coutDeDecouverte(state, player);
+  if (c != null) {
+    const autre = melanger(autreClan.filter(x => x.mana_cost === coutAutreClan(c))).slice(0, 1);
+    const clan = melanger(duClan.filter(x => x.mana_cost === c)).slice(0, SELECTION_OFFER_COUNT - autre.length);
+    return [...clan, ...autre];
+  }
   const sansPaniers = { propre: new Set<string>(), neutre: new Set<string>() };
   const clan = offreSelection(duClan, 0, true, sansPaniers, melanger);
   const autre = offreSelection(autreClan, 0, true, sansPaniers, melanger).slice(0, 1);

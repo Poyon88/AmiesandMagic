@@ -1700,6 +1700,10 @@ export interface IdentiteDeck { faction: string; clan: string | null }
 export interface ReglesPartie {
   /** Découverte un tour sur deux à la place de la pioche (cf. decouverte.ts). */
   decouverteAlternee?: boolean;
+  /** Graine de PARTIE de la découverte, figée à l'initialisation : elle tire le
+   *  coût de chaque rang, identique pour les deux joueurs. Absente (partie
+   *  commencée avant la refonte) ⇒ 0. */
+  graineDecouverte?: number;
 }
 
 export interface PlayerState {
