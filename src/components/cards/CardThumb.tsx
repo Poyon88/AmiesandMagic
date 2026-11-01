@@ -96,10 +96,10 @@ function ThumbIcons({ card, scale: s, accent, isCreature }: { card: Card; scale:
         return (
           <span key={`sk_${i}`} title={SPELL_KEYWORD_LABELS[sk.id] ?? sk.id} style={cell(spellKeywordDisplayOrder(i))}>
             <span style={{ position: "relative", display: "inline-flex", width: box, height: box, lineHeight: 0 }}>
-              <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[sk.id] || "✦"} size={box * 0.6} keyword={`spell_${sk.id}`} fill mode="spell" singulier={sk.singulier} light />
-              {spellKwScope(sk) && <AllAlliesMarker size={box * 0.4} color={keywordModeColor("spell")} label={scopeAriaLabel(spellKwScope(sk)!)} />}
+              <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[sk.id] || "✦"} size={box * 0.6} keyword={`spell_${sk.id}`} fill mode={sk.delay ? "delay" : "spell"} singulier={sk.singulier} light />
+              {spellKwScope(sk) && <AllAlliesMarker size={box * 0.4} color={keywordModeColor(sk.delay ? "delay" : "spell")} label={scopeAriaLabel(spellKwScope(sk)!)} />}
             </span>
-            {val && <span style={{ ...badge, color: keywordModeColor("spell") ?? accent }}>{val}</span>}
+            {val && <span style={{ ...badge, color: keywordModeColor(sk.delay ? "delay" : "spell") ?? accent }}>{val}</span>}
           </span>
         );
       })}

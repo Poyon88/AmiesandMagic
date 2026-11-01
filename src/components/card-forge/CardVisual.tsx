@@ -518,7 +518,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                   {valueText && (
                     <span style={{
                       fontSize: 10 * s, fontWeight: 900, lineHeight: 1,
-                      color: keywordModeColor("spell") ?? "#fff", fontFamily: "'Cinzel',serif",
+                      color: keywordModeColor(spellKw.delay ? "delay" : "spell") ?? "#fff", fontFamily: "'Cinzel',serif",
                       textShadow: `0 0 4px ${fac.accent}, ${TEXT_CONTRAST_HALO}`,
                       marginLeft: -4 * s,
                     }}>{valueText}</span>
@@ -680,7 +680,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
                 <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                   <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
                   <div>
-                    <div style={{ fontSize: 14 * s, color: keywordModeColor("spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
+                    <div style={{ fontSize: 14 * s, color: keywordModeColor(spellKw.delay ? "delay" : "spell") ?? fac.accent, fontWeight: 700 }}>{label}</div>
                     <div style={{ fontSize: 12 * s, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   </div>
                 </div>

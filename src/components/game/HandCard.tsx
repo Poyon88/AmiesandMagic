@@ -955,10 +955,10 @@ function HandCard({
               }}>
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, flexShrink: 0 }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={20} keyword={spellKey} fill mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
-                  {porteeSk && <AllAlliesMarker size={8} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
+                  {porteeSk && <AllAlliesMarker size={8} color={keywordModeColor(spellKw.delay ? "delay" : "spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
-                  fontSize: 12, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
+                  fontSize: 12, fontWeight: 900, color: keywordModeColor(spellKw.delay ? "delay" : "spell") ?? "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}, ${TEXT_CONTRAST_HALO}`,
                 }}>{valueText}</span>}
               </div>

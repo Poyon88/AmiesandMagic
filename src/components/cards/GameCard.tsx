@@ -531,10 +531,10 @@ export default function GameCard({
               }}>
                 <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 33 * icoS, height: 33 * icoS, flexShrink: 0 }}>
                   <KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={33 * icoS} keyword={spellKey} fill mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} />
-                  {porteeSk && <AllAlliesMarker size={13 * icoS} color={keywordModeColor("spell")} label={scopeAriaLabel(porteeSk)} />}
+                  {porteeSk && <AllAlliesMarker size={13 * icoS} color={keywordModeColor(spellKw.delay ? "delay" : "spell")} label={scopeAriaLabel(porteeSk)} />}
                 </span>
                 {valueText && <span style={{
-                  fontSize: 15 * s, fontWeight: 900, color: keywordModeColor("spell") ?? "#fff",
+                  fontSize: 15 * s, fontWeight: 900, color: keywordModeColor(spellKw.delay ? "delay" : "spell") ?? "#fff",
                   fontFamily: "'Cinzel',serif", textShadow: `0 0 3px ${accentColor}, ${TEXT_CONTRAST_HALO}`,
                   marginLeft: 1 * s,
                 }}>{valueText}</span>}
@@ -710,7 +710,7 @@ export default function GameCard({
               <div key={`sk_${i}`} style={{ order: spellKeywordDisplayOrder(i), display: "flex", alignItems: "flex-start", gap: 7 * s }}>
                 <span style={{ flexShrink: 0 }}><KeywordIcon symbol={SPELL_KEYWORD_SYMBOLS[spellKw.id] || "✦"} size={18 * s} keyword={`spell_${spellKw.id}`} mode={spellKw.delay ? "delay" : "spell"} singulier={spellKw.singulier} /></span>
                 <div>
-                  <div style={{ fontSize: 14 * so, color: keywordModeColor("spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
+                  <div style={{ fontSize: 14 * so, color: keywordModeColor(spellKw.delay ? "delay" : "spell") ?? accentColor, fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 12 * so, color: "#ddd", lineHeight: 1.4, fontFamily: "'Crimson Text',serif" }}>{desc}</div>
                   {spellKw.id === "usurpation" && (enJeu?.usurpationCount ?? 0) > 0 && <div style={{ fontSize: 11.5 * so, color: "#e8c56a", fontStyle: "italic", fontFamily: "'Crimson Text',serif" }}>{vocab.usurpationNote(enJeu!.usurpationCount!, spellKw.attack ?? 0, spellKw.health ?? 0)}</div>}
                   {/* Compagnons (sort) : les cartes liées vivent sur l'instance de mot-clé. */}
