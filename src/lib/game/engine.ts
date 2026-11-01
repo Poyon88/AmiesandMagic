@@ -669,6 +669,28 @@ function engagerPourActivation(source: CardInstance): void {
   if (hasKw(source, "ombre")) source.ombreRevealed = true;
 }
 
+/** Déclencheurs qui SORTENT UNE OMBRE de l'ombre : ceux d'une créature EN JEU
+ *  qui agit. Arbitrage de l'auteur (2026-11-01) : « une capacité déclenchée
+ *  fait perdre l'Ombre » — le libellé disait déjà « tant qu'elle n'a pas
+ *  effectué une action (attaque ou capacité) », mais seuls l'attaque et
+ *  l'activation la révélaient.
+ *
+ *  Exclus, délibérément :
+ *   • `on_play` — l'ENTRÉE EN JEU ne révèle pas (choix de l'auteur) : sinon
+ *     Ombre et effet d'arrivée s'annuleraient dès la pose ;
+ *   • mort, retour en main, pioche, déclencheurs « en main » — la carte n'est
+ *     pas (ou plus) sur le plateau, il n'y a rien à révéler ;
+ *   • `automatic` (auras, passifs) et `spell_resolution` — rien n'est « déclenché ». */
+const DECLENCHEURS_REVELANT_L_OMBRE: ReadonlySet<import("./types").CapabilityTrigger> = new Set([
+  "on_activation", "on_attack", "on_end_of_turn", "on_start_of_turn", "on_low_hp", "on_wound", "on_delay",
+]);
+
+/** Une capacité de `source` vient de se déclencher : une Ombre se révèle. */
+function revelerOmbreAuDeclenchement(source: CardInstance | null | undefined, trigger: import("./types").CapabilityTrigger | undefined): void {
+  if (!source || !trigger || !DECLENCHEURS_REVELANT_L_OMBRE.has(trigger)) return;
+  if (hasKw(source, "ombre")) source.ombreRevealed = true;
+}
+
 /** Merge two `keyword_instances` lists, deduping on (id, mode). Used by
  *  copy-keyword effects (Mimique, Héritage du cimetière) so that the
  *  copier inherits the source's tap-mode and death-mode triggers, not
@@ -1950,6 +1972,8 @@ function resolveComposedEffect(
         resolveComposedEffect(composed, source, owner, opponent, chosenTargetIds, fromSpell, opts));
     }
   }
+  // Avant l'effet : il doit voir la source déjà révélée (il peut la cibler).
+  revelerOmbreAuDeclenchement(source, opts?.trigger);
   // Chant : le bonus ne vaut QUE pour les effets du sort lui-même. La garde sur
   // le déclencheur est load-bearing — `settleSpellDeaths` tourne à l'intérieur
   // du `withChant`, si bien qu'un râle d'agonie déclenché par les dégâts du
@@ -10852,6 +10876,7 @@ function resolveCuratedKeywordEffect(
   // mort, retour, fin de tour, attaque, pioche). `inst.mode` porte le
   // déclencheur réel.
   noteAbilitySfx(kw, keywordModeToTrigger(inst?.mode));
+  revelerOmbreAuDeclenchement(source, keywordModeToTrigger(inst?.mode));
   // PORTÉE « TOUTES » : on rejoue la capacité avec, pour cible explicite,
   // chaque créature du camp visé — le chemin « cible explicite » de chaque cas
   // ci-dessous, sans picker différé ni tirage. Instantané pris avant le premier
