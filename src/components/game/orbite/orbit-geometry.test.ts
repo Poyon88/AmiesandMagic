@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ORBIT_BOTTOM_DEG, ORBIT_TOP_DEG, compteurVisible, orbitLayout, segmentsAllumes, type OrbitSlot,
+  ORBIT_BOTTOM_DEG, ORBIT_FLIP_TOP_DEG, ORBIT_TOP_DEG, compteurVisible, orbitLayout, segmentsAllumes, type OrbitSlot,
 } from "./orbit-geometry";
 
 const R = 137;
@@ -82,5 +82,35 @@ describe("jauges et visibilité", () => {
     expect(compteurVisible(null)).toBe(false);
     expect(compteurVisible(0)).toBe(false);
     expect(compteurVisible(1)).toBe(true);
+  });
+});
+
+describe("orbitLayout basculé (main qui recouvre les compteurs)", () => {
+  it("tout reste au-dessus de l'horizontale, compteurs du côté BORD", () => {
+    const l = orbitLayout(2, 3, { side: "mine", radius: R, itemSize: T, basculer: true });
+    for (const s of [...l.emblems.slots, ...l.counters.slots]) expect(s.y).toBeLessThan(0);
+    // Mon héros : le bord est à droite ; le premier compteur y est passé.
+    expect(l.counters.slots[0].x).toBeGreaterThan(0);
+    for (const s of l.emblems.slots) expect(s.x).toBeLessThan(0);
+  });
+
+  it("rien ne sort de l'arc basculé, rien ne se chevauche", () => {
+    for (let e = 0; e <= 9; e++) for (let c = 0; c <= 9; c++) {
+      const l = orbitLayout(e, c, { side: "mine", radius: R, itemSize: T, basculer: true });
+      const slots = [...l.emblems.slots, ...l.counters.slots];
+      for (const s of slots) {
+        expect(Math.hypot(s.x, s.y)).toBeCloseTo(R);
+        const a = angle(s, "mine");
+        expect(a).toBeGreaterThanOrEqual(-1e-6);
+        expect(a).toBeLessThanOrEqual(ORBIT_FLIP_TOP_DEG + 1e-6);
+      }
+      for (let i = 0; i < slots.length; i++) for (let j = i + 1; j < slots.length; j++) {
+        expect(Math.hypot(slots[i].x - slots[j].x, slots[i].y - slots[j].y)).toBeGreaterThanOrEqual(T - 1e-6);
+      }
+      // « +N » : N = tout ce qui est caché, l'élément qu'il remplace compris.
+      expect(l.emblems.slots.length - (l.emblems.overflow > 0 ? 1 : 0) + l.emblems.overflow).toBe(e);
+      // « +N » : N = tout ce qui est caché, l'élément qu'il remplace compris.
+      expect(l.counters.slots.length - (l.counters.overflow > 0 ? 1 : 0) + l.counters.overflow).toBe(c);
+    }
   });
 });

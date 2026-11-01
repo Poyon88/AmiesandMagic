@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import GameCard from "@/components/cards/GameCard";
 import { EXPLORATION_PALIER, MAX_CONQUETE, MAX_EPARGNE, MAX_FOI, MAX_INVENTIONS_MACHINE } from "@/lib/game/constants";
 import { buildMachineCard } from "@/lib/game/machine";
@@ -51,6 +51,9 @@ export interface HeroOrbitProps {
   onSpendConquete?: () => void;
   canTakeMachine?: boolean;
   onTakeMachine?: () => void;
+  /** Nombre de cartes en main (mon héros) : relance la mesure de recouvrement
+   *  qui décide de basculer les compteurs (cf. `basculer`). */
+  mainCount?: number;
   children: React.ReactNode;
 }
 
@@ -182,10 +185,43 @@ export default function HeroOrbit(props: HeroOrbitProps) {
   });
 
   const rayon = box.w > 0 ? Math.min(box.w, box.h) / 2 + TAILLE / 2 + ECART_PORTRAIT : 0;
-  const layout = orbitLayout(emblemItems.length, counterItems.length, { side, radius: rayon, itemSize: TAILLE });
+  const nEmblemes = emblemItems.length;
+  const nCompteurs = counterItems.length;
+
+  // BASCULE : une main pleine s'étale jusque sous le portrait et recouvre les
+  // compteurs (moitié basse côté plateau). On mesure le recouvrement des slots
+  // NORMAUX par les cartes de la main ; s'il y en a, les compteurs passent
+  // par-dessus le portrait, côté bord (cf. orbitLayout `basculer`).
+  // Mesuré quand la main change (après son animation d'entrée) et au
+  // redimensionnement, jamais en continu : le zoom au survol d'une carte ferait
+  // osciller la bascule.
+  const [recouvert, setRecouvert] = useState(false);
+  useEffect(() => {
+    if (!mine || rayon <= 0 || nCompteurs === 0) return;
+    const mesurer = () => {
+      const el = boxRef.current;
+      if (!el || box.w <= 0) return;
+      const r = el.getBoundingClientRect();
+      const k = r.width / box.w; // zoom CSS du plateau
+      const demi = (TAILLE / 2) * k;
+      const slots = orbitLayout(nEmblemes, nCompteurs, { side, radius: rayon, itemSize: TAILLE }).counters.slots;
+      const cartes = Array.from(document.querySelectorAll('[data-hand-card="true"]'), (c) => c.getBoundingClientRect());
+      setRecouvert(slots.some((s) => {
+        const cx = r.left + (box.w / 2 + s.x) * k;
+        const cy = r.top + (box.h / 2 + s.y) * k;
+        return cartes.some((c) => cx + demi > c.left && cx - demi < c.right && cy + demi > c.top && cy - demi < c.bottom);
+      }));
+    };
+    const minuteur = window.setTimeout(mesurer, 450);
+    window.addEventListener("resize", mesurer);
+    return () => { window.clearTimeout(minuteur); window.removeEventListener("resize", mesurer); };
+  }, [mine, side, rayon, nEmblemes, nCompteurs, props.mainCount, box.w, box.h]);
+  const basculer = mine && nCompteurs > 0 && recouvert;
+
+  const layout = orbitLayout(nEmblemes, nCompteurs, { side, radius: rayon, itemSize: TAILLE, basculer });
 
   return (
-    <div ref={boxRef} className="relative" data-hero-orbit={side}>
+    <div ref={boxRef} className="relative" data-hero-orbit={side} data-orbit-bascule={basculer || undefined}>
       {children}
       {rayon > 0 && (
         <>

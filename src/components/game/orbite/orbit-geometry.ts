@@ -30,40 +30,57 @@ export const ORBIT_TOP_DEG = 90;
 export const ORBIT_BOTTOM_DEG = -66;
 /** Jour confortable entre deux éléments, et jour minimal avant le « +N ». */
 export const ORBIT_GAP_PX = 10;
+/** Arc BASCULÉ (main qui recouvre le bas côté plateau) : de l'horizontale côté
+ *  plateau jusqu'à 55° au-dessus de l'horizontale côté BORD (180 − 55). Plus
+ *  bas côté bord, les éléments sortiraient de l'écran : le portrait y est collé. */
+export const ORBIT_FLIP_TOP_DEG = 125;
 export const ORBIT_MIN_GAP_PX = 2;
 
 /** Disposition des deux groupes sur l'arc de rayon `radius`. */
 export function orbitLayout(
   nEmblems: number,
   nCounters: number,
-  opts: { side: OrbitSide; radius: number; itemSize: number },
+  opts: {
+    side: OrbitSide; radius: number; itemSize: number;
+    /** Compteurs basculés par-dessus le portrait, vers le bord : la moitié basse
+     *  côté plateau est recouverte (main pleine). Tout reste AU-DESSUS de
+     *  l'horizontale ; les emblèmes partent de l'horizontale côté plateau, les
+     *  compteurs du haut de l'arc côté bord. */
+    basculer?: boolean;
+  },
 ): { emblems: OrbitGroupLayout; counters: OrbitGroupLayout } {
-  const { side, radius, itemSize } = opts;
+  const { side, radius, itemSize, basculer = false } = opts;
   const vide = { slots: [], overflow: 0 };
   if (radius <= 0 || nEmblems + nCounters <= 0) return { emblems: vide, counters: vide };
 
   const deg = (px: number) => (px / radius) * (180 / Math.PI);
   const pasIdeal = deg(itemSize + ORBIT_GAP_PX);
   const pasMin = deg(itemSize + ORBIT_MIN_GAP_PX);
-  const etendue = ORBIT_TOP_DEG - ORBIT_BOTTOM_DEG;
-  const capacite = Math.max(1, Math.floor(etendue / pasMin) + 1);
+  const etendue = basculer ? ORBIT_FLIP_TOP_DEG : ORBIT_TOP_DEG - ORBIT_BOTTOM_DEG;
+  // Basculé, les deux groupes partent chacun d'une BORNE (0° et le haut) : n
+  // éléments demandent n pas pleins, pas n − 1.
+  const capacite = Math.max(1, Math.floor(etendue / pasMin) + (basculer ? 0 : 1));
 
   // Débordement : les COMPTEURS d'abord (cliquables), en laissant au moins un
   // slot aux emblèmes s'il y en a ; le reste va aux emblèmes.
   const cSlots = Math.min(nCounters, capacite - (nEmblems > 0 ? 1 : 0));
   const eSlots = Math.min(nEmblems, capacite - cSlots);
   const total = eSlots + cSlots;
-  const pas = total <= 1 ? pasIdeal : Math.max(pasMin, Math.min(pasIdeal, etendue / (total - 1)));
+  const pas = basculer
+    ? Math.max(pasMin, Math.min(pasIdeal, etendue / Math.max(1, total)))
+    : total <= 1 ? pasIdeal : Math.max(pasMin, Math.min(pasIdeal, etendue / (total - 1)));
 
-  // Angles depuis l'horizontale, groupes de part et d'autre…
+  // Angles depuis l'horizontale, groupes de part et d'autre (basculé : les
+  // compteurs descendent depuis le haut de l'arc, côté bord)…
   const aE = Array.from({ length: eSlots }, (_, i) => (i + 0.5) * pas);
-  const aC = Array.from({ length: cSlots }, (_, j) => -(j + 0.5) * pas);
+  const aC = Array.from({ length: cSlots }, (_, j) => basculer ? ORBIT_FLIP_TOP_DEG - (j + 0.5) * pas : -(j + 0.5) * pas);
   // …puis glissement si un groupe dépasse sa borne (l'étendue totale tient,
   // un seul glissement suffit).
   const haut = aE.length ? aE[aE.length - 1] : aC[0];
   const bas = aC.length ? aC[aC.length - 1] : aE[0];
   let decalage = 0;
-  if (haut > ORBIT_TOP_DEG) decalage = ORBIT_TOP_DEG - haut;
+  if (basculer) { /* chaque groupe part de sa borne : rien ne déborde */ }
+  else if (haut > ORBIT_TOP_DEG) decalage = ORBIT_TOP_DEG - haut;
   else if (bas < ORBIT_BOTTOM_DEG) decalage = ORBIT_BOTTOM_DEG - bas;
 
   // Mon héros : plateau à gauche (180°), « vers le haut » = vers 90°.

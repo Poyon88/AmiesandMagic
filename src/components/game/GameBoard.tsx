@@ -927,6 +927,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     canTakeMachine, onTakeMachine: handleTakeMachine,
     contresort: myPlayer.contresort, exclusion: myPlayer.exclusion,
     singleton: myPlayer.singleton === true,
+    mainCount: myPlayer.hand.length,
   };
   const opponentOrbit = {
     side: "theirs" as const, porteur: "opponent" as const,
