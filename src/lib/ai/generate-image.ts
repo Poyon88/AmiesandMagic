@@ -28,6 +28,25 @@ const IMAGEN_MODELS_2K = [
   'imagen-3.0-generate-002',
 ];
 
+// Délai MAXIMAL d'un essai. Les modèles en préversion restent parfois muets
+// jusqu'à ce que Google abandonne de lui-même (« Deadline expired », ~2 min)
+// alors qu'une réponse normale arrive en 8 à 10 s : sans borne, le bouton
+// restait sur « Génération… » tout ce temps avant que le repli ne s'enclenche.
+const DELAI_ESSAI_MS = 45_000;
+
+/** fetch borné : un dépassement devient une erreur lisible, rangée dans
+ *  `errorSink` par l'appelant comme les autres échecs (et donc suivie du repli). */
+async function fetchBorne(model: string, url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(DELAI_ESSAI_MS) });
+  } catch (err) {
+    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new Error(`${model} n'a pas répondu en ${DELAI_ESSAI_MS / 1000} s`);
+    }
+    throw err;
+  }
+}
+
 // Formats acceptés par `imageConfig.aspectRatio` de Gemini ; un autre (ex. 5:7)
 // ferait échouer l'appel, on le laisse alors au seul prompt.
 const RATIOS_GEMINI = new Set(['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9']);
@@ -78,7 +97,8 @@ async function callImagen(
   size: '1K' | '2K',
   errorSink: string[],
 ): Promise<GenerateImageResult | null> {
-  const res = await fetch(
+  const res = await fetchBorne(
+    model,
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
     {
       method: 'POST',
@@ -134,7 +154,8 @@ async function callGemini(
       },
     });
   }
-  const res = await fetch(
+  const res = await fetchBorne(
+    model,
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
