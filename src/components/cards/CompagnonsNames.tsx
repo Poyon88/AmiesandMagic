@@ -10,7 +10,7 @@
 // réimplémenté cinq fois (GameCard, HandCard, BoardCreature, SpellCastOverlay,
 // MulliganOverlay). Écrire la liste dans chacun aurait été la cinquième copie
 // d'un motif qui a déjà dérivé plusieurs fois ici.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import GameCard from "./GameCard";
 import { useCardText } from "@/components/game/CardTextProvider";
@@ -63,6 +63,44 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
   const [survolee, setSurvolee] = useState<Card | null>(null);
   const [ancre, setAncre] = useState<{ x: number; y: number } | null>(null);
   const refs = useRef(new Map<number, HTMLElement>());
+  const liste = useRef<HTMLDivElement>(null);
+  const apercu = useRef<HTMLDivElement | null>(null);
+  const fermeture = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // L'aperçu est INTERACTIF : on peut y entrer pour faire défiler un verso
+  // long et survoler SES pastilles (les objets d'un sort appris, par exemple),
+  // qui ouvrent leur propre aperçu par-dessus. Quitter la pastille ne ferme
+  // donc qu'après un court délai, annulé si la souris arrive sur l'aperçu.
+  // Pour la carte hôte (BoardCreature, HandCard), rien ne change : l'aperçu
+  // est un portail, mais un descendant dans l'arbre React — y entrer ne
+  // déclenche pas son onMouseLeave.
+  const garderOuvert = () => {
+    if (fermeture.current) clearTimeout(fermeture.current);
+    fermeture.current = null;
+  };
+  const fermerBientot = () => {
+    garderOuvert();
+    fermeture.current = setTimeout(() => setSurvolee(null), 150);
+  };
+  useEffect(() => garderOuvert, []);
+
+  // MOLETTE sur une pastille = défilement du verso survolé, sans avoir à
+  // entrer dans l'aperçu (un verso long déborde de la carte). Écouteur NATIF posé sur la
+  // liste : il passe avant celui de DetailEnJeu (ancêtre), dont la molette
+  // agrandirait sinon la carte hôte.
+  useEffect(() => {
+    const el = liste.current;
+    if (!el) return;
+    const surMolette = (e: WheelEvent) => {
+      const zone = apercu.current?.querySelector<HTMLElement>("[data-verso-defilant]");
+      if (!zone || zone.scrollHeight <= zone.clientHeight) return;
+      e.preventDefault();
+      e.stopPropagation();
+      zone.scrollTop += e.deltaY;
+    };
+    el.addEventListener("wheel", surMolette, { passive: false });
+    return () => el.removeEventListener("wheel", surMolette);
+  });
 
   // Rien à dire tant que rien n'est résolu : hors partie, la requête est en vol
   // au premier rendu. Mieux vaut le texte générique seul qu'une liste vide ou
@@ -81,6 +119,7 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
     const r = overlayRect(el);
     // Aperçu ancré AU-DESSUS de la pastille, centré : le verso est haut, et le
     // survol se fait souvent en bas d'écran (main du joueur).
+    garderOuvert();
     setAncre({ x: r.left + r.width / 2, y: r.top });
     setSurvolee(c);
   };
@@ -91,13 +130,13 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
   const k = Math.max(scale, 1);
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 * k, marginTop: 4 * k }}>
+    <div ref={liste} style={{ display: "flex", flexWrap: "wrap", gap: 5 * k, marginTop: 4 * k }}>
       {groupes.map(({ carte: c, count }) => (
         <span
           key={c.id}
           ref={(el) => { if (el) refs.current.set(c.id, el); }}
           onMouseEnter={() => montrer(c)}
-          onMouseLeave={() => setSurvolee(null)}
+          onMouseLeave={fermerBientot}
           style={{
             display: "inline-flex", alignItems: "center", gap: 6 * k,
             padding: `${3 * k}px ${10 * k}px ${3 * k}px ${3 * k}px`,
@@ -130,17 +169,27 @@ export default function CompagnonsNames({ ids, cards, scale = 1, icon = "🐾", 
           style={{
             position: "fixed",
             left: ancre.x,
-            top: ancre.y - 8,
+            top: ancre.y,
             transform: "translate(-50%, -100%)",
+            // L'écart avec la pastille est une marge INTÉRIEURE : la souris
+            // reste sur l'aperçu en le rejoignant, sans survoler le plateau —
+            // ce qui fermerait la carte hôte, et l'aperçu avec elle.
+            paddingBottom: 8,
             // Au-dessus des versos, des modales de choix ET du descriptif
             // agrandi d'une carte en partie (DetailEnJeu, z 220) qui porte
             // justement la pastille survolée.
             zIndex: 240,
-            pointerEvents: "none",
             filter: "drop-shadow(0 10px 26px rgba(0,0,0,0.75))",
           }}
           key={survolee.id}
-          ref={dansLEcran}
+          ref={(el) => { apercu.current = el; dansLEcran(el); }}
+          onMouseEnter={garderOuvert}
+          onMouseLeave={fermerBientot}
+          // Un clic dans l'aperçu ne doit pas remonter jusqu'à la carte hôte
+          // (sélection d'attaquant, glisser d'une carte en main…).
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           {/* `showDetails` : c'est le VERSO qu'on veut montrer, pas l'illustration. */}
           <GameCard card={survolee} size="md" showDetails disableHoverZoom forceRarityFrame />

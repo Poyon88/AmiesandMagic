@@ -594,7 +594,7 @@ export default function GameCard({
       </div>
 
       {/* ── Hover overlay: effect text ── */}
-      <div className="no-scrollbar" style={{
+      <div className="no-scrollbar" data-verso-defilant="" style={{
         position: "absolute", inset: 0, zIndex: 3,
         background: "#060612b3",
         backdropFilter: "blur(2px)",
