@@ -1812,6 +1812,20 @@ function applyComposedToUnit(
   }
 }
 
+/** CAPACITÉ CONFÉRÉE À L'ENTRÉE EN JEU : la créature porteuse ne se la confère
+ *  jamais à elle-même. Sans autre cible valide, l'effet ne fait rien — la pose
+ *  n'est pas bloquée pour autant (l'interface laisse jouer sans cible). Le cas
+ *  courant : seule sur le plateau, le repli « au choix sans désignation » la
+ *  prenait, elle, comme première unité du pool. */
+function exclutPorteuse(
+  composed: import("./types").ComposedEffect,
+  trigger: import("./types").CapabilityTrigger | undefined,
+  source: CardInstance | null,
+): CardInstance | null {
+  if (composed.content !== "grant_keyword" || trigger !== "on_play") return null;
+  return source && source.card.card_type !== "spell" ? source : null;
+}
+
 /** Cible composée résolue : une unité, ou un héros. */
 type ComposedTargetRef =
   | { kind: "unit"; unit: CardInstance }
@@ -1844,8 +1858,12 @@ function selectComposedTargets(
   opponent: PlayerState,
   chosenTargetIds?: string[],
   harmful?: boolean,
+  // Unité retirée du pool AVANT la sélection (cf. exclutPorteuse) : retirée
+  // après, un tirage au hasard tombé sur elle ne ferait plus rien du tout.
+  exclue?: CardInstance | null,
 ): ComposedTargetRef[] {
-  const pool = buildComposedPool(spec, owner, opponent);
+  const pool = buildComposedPool(spec, owner, opponent)
+    .filter((ref) => !exclue || ref.kind !== "unit" || ref.unit !== exclue);
 
   if (spec.count === "all") return pool;
   const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
@@ -1926,7 +1944,8 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   const cap = getCapabilities(source.card).find(c => c.uid === trigger.capUid && c.composed);
   const spec = cap?.composed ? cibleComposee(cap.composed) : undefined;
   if (!spec) return [];
-  return composedTargetIds(spec, controller, other);
+  const ids = composedTargetIds(spec, controller, other);
+  return exclutPorteuse(cap!.composed!, cap!.trigger, source) ? ids.filter(id => id !== source.instanceId) : ids;
 }
 
 function resolveComposedEffect(
@@ -2511,8 +2530,9 @@ function resolveComposedEffect(
     const py = pointwise ? 0 : y;
     const seqType = composed.content === "heal" ? "heal" : "damage";
     for (let i = 0; i < passes; i++) {
+      const exclue = exclutPorteuse(composed, opts?.trigger, source);
       const pool = buildComposedPool(target, owner, opponent)
-        .filter((ref) => ref.kind === "hero" || ref.unit.currentHealth > 0);
+        .filter((ref) => ref.kind === "hero" || (ref.unit.currentHealth > 0 && ref.unit !== exclue));
       if (pool.length === 0) break;
       const ref = pool[Math.floor(rng() * pool.length)];
       if (ref.kind === "hero") {
@@ -2541,7 +2561,8 @@ function resolveComposedEffect(
     composed.content === "deal_damage" || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze" ||
     composed.content === "poison";
-  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful)) {
+  for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful,
+    exclutPorteuse(composed, opts?.trigger, source))) {
     if (t.kind === "hero") {
       applyComposedToHero(composed.content, t.hero, x, source);
       recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);

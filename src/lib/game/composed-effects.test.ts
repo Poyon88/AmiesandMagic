@@ -123,20 +123,27 @@ describe("interpréteur composé — contenus d'effet", () => {
   });
 
   it("grant_keyword confère un mot-clé aux alliés", () => {
+    // La porteuse elle-même est exclue (cf. don-entree-sans-porteuse.test.ts).
+    const s0 = mkState();
+    const ally = mkInstance(mkCard({ attack: 1, health: 3 }));
+    s0.players[0].board = [ally];
     const creature = mkCard({ capabilities: [composedCap("on_play", { content: "grant_keyword", grantAbilityId: "gloire", target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] });
-    const s = play(mkState(), mkInstance(creature));
-    const self = s.players[0].board[0];
-    expect((self.card.keywords as string[]).includes("gloire")).toBe(true);
+    const s = play(s0, mkInstance(creature));
+    const a = s.players[0].board.find((c) => c.instanceId === ally.instanceId)!;
+    expect((a.card.keywords as string[]).includes("gloire")).toBe(true);
   });
 
   it("grant_keyword d'une capacité à couple transporte X ET Y (Gloire +X/+Y)", () => {
     // Régression : l'amplitude du forge ne transportait que X, donc une Gloire
     // conférée retombait sur le +Y=1 par défaut quelle que soit la saisie.
+    const s0 = mkState();
+    const ally = mkInstance(mkCard({ attack: 1, health: 3 }));
+    s0.players[0].board = [ally];
     const creature = mkCard({ capabilities: [composedCap("on_play", { content: "grant_keyword", grantAbilityId: "gloire", magnitude: { x: 3, y: 2 }, target: { entity: "unit", count: "all", side: "ally", location: "board", designation: "random" } })] });
-    const s = play(mkState(), mkInstance(creature));
-    const self = s.players[0].board[0];
-    expect(self.grantedKeywordX["gloire"]).toBe(3);
-    expect(self.grantedKeywordY?.["gloire"]).toBe(2);
+    const s = play(s0, mkInstance(creature));
+    const a = s.players[0].board.find((c) => c.instanceId === ally.instanceId)!;
+    expect(a.grantedKeywordX["gloire"]).toBe(3);
+    expect(a.grantedKeywordY?.["gloire"]).toBe(2);
   });
 
   it("désignation hasard : exactement une cible touchée, déterministe (RNG semée)", () => {

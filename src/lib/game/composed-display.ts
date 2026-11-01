@@ -305,6 +305,9 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.count_all": "à toutes les unités",
   "target.count_one": "à une unité",
   "target.count_n": "à {n} unités",
+  "target.count_all_autres": "à toutes les autres unités",
+  "target.count_one_autre": "à une autre unité",
+  "target.count_n_autres": "à {n} autres unités",
   "target.count_scatter": "à au plus {n} unités",
   // Cibles OBJET, et UNITÉ OU OBJET (accords au masculin).
   "target.item_count_all": "à tous les objets",
@@ -951,7 +954,12 @@ function nomCompteDeRace(t: TargetSpec | undefined, tr?: SafeT): string | null {
   return getRaceCountForm(m.race[0], form, tr)?.replace(/\{n\}/g, String(n)) ?? null;
 }
 
-function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): string {
+function describeTarget(
+  t: TargetSpec | undefined, tr?: SafeT, direct = false,
+  // « autres » : la porteuse est exclue des cibles (don à l'entrée en jeu, cf.
+  // exclutPorteuse dans le moteur). Seul le jeu d'unités avec « à » le dit.
+  autres = false,
+): string {
   if (!t) return "";
   // `p` sélectionne le jeu de fragments : avec ou sans préposition.
   const p = direct ? "targetd" : "target";
@@ -977,10 +985,11 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   const scatterRange = t.designation === "scatter" && typeof t.count === "number" && t.count > 1;
   // Jeu de fragments selon la nature visée : unités (défaut), objets, ou les deux.
   const q = t.entity === "item" ? `${p}.item_` : t.entity === "unit_or_item" ? `${p}.uoi_` : `${p}.`;
+  const aut = autres && q === "target." && !scatterRange;
   const count = scatterRange ? frag(tr, `${q}count_scatter`, { n: t.count })
-    : t.count === "all" ? frag(tr, `${q}count_all`)
-    : t.count === 1 ? frag(tr, `${q}count_one`)
-    : frag(tr, `${q}count_n`, { n: t.count });
+    : t.count === "all" ? frag(tr, aut ? "target.count_all_autres" : `${q}count_all`)
+    : t.count === 1 ? frag(tr, aut ? "target.count_one_autre" : `${q}count_one`)
+    : frag(tr, aut ? "target.count_n_autres" : `${q}count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many, t.entity === "item" || t.entity === "unit_or_item");
   const mtxt = filtreLabel(t, tr);
   const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
@@ -1102,7 +1111,8 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
     ?? (eff.content === "incineration" ? describeIncineration(eff, t) : null)
     ?? [
       describeContent(eff, tokens, t),
-      skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content)),
+      skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content),
+        eff.content === "grant_keyword" && cap.trigger === "on_play"),
     ].filter(Boolean).join(" ");
   const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
     : eff.content === "transformation" ? carteDArrivee(eff, t) : "";
