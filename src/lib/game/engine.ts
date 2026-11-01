@@ -3102,6 +3102,14 @@ function makeDedoublementClone(source: CardInstance): CardInstance {
  *  sortie de zone (returnInstanceToPlay) ET pilote l'affichage hors-plateau
  *  (cimetière / main) pour qu'il reflète l'état réel — au même titre que les
  *  buffs génériques, déjà cuits dans `card.attack`/`card.health`. */
+/** Dégâts que porte une unité HORS PLATEAU (blessée en main par un effet qui
+ *  vise la main) : écart entre ses PV max et ses PV courants. Les buffs
+ *  relèvent les deux ensemble, l'écart ne mesure donc que la blessure. */
+export function blessureHorsPlateau(inst: CardInstance): number {
+  if (inst.maxHealth == null || inst.currentHealth == null) return 0;
+  return Math.max(0, inst.maxHealth - inst.currentHealth);
+}
+
 export function persistentStats(inst: CardInstance): { attack: number; health: number } {
   return {
     attack: (inst.card.attack ?? 0)
@@ -9455,6 +9463,20 @@ function dealDamageToCreature(
     damage += consumeWrathBonus();
   }
 
+  // EN MAIN, une unité n'a AUCUNE capacité active (règle de l'auteur,
+  // 2026-11-01) : ni Transcendance, ni Indestructible, ni Bouclier, ni
+  // Résistance, ni Armure, ni Gloire, ni Blessure. Les dégâts tombent tels
+  // quels ; à 0 PV, le balayage des morts l'envoie au cimetière (cf.
+  // cleanDeadCreatures). Test POSITIF sur la main : si les joueurs en cours
+  // ne sont pas publiés, on retombe sur le chemin normal plutôt que de
+  // supposer la carte hors jeu.
+  if (currentBoardPlayers.some(p => p.hand.includes(creature))) {
+    creature.currentHealth -= damage;
+    damageLedgerSink.push({ targetInstanceId: creature.instanceId, amount: damage });
+    if (creature.currentHealth > 0 && isLethalTouch(source, isSpellDamage)) creature.currentHealth = 0;
+    return;
+  }
+
   // Transcendance: immunité totale aux sorts (y compris zone), mais pas aux
   // capacités de créatures.
   if (hasKw(creature, "transcendance") && (fromSpell ?? isSpellDamage)) {
@@ -9575,6 +9597,18 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
 
   player.board = alive;
   player.graveyard.push(...dead);
+
+  // UNITÉS TUÉES EN MAIN (dégâts d'un effet qui vise la main) : elles partent
+  // au cimetière, SANS rien déclencher — en main, une unité n'a aucune
+  // capacité active (ni râle, ni Résurrection, ni Seconde vie). D'où leur
+  // absence de `dead`, que les appelants passent à processDeathTriggers. Vu en
+  // partie : un Sipahi touché en main par Salve dans la Brume (−1 PV) restait
+  // jouable, se payait 4 mana et mourait à l'arrivée.
+  const mortesEnMain = player.hand.filter(c => c.card.card_type === "creature" && c.currentHealth <= 0);
+  if (mortesEnMain.length > 0) {
+    player.hand = player.hand.filter(c => !mortesEnMain.includes(c));
+    player.graveyard.push(...mortesEnMain);
+  }
   return dead;
 }
 

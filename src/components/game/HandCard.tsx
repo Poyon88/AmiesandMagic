@@ -14,7 +14,7 @@ import { buildKeywordDisplayEntries, keywordModeColor, keywordBadgeValue, valeur
 import { displayCardOf } from "@/lib/game/singulier";
 import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
-import { persistentStats, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints, usurpationCount } from "@/lib/game/engine";
+import { persistentStats, blessureHorsPlateau, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints, usurpationCount } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
@@ -181,9 +181,14 @@ function HandCard({
   // nécrophagie…). Pertinent pour une créature renvoyée en main (rebond) qui
   // garde son bonus de Loyauté — aligne la main sur le cimetière. Pour une
   // carte fraîche, les bonus valent 0 → stats de base inchangées.
-  const { attack: displayAttack, health: displayHealth } = isCreature
+  const { attack: displayAttack, health: pvSansBlessure } = isCreature
     ? persistentStats(cardInstance)
     : { attack: card.attack ?? 0, health: card.health ?? 0 };
+  // Blessure reçue EN MAIN (effet qui vise la main) : elle est conservée et
+  // l'unité entrera en jeu avec. La carte l'affiche, en rouge — elle disait
+  // 4/4 d'une unité à −1 PV, que le joueur payait pour la voir mourir.
+  const blessure = isCreature ? blessureHorsPlateau(cardInstance) : 0;
+  const displayHealth = pvSansBlessure - blessure;
   // Colonne de droite : Éveil (jauge vide en main) puis coût additionnel. Les
   // marqueurs qui vivaient dans ce coin (« EN JEU », conquête) descendent sous
   // les jetons présents.
@@ -781,7 +786,7 @@ function HandCard({
           <StatShields
             atk={displayAttack} hp={displayHealth}
             atkTone={toneFor(displayAttack, card.attack ?? 0)}
-            hpTone={toneFor(displayHealth, card.health ?? 0)}
+            hpTone={blessure > 0 ? "debuff" : toneFor(displayHealth, card.health ?? 0)}
             bonus={isItem}
           />
         )}
@@ -1014,7 +1019,7 @@ function HandCard({
             ...(porteDesStats ? {
               atk: displayAttack, hp: displayHealth,
               atkTone: toneFor(displayAttack, card.attack ?? 0),
-              hpTone: toneFor(displayHealth, card.health ?? 0),
+              hpTone: blessure > 0 ? "debuff" : toneFor(displayHealth, card.health ?? 0),
             } : null),
             espritCount: espritCount ?? undefined,
             usurpationCount: usurpationN ?? undefined,
