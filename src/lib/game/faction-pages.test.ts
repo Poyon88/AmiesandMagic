@@ -72,7 +72,7 @@ describe("Portrait de clan", () => {
 
   it("un clan des Royaumes Libres ne rend que les races qui s'y rattachent", () => {
     const nord = clansOfFaction("Humains").find((c) => c.nom === "Le Royaume du Nord")!;
-    expect(nord.races).toEqual(["Humains", "Griffons", "Faucons"]);
+    expect(nord.races).toEqual(["Humains", "Griffons", "Faucons", "Yétis"]);
     const vent = clansOfFaction("Humains").find((c) => c.nom === "Les Guerrières du Vent")!;
     expect(vent.races).toEqual(["Humains", "Griffons", "Faucons", "Pégases", "Sphinx"]);
   });

@@ -66,6 +66,7 @@ export const RACE_FORMS_FR: Record<string, Inflected> = {
   // « Sphinx » est invariable ; masculin en français, quoique la gardienne du
   // mythe grec soit une figure féminine.
   "Pégases": { def: "le Pégase", bare: "Pégase", de: "du Pégase", one: "un Pégase", all: "tous les Pégases", upto: "jusqu'à {n} Pégases" },
+  "Yétis": { def: "le Yéti", bare: "Yéti", de: "du Yéti", one: "un Yéti", all: "tous les Yétis", upto: "jusqu'à {n} Yétis" },
   "Sphinx": { def: "le Sphinx", bare: "Sphinx", de: "du Sphinx", one: "un Sphinx", all: "tous les Sphinx", upto: "jusqu'à {n} Sphinx" },
   "Hommes-Loups": { def: "l'Homme-Loup", bare: "Homme-Loup", de: "de l'Homme-Loup", one: "un Homme-Loup", all: "tous les Hommes-Loups", upto: "jusqu'à {n} Hommes-Loups" },
   "Hommes-Ours": { def: "l'Homme-Ours", bare: "Homme-Ours", de: "de l'Homme-Ours", one: "un Homme-Ours", all: "tous les Hommes-Ours", upto: "jusqu'à {n} Hommes-Ours" },

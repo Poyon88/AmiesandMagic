@@ -1259,6 +1259,7 @@
       "Faucons": "Faucons",
       "Pégases": "Pégases",
       "Sphinx": "Sphinx",
+      "Yétis": "Yétis",
       "Hommes-Loups": "Hommes-Loups",
       "Hommes-Ours": "Hommes-Ours",
       "Hommes-Félins": "Hommes-Félins",
@@ -1523,6 +1524,14 @@
         "one": "un Sphinx",
         "all": "tous les Sphinx",
         "upto": "jusqu'à {n} Sphinx"
+      },
+      "Yétis": {
+        "def": "le Yéti",
+        "bare": "Yéti",
+        "de": "du Yéti",
+        "one": "un Yéti",
+        "all": "tous les Yétis",
+        "upto": "jusqu'à {n} Yétis"
       },
       "Hommes-Loups": {
         "def": "l'Homme-Loup",

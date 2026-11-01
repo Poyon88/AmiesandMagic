@@ -551,7 +551,7 @@ export const FACTIONS: Record<string, {
   Humains: {
     displayName: "Les Royaumes Libres",
     color: "#2c5f8a", accent: "#74b9ff", emoji: "⚔️", bg: "#0a0f2a", alignment: "neutre",
-    races: ["Humains", "Griffons", "Faucons", "Pégases", "Sphinx"],
+    races: ["Humains", "Griffons", "Faucons", "Pégases", "Sphinx", "Yétis"],
     // Groupe transversal SCINDÉ le 2026-09-20, à l'arrivée des Pégases et des
     // Sphinx : tant qu'il portait `appliesTo: "all"` — qui se résout sur
     // `faction.races` — déclarer ces deux races les aurait ouvertes aux QUATRE
@@ -569,6 +569,8 @@ export const FACTIONS: Record<string, {
       { names: ["Le Royaume du Nord", "L'Ordre de l'Aube", "Les Guerrières du Vent", "La Sublime Porte"], appliesTo: "Faucons" },
       { names: ["Les Guerrières du Vent"], appliesTo: "Pégases" },
       { names: ["Les Guerrières du Vent"], appliesTo: "Sphinx" },
+      // Le Yéti, géant des neiges du Nord : rattaché au SEUL Royaume du Nord.
+      { names: ["Le Royaume du Nord"], appliesTo: "Yétis" },
     ],
     statWeights: { atk: 1.00, def: 1.00 },
     guaranteedKeywords: [],
@@ -608,6 +610,15 @@ export const FACTIONS: Record<string, {
       //    rocher — le contrepoint immobile du pégase.
       "Pégases": { likelyKeywords: { "Vol": 0.90, "Loyauté": 0.60, "Raid": 0.55, "Bénédiction": 0.50, "Inspiration X": 0.40, "Piétinement": 0.35 } },
       "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort X": 0.45, "Provocation": 0.40, "Terreur": 0.40, "Ancré": 0.35 } },
+      // YÉTIS (2026-10-31) — le géant des neiges, rattaché au SEUL Royaume du
+      // Nord. Même arbitrage que Pégases et Sphinx : SANS statWeights, le clan
+      // garde son corps (1.15/0.90), qui sied déjà à une brute des cimes.
+      // Le clan razzie et conquiert ; le yéti est la MONTAGNE elle-même : il
+      // glace sa proie (Paralysie), épouvante (Terreur — l'abominable homme
+      // des neiges), écrase (Piétinement), s'enrage (Fureur), cicatrise sous sa
+      // fourrure (Régénération X) et encaisse le froid (Résistance X). Aucun
+      // mot-clé du clan, et aucun recoupement avec l'ombrelle de faction.
+      "Yétis": { likelyKeywords: { "Paralysie": 0.55, "Terreur": 0.50, "Piétinement": 0.50, "Fureur": 0.45, "Régénération X": 0.40, "Résistance X": 0.35 } },
     },
     clanProfiles: {
       // Conquête X en tête : signature du clan (compteur dépensé en découvertes

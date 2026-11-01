@@ -265,6 +265,7 @@ Réponds UNIQUEMENT en JSON valide sans backticks :
           "Faucons": ["falcon", "hawk", "faucon"],
           "Pégases": ["pegasus", "pégase", "winged horse"],
           "Sphinx": ["sphinx", "sphinge", "riddle guardian"],
+          "Yétis": ["yeti", "yéti", "abominable snowman", "snow beast"],
           "Hommes-Loups": ["werewolf", "wolf-man", "homme-loup"],
           "Hommes-Ours": ["werebear", "bear-man", "homme-ours"],
           "Hommes-Félins": ["werecat", "cat-man", "homme-félin"],

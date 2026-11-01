@@ -64,6 +64,8 @@ export const RACE_ABILITY_RULES: Readonly<Record<string, RaceAbilityRule>> = {
   "Hommes-Arbres": LOURDS,
   "Trolls": { interdits: ["Vol", "Célérité", "Esquive"] },
   "Ogres": { interdits: ["Vol", "Esquive"] },
+  // Masse des cimes, mais pas lente : la Célérité du Royaume du Nord lui reste.
+  "Yétis": { interdits: ["Vol", "Esquive"] },
   "Léviathans": LOURDS,
   "Bêtes Chtoniennes": { interdits: ["Vol", "Esquive"] },
 

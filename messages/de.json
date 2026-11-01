@@ -1259,6 +1259,7 @@
       "Faucons": "Falken",
       "Pégases": "Pegasusse",
       "Sphinx": "Sphinxe",
+      "Yétis": "Yetis",
       "Hommes-Loups": "Wolfsmenschen",
       "Hommes-Ours": "Bärenmenschen",
       "Hommes-Félins": "Katzenmenschen",
@@ -1523,6 +1524,14 @@
         "one": "eine Sphinx",
         "all": "alle Sphinxe",
         "upto": "bis zu {n} Sphinxe"
+      },
+      "Yétis": {
+        "def": "der Yeti",
+        "bare": "Yeti",
+        "de": "des Yetis",
+        "one": "ein Yeti",
+        "all": "alle Yetis",
+        "upto": "bis zu {n} Yetis"
       },
       "Hommes-Loups": {
         "def": "der Werwolf",

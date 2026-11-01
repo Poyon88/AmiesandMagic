@@ -2225,6 +2225,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       "Griffons": "a majestic griffin with eagle head and front talons, lion hindquarters, broad feathered wings, heraldic harness",
       "Faucons": "a swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings spread mid-flight",
       "Pégases": "a majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, mid-gallop across the clouds",
+      "Yétis": "a towering yeti of the frozen peaks, shaggy white fur crusted with frost, ape-like powerful build, long arms with great clawed hands, pale blue-grey face, breath steaming in the cold",
       "Sphinx": "a Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, seated upright on a rocky outcrop, inscrutable knowing gaze",
       "Hommes-Loups": "a werewolf humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",
       "Hommes-Ours": "a werebear humanoid, massive bear-headed figure, thick fur, enormous claws, towering",

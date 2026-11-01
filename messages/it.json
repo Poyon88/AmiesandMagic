@@ -1259,6 +1259,7 @@
       "Faucons": "Falchi",
       "Pégases": "Pegasi",
       "Sphinx": "Sfingi",
+      "Yétis": "Yeti",
       "Hommes-Loups": "Uomini-Lupo",
       "Hommes-Ours": "Uomini-Orso",
       "Hommes-Félins": "Uomini-Felino",
@@ -1523,6 +1524,14 @@
         "one": "una Sfinge",
         "all": "tutte le Sfingi",
         "upto": "fino a {n} Sfingi"
+      },
+      "Yétis": {
+        "def": "lo Yeti",
+        "bare": "Yeti",
+        "de": "dello Yeti",
+        "one": "uno Yeti",
+        "all": "tutti gli Yeti",
+        "upto": "fino a {n} Yeti"
       },
       "Hommes-Loups": {
         "def": "l'Uomo-Lupo",

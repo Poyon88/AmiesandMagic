@@ -1259,6 +1259,7 @@
       "Faucons": "猎鹰",
       "Pégases": "飞马",
       "Sphinx": "斯芬克斯",
+      "Yétis": "雪人",
       "Hommes-Loups": "狼人",
       "Hommes-Ours": "熊人",
       "Hommes-Félins": "猫人",
@@ -1523,6 +1524,14 @@
         "one": "一个斯芬克斯",
         "all": "所有斯芬克斯",
         "upto": "至多{n}个斯芬克斯"
+      },
+      "Yétis": {
+        "def": "雪人",
+        "bare": "雪人",
+        "de": "雪人的",
+        "one": "一个雪人",
+        "all": "所有雪人",
+        "upto": "至多{n}个雪人"
       },
       "Hommes-Loups": {
         "def": "狼人",

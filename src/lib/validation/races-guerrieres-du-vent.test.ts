@@ -41,9 +41,10 @@ describe("rattachement", () => {
     expect(getClanNamesForRace("Humains", race)).toEqual([CLAN]);
   });
 
-  it("porte le clan à cinq races, les trois autres clans restent à trois", () => {
+  it("porte le clan à cinq races, sans en ouvrir aux autres clans", () => {
     expect(getRacesForClan(CLAN).sort()).toEqual(["Faucons", "Griffons", "Humains", "Pégases", "Sphinx"]);
-    for (const c of ["Le Royaume du Nord", "L'Ordre de l'Aube", "La Sublime Porte"]) {
+    // Le Royaume du Nord a gagné les Yétis (cf. races-royaume-du-nord.test.ts).
+    for (const c of ["L'Ordre de l'Aube", "La Sublime Porte"]) {
       expect(getRacesForClan(c).sort(), c).toEqual(["Faucons", "Griffons", "Humains"]);
     }
   });

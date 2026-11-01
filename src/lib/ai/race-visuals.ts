@@ -32,6 +32,7 @@ export const RACE_VISUALS: Record<string, string> = {
   "Faucons": "swift hunting falcon with sleek streamlined plumage, sharp hooked beak, piercing eyes, wings folded in a dive or spread mid-flight",
   // Royaumes Libres (Guerrières du Vent)
   "Pégases": "majestic winged horse, pure white coat, vast feathered swan-like wings spread wide, flowing mane and tail, powerful legs, noble and untamed",
+  "Yétis": "towering yeti of the frozen peaks, shaggy white fur crusted with frost, ape-like massive build, long arms with great clawed hands, pale blue-grey face, breath steaming in the cold",
   "Sphinx": "Greek sphinx, body of a lioness with great eagle wings folded at her sides and the head and bust of a stern woman, inscrutable knowing gaze",
   // Hommes-Bêtes
   "Hommes-Loups": "werewolf-like humanoid with wolf head, fur-covered muscular body, feral eyes, claws and fangs",

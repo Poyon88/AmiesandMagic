@@ -90,6 +90,8 @@ export const GRANULAR_RACE_DESCRIPTORS: Record<string, string> = {
     'A humanoid anthropomorphic pegasus champion — clearly bipedal humanoid silhouette, noble white horse head with a long flowing mane, vast white feathered wings folded behind the shoulders, lean athletic build, light Greek bronze cuirass and greaves, proud untamed bearing.',
   'Sphinx':
     'A humanoid sphinx oracle — clearly bipedal humanoid silhouette, the stern beautiful face and bust of a woman framed by a striped Greek headcloth, tawny leonine fur on the arms and shoulders, clawed hands, great eagle wings folded behind, inscrutable knowing gaze, seated composure of one who asks the question.',
+  'Yétis':
+    'A humanoid yeti chieftain — clearly bipedal humanoid silhouette, shaggy white fur rimed with frost, broad ape-like face with pale blue-grey skin and deep-set icy eyes, massive shoulders, rough furs and a crude bronze torc of the northern kingdoms, breath steaming in the cold.',
   // Hommes-Bêtes faction
   'Hommes-Loups':
     'A humanoid werewolf warrior — bipedal humanoid silhouette, lupine head with snout, fangs, pointed ears, thick fur over the shoulders, intelligent amber eyes.',
