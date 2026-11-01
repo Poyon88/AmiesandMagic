@@ -248,7 +248,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "pool.race": " de race {v}",
   "pool.faction": " de la faction {v}",
   "pool.clan": " du clan {v}",
-  "pool.keyword": " portant {v}",
+  "pool.keyword": " avec la capacité {v}",
   "pool.type_creature": " de type unité",
   "pool.type_spell": " de type action",
   "pool.type_item": " de type objet",
@@ -330,6 +330,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.des_automatic": "automatiquement",
   "target.des_choice": "au choix",
   "target.max_cost": "de coût {n} ou moins",
+  "target.with_keyword": "avec la capacité {v}",
 
   "scatter.action_damage": "inflige",
   "scatter.action_heal": "rend",
@@ -885,7 +886,7 @@ function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
   const camp = tg.side === "ally" ? "ally" : tg.side === "enemy" ? "enemy"
     : tg0.entity === "hero" ? "any" : "both";
   return frag(t, "content.incineration_cible", {
-    cartes: [nombre, mtxt && `(${mtxt})`, costTxt, desTxt].filter(Boolean).join(" "),
+    cartes: [nombre, mtxt && `(${mtxt})`, motCleLabel(tg, t), costTxt, desTxt].filter(Boolean).join(" "),
     zone: frag(t, `incin.zone_${camp}`),
     deck: frag(t, `incin.deck_${camp}`),
   });
@@ -919,19 +920,23 @@ function membershipLabel(
   return categories.filter((c) => c.length > 0).map((c) => c.join("/")).join(" + ");
 }
 
-/** « (Machines) » — appartenance accolée au complément d'Exhumation et de
- *  Rappel, qui ne passent pas par describeTarget (cf. skipTarget) : sans elle,
- *  « ressuscite une créature » taisait le filtre de race/clan/faction. */
+/** « (Machines) avec la capacité Invention » — filtres accolés au complément
+ *  d'Exhumation et de Rappel, qui ne passent pas par describeTarget (cf.
+ *  skipTarget) : sans eux, « ressuscite une créature » taisait le filtre. */
 function appartenance(t: TargetSpec | undefined, tr?: SafeT): string {
   const m = filtreLabel(t, tr);
-  return m ? ` (${m})` : "";
+  return [m && ` (${m})`, motCleLabel(t, tr) && ` ${motCleLabel(t, tr)}`].join("");
 }
 
-/** Filtres de la cible tels qu'affichés entre parenthèses : appartenance puis
- *  mot-clé porté, cumulés par « + » (« Machines + Invention »). */
+/** Appartenance de la cible (race, clan, faction), affichée entre parenthèses. */
 function filtreLabel(t: TargetSpec | undefined, tr?: SafeT): string {
-  return [membershipLabel(t?.membership, tr), t?.keywordId ? libelleMotCle(t.keywordId, tr) : ""]
-    .filter(Boolean).join(" + ");
+  return membershipLabel(t?.membership, tr);
+}
+
+/** Mot-clé porté par la cible, HORS parenthèses : « (Canon) » se lisait comme
+ *  une race ; « avec la capacité Canon » dit ce que c'est. */
+function motCleLabel(t: TargetSpec | undefined, tr?: SafeT): string {
+  return t?.keywordId ? frag(tr, "target.with_keyword", { v: libelleMotCle(t.keywordId, tr) }) : "";
 }
 
 /** « une Machine » / « toutes les Machines » / « jusqu'à 2 Machines » quand
@@ -985,7 +990,7 @@ function describeTarget(t: TargetSpec | undefined, tr?: SafeT, direct = false): 
   // Un plafond de 0 se lit « de coût 0 ou moins » : il doit s'écrire comme les
   // autres, d'où le test sur `undefined` (cf. TargetSpec.maxCost).
   const costTxt = t.maxCost != null ? frag(tr, "target.max_cost", { n: t.maxCost }) : "";
-  return [count, sideTxt, mtxt && `(${mtxt})`, costTxt, locTxt, desTxt].filter(Boolean).join(" ");
+  return [count, sideTxt, mtxt && `(${mtxt})`, motCleLabel(t, tr), costTxt, locTxt, desTxt].filter(Boolean).join(" ");
 }
 
 /** Répartition point par point (designation "scatter") : décrit les X points
@@ -1006,7 +1011,7 @@ function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
     ? frag(t, "scatter.target_both", { side })
     : frag(t, "scatter.target_unit", { side });
   const costTxt = tg.maxCost != null ? frag(t, "target.max_cost", { n: tg.maxCost }) : "";
-  return [`${action} ${frag(t, "scatter.times", { x: xAff, unit })}`, targetTxt, mtxt && `(${mtxt})`, costTxt].filter(Boolean).join(" ");
+  return [`${action} ${frag(t, "scatter.times", { x: xAff, unit })}`, targetTxt, mtxt && `(${mtxt})`, motCleLabel(tg, t), costTxt].filter(Boolean).join(" ");
 }
 
 /** En-tête d'un EMBLÈME : ce qu'il est, chez qui il est rangé, combien de temps

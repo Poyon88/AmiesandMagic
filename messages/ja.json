@@ -1071,7 +1071,7 @@
         "race": "（種族：{v}）",
         "faction": "（陣営：{v}）",
         "clan": "（氏族：{v}）",
-        "keyword": "（{v}を持つ）",
+        "keyword": "（{v}能力を持つ）",
         "type_creature": "ユニットタイプの",
         "type_spell": "アクションタイプの",
         "type_item": "アイテムタイプの"
@@ -1132,7 +1132,8 @@
         "des_random": "ランダムに",
         "des_automatic": "自動的に",
         "des_choice": "任意に",
-        "max_cost": "コスト{n}以下"
+        "max_cost": "コスト{n}以下",
+        "with_keyword": "（{v}能力を持つ）"
       },
       "scatter": {
         "action_damage": "与える",

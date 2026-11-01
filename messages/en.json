@@ -1071,7 +1071,7 @@
         "race": " of race {v}",
         "faction": " of faction {v}",
         "clan": " of clan {v}",
-        "keyword": " bearing {v}",
+        "keyword": " with the {v} ability",
         "type_creature": " of type Unit",
         "type_spell": " of type action",
         "type_item": " of type item"
@@ -1132,7 +1132,8 @@
         "des_random": "at random",
         "des_automatic": "automatically",
         "des_choice": "of your choice",
-        "max_cost": "with cost {n} or less"
+        "max_cost": "with cost {n} or less",
+        "with_keyword": "with the {v} ability"
       },
       "scatter": {
         "action_damage": "deals",

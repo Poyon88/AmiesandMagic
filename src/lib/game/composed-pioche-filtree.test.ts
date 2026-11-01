@@ -55,7 +55,7 @@ describe("Piocher filtré", () => {
     const cap = (pool?: ComposedPoolFilter, x = 2) => ({ uid: "u", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
       composed: { content: "draw_cards", magnitude: { x }, pool } }) as Capability;
     expect(describeComposedCap(cap({ cardType: "spell", race: "Gnomes" }))).toBe("Piochez 2 cartes de race Gnomes de type action de votre deck.");
-    expect(describeComposedCap(cap({ keywordId: "invention" }, 1))).toBe("Piochez 1 carte portant Invention de votre deck.");
+    expect(describeComposedCap(cap({ keywordId: "invention" }, 1))).toBe("Piochez 1 carte avec la capacité Invention de votre deck.");
     expect(describeComposedCap(cap({ cardType: "item" }))).toBe("Piochez 2 objets de votre deck.");
     expect(describeComposedCap(cap())).toBe("Piochez 2 cartes.");
   });

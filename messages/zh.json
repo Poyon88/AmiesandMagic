@@ -1071,7 +1071,7 @@
         "race": "种族为{v}的",
         "faction": "阵营为{v}的",
         "clan": "氏族为{v}的",
-        "keyword": "带有{v}的",
+        "keyword": "带有{v}能力的",
         "type_creature": " 单位类型的",
         "type_spell": " 行动类型的",
         "type_item": " 物品类型的"
@@ -1132,7 +1132,8 @@
         "des_random": "随机",
         "des_automatic": "自动",
         "des_choice": "自选",
-        "max_cost": "费用为{n}或更低"
+        "max_cost": "费用为{n}或更低",
+        "with_keyword": "（带有{v}能力）"
       },
       "scatter": {
         "action_damage": "造成",

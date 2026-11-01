@@ -40,7 +40,7 @@ describe("Complément nommé par la race", () => {
 
 describe("Texte du filtre mot-clé", () => {
   it("s'ajoute à l'appartenance ; la race seule ne devient plus un nom", () => {
-    expect(describeComposedCap(cap("rappel", { keywordId: "invention" }))).toBe("Renvoie une carte (Invention) de votre cimetière dans votre main.");
-    expect(describeComposedCap(cap("exhumation", { ...machines, keywordId: "invention" }))).toContain("une créature (Machines + Invention)");
+    expect(describeComposedCap(cap("rappel", { keywordId: "invention" }))).toBe("Renvoie une carte avec la capacité Invention de votre cimetière dans votre main.");
+    expect(describeComposedCap(cap("exhumation", { ...machines, keywordId: "invention" }))).toContain("une créature (Machines) avec la capacité Invention");
   });
 });

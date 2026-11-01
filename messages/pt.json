@@ -1071,7 +1071,7 @@
         "race": " da raça {v}",
         "faction": " da facção {v}",
         "clan": " do clã {v}",
-        "keyword": " portando {v}",
+        "keyword": " com a habilidade {v}",
         "type_creature": " do tipo unidade",
         "type_spell": " do tipo ação",
         "type_item": " do tipo objeto"
@@ -1132,7 +1132,8 @@
         "des_random": "aleatoriamente",
         "des_automatic": "automaticamente",
         "des_choice": "à escolha",
-        "max_cost": "de custo {n} ou menos"
+        "max_cost": "de custo {n} ou menos",
+        "with_keyword": "com a habilidade {v}"
       },
       "scatter": {
         "action_damage": "causa",
