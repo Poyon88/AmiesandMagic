@@ -3060,6 +3060,8 @@
   "game": {
     "hero_power_grant": "赋予一个生物{kw}",
     "hero_power_emblem": "纹章：{kw}",
+    "hero_power_counter": "为{compteur}计数器增加{x}",
+    "hero_power_machine": "为你的机器增加+{x}/+{y}",
     "error_not_authenticated": "未登录",
     "error_match_not_found": "找不到对局",
     "error_load_failed": "对局加载失败",

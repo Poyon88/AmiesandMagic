@@ -3060,6 +3060,8 @@
   "game": {
     "hero_power_grant": "Conferisce {kw} a una creatura",
     "hero_power_emblem": "Emblema: {kw}",
+    "hero_power_counter": "Aggiungi {x} al contatore {compteur}",
+    "hero_power_machine": "Aggiungi +{x}/+{y} alla tua macchina",
     "error_not_authenticated": "Non autenticato",
     "error_match_not_found": "Partita non trovata",
     "error_load_failed": "Caricamento della partita fallito",

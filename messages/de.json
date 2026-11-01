@@ -3060,6 +3060,8 @@
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",
     "hero_power_emblem": "Emblem: {kw}",
+    "hero_power_counter": "Füge dem Zähler {compteur} {x} hinzu",
+    "hero_power_machine": "Füge deiner Maschine +{x}/+{y} hinzu",
     "error_not_authenticated": "Nicht authentifiziert",
     "error_match_not_found": "Partie nicht gefunden",
     "error_load_failed": "Partie konnte nicht geladen werden",

@@ -3060,6 +3060,8 @@
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",
     "hero_power_emblem": "Emblem: {kw}",
+    "hero_power_counter": "Add {x} to the {compteur} counter",
+    "hero_power_machine": "Add +{x}/+{y} to your machine",
     "error_not_authenticated": "Not authenticated",
     "error_match_not_found": "Match not found",
     "error_load_failed": "Failed to load match",

@@ -17,6 +17,8 @@ import { effetsDuPouvoir, uidEffetPouvoir } from "./hero-power";
 const FR: Record<string, string> = {
   "game.hero_power_grant": "Confère {kw} à une créature",
   "game.hero_power_emblem": "Emblème : {kw}",
+  "game.hero_power_counter": "Ajoute {x} au compteur {compteur}",
+  "game.hero_power_machine": "Ajoute +{x}/+{y} à votre machine",
 };
 const gabarit = (cle: string, t?: SafeT) => t?.(cle) ?? FR[cle];
 
@@ -25,6 +27,18 @@ function libelleAvecValeurs(kw: Keyword, effect: HeroPowerEffect, t?: SafeT): st
   const x = effect.params?.amount;
   const inst = { id: kw, x, y: effect.params?.amountY } as unknown as KeywordInstance;
   return applyKeywordValueToLabel(kw, describeKeywordLabel(kw, { x, y: effect.params?.amountY }, t), x, inst);
+}
+
+/** Compteurs alimentés par un pouvoir : le pouvoir dit seulement combien il
+ *  ajoute. Leur fonctionnement (plafond, palier, dépense) est expliqué ailleurs,
+ *  et le répéter alourdissait la carte du pouvoir. */
+const COMPTEURS_DE_POUVOIR = new Set(["epargne", "foi", "conquete", "exploration"]);
+
+/** « Épargne » : le libellé du registre sans son « X ». */
+function nomCompteur(id: string, t?: SafeT): string {
+  const def = SPELL_KEYWORDS[id as keyof typeof SPELL_KEYWORDS];
+  const libelle = t?.(`vocab.spell_keywords.${id}.label`) ?? def?.label ?? id;
+  return libelle.replace(/\s*[+-]?X$/, "").trim();
 }
 
 const phrase = (s: string | null | undefined): string | null => {
@@ -45,6 +59,17 @@ export function decrireEffetPouvoir(effect: HeroPowerEffect, i: number, tokens?:
       return phrase(desc ? `${tete} — ${desc.replace(/\.$/, "")}` : tete);
     }
     case "spell_trigger": {
+      if (COMPTEURS_DE_POUVOIR.has(effect.keywordId)) {
+        return phrase(gabarit("game.hero_power_counter", t)
+          .replace("{x}", String(Math.max(1, effect.params?.amount ?? 1)))
+          .replace("{compteur}", nomCompteur(effect.keywordId, t)));
+      }
+      // Invention : même allègement, la machine s'explique ailleurs.
+      if (effect.keywordId === "invention") {
+        return phrase(gabarit("game.hero_power_machine", t)
+          .replace("{x}", String(effect.params?.attack ?? 0))
+          .replace("{y}", String(effect.params?.health ?? 0)));
+      }
       if (SPELL_KEYWORDS[effect.keywordId as keyof typeof SPELL_KEYWORDS]) {
         const inst = {
           id: effect.keywordId, amount: effect.params?.amount,

@@ -3060,6 +3060,8 @@
   "game": {
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",
     "hero_power_emblem": "エンブレム：{kw}",
+    "hero_power_counter": "{compteur}カウンターに{x}を加える",
+    "hero_power_machine": "あなたのマシンに+{x}/+{y}を加える",
     "error_not_authenticated": "未認証",
     "error_match_not_found": "対戦が見つかりません",
     "error_load_failed": "対戦の読み込みに失敗しました",
