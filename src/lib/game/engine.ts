@@ -404,6 +404,81 @@ function noteWound(creature: CardInstance, origin: WoundOrigin): void {
   woundSink.push({ targetInstanceId: creature.instanceId, origin });
 }
 
+// ── Interruption Blessure goutte par goutte ─────────────────────────────────
+//
+// RÈGLE (arbitrée le 2026-11-02, remplace « après la Tempête ») : une créature
+// blessée par une goutte de Tempête, ou par une passe de répartition au hasard
+// (scatter), lance son pouvoir Blessure AVANT la goutte suivante. « Sans
+// mourir » se juge donc à la goutte : blessée par la 1re puis tuée par la 3e,
+// elle a déjà répondu. Les gouttes restantes tirent leurs cibles sur le plateau
+// tel que la réponse l'a laissé.
+//
+// Les boucles de gouttes sont du code EN LIGNE (sort, entrée en jeu, résolveur
+// curé), impossible à suspendre au milieu : la réponse se résout donc sur une
+// pile IMBRIQUÉE, vidée sur place, et sans interface — un « au choix » y est
+// tiré au hasard, comme toute résolution imbriquée (Déclenchement, emblèmes).
+let sortEnCours: SpellResolutionContext | null = null;
+let interruptionBlessure = 0;
+const MAX_INTERRUPTION_BLESSURE = 8;
+
+/** Appelée après CHAQUE goutte de Tempête / passe de scatter. No-op tant que
+ *  personne n'a été réellement blessé (aucun tirage `rng()` consommé : le flux
+ *  aléatoire des parties sans Blessure est inchangé). */
+function interrompreSurBlessure(): void {
+  if (woundSink.length === 0) return;
+  const state = currentActionState;
+  if (!state || state.phase === "finished" || state.winner) return;
+  // Garde de ré-entrance : au-delà, les blessures restent dans le puits et
+  // partent au balayage habituel (fin de frame / fin d'action).
+  if (interruptionBlessure >= MAX_INTERRUPTION_BLESSURE) return;
+  const pileExterieure = state.effectStack;
+  const porteePrev = porteeEnCours;
+  state.effectStack = [];
+  interruptionBlessure++;
+  porteeEnCours = false;
+  try {
+    // Les modificateurs GLOBAUX du sort en cours (Chant, Tempo, Colère, Touché
+    // mortel, origine des dégâts, couleur de flèche) ne s'appliquent pas au
+    // pouvoir de la blessée : on les neutralise le temps de sa réponse, puis
+    // ils sont restaurés tels quels pour les gouttes restantes.
+    withDamageOrigin(null, () =>
+    withChant(0, () =>
+    withTempo(0, () =>
+    withWrathThreshold(0, () =>
+    withLethalSpell(false, () =>
+    withComposedMode(undefined, () => {
+      checkWoundTriggers(state, 1);
+      if ((state.effectStack?.length ?? 0) === 0) return;
+      // Le coup, puis les morts qu'il a causées, puis la réponse — l'ordre
+      // de la frontière d'effet ordinaire.
+      reglerLesMortsEnCours(state);
+      drainStack(state);
+      // Frontière pour l'ÉCRAN : la réponse se joue AVANT les gouttes restantes
+      // (sans elle, réponse et gouttes suivantes partaient dans la même vague).
+      markAnimationCheckpoint("effet");
+    }))))));
+  } finally {
+    interruptionBlessure--;
+    porteeEnCours = porteePrev;
+    const reste = state.effectStack ?? [];
+    if (pileExterieure) {
+      pileExterieure.push(...reste);
+      state.effectStack = pileExterieure;
+    } else if (reste.length > 0) {
+      state.effectStack = reste;
+    } else {
+      delete state.effectStack;
+    }
+  }
+}
+
+/** Règle les morts par le canal du sort en cours s'il y en a un (marquage
+ *  `${slot}_destroyed`), sinon par celui de la pile. */
+function reglerLesMortsEnCours(state: GameState): void {
+  if (sortEnCours && sortEnCours.state === state) settleSpellDeaths(sortEnCours);
+  else settleDeaths(state, 0);
+}
+
 // Seuil de colère porté par un SORT : bonus de dégâts GLOBAL, posé pour toute la
 // résolution comme `lethalSpellActive`. Un COMPTEUR et non un booléen, parce que
 // le bonus ne s'applique qu'UNE fois — au premier paquet de dégâts du sort, pas
@@ -2566,6 +2641,7 @@ function resolveComposedEffect(
         if (pointwise) sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
         recordPowerStrike(source, ref.unit.instanceId, composed.content, px);
       }
+      interrompreSurBlessure();
     }
     return;
   }
@@ -6300,6 +6376,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         // créature : c'est l'entrée en jeu qui était l'exception.
         dealDamageToCreature(target, 1, false, true, cardInstance);
         sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
+        interrompreSurBlessure();
       }
     }
 
@@ -6944,6 +7021,18 @@ function spellResolutionInstances(card: Card): SpellKeywordInstance[] {
  *  `withLethalSpell` est ré-entrant : un sort imbriqué porte son propre Touché
  *  mortel sans contaminer le sort englobant. */
 function resolveSpellCard(
+  ...args: Parameters<typeof resolveSpellCardCorps>
+): SpellResolutionContext {
+  // Le contexte du sort reste visible le temps de sa résolution : une
+  // interruption Blessure en pleine Tempête (cf. interrompreSurBlessure) doit
+  // régler ses morts par `settleSpellDeaths`, qui seul pose `${slot}_destroyed`.
+  const prev = sortEnCours;
+  try {
+    return resolveSpellCardCorps(...args);
+  } finally { sortEnCours = prev; }
+}
+
+function resolveSpellCardCorps(
   state: GameState,
   caster: PlayerState,
   opponent: PlayerState,
@@ -6974,6 +7063,7 @@ function resolveSpellCard(
     state, caster, opponent, card, targetMap, results: {},
     realManaCost: realManaCost ?? effectiveManaCost({ card }, caster),
   };
+  sortEnCours = ctx;
   // Seuil de colère : évalué UNE fois, à la résolution — le deck du lanceur peut
   // bouger pendant le sort (Incinération, pioche), la condition ne doit pas se
   // ré-évaluer en cours de route.
@@ -7671,6 +7761,7 @@ function resolveSpellKeywords(
           const target = alive[Math.floor(rng() * alive.length)];
           dealDamageToCreature(target, 1, spellPierces, true, ctx.caster.hero);
           sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
+          interrompreSurBlessure();
         }
         break;
       }
@@ -9941,6 +10032,7 @@ function findInstanceById(state: GameState, instanceId: string): CardInstance | 
  *  de selectComposedTargets, ou tirage auto au tour adverse). */
 function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
   if (frame.noSuspend) return false; // Déclenchement : ciblage déterministe, jamais d'UI
+  if (interruptionBlessure > 0) return false; // pile imbriquée en pleine Tempête : hasard
   if (frame.kind !== "composed" || !frame.composed) return false;
   if (frame.composed.target?.designation !== "choice") return false;
   if (frame.chosenTargetIds && frame.chosenTargetIds.length > 0) return false;
@@ -9998,6 +10090,12 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
  *  Palier (c) : remplacé par une production de frames on_death sur la pile (ce
  *  qui ferme la fenêtre d'auras périmées et supprime le drop silencieux). */
 function settleDeaths(state: GameState, _depth: number): void {
+  // Pile imbriquée d'une interruption Blessure en plein sort : les morts passent
+  // par le canal du sort, seul à poser `${slot}_destroyed` (cf. settleSpellDeaths).
+  if (interruptionBlessure > 0 && sortEnCours && sortEnCours.state === state) {
+    settleSpellDeaths(sortEnCours);
+    return;
+  }
   const [p0, p1] = state.players;
   const d0 = cleanDeadCreatures(p0);
   const d1 = cleanDeadCreatures(p1);
@@ -10041,6 +10139,7 @@ function demanderLeChoixOu(
   groupe: StackFrame[],
 ): boolean {
   if (top.noSuspend) return false;            // rejeu Déclenchement : aucune interface
+  if (interruptionBlessure > 0) return false; // interruption Blessure : branche au hasard
   const id = `${top.originTag}#ou`;
   const deja = (state.pendingTriggers ?? []).some(t => t.id === id)
     || pendingTriggerSink.some(t => t.id === id);
@@ -11408,6 +11507,7 @@ function resolveCuratedKeywordEffect(
         const target = alive[Math.floor(rng() * alive.length)];
         // Capacité de créature (Tempête) : non bloquée par Transcendance.
         dealDamageToCreature(target, 1, false, true, source, false);
+        interrompreSurBlessure();
       }
       break;
     }
