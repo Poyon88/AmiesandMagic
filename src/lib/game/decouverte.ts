@@ -18,14 +18,30 @@
 //     dans le tour — sans quoi plus personne ne mettrait de petites cartes
 //     dans son deck (arbitrage de l'auteur).
 //
+// VARIANTE 2 (essai du 2026-11-02, `regles.decouverteVariante = 2`) : l'offre
+// s'ouvre davantage — 1 Commune du clan à C, 1 de la faction mais d'un AUTRE
+// clan à C, 1 d'une AUTRE FACTION à C+1. Cette dernière vient des factions de
+// même alignement ou neutres (deck neutre : autres neutres seulement), panier
+// tiré à pile ou face entre « même alignement » et « neutre » ; jamais de
+// Mercenaires. Faction à un seul clan : la case « autre clan » devient une 2e
+// carte du clan. Coût C et replis : inchangés (cf. engine.ts, offreDecouverte).
+//
 // Activée par `GameState.regles.decouverteAlternee`, fixé à l'initialisation et
-// partagé par les deux clients (inclus dans le hash de synchro).
+// partagé par les deux clients (inclus dans le hash de synchro). Le drapeau de
+// build `NEXT_PUBLIC_REGLE_DECOUVERTE` choisit l'offre : "1" variante 1, "2"
+// variante 2.
 import type { Card, GameState, HeroDefinition, IdentiteDeck } from "./types";
 
 /** La variante est-elle activée pour cette build ? Lue par la page de match et
  *  le simulateur au moment d'initialiser la partie, jamais en cours de partie. */
 export function regleDecouverteActivee(): boolean {
-  return process.env.NEXT_PUBLIC_REGLE_DECOUVERTE === "1";
+  const v = process.env.NEXT_PUBLIC_REGLE_DECOUVERTE;
+  return v === "1" || v === "2";
+}
+
+/** Offre de découverte de cette build : 2 si le drapeau vaut "2", 1 sinon. */
+export function varianteDecouverte(): 1 | 2 {
+  return process.env.NEXT_PUBLIC_REGLE_DECOUVERTE === "2" ? 2 : 1;
 }
 
 /** Tour propre du joueur actif (1, 2, 3…) : `turnNumber` est global, le 1er
@@ -87,6 +103,11 @@ export function rangDeDecouverte(turnNumber: number): number {
 
 /** Coût de l'AUTRE clan : C+1, plafonné à 10 (à C = 10, elle coûte 10 aussi). */
 export function coutAutreClan(c: number): number {
+  return Math.min(COUT_MAX_DECOUVERTE, c + 1);
+}
+
+/** Variante 2 — coût de la carte d'une AUTRE FACTION : C+1, plafonné à 10. */
+export function coutAutreFaction(c: number): number {
   return Math.min(COUT_MAX_DECOUVERTE, c + 1);
 }
 

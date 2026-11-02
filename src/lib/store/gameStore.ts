@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { regleDecouverteActivee } from "@/lib/game/decouverte";
+import { regleDecouverteActivee, varianteDecouverte } from "@/lib/game/decouverte";
 import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, HeroPowerAction, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import type { DeckPickerKeyword } from "@/lib/game/engine";
@@ -1964,7 +1964,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       formatCode,
       // Variante de règles de CETTE build : les deux clients d'une partie
       // tournent sur le même déploiement, donc sur le même drapeau.
-      regleDecouverteActivee() ? { decouverteAlternee: true } : undefined,
+      // Variante 1 : `regles` inchangé (hash identique à avant la variante 2).
+      regleDecouverteActivee()
+        ? { decouverteAlternee: true, ...(varianteDecouverte() === 2 ? { decouverteVariante: 2 as const } : {}) }
+        : undefined,
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;

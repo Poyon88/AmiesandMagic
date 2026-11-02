@@ -34,7 +34,7 @@ import {
   MAX_EVEIL,
 } from "@/lib/game/constants";
 import { HERO_HP_MIN, HERO_HP_MAX } from "@/lib/game/hero-hp";
-import { regleDecouverteActivee } from "@/lib/game/decouverte";
+import { regleDecouverteActivee, varianteDecouverte } from "@/lib/game/decouverte";
 import { keywordModeColor } from "@/lib/game/keyword-labels";
 import type { Emblem, KeywordMode } from "@/lib/game/types";
 import { CostShield, EquipToken, StatShields } from "@/components/card/CardCounters";
@@ -364,7 +364,10 @@ function BeginnerGuide() {
           regleDecouverteActivee()
             ? <>Vous <Hi>piochez 1 carte</Hi> — sauf <Hi>un tour sur deux</Hi> (vos 2ᵉ, 4ᵉ, 6ᵉ tours…) : la pioche
               est alors remplacée par une <Hi>découverte</Hi>. Vous choisissez 1 carte parmi 3 Communes de coûts
-              variés, 2 de votre clan et 1 d'un autre clan de votre faction. La carte est créée pour vous : votre
+              variés, {varianteDecouverte() === 2
+                ? <>1 de votre clan, 1 d'un autre clan de votre faction et 1 d'une autre faction de même alignement
+                  ou neutre (un cran plus chère)</>
+                : <>2 de votre clan et 1 d'un autre clan de votre faction</>}. La carte est créée pour vous : votre
               deck n'est pas entamé.</>
             : <>Vous <Hi>piochez 1 carte</Hi>.</>,
           <>Vos créatures se « réveillent » : elles peuvent de nouveau attaquer ce tour-ci.</>,
@@ -636,7 +639,7 @@ function TcgGuide() {
 
       <Section title={tt('tcg_gameloop_title')}>
         <Bullets items={[
-          <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>{regleDecouverteActivee() && <> — un tour sur deux (vos tours pairs), <Hi>découverte</Hi> à la place : 1 Commune parmi 3 (2 de votre clan, 1 d'un autre clan de la faction), créée hors deck</>}.</>,
+          <>Début de tour : <Hi>+1 mana max</Hi> (cap {MAX_MANA}), recharge complète, <Hi>pioche 1</Hi>{regleDecouverteActivee() && <> — un tour sur deux (vos tours pairs), <Hi>découverte</Hi> à la place : 1 Commune parmi 3 ({varianteDecouverte() === 2 ? "1 de votre clan, 1 d'un autre clan de la faction, 1 d'une autre faction" : "2 de votre clan, 1 d'un autre clan de la faction"}), créée hors deck</>}.</>,
           <>PV de départ <Hi>propres à chaque héros</Hi> ({HERO_HP_MIN}–{HERO_HP_MAX}, {HERO_MAX_HP} par défaut), qui sont aussi son plafond de soin. « Sous 15 PV » reste absolu.</>,
           <>Tout choix revient au <Hi>propriétaire</Hi> de l'effet, même hors de son tour : fenêtre de <Hi>20 s</Hi>, chrono suspendu, hasard à défaut. Les choix « à l'attaque » se règlent avant le combat.</>,
           <>Victoire : héros adverse à <Hi>0 PV</Hi>. Deck vide → <Hi>fatigue</Hi> croissante.</>,

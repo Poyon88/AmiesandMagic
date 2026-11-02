@@ -345,9 +345,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const decouverteOverlay = useMemo(() => {
     const tete = gameState?.pendingTriggers?.[0];
     if (tete?.selectionType !== "decouverte") return {};
-    const clan = gameState!.players.find(p => p.id === tete.controllerId)?.identite?.clan;
+    const identite = gameState!.players.find(p => p.id === tete.controllerId)?.identite;
+    const clan = identite?.clan;
     const badges: Record<number, string> = {};
-    for (const c of selectionCards) if (clan && c.clan && c.clan !== clan) badges[c.id] = t("discovery_other_clan");
+    for (const c of selectionCards) {
+      // Variante 2 : la 3e carte vient d'une AUTRE FACTION — badge propre, qui
+      // prime sur « Autre clan » (une carte d'ailleurs a forcément un autre clan).
+      if (identite && c.faction && c.faction !== identite.faction) badges[c.id] = t("discovery_other_faction");
+      else if (clan && c.clan && c.clan !== clan) badges[c.id] = t("discovery_other_clan");
+    }
     return { title: t("discovery_title"), subtitle: t("discovery_subtitle"), badges };
   }, [gameState, selectionCards, t]);
 

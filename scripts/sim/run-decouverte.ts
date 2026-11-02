@@ -1,6 +1,7 @@
-// A/B — règle actuelle contre DÉCOUVERTE un tour sur deux (variante, cf.
-// src/lib/game/decouverte.ts). Mêmes graines, mêmes decks, mêmes bots
-// heuristiques des deux côtés : seule la règle de pioche change.
+// A/B/C — règle actuelle contre DÉCOUVERTE un tour sur deux, offre variante 1
+// (2 du clan + 1 autre clan) et variante 2 (clan + autre clan + autre faction),
+// cf. src/lib/game/decouverte.ts. Mêmes graines, mêmes decks, mêmes bots
+// heuristiques partout : seule la règle de pioche change.
 //
 // Usage :
 //   npx vite-node --config vitest.config.ts scripts/sim/run-decouverte.ts <catalogue.json> <N>
@@ -47,6 +48,7 @@ function campagne(regles?: ReglesPartie) {
     ecartClans: ecart,
     offres,
     autreClan: offres ? dec.reduce((a, d) => a + d.autreClan, 0) / offres : 0,
+    autreFaction: offres ? dec.reduce((a, d) => a + d.autreFaction, 0) / offres : 0,
     mortes: offres ? dec.reduce((a, d) => a + d.mortes, 0) / offres : 0,
     incidents: res.reduce((a, r) => a + r.incidents.filter((x) => x.kind !== "refus").length, 0),
   };
@@ -56,18 +58,20 @@ const retablir = silence();
 const t0 = Date.now();
 const A = campagne();
 const B = campagne({ decouverteAlternee: true });
+const C = campagne({ decouverteAlternee: true, decouverteVariante: 2 });
 retablir();
 
 const pct = (x: number) => `${(100 * x).toFixed(1)} %`;
-console.log(`| Mesure | Règle actuelle | Découverte |
-|---|---|---|
-| Parties terminées / sans vainqueur | ${A.finies} / ${A.sansFin} | ${B.finies} / ${B.sansFin} |
-| Durée moyenne (tours) | ${A.tours.toFixed(1)} | ${B.tours.toFixed(1)} |
-| Victoires du 1er joueur | ${pct(A.premier)} | ${pct(B.premier)} |
-| Perdant entré en fatigue | ${pct(A.fatigue)} | ${pct(B.fatigue)} |
-| Écart-type des taux de victoire par clan | ${pct(A.ecartClans)} | ${pct(B.ecartClans)} |
-| Découvertes proposées | — | ${B.offres} |
-| Carte « autre clan » retenue | — | ${pct(B.autreClan)} |
-| Offres mortes (rien de jouable sous 3 tours) | — | ${pct(B.mortes)} |
-| Incidents moteur (hors refus) | ${A.incidents} | ${B.incidents} |`);
+console.log(`| Mesure | Règle actuelle | Découverte v1 | Découverte v2 |
+|---|---|---|---|
+| Parties terminées / sans vainqueur | ${A.finies} / ${A.sansFin} | ${B.finies} / ${B.sansFin} | ${C.finies} / ${C.sansFin} |
+| Durée moyenne (tours) | ${A.tours.toFixed(1)} | ${B.tours.toFixed(1)} | ${C.tours.toFixed(1)} |
+| Victoires du 1er joueur | ${pct(A.premier)} | ${pct(B.premier)} | ${pct(C.premier)} |
+| Perdant entré en fatigue | ${pct(A.fatigue)} | ${pct(B.fatigue)} | ${pct(C.fatigue)} |
+| Écart-type des taux de victoire par clan | ${pct(A.ecartClans)} | ${pct(B.ecartClans)} | ${pct(C.ecartClans)} |
+| Découvertes proposées | — | ${B.offres} | ${C.offres} |
+| Carte « autre clan » retenue | — | ${pct(B.autreClan)} | ${pct(C.autreClan)} |
+| Carte « autre faction » retenue | — | — | ${pct(C.autreFaction)} |
+| Offres mortes (rien de jouable sous 3 tours) | — | ${pct(B.mortes)} | ${pct(C.mortes)} |
+| Incidents moteur (hors refus) | ${A.incidents} | ${B.incidents} | ${C.incidents} |`);
 console.log(`\n${N} parties par règle, ${((Date.now() - t0) / 1000).toFixed(0)} s, bots heuristiques en miroir.`);
