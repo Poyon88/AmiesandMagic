@@ -10,7 +10,7 @@ import { useAudioStore } from "./audioStore";
 export type AlternativeOption = NonNullable<import("@/lib/game/types").PendingTrigger["alternativeOptions"]>[number];
 import SfxEngine from "@/lib/audio/SfxEngine";
 import { playAttackLunge } from "@/lib/game/animations";
-import { findInstanceEl, overlayRect, OVERLAY, lent } from "@/lib/fx/overlayMotion";
+import { findInstanceEl, overlayRect, OVERLAY, lent, TEMPETE_BOLT_MS } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
 import { composedCapsOf, composedTriggerMode, composedChoicePrompt } from "@/lib/game/composed-display";
 import { getCapabilities } from "@/lib/game/capability-adapter";
@@ -479,6 +479,9 @@ export interface EveilEvent {
 // here so the overlay can stagger one bolt per drop.
 export interface TempeteEvent {
   targetIds: string[];
+  /** Décollage de chaque éclair (ms après la phase d'impact), aligné sur le
+   *  popup de sa goutte. Absent ⇒ cadence propre de l'overlay. */
+  delaysMs?: number[];
   timestamp: number;
 }
 
@@ -2334,7 +2337,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         delayMs: seqDelais[i],
       };
     });
-    const SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? seqDernier + lent(500) : 0;
+    let SEQ_PHASE_EXTRA_MS = seqEvents.length > 0 ? seqDernier + lent(500) : 0;
 
     // Sorts relancés (capacité Relancer) : le moteur a enregistré chaque relance
     // dans newState.recastEvents {card, targetIds}, dans l'ordre de relance. On
@@ -2750,22 +2753,37 @@ export const useGameStore = create<GameStore>((set, get) => {
         const opponentBoardIds = new Set(
           gameState.players[gameState.currentPlayerIndex === 0 ? 1 : 0].board.map((c) => c.instanceId),
         );
-        // Expand each damage event into N per-HP entries so the overlay
-        // shows ONE bolt per drop (rather than one bolt per unique
-        // target). A creature that took 3 damage gets 3 separate bolts
-        // hitting it. The actual random order chosen by the engine is
-        // not recorded, so the bolts on the same target appear in a row
-        // — sufficient for the "successively" feel without threading
-        // additional state through the engine.
+        // UN ÉCLAIR PAR GOUTTE, dans l'ORDRE RÉEL du moteur : le registre des
+        // points séquentiels porte chaque goutte, cible comprise, et son « -1 »
+        // part à `seqDelais[i]`. Chaque éclair décolle à ce même instant ; les
+        // popups de dégâts sont décalés du trajet de l'éclair, si bien que le
+        // chiffre apparaît à l'IMPACT. Avant, les éclairs étaient regroupés par
+        // cible (A, A, B, B) quand les chiffres suivaient le tirage (A, B, A, B),
+        // et tous les chiffres s'affichaient avant le premier impact.
         const targetIds: string[] = [];
-        for (const ev of dmgEvents) {
-          if (ev.type !== "damage") continue;
-          if (!opponentBoardIds.has(ev.targetId)) continue;
-          const drops = Math.max(1, ev.amount ?? 1);
-          for (let i = 0; i < drops; i++) targetIds.push(ev.targetId);
-        }
+        const delaysMs: number[] = [];
+        seqHits.forEach((h, i) => {
+          if (h.type !== "damage" || !opponentBoardIds.has(h.targetInstanceId)) return;
+          targetIds.push(h.targetInstanceId);
+          delaysMs.push(seqDelais[i]);
+        });
         if (targetIds.length > 0) {
-          tempeteEvent = { targetIds, timestamp: Date.now() };
+          for (const ev of seqEvents) {
+            if (ev.type === "damage") ev.delayMs = (ev.delayMs ?? 0) + TEMPETE_BOLT_MS;
+          }
+          SEQ_PHASE_EXTRA_MS += TEMPETE_BOLT_MS;
+          tempeteEvent = { targetIds, delaysMs, timestamp: Date.now() };
+        } else {
+          // Repli : Tempête rejouée par un chemin qui n'alimente pas le
+          // registre séquentiel (activation). Un éclair par PV perdu, cadence
+          // propre de l'overlay.
+          for (const ev of dmgEvents) {
+            if (ev.type !== "damage") continue;
+            if (!opponentBoardIds.has(ev.targetId)) continue;
+            const drops = Math.max(1, ev.amount ?? 1);
+            for (let i = 0; i < drops; i++) targetIds.push(ev.targetId);
+          }
+          if (targetIds.length > 0) tempeteEvent = { targetIds, timestamp: Date.now() };
         }
       }
     }

@@ -1435,11 +1435,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         <div
           className="absolute top-[14%] left-0 right-0 h-[24%] flex justify-center items-center gap-2 px-8 overflow-visible"
         >
-          {opponent.board.length === 0 ? (
+          {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
+              n'était pas vide, il était démonté avec ses enfants quand la
+              dernière créature mourait, et celle-ci s'effaçait sans jouer
+              sa sortie (animation de mort). Le message de plateau vide est
+              un frère, plus une alternative. */}
+          {opponent.board.length === 0 && (
             <div className="text-foreground/10 text-sm">
               {t("no_creatures")}
             </div>
-          ) : (
+          )}
             <AnimatePresence>
               {opponent.board.map((creature) => (
                 <BoardCreature
@@ -1470,7 +1475,6 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 />
               ))}
             </AnimatePresence>
-          )}
           {/* OBJETS ADVERSES — au bout de sa ligne, après ses créatures. Ils
               occupent une de ses places, il faut donc les VOIR : sans eux, un
               plateau adverse « à trois créatures » paraîtrait avoir cinq places
@@ -1507,7 +1511,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             <div className="text-success/50 text-sm font-medium">
               {t("drop_hint")}
             </div>
-          ) : (
+          ) : null}
+          {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
+              n'était pas vide, il était démonté avec ses enfants quand la
+              dernière créature mourait, et celle-ci s'effaçait sans jouer
+              sa sortie (animation de mort). Le message de plateau vide est
+              un frère, plus une alternative. */}
             <>
               <AnimatePresence>
                 {myPlayer.board.flatMap((creature, i) => {
@@ -1564,14 +1573,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               </AnimatePresence>
               {/* Aperçu déposé en BOUT de file : la boucle ci-dessus ne peut pas
                   l'insérer, sa position valant board.length. */}
-              {pendingPreview && pendingPreview.position >= myPlayer.board.length && (
+              {/* Plateau vide : l'aperçu et le repère de dépôt sont déjà rendus
+                  par les messages ci-dessus. */}
+              {myPlayer.board.length > 0 && pendingPreview && pendingPreview.position >= myPlayer.board.length && (
                 <PendingCreaturePreview instance={pendingPreview.inst} />
               )}
-              {isDragOver && dropIndex === myPlayer.board.length && (
+              {myPlayer.board.length > 0 && isDragOver && dropIndex === myPlayer.board.length && (
                 <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
               )}
             </>
-          )}
           {/* MES OBJETS — après mes créatures, dans la même ligne : ils
               partagent le même plafond de places, et les montrer ailleurs
               donnerait à croire le contraire.

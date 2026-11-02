@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { DamageEvent } from "@/lib/game/types";
 import { isBigHit } from "@/lib/fx/impactFx";
 import { lent } from "@/lib/fx/overlayMotion";
@@ -63,10 +63,49 @@ function ReducedPopup({ event }: { event: DamageEvent }) {
   );
 }
 
+/** Durée de vie d'un popup après son délai : la plus longue de ses
+ *  animations (3,5 s pour les variantes lentes), ×1,7 pour les boosts — cf.
+ *  `slowMul` dans EventPopup. Un peu de marge pour finir le fondu. */
+function dureeDeVie(evt: DamageEvent): number {
+  const type = evt.type ?? "damage";
+  const slowMul = type === "buff" || type === "empower" ? 1.7 : 1;
+  return lent(3600 * slowMul);
+}
+
 export default function DamageOverlay({ events }: DamageOverlayProps) {
   const [mounted, setMounted] = useState(false);
   const reduced = useReducedMotion();
   useEffect(() => setMounted(true), []);
+
+  // POPUPS ACCUMULÉS PAR VAGUE. Le store REMPLACE `damageEvents` à chaque vague
+  // d'animation ; rendre la prop telle quelle avait deux défauts :
+  //   • un popup de la vague 1 disparaissait net quand la vague 2 commençait
+  //     (≈1,2 s), en plein fondu — ce qui se lisait comme un ordre cassé ;
+  //   • deux vagues identiques (deux râles « 2 au héros ») donnaient la même
+  //     clé React : le second popup ne se montait jamais.
+  // Chaque lot reçu devient donc une vague numérotée (clé unique), et chaque
+  // popup vit sa propre durée, indépendamment du nettoyage du store.
+  const [actifs, setActifs] = useState<Array<{ key: string; evt: DamageEvent }>>([]);
+  const vagueRef = useRef(0);
+  const dernierLotRef = useRef<DamageEvent[] | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    // Même RÉFÉRENCE re-posée par le store (deux phases qui partagent le lot) :
+    // ce n'est pas une nouvelle vague.
+    if (events === dernierLotRef.current) return;
+    dernierLotRef.current = events;
+    if (events.length === 0) return;
+    const vague = ++vagueRef.current;
+    const nouveaux = events.map((evt, i) => ({ key: `${vague}-${i}-${evt.targetId}-${evt.type ?? "damage"}`, evt }));
+    setActifs((prev) => [...prev, ...nouveaux]);
+    for (const n of nouveaux) {
+      timersRef.current.push(setTimeout(
+        () => setActifs((prev) => prev.filter((a) => a.key !== n.key)),
+        (n.evt.delayMs ?? 0) + dureeDeVie(n.evt),
+      ));
+    }
+  }, [events]);
+  useEffect(() => () => { for (const t of timersRef.current) clearTimeout(t); }, []);
 
   if (!mounted) return null;
 
@@ -79,20 +118,14 @@ export default function DamageOverlay({ events }: DamageOverlayProps) {
         zIndex: 100,
       }}
     >
-      <AnimatePresence>
-        {events.map((evt, i) => {
-          // Stable key per event: including amount + delay + index keeps each
-          // popup identifiable across re-renders (a changing key would make
-          // AnimatePresence unmount + remount the popup every render, which
-          // caused the animation to play twice).
-          const key = `${i}-${evt.targetId}-${evt.type}-${evt.amount}-${evt.delayMs ?? 0}`;
-          return (
-            <DelayedPopup key={key} delay={evt.delayMs ?? 0}>
-              {reduced ? <ReducedPopup event={evt} /> : <EventPopup event={evt} />}
-            </DelayedPopup>
-          );
-        })}
-      </AnimatePresence>
+      {/* Clé = vague + rang : stable tant que le popup vit, jamais réutilisée
+          par la vague suivante. Pas d'AnimatePresence : un popup n'est retiré
+          qu'une fois son animation finie, il n'a pas de sortie à jouer. */}
+      {actifs.map(({ key, evt }) => (
+        <DelayedPopup key={key} delay={evt.delayMs ?? 0}>
+          {reduced ? <ReducedPopup event={evt} /> : <EventPopup event={evt} />}
+        </DelayedPopup>
+      ))}
     </div>,
     document.body
   );

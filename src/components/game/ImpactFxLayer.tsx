@@ -307,18 +307,23 @@ export default function ImpactFxLayer() {
     };
   }, []);
 
-  // --- Bridge: damageEvents → emitImpact (dedup like useScreenShake) ---------
-  const lastSigRef = useRef("");
+  // --- Bridge: damageEvents → emitImpact ------------------------------------
+  // Dédoublonné par RÉFÉRENCE, plus par contenu : deux vagues identiques
+  // (deux râles « 2 au héros ») sont deux coups, la seconde n'était pas
+  // explosée. Seul un lot re-posé tel quel par le store est écarté.
+  const lastBatchRef = useRef<typeof damageEvents | null>(null);
+  // Explosions différées de TOUTES les vagues : une vague suivante ne les
+  // annule plus (le nettoyage par lot coupait les coups encore en attente
+  // d'un sort de zone à plusieurs cibles). Vidées au démontage seulement.
+  const impactTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => () => { for (const t of impactTimersRef.current) clearTimeout(t); }, []);
   useEffect(() => {
-    const signature = damageEvents
-      .map((e) => `${e.targetId}:${e.amount}:${e.type ?? "damage"}:${e.delayMs ?? 0}`)
-      .join("|");
-    if (signature === lastSigRef.current) return;
-    lastSigRef.current = signature;
+    if (damageEvents === lastBatchRef.current) return;
+    lastBatchRef.current = damageEvents;
     if (damageEvents.length === 0) return;
 
     const FX_TYPES = new Set(["damage", "buff", "empower"]);
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    const timers = impactTimersRef.current;
     for (const ev of damageEvents) {
       const evType = ev.type ?? "damage";
       if (!FX_TYPES.has(evType)) continue;
@@ -348,9 +353,6 @@ export default function ImpactFxLayer() {
       if (delay <= 0) emit();
       else timers.push(setTimeout(emit, delay));
     }
-    return () => {
-      for (const t of timers) clearTimeout(t);
-    };
   }, [damageEvents]);
 
   // --- Bridge: deathEvents → emitImpact("death") ----------------------------

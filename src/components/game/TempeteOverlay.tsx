@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { TempeteEvent } from "@/lib/store/gameStore";
-import { getInstanceCenter, hashRandom, lent } from "@/lib/fx/overlayMotion";
+import { getInstanceCenter, hashRandom, lent, TEMPETE_BOLT_MS } from "@/lib/fx/overlayMotion";
 
 interface Props {
   event: TempeteEvent | null;
@@ -15,7 +15,7 @@ interface Props {
 // origin to its target, IMPACT_MS for the flash. STAGGER_MS spaces the
 // missiles so each is clearly its own projectile (Hearthstone Arcane
 // Missiles cadence).
-const BOLT_MS = lent(260);
+const BOLT_MS = TEMPETE_BOLT_MS;
 const IMPACT_MS = lent(320);
 const STAGGER_MS = lent(200);
 const TAIL_FADE_MS = lent(140);
@@ -84,7 +84,9 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
         origin,
         target,
         path: bezierPath(origin.x, origin.y, target.x, target.y, bulge),
-        delay: (i * STAGGER_MS) / 1000,
+        // Décollage fourni par le store (calé sur le « -1 » de la goutte),
+        // sinon cadence propre.
+        delay: (event.delaysMs?.[i] ?? i * STAGGER_MS) / 1000,
         sparks,
       });
     }
@@ -93,7 +95,10 @@ export default function TempeteOverlay({ event, onComplete }: Props) {
 
   useEffect(() => {
     if (!event) return;
-    const total = STAGGER_MS * (event.targetIds.length - 1) + BOLT_MS + IMPACT_MS;
+    const dernierDepart = event.delaysMs?.length
+      ? Math.max(...event.delaysMs)
+      : STAGGER_MS * (event.targetIds.length - 1);
+    const total = dernierDepart + BOLT_MS + IMPACT_MS;
     const timer = setTimeout(onComplete, total + 100);
     return () => clearTimeout(timer);
   }, [event, onComplete]);
