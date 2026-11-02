@@ -460,6 +460,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     return evt ? evt.amount : null;
   }
 
+  /** Délai du PREMIER coup reçu par cette cible dans la vague (effet de zone
+   *  échelonné par cible) : le clignotement et la baisse des PV l'attendent. */
+  function getDamageDelay(targetId: string): number {
+    let min = Infinity;
+    for (const e of damageEvents) {
+      if (e.targetId === targetId && (e.type ?? "damage") === "damage") min = Math.min(min, e.delayMs ?? 0);
+    }
+    return Number.isFinite(min) ? min : 0;
+  }
+
   // A positive boost (stat buff or capability gained) landed on this unit →
   // drives BoardCreature's graceful power-up pulse. Damage takes precedence.
   function getBoost(targetId: string): "buff" | "empower" | null {
@@ -1325,6 +1335,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             isValidTarget={validTargets.includes("enemy_hero")}
             validTargetColor={powerTargetColor}
             damageAmount={getDamage("enemy_hero")}
+            damageDelayMs={getDamageDelay("enemy_hero")}
             onClick={handleOppHeroClick}
             onContextMenu={handleOppHeroContextMenu}
             onMouseEnter={
@@ -1454,6 +1465,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   equippedItems={objetsDe(opponent).filter(o => o.equippedToInstanceId === creature.instanceId)}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
+                  damageDelayMs={getDamageDelay(creature.instanceId)}
                   boostKind={getBoost(creature.instanceId)}
                   summoning={summonEvents.includes(creature.instanceId)}
                   entering={entryEvents.includes(creature.instanceId)}
@@ -1545,6 +1557,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                       }
                       isValidTarget={validTargets.includes(creature.instanceId)}
                       damageAmount={getDamage(creature.instanceId)}
+                      damageDelayMs={getDamageDelay(creature.instanceId)}
                       boostKind={getBoost(creature.instanceId)}
                       summoning={summonEvents.includes(creature.instanceId)}
                       entering={entryEvents.includes(creature.instanceId)}
@@ -1673,6 +1686,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             isValidTarget={validTargets.includes("friendly_hero")}
             validTargetColor={powerTargetColor}
             damageAmount={getDamage("friendly_hero")}
+            damageDelayMs={getDamageDelay("friendly_hero")}
             onClick={handleMyHeroClick}
             onDoubleClick={handleMyHeroDoubleClick}
             onContextMenu={handleMyHeroContextMenu}

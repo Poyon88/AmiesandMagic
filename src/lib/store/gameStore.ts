@@ -3558,6 +3558,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     const POWER_ARROW_PRE_IMPACT_MS = lent(550); // pouvoir tap sans overlay : laisse la flèche partir avant que les dégâts/bouclier ne s'affichent
     const ATTACK_LUNGE_PRE_IMPACT_MS = lent(700); // lunge (~650ms) + short buffer
     const IMPACT_MS = lent(1200);
+    /** Temps laissé au dernier popup d'une vague avant la phase suivante. */
+    const LECTURE_POPUP_MS = lent(600);
+    const dernierDelai = (evs: DamageEvent[]): number =>
+      evs.reduce((m, e) => Math.max(m, e.delayMs ?? 0), 0);
     const DRAW_MS = lent(1000);
     const DEATH_MS = lent(1000);
     const SUMMON_MS = lent(1400);
@@ -3925,7 +3929,10 @@ export const useGameStore = create<GameStore>((set, get) => {
         });
         if (v.summonIds.length > 0) playSfxBatch([{ type: "summon" }]);
       }, c);
-      c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + lent(500) : 0);
+      c += Math.max(
+        IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + lent(500) : 0),
+        dernierDelai(v.dmg) + LECTURE_POPUP_MS,
+      );
       if (v.hasDeaths) {
         setTimeout(() => {
           set({
@@ -4183,7 +4190,13 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
     setTimeout(phaseImpacts, cursor);
-    cursor += IMPACT_MS + FUREUR_PHASE_EXTRA_MS + SEQ_PHASE_EXTRA_MS;
+    // Au moins jusqu'au DERNIER popup décalé (effet de zone : 200 ms par
+    // cible), plus le temps de le lire : au-delà de 6 cibles, la phase de mort
+    // retirait des créatures avant que leur « -N » n'apparaisse.
+    cursor += Math.max(
+      IMPACT_MS + FUREUR_PHASE_EXTRA_MS + SEQ_PHASE_EXTRA_MS,
+      dernierDelai(staggeredDmgEvents) + LECTURE_POPUP_MS,
+    );
 
     if (hasDeaths) {
       setTimeout(phaseDeaths, cursor);
@@ -4256,6 +4269,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       setTimeout(() => set({ deckEffectEvent }), cursor);
       cursor += 120;
     }
+
+    // La carte du sort (ou le pouvoir de héros) reste affichée `displayMs` :
+    // déverrouiller avant laissait son fondu déborder ~450 ms sur l'action
+    // suivante, qui semblait alors partir « avant » la fin du sort.
+    if (spellEvent) cursor = Math.max(cursor, overlayAt + OVERLAY.spell.displayMs);
+    else if (heroPowerEvent) cursor = Math.max(cursor, overlayAt + OVERLAY.heroPower.displayMs);
 
     setTimeout(phaseUnlock, cursor);
 

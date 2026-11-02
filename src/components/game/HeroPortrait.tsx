@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useCoupDiffere } from "./useCoupDiffere";
 import Image from "next/image";
 import type { HeroState } from "@/lib/game/types";
 import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
@@ -33,6 +34,8 @@ interface HeroPortraitProps {
    *  etc.). null/undefined → default red attack-target ring is kept. */
   validTargetColor?: string | null;
   damageAmount?: number | null;
+  /** Délai du popup du héros (effet de zone échelonné). */
+  damageDelayMs?: number;
   onClick?: () => void;
   // Double-click → activates non-targeted hero powers (e.g. gain_armor,
   // deal_damage with target=enemy_hero). Mirrors the 3D hero UX so 2D heroes
@@ -50,7 +53,8 @@ export default function HeroPortrait({
   isOpponent,
   isValidTarget = false,
   validTargetColor = null,
-  damageAmount = null,
+  damageAmount: montantBrut = null,
+  damageDelayMs = 0,
   onClick,
   onDoubleClick,
   onContextMenu,
@@ -58,6 +62,9 @@ export default function HeroPortrait({
   onMouseLeave,
 }: HeroPortraitProps) {
   const longPress = useLongPress(() => onContextMenu?.());
+  // Secousse et PV attendent l'arrivée du popup du héros (cf. useCoupDiffere).
+  const { frappe, valeurAffichee: pvAffiche } = useCoupDiffere(montantBrut, damageDelayMs, hero.hp);
+  const damageAmount = frappe ? montantBrut : null;
   const isBigDmg = damageAmount != null && isBigHit(damageAmount);
   // Activatable-power targeting → colour the ring like the power icon instead
   // of the default red attack ring.
@@ -178,10 +185,10 @@ export default function HeroPortrait({
           }}
         >
           <span
-            className={`text-[28px] font-black leading-none ${hero.hp <= 10 ? "text-accent" : "text-[#f6eedb]"}`}
+            className={`text-[28px] font-black leading-none ${pvAffiche <= 10 ? "text-accent" : "text-[#f6eedb]"}`}
             style={{ fontFamily: "var(--font-cinzel), serif", textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}
           >
-            {hero.hp}
+            {pvAffiche}
           </span>
         </div>
       </div>
