@@ -388,7 +388,9 @@ describe("blessure — mots-clés curés et multijoueur", () => {
 
     const st = lance(s, sort.instanceId);
 
-    const avant = (st.animationCheckpoints ?? []).at(-1);
+    // La frontière qui précède la réponse (une autre suit la résolution de la
+    // frame, depuis que la pile pose une frontière par effet).
+    const avant = (st.animationCheckpoints ?? []).find(c => c.state.players[1].board[0]?.currentHealth === 4);
     expect(avant?.label).toBe("effet");
     // Instantané : l'Écorchée a déjà pris son point, le héros de P1 rien encore.
     expect(avant!.state.players[1].board[0].currentHealth).toBe(4);

@@ -2212,7 +2212,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     // dernière vague peint ce que son effet a fait.
     // Le moteur pose ses frontières dans l'ordre chronologique de l'action ; on
     // garde cet ordre, c'est lui qui définit les intervalles.
-    const frontieres = newState.animationCheckpoints ?? [];
+    // Une attaque à pouvoir « à l'attaque » a sa propre vague 1 (gameState →
+    // intermediate) : les frontières posées PENDANT ce pouvoir lui appartiennent.
+    // Les dérouler après le combat diffait `intermediate` vers un état ANTÉRIEUR
+    // (PV du héros 30 → 26 → 30 avec un faux « +4 », puis 26 à nouveau).
+    const toutesFrontieres = newState.animationCheckpoints ?? [];
+    const frontieres = onAttackWave?.checkpointsBefore
+      ? toutesFrontieres.slice(onAttackWave.checkpointsBefore)
+      : toutesFrontieres;
     if (newState.animationCheckpoints) newState.animationCheckpoints = undefined;
     const drawWave = frontieres.find(c => c.label === "pioche") ?? null;
     // Les frontières « mort » et « effet » se répètent ; seule « pioche » est
@@ -2807,6 +2814,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!m) return id;
       return gameState.players[Number(m[1])]?.id === localPlayerId ? "friendly_hero" : "enemy_hero";
     };
+    /** Flèches de pouvoir DÉCLENCHÉES, regroupées par (source, couleur de mode). */
+    const grouperFleches = (strikes: { sourceId: string; targetId: string; mode: KeywordMode }[]): PowerArrowGroup[] => {
+      const groups = new Map<string, { sourceId: string; color: string; targets: Set<string> }>();
+      for (const st of strikes) {
+        const color = keywordModeColor(st.mode) ?? "#d4a800";
+        const src = heroSentinelToLocal(st.sourceId);
+        const tgt = heroSentinelToLocal(st.targetId);
+        const key = `${src}|${color}`;
+        let g = groups.get(key);
+        if (!g) { g = { sourceId: src, color, targets: new Set() }; groups.set(key, g); }
+        if (tgt !== src) g.targets.add(tgt);
+      }
+      return [...groups.values()]
+        .filter((g) => g.targets.size > 0)
+        .map((g) => ({ sourceId: g.sourceId, targetIds: Array.from(g.targets), color: g.color }));
+    };
 
     // (1) Pouvoir ACTIVÉ (tap) ou pouvoir de HÉROS → flèche JAUNE. Cibles
     // déduites en comparant l'état AVANT (gameState) / APRÈS (newState) sur le
@@ -2889,16 +2912,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Copie conservée pour l'historique : le bloc ci-dessous consomme
     // `newState.powerStrikes` (indice d'animation, hors état).
     const rawPowerStrikes = newState.powerStrikes ? [...newState.powerStrikes] : [];
+    // DÉCOUPE PAR VAGUE : une flèche appartient à l'intervalle où son pouvoir a
+    // frappé. Seule la tranche de l'intervalle principal part avec l'overlay ;
+    // les suivantes partent avec leur vague (programmerVague). Avant, toutes
+    // partaient d'emblée — la flèche d'un râle avant la mort qui le déclenche.
+    const finFlechesPrincipales = frontieres[0]?.powerStrikesBefore ?? rawPowerStrikes.length;
     if (newState.powerStrikes && newState.powerStrikes.length > 0) {
-      const groups = new Map<string, { sourceId: string; color: string; targets: Set<string> }>();
       for (const st of newState.powerStrikes) {
-        const color = keywordModeColor(st.mode) ?? "#d4a800";
-        const src = heroSentinelToLocal(st.sourceId);
         const tgt = heroSentinelToLocal(st.targetId);
-        const key = `${src}|${color}`;
-        let g = groups.get(key);
-        if (!g) { g = { sourceId: src, color, targets: new Set() }; groups.set(key, g); }
-        if (tgt !== src) g.targets.add(tgt);
         // Fin de tour : le moteur résout les effets dans l'ordre plateau
         // gauche→droite des créatures sources. On mémorise, par cible touchée,
         // l'index plateau de sa créature source (dans le plateau du joueur
@@ -2908,9 +2929,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           if (srcIdx >= 0) endTurnSourceIdxByTarget.set(tgt, srcIdx);
         }
       }
-      for (const g of groups.values()) {
-        if (g.targets.size > 0) powerArrows.push({ sourceId: g.sourceId, targetIds: Array.from(g.targets), color: g.color });
-      }
+      powerArrows.push(...grouperFleches(rawPowerStrikes.slice(0, finFlechesPrincipales)));
       newState.powerStrikes = undefined; // consommé (indice d'animation, hors état)
     }
 
@@ -3106,20 +3125,26 @@ export const useGameStore = create<GameStore>((set, get) => {
     // On vide la liste transitoire après extraction (exclue du hash).
     const rawAbilitySfx = newState.abilitySfxEvents ?? [];
     if (newState.abilitySfxEvents) newState.abilitySfxEvents = undefined;
-    const abilitySfxByPhase = { overlay: [] as string[], death: [] as string[] };
-    {
+    /** Répartit des bruitages de capacité entre la phase d'ouverture et la
+     *  phase de mort. Seule la mort a sa propre phase sonore ; tout le reste
+     *  (entrée en jeu, tap, attaque, fin de tour, retour, pioche, sort)
+     *  s'enchaîne après le son d'ouverture. */
+    const repartirBruitages = (evs: typeof rawAbilitySfx) => {
+      const out = { overlay: [] as string[], death: [] as string[] };
       const urls = useAudioStore.getState().abilitySfxUrls;
-      for (const ev of rawAbilitySfx) {
+      for (const ev of evs) {
         if (suppressOnPlaySfx && ev.trigger === "on_play") continue;
         const url = urls[ev.abilityId];
         if (!url) continue;
-        // Seule la mort a sa propre phase sonore ; tout le reste (entrée en jeu,
-        // tap, attaque, fin de tour, retour, pioche, sort) s'enchaîne après le
-        // son d'ouverture de l'action.
-        const bucket = ev.trigger === "on_death" ? abilitySfxByPhase.death : abilitySfxByPhase.overlay;
+        const bucket = ev.trigger === "on_death" ? out.death : out.overlay;
         if (!bucket.includes(url)) bucket.push(url);
       }
-    }
+      return out;
+    };
+    // DÉCOUPE PAR VAGUE, comme les flèches : la tranche de l'intervalle
+    // principal ici, les suivantes avec leur vague.
+    const abilitySfxByPhase = repartirBruitages(
+      rawAbilitySfx.slice(0, frontieres[0]?.abilitySfxBefore ?? rawAbilitySfx.length));
 
     /** `delayMs` : décalage de lecture. Sert aux séries (un son par compteur
      *  d'Esprit de corps) — sans lui les N sons partiraient dans le même tick et
@@ -3335,7 +3360,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = frontieres.length > 0 || hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3734,11 +3759,44 @@ export const useGameStore = create<GameStore>((set, get) => {
       /** Sorts relancés à révéler AVANT de peindre cet intervalle : ce sont
        *  leurs effets qu'il contient. */
       reveals: SpellCastEvent[];
+      /** Flèches des pouvoirs qui ont frappé DANS cet intervalle : elles
+       *  partent juste avant ses dégâts. */
+      arrows: PowerArrowGroup[];
+      /** Bruitages de capacité de l'intervalle (ouverture / mort). */
+      bruitages: { overlay: string[]; death: string[] };
+      /** Créatures apparues dans l'intervalle : portail + son avec la vague. */
+      summonIds: string[];
     };
 
-    const construireVague = (f: typeof frontieres[number]): Vague => {
+    /** Tranche d'un registre plat appartenant à l'intervalle de `f`. */
+    const trancheDe = <T,>(liste: T[], f: typeof frontieres[number], cle: "powerStrikesBefore" | "abilitySfxBefore"): T[] => {
+      const i = frontieres.indexOf(f);
+      const debut = f[cle] ?? liste.length;
+      const suivante = frontieres[i + 1]?.[cle];
+      return liste.slice(debut, suivante ?? liste.length);
+    };
+
+    const construireVague = (f: typeof frontieres[number], avantPioche: boolean): Vague => {
       const bord = f.state;
-      const fin = finDeLIntervalle(f);
+      // Avant la pioche, la carte piochée et la bascule du tour n'ont pas encore
+      // eu lieu À L'ÉCRAN : on les retire des états de la vague (sinon la carte
+      // apparaissait, disparaissait au repli sur preDrawState, puis réapparaissait).
+      const masquerAvantPioche = (st: GameState): GameState => {
+        if (!avantPioche) return st;
+        const c = cloneState(st);
+        trimDrawsFromHand(c);
+        if (isEndTurn && hasDraws) {
+          c.currentPlayerIndex = gameState.currentPlayerIndex;
+          c.turnStartedAt = gameState.turnStartedAt;
+          c.turnNumber = gameState.turnNumber;
+          for (let i = 0; i < 2; i++) {
+            c.players[i].mana = gameState.players[i].mana;
+            c.players[i].maxMana = gameState.players[i].maxMana;
+          }
+        }
+        return c;
+      };
+      const fin = masquerAvantPioche(finDeLIntervalle(f));
       const impactState = cloneState(fin);
       const dead: CardInstance[] = [];
       let hasDeaths = false;
@@ -3794,6 +3852,14 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...lethalDamageEvents(dead, fin, damageLedger),
       ].filter((ev) => !(seqCibles.has(ev.targetId) && (ev.type === "damage" || ev.type === "heal")));
 
+      const summonIds: string[] = [];
+      for (let i = 0; i < 2; i++) {
+        for (const nc of fin.players[i].board) {
+          if (nc.instanceId === playedId) continue;
+          if (!bord.players[i].board.some((c) => c.instanceId === nc.instanceId)) summonIds.push(nc.instanceId);
+        }
+      }
+
       return {
         impactState,
         finState: fin,
@@ -3803,11 +3869,25 @@ export const useGameStore = create<GameStore>((set, get) => {
         seqCount: seq.length,
         seqDuree: dernierIntervalle,
         reveals: relancesDeLIntervalle(f),
+        arrows: grouperFleches(trancheDe(rawPowerStrikes, f, "powerStrikesBefore")),
+        bruitages: repartirBruitages(trancheDe(rawAbilitySfx, f, "abilitySfxBefore")),
+        summonIds,
       };
     };
 
-    const vaguesAvantPioche = frontieresAvantPioche.map(construireVague);
-    const vaguesDepuisPioche = frontieresDepuisPioche.map(construireVague);
+    const vaguesAvantPioche = frontieresAvantPioche.map((f) => construireVague(f, true));
+    const vaguesDepuisPioche = frontieresDepuisPioche.map((f) => construireVague(f, false));
+    // Invocations de l'intervalle PRINCIPAL : la 1re vague les peint déjà (son
+    // état de départ est la 1re frontière), alors que leur portail ne partait
+    // qu'à `phaseSummons`, APRÈS toutes les vagues — la créature surgissait sans
+    // portail, puis le portail jouait sur elle. Il part donc avec la 1re vague
+    // peinte, et `phaseSummons` ne le rejoue pas.
+    const premiereVagueAvantPioche = vaguesAvantPioche.find((v) =>
+      v.dmg.length > 0 || v.hasDeaths || v.arrows.length > 0 || v.summonIds.length > 0) ?? null;
+    const invocationsAvancees = !!premiereVagueAvantPioche && lateSummonIds.length > 0;
+    if (premiereVagueAvantPioche && invocationsAvancees) {
+      premiereVagueAvantPioche.summonIds = [...new Set([...lateSummonIds, ...premiereVagueAvantPioche.summonIds])];
+    }
 
     /** Programme une vague d'intervalle et rend le curseur avancé. Une vague
      *  SANS RIEN À PEINDRE n'occupe aucun temps : une frontière posée pour un
@@ -3822,19 +3902,49 @@ export const useGameStore = create<GameStore>((set, get) => {
         setTimeout(() => set({ spellCastEvent: reveal }), c);
         c += RECAST_GAP_MS;
       }
-      const aPeindre = v.dmg.length > 0 || v.hasDeaths;
-      if (!aPeindre) return c;
-      setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
+      const aPeindre = v.dmg.length > 0 || v.hasDeaths || v.arrows.length > 0 || v.summonIds.length > 0;
+      if (!aPeindre) {
+        // Rien à montrer, mais un bruitage reste un bruitage.
+        if (v.bruitages.overlay.length > 0) setTimeout(() => playSfxBatch([], v.bruitages.overlay), c);
+        return c;
+      }
+      // La flèche du pouvoir part AVANT ses dégâts, avec son bruitage.
+      if (v.arrows.length > 0 || v.bruitages.overlay.length > 0) {
+        const ts = Date.now() + 1000 + c; // clé de montage propre à la vague
+        setTimeout(() => {
+          if (v.arrows.length > 0) set({ powerArrowEvent: { arrows: v.arrows, timestamp: ts } });
+          if (v.bruitages.overlay.length > 0) playSfxBatch([], v.bruitages.overlay);
+        }, c);
+        if (v.arrows.length > 0) c += POWER_ARROW_PRE_IMPACT_MS;
+      }
+      setTimeout(() => {
+        set({
+          gameState: v.impactState,
+          damageEvents: v.dmg,
+          ...(v.summonIds.length > 0 ? { summonEvents: v.summonIds } : {}),
+        });
+        if (v.summonIds.length > 0) playSfxBatch([{ type: "summon" }]);
+      }, c);
       c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + lent(500) : 0);
       if (v.hasDeaths) {
-        setTimeout(() => set({
-          gameState: v.finState,
-          deathEvents: v.dead.map((mort) => {
-            const pos = getElementCenter(mort.instanceId);
-            return { instanceId: mort.instanceId, x: pos.x, y: pos.y, poisoned: !!mort.isPoisoned };
-          }),
-        }), c);
+        setTimeout(() => {
+          set({
+            gameState: v.finState,
+            deathEvents: v.dead.map((mort) => {
+              const pos = getElementCenter(mort.instanceId);
+              return { instanceId: mort.instanceId, x: pos.x, y: pos.y, poisoned: !!mort.isPoisoned };
+            }),
+          });
+          // Sons de mort de la vague (avant, une victime de cascade mourait en
+          // silence), puis les bruitages de râle de l'intervalle.
+          playSfxBatch(
+            v.dead.map((mort) => ({ type: "creature_death", cardSfxUrl: mort.card.sfx_death_url ?? undefined })),
+            v.bruitages.death,
+          );
+        }, c);
         c += DEATH_MS;
+      } else if (v.bruitages.death.length > 0) {
+        setTimeout(() => playSfxBatch([], v.bruitages.death), c);
       }
       return c;
     };
@@ -3897,11 +4007,12 @@ export const useGameStore = create<GameStore>((set, get) => {
         // On EXCLUT les invocations de la vague de pouvoir (déjà portées à
         // phasePowerImpacts) : les réémettre ici ferait un second portail après
         // que la couche FX ait purgé le premier (signature réinitialisée).
-        ...(lateSummonIds.length > 0 ? { summonEvents: lateSummonIds } : {}),
+        ...(lateSummonIds.length > 0 && !invocationsAvancees ? { summonEvents: lateSummonIds } : {}),
       });
       // Son d'invocation seulement pour les invocations tardives — celles de la
-      // vague de pouvoir l'ont déjà joué à phasePowerImpacts.
-      if (lateSummonIds.length > 0) playSfxBatch(summonSfx);
+      // vague de pouvoir l'ont déjà joué à phasePowerImpacts, celles de
+      // l'intervalle principal avec la 1re vague.
+      if (lateSummonIds.length > 0 && !invocationsAvancees) playSfxBatch(summonSfx);
     };
 
     const phaseDiscard = () => {

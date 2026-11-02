@@ -51,15 +51,17 @@ describe("frontière de pioche — pose", () => {
     expect(frontiere(st)).toBeDefined();
   });
 
-  it("une pioche SANS effet ne pose aucune frontière", () => {
-    // Une vague par pioche banale n'aurait rien à montrer : elle ne ferait
-    // qu'introduire un temps mort au milieu de chaque fin de tour.
+  it("la pioche du TOUR pose sa frontière, même sans effet — une seule", () => {
+    // Sans elle, le store ne savait pas que la pioche précède les effets de
+    // début de tour, et les animait AVANT la bascule et la carte (audit
+    // 2026-11-02). Pas de temps mort pour autant : une vague sans rien à
+    // peindre n'occupe aucun temps côté store.
     const s = mkState();
     s.players[1].deck = [mkInstance(mkCard({ name: "Carte muette" }))];
 
     const st = applyAction(s, { type: "end_turn" });
 
-    expect(st.animationCheckpoints).toBeUndefined();
+    expect((st.animationCheckpoints ?? []).map(c => c.label)).toEqual(["pioche"]);
   });
 
   it("deux pioches à effet dans la même action ne posent qu'UNE frontière", () => {

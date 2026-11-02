@@ -249,11 +249,18 @@ let currentActionState: GameState | null = null;
 // une action qui pioche trois cartes à déclencheur ne crée pas trois vagues,
 // elle sépare simplement « avant la pioche » de « ce que la pioche a fait ».
 // Vidé au début d'applyAction, rattaché à state.animationCheckpoints ; hors hash.
+/** Empreinte visible de l'état au DÉBUT de l'action (cf. empreinteVisible).
+ *  Sert de référence à la PREMIÈRE frontière : sans elle, une frontière posée
+ *  avant que quoi que ce soit n'ait bougé ouvrirait un premier intervalle vide,
+ *  et le store prendrait l'action pour une action sans animation. */
+let empreinteDepart = "";
 let animationCheckpointSink: Array<{
   label: import("./types").AnimationCheckpointLabel;
   state: GameState;
   sequentialHitsBefore: number;
   recastsBefore: number;
+  powerStrikesBefore: number;
+  abilitySfxBefore: number;
   /** Interne au moteur : sert à ne pas poser deux frontières qui n'encadrent
    *  rien. Retiré avant d'attacher la file à l'état. */
   empreinte: string;
@@ -290,6 +297,9 @@ function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLab
     && animationCheckpointSink.some(c => c.label === label)) return;
   const derniere = animationCheckpointSink[animationCheckpointSink.length - 1];
   if (derniere && derniere.empreinte === empreinteVisible(live)) return;
+  // « pioche » garde son rôle de borne même sans changement visible préalable
+  // (le store sépare avant / depuis la pioche par sa POSITION).
+  if (!derniere && label !== "pioche" && empreinteDepart === empreinteVisible(live)) return;
   const fp = live.factionCardPool, ap = live.allSpellsPool, wave = live.onAttackWave;
   live.factionCardPool = undefined; live.allSpellsPool = undefined; live.onAttackWave = undefined;
   animationCheckpointSink.push({
@@ -303,6 +313,11 @@ function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLab
     // ses effets DANS l'intervalle qu'elle ferme (castSpellWithRandomTargets
     // annonce puis résout ; le sort imbriqué pose sa frontière en sortant).
     recastsBefore: live.recastEvents?.length ?? 0,
+    // Mêmes rangs pour les flèches de pouvoir et les bruitages de capacité :
+    // registres plats, eux aussi, que le store découpe par vague — sans quoi
+    // la flèche d'un râle partait au tout début de l'action, avant la mort.
+    powerStrikesBefore: powerStrikeSink.length,
+    abilitySfxBefore: abilitySfxSink.length,
   });
   live.factionCardPool = fp; live.allSpellsPool = ap; live.onAttackWave = wave;
 }
@@ -2708,6 +2723,12 @@ function runComposedCapsForCard(
     withComposedMode(triggerToKeywordMode(trigger), () =>
       resolveComposedEffect(cap.composed!, source, owner, opponent, chosen, trigger === "spell_resolution",
         { trigger, capUid: cap.uid, sourceCard: card }));
+    // Frontière pour l'ÉCRAN entre deux effets composés d'un sort (ou d'un
+    // pouvoir héroïque, qui passe par ici). Seule la boucle des mécaniques
+    // curées en posait : un sort fait uniquement d'effets composés — le cas
+    // courant depuis la liste d'effets unifiée — peignait tout d'une salve.
+    // Mise en scène seule : les morts se règlent toujours après les composés.
+    if (trigger === "spell_resolution") markAnimationCheckpoint("effet");
   }
 }
 
@@ -4154,6 +4175,9 @@ export function startTurn(state: GameState): GameState {
   newState.allSpellsPool = allPool;
   const player = newState.players[newState.currentPlayerIndex];
   const opponent = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+  // Frontière pour l'ÉCRAN : la fin du tour sortant (ses morts comprises) se
+  // joue AVANT la bascule, la pioche et le Poison du tour qui s'ouvre.
+  markAnimationCheckpoint("effet");
 
   newState.turnNumber++;
   // Les estampilles d'arrivée (Neutralisation) posées pendant ce début de tour
@@ -4203,7 +4227,15 @@ export function startTurn(state: GameState): GameState {
   // au lieu de piocher. Le choix est déposé dans le puits : la séquence de
   // début de tour se met en pause dessus (rapatrierLePuits) et reprend une fois
   // la carte choisie. Offre vide (vivier sans Communes de sa faction) ⇒ pioche.
-  if (!(estTourDeDecouverte(newState) && poserDecouverte(newState, player))) drawCard(player);
+  if (!(estTourDeDecouverte(newState) && poserDecouverte(newState, player))) {
+    drawCard(player);
+    // Frontière pour l'ÉCRAN : la pioche du tour. Le store place sa phase de
+    // pioche à cette frontière ; sans elle (seul un effet « à la pioche » en
+    // posait une), les effets de début de tour s'animaient AVANT la bascule et
+    // la carte piochée. Unique par action : si la carte a un effet « à la
+    // pioche », triggerOnDraw l'a déjà posée au même instant.
+    markAnimationCheckpoint("pioche");
+  }
 
   // Return Corruption-stolen units to opponent at start of owner's turn
   for (const creature of [...opponent.board]) {
@@ -4725,7 +4757,14 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
   const finalize = phase === "end_of_turn" ? finalizeEndOfTurn : finalizeStartOfTurn;
   if (!queue) return finalize(newState);
 
+  // Frontière pour l'ÉCRAN entre deux pas de la file : sans elle, tous les
+  // effets de fin (ou de début) de tour partaient dans la même salve. Posée en
+  // TÊTE de l'itération suivante — un pas a plusieurs sorties (`continue`) —
+  // et après la boucle pour le dernier pas.
+  let pasPrecedent = false;
   while (queue.length > 0) {
+    if (pasPrecedent) markAnimationCheckpoint("effet");
+    pasPrecedent = true;
     // Un effet résolu EN LIGNE au pas précédent (mot-clé curé ciblé, Sélection
     // composée de créature, râle d'agonie) a pu déposer un choix dans le puits.
     // Sans rapatriement, la file continuait de se vider et le tour basculait
@@ -4892,6 +4931,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
         { trigger: spec.trigger, capUid: cap.uid }));
   }
 
+  if (pasPrecedent) markAnimationCheckpoint("effet");
   // Le DERNIER pas de la file a pu, lui aussi, déposer un choix.
   if (rapatrierLePuits(newState)) return pauseTurnPhase(newState, phase); // PAUSE
   // File épuisée : plus aucun effet de la phase → finalisation.
@@ -6361,8 +6401,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // arrive ne doit pas réveiller son propre emblème pour sa propre arrivée —
     // puis on pose les siens. Hors de la pile composée : la pose est immédiate
     // et sans cible.
+    // Frontière pour l'ÉCRAN : la cascade curée d'entrée en jeu (Tempête,
+    // Cataclysme, Canon…) se joue AVANT les emblèmes et les composés « après ».
+    markAnimationCheckpoint("effet");
     fireEmblemsForEvent("on_play", player, opponent);
     placeEmblemsForCard(cardInstance.card, player, opponent);
+    markAnimationCheckpoint("effet");
 
     // Effets composés à l'entrée en jeu (modèle hybride) → pile LIFO. Un effet
     // poussé pendant la résolution (ex. mort déclenchée par un dégât on_play) se
@@ -8310,7 +8354,12 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // Emblèmes qui guettent l'attaque. HORS du `if` ci-dessous, qui ne parle que
   // des capacités de L'ATTAQUANT : un emblème est un guetteur du joueur, il doit
   // parler même quand l'attaquant n'a aucun pouvoir d'attaque.
-  if (!action.reprise) fireEmblemsForEvent("on_attack", player, opponent);
+  if (!action.reprise) {
+    fireEmblemsForEvent("on_attack", player, opponent);
+    // Frontière pour l'ÉCRAN : l'emblème d'attaque se joue avant le combat,
+    // même quand l'attaquant n'a aucun pouvoir d'attaque (pas de vague 1).
+    markAnimationCheckpoint("effet");
+  }
 
   // Choix posés par les effets d'attaque : comptés pour suspendre l'attaque.
   const choixAvantAttaque = pendingTriggerSink.length;
@@ -8375,7 +8424,14 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Snapshot for wave 1 — pools stripped (the store diffs boards only).
     const fp = newState.factionCardPool, ap = newState.allSpellsPool;
     newState.factionCardPool = undefined; newState.allSpellsPool = undefined;
-    newState.onAttackWave = { intermediate: deepClone(newState) };
+    newState.onAttackWave = {
+      intermediate: deepClone(newState),
+      // Frontières posées PENDANT le pouvoir d'attaque : elles appartiennent à
+      // la vague 1 (gameState → intermediate). Le store ne déroule que les
+      // suivantes après le combat — sans ce rang, il diffait de `intermediate`
+      // vers une frontière ANTÉRIEURE (faux soin, dégâts montrés deux fois).
+      checkpointsBefore: animationCheckpointSink.length,
+    };
     newState.factionCardPool = fp; newState.allSpellsPool = ap;
     // Power could have killed the attacker itself (e.g. an AoE it's caught in)
     // → no combat, finalize.
@@ -10087,6 +10143,11 @@ function drainStack(state: GameState, opts?: { fizzleUnresolvedChoices?: boolean
     resolveFrame(state, top);
     settleDeaths(state, top.depth);
     recalculateAuras(state.players[0], state.players[1]);
+    // Frontière pour l'ÉCRAN : chaque effet de la pile a sa vague. Sans elle,
+    // deux effets d'entrée en jeu, un effet puis la réponse qu'il provoque, ou
+    // les déclencheurs d'un choix tranché, partaient dans la même salve.
+    // `empreinteVisible` écarte les frames qui n'ont rien changé de visible.
+    markAnimationCheckpoint("effet");
     // « Sous 15 PV » : une frame vient peut-être de faire franchir le seuil à
     // un héros — interruption LIFO avec profondeur héritée (garde unifiée).
     checkLowHpTriggers(state, top.depth + 1);
@@ -10284,6 +10345,9 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
         });
       }
     }
+    // Frontière pour l'ÉCRAN, comme Blessure : le coup qui fait franchir le
+    // seuil se joue AVANT la réponse.
+    if (frames.length > 0) markAnimationCheckpoint("effet");
     pushFrames(state, frames);
   }
 }
@@ -10587,9 +10651,6 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
  *  passent (dead, owner, enemy) — l'ancien 4e paramètre `depth` disparaît). */
 function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: PlayerState): void {
   if (dead.length === 0) return;
-  // Emblèmes qui guettent la mort : une fois par dépouille, quelles que soient
-  // les capacités de la défunte.
-  for (let i = 0; i < dead.length; i++) fireEmblemsForEvent("on_death", owner, enemy);
   // FRONTIÈRE DE MORT. Les dépouilles ont déjà quitté le plateau
   // (cleanDeadCreatures), aucun râle n'a encore résolu : c'est exactement
   // l'instant que l'écran doit montrer entre l'animation de mort et les dégâts
@@ -10601,10 +10662,16 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
   // capacités concernées est longue et bougerait à chaque ajout. Une frontière
   // posée pour rien ne coûte qu'un clone — le store écarte les vagues qui
   // n'ont rien à peindre.
-  if (dead.some(c => (c.card.keywords?.length ?? 0) > 0
+  const emblemesDeMort = (owner.emblems ?? []).some(e => e.composed && e.trigger === "on_death");
+  if (emblemesDeMort || dead.some(c => (c.card.keywords?.length ?? 0) > 0
     || getCapabilities(c.card).some(cap => cap.trigger === "on_death"))) {
     markAnimationCheckpoint("mort");
   }
+  // Emblèmes qui guettent la mort : une fois par dépouille, quelles que soient
+  // les capacités de la défunte. APRÈS la frontière : leurs dégâts étaient
+  // peints avec le coup fatal, avant même l'animation de mort.
+  for (let i = 0; i < dead.length; i++) fireEmblemsForEvent("on_death", owner, enemy);
+  if (emblemesDeMort) markAnimationCheckpoint("effet");
   type DeathWork = { c: CardInstance; owner: PlayerState; enemy: PlayerState };
   const work: DeathWork[] = [];
   // dead[0] doit être traité en premier → empilé en dernier (pop = LIFO).
@@ -10615,11 +10682,17 @@ function processDeathTriggers(dead: CardInstance[], owner: PlayerState, enemy: P
     const w = work.pop()!;
     resolveCreatureDeath(w.c, w.owner, w.enemy);
     recalculateAuras(owner, enemy);
+    // Frontière pour l'ÉCRAN : le râle de cette dépouille se joue avant celui de
+    // la suivante (sœur ou victime de la cascade).
+    markAnimationCheckpoint("effet");
     // Cascade : Maléfice/Carnage/auto-débuff ont pu tuer d'autres unités. On
     // ré-empile (ennemi d'abord puis allié → allié traité en premier, ordre
     // plateau) ; elles passent avant les morts sœurs restantes (LIFO).
     const ed = cleanDeadCreatures(enemy);
     const od = cleanDeadCreatures(owner);
+    // Cascade : les victimes du râle meurent à l'écran AVANT que leurs propres
+    // râles ne frappent (même rôle que la frontière de tête).
+    if (ed.length > 0 || od.length > 0) markAnimationCheckpoint("mort");
     for (let i = ed.length - 1; i >= 0; i--) work.push({ c: ed[i], owner: enemy, enemy: owner });
     for (let i = od.length - 1; i >= 0; i--) work.push({ c: od[i], owner, enemy });
   }
@@ -13106,6 +13179,8 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   eveilSink = [];
   animationCheckpointSink = [];
   currentActionState = null;
+  // Après la remise à zéro des registres séquentiel / dégâts, que l'empreinte lit.
+  empreinteDepart = empreinteVisible(state);
   deckEffectSink = [];
   compagnonsSink = [];
   lethalSpellActive = false;
@@ -13247,8 +13322,15 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // store risquait de rejouer une vague périmée.
   if (result !== state) {
     result.animationCheckpoints = animationCheckpointSink.length > 0
-      ? animationCheckpointSink.map(({ label, state, sequentialHitsBefore, recastsBefore }) =>
-        ({ label, state, sequentialHitsBefore, recastsBefore }))
+      ? animationCheckpointSink.map(({ label, state, sequentialHitsBefore, recastsBefore, powerStrikesBefore, abilitySfxBefore }) =>
+        ({
+          label, state, sequentialHitsBefore, recastsBefore,
+          // Rangs relatifs aux registres de CETTE action ; décalés de ce que les
+          // listes de l'état portaient déjà (bruitages : déjà rattachés plus
+          // haut ; flèches : rattachées plus bas).
+          powerStrikesBefore: powerStrikesBefore + (result.powerStrikes?.length ?? 0),
+          abilitySfxBefore: abilitySfxBefore + (result.abilitySfxEvents?.length ?? 0) - abilitySfxSink.length,
+        }))
       : undefined;
   }
   // Rattache le repli payé pendant l'action (dos de carte qui file vers le deck).
