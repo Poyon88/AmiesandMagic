@@ -2666,7 +2666,9 @@ function runComposedCapsForCard(
   // qui appelle plusieurs fois pour intercaler les composés entre les
   // mécaniques). `skipEmblems` : les emblèmes ne se posent qu'UNE fois, à
   // l'appel final ; sans ce drapeau, chaque appel intercalé les reposerait.
-  opts?: { only?: (cap: import("./types").Capability) => boolean; skipEmblems?: boolean },
+  // `apresChaque` : appelé après CHAQUE effet résolu ici — le sort y règle ses
+  // morts et leurs râles (settleSpellDeaths), comme après chaque mécanique curée.
+  opts?: { only?: (cap: import("./types").Capability) => boolean; skipEmblems?: boolean; apresChaque?: () => void },
 ): void {
   // Un SORT pose ici ses emblèmes, à sa résolution.
   //
@@ -2727,7 +2729,10 @@ function runComposedCapsForCard(
     // pouvoir héroïque, qui passe par ici). Seule la boucle des mécaniques
     // curées en posait : un sort fait uniquement d'effets composés — le cas
     // courant depuis la liste d'effets unifiée — peignait tout d'une salve.
-    // Mise en scène seule : les morts se règlent toujours après les composés.
+    // Les morts de CET effet et leurs râles sont réglés avant l'effet suivant
+    // (règle arbitrée le 2026-11-02 : comme pour les mécaniques curées, « morts
+    // + râles réglés après CHAQUE effet ») — le suivant ne vise plus de cadavres.
+    opts?.apresChaque?.();
     if (trigger === "spell_resolution") markAnimationCheckpoint("effet");
   }
 }
@@ -7016,7 +7021,7 @@ function resolveSpellCard(
       Math.min(cap.position ?? Number.POSITIVE_INFINITY, nbCreneaux);
     const resoudreComposesDu = (creneau: number) => {
       runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
-        { only: (cap) => creneauCompose(cap) === creneau, skipEmblems: true });
+        { only: (cap) => creneauCompose(cap) === creneau, skipEmblems: true, apresChaque: () => settleSpellDeaths(ctx) });
       settleSpellDeaths(ctx);
     };
 
@@ -7050,7 +7055,7 @@ function resolveSpellCard(
     // de la liste d'auteur, dons compris. C'est aussi l'appel qui pose les
     // emblèmes, une seule fois — d'où `skipEmblems` sur tous les intercalés.
     runComposedCapsForCard(card, "spell_resolution", null, caster, opponent, targetMap, undefined,
-      { only: (cap) => creneauCompose(cap) === nbCreneaux });
+      { only: (cap) => creneauCompose(cap) === nbCreneaux, apresChaque: () => settleSpellDeaths(ctx) });
     settleSpellDeaths(ctx);
 
     // Repli legacy (cartes sans mots-clés ni effets composables).
