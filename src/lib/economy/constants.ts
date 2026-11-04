@@ -15,3 +15,18 @@ export const REWARD_VICTORY = 5;
 export const REWARD_QUEST_SMALL = 10;
 export const REWARD_QUEST_MEDIUM = 25;
 export const REWARD_QUEST_LARGE = 50;
+
+// ─── Essence ──────────────────────────────────────────────────────────────────
+// Le tirage RÉEL vit dans `craft_with_essence` (supabase-migration-essence.sql) ;
+// ces valeurs ne servent qu'à l'AFFICHAGE. Toute modification doit être
+// reportée dans le SQL, faute de quoi la boutique annoncerait d'autres chances
+// que celles appliquées.
+export const ESSENCE_NAME = 'Essence';
+export const ESSENCE_CRAFT_COST = 2000;
+export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odds: string; rarity: string }> = [
+  { key: 'hero', label: 'Héros légendaire', odds: '1 sur 10 000', rarity: 'Légendaire' },
+  { key: 'Légendaire', label: 'Légendaire', odds: '1 sur 1 000', rarity: 'Légendaire' },
+  { key: 'Épique', label: 'Épique', odds: '1 sur 100', rarity: 'Épique' },
+  { key: 'Rare', label: 'Rare', odds: '1 sur 10', rarity: 'Rare' },
+  { key: 'Peu Commune', label: 'Peu Commune', odds: 'le reste', rarity: 'Peu Commune' },
+];

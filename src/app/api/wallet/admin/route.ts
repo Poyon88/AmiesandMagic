@@ -26,7 +26,8 @@ function getAdminClient() {
   );
 }
 
-// POST /api/wallet/admin — { userId, amount, type: 'admin_credit' | 'admin_debit', description? }
+// POST /api/wallet/admin — { userId, amount, type: 'admin_credit' | 'admin_debit', description?, currency? }
+// `currency` : 'gold' (défaut) ou 'essence'.
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
@@ -44,12 +45,17 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { userId, amount, type, description } = body as {
+  const { userId, amount, type, description, currency = 'gold' } = body as {
     userId: string;
     amount: number;
     type: 'admin_credit' | 'admin_debit';
     description?: string;
+    currency?: 'gold' | 'essence';
   };
+
+  if (currency !== 'gold' && currency !== 'essence') {
+    return NextResponse.json({ error: 'Monnaie invalide' }, { status: 400 });
+  }
 
   if (!userId || !amount || !type) {
     return NextResponse.json({ error: 'userId, amount et type requis' }, { status: 400 });
@@ -64,6 +70,24 @@ export async function POST(request: Request) {
   }
 
   const adjustedAmount = type === 'admin_debit' ? -amount : amount;
+
+  if (currency === 'essence') {
+    const { data, error } = await supabase.rpc('adjust_essence', {
+      p_user_id: userId,
+      p_amount: adjustedAmount,
+      p_type: type,
+      p_description: description ?? null,
+      p_metadata: {},
+      p_created_by: user.id,
+    });
+    if (error) {
+      if (error.message.includes('insufficient_essence') || error.message.includes('check') || error.message.includes('violates')) {
+        return NextResponse.json({ error: 'Essence insuffisante' }, { status: 400 });
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true, currency, new_balance: data as number });
+  }
 
   const { data, error } = await supabase.rpc('adjust_wallet_balance', {
     p_user_id: userId,

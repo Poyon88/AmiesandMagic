@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import TicketShop from "@/components/payments/TicketShop";
 import GoldShop from "@/components/payments/GoldShop";
 import FactionShop from "@/components/payments/FactionShop";
+import EssenceForge from "@/components/essence/EssenceForge";
 import { publicGoldPacks, publicTicketPacks } from "@/lib/payments/config";
 import PageChrome from "@/components/shared/PageChrome";
 
@@ -25,6 +26,8 @@ export default async function BoutiquePage() {
   // tant que la migration n'est pas appliquée.
   return (
     <PageChrome>
+      {/* Masquée d'elle-même tant que la migration essence n'est pas appliquée. */}
+      <EssenceForge />
       <FactionShop />
       <div className="mx-auto max-w-5xl px-4">
         <div className="am-rule-diamond mx-auto w-40" aria-hidden="true" />
