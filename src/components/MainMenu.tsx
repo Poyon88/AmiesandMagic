@@ -2,6 +2,7 @@
 
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
+import TournamentTileBackdrop from "@/components/tournaments/TournamentTileBackdrop";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import NewsBanner, { type BannerNews } from "@/components/NewsBanner";
 import { useTranslations } from "next-intl";
@@ -111,14 +112,8 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
                 href="/tournois"
                 accent="market"
                 label="Tournois"
-                description="Le circuit payant. Entrée 2,50 €, gains en pièces d'or."
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 10h24v10a12 12 0 0 1-24 0V10Z" />
-                    <path d="M20 14h-8v4a8 8 0 0 0 8 8M44 14h8v4a8 8 0 0 1-8 8" />
-                    <path d="M32 32v12M24 52h16M28 44h8" />
-                  </svg>
-                }
+                description="Affrontez les meilleurs, remportez des récompenses exceptionnelles."
+                bgContent={<TournamentTileBackdrop />}
               />
             </li>
             <li>

@@ -15,6 +15,10 @@ interface MenuTileProps {
    *  readable. The glyph is hidden when an image is provided to avoid
    *  visual noise. */
   bgImage?: string;
+  /** Même rôle que `bgImage` pour un fond qui n'est pas une image : même voile
+   *  de lisibilité, même glyphe masqué. L'élément fourni se cale lui-même dans
+   *  la tuile (`absolute inset-0`). */
+  bgContent?: ReactNode;
 }
 
 // Reusable tile for the home + collection hub. Same overall shape as
@@ -23,8 +27,9 @@ interface MenuTileProps {
 // player can identify the section at a glance. Renders as a proper
 // <Link> so middle-click / right-click / keyboard activation behave
 // like real navigation.
-export default function MenuTile({ href, label, description, accent, glyph, bgImage }: MenuTileProps) {
+export default function MenuTile({ href, label, description, accent, glyph, bgImage, bgContent }: MenuTileProps) {
   const accentColor = ACCENT_HEX[accent];
+  const aUnFond = Boolean(bgImage || bgContent);
 
   return (
     <Link
@@ -66,17 +71,20 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
       {/* Optional background image — full-bleed, slightly desaturated
           and darkened so the title + description stay legible. Sits
           below the accent glow + corner ornaments. */}
-      {bgImage && (
+      {aUnFond && (
         <>
-          <Image
-            src={bgImage}
-            alt=""
-            fill
-            sizes="(max-width: 640px) 90vw, 45vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            style={{ filter: "brightness(0.55) saturate(0.9)" }}
-            aria-hidden="true"
-          />
+          {bgImage && (
+            <Image
+              src={bgImage}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 90vw, 45vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              style={{ filter: "brightness(0.55) saturate(0.9)" }}
+              aria-hidden="true"
+            />
+          )}
+          {bgContent}
           {/* Dark gradient overlay focused at the bottom so the text
               block is always readable regardless of the image content. */}
           <div
@@ -119,7 +127,7 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
 
       {/* Content */}
       <div className="relative z-[2] flex flex-col items-center justify-center h-full p-6 md:p-8 gap-3 text-center transition-transform duration-500 group-hover:scale-[1.02]">
-        {glyph && !bgImage && (
+        {glyph && !aUnFond && (
           <div
             className="mb-1 transition-transform duration-500 group-hover:scale-110"
             style={{
