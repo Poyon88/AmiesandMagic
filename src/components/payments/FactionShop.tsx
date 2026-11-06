@@ -12,6 +12,7 @@ import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import GoldCoin from "@/components/shared/GoldCoin";
 import { AmButton } from "@/components/ui/AmButton";
+import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface FactionRow {
   id: string;
@@ -65,7 +66,7 @@ export default function FactionShop() {
       setFlash(
         data.unlocked === "*"
           ? "Toutes les factions sont désormais à vous."
-          : `${data.unlocked} rejoint votre collection.`,
+          : `Faction débloquée : ${getFactionDisplayName(data.unlocked)}.`,
       );
       // On relit l'état plutôt que de le rafistoler localement : le solde, la
       // dette et les droits changent tous en même temps côté serveur, et une
@@ -154,7 +155,7 @@ export default function FactionShop() {
         <div className="mt-10 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {manquantes.map((f) => (
             <AmPanel key={f.id} corners className="flex h-full flex-col items-center gap-3 p-6 text-center">
-              <span className="font-display text-base text-am-ink-1">{f.id}</span>
+              <span className="font-display text-base text-am-ink-1">{getFactionDisplayName(f.id)}</span>
               <span className="text-xs text-am-ink-3">
                 {f.commonCount} carte{f.commonCount > 1 ? "s" : ""} commune
                 {f.commonCount > 1 ? "s" : ""}
