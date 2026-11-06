@@ -103,16 +103,12 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
                 bgImage="/images/home/decks-bg.png"
               />
             </li>
-            {/* Circuit payant. Libellés en dur et non traduits : les 8 locales
-                seront alimentées quand le moteur de tournoi existera et que le
-                vocabulaire sera arrêté — traduire maintenant reviendrait à
-                retraduire. */}
             <li>
               <MenuTile
                 href="/tournois"
                 accent="market"
-                label="Tournois"
-                description="Affrontez les meilleurs, remportez des récompenses exceptionnelles."
+                label={t('tournaments_label')}
+                description={t('tournaments_desc')}
                 bgContent={<TournamentTileBackdrop />}
               />
             </li>

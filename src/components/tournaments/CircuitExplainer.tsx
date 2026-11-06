@@ -2,6 +2,7 @@
 
 // Le circuit en quatre étapes + les règles clés. Les chiffres viennent du
 // barème (config.ts) pour ne jamais contredire les tableaux de récompenses.
+import { useTranslations } from "next-intl";
 import EssenceIcon from "@/components/shared/EssenceIcon";
 import AmPanel from "@/components/ui/AmPanel";
 import {
@@ -33,25 +34,27 @@ const CrownIcon = () => (
 );
 
 export default function CircuitExplainer() {
+  const t = useTranslations("tournaments");
+  const b = (chunks: React.ReactNode) => <b>{chunks}</b>;
   const qualRounds = roundsFor(QUALIFICATION_SIZE);
   const steps = [
-    { icon: <TicketIcon />, title: "Ticket de tournoi", text: "Acheté en boutique — un ticket gratuit mensuel est prévu pour les joueurs actifs." },
+    { icon: <TicketIcon />, title: t("step_ticket_title"), text: t("step_ticket_text") },
     {
       icon: <SwordsIcon className="text-am-arcane-bright" />,
-      title: "Qualification",
-      text: `${QUALIFICATION_SIZE} joueurs, élimination directe en ${qualRounds} manches, en direct dès que les ${QUALIFICATION_SIZE} sont prêts.`,
+      title: t("step_qualification_title"),
+      text: t("step_qualification_text", { size: QUALIFICATION_SIZE, rounds: qualRounds }),
     },
-    { icon: <GoldenTicketIcon size={30} />, title: "Golden Ticket", text: "Le vainqueur décroche sa place au grand tournoi mensuel." },
-    { icon: <CrownIcon />, title: "Grand tournoi mensuel", text: "Les détenteurs de Golden Ticket s'affrontent, une manche à jouer avant chaque échéance." },
+    { icon: <GoldenTicketIcon size={30} />, title: "Golden Ticket", text: t("step_golden_text") },
+    { icon: <CrownIcon />, title: t("grand_title"), text: t("step_grand_text") },
   ];
 
   const rules: Array<{ icon?: React.ReactNode; text: React.ReactNode }> = [
-    { text: <>Les récompenses dépendent du <b>nombre de victoires</b>, pas du classement final : deux victoires rapportent la même chose dans tous les tableaux. Seul le champion touche davantage.</> },
-    { text: <>Le grand tournoi se joue sur un tableau complet (16, 32, 64… joueurs). Les qualifiés en surplus sont <b>reportés en priorité</b> au mois suivant ; sous {GRAND_MIN_SIZE} qualifiés, toute l&apos;édition est reportée.</> },
-    { icon: <GoldenTicketIcon size={16} />, text: <>Plusieurs Golden Tickets ? Une seule inscription par édition : les tickets en trop valent pour les éditions suivantes.</> },
-    { icon: <SwordsIcon className="h-4 w-4 text-am-ember" />, text: <>Un joueur absent à l&apos;échéance perd par forfait ; si les deux sont absents, double forfait et leur prochain adversaire passe sans jouer.</> },
-    { icon: <CreditIcon size={16} />, text: <>Les <b>crédits marché</b> servent à enchérir sur les éditions limitées et expirent {CREDIT_LIFETIME_DAYS} jours après leur gain.</> },
-    { icon: <EssenceIcon size={16} />, text: <>L&apos;<b>essence</b> est permanente : {nombre(FORGE_COST)} essences = une forge d&apos;une carte limitée au hasard.</> },
+    { text: t.rich("rule_wins", { b }) },
+    { text: t.rich("rule_bracket", { b, min: GRAND_MIN_SIZE }) },
+    { icon: <GoldenTicketIcon size={16} />, text: t("rule_golden") },
+    { icon: <SwordsIcon className="h-4 w-4 text-am-ember" />, text: t("rule_forfeit") },
+    { icon: <CreditIcon size={16} />, text: t.rich("rule_credits", { b, days: CREDIT_LIFETIME_DAYS }) },
+    { icon: <EssenceIcon size={16} />, text: t.rich("rule_essence", { b, cost: nombre(FORGE_COST) }) },
   ];
 
   return (
@@ -60,7 +63,7 @@ export default function CircuitExplainer() {
         {steps.map((s, i) => (
           <li key={s.title} className="relative">
             <AmPanel className="flex h-full flex-col items-center gap-2 p-4 text-center">
-              <span className="font-display text-[10px] tracking-[0.3em] text-am-ink-faint">ÉTAPE {i + 1}</span>
+              <span className="font-display text-[10px] tracking-[0.3em] text-am-ink-faint">{t("step_label", { n: i + 1 })}</span>
               {s.icon}
               <b className="font-display text-sm text-am-gold">{s.title}</b>
               <p className="text-xs leading-relaxed text-am-ink-soft">{s.text}</p>
@@ -81,7 +84,7 @@ export default function CircuitExplainer() {
       <AmPanel>
         <details className="group">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[inherit] p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold/70 [&::-webkit-details-marker]:hidden">
-            <h3 className="font-display text-base text-am-gold">Comment ça marche</h3>
+            <h3 className="font-display text-base text-am-gold">{t("how_it_works")}</h3>
             <svg
               width="18"
               height="18"

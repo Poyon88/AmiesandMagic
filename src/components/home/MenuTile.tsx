@@ -16,8 +16,9 @@ interface MenuTileProps {
    *  visual noise. */
   bgImage?: string;
   /** Même rôle que `bgImage` pour un fond qui n'est pas une image : même voile
-   *  de lisibilité, même glyphe masqué. L'élément fourni se cale lui-même dans
-   *  la tuile (`absolute inset-0`). */
+   *  glyphe masqué. L'élément fourni se cale lui-même dans la tuile
+   *  (`absolute inset-0`). Comme il contient du texte à lire, le titre passe
+   *  sous sa moitié haute et le voile se réduit à un halo derrière lui. */
   bgContent?: ReactNode;
 }
 
@@ -91,7 +92,9 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "linear-gradient(180deg, rgba(10,10,24,0.25) 0%, rgba(10,10,24,0.55) 50%, rgba(10,10,24,0.9) 100%)",
+                bgContent
+                  ? "radial-gradient(ellipse 42% 26% at 50% 63%, rgba(10,10,24,0.85) 0%, rgba(10,10,24,0.6) 60%, transparent 100%)"
+                  : "linear-gradient(180deg, rgba(10,10,24,0.25) 0%, rgba(10,10,24,0.55) 50%, rgba(10,10,24,0.9) 100%)",
             }}
             aria-hidden="true"
           />
@@ -126,7 +129,11 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
       <CornerOrnament className="absolute bottom-0 left-0" rotate={270} />
 
       {/* Content */}
-      <div className="relative z-[2] flex flex-col items-center justify-center h-full p-6 md:p-8 gap-3 text-center transition-transform duration-500 group-hover:scale-[1.02]">
+      <div
+        className={`relative z-[2] flex flex-col items-center h-full gap-3 text-center transition-transform duration-500 group-hover:scale-[1.02] ${bgContent ? "justify-start px-4 md:px-5" : "justify-center p-6 md:p-8"}`}
+        // Pourcentage de la LARGEUR : suit la tuile, dont le ratio est fixe (16/10).
+        style={bgContent ? { paddingTop: "30%" } : undefined}
+      >
         {glyph && !aUnFond && (
           <div
             className="mb-1 transition-transform duration-500 group-hover:scale-110"

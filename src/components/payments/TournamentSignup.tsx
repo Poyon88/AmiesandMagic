@@ -6,6 +6,7 @@
 // ne fait que le dépenser. Le bouton n'ouvre donc jamais Stripe — c'est ce
 // découplage qui a supprimé le cas « tournoi rempli pendant le paiement ».
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { AmButton } from "@/components/ui/AmButton";
 
@@ -24,6 +25,7 @@ export default function TournamentSignup({
   ticketsAvailable: number;
   ticketDebt: number;
 }) {
+  const t = useTranslations("tournaments");
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(alreadyEntered);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function TournamentSignup({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Inscription impossible.");
+        setError(data.error ?? t("signup_error"));
         setPending(false);
         return;
       }
@@ -49,26 +51,26 @@ export default function TournamentSignup({
       setEntered(true);
       window.location.reload();
     } catch {
-      setError("Inscription impossible.");
+      setError(t("signup_error"));
       setPending(false);
     }
   }
 
   if (entered) {
-    return <p className="text-sm font-semibold text-emerald-400">Vous êtes inscrit.</p>;
+    return <p className="text-sm font-semibold text-emerald-400">{t("signup_done")}</p>;
   }
 
   if (seatsLeft <= 0) {
-    return <p className="text-sm text-am-ink-3">Complet.</p>;
+    return <p className="text-sm text-am-ink-3">{t("signup_full")}</p>;
   }
 
   // Dette : on n'affiche pas un bouton qui va forcément échouer.
   if (requiresTicket && ticketDebt > 0) {
     return (
       <div className="flex flex-col items-start gap-1">
-        <p className="text-sm text-red-400">Inscriptions bloquées</p>
+        <p className="text-sm text-red-400">{t("signup_blocked")}</p>
         <Link href="/boutique" className="text-xs text-am-ink-3 underline">
-          {ticketDebt} ticket{ticketDebt > 1 ? "s" : ""} à régulariser
+          {t("signup_debt", { count: ticketDebt })}
         </Link>
       </div>
     );
@@ -80,9 +82,9 @@ export default function TournamentSignup({
     return (
       <div className="flex flex-col items-start gap-2">
         <Link href="/boutique" className="am-btn am-btn-gold am-btn-sheen px-6 py-3 text-sm">
-          Obtenir un ticket
+          {t("signup_get_ticket")}
         </Link>
-        <span className="text-xs text-am-ink-3">Aucun ticket disponible</span>
+        <span className="text-xs text-am-ink-3">{t("signup_no_ticket")}</span>
       </div>
     );
   }
@@ -91,14 +93,14 @@ export default function TournamentSignup({
     <div className="flex flex-col items-start gap-2">
       <AmButton onClick={enter} disabled={pending}>
         {pending
-          ? "Inscription…"
+          ? t("signup_pending")
           : requiresTicket
-            ? "S'inscrire (1 🎟️)"
-            : "S'inscrire (gratuit)"}
+            ? t("signup_with_ticket")
+            : t("signup_free")}
       </AmButton>
       <span className="text-xs text-am-ink-3">
-        {seatsLeft} place{seatsLeft > 1 ? "s" : ""} restante{seatsLeft > 1 ? "s" : ""}
-        {requiresTicket && ` · ${ticketsAvailable} ticket${ticketsAvailable > 1 ? "s" : ""} en main`}
+        {t("signup_seats", { count: seatsLeft })}
+        {requiresTicket && ` · ${t("signup_tickets_in_hand", { count: ticketsAvailable })}`}
       </span>
       {error && <span className="text-xs text-red-400" role="alert">{error}</span>}
     </div>

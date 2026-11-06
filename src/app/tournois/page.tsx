@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getLocale, getTranslations } from "next-intl/server";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import TournamentSignup from "@/components/payments/TournamentSignup";
@@ -9,7 +10,10 @@ import CircuitExplainer from "@/components/tournaments/CircuitExplainer";
 import { GrandTournamentCard, QualificationCard } from "@/components/tournaments/TournamentRewardCards";
 import { CASH_BY_WINS, CASH_PRIZES_ENABLED, CREDIT_LIFETIME_DAYS } from "@/lib/tournaments/config";
 
-export const metadata = { title: "Tournois — Armies & Magic" };
+export async function generateMetadata() {
+  const t = await getTranslations("tournaments");
+  return { title: t("meta_title") };
+}
 
 interface TournamentRow {
   id: string;
@@ -20,13 +24,9 @@ interface TournamentRow {
   starts_at: string | null;
 }
 
-const KIND_LABEL: Record<TournamentRow["kind"], string> = {
-  weekly: "Hebdomadaire",
-  free: "Gratuit",
-  special: "Spécial",
-};
-
 export default async function TournoisPage() {
+  const t = await getTranslations("tournaments");
+  const locale = await getLocale();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -73,22 +73,25 @@ export default async function TournoisPage() {
     <PageChrome>
       <div className="mx-auto max-w-6xl px-4 pb-16">
         <AmHeading
-          eyebrow="Circuit compétitif"
-          subtitle="Un ticket ouvre un tournoi de qualification ; son vainqueur décroche un Golden Ticket pour le grand tournoi mensuel. Chaque victoire rapporte crédits marché et essence."
+          eyebrow={t("page_eyebrow")}
+          subtitle={t("page_subtitle")}
         >
-          Tournois
+          {t("page_title")}
         </AmHeading>
 
         <p className="mt-6 text-center text-sm text-am-ink-soft">
-          Vous détenez <strong className="text-am-gold">{tickets}</strong> ticket
-          {tickets > 1 ? "s" : ""} ·{" "}
-          <Link href="/boutique" className="underline hover:text-am-gold">en obtenir</Link>
+          {t.rich("tickets_held", {
+            count: tickets,
+            b: (chunks) => <strong className="text-am-gold">{chunks}</strong>,
+          })}{" "}
+          ·{" "}
+          <Link href="/boutique" className="underline hover:text-am-gold">{t("get_tickets")}</Link>
         </p>
 
-        <h2 className="mt-12 font-display text-xl text-am-gold">Tournois ouverts</h2>
+        <h2 className="mt-12 font-display text-xl text-am-gold">{t("open_title")}</h2>
         {rows.length === 0 ? (
           <p className="mt-6 text-center text-sm text-am-ink-faint">
-            Aucun tournoi ouvert pour le moment.
+            {t("none_open")}
           </p>
         ) : (
           <div className="mt-6 flex flex-col gap-5">
@@ -99,9 +102,9 @@ export default async function TournoisPage() {
                   <div>
                     <h3 className="font-display text-lg text-am-gold">{tr.name}</h3>
                     <p className="mt-1 text-xs text-am-ink-faint">
-                      {KIND_LABEL[tr.kind]} · {tr.capacity} joueurs
-                      {tr.starts_at && ` · ${new Date(tr.starts_at).toLocaleString("fr-FR")}`}
-                      {tr.status === "running" && " · en cours"}
+                      {t(`kind_${tr.kind}`)} · {t("capacity", { count: tr.capacity })}
+                      {tr.starts_at && ` · ${new Date(tr.starts_at).toLocaleString(locale)}`}
+                      {tr.status === "running" && ` · ${t("running")}`}
                     </p>
                   </div>
                   {tr.status === "open" ? (
@@ -116,7 +119,7 @@ export default async function TournoisPage() {
                       ticketDebt={debt}
                     />
                   ) : (
-                    <span className="text-sm text-am-ink-faint">Inscriptions closes</span>
+                    <span className="text-sm text-am-ink-faint">{t("registration_closed")}</span>
                   )}
                 </AmPanel>
               );
@@ -125,21 +128,21 @@ export default async function TournoisPage() {
         )}
 
         <section className="mt-16">
-          <AmHeading as="h2" eyebrow="Le circuit">Du ticket au titre mensuel</AmHeading>
+          <AmHeading as="h2" eyebrow={t("circuit_eyebrow")}>{t("circuit_title")}</AmHeading>
           <div className="mt-8"><CircuitExplainer /></div>
         </section>
 
         <section className="mt-16">
-          <AmHeading as="h2" eyebrow="Récompenses">Ce que rapporte chaque victoire</AmHeading>
+          <AmHeading as="h2" eyebrow={t("rewards_eyebrow")}>{t("rewards_title")}</AmHeading>
           <div className="mt-8 grid items-start gap-6 lg:grid-cols-2">
             <QualificationCard />
             <GrandTournamentCard />
           </div>
           <p className="mx-auto mt-6 max-w-3xl text-center text-xs text-am-ink-faint">
-            Un joueur éliminé au tour <i>r</i> a gagné <i>r</i>−1 matchs. Les crédits marché expirent
-            {" "}{CREDIT_LIFETIME_DAYS} jours après leur gain.
-            {CASH_PRIZES_ENABLED && ` L'argent est versé à partir de ${Math.min(...Object.keys(CASH_BY_WINS).map(Number))} victoires ;`}
-            {" "}Crédits, essence et cosmétiques vont à tous les participants récompensés.
+            {t.rich("footnote_rounds", { i: (chunks) => <i>{chunks}</i> })}{" "}
+            {t("footnote_credits", { days: CREDIT_LIFETIME_DAYS })}
+            {CASH_PRIZES_ENABLED && ` ${t("footnote_cash", { wins: Math.min(...Object.keys(CASH_BY_WINS).map(Number)) })}`}
+            {" "}{t("footnote_all")}
           </p>
         </section>
       </div>

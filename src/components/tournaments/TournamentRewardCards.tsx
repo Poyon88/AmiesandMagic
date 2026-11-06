@@ -4,11 +4,11 @@
 // barème (src/lib/tournaments/config.ts) : changer un chiffre là-bas met à
 // jour prize pool, podium et tableau, sans image à régénérer.
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import AmPanel from "@/components/ui/AmPanel";
 import {
   CASH_PRIZES_ENABLED,
   GRAND_DEFAULT_SIZE,
-  GRAND_PARTICIPATION_COSMETICS,
   GRAND_SIZES,
   QUALIFICATION_SIZE,
 } from "@/lib/tournaments/config";
@@ -19,14 +19,14 @@ import { nombre, Podium, PrizePoolSummary, RewardTable } from "./RewardParts";
 function CardHeader({ tag, size, access, gold }: { tag: string; size: React.ReactNode; access: React.ReactNode; gold?: boolean }) {
   return (
     <header>
-      <span
-        className={`inline-block rounded border px-2.5 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.16em] ${
-          gold ? "border-am-gold/50 bg-am-gold/15 text-am-gold-bright" : "border-am-arcane/50 bg-am-arcane/15 text-am-arcane-bright"
+      <h3
+        className={`font-display text-2xl font-bold leading-tight tracking-wide md:text-3xl ${
+          gold ? "text-am-gold-bright" : "text-am-arcane-bright"
         }`}
       >
         {tag}
-      </span>
-      <h3 className="mt-2 font-display text-4xl font-bold leading-none text-am-ink">{size}</h3>
+      </h3>
+      <p className="mt-2 font-display text-2xl font-bold leading-none text-am-ink">{size}</p>
       <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-semibold text-am-ink-soft">
         {access}
       </p>
@@ -34,28 +34,32 @@ function CardHeader({ tag, size, access, gold }: { tag: string; size: React.Reac
   );
 }
 
-const Joueurs = ({ n }: { n: number }) => (
-  <>
-    {nombre(n)} <span className="text-base font-medium uppercase tracking-widest text-am-ink-faint">joueurs</span>
-  </>
-);
+function Joueurs({ n }: { n: number }) {
+  const t = useTranslations("tournaments");
+  return (
+    <>
+      {nombre(n)} <span className="text-sm font-medium uppercase tracking-widest text-am-ink-faint">{t("players")}</span>
+    </>
+  );
+}
 
 export function QualificationCard() {
+  const t = useTranslations("tournaments");
   const rows = rewardTable("qualification", QUALIFICATION_SIZE);
   return (
     <AmPanel corners className="flex min-w-0 flex-col gap-4 p-5 ring-1 ring-am-gold/30">
       <CardHeader
         gold
-        tag="Tournoi de qualification"
+        tag={t("qualification_title")}
         size={<Joueurs n={QUALIFICATION_SIZE} />}
-        access={<><span className="text-am-arcane-bright">◆</span> Accessible avec un ticket de tournoi</>}
+        access={<><span className="text-am-arcane-bright">◆</span> {t("access_ticket")}</>}
       />
       <PrizePoolSummary pool={prizePool("qualification", QUALIFICATION_SIZE)} withCash={false} />
       <div className="flex items-center gap-3 rounded-xl border border-am-gold/40 bg-am-gold/10 px-4 py-3">
         <GoldenTicketIcon size={34} />
         <div>
-          <b className="block font-display text-sm text-am-gold-bright">Le vainqueur remporte le Golden Ticket</b>
-          <small className="text-xs text-am-ink-soft">La seule clé d&apos;entrée du grand tournoi mensuel</small>
+          <b className="block font-display text-sm text-am-gold-bright">{t("winner_golden_title")}</b>
+          <small className="text-xs text-am-ink-soft">{t("winner_golden_desc")}</small>
         </div>
       </div>
       <RewardTable rows={rewardedRows(rows, false)} firstColumn="ticket" />
@@ -64,21 +68,22 @@ export function QualificationCard() {
 }
 
 export function GrandTournamentCard({ initialSize = GRAND_DEFAULT_SIZE }: { initialSize?: number }) {
+  const t = useTranslations("tournaments");
   const [size, setSize] = useState<number>(initialSize);
   const rows = rewardTable("grand", size);
   return (
     <AmPanel corners className="flex min-w-0 flex-col gap-4 p-5">
       <CardHeader
-        tag="Grand tournoi mensuel"
+        tag={t("grand_title")}
         size={<Joueurs n={size} />}
-        access={<><GoldenTicketIcon size={14} /> Accessible uniquement avec un Golden Ticket</>}
+        access={<><GoldenTicketIcon size={14} /> {t("access_golden")}</>}
       />
 
       <div>
         <div className="mb-1.5 font-display text-[10px] uppercase tracking-widest text-am-ink-faint">
-          Taille du tableau
+          {t("bracket_size")}
         </div>
-        <div role="radiogroup" aria-label="Taille du grand tournoi" className="flex flex-wrap gap-1.5">
+        <div role="radiogroup" aria-label={t("bracket_size_aria")} className="flex flex-wrap gap-1.5">
           {GRAND_SIZES.map((s) => (
             <button
               key={s}
@@ -105,8 +110,8 @@ export function GrandTournamentCard({ initialSize = GRAND_DEFAULT_SIZE }: { init
       <div className="flex items-center gap-3 rounded-xl border border-am-arcane/40 bg-am-arcane/10 px-4 py-3">
         <CosmeticIcon size={26} className="text-am-arcane-bright" />
         <div>
-          <b className="block font-display text-sm text-am-arcane-bright">{GRAND_PARTICIPATION_COSMETICS}</b>
-          <small className="text-xs text-am-ink-soft">Pour chaque participant, quel que soit son résultat</small>
+          <b className="block font-display text-sm text-am-arcane-bright">{t("participation_rewards")}</b>
+          <small className="text-xs text-am-ink-soft">{t("participation_desc")}</small>
         </div>
       </div>
     </AmPanel>

@@ -72,5 +72,3 @@ export const CHAMPION_BONUS: Record<number, { credits: number; essence: number }
   12: { credits: 5000, essence: 10000 },
 };
 
-/** Cosmétiques remis à chaque participant du grand tournoi. */
-export const GRAND_PARTICIPATION_COSMETICS = "Plateau + Héros en édition limitée";
