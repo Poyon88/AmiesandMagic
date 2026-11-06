@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import GoldCoin from "@/components/shared/GoldCoin";
 import EssenceIcon from "@/components/shared/EssenceIcon";
+import CreditIcon from "@/components/shared/CreditIcon";
 interface ProfileRow {
   id: string;
   username: string;
@@ -28,7 +29,8 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [balance, setBalance] = useState<number | null>(null);
   const [essence, setEssence] = useState<number | null>(null);
-  const [currency, setCurrency] = useState<"gold" | "essence">("gold");
+  const [credits, setCredits] = useState<{ balance: number; nextExpiry: { at: string; amount: number } | null } | null>(null);
+  const [currency, setCurrency] = useState<"gold" | "essence" | "credits">("gold");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -40,10 +42,11 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
     setLoading(true);
     setMessage(null);
     try {
-      const [walletRes, txRes, essRes] = await Promise.all([
+      const [walletRes, txRes, essRes, credRes] = await Promise.all([
         fetch(`/api/wallet?userId=${userId}`),
         fetch(`/api/wallet/transactions?userId=${userId}&limit=50`),
         fetch(`/api/essence?userId=${userId}`),
+        fetch(`/api/credits?userId=${userId}`),
       ]);
       const walletData = await walletRes.json();
       const txData = await txRes.json();
@@ -51,6 +54,11 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
       setTransactions(txData.transactions ?? []);
       // 503 tant que la migration essence n'est pas appliquée : on masque.
       setEssence(essRes.ok ? ((await essRes.json()).essence ?? 0) : null);
+      // Idem pour les crédits marché (migration credits).
+      if (credRes.ok) {
+        const c = await credRes.json();
+        setCredits({ balance: c.balance ?? 0, nextExpiry: c.nextExpiry ?? null });
+      } else setCredits(null);
     } finally {
       setLoading(false);
     }
@@ -86,9 +94,15 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
       }
 
       setMessage({
-        text: `${type === "admin_credit" ? "Crédité" : "Débité"} ${numAmount} ${currency === "essence" ? "essence" : "pièces d'or"}. Nouveau solde : ${data.new_balance}`,
+        text: `${type === "admin_credit" ? "Crédité" : "Débité"} ${numAmount} ${currency === "essence" ? "essence" : currency === "credits" ? "crédits marché" : "pièces d'or"}. Nouveau solde : ${data.new_balance}`,
         type: "success",
       });
+      if (currency === "credits") {
+        setCredits((c) => ({ balance: data.new_balance, nextExpiry: c?.nextExpiry ?? null }));
+        setAmount("");
+        setDescription("");
+        return;
+      }
       if (currency === "essence") {
         setEssence(data.new_balance);
         setAmount("");
@@ -139,7 +153,7 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
           onChange={(e) => {
             setSelectedUserId(e.target.value);
             if (e.target.value) fetchWalletData(e.target.value);
-            else { setBalance(null); setEssence(null); setTransactions([]); }
+            else { setBalance(null); setEssence(null); setCredits(null); setTransactions([]); }
           }}
           style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 14, minWidth: 300 }}
         >
@@ -176,6 +190,22 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
             </span>
           </div>
         )}
+
+        {credits !== null && (
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", borderRadius: 8,
+              background: "#4a90d915", border: "1px solid #4a90d940",
+            }}
+            title={credits.nextExpiry ? `${credits.nextExpiry.amount} expirent le ${new Date(credits.nextExpiry.at).toLocaleDateString("fr-FR")}` : undefined}
+          >
+            <CreditIcon size={20} />
+            <span style={{ fontSize: 18, fontWeight: "bold", color: "#2f6fb5" }}>
+              {credits.balance.toLocaleString("fr-FR")}
+            </span>
+          </div>
+        )}
       </div>
 
       {loading && <p>Chargement...</p>}
@@ -195,11 +225,12 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
                 <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 4 }}>Monnaie</label>
                 <select
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value as "gold" | "essence")}
+                  onChange={(e) => setCurrency(e.target.value as "gold" | "essence" | "credits")}
                   style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 14 }}
                 >
                   <option value="gold">Or</option>
                   {essence !== null && <option value="essence">Essence</option>}
+                  {credits !== null && <option value="credits">Crédits marché (lot à 30 j)</option>}
                 </select>
               </div>
               <div>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import GoldBalance from "@/components/shared/GoldBalance";
 import NotificationBell from "@/components/shared/NotificationBell";
 import EssenceBadge from "@/components/shared/EssenceBadge";
+import CreditBadge from "@/components/shared/CreditBadge";
 import SettingsModal from "@/components/shared/SettingsModal";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import { useTranslations } from "next-intl";
@@ -148,6 +149,8 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
           </Link>
 
           <EssenceBadge />
+
+          <CreditBadge />
 
           <NotificationBell />
 

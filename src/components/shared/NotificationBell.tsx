@@ -48,13 +48,20 @@ export default function NotificationBell() {
     return typeof id === "string" && id.length > 0 ? id : null;
   }
 
-  function handleClickNotif(id: string, isRead: boolean, auctionId: string | null) {
+  /** Page vers laquelle mène une notification, ou `null`. */
+  function hrefOf(notif: { type?: string; metadata?: Record<string, unknown> }): string | null {
+    if (notif.type === "credits_expiring") return "/compte/credits";
+    const auctionId = auctionIdOf(notif);
+    return auctionId ? `/auction/${auctionId}` : null;
+  }
+
+  function handleClickNotif(id: string, isRead: boolean, href: string | null) {
     if (!isRead) markAsRead([id]);
-    if (auctionId) {
+    if (href) {
       // Le panneau se ferme AVANT la navigation : sinon il reste ouvert
       // par-dessus la page d'arrivée, la cloche n'ayant pas été cliquée.
       setOpen(false);
-      router.push(`/auction/${auctionId}`);
+      router.push(href);
     }
   }
 
@@ -64,6 +71,7 @@ export default function NotificationBell() {
     auction_sold: "💰",
     auction_ended_unsold: "📦",
     auction_cancelled: "❌",
+    credits_expiring: "⏳",
   };
 
   return (
@@ -158,11 +166,11 @@ export default function NotificationBell() {
               {notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  onClick={() => handleClickNotif(notif.id, notif.is_read, auctionIdOf(notif))}
+                  onClick={() => handleClickNotif(notif.id, notif.is_read, hrefOf(notif))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      handleClickNotif(notif.id, notif.is_read, auctionIdOf(notif));
+                      handleClickNotif(notif.id, notif.is_read, hrefOf(notif));
                     }
                   }}
                   role="button"

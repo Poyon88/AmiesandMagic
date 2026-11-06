@@ -7,6 +7,8 @@ import type { AuctionWithDetails, AuctionBid } from "@/lib/auction/types";
 import GameCard from "@/components/cards/GameCard";
 
 import GoldCoin from "@/components/shared/GoldCoin";
+import CreditIcon from "@/components/shared/CreditIcon";
+import { announceCredits } from "@/components/shared/CreditBadge";
 function useCountdown(endDate: string, endedLabel: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
@@ -53,6 +55,23 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
   // Le pré-remplissage n'a lieu qu'au PREMIER chargement. Les rafraîchissements
   // qui suivent ne doivent pas écraser ce que le joueur est en train de taper.
   const prefilled = useRef(false);
+  // Crédits marché : acceptés sur les ventes de la plateforme seulement, et
+  // dépensés avant l'or. null = indisponibles (migration absente).
+  const [credits, setCredits] = useState<number | null>(null);
+  const rafraichirCredits = useCallback(async () => {
+    const d = await fetch("/api/credits").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (d && typeof d.balance === "number") {
+      setCredits(d.balance);
+      return d.balance as number;
+    }
+    return null;
+  }, []);
+  useEffect(() => {
+    fetch("/api/credits")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d && typeof d.balance === "number") setCredits(d.balance); })
+      .catch(() => { /* crédits indisponibles : l'aperçu reste masqué */ });
+  }, []);
 
   const fetchAuction = useCallback(async () => {
     const res = await fetch(`/api/auctions/${auctionId}`);
@@ -148,6 +167,10 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
       // la valeur qu'il contenait vient d'être consommée.
       prefilled.current = false;
       fetchAuction();
+      if (data.credits_used) {
+        const solde = await rafraichirCredits();
+        if (solde !== null) announceCredits(solde);
+      }
     }
     setBidding(false);
   }
@@ -365,6 +388,22 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                 </button>
               </div>
 
+              {auction.seller_type === "admin" && credits !== null && credits > 0 && (() => {
+                const montant = parseInt(bidAmount) || 0;
+                const enCredits = Math.min(credits, montant);
+                const enOr = montant - enCredits;
+                return (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: 13, color: "#9fc6ee", marginBottom: 10 }}>
+                    <span>Paiement :</span>
+                    <span style={{ fontWeight: 600 }}><CreditIcon size={13} /> {enCredits.toLocaleString("fr-FR")} crédits</span>
+                    {enOr > 0 && (
+                      <span style={{ fontWeight: 600, color: "#ffd54f" }}>+ <GoldCoin size={13} /> {enOr.toLocaleString("fr-FR")} or</span>
+                    )}
+                    <span style={{ color: "#777", fontSize: 12 }}>· solde {credits.toLocaleString("fr-FR")} crédits</span>
+                  </div>
+                );
+              })()}
+
               {auction.buyout_price && (
                 <button
                   onClick={() => handleBid(true)}
@@ -452,8 +491,15 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       {bid.bidder_username ?? t("anonymous")}
                       {bid.is_buyout && <span style={{ color: "#2ecc71", marginLeft: 4 }}>{t("buyout_tag")}</span>}
                     </span>
-                    <span style={{ color: "#ffd54f", fontWeight: 600 }}>
-                      <GoldCoin size={13} /> {bid.amount.toLocaleString("fr-FR")}
+                    <span style={{ color: "#ffd54f", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                      {/* Répartition visible pour SES propres mises uniquement. */}
+                      {bid.bidder_id === userId && (bid.credits_amount ?? 0) > 0 && (
+                        <span style={{ color: "#9fc6ee", fontWeight: 500, fontSize: 11 }}>
+                          <CreditIcon size={11} /> {bid.credits_amount}
+                          {(bid.gold_amount ?? 0) > 0 && <> + <GoldCoin size={11} /> {bid.gold_amount}</>}
+                        </span>
+                      )}
+                      <span><GoldCoin size={13} /> {bid.amount.toLocaleString("fr-FR")}</span>
                     </span>
                   </div>
                 ))}

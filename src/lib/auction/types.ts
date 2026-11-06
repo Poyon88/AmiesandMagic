@@ -90,6 +90,10 @@ export interface AuctionBid {
   is_buyout: boolean;
   wallet_tx_id: string | null;
   refund_tx_id: string | null;
+  /** Part payée en crédits marché (ventes de la plateforme seulement). */
+  credits_amount?: number;
+  /** Part payée en or ; null pour les mises antérieures aux crédits (tout en or). */
+  gold_amount?: number | null;
   created_at: string;
   bidder_username?: string;
 }

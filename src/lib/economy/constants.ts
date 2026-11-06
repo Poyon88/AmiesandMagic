@@ -30,3 +30,10 @@ export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odd
   { key: 'Rare', label: 'Rare', odds: '1 sur 10', rarity: 'Rare' },
   { key: 'Peu Commune', label: 'Peu Commune', odds: 'le reste', rarity: 'Peu Commune' },
 ];
+
+// ─── Crédits marché ──────────────────────────────────────────────────────────
+// La durée de vie (30 jours) vit dans le barème des tournois
+// (src/lib/tournaments/config.ts, CREDIT_LIFETIME_DAYS), source unique.
+export const CREDIT_NAME = 'Crédit marché';
+/** Alerte quand un lot expire dans moins de N jours. */
+export const CREDIT_EXPIRY_ALERT_DAYS = 3;

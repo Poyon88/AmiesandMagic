@@ -112,21 +112,32 @@ export async function DELETE(request: Request) {
 
   // Refund current bidder
   if (auction.current_bidder_id && auction.current_bid) {
-    await supabase.rpc('adjust_wallet_balance', {
-      p_user_id: auction.current_bidder_id,
-      p_amount: auction.current_bid,
-      p_type: 'auction_refund',
-      p_description: 'Enchère annulée par un administrateur',
-      p_metadata: { auction_id: auctionId },
-      p_created_by: null,
-    });
+    // Rembourse EXACTEMENT ce qui a été payé (or + crédits sur leurs lots) :
+    // un remboursement tout en or transformerait des crédits en or.
+    const { data: lastBid } = await supabase
+      .from('auction_bids')
+      .select('id')
+      .eq('auction_id', auctionId)
+      .eq('bidder_id', auction.current_bidder_id)
+      .is('refunded_at', null)
+      .is('refund_tx_id', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastBid) {
+      const { error: refundErr } = await supabase.rpc('refund_bid', {
+        p_bid_id: lastBid.id,
+        p_description: 'Enchère annulée par un administrateur',
+      });
+      if (refundErr) return NextResponse.json({ error: refundErr.message }, { status: 500 });
+    }
 
     // Notify bidder
     await supabase.from('notifications').insert({
       user_id: auction.current_bidder_id,
       type: 'auction_cancelled',
       title: 'Enchère annulée',
-      message: `L'enchère a été annulée par un administrateur. Votre mise de ${auction.current_bid} or a été remboursée.`,
+      message: `L'enchère a été annulée par un administrateur. Votre mise de ${auction.current_bid} a été remboursée.`,
       metadata: { auction_id: auctionId },
     });
   }

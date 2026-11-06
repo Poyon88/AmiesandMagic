@@ -67,3 +67,36 @@ export interface CraftResult {
   card?: Record<string, unknown>;
   hero?: { id: number; name: string; thumbnail_url: string | null; race: string | null };
 }
+
+// ─── Crédits marché ───────────────────────────────────────────────────────────
+export type CreditTransactionType =
+  | 'admin_credit' | 'admin_debit' | 'reward_tournament' | 'auction_escrow' | 'auction_refund';
+
+/** Un lot de crédits : il expire en bloc à `expires_at`. */
+export interface CreditGrant {
+  id: string;
+  amount: number;
+  spent: number;
+  expires_at: string;
+  source: string;
+  created_at: string;
+}
+
+export interface CreditTransaction {
+  id: string;
+  type: CreditTransactionType;
+  amount: number;
+  balance_after: number;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+/** Réponse de GET /api/credits. */
+export interface CreditsSummary {
+  balance: number;
+  /** Prochaine échéance d'un lot actif, et le reliquat qui expire alors. */
+  nextExpiry: { at: string; amount: number } | null;
+  grants: CreditGrant[];
+  transactions: CreditTransaction[];
+}

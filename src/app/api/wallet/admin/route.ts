@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { CREDIT_LIFETIME_DAYS } from '@/lib/tournaments/config';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -27,7 +28,8 @@ function getAdminClient() {
 }
 
 // POST /api/wallet/admin — { userId, amount, type: 'admin_credit' | 'admin_debit', description?, currency? }
-// `currency` : 'gold' (défaut) ou 'essence'.
+// `currency` : 'gold' (défaut), 'essence' ou 'credits' (crédits marché : un
+// crédit émet un lot à 30 jours, un débit consomme les lots par échéance).
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
@@ -50,10 +52,10 @@ export async function POST(request: Request) {
     amount: number;
     type: 'admin_credit' | 'admin_debit';
     description?: string;
-    currency?: 'gold' | 'essence';
+    currency?: 'gold' | 'essence' | 'credits';
   };
 
-  if (currency !== 'gold' && currency !== 'essence') {
+  if (currency !== 'gold' && currency !== 'essence' && currency !== 'credits') {
     return NextResponse.json({ error: 'Monnaie invalide' }, { status: 400 });
   }
 
@@ -70,6 +72,27 @@ export async function POST(request: Request) {
   }
 
   const adjustedAmount = type === 'admin_debit' ? -amount : amount;
+
+  if (currency === 'credits') {
+    const { error } = type === 'admin_credit'
+      ? await supabase.rpc('grant_credits', {
+          p_user_id: userId, p_amount: amount, p_type: type, p_source: 'admin',
+          p_description: description ?? null, p_metadata: {}, p_created_by: user.id,
+          p_lifetime_days: CREDIT_LIFETIME_DAYS,
+        })
+      : await supabase.rpc('spend_credits', {
+          p_user_id: userId, p_amount: amount, p_type: type,
+          p_description: description ?? null, p_metadata: {}, p_created_by: user.id,
+        });
+    if (error) {
+      if (error.message.includes('insuffisants') || error.message.includes('check')) {
+        return NextResponse.json({ error: 'Crédits insuffisants' }, { status: 400 });
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    const { data: balance } = await supabase.rpc('credit_balance', { p_user_id: userId });
+    return NextResponse.json({ success: true, currency, new_balance: (balance as number) ?? 0 });
+  }
 
   if (currency === 'essence') {
     const { data, error } = await supabase.rpc('adjust_essence', {

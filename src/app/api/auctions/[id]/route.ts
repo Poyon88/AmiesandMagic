@@ -94,7 +94,9 @@ export async function GET(
   const result = {
     ...data,
     seller_username: sellerProfile?.username ?? null,
-    bids: (bids ?? []).map(b => ({
+    // Les lots de crédits consommés (identifiants internes) ne quittent pas le
+    // serveur : seule la répartition crédits / or est utile à l'écran.
+    bids: (bids ?? []).map(({ credit_allocations: _lots, ...b }) => ({
       ...b,
       bidder_username: bidderMap.get(b.bidder_id) ?? null,
     })),
