@@ -13,10 +13,10 @@
 
 /** Plancher par rareté. L'ABSENCE d'une rareté vaut interdiction de vente. */
 export const MIN_STARTING_BID: Readonly<Record<string, number>> = {
-  "Peu Commune": 50,
-  "Rare": 100,
-  "Épique": 150,
-  "Légendaire": 200,
+  "Peu Commune": 5,
+  "Rare": 10,
+  "Épique": 15,
+  "Légendaire": 20,
 };
 
 /** Raretés vendables aux enchères, de la plus basse à la plus haute. */
@@ -29,11 +29,11 @@ export function isAuctionableRarity(rarity: string | null | undefined): boolean 
 /** Plancher d'un lot : le PLUS ÉLEVÉ de ses cartes (arbitré avec l'auteur).
  *
  *  Un lot vaut au moins sa meilleure carte. La somme aurait rendu certains lots
- *  invendables — dix légendaires auraient démarré à 2 000 or, au-dessus de ce
+ *  invendables — dix légendaires auraient démarré à 200 or, au-dessus de ce
  *  que détient n'importe quel joueur aujourd'hui — et le but d'un lot est
  *  souvent d'écouler du dépareillé avec une belle pièce.
  *
- *  Contrepartie assumée : dix légendaires peuvent partir à 200, soit 20 l'unité.
+ *  Contrepartie assumée : dix légendaires peuvent partir à 20, soit 2 l'unité.
  *
  *  Renvoie `null` si le lot est vide ou contient une rareté non vendable :
  *  l'appelant doit alors REFUSER, pas retomber sur une valeur par défaut. Un

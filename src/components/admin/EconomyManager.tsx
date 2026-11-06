@@ -209,7 +209,7 @@ export default function EconomyManager({ profiles }: EconomyManagerProps) {
                   min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="100"
+                  placeholder="10"
                   style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #ccc", fontSize: 14, width: 120 }}
                 />
               </div>

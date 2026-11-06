@@ -39,7 +39,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
   const t = useTranslations("auction");
   const [cards, setCards] = useState<CardOption[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [startingBid, setStartingBid] = useState("100");
+  const [startingBid, setStartingBid] = useState("10");
   const [buyoutPrice, setBuyoutPrice] = useState("");
   const [duration, setDuration] = useState(settings.allowed_durations[0] ?? 1440);
   const [loading, setLoading] = useState(true);

@@ -25,9 +25,9 @@ export interface GoldPack {
 }
 
 export const GOLD_PACKS: readonly GoldPack[] = [
-  { code: "gold_pack_s", label: "Petite bourse",  gold: 200,  displayPriceCents: 199,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_S" },
-  { code: "gold_pack_m", label: "Bourse",         gold: 550,  displayPriceCents: 499,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_M" },
-  { code: "gold_pack_l", label: "Grande bourse",  gold: 1200, displayPriceCents: 999,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_L" },
+  { code: "gold_pack_s", label: "Petite bourse",  gold: 20,   displayPriceCents: 199,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_S" },
+  { code: "gold_pack_m", label: "Bourse",         gold: 55,   displayPriceCents: 499,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_M" },
+  { code: "gold_pack_l", label: "Grande bourse",  gold: 120,  displayPriceCents: 999,  priceEnvVar: "STRIPE_PRICE_GOLD_PACK_L" },
 ];
 
 export function findGoldPack(code: string): GoldPack | undefined {

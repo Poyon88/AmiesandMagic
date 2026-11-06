@@ -1,7 +1,7 @@
 // PLANCHER DE MISE PAR RARETÉ, et interdiction des communes.
 //
 // Deux règles arbitrées avec l'auteur :
-//   · 50 / 100 / 150 / 200 pour Peu Commune / Rare / Épique / Légendaire ;
+//   · 5 / 10 / 15 / 20 pour Peu Commune / Rare / Épique / Légendaire ;
 //   · les COMMUNES ne sont jamais mises en vente — ce n'est pas un plancher
 //     bas, c'est une interdiction.
 //
@@ -21,10 +21,10 @@ import { RARITIES } from "@/lib/card-engine/constants";
 describe("la grille", () => {
   it("porte exactement les montants demandés", () => {
     expect(MIN_STARTING_BID).toEqual({
-      "Peu Commune": 50,
-      "Rare": 100,
-      "Épique": 150,
-      "Légendaire": 200,
+      "Peu Commune": 5,
+      "Rare": 10,
+      "Épique": 15,
+      "Légendaire": 20,
     });
   });
 
@@ -77,15 +77,15 @@ describe("ce qui est vendable", () => {
 
 describe("plancher d'un lot — la rareté la PLUS ÉLEVÉE décide", () => {
   it("une seule carte : son propre plancher", () => {
-    expect(minStartingBidForLot(["Peu Commune"])).toBe(50);
-    expect(minStartingBidForLot(["Rare"])).toBe(100);
-    expect(minStartingBidForLot(["Épique"])).toBe(150);
-    expect(minStartingBidForLot(["Légendaire"])).toBe(200);
+    expect(minStartingBidForLot(["Peu Commune"])).toBe(5);
+    expect(minStartingBidForLot(["Rare"])).toBe(10);
+    expect(minStartingBidForLot(["Épique"])).toBe(15);
+    expect(minStartingBidForLot(["Légendaire"])).toBe(20);
   });
 
   it("lot mélangé : la meilleure carte impose le plancher", () => {
-    expect(minStartingBidForLot(["Légendaire", "Peu Commune", "Peu Commune"])).toBe(200);
-    expect(minStartingBidForLot(["Peu Commune", "Rare"])).toBe(100);
+    expect(minStartingBidForLot(["Légendaire", "Peu Commune", "Peu Commune"])).toBe(20);
+    expect(minStartingBidForLot(["Peu Commune", "Rare"])).toBe(10);
   });
 
   it("l'ordre des cartes n'y change rien", () => {
@@ -94,13 +94,13 @@ describe("plancher d'un lot — la rareté la PLUS ÉLEVÉE décide", () => {
   });
 
   it("ce n'est PAS la somme — c'est le choix qui a été fait", () => {
-    // Dix légendaires démarrent à 200, pas à 2 000. Contrepartie assumée :
+    // Dix légendaires démarrent à 20, pas à 200. Contrepartie assumée :
     // la somme aurait rendu les gros lots invendables.
-    expect(minStartingBidForLot(Array(10).fill("Légendaire"))).toBe(200);
+    expect(minStartingBidForLot(Array(10).fill("Légendaire"))).toBe(20);
   });
 
   it("un lot contenant une COMMUNE est refusé, pas escompté", () => {
-    // Le piège : renvoyer 200 en ignorant la commune, ce qui autoriserait la
+    // Le piège : renvoyer 20 en ignorant la commune, ce qui autoriserait la
     // vente qu'on interdit.
     expect(minStartingBidForLot(["Légendaire", "Commune"])).toBeNull();
     expect(minStartingBidForLot(["Commune"])).toBeNull();

@@ -62,7 +62,7 @@ export function situationPour(etat: Etat | null, factionId: string, anonyme: boo
   if (ligne?.owned) return { quoi: "possedee", parLeForfait: false, deDepart: ligne.isStarter };
 
   // Aucune faction de départ ⇒ celle-ci peut encore l'être, gratuitement. Ce
-  // test PASSE AVANT le prix : proposer 1200 or à quelqu'un qui a droit à une
+  // test PASSE AVANT le prix : proposer 120 or à quelqu'un qui a droit à une
   // faction gratuite serait lui vendre ce qu'on lui doit.
   if (etat.starterFaction == null) return { quoi: "offrable" };
 

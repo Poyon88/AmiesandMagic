@@ -66,7 +66,7 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
   const [selectedCardIds, setSelectedCardIds] = useState<Set<number>>(new Set());
-  const [createStartingBid, setCreateStartingBid] = useState("100");
+  const [createStartingBid, setCreateStartingBid] = useState("10");
   const [createBuyoutPrice, setCreateBuyoutPrice] = useState("");
   const [createDuration, setCreateDuration] = useState(1440);
   const [createLoading, setCreateLoading] = useState(false);
