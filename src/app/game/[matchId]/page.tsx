@@ -10,47 +10,14 @@ import SfxEngine from "@/lib/audio/SfxEngine";
 import GameBoard from "@/components/game/GameBoard";
 import CardTextProvider from "@/components/game/CardTextProvider";
 import OrientationLock from "@/components/shared/OrientationLock";
-import type { Card, FormatCode, GameAction, GameState, HeroDefinition, HeroPowerEffect, Race } from "@/lib/game/types";
+import type { Card, FormatCode, GameAction, GameState, HeroDefinition } from "@/lib/game/types";
 import { syncHash, reconcileVerdict } from "@/lib/game/stateHash";
-import { FACTIONS } from "@/lib/card-engine/constants";
 import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { INVENTION_SET_NAME } from "@/lib/game/constants";
-import { excludeSpecialSets, excludeNonDiscoverable, onlyPlayable } from "@/lib/game/deck-rules";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
-import { designatedCardIds } from "@/lib/game/tuteur";
 import { useTranslations } from "next-intl";
-import { effetsDuPouvoir } from "@/lib/game/hero-power";
-
-// Colonnes de `cards` réellement consommées par le moteur en partie. Projection
-// explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
-// cartes de faction est chargé par match ET par client. On écarte
-// `illustration_prompt` (long prompt de génération, jamais lu en jeu) et
-// `created_at`. Miroir de la liste de api/cards/save (moins illustration_prompt).
-const GAME_CARD_COLUMNS =
-  "id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, " +
-  "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
-  "image_url, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, " +
-  "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
-  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status";
-
-interface HeroRow {
-  id: number;
-  name: string;
-  race: string;
-  faction?: string | null;
-  clan?: string | null;
-  power_name: string;
-  power_cost: number;
-  power_effect: HeroPowerEffect;
-  power_description: string;
-  power_usage_limit?: number | null;
-  starting_hp?: number | null;
-  glb_url?: string | null;
-  thumbnail_url?: string | null;
-  power_image_url?: string | null;
-  power_sfx_url?: string | null;
-  rarity?: string | null;
-}
+import { GAME_CARD_COLUMNS, mapHeroRow, selectionFactionsFor, buildPools, missingLinkedCardIds, type HeroRow } from "@/lib/game/match-setup";
+import { vainqueurTransition } from "@/lib/game/match-result";
 
 interface MatchData {
   player1_id: string;
@@ -59,26 +26,22 @@ interface MatchData {
   player2_deck_id: number;
 }
 
-function mapHeroRow(row: HeroRow | null): HeroDefinition | null {
-  if (!row) return null;
-  return {
-    id: row.id,
-    name: row.name,
-    race: row.race as Race,
-    faction: row.faction ?? null,
-    clan: row.clan ?? null,
-    powerName: row.power_name,
-    powerCost: row.power_cost,
-    powerEffect: row.power_effect,
-    powerDescription: row.power_description,
-    powerUsageLimit: row.power_usage_limit ?? null,
-    startingHp: row.starting_hp ?? null,
-    glbUrl: row.glb_url ?? null,
-    thumbnailUrl: row.thumbnail_url ?? null,
-    rarity: row.rarity ?? null,
-    powerImageUrl: row.power_image_url ?? null,
-    powerSfxUrl: row.power_sfx_url ?? null,
-  };
+/** Clôture côté SERVEUR : il rejoue la partie et écrit lui-même le résultat
+ *  (le client ne fait que déclarer le vainqueur qu'il voit). Idempotente,
+ *  appelée par les deux clients ; quelques essais en cas d'échec réseau. */
+async function finaliserPartie(matchId: string, claimedWinner: string | null) {
+  for (let essai = 1; essai <= 3; essai++) {
+    try {
+      const res = await fetch(`/api/matches/${matchId}/finalize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claimedWinner }),
+      });
+      if (res.ok || res.status === 202 || res.status === 403) return;
+    } catch { /* réseau : on réessaie */ }
+    await new Promise((r) => setTimeout(r, 1000 * essai));
+  }
+  console.error("[match] clôture serveur impossible", matchId);
 }
 
 export default function GamePage() {
@@ -86,6 +49,7 @@ export default function GamePage() {
   const supabase = createClient();
   const t = useTranslations("game");
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const derniereJournalisationRef = useRef<Promise<unknown>>(Promise.resolve());
   const presencePollRef = useRef<NodeJS.Timeout | null>(null);
 
   // Re-fetch the SFX catalog on game page mount so recently admin-uploaded
@@ -272,38 +236,9 @@ export default function GamePage() {
           (p2DeckData.data?.heroes as unknown as HeroRow) ?? null
         );
 
-        // Load faction card pool for Sélection X keyword.
-        const deckFactions = new Set(
-          [...p1Cards, ...p2Cards]
-            .map((c) => c.card.faction)
-            .filter(Boolean) as string[]
-        );
-        deckFactions.add("Mercenaires");
-        // Sélection X propose des communes de TOUTES les factions du même
-        // ALIGNEMENT (bon/neutre/maléfique) que la carte source, pas seulement
-        // des factions du deck. On élargit donc le pool à toutes les factions
-        // partageant un alignement avec une faction du deck — sinon un joueur
-        // mono-faction ne se voit proposer que sa propre faction (cf. Intendant
-        // des Gemmes : neutre → doit offrir toutes les factions neutres).
-        const deckAlignments = new Set<string>();
-        for (const f of deckFactions) {
-          const al = FACTIONS[f]?.alignment;
-          if (al && al !== "spéciale") deckAlignments.add(al);
-        }
-        // Les alignements TRANCHÉS (bon, maléfique) reçoivent en renfort le pool
-        // NEUTRE : il faut donc charger les factions neutres dès que le deck
-        // porte l'un des deux. Sans cet élargissement, le moteur aurait beau
-        // autoriser le neutre, les cartes ne seraient pas en mémoire et
-        // l'ouverture serait TOTALEMENT sans effet pour un joueur mono-faction
-        // — sans la moindre erreur pour le signaler.
-        const renfortNeutre = deckAlignments.has("bon") || deckAlignments.has("maléfique");
-        const selectionFactions = new Set(deckFactions);
-        for (const [factionId, def] of Object.entries(FACTIONS)) {
-          if (def.alignment === "spéciale") continue;
-          if (deckAlignments.has(def.alignment) || (renfortNeutre && def.alignment === "neutre")) {
-            selectionFactions.add(factionId);
-          }
-        }
+        // Factions du pool de Sélection & co : règle partagée avec le rejeu
+        // serveur (selectionFactionsFor) — deux copies divergeraient en silence.
+        const selectionFactions = new Set(selectionFactionsFor([...p1Cards, ...p2Cards]));
         // `.returns<Card[]>()` : la projection est une string dynamique, donc
         // supabase-js ne peut pas inférer la forme des lignes — on la fournit.
         //
@@ -348,12 +283,7 @@ export default function GamePage() {
         // bâtissent donc des pools identiques, condition de la synchro des
         // tirages semés.
         const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
-        const factionCards = onlyPlayable(excludeNonDiscoverable(excludeSpecialSets(factionCardsData, specialSetIds)));
-        // Ensure Mana Spark is in the pool (may not be if Humains not in deck factions)
         const manaSpark = manaSparkRes.data?.[0];
-        if (manaSpark && !factionCards.find((c) => c.id === manaSpark.id)) {
-          factionCards.push(manaSpark);
-        }
         if (!manaSpark) {
           // Sans cette ligne, le moteur sert un repli sans illustration et
           // introuvable dans card_translations : autant que ça se voie.
@@ -361,7 +291,7 @@ export default function GamePage() {
             "[match] Étincelle de Mana introuvable en base — repli dégradé servi au 2e joueur.",
           );
         }
-        const allSpells = onlyPlayable(excludeNonDiscoverable(excludeSpecialSets(allSpellsData, specialSetIds)));
+        const { factionCards, allSpells } = buildPools(factionCardsData, allSpellsData, manaSpark, specialSetIds);
 
         // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
         // par id au déclenchement, or elles peuvent tomber hors des pools déjà
@@ -370,37 +300,7 @@ export default function GamePage() {
         // les manquantes — une seule passe : une carte liée qui porterait
         // elle-même des Compagnons hors pool resterait irrésolue (warn moteur).
         // Requête et tri déterministes : les deux clients bâtissent le même pool.
-        const linkedIds = new Set<number>();
-        const collectLinked = (c: Card) => {
-          for (const inst of c.keyword_instances ?? []) {
-            if (inst.id === "compagnons" || inst.id === "tuteur" || inst.id === "transformation") for (const id of inst.linkedCardIds ?? []) linkedIds.add(id);
-          }
-          for (const sk of c.spell_keywords ?? []) {
-            if (sk.id === "compagnons" || sk.id === "tuteur") for (const id of sk.linkedCardIds ?? []) linkedIds.add(id);
-          }
-          for (const cap of c.capabilities ?? []) {
-            if (cap.abilityId === "compagnons" || cap.abilityId === "tuteur" || cap.abilityId === "transformation") for (const id of cap.linkedCardIds ?? []) linkedIds.add(id);
-            // Invocation DÉSIGNÉE (effet composé) : même besoin, même passe.
-            // Invocation DÉSIGNÉE et TUTEUR (effets composés) : même besoin, même passe.
-            for (const id of designatedCardIds(cap.composed)) linkedIds.add(id);
-          }
-        };
-        [...p1Cards, ...p2Cards].forEach(({ card }) => collectLinked(card));
-        factionCards.forEach(collectLinked);
-        allSpells.forEach(collectLinked);
-        // POUVOIRS DE HÉROS composés : un Tuteur ou une Invocation désignée y
-        // nomme une carte qui n'est dans aucun deck ni aucun pool — sans cette
-        // passe, le pouvoir serait un no-op (warn moteur) alors que l'admin l'a
-        // configuré correctement.
-        for (const h of [p1Hero, p2Hero]) {
-          for (const e of effetsDuPouvoir(h)) {
-            if (e.mode === "composed") for (const id of designatedCardIds(e.composed)) linkedIds.add(id);
-          }
-        }
-        const loadedCardIds = new Set([...factionCards, ...allSpells].map((c) => c.id));
-        const missingLinkedIds = Array.from(linkedIds)
-          .filter((id) => !loadedCardIds.has(id))
-          .sort((a, b) => a - b);
+        const missingLinkedIds = missingLinkedCardIds([...p1Cards, ...p2Cards], factionCards, allSpells, [p1Hero, p2Hero]);
         if (missingLinkedIds.length > 0) {
           // Route service role, par lots de 50 (sa limite) : une carte liée
           // suit sa mère QUEL QUE SOIT SON STATUT, or la RLS cacherait au
@@ -496,6 +396,10 @@ export default function GamePage() {
         const p1OwnedLimitedIds = Array.isArray(p1CollectionsJson?.limitedCardIds) ? p1CollectionsJson.limitedCardIds : [];
         const p2OwnedLimitedIds = Array.isArray(p2CollectionsJson?.limitedCardIds) ? p2CollectionsJson.limitedCardIds : [];
         matchDataRef.current = { match, p1Cards, p2Cards, p1Hero, p2Hero, factionCards: (factionCards ?? []) as unknown as Card[], allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds, formatCode: matchFormatCode };
+        // Le SERVEUR fige sa propre copie de la configuration (decks, pools,
+        // héros…) pour pouvoir rejouer la partie à la fin et en décider l'issue.
+        // Idempotent : la première capture fait foi.
+        void fetch(`/api/matches/${matchId}/setup`, { method: "POST" }).catch(() => {});
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -515,18 +419,6 @@ export default function GamePage() {
             }));
           } else {
             store.dispatchAction(a);
-          }
-          const newState = useGameStore.getState().gameState;
-          if (newState?.phase === "finished" && newState.winner) {
-            supabase
-              .from("matches")
-              .update({
-                status: "finished",
-                winner_id: newState.winner,
-                finished_at: new Date().toISOString(),
-              })
-              .eq("id", matchId)
-              .then(() => {});
           }
         };
 
@@ -921,6 +813,14 @@ export default function GamePage() {
           event: "mulligan",
           payload: { action },
         });
+        // Journalisé à part (une ligne par joueur) : le rejeu serveur en a
+        // besoin, il change la main de départ. 23505 = déjà écrit.
+        void supabase
+          .from("match_mulligans")
+          .insert({ match_id: matchId, action })
+          .then(({ error }) => {
+            if (error && error.code !== "23505") console.warn("[match] mulligan non journalisé", error.message);
+          });
         // Si ce confirm a fait basculer en jeu, on fige un snapshot (le mulligan
         // n'étant pas dans le log seq, la reprise après reconnexion s'appuie sur
         // ce snapshot tant qu'aucune action de tour n'a encore été persistée).
@@ -940,7 +840,7 @@ export default function GamePage() {
         payload: { action, seq },
       });
 
-      void persistAction(seq, action);
+      derniereJournalisationRef.current = persistAction(seq, action);
 
       // Snapshot the post-action state. On the fast path the store committed it
       // synchronously (write now); during an animation the gameState commit is
@@ -950,20 +850,6 @@ export default function GamePage() {
         pendingSnapshotSeqRef.current = seq;
       } else {
         writeSnapshot(seq);
-      }
-
-      // Update match status on game end
-      const store = useGameStore.getState();
-      if (store.gameState?.phase === "finished" && store.gameState.winner) {
-        supabase
-          .from("matches")
-          .update({
-            status: "finished",
-            winner_id: store.gameState.winner,
-            finished_at: new Date().toISOString(),
-          })
-          .eq("id", matchId)
-          .then(() => {});
       }
     },
     [matchId, supabase, persistAction, writeSnapshot]
@@ -998,6 +884,27 @@ export default function GamePage() {
     });
     return unsub;
   }, [writeSnapshot]);
+
+  // Fin de partie : clôture côté SERVEUR. Se déclenche sur la TRANSITION de
+  // l'état, et non juste après l'action : une action animée ne commit
+  // `gameState` qu'à la fin de son animation, si bien qu'un test placé après
+  // l'envoi voyait encore la partie en cours et ne clôturait jamais. Le délai
+  // laisse à l'émetteur le temps de journaliser l'action finale ; sans elle, le
+  // rejeu serait inachevé. Les deux clients appellent, la route est idempotente.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsub = useGameStore.subscribe((state, prev) => {
+      const gagnant = vainqueurTransition(prev.gameState, state.gameState);
+      if (!gagnant) return;
+      timer = setTimeout(() => {
+        void derniereJournalisationRef.current.then(() => finaliserPartie(matchId, gagnant));
+      }, 2500);
+    });
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, [matchId]);
 
   if (error) {
     return (
