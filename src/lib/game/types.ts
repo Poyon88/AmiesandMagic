@@ -2741,7 +2741,7 @@ export interface Match {
   winner_id: string | null;
   player1_deck_id: number;
   player2_deck_id: number;
-  status: "waiting" | "active" | "finished";
+  status: "waiting" | "active" | "finished" | "abandoned";
   created_at: string;
   finished_at: string | null;
 }

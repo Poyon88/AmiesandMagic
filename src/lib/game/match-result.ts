@@ -66,3 +66,16 @@ export function vainqueurTransition(
   if (avant?.phase === "finished" || apres?.phase !== "finished") return null;
   return apres.winner ?? null;
 }
+
+/** Délai sans la moindre activité au-delà duquel une partie est tenue pour
+ *  interrompue. Très au-dessus du chrono de tour (90 s) et d'une reconnexion. */
+export const DELAI_INACTIVITE_MS = 60 * 60 * 1000;
+
+/** Dernier signe de vie d'une partie : création, action ou snapshot. */
+export function derniereActivite(dates: Array<string | null | undefined>): number {
+  return Math.max(...dates.map((d) => (d ? Date.parse(d) : 0)));
+}
+
+export function partieInactive(dernierSigneDeVie: number, maintenant: number): boolean {
+  return maintenant - dernierSigneDeVie > DELAI_INACTIVITE_MS;
+}
