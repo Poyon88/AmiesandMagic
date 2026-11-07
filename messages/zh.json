@@ -111,8 +111,8 @@
         "desc": "弃置你手牌中的一张卡牌，然后抽两张牌。"
       },
       "terreur": {
-        "label": "恐惧",
-        "desc": "敌方单位在此牌在场时失去 1 点攻击力。"
+        "label": "恐惧 X",
+        "desc": "只要这张牌在场,敌方单位 ATK 减少 X。"
       },
       "pauvrete": {
         "label": "贫困 X",
@@ -435,13 +435,17 @@
         "label": "纪律 +X/+Y",
         "desc": "如果你场上所有单位的费用与其奇偶性相同,则永久给予一个被选中的其他友方单位+X/+Y。"
       },
+      "lien_du_sang": {
+        "label": "血契 X",
+        "desc": "获得 +X/+X,并失去 X 点生命值(以你的生命值允许为限)。"
+      },
       "usurpation": {
         "label": "篡夺 +X/+Y",
         "desc": "你每打出过一张对手的牌，永久给予一个被选中的其他友方单位+X/+Y。"
       },
       "esprit_de_corps": {
         "label": "团队精神",
-        "desc": "每有一个已打出的带有团队精神的生物,随机获得+1 ATK或+1 PV。"
+        "desc": "你每已打出一个具有同袍之情的生物,便随机获得 +1 攻击或 +1 生命值。"
       },
       "presage": {
         "label": "预兆",
@@ -559,15 +563,15 @@
       },
       "execution": {
         "label": "处决",
-        "desc": "消灭一个目标敌方单位。"
+        "desc": "消灭一个被选定的敌方单位。"
       },
       "silence": {
         "label": "沉默",
-        "desc": "移除另一个目标单位的所有关键词，并将其属性恢复为初始值。"
+        "desc": "移除一个被选定的其他单位的所有关键词,并将其属性恢复为原始值。"
       },
       "guerison": {
-        "label": "治愈 X",
-        "desc": "为另一个目标友方单位或你的英雄恢复 X 点生命值。"
+        "label": "治疗 X",
+        "desc": "为一个被选定的其他友方单位或你的英雄恢复 X 点生命值。"
       }
     },
     "spell_keywords": {
@@ -860,6 +864,14 @@
         "on_wound": "受伤",
         "on_delay": "延迟 {d}"
       },
+      "siphon": {
+        "heal": "并为你的英雄恢复{x}点生命值",
+        "heal_each": "并为你的英雄每命中一个目标恢复{x}点生命值",
+        "heal_scatter": "并为你的英雄总共恢复{x}点生命值"
+      },
+      "domination": {
+        "limit": "在空位范围内"
+      },
       "content": {
         "deal_damage_one": "造成 {x} 点伤害",
         "deal_damage_many": "造成 {x} 点伤害",
@@ -868,6 +880,7 @@
         "usurpation": "每打出过一张对手的牌，给予 +{x}/+{y}",
         "debuff": "给予 -{x}/-{y}",
         "destroy": "消灭",
+        "domination": "支配",
         "bounce": "返回手牌",
         "paralyze": "麻痹",
         "transformation": "变形",
@@ -975,6 +988,14 @@
         "invocation_item_any": "放置一个随机物品{filter}",
         "exhumation_any": "从你的墓地中复活{who}",
         "exhumation_item_any": "从你的墓地中将{who}重新置入场上",
+        "exhumation_enemy": "从对手的墓地复活{who}并由你控制(费用 ≤ {x})",
+        "exhumation_item_enemy": "将{who}从对手的墓地重新放回场上并由你控制(费用 ≤ {x})",
+        "exhumation_enemy_any": "从对手的墓地复活{who}并由你控制",
+        "exhumation_item_enemy_any": "将{who}从对手的墓地重新放回场上并由你控制",
+        "exhumation_both": "从任意墓地复活{who}并由你控制(费用 ≤ {x})",
+        "exhumation_item_both": "将{who}从任意墓地重新放回场上并由你控制(费用 ≤ {x})",
+        "exhumation_both_any": "从任意墓地复活{who}并由你控制",
+        "exhumation_item_both_any": "将{who}从任意墓地重新放回场上并由你控制",
         "appel_any": "将你牌库中的首个单位置入场上",
         "appel_item_any": "将你牌库中的首个物品置入场上",
         "dechainement_any": "打出{x}张随机行动牌",
@@ -997,6 +1018,8 @@
       "choice": {
         "transformation": "选择一个要变形的生物",
         "deal_damage": "选择一个目标造成伤害",
+        "siphon": "选择一个目标进行汲取",
+        "domination": "选择一个要支配的生物",
         "heal": "选择一个治疗目标",
         "buff": "选择一个强化的生物",
         "usurpation": "选择一个强化的生物",
@@ -1072,7 +1095,7 @@
         "race": "种族为{v}的",
         "faction": "阵营为{v}的",
         "clan": "氏族为{v}的",
-        "keyword": "带有{v}能力的",
+        "keyword": " 具有能力{v}",
         "type_creature": " 单位类型的",
         "type_spell": " 行动类型的",
         "type_item": " 物品类型的"
@@ -1105,14 +1128,14 @@
         "both_one": "对一个目标（单位或英雄）{side}",
         "both_side_ally": "我方",
         "both_side_enemy": "敌方",
-        "both_side_ally_one": "我方",
+        "both_side_ally_one": "友方",
         "both_side_enemy_one": "敌方",
         "count_all": "对所有单位",
         "count_one": "对一个单位",
         "count_n": "对 {n} 个单位",
-        "count_all_autres": "对其他所有单位",
+        "count_all_autres": "对所有其他单位",
         "count_one_autre": "对另一个单位",
-        "count_n_autres": "对其他 {n} 个单位",
+        "count_n_autres": "对另外 {n} 个单位",
         "count_scatter": "向至多{n}个单位",
         "item_count_all": "对所有物品",
         "item_count_one": "对一件物品",
@@ -1137,7 +1160,7 @@
         "des_automatic": "自动",
         "des_choice": "自选",
         "max_cost": "费用为{n}或更低",
-        "with_keyword": "（带有{v}能力）"
+        "with_keyword": "具有能力{v}"
       },
       "scatter": {
         "action_damage": "造成",
@@ -2074,14 +2097,14 @@
       "invocations_more_one": "一个费用为{cost}的",
       "invocations_more_many": "{count}个费用为{cost}的",
       "invocations_join": " 和 ",
-      "race_or": " 或 ",
+      "race_or": "或",
       "invocations_of_race": "（{v}中）",
       "invocations_of_faction": "（{v}阵营中）",
       "lycanthrope": "一个X/X指示物",
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
-      "edc_compte": "随机获得{n}次+1 ATK或+1 PV(每有一个已打出的带有团队精神的生物计1次)。",
+      "edc_compte": "随机获得 {n} 次 +1 攻击或 +1 生命值(每已打出一个具有同袍之情的生物算 1 次)。",
       "usurpation_actuel": "已打出的对手牌：{n} 张 — 当前 +{x}/+{y}。",
       "scope_all": "给你所有的单位",
       "machine_part": "及{ability}",
@@ -2151,12 +2174,12 @@
         "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
         "siphon": "对{cibles}造成 X 点伤害,并为你的英雄每个被命中的单位恢复 X 点生命。",
         "entrave": "使{cibles}麻痹X回合。",
-        "execution": "消灭{cibles}，包括物品。",
-        "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
+        "execution": "消灭{cibles},包括物品。",
+        "silence": "移除{cibles}的所有关键词(包括物品),并将其属性恢复为原始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
         "usurpation": "你每打出过一张对手的牌，{cibles}获得+X/+Y。",
-        "guerison": "为{cibles}和你的英雄恢复X点生命值。"
+        "guerison": "为{cibles}和你的英雄恢复 X 点生命值。"
       },
       "creature": {
         "impact": "对{cibles}造成X点伤害。",
@@ -2176,14 +2199,15 @@
         "renforcement_soi": "永久获得 +X 攻击力和 +Y 生命值。",
         "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。",
         "usurpation_soi": "你每打出过一张对手的牌，永久获得 +X 攻击力和 +Y 生命值。",
-        "execution": "消灭{cibles}，包括物品。",
-        "silence": "移除{cibles}（包括物品）的所有关键词，并将其属性恢复为初始值。",
-        "guerison": "为其他所有友方单位和你的英雄恢复X点生命值。",
+        "execution": "消灭{cibles},包括物品。",
+        "silence": "移除{cibles}的所有关键词(包括物品),并将其属性恢复为原始值。",
+        "guerison": "为所有其他友方单位和你的英雄恢复 X 点生命值。",
         "purete": "只要你的墓地为空，所有其他友方单位获得+X攻击力和+Y生命值。",
         "force_des_ancetres": "只要你的墓地中有7个或更多生物，所有其他友方单位获得+X攻击力和+Y生命值。",
         "seuil_sacrificiel": "只要你的牌库中有25张或更少的牌，所有其他友方单位获得+X攻击力和+Y生命值。",
-        "silence_soi": "失去自身所有关键词，属性恢复为初始值。",
-        "guerison_soi": "恢复 X 点生命值。"
+        "silence_soi": "失去所有关键词,属性恢复为原始值。",
+        "guerison_soi": "恢复 X 点生命值。",
+        "sacrifice": "消灭所有其他友方单位,永久获得它们的生命值和攻击力。"
       },
       "cibles": {
         "all_enemies": "所有敌方单位",
@@ -2215,6 +2239,11 @@
         "title": "回置 {n}",
         "desc_one": "除法力值外，还需将你手牌中的一张牌（自选）放回牌组顶部。",
         "desc_many": "除法力值外，还需将你手牌中的 {n} 张牌（自选）放回牌组顶部。最先选择的牌最终位于最上方。"
+      },
+      "retraite": {
+        "title": "撤退 {n}",
+        "desc_one": "除法力费用外,还需将你场上的一个生物(任选)收回手牌。若你的手牌无法容纳,则无法支付。",
+        "desc_many": "除法力费用外,还需将你场上的 {n} 个生物(任选)收回手牌。若你的手牌无法容纳它们,则无法支付。"
       },
       "eveil": {
         "title": "觉醒 {n}",
@@ -2575,6 +2604,8 @@
     "target_scope_hint_all_allies": "攻击所有友方单位,而非选定的单个目标(不包括英雄和物品)。",
     "target_scope_hint_all": "攻击双方所有单位,而非选定的单个目标(不包括英雄和物品)。",
     "content_deal_damage": "造成伤害",
+    "content_siphon": "汲取 X(伤害 + 英雄治疗)",
+    "content_domination": "支配(夺取控制权)",
     "content_heal": "治疗",
     "content_buff": "增益 +X/+Y",
     "content_usurpation": "篡夺 +X/+Y（每打出过一张对手的牌）",
@@ -2687,7 +2718,7 @@
     "collections": "收藏",
     "section_faction": "阵营",
     "section_race": "种族",
-    "section_race2": "种族 2（双种族单位）",
+    "section_race2": "种族 2(双种族单位)",
     "main_races": "主要种族",
     "all_races": "所有种族",
     "section_clan": "阵营",
@@ -2746,6 +2777,8 @@
     "sacrifice_label": "牺牲",
     "exile_label": "放逐",
     "topdeck_label": "回置",
+    "retreat_cost_hint": "玩家从战场收回手牌的友方生物数量。它们会保留永久加成,并触发返回时的效果。属于节奏代价,不可减免。",
+    "retreat_label": "撤退",
     "spell_effects_label": "行动效果",
     "spell_keywords_label": "行动关键词",
     "token_to_summon": "待召唤衍生物",
@@ -3067,7 +3100,7 @@
     "hero_power_grant": "赋予一个生物{kw}",
     "hero_power_emblem": "纹章：{kw}",
     "hero_power_counter": "为{compteur}计数器增加{x}",
-    "hero_power_machine": "为你的机器增加+{x}/+{y}",
+    "hero_power_machine": "为你的机器增加 +{x}/+{y}",
     "error_not_authenticated": "未登录",
     "error_match_not_found": "找不到对局",
     "error_load_failed": "对局加载失败",
@@ -3124,6 +3157,7 @@
     "cost_pay_title": "支付 {name} 的费用",
     "cost_discard_label": "🃏 {count, plural, one {弃置 # 张牌} other {弃置 # 张牌}}",
     "cost_topdeck_label": "{count, plural, one {将 # 张卡放回牌库} other {将 # 张卡放回牌库}}",
+    "cost_retreat_label": "{count, plural, one {将 # 个生物收回手牌} other {将 # 个生物收回手牌}}",
     "cost_topdeck_order_hint": "最先选择的卡将被放在牌库最上方。",
     "cost_hand_order_hint": "您的点击将先填满弃牌堆，再填充回置。",
     "topdeck_cost_caption": "{count, plural, one {回置} other {回置 ×#}}",
@@ -3266,9 +3300,9 @@
     "creature_abilities_group": "随从技能（{count}）",
     "spell_abilities_group": "行动能力（{count}）",
     "no_ability_match": "没有与「{query}」匹配的技能。",
-    "goal_text": "每位玩家扮演一名<hi>英雄</hi>,根据英雄不同,初始拥有<hi>{min}至{max}点生命值</hi>(通常为{usual}):强大的能力需要以少量生命值为代价,较弱的能力则由额外的生命值来补偿。当对手英雄的生命值降至<hi>{zero}</hi>时,你就赢得了对局。为此,你需要召唤生物并打出行动。",
+    "goal_text": "每位玩家扮演一位<hi>英雄</hi>,根据英雄不同,初始拥有<hi>{min} 至 {max} 点生命值</hi>(通常为 {usual}):强大的能力要以少量生命值为代价,较弱的能力则以少量额外生命值作补偿。将对手英雄的生命值降至<hi>{zero}</hi>即可获胜。为此,你需要召唤生物并打出行动。",
     "stat_hero_start_value": "{min}–{max} 点生命值",
-    "stat_starting_hand_value": "{first}或{second}张牌"
+    "stat_starting_hand_value": "{first} 或 {second} 张牌"
   },
   "deck": {
     "alignment_incompatible": "善良与邪恶阵营不可兼容",
@@ -3473,6 +3507,8 @@
     "cost_sacrifice": "献祭",
     "cost_exile": "放逐",
     "cost_topdeck": "置顶",
+    "cost_retreat": "撤退",
+    "cost_retreat_desc": "这些卡牌除法力费用外,还需要将战场上的生物收回你的手牌。",
     "cost_life_desc": "这些卡牌除了法力值费用外，还需要消耗英雄的生命值。",
     "cost_discard_desc": "这些卡牌除了法力值费用外，还需要弃置手牌。",
     "cost_sacrifice_desc": "这些卡牌除了法力值费用外，还需要献祭你控制的生物。",
@@ -3521,71 +3557,71 @@
     "grand_title": "每月大型锦标赛",
     "players": "名玩家",
     "access_ticket": "持锦标赛门票即可参加",
-    "access_golden": "仅限持黄金门票参加",
-    "winner_golden_title": "优胜者将获得黄金门票",
-    "winner_golden_desc": "每月大型锦标赛的唯一入场凭证",
+    "access_golden": "仅限持有黄金门票者参加",
+    "winner_golden_title": "冠军将获得黄金门票",
+    "winner_golden_desc": "这是月度大型锦标赛唯一的入场钥匙",
     "bracket_size": "对阵表规模",
     "bracket_size_aria": "大型锦标赛规模",
     "participation_rewards": "限定版战场 + 英雄",
     "participation_desc": "每位参赛者均可获得,无论成绩如何",
-    "prize_pool": "奖池",
-    "real_money": "以真实货币",
-    "market_credits": "市场点数",
+    "prize_pool": "奖金池",
+    "real_money": "现金",
+    "market_credits": "市场积分",
     "essences": "精华",
-    "wins_count": "{count, plural, other {#场胜利}}",
-    "credits_count": "{count} 点数",
+    "wins_count": "{count, plural, one {# 场胜利} other {# 场胜利}}",
+    "credits_count": "{count} 积分",
     "col_wins": "胜场",
-    "col_money": "金钱",
+    "col_money": "现金",
     "col_reward": "奖励",
-    "col_credits": "点数",
+    "col_credits": "积分",
     "col_essence": "精华",
     "meta_title": "锦标赛 — Armies & Magic",
-    "page_eyebrow": "竞技赛程",
-    "page_subtitle": "一张门票可开启一场资格赛;其优胜者将获得一张黄金门票,参加盛大的月度锦标赛。每场胜利都能赢得市场点数和精华。",
+    "page_eyebrow": "竞技赛事",
+    "page_subtitle": "一张门票可参加一场资格赛;资格赛冠军将获得月度大型锦标赛的黄金门票。每场胜利都能赢得市场积分和精华。",
     "page_title": "锦标赛",
     "tickets_held": "你持有 <b>{count}</b> {count, plural, one {张门票} other {张门票}}",
-    "get_tickets": "获取门票",
+    "get_tickets": "获取",
     "open_title": "开放中的锦标赛",
-    "none_open": "目前没有开放的锦标赛。",
+    "none_open": "暂无开放的锦标赛。",
     "kind_weekly": "每周赛",
     "kind_free": "免费赛",
     "kind_special": "特别赛",
     "capacity": "{count} 名玩家",
     "running": "进行中",
     "registration_closed": "报名已截止",
-    "circuit_eyebrow": "赛程",
+    "circuit_eyebrow": "赛事体系",
     "circuit_title": "从门票到月度冠军",
     "rewards_eyebrow": "奖励",
     "rewards_title": "每场胜利的收益",
     "footnote_rounds": "在第 <i>r</i> 轮被淘汰的玩家已赢得 <i>r</i>−1 场比赛。",
-    "footnote_credits": "市场点数在获得 {days} 天后过期。",
-    "footnote_cash": "现金奖励从 {wins} 场胜利起发放;",
-    "footnote_all": "点数、精华和外观奖励将发放给所有获奖的参赛者。",
-    "step_label": "第 {n} 步",
+    "footnote_credits": "市场积分在获得后 {days} 天过期。",
+    "footnote_cash": "累计 {wins} 场胜利起发放现金;",
+    "footnote_all": "积分、精华和外观道具将发放给所有获得奖励的参赛者。",
+    "step_label": "第{n}步",
     "step_ticket_title": "锦标赛门票",
     "step_ticket_text": "可在商店购买——活跃玩家每月可获得一张免费门票。",
     "step_qualification_title": "资格赛",
-    "step_qualification_text": "{size} 名玩家,{rounds} 轮单败淘汰制,{size} 人全部就绪后立即直播开赛。",
-    "step_golden_text": "优胜者将赢得月度盛大锦标赛的参赛资格。",
-    "step_grand_text": "黄金门票持有者同台对决,每个截止日期前需完成一轮比赛。",
+    "step_qualification_text": "{size}名玩家,{rounds}轮单败淘汰制,{size}人全部就绪后立即开赛。",
+    "step_golden_text": "获胜者将赢得月度大型锦标赛的参赛资格。",
+    "step_grand_text": "金票持有者同场对决,每个截止日前需完成一轮比赛。",
     "how_it_works": "玩法说明",
-    "rule_wins": "奖励取决于<b>胜场数</b>,而非最终排名:在所有对阵表中,两场胜利的奖励相同。只有冠军能获得更多。",
-    "rule_bracket": "大型锦标赛采用完整对阵表(16、32、64……名玩家)。多出的合格者将<b>优先顺延</b>至下个月;合格者不足 {min} 人时,整届赛事顺延。",
-    "rule_golden": "有多张金票?每届只能报名一次:多余的票可用于之后的赛事。",
-    "rule_forfeit": "截止时未到场的玩家按弃权判负;若双方均未到场,则双双弃权,其下一位对手直接晋级。",
-    "rule_credits": "<b>市场点数</b>可用于竞拍限量版,获得后 {days} 天过期。",
-    "rule_essence": "<b>精华</b>永久有效:{cost} 点精华 = 随机锻造一张限量卡牌。",
+    "rule_wins": "奖励取决于<b>胜场数</b>,而非最终排名:无论在哪个对阵表中,两场胜利的奖励都相同。只有冠军能获得更多。",
+    "rule_bracket": "大型锦标赛采用完整对阵表(16、32、64……名玩家)。多出的晋级者将<b>优先顺延</b>至下个月;若晋级者不足{min}人,则整期赛事顺延。",
+    "rule_golden": "有多张金票?每期只能报名一次:多余的金票可用于之后的赛事。",
+    "rule_forfeit": "玩家若在截止日未到场,则判负;若双方都未到场,则双方均判负,其下一位对手直接晋级。",
+    "rule_credits": "<b>市场积分</b>可用于竞拍限量版,获得后{days}天过期。",
+    "rule_essence": "<b>精华</b>永久有效:{cost}精华 = 锻造一张随机限量卡牌。",
     "signup_error": "无法报名。",
     "signup_done": "您已报名。",
     "signup_full": "已满员。",
-    "signup_blocked": "报名已被封锁",
-    "signup_debt": "{count, plural, one {# 张票待补缴} other {# 张票待补缴}}",
+    "signup_blocked": "报名已被限制",
+    "signup_debt": "{count, plural, one {# 张门票待补缴} other {# 张门票待补缴}}",
     "signup_get_ticket": "获取门票",
     "signup_no_ticket": "没有可用门票",
     "signup_pending": "报名中……",
     "signup_with_ticket": "报名(1 🎟️)",
     "signup_free": "报名(免费)",
     "signup_seats": "{count, plural, one {剩余 # 个名额} other {剩余 # 个名额}}",
-    "signup_tickets_in_hand": "{count, plural, one {手持 # 张票} other {手持 # 张票}}"
+    "signup_tickets_in_hand": "{count, plural, one {持有 # 张门票} other {持有 # 张门票}}"
   }
 }

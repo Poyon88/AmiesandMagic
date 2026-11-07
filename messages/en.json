@@ -111,8 +111,8 @@
         "desc": "Discard a card from your hand, then draw two cards."
       },
       "terreur": {
-        "label": "Terror",
-        "desc": "Enemy units lose 1 ATK while this card is in play."
+        "label": "Terror X",
+        "desc": "Enemy units lose X ATK while this card is in play."
       },
       "pauvrete": {
         "label": "Poverty X",
@@ -435,6 +435,10 @@
         "label": "Discipline +X/+Y",
         "desc": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to another targeted allied unit."
       },
+      "lien_du_sang": {
+        "label": "Blood Bond X",
+        "desc": "Gains +X/+X and you lose X HP, if your HP allows it."
+      },
       "usurpation": {
         "label": "Usurpation +X/+Y",
         "desc": "Gives permanent +X/+Y to another targeted allied unit for each opponent's card you have played."
@@ -563,11 +567,11 @@
       },
       "silence": {
         "label": "Silence",
-        "desc": "Removes all keywords from another targeted unit and resets its stats to their original values."
+        "desc": "Removes all keywords from a targeted other unit and resets its stats to their original values."
       },
       "guerison": {
         "label": "Healing X",
-        "desc": "Restores X HP to another targeted friendly unit or to your hero."
+        "desc": "Restores X HP to a targeted other allied unit or to your hero."
       }
     },
     "spell_keywords": {
@@ -748,7 +752,7 @@
       },
       "guerison": {
         "label": "Healing X",
-        "desc": "Restores X HP to a friendly unit or to your hero."
+        "desc": "Restores X HP to an allied unit or to your hero."
       },
       "seconde_vie": {
         "label": "Second Life X",
@@ -860,6 +864,14 @@
         "on_wound": "Wound",
         "on_delay": "Delay {d}"
       },
+      "siphon": {
+        "heal": "and heals your hero for {x} HP",
+        "heal_each": "and heals your hero for {x} HP per target hit",
+        "heal_scatter": "and heals your hero for {x} HP in total"
+      },
+      "domination": {
+        "limit": "as space allows"
+      },
       "content": {
         "deal_damage_one": "deals {x} damage",
         "deal_damage_many": "deals {x} damage",
@@ -868,6 +880,7 @@
         "usurpation": "grants, for each opponent's card played, +{x}/+{y}",
         "debuff": "inflicts -{x}/-{y}",
         "destroy": "destroys",
+        "domination": "dominates",
         "bounce": "returns to hand",
         "paralyze": "paralyzes",
         "transformation": "transforms",
@@ -975,6 +988,14 @@
         "invocation_item_any": "deploys a random item{filter}",
         "exhumation_any": "resurrects {who} from your graveyard",
         "exhumation_item_any": "returns {who} from your graveyard into play",
+        "exhumation_enemy": "resurrects {who} from the enemy graveyard under your control (cost ≤ {x})",
+        "exhumation_item_enemy": "returns {who} from the enemy graveyard to play under your control (cost ≤ {x})",
+        "exhumation_enemy_any": "resurrects {who} from the enemy graveyard under your control",
+        "exhumation_item_enemy_any": "returns {who} from the enemy graveyard to play under your control",
+        "exhumation_both": "resurrects {who} from any graveyard under your control (cost ≤ {x})",
+        "exhumation_item_both": "returns {who} from any graveyard to play under your control (cost ≤ {x})",
+        "exhumation_both_any": "resurrects {who} from any graveyard under your control",
+        "exhumation_item_both_any": "returns {who} from any graveyard to play under your control",
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
@@ -997,6 +1018,8 @@
       "choice": {
         "transformation": "choose a creature to transform",
         "deal_damage": "choose a target to damage",
+        "siphon": "choose a target to siphon",
+        "domination": "choose a creature to dominate",
         "heal": "choose a target to heal",
         "buff": "choose a creature to strengthen",
         "usurpation": "choose a creature to strengthen",
@@ -1072,7 +1095,7 @@
         "race": " of race {v}",
         "faction": " of faction {v}",
         "clan": " of clan {v}",
-        "keyword": " with the {v} ability",
+        "keyword": " with the ability {v}",
         "type_creature": " of type Unit",
         "type_spell": " of type action",
         "type_item": " of type item"
@@ -1105,7 +1128,7 @@
         "both_one": "to a target (unit or hero){side}",
         "both_side_ally": "friendly",
         "both_side_enemy": "enemy",
-        "both_side_ally_one": "friendly",
+        "both_side_ally_one": "allied",
         "both_side_enemy_one": "enemy",
         "count_all": "to all units",
         "count_one": "to one unit",
@@ -1137,7 +1160,7 @@
         "des_automatic": "automatically",
         "des_choice": "of your choice",
         "max_cost": "with cost {n} or less",
-        "with_keyword": "with the {v} ability"
+        "with_keyword": "with the ability {v}"
       },
       "scatter": {
         "action_damage": "deals",
@@ -2152,7 +2175,7 @@
         "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
         "execution": "Destroys {cibles}, items included.",
-        "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
+        "silence": "Removes all keywords from {cibles}, items included, and resets their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
         "usurpation": "+X/+Y to {cibles} for each opponent's card you have played.",
@@ -2177,13 +2200,14 @@
         "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
         "usurpation_soi": "Permanently gains +X ATK and +Y HP for each opponent's card you have played.",
         "execution": "Destroys {cibles}, items included.",
-        "silence": "Removes all keywords from {cibles}, items included, and restores their stats to their original values.",
-        "guerison": "Restores X HP to all other friendly units and to your hero.",
+        "silence": "Removes all keywords from {cibles}, items included, and resets their stats to their original values.",
+        "guerison": "Restores X HP to all other allied units and to your hero.",
         "purete": "While your graveyard is empty, all other allied units gain +X ATK and +Y HP.",
         "force_des_ancetres": "While your graveyard holds 7 or more creatures, all other allied units gain +X ATK and +Y HP.",
         "seuil_sacrificiel": "While your deck holds 25 cards or fewer, all other allied units gain +X ATK and +Y HP.",
-        "silence_soi": "Loses all its keywords and its stats return to their original values.",
-        "guerison_soi": "Recovers X HP."
+        "silence_soi": "Loses all its keywords and its stats revert to their original values.",
+        "guerison_soi": "Recovers X HP.",
+        "sacrifice": "Destroy all other allied units to permanently gain their HP and ATK."
       },
       "cibles": {
         "all_enemies": "all enemy units",
@@ -2215,6 +2239,11 @@
         "title": "Retreat {n}",
         "desc_one": "In addition to mana, put a card of your choice from your hand back on top of your deck.",
         "desc_many": "In addition to mana, put {n} cards of your choice from your hand back on top of your deck. The first one chosen ends up on top."
+      },
+      "retraite": {
+        "title": "Retreat {n}",
+        "desc_one": "In addition to mana, return one of your creatures in play to your hand, of your choice. Not possible if your hand cannot hold it.",
+        "desc_many": "In addition to mana, return {n} of your creatures in play to your hand, of your choice. Not possible if your hand cannot hold them."
       },
       "eveil": {
         "title": "Awakening {n}",
@@ -2575,6 +2604,8 @@
     "target_scope_hint_all_allies": "Strikes all allied units instead of a chosen target (no heroes or items).",
     "target_scope_hint_all": "Strikes all units on both sides instead of a chosen target (no heroes or items).",
     "content_deal_damage": "Deal damage",
+    "content_siphon": "Siphon X (damage + hero healing)",
+    "content_domination": "Domination (take control)",
     "content_heal": "Heal",
     "content_buff": "Buff +X/+Y",
     "content_usurpation": "Usurpation +X/+Y (per opponent's card played)",
@@ -2746,6 +2777,8 @@
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXILE",
     "topdeck_label": "TOPDECK",
+    "retreat_cost_hint": "Number of allied creatures the player returns from the board to their hand. They keep their permanent bonuses and trigger their return effects. Tempo cost, cannot be reduced.",
+    "retreat_label": "RETREAT",
     "spell_effects_label": "ACTION EFFECTS",
     "spell_keywords_label": "ACTION KEYWORDS",
     "token_to_summon": "TOKEN TO SUMMON",
@@ -3066,8 +3099,8 @@
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",
     "hero_power_emblem": "Emblem: {kw}",
-    "hero_power_counter": "Add {x} to the {compteur} counter",
-    "hero_power_machine": "Add +{x}/+{y} to your machine",
+    "hero_power_counter": "Adds {x} to the {compteur} counter",
+    "hero_power_machine": "Adds +{x}/+{y} to your machine",
     "error_not_authenticated": "Not authenticated",
     "error_match_not_found": "Match not found",
     "error_load_failed": "Failed to load match",
@@ -3124,6 +3157,7 @@
     "cost_pay_title": "Pay the costs of {name}",
     "cost_discard_label": "🃏 {count, plural, one {Discard # card} other {Discard # cards}}",
     "cost_topdeck_label": "{count, plural, one {Topdeck # card} other {Topdeck # cards}}",
+    "cost_retreat_label": "{count, plural, one {Return # creature to hand} other {Return # creatures to hand}}",
     "cost_topdeck_order_hint": "The first card selected will end up on top of the deck.",
     "cost_hand_order_hint": "Your clicks fill the discard first, then the topdeck.",
     "topdeck_cost_caption": "{count, plural, one {Retreat} other {Retreat ×#}}",
@@ -3266,7 +3300,7 @@
     "creature_abilities_group": "Creature Abilities ({count})",
     "spell_abilities_group": "Action abilities ({count})",
     "no_ability_match": "No ability matches \"{query}\".",
-    "goal_text": "Each player embodies a <hi>hero</hi> who starts with <hi>{min} to {max} hit points</hi> depending on the hero ({usual} most often): a powerful power costs a few HP, while a modest power is offset by a few extra HP. You win the game by reducing the opposing hero's hit points to <hi>{zero}</hi>. To do so, you summon creatures and play actions.",
+    "goal_text": "Each player embodies a <hi>hero</hi> who starts with <hi>{min} to {max} health points</hi> depending on the hero ({usual} most often): a powerful ability costs a few HP, while a modest ability is offset by a few extra HP. You win the game by reducing the opposing hero's health points to <hi>{zero}</hi>. To do so, you summon creatures and play actions.",
     "stat_hero_start_value": "{min}–{max} HP",
     "stat_starting_hand_value": "{first} or {second} cards"
   },
@@ -3473,6 +3507,8 @@
     "cost_sacrifice": "Sacrifice",
     "cost_exile": "Exile",
     "cost_topdeck": "Topdeck",
+    "cost_retreat": "Retreat",
+    "cost_retreat_desc": "These cards require you to return creatures from the board to your hand, in addition to their mana cost.",
     "cost_life_desc": "These cards are also paid for in hero life points, in addition to their mana cost.",
     "cost_discard_desc": "These cards require discarding cards from your hand, in addition to their mana cost.",
     "cost_sacrifice_desc": "These cards require sacrificing creatures you control, in addition to their mana cost.",
@@ -3517,7 +3553,7 @@
     "reason": "Reason: {reason}"
   },
   "tournaments": {
-    "qualification_title": "Qualification Tournament",
+    "qualification_title": "Qualifying Tournament",
     "grand_title": "Grand Monthly Tournament",
     "players": "players",
     "access_ticket": "Accessible with a tournament ticket",
@@ -3526,7 +3562,7 @@
     "winner_golden_desc": "The only entry key to the grand monthly tournament",
     "bracket_size": "Bracket size",
     "bracket_size_aria": "Grand tournament size",
-    "participation_rewards": "Board + limited edition Hero",
+    "participation_rewards": "Limited-edition Board + Hero",
     "participation_desc": "For every participant, regardless of result",
     "prize_pool": "Prize pool",
     "real_money": "in real money",
@@ -3559,32 +3595,32 @@
     "rewards_title": "What each win earns",
     "footnote_rounds": "A player eliminated in round <i>r</i> has won <i>r</i>−1 matches.",
     "footnote_credits": "Market credits expire {days} days after being earned.",
-    "footnote_cash": "Cash is paid out starting at {wins} wins;",
-    "footnote_all": "Credits, essence and cosmetics go to all rewarded participants.",
+    "footnote_cash": "Money is paid out starting from {wins} wins;",
+    "footnote_all": "Credits, essence, and cosmetics go to all rewarded participants.",
     "step_label": "STEP {n}",
-    "step_ticket_title": "Tournament ticket",
+    "step_ticket_title": "Tournament Ticket",
     "step_ticket_text": "Bought in the shop — a free monthly ticket is provided for active players.",
     "step_qualification_title": "Qualification",
     "step_qualification_text": "{size} players, single elimination over {rounds} rounds, live as soon as all {size} are ready.",
     "step_golden_text": "The winner earns a spot in the grand monthly tournament.",
     "step_grand_text": "Golden Ticket holders face off, with one round to play before each deadline.",
     "how_it_works": "How it works",
-    "rule_wins": "Rewards depend on the <b>number of wins</b>, not on final standing: two wins earn the same in every bracket. Only the champion earns more.",
-    "rule_bracket": "The grand tournament is played on a full bracket (16, 32, 64… players). Surplus qualifiers are <b>carried over first</b> to the following month; with fewer than {min} qualifiers, the entire edition is postponed.",
+    "rule_wins": "Rewards depend on the <b>number of wins</b>, not the final ranking: two wins earn the same in every bracket. Only the champion earns more.",
+    "rule_bracket": "The grand tournament is played on a full bracket (16, 32, 64… players). Surplus qualified players are <b>carried over first</b> to the following month; with fewer than {min} qualified players, the whole edition is postponed.",
     "rule_golden": "Multiple Golden Tickets? Only one entry per edition: extra tickets are valid for later editions.",
     "rule_forfeit": "A player who is absent at the deadline loses by forfeit; if both are absent, it's a double forfeit and their next opponent advances without playing.",
     "rule_credits": "<b>Market credits</b> are used to bid on limited editions and expire {days} days after being earned.",
     "rule_essence": "<b>Essence</b> is permanent: {cost} essence = one forge of a random limited card.",
-    "signup_error": "Unable to sign up.",
-    "signup_done": "You are signed up.",
+    "signup_error": "Unable to register.",
+    "signup_done": "You are registered.",
     "signup_full": "Full.",
-    "signup_blocked": "Sign-ups blocked",
+    "signup_blocked": "Registration blocked",
     "signup_debt": "{count, plural, one {# ticket to settle} other {# tickets to settle}}",
     "signup_get_ticket": "Get a ticket",
     "signup_no_ticket": "No tickets available",
-    "signup_pending": "Signing up…",
-    "signup_with_ticket": "Sign up (1 🎟️)",
-    "signup_free": "Sign up (free)",
+    "signup_pending": "Registering…",
+    "signup_with_ticket": "Register (1 🎟️)",
+    "signup_free": "Register (free)",
     "signup_seats": "{count, plural, one {# spot left} other {# spots left}}",
     "signup_tickets_in_hand": "{count, plural, one {# ticket in hand} other {# tickets in hand}}"
   }

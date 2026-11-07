@@ -111,8 +111,8 @@
         "desc": "Wirft eine Karte aus eurer Hand ab und zieht dann zwei Karten."
       },
       "terreur": {
-        "label": "Schrecken",
-        "desc": "Gegnerische Einheiten verlieren 1 ATK, solange diese Karte im Spiel ist."
+        "label": "Schrecken X",
+        "desc": "Gegnerische Einheiten verlieren X ATK, solange diese Karte im Spiel ist."
       },
       "pauvrete": {
         "label": "Verarmung X",
@@ -435,13 +435,17 @@
         "label": "Disziplin +X/+Y",
         "desc": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y."
       },
+      "lien_du_sang": {
+        "label": "Blutsband X",
+        "desc": "Erhält +X/+X, und du verlierst X LP, sofern deine LP es zulassen."
+      },
       "usurpation": {
         "label": "Usurpation +X/+Y",
         "desc": "Verleiht einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt."
       },
       "esprit_de_corps": {
         "label": "Korpsgeist",
-        "desc": "Erhält zufällig +1 ANG oder +1 LP für jede bereits gespielte Kreatur mit Corpsgeist."
+        "desc": "Erhält zufällig +1 ANG oder +1 LP für jede bereits gespielte Kreatur mit Korpsgeist."
       },
       "presage": {
         "label": "Vorahnung",
@@ -454,7 +458,7 @@
       },
       "impact": {
         "label": "Wucht X",
-        "desc": "Fügt einer feindlichen Einheit oder einem feindlichen Helden X Schaden zu."
+        "desc": "Fügt einem feindlichen Ziel (Einheit oder Held) X Schaden zu."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -563,11 +567,11 @@
       },
       "silence": {
         "label": "Stille",
-        "desc": "Entfernt alle Schlüsselwörter einer anderen Zieleinheit und setzt ihre Werte auf die Ausgangswerte zurück."
+        "desc": "Entfernt alle Schlüsselwörter einer anderen anvisierten Einheit und setzt ihre Werte auf den Ausgangswert zurück."
       },
       "guerison": {
         "label": "Heilung X",
-        "desc": "Stellt einer anderen verbündeten Zieleinheit oder deinem Helden X LP wieder her."
+        "desc": "Stellt einer anderen anvisierten verbündeten Einheit oder deinem Helden X LP wieder her."
       }
     },
     "spell_keywords": {
@@ -700,7 +704,7 @@
       },
       "impact": {
         "label": "Einschlag X",
-        "desc": "Fügt einer feindlichen Einheit oder einem feindlichen Helden X Schaden zu."
+        "desc": "Fügt einem feindlichen Ziel (Einheit oder Held) X Schaden zu."
       },
       "canon": {
         "label": "Kanone X",
@@ -860,6 +864,14 @@
         "on_wound": "Verwundung",
         "on_delay": "Verzögerung {d}"
       },
+      "siphon": {
+        "heal": "und heilt Euren Helden um {x} LP",
+        "heal_each": "und heilt Euren Helden um {x} LP pro getroffenem Ziel",
+        "heal_scatter": "und heilt Euren Helden insgesamt um {x} LP"
+      },
+      "domination": {
+        "limit": "im Rahmen der verfügbaren Plätze"
+      },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
         "deal_damage_many": "verursacht {x} Schaden",
@@ -868,6 +880,7 @@
         "usurpation": "gewährt für jede gespielte gegnerische Karte +{x}/+{y}",
         "debuff": "verursacht -{x}/-{y}",
         "destroy": "vernichtet",
+        "domination": "beherrscht",
         "bounce": "zurück auf die Hand",
         "paralyze": "lähmt",
         "transformation": "verwandelt",
@@ -975,6 +988,14 @@
         "invocation_item_any": "legt einen zufälligen Gegenstand{filter}",
         "exhumation_any": "erweckt {who} aus deinem Friedhof",
         "exhumation_item_any": "bringt {who} aus deinem Friedhof zurück ins Spiel",
+        "exhumation_enemy": "erweckt {who} vom gegnerischen Friedhof unter deiner Kontrolle wieder (Kosten ≤ {x})",
+        "exhumation_item_enemy": "bringt {who} vom gegnerischen Friedhof unter deiner Kontrolle zurück ins Spiel (Kosten ≤ {x})",
+        "exhumation_enemy_any": "erweckt {who} vom gegnerischen Friedhof unter deiner Kontrolle wieder",
+        "exhumation_item_enemy_any": "bringt {who} vom gegnerischen Friedhof unter deiner Kontrolle zurück ins Spiel",
+        "exhumation_both": "erweckt {who} von einem beliebigen Friedhof unter deiner Kontrolle wieder (Kosten ≤ {x})",
+        "exhumation_item_both": "bringt {who} von einem beliebigen Friedhof unter deiner Kontrolle zurück ins Spiel (Kosten ≤ {x})",
+        "exhumation_both_any": "erweckt {who} von einem beliebigen Friedhof unter deiner Kontrolle wieder",
+        "exhumation_item_both_any": "bringt {who} von einem beliebigen Friedhof unter deiner Kontrolle zurück ins Spiel",
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
@@ -997,6 +1018,8 @@
       "choice": {
         "transformation": "Wähle eine zu verwandelnde Kreatur",
         "deal_damage": "wähle ein Ziel zum Angreifen",
+        "siphon": "wähle ein Ziel zum Abzapfen",
+        "domination": "wähle eine Kreatur, die du beherrschen willst",
         "heal": "wähle ein Ziel zum Heilen",
         "buff": "wähle eine Kreatur zum Stärken",
         "usurpation": "wähle eine Kreatur zum Stärken",
@@ -1105,14 +1128,14 @@
         "both_one": "einem Ziel (Einheit oder Held){side}",
         "both_side_ally": "verbündeten",
         "both_side_enemy": "feindlichen",
-        "both_side_ally_one": "verbündeten",
-        "both_side_enemy_one": "feindlichen",
+        "both_side_ally_one": "verbündete",
+        "both_side_enemy_one": "feindliche",
         "count_all": "an alle Einheiten",
         "count_one": "an eine Einheit",
         "count_n": "an {n} Einheiten",
-        "count_all_autres": "an alle anderen Einheiten",
-        "count_one_autre": "an eine andere Einheit",
-        "count_n_autres": "an {n} andere Einheiten",
+        "count_all_autres": "allen anderen Einheiten",
+        "count_one_autre": "einer anderen Einheit",
+        "count_n_autres": "{n} anderen Einheiten",
         "count_scatter": "an höchstens {n} Einheiten",
         "item_count_all": "an alle Gegenstände",
         "item_count_one": "an einen Gegenstand",
@@ -2081,7 +2104,7 @@
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
-      "edc_compte": "Erhält {n}-mal zufällig +1 ANG oder +1 LP (1 für jede bereits gespielte Kreatur mit Corpsgeist).",
+      "edc_compte": "Erhält {n}-mal zufällig +1 ANG oder +1 LP (1 pro bereits gespielter Kreatur mit Korpsgeist).",
       "usurpation_actuel": "Gespielte gegnerische Karten: {n} — derzeit +{x}/+{y}.",
       "scope_all": "auf alle deine Einheiten",
       "machine_part": " und {ability}",
@@ -2151,8 +2174,8 @@
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
         "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
-        "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
-        "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
+        "execution": "Zerstört {cibles}, einschließlich Gegenstände.",
+        "silence": "Entfernt alle Schlüsselwörter von {cibles}, einschließlich Gegenstände, und setzt deren Werte auf den Ausgangswert zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
         "usurpation": "{cibles} erhalten +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
@@ -2176,14 +2199,15 @@
         "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
         "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
         "usurpation_soi": "Erhält dauerhaft +X ANG und +Y LP für jede gegnerische Karte, die Ihr gespielt habt.",
-        "execution": "Zerstört {cibles}, Gegenstände eingeschlossen.",
-        "silence": "Entfernt alle Schlüsselwörter von {cibles}, Gegenstände eingeschlossen, und setzt ihre Werte auf die Ausgangswerte zurück.",
+        "execution": "Zerstört {cibles}, einschließlich Gegenstände.",
+        "silence": "Entfernt alle Schlüsselwörter von {cibles}, einschließlich Gegenstände, und setzt deren Werte auf den Ausgangswert zurück.",
         "guerison": "Stellt allen anderen verbündeten Einheiten und deinem Helden X LP wieder her.",
         "purete": "Solange euer Friedhof leer ist, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "force_des_ancetres": "Solange euer Friedhof 7 oder mehr Kreaturen enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "seuil_sacrificiel": "Solange euer Deck 25 Karten oder weniger enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
-        "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren zu den Ausgangswerten zurück.",
-        "guerison_soi": "Erhält X LP zurück."
+        "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren auf den Ausgangswert zurück.",
+        "guerison_soi": "Stellt X LP wieder her.",
+        "sacrifice": "Zerstöre alle anderen verbündeten Einheiten, um dauerhaft ihre LP und ihren ANG zu erhalten."
       },
       "cibles": {
         "all_enemies": "alle feindlichen Einheiten",
@@ -2215,6 +2239,11 @@
         "title": "Rückzug {n}",
         "desc_one": "Lege zusätzlich zum Mana eine Karte deiner Wahl aus deiner Hand oben auf dein Deck zurück.",
         "desc_many": "Lege zusätzlich zum Mana {n} Karten deiner Wahl aus deiner Hand oben auf dein Deck zurück. Die zuerst gewählte Karte liegt am Ende ganz oben."
+      },
+      "retraite": {
+        "title": "Rückzug {n}",
+        "desc_one": "Zusätzlich zum Mana nimmst du eine deiner Kreaturen im Spiel nach deiner Wahl zurück auf die Hand. Nicht möglich, wenn deine Hand sie nicht aufnehmen kann.",
+        "desc_many": "Zusätzlich zum Mana nimmst du {n} deiner Kreaturen im Spiel nach deiner Wahl zurück auf die Hand. Nicht möglich, wenn deine Hand sie nicht aufnehmen kann."
       },
       "eveil": {
         "title": "Erwachen {n}",
@@ -2575,6 +2604,8 @@
     "target_scope_hint_all_allies": "Trifft alle verbündeten Einheiten statt eines gewählten Ziels (weder Helden noch Gegenstände).",
     "target_scope_hint_all": "Trifft alle Einheiten beider Seiten statt eines gewählten Ziels (weder Helden noch Gegenstände).",
     "content_deal_damage": "Schaden verursachen",
+    "content_siphon": "Abzapfen X (Schaden + Heldenheilung)",
+    "content_domination": "Beherrschung (Kontrolle übernehmen)",
     "content_heal": "Heilen",
     "content_buff": "Buff +X/+Y",
     "content_usurpation": "Usurpation +X/+Y (je gespielte gegnerische Karte)",
@@ -2746,6 +2777,8 @@
     "sacrifice_label": "OPFER",
     "exile_label": "EXIL",
     "topdeck_label": "RÜCKZUG",
+    "retreat_cost_hint": "Anzahl verbündeter Kreaturen, die der Spieler vom Spielfeld zurück auf seine Hand nimmt. Sie behalten ihre dauerhaften Boni und lösen ihre Rückkehreffekte aus. Tempokosten, nicht reduzierbar.",
+    "retreat_label": "RÜCKZUG",
     "spell_effects_label": "EFFEKTE DER AKTION",
     "spell_keywords_label": "AKTIONS-SCHLÜSSELWÖRTER",
     "token_to_summon": "ZU BESCHWÖRENDER TOKEN",
@@ -3066,8 +3099,8 @@
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",
     "hero_power_emblem": "Emblem: {kw}",
-    "hero_power_counter": "Füge dem Zähler {compteur} {x} hinzu",
-    "hero_power_machine": "Füge deiner Maschine +{x}/+{y} hinzu",
+    "hero_power_counter": "Fügt {x} zum Zähler {compteur} hinzu",
+    "hero_power_machine": "Fügt deiner Maschine +{x}/+{y} hinzu",
     "error_not_authenticated": "Nicht authentifiziert",
     "error_match_not_found": "Partie nicht gefunden",
     "error_load_failed": "Partie konnte nicht geladen werden",
@@ -3124,6 +3157,7 @@
     "cost_pay_title": "Bezahle die Kosten von {name}",
     "cost_discard_label": "🃏 {count, plural, one {# Karte abwerfen} other {# Karten abwerfen}}",
     "cost_topdeck_label": "{count, plural, one {# Karte auf das Deck zurücklegen} other {# Karten auf das Deck zurücklegen}}",
+    "cost_retreat_label": "{count, plural, one {# Kreatur auf die Hand zurücknehmen} other {# Kreaturen auf die Hand zurücknehmen}}",
     "cost_topdeck_order_hint": "Die zuerst gewählte Karte landet oben auf dem Deck.",
     "cost_hand_order_hint": "Ihre Klicks füllen zuerst den Friedhof, dann den Rückzug.",
     "topdeck_cost_caption": "{count, plural, one {Rückzug} other {Rückzug ×#}}",
@@ -3266,7 +3300,7 @@
     "creature_abilities_group": "Kreaturfähigkeiten ({count})",
     "spell_abilities_group": "Aktionsfähigkeiten ({count})",
     "no_ability_match": "Keine Fähigkeit entspricht „{query}\".",
-    "goal_text": "Jeder Spieler verkörpert einen <hi>Helden</hi>, der je nach Held mit <hi>{min} bis {max} Lebenspunkten</hi> startet ({usual} meistens): Eine mächtige Kraft kostet ein paar LP, eine bescheidene Kraft wird durch ein paar LP mehr ausgeglichen. Du gewinnst das Spiel, indem du die Lebenspunkte des gegnerischen Helden auf <hi>{zero}</hi> senkst. Dazu beschwörst du Kreaturen und spielst Aktionen.",
+    "goal_text": "Jeder Spieler verkörpert einen <hi>Helden</hi>, der je nach Held mit <hi>{min} bis {max} Lebenspunkten</hi> startet ({usual} am häufigsten): Eine mächtige Kraft kostet ein paar LP, eine bescheidene Kraft wird durch ein paar LP mehr ausgeglichen. Du gewinnst die Partie, indem du die Lebenspunkte des gegnerischen Helden auf <hi>{zero}</hi> senkst. Dazu beschwörst du Kreaturen und spielst Aktionen.",
     "stat_hero_start_value": "{min}–{max} LP",
     "stat_starting_hand_value": "{first} oder {second} Karten"
   },
@@ -3473,6 +3507,8 @@
     "cost_sacrifice": "Opfer",
     "cost_exile": "Verbannung",
     "cost_topdeck": "Rücklegen",
+    "cost_retreat": "Rückzug",
+    "cost_retreat_desc": "Diese Karten verlangen zusätzlich zu ihren Manakosten, Kreaturen vom Spielfeld zurück auf deine Hand zu nehmen.",
     "cost_life_desc": "Diese Karten kosten zusätzlich zu ihren Manakosten auch Lebenspunkte des Helden.",
     "cost_discard_desc": "Diese Karten erfordern zusätzlich zu ihren Manakosten das Abwerfen von Karten aus deiner Hand.",
     "cost_sacrifice_desc": "Diese Karten erfordern zusätzlich zu ihren Manakosten das Opfern von Kreaturen, die du kontrollierst.",
@@ -3522,8 +3558,8 @@
     "players": "Spieler",
     "access_ticket": "Zugang mit einem Turnierticket",
     "access_golden": "Zugang nur mit einem Golden Ticket",
-    "winner_golden_title": "Der Gewinner erhält das Golden Ticket",
-    "winner_golden_desc": "Der einzige Eintrittsschlüssel zum großen Monatsturnier",
+    "winner_golden_title": "Der Sieger gewinnt das Golden Ticket",
+    "winner_golden_desc": "Der einzige Zugangsschlüssel zum großen Monatsturnier",
     "bracket_size": "Größe des Turnierbaums",
     "bracket_size_aria": "Größe des großen Turniers",
     "participation_rewards": "Spielfeld + Held in limitierter Auflage",
@@ -3541,12 +3577,12 @@
     "col_essence": "Essenz",
     "meta_title": "Turniere — Armies & Magic",
     "page_eyebrow": "Wettkampfzirkel",
-    "page_subtitle": "Ein Ticket eröffnet ein Qualifikationsturnier; dessen Sieger erhält ein Golden Ticket für das große monatliche Turnier. Jeder Sieg bringt Marktguthaben und Essenz.",
+    "page_subtitle": "Ein Ticket öffnet ein Qualifikationsturnier; dessen Sieger erhält ein Golden Ticket für das große Monatsturnier. Jeder Sieg bringt Marktguthaben und Essenz.",
     "page_title": "Turniere",
     "tickets_held": "Du besitzt <b>{count}</b> {count, plural, one {Ticket} other {Tickets}}",
     "get_tickets": "Tickets erhalten",
     "open_title": "Offene Turniere",
-    "none_open": "Derzeit sind keine Turniere offen.",
+    "none_open": "Zurzeit sind keine Turniere offen.",
     "kind_weekly": "Wöchentlich",
     "kind_free": "Kostenlos",
     "kind_special": "Spezial",
@@ -3557,24 +3593,24 @@
     "circuit_title": "Vom Ticket zum Monatstitel",
     "rewards_eyebrow": "Belohnungen",
     "rewards_title": "Was jeder Sieg einbringt",
-    "footnote_rounds": "Ein Spieler, der in Runde <i>r</i> ausscheidet, hat <i>r</i>−1 Spiele gewonnen.",
+    "footnote_rounds": "Ein Spieler, der in Runde <i>r</i> ausscheidet, hat <i>r</i>−1 Partien gewonnen.",
     "footnote_credits": "Marktguthaben verfällt {days} Tage nach dem Erhalt.",
     "footnote_cash": "Geld wird ab {wins} Siegen ausgezahlt;",
-    "footnote_all": "Guthaben, Essenz und Kosmetika erhalten alle belohnten Teilnehmer.",
+    "footnote_all": "Credits, Essenz und Kosmetika gehen an alle ausgezeichneten Teilnehmer.",
     "step_label": "SCHRITT {n}",
     "step_ticket_title": "Turnierticket",
     "step_ticket_text": "Im Shop erhältlich – aktive Spieler erhalten monatlich ein kostenloses Ticket.",
     "step_qualification_title": "Qualifikation",
-    "step_qualification_text": "{size} Spieler, K.-o.-System in {rounds} Runden, live, sobald alle {size} bereit sind.",
-    "step_golden_text": "Der Sieger sichert sich einen Platz im großen monatlichen Turnier.",
-    "step_grand_text": "Die Golden-Ticket-Inhaber treten gegeneinander an, eine Runde ist vor jedem Termin zu spielen.",
+    "step_qualification_text": "{size} Spieler, K.-o.-System in {rounds} Runden, live sobald alle {size} bereit sind.",
+    "step_golden_text": "Der Sieger sichert sich seinen Platz beim großen monatlichen Turnier.",
+    "step_grand_text": "Inhaber eines Golden Tickets treten gegeneinander an, jeweils eine Runde vor jedem Termin.",
     "how_it_works": "So funktioniert's",
-    "rule_wins": "Die Belohnungen hängen von der <b>Anzahl der Siege</b> ab, nicht von der Endplatzierung: Zwei Siege bringen in allen Turnierbäumen dasselbe ein. Nur der Champion erhält mehr.",
-    "rule_bracket": "Das große Turnier wird in einem vollständigen Turnierbaum gespielt (16, 32, 64 … Spieler). Überzählige Qualifizierte werden <b>vorrangig</b> auf den nächsten Monat <b>verschoben</b>; bei weniger als {min} Qualifizierten wird die gesamte Ausgabe verschoben.",
+    "rule_wins": "Die Belohnungen hängen von der <b>Anzahl der Siege</b> ab, nicht von der Endplatzierung: Zwei Siege bringen in jedem Turnierbaum dasselbe ein. Nur der Champion erhält mehr.",
+    "rule_bracket": "Das große Turnier wird in einem vollständigen Turnierbaum gespielt (16, 32, 64 … Spieler). Überzählige Qualifizierte werden <b>vorrangig</b> auf den nächsten Monat verschoben; bei weniger als {min} Qualifizierten wird die gesamte Ausgabe verschoben.",
     "rule_golden": "Mehrere Golden Tickets? Pro Ausgabe ist nur eine Anmeldung möglich: Überzählige Tickets gelten für die folgenden Ausgaben.",
-    "rule_forfeit": "Wer zur Frist nicht erscheint, verliert kampflos; erscheinen beide nicht, gilt das als doppelte Aufgabe, und der nächste Gegner erhält ein Freilos.",
-    "rule_credits": "<b>Marktguthaben</b> dienen zum Bieten auf limitierte Ausgaben und verfallen {days} Tage nach Erhalt.",
-    "rule_essence": "<b>Essenz</b> ist dauerhaft: {cost} Essenzen = eine Schmiedung einer zufälligen limitierten Karte.",
+    "rule_forfeit": "Ein Spieler, der zum Termin fehlt, verliert kampflos; fehlen beide, gilt dies als doppelte Niederlage und der nächste Gegner kommt ohne Spiel weiter.",
+    "rule_credits": "<b>Marktcredits</b> dienen zum Bieten auf limitierte Editionen und verfallen {days} Tage nach Erhalt.",
+    "rule_essence": "<b>Essenz</b> ist dauerhaft: {cost} Essenz = eine Schmiedung einer zufälligen limitierten Karte.",
     "signup_error": "Anmeldung nicht möglich.",
     "signup_done": "Du bist angemeldet.",
     "signup_full": "Voll.",

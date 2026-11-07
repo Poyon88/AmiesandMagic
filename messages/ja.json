@@ -111,8 +111,8 @@
         "desc": "手札を1枚捨て、その後カードを2枚引く。"
       },
       "terreur": {
-        "label": "恐怖",
-        "desc": "このカードが場にある間、相手ユニット全体のATKが1減少する。"
+        "label": "恐怖X",
+        "desc": "このカードが場にある間、敵ユニットのATKが X 減少する。"
       },
       "pauvrete": {
         "label": "貧困 X",
@@ -435,13 +435,17 @@
         "label": "規律 +X/+Y",
         "desc": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、対象の味方ユニット1体(このユニットを除く)に+X/+Yを永続的に与える。"
       },
+      "lien_du_sang": {
+        "label": "血の絆 X",
+        "desc": "+X/+Xを得て、HPがXを下回らない範囲で自分はXのHPを失う。"
+      },
       "usurpation": {
         "label": "簒奪 +X/+Y",
         "desc": "あなたがプレイした相手のカード1枚につき、対象の味方ユニット1体(このユニットを除く)に+X/+Yを永続的に与える。"
       },
       "esprit_de_corps": {
         "label": "団結心",
-        "desc": "すでにプレイした「団結」を持つクリーチャー1体につき、ランダムで攻撃力+1か体力+1を得る。"
+        "desc": "すでにプレイした団結心を持つクリーチャー1体につき、ランダムで+1 ATKまたは+1 HPを得る。"
       },
       "presage": {
         "label": "予兆",
@@ -454,7 +458,7 @@
       },
       "impact": {
         "label": "衝撃 X",
-        "desc": "敵の対象(ユニットまたはヒーロー)にXダメージを与える。"
+        "desc": "敵の対象1つ(ユニットまたはヒーロー)にXダメージを与える。"
       },
       "inspiration": {
         "label": "霊感 X",
@@ -563,11 +567,11 @@
       },
       "silence": {
         "label": "沈黙",
-        "desc": "他の対象ユニット1体の全キーワードを除去し、ステータスを元の値に戻す。"
+        "desc": "対象の他のユニット1体からすべてのキーワードを取り除き、ステータスを元の値に戻す。"
       },
       "guerison": {
-        "label": "回復 X",
-        "desc": "他の対象の味方ユニット1体またはあなたのヒーローのHPをX回復する。"
+        "label": "治癒 X",
+        "desc": "対象の他の味方ユニット1体または自分のヒーローのHPをX回復する。"
       }
     },
     "spell_keywords": {
@@ -700,7 +704,7 @@
       },
       "impact": {
         "label": "衝撃 X",
-        "desc": "敵の対象(ユニットまたはヒーロー)にXダメージを与える。"
+        "desc": "敵の対象1つ(ユニットまたはヒーロー)にXダメージを与える。"
       },
       "canon": {
         "label": "大砲 X",
@@ -748,7 +752,7 @@
       },
       "guerison": {
         "label": "回復 X",
-        "desc": "味方ユニット1体またはあなたのヒーローのHPをX回復する。"
+        "desc": "味方ユニット1体または自分のヒーローのHPをX回復する。"
       },
       "seconde_vie": {
         "label": "第二の生X",
@@ -860,6 +864,14 @@
         "on_wound": "負傷",
         "on_delay": "遅延 {d}"
       },
+      "siphon": {
+        "heal": "さらに自分のヒーローのHPを{x}回復する",
+        "heal_each": "さらに命中した対象1体につき、自分のヒーローのHPを{x}回復する",
+        "heal_scatter": "さらに自分のヒーローのHPを合計{x}回復する"
+      },
+      "domination": {
+        "limit": "空きに応じた数まで"
+      },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
         "deal_damage_many": "{x}ダメージを与える",
@@ -868,6 +880,7 @@
         "usurpation": "プレイした相手のカード1枚につき+{x}/+{y}を与える",
         "debuff": "-{x}/-{y}を与える",
         "destroy": "破壊する",
+        "domination": "支配する",
         "bounce": "手札に戻す",
         "paralyze": "麻痺させる",
         "transformation": "変身させる",
@@ -975,6 +988,14 @@
         "invocation_item_any": "ランダムなアイテム{filter}を1つ場に出す",
         "exhumation_any": "墓地から{who}を蘇生する",
         "exhumation_item_any": "墓地から{who}を場に戻す",
+        "exhumation_enemy": "相手の墓地から{who}をコスト{x}以下まで、あなたの支配下で蘇生する",
+        "exhumation_item_enemy": "相手の墓地から{who}をコスト{x}以下まで、あなたの支配下で場に戻す",
+        "exhumation_enemy_any": "相手の墓地から{who}をあなたの支配下で蘇生する",
+        "exhumation_item_enemy_any": "相手の墓地から{who}をあなたの支配下で場に戻す",
+        "exhumation_both": "いずれかの墓地から{who}をコスト{x}以下まで、あなたの支配下で蘇生する",
+        "exhumation_item_both": "いずれかの墓地から{who}をコスト{x}以下まで、あなたの支配下で場に戻す",
+        "exhumation_both_any": "いずれかの墓地から{who}をあなたの支配下で蘇生する",
+        "exhumation_item_both_any": "いずれかの墓地から{who}をあなたの支配下で場に戻す",
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
@@ -997,6 +1018,8 @@
       "choice": {
         "transformation": "変身させるクリーチャーを選択してください",
         "deal_damage": "ダメージを与える対象を選んでください",
+        "siphon": "吸収する対象を1体選ぶ",
+        "domination": "支配するクリーチャーを1体選ぶ",
         "heal": "回復する対象を選んでください",
         "buff": "強化するクリーチャーを選んでください",
         "usurpation": "強化するクリーチャーを選んでください",
@@ -1072,7 +1095,7 @@
         "race": "（種族：{v}）",
         "faction": "（陣営：{v}）",
         "clan": "（氏族：{v}）",
-        "keyword": "（{v}能力を持つ）",
+        "keyword": "能力{v}を持つ",
         "type_creature": "ユニットタイプの",
         "type_spell": "アクションタイプの",
         "type_item": "アイテムタイプの"
@@ -1137,7 +1160,7 @@
         "des_automatic": "自動的に",
         "des_choice": "任意に",
         "max_cost": "コスト{n}以下",
-        "with_keyword": "（{v}能力を持つ）"
+        "with_keyword": "能力{v}を持つ"
       },
       "scatter": {
         "action_damage": "与える",
@@ -2081,7 +2104,7 @@
       "ability": "能力",
       "scope": "味方ユニット1体（または全体）に",
       "scope_target": "味方ユニット1体に",
-      "edc_compte": "ランダムで攻撃力+1か体力+1を{n}回得る(すでにプレイした「団結」を持つクリーチャー1体につき1回)。",
+      "edc_compte": "ランダムで+1 ATKまたは+1 HPを{n}回得る(すでにプレイした団結心を持つクリーチャー1体につき1回)。",
       "usurpation_actuel": "プレイした相手のカード：{n}枚 — 現在+{x}/+{y}。",
       "scope_all": "あなたの全ユニットに",
       "machine_part": "と{ability}",
@@ -2151,12 +2174,12 @@
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
         "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
-        "execution": "{cibles}をアイテムも含めて破壊する。",
-        "silence": "{cibles}（アイテムを含む）からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
+        "execution": "アイテムを含む{cibles}を破壊する。",
+        "silence": "アイテムを含む{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
         "usurpation": "あなたがプレイした相手のカード1枚につき、{cibles}に+X/+Yを与える。",
-        "guerison": "{cibles}とあなたのヒーローのHPをX回復する。"
+        "guerison": "{cibles}と自分のヒーローのHPをX回復する。"
       },
       "creature": {
         "impact": "{cibles}にXダメージを与える。",
@@ -2176,14 +2199,15 @@
         "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
         "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。",
         "usurpation_soi": "あなたがプレイした相手のカード1枚につき、永続的に+X ATKと+Y HPを得る。",
-        "execution": "{cibles}をアイテムも含めて破壊する。",
-        "silence": "{cibles}（アイテムを含む）からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
-        "guerison": "他のすべての味方ユニットとあなたのヒーローのHPをX回復する。",
+        "execution": "アイテムを含む{cibles}を破壊する。",
+        "silence": "アイテムを含む{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
+        "guerison": "他のすべての味方ユニットと自分のヒーローのHPをX回復する。",
         "purete": "自分の墓地が空である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "force_des_ancetres": "自分の墓地にクリーチャーが7体以上ある限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "seuil_sacrificiel": "自分のデッキが25枚以下である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
-        "silence_soi": "自身のすべてのキーワードを失い、ステータスが元の値に戻る。",
-        "guerison_soi": "HPをX回復する。"
+        "silence_soi": "すべてのキーワードを失い、ステータスが元の値に戻る。",
+        "guerison_soi": "HPをX回復する。",
+        "sacrifice": "自軍の他のユニットをすべて破壊し、そのHPとATKを永続的に獲得する。"
       },
       "cibles": {
         "all_enemies": "すべての敵ユニット",
@@ -2215,6 +2239,11 @@
         "title": "リプレイス {n}",
         "desc_one": "マナに加えて、手札から好きなカードを1枚選び、デッキの一番上に戻す。",
         "desc_many": "マナに加えて、手札から好きなカードを{n}枚選び、デッキの一番上に戻す。最初に選んだカードが一番上になる。"
+      },
+      "retraite": {
+        "title": "撤退 {n}",
+        "desc_one": "マナに加えて、場にいる自分のクリーチャー1体を選んで手札に戻します。手札に戻せない場合は使用できません。",
+        "desc_many": "マナに加えて、場にいる自分のクリーチャー{n}体を選んで手札に戻します。手札に戻せない場合は使用できません。"
       },
       "eveil": {
         "title": "覚醒 {n}",
@@ -2271,7 +2300,7 @@
     "heroes_load_error": "ヒーローを読み込めませんでした。",
     "hero_power": "パワー",
     "tournaments_label": "トーナメント",
-    "tournaments_desc": "強者たちに挑み、特別な報酬を手に入れよう。"
+    "tournaments_desc": "強者たちに挑み、特別な報酬を勝ち取ろう。"
   },
   "landing": {
     "nav_play": "プレイ",
@@ -2575,6 +2604,8 @@
     "target_scope_hint_all_allies": "選んだ対象の代わりに、すべての味方ユニットを攻撃する(ヒーローとアイテムは対象外)。",
     "target_scope_hint_all": "選んだ対象の代わりに、両陣営のすべてのユニットを攻撃する(ヒーローとアイテムは対象外)。",
     "content_deal_damage": "ダメージを与える",
+    "content_siphon": "サイフォン X(ダメージ+ヒーロー回復)",
+    "content_domination": "支配(コントロールを奪う)",
     "content_heal": "回復する",
     "content_buff": "バフ +X/+Y",
     "content_usurpation": "簒奪 +X/+Y（プレイした相手のカード1枚につき）",
@@ -2687,7 +2718,7 @@
     "collections": "コレクション",
     "section_faction": "派閥",
     "section_race": "種族",
-    "section_race2": "種族2（二種族ユニット）",
+    "section_race2": "種族2(複合種族ユニット)",
     "main_races": "主要種族",
     "all_races": "全種族",
     "section_clan": "クラン",
@@ -2746,6 +2777,8 @@
     "sacrifice_label": "サクリファイス",
     "exile_label": "追放",
     "topdeck_label": "リプレイス",
+    "retreat_cost_hint": "プレイヤーが盤面から手札に戻す味方クリーチャーの数。永続ボーナスは維持され、帰還時効果が発動します。テンポコストであり、軽減はできません。",
+    "retreat_label": "撤退",
     "spell_effects_label": "アクション効果",
     "spell_keywords_label": "アクションキーワード",
     "token_to_summon": "召喚するトークン",
@@ -3067,7 +3100,7 @@
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",
     "hero_power_emblem": "エンブレム：{kw}",
     "hero_power_counter": "{compteur}カウンターに{x}を加える",
-    "hero_power_machine": "あなたのマシンに+{x}/+{y}を加える",
+    "hero_power_machine": "マシンに+{x}/+{y}を加える",
     "error_not_authenticated": "未認証",
     "error_match_not_found": "対戦が見つかりません",
     "error_load_failed": "対戦の読み込みに失敗しました",
@@ -3124,6 +3157,7 @@
     "cost_pay_title": "{name} のコストを支払う",
     "cost_discard_label": "🃏 {count, plural, one {カードを # 枚捨てる} other {カードを # 枚捨てる}}",
     "cost_topdeck_label": "{count, plural, one {カード#枚をデッキに戻す} other {カード#枚をデッキに戻す}}",
+    "cost_retreat_label": "{count, plural, one {クリーチャー#体を手札に戻す} other {クリーチャー#体を手札に戻す}}",
     "cost_topdeck_order_hint": "最初に指定したカードがデッキの一番上になります。",
     "cost_hand_order_hint": "クリックはまず捨て札を、その後リプレイスを埋めます。",
     "topdeck_cost_caption": "{count, plural, one {リプレイス} other {リプレイス×#}}",
@@ -3266,8 +3300,8 @@
     "creature_abilities_group": "クリーチャー能力（{count}）",
     "spell_abilities_group": "アクション能力（{count}）",
     "no_ability_match": "「{query}」に一致する能力はありません。",
-    "goal_text": "各プレイヤーは<hi>ヒーロー</hi>となり、ヒーローに応じて<hi>{min}~{max}のライフ</hi>(通常は{usual})で開始します。強力なパワーはライフが少し低く、控えめなパワーはライフが少し高くなります。相手ヒーローのライフを<hi>{zero}</hi>にすればゲームに勝利です。そのためにクリーチャーを召喚し、アクションをプレイしましょう。",
-    "stat_hero_start_value": "{min}–{max} HP",
+    "goal_text": "各プレイヤーは<hi>ヒーロー</hi>となり、ヒーローごとに<hi>{min}~{max}の体力</hi>で開始します(通常は{usual})。強力なパワーはHPが少なめという代償を伴い、控えめなパワーは多めのHPで補われます。相手ヒーローの体力を<hi>{zero}</hi>にすれば勝利です。そのためにクリーチャーを召喚し、アクションをプレイしましょう。",
+    "stat_hero_start_value": "{min}~{max} HP",
     "stat_starting_hand_value": "{first}枚または{second}枚"
   },
   "deck": {
@@ -3473,6 +3507,8 @@
     "cost_sacrifice": "生け贄",
     "cost_exile": "追放",
     "cost_topdeck": "山札戻し",
+    "cost_retreat": "撤退",
+    "cost_retreat_desc": "これらのカードは、マナコストに加えて、盤面のクリーチャーを手札に戻す必要があります。",
     "cost_life_desc": "これらのカードはマナコストに加えて、ヒーローのライフポイントも消費します。",
     "cost_discard_desc": "これらのカードはマナコストに加えて、手札からカードを捨てる必要があります。",
     "cost_sacrifice_desc": "これらのカードはマナコストに加えて、自分がコントロールするクリーチャーを生け贄に捧げる必要があります。",
@@ -3518,32 +3554,32 @@
   },
   "tournaments": {
     "qualification_title": "予選トーナメント",
-    "grand_title": "月間グランドトーナメント",
+    "grand_title": "月例グランドトーナメント",
     "players": "プレイヤー",
     "access_ticket": "トーナメントチケットで参加可能",
     "access_golden": "ゴールデンチケットのみで参加可能",
-    "winner_golden_title": "優勝者はゴールデンチケットを獲得",
-    "winner_golden_desc": "月間グランドトーナメントへの唯一の参加キー",
-    "bracket_size": "トーナメント表のサイズ",
-    "bracket_size_aria": "グランドトーナメントのサイズ",
-    "participation_rewards": "限定版プレイマット+ヒーロー",
-    "participation_desc": "結果に関係なく、参加者全員に贈呈",
-    "prize_pool": "賞金プール",
-    "real_money": "実際のお金で",
+    "winner_golden_title": "優勝者にはゴールデンチケットを進呈",
+    "winner_golden_desc": "月例グランドトーナメントへの唯一の参加資格",
+    "bracket_size": "ブラケットサイズ",
+    "bracket_size_aria": "グランドトーナメントの規模",
+    "participation_rewards": "限定版プレイマット + ヒーロー",
+    "participation_desc": "結果に関わらず、参加者全員に贈呈",
+    "prize_pool": "賞金総額",
+    "real_money": "現金",
     "market_credits": "マーケットクレジット",
     "essences": "エッセンス",
-    "wins_count": "{count, plural, other {#勝}}",
+    "wins_count": "{count, plural, one {#勝} other {#勝}}",
     "credits_count": "{count}クレジット",
     "col_wins": "勝利数",
-    "col_money": "お金",
+    "col_money": "賞金",
     "col_reward": "報酬",
     "col_credits": "クレジット",
     "col_essence": "エッセンス",
     "meta_title": "トーナメント — Armies & Magic",
-    "page_eyebrow": "競技サーキット",
-    "page_subtitle": "チケット1枚で予選トーナメントに参加でき、優勝者は月例の大型トーナメントへのゴールデンチケットを獲得します。勝利するごとにマーケットクレジットとエッセンスがもらえます。",
+    "page_eyebrow": "competitive circuit",
+    "page_subtitle": "チケット1枚で予選トーナメントに参加でき、優勝者は月例グランドトーナメントへのゴールデンチケットを獲得します。勝利するたびにマーケットクレジットとエッセンスを獲得できます。",
     "page_title": "トーナメント",
-    "tickets_held": "チケットを<b>{count}</b>{count, plural, one {枚} other {枚}}所持しています",
+    "tickets_held": "<b>{count}</b>枚のチケットを所持しています",
     "get_tickets": "入手する",
     "open_title": "開催中のトーナメント",
     "none_open": "現在開催中のトーナメントはありません。",
@@ -3554,38 +3590,38 @@
     "running": "進行中",
     "registration_closed": "受付終了",
     "circuit_eyebrow": "サーキット",
-    "circuit_title": "チケットから月間王者まで",
+    "circuit_title": "チケットから月間王者へ",
     "rewards_eyebrow": "報酬",
-    "rewards_title": "勝利ごとの報酬",
-    "footnote_rounds": "<i>r</i>回戦で敗退したプレイヤーは<i>r</i>−1勝したことになります。",
+    "rewards_title": "1勝ごとの獲得報酬",
+    "footnote_rounds": "第<i>r</i>ラウンドで敗退したプレイヤーは<i>r</i>−1勝しています。",
     "footnote_credits": "マーケットクレジットは獲得から{days}日後に失効します。",
-    "footnote_cash": "賞金は{wins}勝以上で支払われます。",
-    "footnote_all": "クレジット、エッセンス、コスメティックは、報酬対象のすべての参加者に付与されます。",
-    "step_label": "ステップ{n}",
+    "footnote_cash": "賞金は{wins}勝以上から支払われます。",
+    "footnote_all": "クレジット、エッセンス、コスメティックは、報酬を獲得したすべての参加者に付与されます。",
+    "step_label": "ステップ {n}",
     "step_ticket_title": "トーナメントチケット",
     "step_ticket_text": "ショップで購入できます。アクティブなプレイヤーには毎月無料チケットが1枚用意されています。",
     "step_qualification_title": "予選",
     "step_qualification_text": "{size}人参加、{rounds}回戦のシングルエリミネーション。{size}人が揃い次第、ライブで開始します。",
-    "step_golden_text": "優勝者は月例の大型トーナメントへの出場権を獲得します。",
-    "step_grand_text": "ゴールデンチケット保持者が激突します。各締め切りまでに1ラウンドをプレイします。",
-    "how_it_works": "仕組み",
-    "rule_wins": "報酬は最終順位ではなく<b>勝利数</b>で決まります。2勝すればどの対戦表でも同じ報酬です。より多く受け取れるのは優勝者だけです。",
-    "rule_bracket": "大規模トーナメントは完全な対戦表(16、32、64…人)で行われます。余剰の予選通過者は翌月に<b>優先的に繰り越され</b>、予選通過者が{min}人未満の場合は開催全体が延期されます。",
-    "rule_golden": "ゴールデンチケットを複数お持ちですか?1開催につき参加登録は1回のみで、余ったチケットは次回以降の開催で使えます。",
-    "rule_forfeit": "期限までに現れなかったプレイヤーは不戦敗となります。双方が不在の場合は両者不戦敗となり、次の対戦相手は戦わずに勝ち進みます。",
+    "step_golden_text": "勝者は月例の大トーナメントへの出場権を獲得します。",
+    "step_grand_text": "ゴールデンチケット保持者が激突します。各期限の前に1回戦を消化します。",
+    "how_it_works": "遊び方",
+    "rule_wins": "報酬は最終順位ではなく<b>勝利数</b>で決まります。どのトーナメント表でも2勝なら同じ報酬です。より多く受け取れるのは優勝者だけです。",
+    "rule_bracket": "大トーナメントはフルサイズのトーナメント表(16、32、64…人)で行われます。余った予選通過者は翌月に<b>優先的に繰り越され</b>ます。予選通過者が{min}人未満の場合、開催全体が延期されます。",
+    "rule_golden": "ゴールデンチケットを複数持っている場合でも、1回の開催につき登録できるのは1回のみです。余ったチケットは次回以降の開催で使えます。",
+    "rule_forfeit": "期限までに不在のプレイヤーは不戦敗となります。両者とも不在の場合は両者不戦敗となり、次の対戦相手は戦わずに勝ち進みます。",
     "rule_credits": "<b>マーケットクレジット</b>は限定版の入札に使用でき、獲得から{days}日後に失効します。",
-    "rule_essence": "<b>エッセンス</b>は永久に残ります。エッセンス{cost}個で、ランダムな限定カード1枚を鍛造できます。",
+    "rule_essence": "<b>エッセンス</b>は永続です。{cost}エッセンスでランダムな限定カードを1枚鍛造できます。",
     "signup_error": "登録できません。",
     "signup_done": "登録済みです。",
-    "signup_full": "満員",
-    "signup_blocked": "登録停止中",
-    "signup_debt": "{count, plural, other {チケットの精算が#枚必要です}}",
+    "signup_full": "満員です。",
+    "signup_blocked": "登録不可",
+    "signup_debt": "{count, plural, one {精算が必要なチケット: #枚} other {精算が必要なチケット: #枚}}",
     "signup_get_ticket": "チケットを入手",
     "signup_no_ticket": "利用可能なチケットがありません",
     "signup_pending": "登録中…",
     "signup_with_ticket": "登録する(1 🎟️)",
     "signup_free": "登録する(無料)",
-    "signup_seats": "{count, plural, other {残り#枠}}",
-    "signup_tickets_in_hand": "{count, plural, other {所持チケット#枚}}"
+    "signup_seats": "{count, plural, one {残り#枠} other {残り#枠}}",
+    "signup_tickets_in_hand": "{count, plural, one {所持チケット: #枚} other {所持チケット: #枚}}"
   }
 }

@@ -111,8 +111,8 @@
         "desc": "Descarta una carta de tu mano, luego roba dos cartas."
       },
       "terreur": {
-        "label": "Terror",
-        "desc": "Las unidades enemigas pierden 1 ATK en presencia de esta carta."
+        "label": "Terror X",
+        "desc": "Las unidades enemigas pierden X de ATK mientras esta carta esté en juego."
       },
       "pauvrete": {
         "label": "Pobreza X",
@@ -435,13 +435,17 @@
         "label": "Disciplina +X/+Y",
         "desc": "Si todos los costes de tu tablero tienen la misma paridad que el suyo, otorga +X/+Y permanente a otra unidad aliada objetivo."
       },
+      "lien_du_sang": {
+        "label": "Vínculo de sangre X",
+        "desc": "Gana +X/+X y pierdes X PV, si tus PV lo permiten."
+      },
       "usurpation": {
         "label": "Usurpación +X/+Y",
         "desc": "Otorga +X/+Y permanente a otra unidad aliada objetivo por cada carta del adversario que hayas jugado."
       },
       "esprit_de_corps": {
         "label": "Espíritu de cuerpo",
-        "desc": "Gana +1 de ATK o +1 de PV al azar por cada criatura con Espíritu de cuerpo que ya hayas jugado."
+        "desc": "Gana +1 ATQ o +1 PV al azar por cada criatura con Espíritu de cuerpo ya jugada."
       },
       "presage": {
         "label": "Presagio",
@@ -563,7 +567,7 @@
       },
       "silence": {
         "label": "Silencio",
-        "desc": "Elimina todas las palabras clave de otra unidad objetivo y restablece sus estadísticas a su valor original."
+        "desc": "Elimina todas las palabras clave de otra unidad objetivo y devuelve sus estadísticas a su valor original."
       },
       "guerison": {
         "label": "Curación X",
@@ -860,6 +864,14 @@
         "on_wound": "Herida",
         "on_delay": "Retraso {d}"
       },
+      "siphon": {
+        "heal": "y cura a tu héroe {x} PV",
+        "heal_each": "y cura a tu héroe {x} PV por cada objetivo alcanzado",
+        "heal_scatter": "y cura a tu héroe {x} PV en total"
+      },
+      "domination": {
+        "limit": "dentro del límite de espacios disponibles"
+      },
       "content": {
         "deal_damage_one": "inflige {x} daño",
         "deal_damage_many": "inflige {x} daños",
@@ -868,6 +880,7 @@
         "usurpation": "otorga, por cada carta del adversario jugada, +{x}/+{y}",
         "debuff": "inflige -{x}/-{y}",
         "destroy": "destruye",
+        "domination": "domina",
         "bounce": "devuelve a la mano",
         "paralyze": "paraliza",
         "transformation": "transforma",
@@ -975,6 +988,14 @@
         "invocation_item_any": "coloca un objeto aleatorio{filter}",
         "exhumation_any": "resucita a {who} de tu cementerio",
         "exhumation_item_any": "vuelve a poner en juego {who} de tu cementerio",
+        "exhumation_enemy": "resucita bajo tu control {who} del cementerio rival (coste ≤ {x})",
+        "exhumation_item_enemy": "vuelve a poner en juego bajo tu control {who} del cementerio rival (coste ≤ {x})",
+        "exhumation_enemy_any": "resucita bajo tu control {who} del cementerio rival",
+        "exhumation_item_enemy_any": "vuelve a poner en juego bajo tu control {who} del cementerio rival",
+        "exhumation_both": "resucita bajo tu control {who} de cualquier cementerio (coste ≤ {x})",
+        "exhumation_item_both": "vuelve a poner en juego bajo tu control {who} de cualquier cementerio (coste ≤ {x})",
+        "exhumation_both_any": "resucita bajo tu control {who} de cualquier cementerio",
+        "exhumation_item_both_any": "vuelve a poner en juego bajo tu control {who} de cualquier cementerio",
         "appel_any": "pone en juego la 1ª unidad de tu mazo",
         "appel_item_any": "pone en juego el 1er objeto de tu mazo",
         "dechainement_any": "juega {x} acciones aleatorias",
@@ -997,6 +1018,8 @@
       "choice": {
         "transformation": "elige una criatura para transformar",
         "deal_damage": "elige un objetivo al que herir",
+        "siphon": "elige un objetivo al que drenar",
+        "domination": "elige una criatura para dominar",
         "heal": "elige un objetivo al que sanar",
         "buff": "elige una criatura para fortalecer",
         "usurpation": "elige una criatura para fortalecer",
@@ -1105,8 +1128,8 @@
         "both_one": "a un objetivo (unidad o héroe){side}",
         "both_side_ally": "aliados",
         "both_side_enemy": "enemigos",
-        "both_side_ally_one": "aliado",
-        "both_side_enemy_one": "enemigo",
+        "both_side_ally_one": "aliada",
+        "both_side_enemy_one": "enemiga",
         "count_all": "a todas las unidades",
         "count_one": "a una unidad",
         "count_n": "a {n} unidades",
@@ -2081,7 +2104,7 @@
       "ability": "una habilidad",
       "scope": "a una unidad aliada (o a todas)",
       "scope_target": "a una unidad aliada",
-      "edc_compte": "Gana +1 de ATK o +1 de PV al azar {n} veces (1 por cada criatura con Espíritu de cuerpo que ya hayas jugado).",
+      "edc_compte": "Gana {n} veces +1 ATQ o +1 PV al azar (1 por cada criatura con Espíritu de cuerpo ya jugada).",
       "usurpation_actuel": "Cartas del adversario jugadas: {n} — actualmente +{x}/+{y}.",
       "scope_all": "a todas tus unidades",
       "machine_part": " y {ability}",
@@ -2151,8 +2174,8 @@
         "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
         "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada unidad alcanzada.",
         "entrave": "Paraliza a {cibles} durante X turno(s).",
-        "execution": "Destruye a {cibles}, objetos incluidos.",
-        "silence": "Elimina todas las palabras clave de {cibles}, objetos incluidos, y restablece sus estadísticas a su valor original.",
+        "execution": "Destruye {cibles}, incluidos los objetos.",
+        "silence": "Elimina todas las palabras clave de {cibles}, incluidos los objetos, y devuelve sus estadísticas a su valor original.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
         "usurpation": "+X/+Y a {cibles} por cada carta del adversario que hayas jugado.",
@@ -2176,14 +2199,15 @@
         "renforcement_soi": "Gana +X ATQ y +Y PV de forma permanente.",
         "discipline_soi": "Si todas tus criaturas en juego tienen un coste con la misma paridad que el suyo, gana +X ATQ y +Y PV de forma permanente.",
         "usurpation_soi": "Gana +X ATQ y +Y PV de forma permanente por cada carta del adversario que hayas jugado.",
-        "execution": "Destruye a {cibles}, objetos incluidos.",
-        "silence": "Elimina todas las palabras clave de {cibles}, objetos incluidos, y restablece sus estadísticas a su valor original.",
+        "execution": "Destruye {cibles}, incluidos los objetos.",
+        "silence": "Elimina todas las palabras clave de {cibles}, incluidos los objetos, y devuelve sus estadísticas a su valor original.",
         "guerison": "Restaura X PV a todas las demás unidades aliadas y a tu héroe.",
         "purete": "Mientras tu cementerio esté vacío, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "force_des_ancetres": "Mientras tu cementerio contenga 7 o más criaturas, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "seuil_sacrificiel": "Mientras tu mazo tenga 25 cartas o menos, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "silence_soi": "Pierde todas sus palabras clave y sus estadísticas vuelven a su valor original.",
-        "guerison_soi": "Recupera X PV."
+        "guerison_soi": "Recupera X PV.",
+        "sacrifice": "Destruye todas las demás unidades aliadas para ganar sus PV y su ATK de forma permanente."
       },
       "cibles": {
         "all_enemies": "todas las unidades enemigas",
@@ -2215,6 +2239,11 @@
         "title": "Repliegue {n}",
         "desc_one": "Además del maná, devuelve una carta de tu mano, a tu elección, encima de tu mazo.",
         "desc_many": "Además del maná, devuelve {n} cartas de tu mano, a tu elección, encima de tu mazo. La primera que elijas queda arriba del todo."
+      },
+      "retraite": {
+        "title": "Retirada {n}",
+        "desc_one": "Además del maná, devuelve a tu mano una de tus criaturas en juego, a tu elección. Imposible si tu mano no puede acogerla.",
+        "desc_many": "Además del maná, devuelve a tu mano {n} de tus criaturas en juego, a tu elección. Imposible si tu mano no puede acogerlas."
       },
       "eveil": {
         "title": "Despertar {n}",
@@ -2575,6 +2604,8 @@
     "target_scope_hint_all_allies": "Golpea a todas las unidades aliadas en lugar de a un objetivo elegido (ni héroes ni objetos).",
     "target_scope_hint_all": "Golpea a todas las unidades de ambos bandos en lugar de a un objetivo elegido (ni héroes ni objetos).",
     "content_deal_damage": "Infligir daño",
+    "content_siphon": "Succión X (daño + curación del héroe)",
+    "content_domination": "Dominación (tomar el control)",
     "content_heal": "Curar",
     "content_buff": "Buff +X/+Y",
     "content_usurpation": "Usurpación +X/+Y (por carta del adversario jugada)",
@@ -2687,7 +2718,7 @@
     "collections": "Colecciones",
     "section_faction": "Facción",
     "section_race": "Raza",
-    "section_race2": "Raza 2 (unidad de doble raza)",
+    "section_race2": "Raza 2 (unidad birracial)",
     "main_races": "Razas principales",
     "all_races": "Todas las razas",
     "section_clan": "Clan",
@@ -2746,6 +2777,8 @@
     "sacrifice_label": "SACRIFICIO",
     "exile_label": "EXILIO",
     "topdeck_label": "REPLIEGUE",
+    "retreat_cost_hint": "Número de criaturas aliadas que el jugador devuelve del tablero a su mano. Conservan sus bonificaciones permanentes y activan sus efectos de retorno. Coste de tempo, no reducible.",
+    "retreat_label": "RETIRADA",
     "spell_effects_label": "EFECTOS DE LA ACCIÓN",
     "spell_keywords_label": "PALABRAS CLAVE DE ACCIÓN",
     "token_to_summon": "TOKEN A INVOCAR",
@@ -3124,6 +3157,7 @@
     "cost_pay_title": "Paga los costes de {name}",
     "cost_discard_label": "🃏 {count, plural, one {Descartar # carta} other {Descartar # cartas}}",
     "cost_topdeck_label": "{count, plural, one {Replegar # carta al mazo} other {Replegar # cartas al mazo}}",
+    "cost_retreat_label": "{count, plural, one {Devolver # criatura a la mano} other {Devolver # criaturas a la mano}}",
     "cost_topdeck_order_hint": "La primera carta designada quedará encima del mazo.",
     "cost_hand_order_hint": "Tus clics llenan primero el descarte, luego el repliegue.",
     "topdeck_cost_caption": "{count, plural, one {Repliegue} other {Repliegue ×#}}",
@@ -3266,7 +3300,7 @@
     "creature_abilities_group": "Habilidades de criatura ({count})",
     "spell_abilities_group": "Habilidades de acción ({count})",
     "no_ability_match": "Ninguna habilidad coincide con «{query}».",
-    "goal_text": "Cada jugador encarna a un <hi>héroe</hi> que empieza con <hi>de {min} a {max} puntos de vida</hi> según el héroe ({usual} lo más habitual): un poder potente se paga con algunos PV menos, y un poder modesto se compensa con algunos PV más. Ganas la partida reduciendo los puntos de vida del héroe rival a <hi>{zero}</hi>. Para ello, invocas criaturas y juegas acciones.",
+    "goal_text": "Cada jugador encarna a un <hi>héroe</hi> que empieza con <hi>de {min} a {max} puntos de vida</hi> según el héroe ({usual} lo más habitual): un poder poderoso se paga con unos PV menos, y un poder modesto se compensa con unos PV más. Ganas la partida reduciendo los puntos de vida del héroe rival a <hi>{zero}</hi>. Para ello, invocas criaturas y juegas acciones.",
     "stat_hero_start_value": "{min}–{max} PV",
     "stat_starting_hand_value": "{first} o {second} cartas"
   },
@@ -3473,6 +3507,8 @@
     "cost_sacrifice": "Sacrificio",
     "cost_exile": "Exilio",
     "cost_topdeck": "Retorno",
+    "cost_retreat": "Retirada",
+    "cost_retreat_desc": "Estas cartas exigen devolver criaturas del tablero a tu mano, además de su coste de maná.",
     "cost_life_desc": "Estas cartas también se pagan con puntos de vida del héroe, además de su coste en maná.",
     "cost_discard_desc": "Estas cartas exigen descartar cartas de tu mano, además de su coste en maná.",
     "cost_sacrifice_desc": "Estas cartas exigen sacrificar criaturas que controlas, además de su coste en maná.",
@@ -3522,7 +3558,7 @@
     "players": "jugadores",
     "access_ticket": "Accesible con un ticket de torneo",
     "access_golden": "Accesible únicamente con un Golden Ticket",
-    "winner_golden_title": "El vencedor gana el Golden Ticket",
+    "winner_golden_title": "El ganador obtiene el Golden Ticket",
     "winner_golden_desc": "La única llave de entrada al gran torneo mensual",
     "bracket_size": "Tamaño del cuadro",
     "bracket_size_aria": "Tamaño del gran torneo",
@@ -3559,23 +3595,23 @@
     "rewards_title": "Lo que otorga cada victoria",
     "footnote_rounds": "Un jugador eliminado en la ronda <i>r</i> ha ganado <i>r</i>−1 partidas.",
     "footnote_credits": "Los créditos de mercado caducan {days} días después de obtenerlos.",
-    "footnote_cash": "El dinero se entrega a partir de {wins} victorias;",
-    "footnote_all": "Los créditos, la esencia y los cosméticos van para todos los participantes recompensados.",
-    "step_label": "ETAPA {n}",
+    "footnote_cash": "El dinero se otorga a partir de {wins} victorias;",
+    "footnote_all": "Los créditos, la esencia y los cosméticos se entregan a todos los participantes recompensados.",
+    "step_label": "PASO {n}",
     "step_ticket_title": "Ticket de torneo",
-    "step_ticket_text": "Se compra en la tienda; se prevé un ticket gratuito mensual para los jugadores activos.",
+    "step_ticket_text": "Se compra en la tienda; hay un ticket gratuito al mes para los jugadores activos.",
     "step_qualification_title": "Clasificación",
     "step_qualification_text": "{size} jugadores, eliminación directa en {rounds} rondas, en directo en cuanto los {size} estén listos.",
-    "step_golden_text": "El ganador consigue su plaza en el gran torneo mensual.",
+    "step_golden_text": "El vencedor consigue su plaza en el gran torneo mensual.",
     "step_grand_text": "Los poseedores de un Golden Ticket se enfrentan, con una ronda por jugar antes de cada fecha límite.",
     "how_it_works": "Cómo funciona",
     "rule_wins": "Las recompensas dependen del <b>número de victorias</b>, no de la clasificación final: dos victorias dan lo mismo en todos los cuadros. Solo el campeón recibe más.",
     "rule_bracket": "El gran torneo se juega en un cuadro completo (16, 32, 64… jugadores). Los clasificados sobrantes se <b>aplazan con prioridad</b> al mes siguiente; con menos de {min} clasificados, toda la edición se aplaza.",
     "rule_golden": "¿Varios Golden Tickets? Solo una inscripción por edición: los tickets sobrantes valen para las ediciones siguientes.",
-    "rule_forfeit": "Un jugador ausente en la fecha límite pierde por incomparecencia; si ambos están ausentes, doble incomparecencia y su próximo rival avanza sin jugar.",
-    "rule_credits": "Los <b>créditos de mercado</b> sirven para pujar por las ediciones limitadas y caducan {days} días después de obtenerlos.",
-    "rule_essence": "La <b>esencia</b> es permanente: {cost} esencias = la forja de una carta limitada al azar.",
-    "signup_error": "No se puede realizar la inscripción.",
+    "rule_forfeit": "Un jugador ausente en la fecha límite pierde por incomparecencia; si ambos están ausentes, doble incomparecencia y su próximo rival pasa sin jugar.",
+    "rule_credits": "Los <b>créditos de mercado</b> sirven para pujar por ediciones limitadas y caducan {days} días después de obtenerlos.",
+    "rule_essence": "La <b>esencia</b> es permanente: {cost} de esencia = una forja de una carta limitada aleatoria.",
+    "signup_error": "No se puede inscribir.",
     "signup_done": "Estás inscrito.",
     "signup_full": "Completo.",
     "signup_blocked": "Inscripciones bloqueadas",
