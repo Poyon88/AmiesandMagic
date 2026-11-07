@@ -2193,6 +2193,7 @@
         "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
         "vampirisme": "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
         "devoration": "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
+        "sacrifice": "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",
         "renforcement": "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",
         "discipline": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à toutes les autres unités alliées.",
         "usurpation": "Donne +X/+Y permanent à toutes les autres unités alliées par carte adverse que vous avez jouée.",

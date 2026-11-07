@@ -143,7 +143,7 @@ describe("camps ouverts", () => {
     expect(spellScopes("deferlement")).toEqual([]);
   });
   it("capacités de créature à cible unique exclues", () => {
-    for (const id of ["sacrifice", "permutation", "mimique", "metamorphose", "incineration"]) {
+    for (const id of ["permutation", "mimique", "metamorphose", "incineration"]) {
       expect(creatureScopes(id)).toEqual([]);
     }
   });

@@ -5729,8 +5729,9 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Sacrifice: détruisez un allié pour gagner ses PV et ATK permanents
-    if (hasKwOnPlay(cardInstance, "sacrifice") && action.targetInstanceId) {
-      const sacrificed = player.board.find(c => c.instanceId === action.targetInstanceId && c !== cardInstance);
+    // Portée « toutes » : chaque autre unité alliée, gains cumulés.
+    if (hasKwOnPlay(cardInstance, "sacrifice")) for (const tid of ciblesOnPlay(cardInstance, "sacrifice", action.targetInstanceId, player, opponent)) {
+      const sacrificed = player.board.find(c => c.instanceId === tid && c !== cardInstance);
       if (sacrificed) {
         cardInstance.summonBonusATK += sacrificed.currentAttack;
         cardInstance.currentAttack += sacrificed.currentAttack;

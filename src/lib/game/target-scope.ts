@@ -53,8 +53,8 @@ export function spellScopes(id: SpellKeywordId | string): TargetScope[] {
  *  côté créature, le camp visé n'est écrit dans aucun registre, il vit dans
  *  chaque résolveur — la liste suit ce qu'ils acceptent.
  *
- *  Exclues, car une seule cible fait leur sens : Sacrifice, Permutation,
- *  Mimique, Métamorphose, Incinération. Conférer a SA propre portée
+ *  Exclues, car une seule cible fait leur sens : Permutation, Mimique,
+ *  Métamorphose, Incinération. Conférer a SA propre portée
  *  (`grantScope`, « tous les alliés ») depuis bien avant ce module. */
 const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   impact: ["all_enemies"],
@@ -72,6 +72,8 @@ const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   renforcement: ["all_allies"],
   discipline: ["all_allies"],
   usurpation: ["all_allies"],
+  // Sacrifice : toutes les AUTRES unités alliées ; la source gagne la somme.
+  sacrifice: ["all_allies"],
   // Auras conditionnelles : elle-même par défaut (« S »), ou toutes les AUTRES
   // unités alliées tant que la condition tient (« A »).
   purete: ["all_allies"],
@@ -262,6 +264,8 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
   vampirisme: "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
   devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
+  // La source est exclue : « autres » le dit, {cibles} ne le dirait pas.
+  sacrifice: "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",
   execution: "Détruit {cibles}, objets compris.",
   silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   // Source exclue, comme pour Renforcement : « autres ».
