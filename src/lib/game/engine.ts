@@ -1994,6 +1994,48 @@ export function endOfTurnTriggerTargets(state: GameState, trigger: import("./typ
   return exclutPorteuse(cap!.composed!, cap!.trigger, source) ? ids.filter(id => id !== source.instanceId) : ids;
 }
 
+/** Vivier d'une Exhumation composée : le ou les cimetières du `side`, avec tous
+ *  les filtres de la cible, et X comme plafond de coût (0 ou vide = tout coût).
+ *  Source unique du sélecteur et de la résolution, qui ne peuvent plus diverger. */
+function vivierExhumation(
+  composed: import("./types").ComposedEffect,
+  owner: PlayerState,
+  opponent: PlayerState,
+  x: number,
+): CardInstance[] {
+  const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
+  return composedTargetPool({ ...spec, location: "graveyard" }, owner, opponent)
+    .filter((c) => (c.card.card_type === "creature" && visesUnites(spec.entity))
+      || (c.card.card_type === "item" && visesObjets(spec.entity)))
+    .filter((c) => respecteCoutMax(c.card, x));
+}
+
+/** Une carte morte sous le contrôle d'un autre retourne au cimetière de son
+ *  propriétaire : créature volée, ou ressuscitée d'un cimetière adverse.
+ *
+ *  Balayé en fin d'action plutôt que dans `cleanDeadCreatures` : ses 38 sites ne
+ *  voient qu'un joueur, et les râles d'agonie cherchent la dépouille dans le
+ *  cimetière de son contrôleur pendant la résolution. */
+function rendreAuxCimetieresDOrigine(state: GameState): void {
+  for (const p of state.players) {
+    const aRendre = p.graveyard.filter((c) => c.trueOwnerId && c.trueOwnerId !== p.id);
+    for (const c of aRendre) {
+      const origine = state.players.find((j) => j.id === c.trueOwnerId);
+      c.trueOwnerId = null;
+      if (!origine) continue;
+      p.graveyard = p.graveyard.filter((g) => g !== c);
+      origine.graveyard.push(c);
+    }
+  }
+}
+
+/** Propriétaire à mémoriser quand `voleur` prend le contrôle d'une unité de
+ *  `vole` : celui déjà connu, ou personne si `voleur` reprend sa propre carte. */
+function proprietaireApresVol(u: CardInstance, voleur: PlayerState, vole: PlayerState): string | null {
+  if (u.trueOwnerId === voleur.id) return null;
+  return u.trueOwnerId ?? vole.id;
+}
+
 function resolveComposedEffect(
   composed: import("./types").ComposedEffect,
   source: CardInstance | null,
@@ -2281,21 +2323,19 @@ function resolveComposedEffect(
       // l'ordre) ; en leur absence (déclencheur non-interactif), repli
       // DÉTERMINISTE = plus hauts coûts éligibles (jamais rng, pour la
       // rejouabilité multijoueur).
-      const maxCost = x;
+      const vivier = vivierExhumation(composed, owner, opponent, x);
       const cnt = composed.target?.count;
       const desired = typeof cnt === "number" ? cnt : Infinity;
-      // Nature ramenable : unités et/ou objets selon l'entité visée (défaut :
-      // unités, comportement historique).
-      const entite = composed.target?.entity ?? "unit";
-      const ramenable = (c: CardInstance) =>
-        (c.card.card_type === "creature" && visesUnites(entite))
-        || (c.card.card_type === "item" && visesObjets(entite));
-      const resurrect = (inst: CardInstance | undefined): boolean => {
-        if (!inst || placesOccupees(owner) >= MAX_BOARD_SIZE) return false;
-        if (!ramenable(inst) || !respecteCoutMax(inst.card, maxCost)) return false;
-        owner.graveyard = owner.graveyard.filter((c) => c !== inst);
+      const resurrect = (inst: CardInstance): boolean => {
+        if (placesOccupees(owner) >= MAX_BOARD_SIZE) return false;
+        // Sortie du cimetière adverse : elle reste à son propriétaire, et y
+        // retournera à sa mort (cf. rendreAuxCimetieresDOrigine).
+        const adverse = opponent.graveyard.includes(inst);
+        const zone = adverse ? opponent : owner;
+        zone.graveyard = zone.graveyard.filter((c) => c !== inst);
         returnInstanceToPlay(inst);
         inst.instanceId = generateInstanceId();
+        if (adverse) inst.trueOwnerId = opponent.id;
         // OBJET : reposé sur la table, non équipé.
         if (inst.card.card_type === "item") {
           inst.equippedToInstanceId = null;
@@ -2308,24 +2348,18 @@ function resolveComposedEffect(
         owner.board.push(inst);
         return true;
       };
+      const choisies = (chosenTargetIds ?? [])
+        .map((id) => vivier.find((c) => c.instanceId === id))
+        .filter((c): c is CardInstance => !!c);
+      // Interactif : exactement le lot désigné. Sinon « au hasard » tire, et tout
+      // le reste suit le repli déterministe, plus hauts coûts d'abord.
+      const lot = choisies.length > 0 ? choisies
+        : composed.target?.designation === "random" ? shuffleArray(vivier)
+          : [...vivier].sort((a, b) => b.card.mana_cost - a.card.mana_cost);
       let done = 0;
-      const chosen = chosenTargetIds ?? [];
-      if (chosen.length > 0) {
-        // Interactif : ressuscite exactement les créatures choisies (pas de repli
-        // au-delà — le joueur a désigné son lot).
-        for (const id of chosen) {
-          if (done >= desired) break;
-          if (resurrect(owner.graveyard.find((c) => c.instanceId === id))) done++;
-        }
-      } else {
-        // Non-interactif : repli déterministe, plus hauts coûts d'abord.
-        while (done < desired && placesOccupees(owner) < MAX_BOARD_SIZE) {
-          const eligible = owner.graveyard.filter((c) => ramenable(c) && respecteCoutMax(c.card, maxCost));
-          if (eligible.length === 0) break;
-          const best = eligible.reduce((b, c) => (c.card.mana_cost > b.card.mana_cost ? c : b), eligible[0]);
-          if (!resurrect(best)) break;
-          done++;
-        }
+      for (const inst of lot) {
+        if (done >= desired || !resurrect(inst)) break;
+        done++;
       }
       return;
     }
@@ -2785,7 +2819,7 @@ function resolveCreatureKeywordAsHeroPower(
       if (!target || placesOccupees(player) >= MAX_BOARD_SIZE) break;
       opponent.board = opponent.board.filter(c => c !== target);
       target.originalOwnerId = opponent.id;
-      target.trueOwnerId = opponent.id;
+      target.trueOwnerId = proprietaireApresVol(target, player, opponent);
       resetTurnStateForNewController(target);
       const list = target.card.keywords as string[];
       if (!list.includes("charge")) {
@@ -2805,7 +2839,7 @@ function resolveCreatureKeywordAsHeroPower(
       stolen.hasSummoningSickness = true;
       stolen.originalOwnerId = null;
       // Contrôle permanent, mais on mémorise le propriétaire d'origine pour Remontée.
-      stolen.trueOwnerId = opponent.id;
+      stolen.trueOwnerId = proprietaireApresVol(stolen, player, opponent);
       player.board.push(stolen);
       break;
     }
@@ -2907,6 +2941,22 @@ function resetTurnStateForNewController(inst: CardInstance): void {
   inst.hasAttacked = false;
   inst.attacksRemaining = maxAttacksFor(inst);
   inst.targetsAttackedThisTurn = [];
+}
+
+/** DOMINATION composée : `owner` prend le contrôle PERMANENT d'une unité du
+ *  plateau adverse, si une place est libre.
+ *
+ *  Deux compteurs à ne pas laisser traîner : une Corruption en cours la ferait
+ *  repartir au tour suivant, et une unité que `owner` récupère redevient
+ *  simplement la sienne au lieu de le désigner comme l'ayant volée. */
+function prendreLeControle(u: CardInstance, owner: PlayerState, opponent: PlayerState): void {
+  const idx = opponent.board.indexOf(u);
+  if (idx < 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
+  opponent.board.splice(idx, 1);
+  u.hasSummoningSickness = true;
+  u.originalOwnerId = null;
+  u.trueOwnerId = proprietaireApresVol(u, owner, opponent);
+  owner.board.push(u);
 }
 
 /** X des capacités dont la valeur est FIGÉE sur l'instance à sa naissance, au
@@ -5691,7 +5741,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (stealTarget && placesOccupees(player) < MAX_BOARD_SIZE) {
         opponent.board = opponent.board.filter(c => c !== stealTarget);
         stealTarget.originalOwnerId = opponent.id;
-        stealTarget.trueOwnerId = opponent.id;
+        stealTarget.trueOwnerId = proprietaireApresVol(stealTarget, player, opponent);
         resetTurnStateForNewController(stealTarget); // Traque + compteurs de tour
         if (!stealTarget.card.keywords.includes("charge")) {
           stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
@@ -5710,7 +5760,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         const stolen = opponent.board.splice(idx, 1)[0];
         stolen.hasSummoningSickness = true;
         // Contrôle permanent, mais on mémorise le propriétaire d'origine (Remontée).
-        stolen.trueOwnerId = opponent.id;
+        stolen.trueOwnerId = proprietaireApresVol(stolen, player, opponent);
         player.board.push(stolen);
       }
     }
@@ -7373,7 +7423,7 @@ function resolveSpellKeywords(
         if (!corrupted) break;
         ctx.opponent.board = ctx.opponent.board.filter(c => c !== corrupted);
         corrupted.originalOwnerId = ctx.opponent.id;
-        corrupted.trueOwnerId = ctx.opponent.id;
+        corrupted.trueOwnerId = proprietaireApresVol(corrupted, ctx.caster, ctx.opponent);
         resetTurnStateForNewController(corrupted); // Traque + compteurs de tour
         if (!corrupted.card.keywords.includes("charge")) {
           corrupted.card = { ...corrupted.card, keywords: [...corrupted.card.keywords, "charge"] };
@@ -7395,7 +7445,7 @@ function resolveSpellKeywords(
         dominated.hasSummoningSickness = true;
         // Contrôle permanent, mais on mémorise le propriétaire d'origine pour
         // que Remontée la renvoie dans la BONNE main (cf. version créature).
-        dominated.trueOwnerId = ctx.opponent.id;
+        dominated.trueOwnerId = proprietaireApresVol(dominated, ctx.caster, ctx.opponent);
         ctx.caster.board.push(dominated);
         break;
       }
@@ -8137,7 +8187,7 @@ function resolveAtomicEffect(ctx: SpellResolutionContext, rawEffect: AtomicEffec
           if (idx !== -1) {
             ctx.opponent.board.splice(idx, 1);
             target.originalOwnerId = ctx.opponent.id;
-            target.trueOwnerId = ctx.opponent.id;
+            target.trueOwnerId = proprietaireApresVol(target, ctx.caster, ctx.opponent);
             resetTurnStateForNewController(target);
             ctx.caster.board.push(target);
           }
@@ -8262,7 +8312,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
     const t = cap.composed?.target;
     if (!composeExecutable(cap) || cap.trigger !== "spell_resolution" || !t) continue;
     if (t.designation !== "choice" || typeof t.count !== "number") continue; // "all"/hasard → pas de slot
-    const type = composedSlotType(t);
+    const type = composedSlotType(t, cap.composed?.content);
     if (!type) continue;
     const n = Math.max(1, t.count);
     for (let i = 0; i < n; i++) {
@@ -8276,7 +8326,7 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
 /** Mappe un TargetSpec (choix, count 1) vers un SpellTargetType pour le picker
  *  in-game. Retourne undefined si non ciblable en v1 (zone ≠ plateau pour les
  *  unités). */
-function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | undefined {
+function composedSlotType(t: import("./types").TargetSpec, content?: import("./types").ComposedEffectContent): SpellTargetType | undefined {
   if (t.entity === "self" || t.entity === "damage_source") return undefined; // déterministe → aucun picker
   if (t.entity === "hero") return t.side === "ally" ? "friendly_hero" : "enemy_hero";
   // "both" : héros OU unité. Side-aware — un effet OFFENSIF (side "enemy") ne
@@ -8288,10 +8338,11 @@ function composedSlotType(t: import("./types").TargetSpec): SpellTargetType | un
          : t.side === "ally" ? "friendly_any"
          : "any";
   }
-  // Exhumation composée : cible une créature du cimetière ALLIÉ (résurrection) →
-  // picker cimetière existant. Cimetière ennemi non pris en charge.
+  // Exhumation composée : picker cimetière, le pool exact (camp compris) vient
+  // de getComposedGraveyardTargets. Pour les autres contenus, cimetière allié
+  // seulement.
   if (t.location === "graveyard") {
-    if (t.side !== "ally") return undefined;
+    if (t.side !== "ally" && content !== "exhumation") return undefined;
     if (t.entity === "unit") return "friendly_graveyard_to_board";
     // Objets du cimetière : tout le cimetière, restreint ensuite au pool exact
     // par restreindreCreneauCompose.
@@ -11611,7 +11662,7 @@ function resolveCuratedKeywordEffect(
       if (idxD < 0) return;
       const stolen = opponent.board.splice(idxD, 1)[0];
       stolen.hasSummoningSickness = true;
-      stolen.trueOwnerId = opponent.id;
+      stolen.trueOwnerId = proprietaireApresVol(stolen, owner, opponent);
       owner.board.push(stolen);
       return;
     }
@@ -11625,7 +11676,7 @@ function resolveCuratedKeywordEffect(
       if (!stealTarget) return;
       opponent.board = opponent.board.filter(c => c !== stealTarget);
       stealTarget.originalOwnerId = opponent.id;
-      stealTarget.trueOwnerId = opponent.id;
+      stealTarget.trueOwnerId = proprietaireApresVol(stealTarget, owner, opponent);
       resetTurnStateForNewController(stealTarget);
       if (!stealTarget.card.keywords.includes("charge")) {
         stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
@@ -13276,6 +13327,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // poussé de frame (migration incrémentale). Suspend si un choix joueur reste
   // requis (la pile persiste alors dans l'état).
   if (result !== state) drainStack(result);
+  if (result !== state) rendreAuxCimetieresDOrigine(result);
 
   // Un effet « Sous 15 PV » résolu dans ce drain peut avoir tué un héros — les
   // handlers ont déjà tranché AVANT ce drain, il faut re-vérifier après.
@@ -13796,7 +13848,7 @@ export function getCreatureComposedChoice(
   const cap = firstOnPlayComposedChoiceCap(card);
   const t = cap?.composed?.target;
   if (!cap || !t || typeof t.count !== "number") return null;
-  const type = composedSlotType(t);
+  const type = composedSlotType(t, cap.composed?.content);
   if (!type) return null;
   return { uid: cap.uid, count: t.count, type };
 }
@@ -13843,7 +13895,7 @@ export function getOnAttackComposedChoice(
   const cap = firstOnAttackComposedChoiceCap(card);
   const t = cap?.composed?.target;
   if (!cap || !t || typeof t.count !== "number") return null;
-  const type = composedSlotType(t);
+  const type = composedSlotType(t, cap.composed?.content);
   if (!type) return null;
   return { uid: cap.uid, count: t.count, type };
 }
@@ -15333,8 +15385,9 @@ export function getSpellSlotTargets(state: GameState, card: Card, slot: SpellTar
   // désignables, même en « actions seulement ». Le pool du TargetSpec fait foi,
   // comme pour la forme créature.
   const uid = /^(.+)#\d+$/.exec(slot.slot)?.[1];
-  if (uid && getCapabilities(card).find((c) => c.uid === uid)?.composed?.content === "rappel") {
-    return getComposedGraveyardTargets(state, card, uid);
+  const contenu = uid ? getCapabilities(card).find((c) => c.uid === uid)?.composed?.content : undefined;
+  if (contenu === "rappel" || contenu === "exhumation") {
+    return getComposedGraveyardTargets(state, card, uid!);
   }
   const base =restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
   if (!isIncinerationSlot(card, slot)) return base;
@@ -15476,8 +15529,12 @@ export function getComposedGraveyardTargets(state: GameState, card: Card, capUid
   // s'accordent pas.
   const x = (composed?.magnitude?.x ?? 0)
     + (card.card_type === "spell" ? chantBonusForSpell(state, card) + tempoBonusForCard(state, card) : 0);
+  if (composed?.content === "exhumation") {
+    const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
+    return vivierExhumation(composed, player, opponent, x).map(c => c.instanceId);
+  }
   return player.graveyard
-    .filter(c => c.card.card_type === "creature" && c.card.mana_cost <= x)
+    .filter(c => c.card.card_type === "creature" && respecteCoutMax(c.card, x))
     .map(c => c.instanceId);
 }
 

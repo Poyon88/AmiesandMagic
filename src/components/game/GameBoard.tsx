@@ -2022,7 +2022,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       )}
       {targetingMode === "graveyard" && !overlayPeeked && (
         <GraveyardOverlay
-          cards={myPlayer.graveyard}
+          // Une Exhumation peut viser le cimetière adverse : seules ses cartes
+          // désignables s'y ajoutent, le reste de ce cimetière n'a rien à faire ici.
+          cards={[...myPlayer.graveyard, ...opponent.graveyard.filter((c) => validTargets.includes(c.instanceId))]}
           title={graveyardPickProgress ? `${t("choose_card")} ${graveyardPickProgress}` : t("choose_card")}
           onClose={clearSelection}
           selectableInstanceIds={validTargets}

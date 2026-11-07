@@ -135,8 +135,9 @@ function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content
  *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
  *  que des unités vivantes, le pool serait toujours vide), Incinération vise
  *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
- *  ciblage. */
-const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration"]);
+ *  ciblage — et Domination sort sa victime du pool, ce qui revient à « au
+ *  hasard ». */
+const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination"]);
 
 /** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
  *  passe. Hors plateau, il n'y a rien à répartir. */

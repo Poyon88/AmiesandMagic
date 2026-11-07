@@ -247,6 +247,14 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.invocation_item_any": "pose un objet aléatoire{filter}",
   "content.exhumation_any": "ressuscite {who} de votre cimetière",
   "content.exhumation_item_any": "remet en jeu {who} de votre cimetière",
+  "content.exhumation_enemy": "ressuscite sous votre contrôle {who} du cimetière adverse (coût ≤ {x})",
+  "content.exhumation_item_enemy": "remet en jeu sous votre contrôle {who} du cimetière adverse (coût ≤ {x})",
+  "content.exhumation_enemy_any": "ressuscite sous votre contrôle {who} du cimetière adverse",
+  "content.exhumation_item_enemy_any": "remet en jeu sous votre contrôle {who} du cimetière adverse",
+  "content.exhumation_both": "ressuscite sous votre contrôle {who} de n'importe quel cimetière (coût ≤ {x})",
+  "content.exhumation_item_both": "remet en jeu sous votre contrôle {who} de n'importe quel cimetière (coût ≤ {x})",
+  "content.exhumation_both_any": "ressuscite sous votre contrôle {who} de n'importe quel cimetière",
+  "content.exhumation_item_both_any": "remet en jeu sous votre contrôle {who} de n'importe quel cimetière",
   "content.appel_any": "met en jeu la 1re unité de votre deck",
   "content.appel_item_any": "met en jeu le 1er objet de votre deck",
   "content.dechainement_any": "joue {x} actions aléatoires",
@@ -763,11 +771,13 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       const n = eff.target?.count;
       const ent = eff.target?.entity;
       const q = ent === "item" ? "exhum_item_" : ent === "unit_or_item" ? "exhum_uoi_" : "exhum_";
-      const who = (ent === "unit" ? nomCompteDeRace(eff.target, t) : null)
+      const plafond = eff.target?.maxCost != null ? ` ${frag(t, "target.max_cost", { n: eff.target.maxCost })}` : "";
+      const who = ((ent === "unit" ? nomCompteDeRace(eff.target, t) : null)
         ?? (typeof n === "number" && n > 1 ? frag(t, `content.${q}upto`, { n })
           : n === "all" ? frag(t, `content.${q}all`)
-          : frag(t, `content.${q}one`)) + appartenance(eff.target, t);
-      return frag(t, libre(ent === "item" || ent === "unit_or_item" ? "content.exhumation_item" : "content.exhumation"), { who, x });
+          : frag(t, `content.${q}one`)) + appartenance(eff.target, t)) + plafond;
+      const camp = eff.target?.side === "enemy" ? "_enemy" : eff.target?.side === "any" ? "_both" : "";
+      return frag(t, libre(`${ent === "item" || ent === "unit_or_item" ? "content.exhumation_item" : "content.exhumation"}${camp}`), { who, x });
     }
     case "rappel": {
       const n = eff.target?.count;
@@ -1199,7 +1209,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "heal", "buff", "usurpation", "debuff", "destroy", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
+  const key = ["deal_damage", "siphon", "heal", "buff", "usurpation", "debuff", "destroy", "domination", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);
