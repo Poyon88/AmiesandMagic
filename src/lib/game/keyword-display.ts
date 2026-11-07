@@ -7,7 +7,6 @@ import { AUTOMATIC_ABILITY_IDS, COUT_OPTIONNEL, CURATED_MULTIMODE_IDS, DEATH_NAT
 import { LOW_HP_TRIGGER_THRESHOLD } from "./constants";
 import { marker, resolveMarkers, singulierHelp, singulierLabel, type MarkerCtx, type Resolver } from "./desc-markers";
 import { SINGULIER_COLOR } from "./singulier";
-import { getClanForm } from "@/lib/card-engine/race-forms";
 import type { TargetScope } from "./types";
 import { recipientDescTemplate, scopedDescTemplate } from "./target-scope";
 import {
@@ -215,9 +214,7 @@ export function describeKeyword(
   if (kw === "esprit_de_corps" && (ctx.espritCount ?? 0) > 0) {
     // `marker` retombe déjà sur MARKERS_FR quand la locale ne porte rien.
     const tmpl = marker("edc_compte", t) ?? "";
-    return tmpl
-      .replace("{n}", String(ctx.espritCount))
-      .replace("{clan_de}", getClanForm(ctx.card?.clan, t) ?? "");
+    return tmpl.replace("{n}", String(ctx.espritCount));
   }
 
   // Convocations multiples : phrase entièrement composée, pas un simple

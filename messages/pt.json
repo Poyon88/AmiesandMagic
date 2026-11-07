@@ -441,7 +441,7 @@
       },
       "esprit_de_corps": {
         "label": "Espírito de Corpo",
-        "desc": "Ganha +1 ATK ou +1 PV aleatoriamente por criatura {clan_de} com Espírito de Corpo já jogada."
+        "desc": "Ganha +1 ATQ ou +1 PV aleatoriamente por criatura com Espírito de corpo já jogada."
       },
       "presage": {
         "label": "Presságio",
@@ -2080,7 +2080,7 @@
       "ability": "uma habilidade",
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
-      "edc_compte": "Ganha {n} vezes +1 ATK ou +1 PV aleatoriamente (1 por criatura {clan_de} com Espírito de Corpo já jogada).",
+      "edc_compte": "Ganha {n} vezes +1 ATQ ou +1 PV aleatoriamente (1 por criatura com Espírito de corpo já jogada).",
       "usurpation_actuel": "Cartas do adversário jogadas: {n} — atualmente +{x}/+{y}.",
       "scope_all": "a todas as suas unidades",
       "machine_part": " e {ability}",

@@ -1,5 +1,5 @@
 // ESPRIT DE CORPS — +1 ATK ou +1 PV au hasard, une fois par AUTRE créature
-// Esprit de corps du même clan déjà posée depuis la main par le contrôleur.
+// Esprit de corps, tous clans confondus, déjà posée depuis la main par le contrôleur.
 //
 // Quatre choses à verrouiller, par ordre d'importance :
 //
@@ -132,18 +132,11 @@ describe("le compteur d'historique", () => {
     expect(compteur(st)).toBe(0);
   });
 
-  it("une porteuse SANS CLAN n'est comptée nulle part", () => {
-    const s = mkState();
-    const st = applyAction(s, play(s, porteuse({ clan: null, name: "Errante" })));
-    expect(st.players[0].espritDeCorpsPlayed ?? {}).toEqual({});
-  });
-
-  it("les clans sont cloisonnés", () => {
+  it("une porteuse sans clan compte aussi", () => {
     let s = mkState();
-    s = applyAction(s, play(s, porteuse({ name: "A" })));
-    s = applyAction(s, play(s, porteuse({ name: "B", clan: AUTRE_CLAN })));
-    expect(compteur(s, CLAN)).toBe(1);
-    expect(compteur(s, AUTRE_CLAN)).toBe(1);
+    s = applyAction(s, play(s, porteuse({ name: "Errante", clan: null })));
+    s = applyAction(s, play(s, porteuse({ name: "Locale" })));
+    expect(gain(surPlateau(s, "Locale"))).toBe(1);
   });
 
   it("les joueurs sont cloisonnés", () => {
@@ -202,11 +195,11 @@ describe("l'amorçage : la première porteuse ne gagne rien", () => {
     expect((c.card.attack ?? 0) + (c.card.health ?? 0)).toBe(5); // 2/2 + 1 point
   });
 
-  it("une porteuse d'un AUTRE clan ne fait pas grossir la troupe", () => {
+  it("une porteuse d'un AUTRE clan compte comme les autres", () => {
     let s = mkState();
     s = applyAction(s, play(s, porteuse({ name: "Étrangère", clan: AUTRE_CLAN })));
     s = applyAction(s, play(s, porteuse({ name: "Locale" })));
-    expect(gain(surPlateau(s, "Locale"))).toBe(0);
+    expect(gain(surPlateau(s, "Locale"))).toBe(1);
   });
 
   it("une créature du même clan sans le mot-clé ne fait pas grossir la troupe", () => {
@@ -376,7 +369,7 @@ describe("la porteuse ne se compte jamais elle-même", () => {
     const s = mkState();
     s.players[0].espritDeCorpsPlayed = { [CLAN]: 2 };
     const invoquee = porteuse({ name: "Invoquée" });
-    expect(espritDeCorpsPoints(s.players[0], invoquee.card, invoquee)).toBe(2);
+    expect(espritDeCorpsPoints(s.players[0], invoquee)).toBe(2);
   });
 });
 
@@ -418,7 +411,7 @@ describe("espritDeCorpsPoints — la source unique du moteur ET de l'affichage",
     const p = mkPlayer("P1");
     p.espritDeCorpsPlayed = { [CLAN]: 2 };
     const enMain = porteuse({ name: "En main" });
-    expect(espritDeCorpsPoints(p, enMain.card, enMain)).toBe(2);
+    expect(espritDeCorpsPoints(p, enMain)).toBe(2);
   });
 
   it("sur le plateau : un de moins, la carte s'étant comptée", () => {
@@ -426,24 +419,24 @@ describe("espritDeCorpsPoints — la source unique du moteur ET de l'affichage",
     p.espritDeCorpsPlayed = { [CLAN]: 2 };
     const posee = porteuse({ name: "Posée" });
     posee.espritDeCorpsCounted = true;
-    expect(espritDeCorpsPoints(p, posee.card, posee)).toBe(1);
+    expect(espritDeCorpsPoints(p, posee)).toBe(1);
   });
 
-  it("sans clan : zéro, quoi qu'il arrive", () => {
+  it("additionne tous les clans du contrôleur", () => {
     const p = mkPlayer("P1");
-    p.espritDeCorpsPlayed = { [CLAN]: 5 };
-    expect(espritDeCorpsPoints(p, { clan: undefined })).toBe(0);
+    p.espritDeCorpsPlayed = { [CLAN]: 2, [AUTRE_CLAN]: 3 };
+    expect(espritDeCorpsPoints(p)).toBe(5);
   });
 
   it("compteur absent (snapshot d'avant l'ajout du champ) : zéro, pas une erreur", () => {
-    expect(espritDeCorpsPoints(mkPlayer("P1"), { clan: CLAN })).toBe(0);
+    expect(espritDeCorpsPoints(mkPlayer("P1"))).toBe(0);
   });
 
   it("ne descend jamais sous zéro", () => {
     const p = mkPlayer("P1");
     const orpheline = porteuse();
     orpheline.espritDeCorpsCounted = true;
-    expect(espritDeCorpsPoints(p, orpheline.card, orpheline)).toBe(0);
+    expect(espritDeCorpsPoints(p, orpheline)).toBe(0);
   });
 });
 
@@ -455,7 +448,7 @@ describe("la description affichée", () => {
 
   it("hors partie (forge, collection) : la forme générique, sans compteur", () => {
     const d = describeKeyword("esprit_de_corps", { card: carte })!;
-    expect(d).toContain("des Sylvains");
+    expect(d).not.toContain("Sylvains");
     // « +1 » appartient à la phrase ; c'est le « N fois » du compteur qui doit
     // rester absent hors partie.
     expect(d).not.toContain("fois");
@@ -464,7 +457,7 @@ describe("la description affichée", () => {
   it("en partie : le TOTAL est écrit en toutes lettres, pas à calculer", () => {
     const d = describeKeyword("esprit_de_corps", { card: carte, espritCount: 2 })!;
     expect(d).toContain("2 fois");
-    expect(d).toContain("des Sylvains");
+    expect(d).not.toContain("Sylvains");
     expect(d).not.toContain("{");
   });
 
@@ -484,7 +477,7 @@ describe("la description affichée", () => {
     // par espritDeCorpsPoints, ce test le verrouille bout à bout.
     const { state } = poseSuccessive(3);
     const enJeu = surPlateau(state, "Légionnaire 3");
-    const points = espritDeCorpsPoints(state.players[0], enJeu.card, enJeu);
+    const points = espritDeCorpsPoints(state.players[0], enJeu);
     expect(points).toBe(gain(enJeu));
   });
 });

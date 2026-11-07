@@ -5428,8 +5428,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // `espritDeCorpsPoints` retranche la source d'elle-même, donc l'ordre entre
     // l'incrément et la lecture n'est pas load-bearing — c'est justement ce que
     // le drapeau achète.
-    if (!fromGraveyard && cardInstance.card.clan && hasKw(cardInstance, "esprit_de_corps")) {
-      const clan = cardInstance.card.clan;
+    if (!fromGraveyard && hasKw(cardInstance, "esprit_de_corps")) {
+      const clan = cardInstance.card.clan ?? "";
       player.espritDeCorpsPlayed = {
         ...(player.espritDeCorpsPlayed ?? {}),
         [clan]: (player.espritDeCorpsPlayed?.[clan] ?? 0) + 1,
@@ -10772,20 +10772,14 @@ function applyGloire(inst: CardInstance): void {
  *
  *  La créature s'exclut de son propre décompte dès qu'elle a été comptée, ce
  *  qui rend la règle identique à tous les déclencheurs : « une AUTRE créature
- *  Esprit de corps du même clan déjà jouée ». En main, la carte n'est pas
+ *  Esprit de corps déjà jouée », TOUS clans confondus. En main, la carte n'est pas
  *  encore comptée et affiche donc le total complet — exactement ce qu'elle
- *  gagnera en arrivant. Sur le plateau elle affiche un de moins.
- *
- *  Sans clan, aucun point : le compteur est indexé PAR clan, et une créature
- *  sans clan n'appartient à aucune troupe (même repli qu'Appel du clan). */
+ *  gagnera en arrivant. Sur le plateau elle affiche un de moins. */
 export function espritDeCorpsPoints(
   owner: PlayerState,
-  card: Pick<Card, "clan">,
   inst?: Pick<CardInstance, "espritDeCorpsCounted"> | null,
 ): number {
-  const clan = card.clan;
-  if (!clan) return 0;
-  const played = owner.espritDeCorpsPlayed?.[clan] ?? 0;
+  const played = Object.values(owner.espritDeCorpsPlayed ?? {}).reduce((n, v) => n + v, 0);
   return Math.max(0, played - (inst?.espritDeCorpsCounted ? 1 : 0));
 }
 
@@ -10807,7 +10801,7 @@ export function espritDeCorpsPoints(
  *  — un appel de plus d'un côté décale les deux clients pour tout le reste de la
  *  partie. */
 function resolveEspritDeCorps(source: CardInstance, owner: PlayerState): void {
-  const points = espritDeCorpsPoints(owner, source.card, source);
+  const points = espritDeCorpsPoints(owner, source);
   if (points <= 0) return;
   for (let i = 0; i < points; i++) {
     const enAttaque = rng() < 0.5;

@@ -1183,7 +1183,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   // Esprit de corps : récompense l'accumulation de porteurs d'un MÊME CLAN au
   // fil de la partie. À chaque déclenchement, la créature gagne un point par
-  // AUTRE créature Esprit de corps du même clan que son contrôleur a posée
+  // AUTRE créature Esprit de corps, tous clans confondus, que son contrôleur a posée
   // depuis la main — chaque point tiré au hasard entre +1 ATK et +1 PV.
   //
   // Trois voisines existent, aucune ne fait cela : Loyauté compte les alliés de
@@ -1206,15 +1206,15 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // résolution.
   esprit_de_corps: {
     id: "esprit_de_corps", label: "Esprit de corps", symbol: "🫂",
-    desc: "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée.",
+    desc: "Gagne +1 ATK ou +1 PV au hasard par créature avec Esprit de corps déjà jouée.",
     applicable_to: ["creature"],
     creature: {
       // Non scalable : la valeur vient du nombre de porteurs, pas d'un X. Le
       // coût de base reste modeste — la première posée ne gagne rien du tout,
-      // et la capacité n'a de valeur que dans un deck mono-clan qui l'empile.
+      // et la capacité n'a de valeur que dans un deck qui l'empile, tous clans confondus.
       // À réajuster après essai en partie.
       cost: 4, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain",
-      desc: "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée.",
+      desc: "Gagne +1 ATK ou +1 PV au hasard par créature avec Esprit de corps déjà jouée.",
     },
   },
   affaiblissement: {

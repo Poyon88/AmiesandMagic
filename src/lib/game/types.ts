@@ -152,7 +152,7 @@ export type Keyword =
   // coûts RÉELS du plateau du déclencheur ont la même parité que le sien.
   | "discipline"
   // +1 ATK ou +1 PV au HASARD, autant de fois qu'il y a d'AUTRES créatures
-  // Esprit de corps du même clan déjà posées depuis la main par le contrôleur.
+  // Esprit de corps, tous clans confondus, déjà posées depuis la main par le contrôleur.
   | "esprit_de_corps"
   // +X/+Y PAR CARTE ADVERSE (vrai propriétaire = l'adversaire) que le
   // contrôleur a jouée depuis la main pendant la partie. Bénéficiaire réglable
@@ -1811,7 +1811,8 @@ export interface PlayerState {
    *  non singleton (rien ne se déclenche, rien n'est révélé). */
   singletonRevealed?: boolean;
   /** Esprit de corps : combien de créatures portant ce mot-clé ce joueur a-t-il
-   *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan.
+   *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan. Le gain lit le
+   *  TOTAL, tous clans confondus (`espritDeCorpsPoints`) ; `""` = sans clan.
    *
    *  Clé = nom canonique FR du clan, tel que stocké dans `cards.clan` — le clan
    *  n'est pas un enum (cf. `clan-profile.ts`).

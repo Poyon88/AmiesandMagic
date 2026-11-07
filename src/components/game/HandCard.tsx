@@ -103,7 +103,7 @@ function HandCard({
   // complet — exactement ce qu'elle vaudra une fois posée.
   const espritCount = useMemo(() => {
     const owner = gameState?.players.find(p => p.id === localPlayerId);
-    return owner ? espritDeCorpsPoints(owner, card, cardInstance) : null;
+    return owner ? espritDeCorpsPoints(owner, cardInstance) : null;
   }, [gameState, localPlayerId, card, cardInstance]);
 
   // Usurpation : en main, la carte ne s'est pas encore comptée — le nombre est

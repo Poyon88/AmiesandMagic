@@ -441,7 +441,7 @@
       },
       "esprit_de_corps": {
         "label": "Esprit de corps",
-        "desc": "Gagne +1 ATK ou +1 PV au hasard par créature {clan_de} avec Esprit de corps déjà jouée."
+        "desc": "Gagne +1 ATK ou +1 PV au hasard par créature avec Esprit de corps déjà jouée."
       },
       "presage": {
         "label": "Présage",
@@ -2080,7 +2080,7 @@
       "ability": "une capacité",
       "scope": "à une unité alliée (ou à toutes)",
       "scope_target": "à une unité alliée",
-      "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature {clan_de} avec Esprit de corps déjà jouée).",
+      "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature avec Esprit de corps déjà jouée).",
       "usurpation_actuel": "Cartes adverses jouées : {n} — actuellement +{x}/+{y}.",
       "scope_all": "à toutes vos unités",
       "machine_part": " et {ability}",

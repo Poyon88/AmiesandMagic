@@ -441,7 +441,7 @@
       },
       "esprit_de_corps": {
         "label": "团队精神",
-        "desc": "场上每有一张已打出、拥有团队精神的{clan_de}随从，随机获得+1攻击力或+1生命值。"
+        "desc": "每有一个已打出的带有团队精神的生物,随机获得+1 ATK或+1 PV。"
       },
       "presage": {
         "label": "预兆",
@@ -2080,7 +2080,7 @@
       "ability": "一项能力",
       "scope": "给一个友方单位（或全部）",
       "scope_target": "给一个友方单位",
-      "edc_compte": "随机获得{n}次+1攻击力或+1生命值（场上每有一张已打出、拥有团队精神的{clan_de}随从算1次）。",
+      "edc_compte": "随机获得{n}次+1 ATK或+1 PV(每有一个已打出的带有团队精神的生物计1次)。",
       "usurpation_actuel": "已打出的对手牌：{n} 张 — 当前 +{x}/+{y}。",
       "scope_all": "给你所有的单位",
       "machine_part": "及{ability}",
