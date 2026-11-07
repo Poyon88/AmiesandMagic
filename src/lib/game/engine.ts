@@ -11428,8 +11428,8 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "vampirisme": {
-      // Tap mode: drain X from a chosen enemy creature (mirrors on-play).
-      // Death / no-target fallback: hit the opposing hero.
+      // Vampirisme ne vise QUE des créatures ennemies, jamais le héros.
+      // Cible désignée (tap) : on la draine.
       if (targetInstanceId) {
         const target = opponent.board.find(c => c.instanceId === targetInstanceId);
         if (target) {
@@ -11441,24 +11441,18 @@ function resolveCuratedKeywordEffect(
           break;
         }
       }
-      // Mode attaque : draine une créature ennemie AU HASARD (le flux d'attaque
-      // ne peut pas ouvrir de picker) ; à défaut de créature, le héros adverse.
-      if (inst?.mode === "attack") {
-        const poolV = opponent.board.filter(c => c.currentHealth > 0 && !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed));
-        if (poolV.length > 0) {
-          const targetV = poolV[Math.floor(rng() * poolV.length)];
-          const stolenV = Math.min(x, targetV.currentHealth);
-          targetV.currentHealth -= stolenV;
-          if (stolenV > 0) noteWound(targetV, woundOriginOf(source));
-          source.currentHealth += stolenV;
-          source.maxHealth += stolenV;
-          break;
-        }
+      // Sans cible (attaque, fin/début de tour, mort, blessure… : aucun picker
+      // possible) : une créature ennemie ciblable AU HASARD ; s'il n'y en a
+      // aucune, l'effet ne fait rien.
+      const poolV = opponent.board.filter(c => c.currentHealth > 0 && !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed));
+      if (poolV.length > 0) {
+        const targetV = poolV[Math.floor(rng() * poolV.length)];
+        const stolenV = Math.min(x, targetV.currentHealth);
+        targetV.currentHealth -= stolenV;
+        if (stolenV > 0) noteWound(targetV, woundOriginOf(source));
+        source.currentHealth += stolenV;
+        source.maxHealth += stolenV;
       }
-      const before = opponent.hero.hp;
-      dealDamageToHero(opponent.hero, x, source);
-      const dealt = before - opponent.hero.hp;
-      soignerHeros(owner.hero, dealt);
       break;
     }
     case "prescience": {

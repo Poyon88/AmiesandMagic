@@ -53,3 +53,38 @@ describe("Vampirisme X à l'entrée en jeu", () => {
     expect(describeKeyword("vampirisme", { card: mkCard({ keywords: ["vampirisme"] as never }), x: 2 })).toContain("jusqu'à 2 PV");
   });
 });
+
+// Novice du Banquet rouge : Vampirisme 1 en fin de tour. Sans choix de cible,
+// le vol vise une créature ennemie au hasard, JAMAIS le héros adverse.
+describe("Vampirisme sans cible désignée (fin de tour)", () => {
+  const novice = () => mkInstance(mkCard({
+    name: "Novice", mana_cost: 1, attack: 1, health: 1, keywords: ["vampirisme"] as never,
+    keyword_instances: [{ id: "vampirisme", mode: "end_of_turn", x: 1 }],
+    capabilities: [{ uid: "cw_0", targets: [], trigger: "on_end_of_turn", effectKind: "immediate", abilityId: "vampirisme", params: { x: 1 } }],
+  } as never));
+
+  function finDeTour(ennemies: CardInstance[], avecNovice = true): GameState {
+    const s = mkState();
+    if (avecNovice) s.players[0].board.push(novice());
+    s.players[1].board.push(...ennemies);
+    return applyAction(s, { type: "end_turn" } as GameAction);
+  }
+
+  it("draine une créature ennemie, le héros adverse n'est pas touché", () => {
+    // Témoin : même fin de tour sans le Novice (la pioche à vide coûte des PV).
+    const s0 = finDeTour([ennemie(5)], false);
+    const st = finDeTour([ennemie(5)]);
+    expect(st.players[1].hero.hp).toBe(s0.players[1].hero.hp);
+    expect(st.players[0].hero.hp).toBe(s0.players[0].hero.hp);
+    expect(st.players[1].board[0].currentHealth).toBe(4);
+    expect(st.players[0].board[0].currentHealth).toBe(2);
+  });
+
+  it("aucune créature ennemie : rien ne se passe", () => {
+    const s0 = finDeTour([], false);
+    const st = finDeTour([]);
+    expect(st.players[1].hero.hp).toBe(s0.players[1].hero.hp);
+    expect(st.players[0].hero.hp).toBe(s0.players[0].hero.hp);
+    expect(st.players[0].board[0].currentHealth).toBe(1);
+  });
+});
