@@ -151,8 +151,8 @@ export type Keyword =
   // Renforcement sous CONDITION de parité : le bonus ne tombe que si tous les
   // coûts RÉELS du plateau du déclencheur ont la même parité que le sien.
   | "discipline"
-  // +1 ATK ou +1 PV au HASARD, autant de fois qu'il y a d'AUTRES créatures
-  // Esprit de corps, tous clans confondus, déjà posées depuis la main par le contrôleur.
+  // +1 ATK ou +1 PV au HASARD, autant de fois que le contrôleur a DÉJÀ
+  // déclenché Esprit de corps pendant la partie.
   | "esprit_de_corps"
   // +X/+Y PAR CARTE ADVERSE (vrai propriétaire = l'adversaire) que le
   // contrôleur a jouée depuis la main pendant la partie. Bénéficiaire réglable
@@ -1387,22 +1387,12 @@ export interface CardInstance {
    *  `forceAncetresHealthBonus`. Optionnel : les instances sérialisées avant
    *  l'ajout du champ n'en disposent pas (lire avec ?? 0). */
   pureteHealthBonus?: number;
-  /** Esprit de corps : cette instance a elle-même incrémenté
-   *  `PlayerState.espritDeCorpsPlayed` en étant posée depuis la main.
-   *
-   *  Elle s'exclut donc de son propre décompte, à TOUS ses déclencheurs. Sans
-   *  ce drapeau la règle se contredirait : à l'entrée en jeu la créature est
-   *  comptée après avoir lu le compteur (elle gagne 0 quand elle est la
-   *  première), mais un déclenchement plus tardif (mort, tap, fin de tour) lit
-   *  un compteur qui l'inclut déjà — la première gagnerait 1.
-   *
-   *  Optionnel : les instances sérialisées avant l'ajout du champ n'en
-   *  disposent pas (lire avec `?? false`). */
+  /** @deprecated Ancien compteur d'Esprit de corps (créatures jouées), plus lu
+   *  ni écrit : gardé pour les snapshots `match_state` qui le portent encore. */
   espritDeCorpsCounted?: boolean;
   /** USURPATION : cette instance, carte ADVERSE posée depuis la main, a
    *  elle-même incrémenté `PlayerState.usurpationPlayed`. Elle s'exclut donc de
-   *  son propre décompte, à tous ses déclencheurs — même contrat que
-   *  `espritDeCorpsCounted`. Optionnel (lire avec `?? false`). */
+   *  son propre décompte, à tous ses déclencheurs. Optionnel (lire avec `?? false`). */
   usurpationCounted?: boolean;
   /** APPRENTISSAGE — le sort que cette créature a MÉMORISÉ.
    *
@@ -1824,34 +1814,22 @@ export interface PlayerState {
    *  l'état singleton d'un joueur qu'à partir de là. Jamais posé pour un joueur
    *  non singleton (rien ne se déclenche, rien n'est révélé). */
   singletonRevealed?: boolean;
-  /** Esprit de corps : combien de créatures portant ce mot-clé ce joueur a-t-il
-   *  POSÉES DEPUIS LA MAIN depuis le début de la partie, par clan. Le gain lit le
-   *  TOTAL, tous clans confondus (`espritDeCorpsPoints`) ; `""` = sans clan.
+  /** Esprit de corps : combien de fois ce joueur a DÉCLENCHÉ Esprit de corps
+   *  depuis le début de la partie (toutes porteuses, tous déclencheurs, gain
+   *  nul compris). Le gain d'un déclenchement = ce compteur AVANT incrément.
    *
-   *  Clé = nom canonique FR du clan, tel que stocké dans `cards.clan` — le clan
-   *  n'est pas un enum (cf. `clan-profile.ts`).
-   *
-   *  C'est un compteur d'HISTORIQUE, pas un décompte de plateau : il ne
-   *  redescend jamais, une créature morte ou renvoyée en main reste comptée.
-   *  Aucune structure existante ne pouvait le porter — `graveyard` est une zone
-   *  MUTABLE (Exhumation, Rappel, Seconde vie la vident) et `spellHistory` ne
-   *  couvre que les sorts.
-   *
-   *  « Posée depuis la main » exclut délibérément tout ce qui est mis en jeu
-   *  gratuitement par un effet : Seconde vie (posée depuis le cimetière),
-   *  Invocation X, Appel du clan, Résurrection, Exhumation, tokens de
-   *  Convocation, Dédoublement. Le moteur distingue déjà « jouée » de « mise en
-   *  jeu » (cf. le mal d'invocation par défaut d'Appel du clan).
-   *
-   *  Entre dans le hash de synchro comme tout champ de PlayerState : piloté
-   *  exclusivement par `playCard`, donc identique sur les deux clients.
-   *  Optionnel : les snapshots `match_state` d'avant l'ajout ne le portent pas
-   *  (lire avec `?? 0`). */
+   *  Historique : ne redescend jamais. Piloté exclusivement par
+   *  `resolveEspritDeCorps`, donc identique sur les deux clients ; entre dans le
+   *  hash de synchro comme tout champ de PlayerState. Optionnel : les snapshots
+   *  d'avant l'ajout ne le portent pas (lire avec `?? 0`). */
+  espritDeCorpsDeclenchements?: number;
+  /** @deprecated Ancien compteur (créatures jouées par clan), plus lu ni écrit :
+   *  gardé pour les snapshots `match_state` qui le portent encore. */
   espritDeCorpsPlayed?: Record<string, number>;
   /** USURPATION : nombre de cartes ADVERSES (vrai propriétaire = l'adversaire :
    *  conquises, volées puis renvoyées en main…) que ce joueur a JOUÉES depuis la
    *  main depuis le début de la partie, tous types confondus. Historique : ne
-   *  redescend jamais. Même contrat de synchro qu'`espritDeCorpsPlayed`.
+   *  redescend jamais. Même contrat de synchro qu'`espritDeCorpsDeclenchements`.
    *  Optionnel (lire avec `?? 0`). */
   usurpationPlayed?: number;
   /** TEMPO (Lune, Soleil) : combien de cartes ce joueur a-t-il JOUÉES depuis le

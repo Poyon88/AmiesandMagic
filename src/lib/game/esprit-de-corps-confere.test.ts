@@ -51,7 +51,7 @@ describe("Esprit de corps conféré", () => {
   it.each(["deck", "hand"] as const)("depuis la zone %s : la créature gagne à sa pose et compte pour la suite", (zone) => {
     initRNG(42);
     const s = mkState();
-    s.players[0].espritDeCorpsPlayed = { Autre: 2 };
+    s.players[0].espritDeCorpsDeclenchements = 2;
     const c = mkInstance(mkCard({ name: "Recrue", attack: 1, health: 1, mana_cost: 0, keywords: [] }));
     s.players[0][zone] = [c];
     const st = apresDon(s, zone, "on_play");
@@ -61,14 +61,13 @@ describe("Esprit de corps conféré", () => {
     const fin = jouer(st, recrue);
     const posee = fin.players[0].board.find((x) => x.card.name === "Recrue")!;
     expect(posee.currentAttack + posee.currentHealth).toBe(4);
-    expect(posee.espritDeCorpsCounted).toBe(true);
-    expect(Object.values(fin.players[0].espritDeCorpsPlayed ?? {}).reduce((n, v) => n + v, 0)).toBe(3);
+    expect(fin.players[0].espritDeCorpsDeclenchements).toBe(3);
   });
 
-  it("sur le plateau, part en fin de tour et compte toutes les porteuses jouées", () => {
+  it("sur le plateau, part en fin de tour et compte les déclenchements passés", () => {
     initRNG(42);
     const s = mkState();
-    s.players[0].espritDeCorpsPlayed = { Autre: 2 };
+    s.players[0].espritDeCorpsDeclenchements = 2;
     s.players[0].board = [mkInstance(mkCard({ name: "Vétérane", attack: 1, health: 1, keywords: [] }))];
     const st = apresDon(s, "board", "on_end_of_turn");
     const fin = applyAction(st, { type: "end_turn" } as GameAction);

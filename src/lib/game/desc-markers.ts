@@ -102,7 +102,7 @@ export const MARKERS_FR: Record<string, string> = {
   // calculer. Composée dans describeKeyword, comme Convocations multiples :
   // resolveMarkers ne fait qu'UNE passe, un {clan_de} renvoyé par un résolveur
   // resterait littéral à l'écran.
-  "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par créature avec Esprit de corps déjà jouée).",
+  "edc_compte": "Gagne {n} fois +1 ATK ou +1 PV au hasard (1 par Esprit de corps que vous avez déjà déclenché).",
   "scope_all": "à toutes vos unités",
   // Usurpation EN PARTIE : ce que la capacité donnerait si elle se
   // déclenchait maintenant, sous sa description (cf. usurpationNote).

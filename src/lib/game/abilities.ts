@@ -1197,16 +1197,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
       params: ["attack", "health"], needsTarget: true, targetType: "friendly_creature",
     },
   },
-  // Esprit de corps : récompense l'accumulation de porteurs d'un MÊME CLAN au
-  // fil de la partie. À chaque déclenchement, la créature gagne un point par
-  // AUTRE créature Esprit de corps, tous clans confondus, que son contrôleur a posée
-  // depuis la main — chaque point tiré au hasard entre +1 ATK et +1 PV.
+  // Esprit de corps : récompense la répétition. À chaque déclenchement, la
+  // créature gagne un point par Esprit de corps que son contrôleur a DÉJÀ
+  // déclenché pendant la partie (toutes porteuses, tous déclencheurs) — chaque
+  // point tiré au hasard entre +1 ATK et +1 PV.
   //
-  // Trois voisines existent, aucune ne fait cela : Loyauté compte les alliés de
-  // même RACE en jeu, Fierté du clan est une AURA de clan, Commandement une
-  // aura de faction. Toutes lisent le PLATEAU COURANT. Esprit de corps lit un
-  // HISTORIQUE de partie (PlayerState.espritDeCorpsPlayed) : le compteur ne
-  // redescend jamais, et tuer les porteurs ne le réduit pas.
+  // Loyauté, Fierté du clan, Commandement lisent le PLATEAU COURANT. Esprit de
+  // corps lit un HISTORIQUE de partie (PlayerState.espritDeCorpsDeclenchements) :
+  // le compteur ne redescend jamais, et tuer les porteurs ne le réduit pas.
   //
   // Pas de X paramétrable (arbitré avec l'auteur) : le pas est figé à +1, la
   // montée en puissance vient du NOMBRE de porteurs joués. Le libellé ne
@@ -1217,20 +1215,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // déclenchement. Sa place est donc dans CURATED_MULTIMODE_IDS, pas dans
   // AUTOMATIC_ABILITY_IDS ni dans recalculateAuras.
   //
-  // Créature uniquement : « créatures jouées » n'a pas de sens porté par un
-  // sort, qui n'a ni instance sur le plateau ni déclencheur autre que sa
-  // résolution.
+  // Créature uniquement : le gain se pose sur la porteuse ; un sort n'a ni
+  // instance sur le plateau ni déclencheur autre que sa résolution.
   esprit_de_corps: {
     id: "esprit_de_corps", label: "Esprit de corps", symbol: "🫂",
-    desc: "Gagne +1 ATK ou +1 PV au hasard par créature avec Esprit de corps déjà jouée.",
+    desc: "Gagne +1 ATK ou +1 PV au hasard par Esprit de corps que vous avez déjà déclenché.",
     applicable_to: ["creature"],
     creature: {
-      // Non scalable : la valeur vient du nombre de porteurs, pas d'un X. Le
-      // coût de base reste modeste — la première posée ne gagne rien du tout,
-      // et la capacité n'a de valeur que dans un deck qui l'empile, tous clans confondus.
+      // Non scalable : la valeur vient du nombre de déclenchements, pas d'un X.
+      // Le coût de base reste modeste — le premier déclenchement ne rapporte
+      // rien, et la capacité n'a de valeur que répétée.
       // À réajuster après essai en partie.
       cost: 4, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain",
-      desc: "Gagne +1 ATK ou +1 PV au hasard par créature avec Esprit de corps déjà jouée.",
+      desc: "Gagne +1 ATK ou +1 PV au hasard par Esprit de corps que vous avez déjà déclenché.",
     },
   },
   affaiblissement: {

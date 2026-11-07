@@ -210,7 +210,7 @@ export function describeKeyword(
   //
   // 0 point retombe volontairement sur la forme générique : « Gagne 0 fois »
   // serait la phrase la plus décourageante de la carte, alors que le compteur
-  // grimpera dès la prochaine posée.
+  // grimpera dès le prochain déclenchement.
   if (kw === "esprit_de_corps" && (ctx.espritCount ?? 0) > 0) {
     // `marker` retombe déjà sur MARKERS_FR quand la locale ne porte rien.
     const tmpl = marker("edc_compte", t) ?? "";

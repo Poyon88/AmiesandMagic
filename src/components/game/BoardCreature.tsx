@@ -170,7 +170,7 @@ function BoardCreature({
   const espritCount = useGameStore(s => {
     if (!s.gameState) return null;
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
-    return owner ? espritDeCorpsPoints(owner, creature) : null;
+    return owner ? espritDeCorpsPoints(owner) : null;
   });
   // Usurpation : cartes adverses jouées par le CONTRÔLEUR, la créature exclue
   // si elle s'y est comptée elle-même.

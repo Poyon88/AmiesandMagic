@@ -445,7 +445,7 @@
       },
       "esprit_de_corps": {
         "label": "Spirito di corpo",
-        "desc": "Ottiene +1 ATT o +1 PV a caso per ogni creatura con Spirito di corpo già giocata."
+        "desc": "Ottiene +1 ATT o +1 PV a caso per ogni Spirito di corpo che hai già attivato."
       },
       "presage": {
         "label": "Presagio",
@@ -2104,7 +2104,7 @@
       "ability": "una capacità",
       "scope": "a un'unità alleata (o a tutte)",
       "scope_target": "a un'unità alleata",
-      "edc_compte": "Ottiene {n} volte +1 ATT o +1 PV a caso (1 per ogni creatura con Spirito di corpo già giocata).",
+      "edc_compte": "Ottiene {n} volte +1 ATT o +1 PV a caso (1 per ogni Spirito di corpo che hai già attivato).",
       "usurpation_actuel": "Carte dell'avversario giocate: {n} — attualmente +{x}/+{y}.",
       "scope_all": "a tutte le vostre unità",
       "machine_part": " e {ability}",

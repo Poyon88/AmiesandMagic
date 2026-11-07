@@ -98,12 +98,11 @@ function HandCard({
     [card, gameState, localPlayerId, cardInstance.manaCostReduction],
   );
 
-  // Esprit de corps : combien de points cette carte gagnerait en arrivant.
-  // En main elle n'est pas encore comptée, donc le nombre affiché est le total
-  // complet — exactement ce qu'elle vaudra une fois posée.
+  // Esprit de corps : combien de points cette carte gagnerait si elle
+  // déclenchait maintenant (Esprit de corps déjà déclenchés par le joueur).
   const espritCount = useMemo(() => {
     const owner = gameState?.players.find(p => p.id === localPlayerId);
-    return owner ? espritDeCorpsPoints(owner, cardInstance) : null;
+    return owner ? espritDeCorpsPoints(owner) : null;
   }, [gameState, localPlayerId, card, cardInstance]);
 
   // Usurpation : en main, la carte ne s'est pas encore comptée — le nombre est

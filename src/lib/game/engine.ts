@@ -5560,29 +5560,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // effacerait ce qu'il vient d'apprendre.
     cardInstance.apprentissageSpell = undefined;
 
-    // Esprit de corps : le compteur d'HISTORIQUE du contrôleur, par clan.
-    //
-    // Il s'incrémente à la POSE, quel que soit le déclencheur porté par la
-    // créature — une Esprit de corps « à la mort » grossit la troupe dès son
-    // arrivée, même si elle ne gagnera rien avant de mourir.
-    //
-    // `!fromGraveyard` est la garde qui matérialise « posée depuis la main » :
-    // Seconde vie pose depuis le cimetière et ne compte pas, pas plus
-    // qu'Invocation X, Appel du clan, Résurrection ou un token — aucun de ces
-    // chemins ne passe par ici.
-    //
-    // Le drapeau est posé AVANT le bloc de déclenchement d'entrée en jeu :
-    // `espritDeCorpsPoints` retranche la source d'elle-même, donc l'ordre entre
-    // l'incrément et la lecture n'est pas load-bearing — c'est justement ce que
-    // le drapeau achète.
-    if (!fromGraveyard && hasKw(cardInstance, "esprit_de_corps")) {
-      const clan = cardInstance.card.clan ?? "";
-      player.espritDeCorpsPlayed = {
-        ...(player.espritDeCorpsPlayed ?? {}),
-        [clan]: (player.espritDeCorpsPlayed?.[clan] ?? 0) + 1,
-      };
-      cardInstance.espritDeCorpsCounted = true;
-    }
+    // Esprit de corps : plus rien à compter à la pose — le compteur est celui
+    // des DÉCLENCHEMENTS (cf. resolveEspritDeCorps).
 
     // ── On-summon triggers ──
 
@@ -10931,22 +10910,15 @@ function applyGloire(inst: CardInstance): void {
 // partie, et dont la RÉPARTITION vient du hasard. Deux fonctions, une pour
 // chaque moitié.
 
-/** Combien de points CETTE carte gagnerait si elle déclenchait maintenant.
+/** Combien de points une Esprit de corps de ce joueur gagnerait si elle
+ *  déclenchait maintenant : le nombre d'Esprit de corps qu'il a DÉJÀ déclenchés
+ *  pendant la partie (toutes porteuses, tous déclencheurs confondus).
  *
  *  Source unique du moteur ET de l'affichage (le « (2) » de la description est
- *  ce même nombre) : les deux ne peuvent donc pas se contredire à l'écran.
- *
- *  La créature s'exclut de son propre décompte dès qu'elle a été comptée, ce
- *  qui rend la règle identique à tous les déclencheurs : « une AUTRE créature
- *  Esprit de corps déjà jouée », TOUS clans confondus. En main, la carte n'est pas
- *  encore comptée et affiche donc le total complet — exactement ce qu'elle
- *  gagnera en arrivant. Sur le plateau elle affiche un de moins. */
-export function espritDeCorpsPoints(
-  owner: PlayerState,
-  inst?: Pick<CardInstance, "espritDeCorpsCounted"> | null,
-): number {
-  const played = Object.values(owner.espritDeCorpsPlayed ?? {}).reduce((n, v) => n + v, 0);
-  return Math.max(0, played - (inst?.espritDeCorpsCounted ? 1 : 0));
+ *  ce même nombre) : les deux ne peuvent donc pas se contredire à l'écran. Le
+ *  même nombre vaut pour toutes ses porteuses, en main comme sur le plateau. */
+export function espritDeCorpsPoints(owner: PlayerState): number {
+  return owner.espritDeCorpsDeclenchements ?? 0;
 }
 
 /** Résout Esprit de corps pour `source`, quel que soit le déclencheur.
@@ -10959,16 +10931,17 @@ export function espritDeCorpsPoints(
  *  est tombé. C'est le même parti pris que les dégâts point par point du
  *  scatter, qui utilisent le même canal.
  *
- *  No-op silencieux (et sans consommation de RNG) quand il n'y a aucun point à
- *  distribuer — c'est le cas de la toute première créature posée.
+ *  Le déclenchement est compté APRÈS le tirage : il ne profite qu'aux
+ *  déclenchements suivants. Il compte même quand il ne rapporte rien (le tout
+ *  premier gagne 0).
  *
  *  ⚠️ CONTRAT RNG, load-bearing : EXACTEMENT `points` appels à `rng()`, sur tous
  *  les chemins. Le flux aléatoire est partagé et fait partie de l'état répliqué
  *  — un appel de plus d'un côté décale les deux clients pour tout le reste de la
  *  partie. */
 function resolveEspritDeCorps(source: CardInstance, owner: PlayerState): void {
-  const points = espritDeCorpsPoints(owner, source);
-  if (points <= 0) return;
+  const points = espritDeCorpsPoints(owner);
+  owner.espritDeCorpsDeclenchements = points + 1;
   for (let i = 0; i < points; i++) {
     const enAttaque = rng() < 0.5;
     applyRenforcementSelf(source, enAttaque ? 1 : 0, enAttaque ? 0 : 1);
@@ -11172,15 +11145,15 @@ function resolveCuratedKeywordEffect(
     case "esprit_de_corps": {
       // Mort / attaque / tap / retour / fin de tour / pioche / PV bas : même
       // calcul qu'à l'invocation, lu à l'instant du déclenchement — le
-      // compteur a pu grossir depuis que la source est arrivée.
+      // compteur de déclenchements a pu grossir depuis que la source est arrivée.
       //
       // Contrairement à Discipline et Renforcement, le mode « mort » n'est pas
       // dégradé : le compteur est un historique du JOUEUR, pas une lecture du
       // plateau, donc il reste exact même quand la source vient de le quitter.
       // Le gain part en revanche au cimetière avec elle — comme ses voisines.
       //
-      // En « fin de tour » le bonus retombe à CHAQUE tour, et grossit à mesure
-      // que d'autres porteurs sont joués : l'empilement est voulu, pas un
+      // En « fin de tour » le bonus retombe à CHAQUE tour, et grossit à chaque
+      // déclenchement (le sien compris) : l'empilement est voulu, pas un
       // oubli de garde-fou.
       withComposedMode(inst?.mode, () => resolveEspritDeCorps(source, owner));
       return;

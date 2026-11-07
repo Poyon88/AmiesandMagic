@@ -81,7 +81,7 @@
 - 📯 **Appel du clan X** — Invocation : mettez en jeu gratuitement la première unité de même clan avec un coût inférieur ou égal à X depuis le dessus de votre deck.
 - 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
 - 📖 **Apprentissage X** — Retire un sort de coût ≤ X de votre main et le mémorise : la créature peut le lancer, autant de fois qu'elle peut s'activer, sans payer de mana (les coûts additionnels restent dus). X vide : n'importe quel coût
-- 🫂 **Esprit de corps** — Gagne +1 ATK ou +1 PV au hasard par autre créature avec Esprit de corps que vous avez déjà jouée depuis votre main.
+- 🫂 **Esprit de corps** — Gagne +1 ATK ou +1 PV au hasard par Esprit de corps que vous avez déjà déclenché.
 
 ## Sort uniquement (9)
 

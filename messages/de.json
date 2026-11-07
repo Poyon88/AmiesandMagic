@@ -445,7 +445,7 @@
       },
       "esprit_de_corps": {
         "label": "Korpsgeist",
-        "desc": "Erhält zufällig +1 ANG oder +1 LP für jede bereits gespielte Kreatur mit Korpsgeist."
+        "desc": "Erhält zufällig +1 ANG oder +1 LP für jeden Korpsgeist, den du bereits ausgelöst hast."
       },
       "presage": {
         "label": "Vorahnung",
@@ -2104,7 +2104,7 @@
       "ability": "eine Fähigkeit",
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
-      "edc_compte": "Erhält {n}-mal zufällig +1 ANG oder +1 LP (1 pro bereits gespielter Kreatur mit Korpsgeist).",
+      "edc_compte": "Erhält {n}-mal zufällig +1 ANG oder +1 LP (1 pro Korpsgeist, den du bereits ausgelöst hast).",
       "usurpation_actuel": "Gespielte gegnerische Karten: {n} — derzeit +{x}/+{y}.",
       "scope_all": "auf alle deine Einheiten",
       "machine_part": " und {ability}",

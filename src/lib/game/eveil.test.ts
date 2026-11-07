@@ -325,10 +325,7 @@ describe("arrivée en jeu", () => {
     expect(st.players[1].hand).toHaveLength(1);
   });
 
-  it("compte comme POSÉE DEPUIS LA MAIN pour Esprit de corps", () => {
-    // Contraste voulu avec Seconde vie, qui pose depuis le cimetière et ne
-    // compte pas : l'éveil n'est qu'un chemin de paiement différé, la carte a
-    // bien quitté la main du joueur.
+  it("l'arrivée par éveil déclenche Esprit de corps à l'entrée en jeu", () => {
     const { s, carte } = etat(creature({
       eveil_cost: 1, clan: CLAN,
       keywords: ["esprit_de_corps"] as never,
@@ -340,7 +337,7 @@ describe("arrivée en jeu", () => {
       type: "play_card", cardInstanceId: carte.instanceId, fromEveil: true,
     });
 
-    expect(st.players[0].espritDeCorpsPlayed?.[CLAN]).toBe(1);
+    expect(st.players[0].espritDeCorpsDeclenchements).toBe(1);
   });
 
   it("un SORT en éveil se résout avec la cible choisie À L'ARRIVÉE", () => {
