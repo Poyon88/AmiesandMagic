@@ -360,7 +360,7 @@ export const FACTIONS: Record<string, {
       "Kobolds": { statWeights: { atk: 0.95, def: 0.85 }, likelyKeywords: { "Rassemblement X": 0.60, "Solidarité X": 0.55, "Instinct de meute X": 0.50, "Convocation X": 0.45, "Bravoure": 0.40, "Fureur": 0.35, "Combustion": 0.30 } },
       // Géants : profil repris tel quel des Mercenaires, qu'ils quittent. Aucun
       // de ses mots-clés ne figure dans les interdits de la faction.
-      "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur": 0.40, "Carnage X": 0.30 } },
+      "Géants": { statWeights: { atk: 1.15, def: 1.30 }, likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Indestructible": 0.45, "Terreur X": 0.40, "Carnage X": 0.30 } },
       // Mammouths : le CONTRE-POIDS des Géants dans leur propre clan. Les
       // Géants tiennent le terrain (Provocation, Résistance, Indestructible) ;
       // les Mammouths le traversent — plus d'attaque, moins de défense, et des
@@ -371,7 +371,7 @@ export const FACTIONS: Record<string, {
       // Reste sous la moyenne d'attaque des factions offensives : c'est une
       // charge lourde, pas un assassin. Aucun mot-clé interdit de la faction
       // (Vol, Invisible, Esquive, Ombre, Traque, Pillage) n'est sollicité.
-      "Mammouths": { statWeights: { atk: 1.35, def: 1.10 }, likelyKeywords: { "Piétinement": 0.70, "Bravoure": 0.55, "Carnage X": 0.50, "Fureur": 0.45, "Terreur": 0.35, "Armure": 0.30 } },
+      "Mammouths": { statWeights: { atk: 1.35, def: 1.10 }, likelyKeywords: { "Piétinement": 0.70, "Bravoure": 0.55, "Carnage X": 0.50, "Fureur": 0.45, "Terreur X": 0.35, "Armure": 0.30 } },
     },
     clanProfiles: {
       "La Forge Ardente": { statWeights: { atk: 1.15, def: 1.05 }, likelyKeywords: { "Combustion": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Riposte X": 0.40, "Catalyse": 0.40, "Bravoure": 0.35 } },
@@ -382,7 +382,7 @@ export const FACTIONS: Record<string, {
       // et la seconde race n'aurait plus été qu'un habillage. Chacune pilote
       // donc ses propres poids ; les mots-clés du clan, eux, s'appliquent aux
       // deux (c'est là que vit l'identité commune du clan).
-      "Clan des Premiers Géants": { likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur": 0.35 } },
+      "Clan des Premiers Géants": { likelyKeywords: { "Provocation": 0.65, "Résistance X": 0.60, "Armure": 0.55, "Ancré": 0.45, "Indestructible": 0.40, "Terreur X": 0.35 } },
       "La Guilde des Ingénieurs": { statWeights: { atk: 0.80, def: 1.00 }, likelyKeywords: { "Convocation X": 0.55, "Catalyse": 0.50, "Divination": 0.45, "Tactique X": 0.40, "Inspiration X": 0.40, "Contresort X": 0.35, "Riposte X": 0.30 } },
     },
   },
@@ -488,7 +488,7 @@ export const FACTIONS: Record<string, {
       // méchants (Souffle de feu X) et apporte la prospérité (Afflux X).
       "Qilins": { likelyKeywords: { "Bénédiction": 0.60, "Pureté +X/+Y": 0.55, "Bouclier": 0.50, "Présage": 0.45, "Transcendance": 0.40, "Souffle de feu X": 0.35, "Afflux X": 0.30 } },
       "Tengu": { likelyKeywords: { "Vol": 0.85, "Tactique X": 0.55, "Riposte X": 0.45, "Tempête X": 0.40, "Permutation": 0.40, "Mimique": 0.35 } },
-      "Oni": { likelyKeywords: { "Terreur": 0.60, "Fureur": 0.55, "Piétinement": 0.50, "Gloire +X/+Y": 0.45, "Persécution X": 0.40, "Régénération X": 0.35, "Carnage X": 0.30 } },
+      "Oni": { likelyKeywords: { "Terreur X": 0.60, "Fureur": 0.55, "Piétinement": 0.50, "Gloire +X/+Y": 0.45, "Persécution X": 0.40, "Régénération X": 0.35, "Carnage X": 0.30 } },
       "Nagas": { likelyKeywords: { "Contresort X": 0.55, "Régénération X": 0.55, "Esquive": 0.50, "Divination": 0.50, "Canalisation": 0.45, "Augure": 0.40, "Liaison de vie": 0.35, "Prescience X": 0.30 } },
     },
     clanProfiles: {
@@ -610,7 +610,7 @@ export const FACTIONS: Record<string, {
       //    (Terreur). Pas de Vol : ailée dans le mythe, mais assise sur son
       //    rocher — le contrepoint immobile du pégase.
       "Pégases": { likelyKeywords: { "Vol": 0.90, "Loyauté": 0.60, "Raid": 0.55, "Bénédiction": 0.50, "Inspiration X": 0.40, "Piétinement": 0.35 } },
-      "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort X": 0.45, "Provocation": 0.40, "Terreur": 0.40, "Ancré": 0.35 } },
+      "Sphinx": { likelyKeywords: { "Présage": 0.55, "Divination": 0.50, "Malédiction": 0.50, "Contresort X": 0.45, "Provocation": 0.40, "Terreur X": 0.40, "Ancré": 0.35 } },
       // YÉTIS (2026-10-31) — le géant des neiges, rattaché au SEUL Royaume du
       // Nord. Même arbitrage que Pégases et Sphinx : SANS statWeights, le clan
       // garde son corps (1.15/0.90), qui sied déjà à une brute des cimes.
@@ -619,7 +619,7 @@ export const FACTIONS: Record<string, {
       // des neiges), écrase (Piétinement), s'enrage (Fureur), cicatrise sous sa
       // fourrure (Régénération X) et encaisse le froid (Résistance X). Aucun
       // mot-clé du clan, et aucun recoupement avec l'ombrelle de faction.
-      "Yétis": { likelyKeywords: { "Paralysie": 0.55, "Terreur": 0.50, "Piétinement": 0.50, "Fureur": 0.45, "Régénération X": 0.40, "Résistance X": 0.35 } },
+      "Yétis": { likelyKeywords: { "Paralysie": 0.55, "Terreur X": 0.50, "Piétinement": 0.50, "Fureur": 0.45, "Régénération X": 0.40, "Résistance X": 0.35 } },
     },
     clanProfiles: {
       // Conquête X en tête : signature du clan (compteur dépensé en découvertes
@@ -734,7 +734,7 @@ export const FACTIONS: Record<string, {
       "Sirènes": { likelyKeywords: { "Domination": 0.60, "Canalisation": 0.55, "Malédiction": 0.50, "Contresort X": 0.45, "Augure": 0.40, "Ombre": 0.30 } },
       // Léviathans : le colosse des abysses. Fureur (0.40) et Carnage X (0.30)
       // doivent eux aussi dépasser l'ombrelle.
-      "Léviathans": { likelyKeywords: { "Piétinement": 0.60, "Terreur": 0.55, "Dévoration": 0.50, "Fureur": 0.50, "Carnage X": 0.40, "Indestructible": 0.35 } },
+      "Léviathans": { likelyKeywords: { "Piétinement": 0.60, "Terreur X": 0.55, "Dévoration": 0.50, "Fureur": 0.50, "Carnage X": 0.40, "Indestructible": 0.35 } },
       // Le Socle du Monde suit la MÊME règle que l'Eau, et pour la même raison :
       // il héberge « Élémentaire », donc il ne peut pas céder ses `statWeights`.
       // Les trois races partagent son corps 0.85/1.50 et se séparent aux pouvoirs.
@@ -746,7 +746,7 @@ export const FACTIONS: Record<string, {
       "Troglodytes": { likelyKeywords: { "Creuser X": 0.60, "Traque": 0.55, "Ombre": 0.50, "Invisible": 0.45, "Instinct de meute X": 0.40, "Célérité": 0.30 } },
       // Bêtes Chtoniennes : ce qui remonte de la roche. Fureur (0.40) et Carnage X
       // (0.30) doivent dépasser l'ombrelle.
-      "Bêtes Chtoniennes": { likelyKeywords: { "Piétinement": 0.60, "Fureur": 0.55, "Terreur": 0.50, "Convocation X": 0.50, "Carnage X": 0.45, "Persécution X": 0.35 } },
+      "Bêtes Chtoniennes": { likelyKeywords: { "Piétinement": 0.60, "Fureur": 0.55, "Terreur X": 0.50, "Convocation X": 0.50, "Carnage X": 0.45, "Persécution X": 0.35 } },
       // Salamandres : même règle encore une fois — La Colère des Flammes héberge
       // « Élémentaire », donc elle garde son corps 1.40/0.75 et la race n'en
       // déclare aucun. Son registre est celui de ce qui SURVIT au feu là où le
@@ -787,7 +787,7 @@ export const FACTIONS: Record<string, {
     description: "Soldats de fortune sans allégeance. Polyvalents et disponibles pour tous les decks.",
     raceProfiles: {
       "Ogres": { statWeights: { atk: 1.25, def: 1.10 }, likelyKeywords: { "Gloire +X/+Y": 0.55, "Fureur": 0.50, "Provocation": 0.40, "Résistance X": 0.35, "Pillage X": 0.30 } },
-      "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
+      "Dragons": { statWeights: { atk: 1.40, def: 0.90 }, likelyKeywords: { "Vol": 0.90, "Souffle de feu X": 0.70, "Terreur X": 0.60, "Fureur": 0.50, "Indestructible": 0.40, "Transcendance": 0.35, "Vampirisme X": 0.25 } },
       "Chiens": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Raid": 0.70, "Traque": 0.55, "Instinct de meute X": 0.60, "Loyauté": 0.50, "Esquive": 0.40, "Gloire +X/+Y": 0.35, "Première Frappe": 0.30 } },
       "Phoenix": { statWeights: { atk: 1.20, def: 0.95 }, likelyKeywords: { "Vol": 0.80, "Résurrection": 0.70, "Souffle de feu X": 0.55, "Régénération X": 0.50, "Bouclier": 0.40, "Gloire +X/+Y": 0.35, "Fureur": 0.30, "Cycle éternel": 0.45 } },
       "Anges": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Vol": 0.85, "Bouclier": 0.60, "Bénédiction": 0.55, "Commandement X": 0.50, "Première Frappe": 0.45, "Drain de vie": 0.40, "Provocation": 0.35, "Résistance X": 0.30 } },
@@ -821,7 +821,7 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.05, def: 0.95 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur": 0.55, "Rappel X": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération X": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
+    likelyKeywords: { "Poison": 0.65, "Drain de vie": 0.60, "Nécrophagie": 0.55, "Terreur X": 0.55, "Rappel X": 0.55, "Exhumation X": 0.55, "Maléfice": 0.50, "Ombre du passé": 0.50, "Profanation X": 0.50, "Vampirisme X": 0.50, "Régénération X": 0.45, "Héritage du cimetière": 0.45, "Résurrection": 0.40, "Pacte de sang": 0.40, "Convocation X": 0.40, "Liaison de vie": 0.35, "Corruption": 0.30, "Domination": 0.30, "Vol": 0.15 },
     forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Insatiables et corrompus : résurrection, drain de vie et magie du cimetière.",
     // La Cour Écarlate héberge CINQ races (le clan le plus peuplé du jeu) : elle
@@ -843,7 +843,7 @@ export const FACTIONS: Record<string, {
       "Ghoules": { likelyKeywords: { "Célérité": 0.55, "Paralysie": 0.50, "Dévoration": 0.45, "Fureur": 0.45, "Traque": 0.40, "Persécution X": 0.35, "Carnage X": 0.30 } },
       // Vampires : reprise EXACTE des lignes retirées du clan, pour que la
       // génération d'un Vampire de la Cour Écarlate reste identique au bit près.
-      "Vampires": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Célérité": 0.45, "Régénération X": 0.45, "Terreur": 0.35, "Vol": 0.30 } },
+      "Vampires": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Célérité": 0.45, "Régénération X": 0.45, "Terreur X": 0.35, "Vol": 0.30 } },
       "Homuncules de Sang": { statWeights: { atk: 1.10, def: 0.80 }, likelyKeywords: { "Sacrifice": 0.55, "Catalyse": 0.45, "Liaison de vie": 0.45, "Solidarité X": 0.40, "Corruption": 0.35 } },
       "Gargouilles": { statWeights: { atk: 0.95, def: 1.35 }, likelyKeywords: { "Armure": 0.65, "Ancré": 0.55, "Provocation": 0.55, "Résistance X": 0.50, "Riposte X": 0.45, "Vol": 0.40, "Indestructible": 0.25 } },
       "Dhampirs": { statWeights: { atk: 1.20, def: 1.00 }, likelyKeywords: { "Traque": 0.60, "Première Frappe": 0.55, "Précision": 0.50, "Sang mêlé": 0.50, "Esquive": 0.45, "Double Attaque": 0.35 } },
@@ -903,7 +903,7 @@ export const FACTIONS: Record<string, {
       // présage de mort, que le Dullahan porte autant que la Banshee. Garder
       // Paralysie ici évite en prime de la faire apparaître dans un profil de
       // RACE, où un test la réserve à la Ghoule pour toute la Nécropole.
-      "Le Voile Hurlant": { likelyKeywords: { "Terreur": 0.60, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
+      "Le Voile Hurlant": { likelyKeywords: { "Terreur X": 0.60, "Maléfice": 0.45, "Malédiction": 0.40, "Paralysie": 0.35 } },
       // Pas de `statWeights` : chacune de ses cinq races porte le sien (cf. le
       // commentaire ci-dessus). Ne PAS les remettre — la cascade choisit un
       // objet entier et les quatre nouvelles races redeviendraient mort-nées.
@@ -937,16 +937,16 @@ export const FACTIONS: Record<string, {
     ],
     statWeights: { atk: 1.15, def: 0.90 },
     guaranteedKeywords: [],
-    likelyKeywords: { "Fureur": 0.50, "Traque": 0.50, "Gloire +X/+Y": 0.45, "Poison": 0.45, "Sacrifice": 0.45, "Terreur": 0.45, "Invisible": 0.40, "Ombre": 0.40, "Malédiction": 0.40, "Pillage X": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Maléfice": 0.35, "Pacte de sang": 0.35, "Drain de vie": 0.35, "Corruption": 0.30, "Convocation X": 0.30, "Domination": 0.30, "Vol": 0.20 },
+    likelyKeywords: { "Fureur": 0.50, "Traque": 0.50, "Gloire +X/+Y": 0.45, "Poison": 0.45, "Sacrifice": 0.45, "Terreur X": 0.45, "Invisible": 0.40, "Ombre": 0.40, "Malédiction": 0.40, "Pillage X": 0.40, "Persécution X": 0.40, "Carnage X": 0.35, "Maléfice": 0.35, "Pacte de sang": 0.35, "Drain de vie": 0.35, "Corruption": 0.30, "Convocation X": 0.30, "Domination": 0.30, "Vol": 0.20 },
     forbiddenKeywords: ["Loyauté", "Commandement X", "Bouclier", "Bénédiction", "Bravoure"],
     description: "Toutes les forces du Chaos unies : horde organisée, cour démoniaque, corrompus du poison et élite déchue.",
     raceProfiles: {
-      "Démons": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Ombre": 0.45, "Vol": 0.30, "Carnage X": 0.40, "Persécution X": 0.45 } },
+      "Démons": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur X": 0.50, "Ombre": 0.45, "Vol": 0.30, "Carnage X": 0.40, "Persécution X": 0.45 } },
       "Araignées Géantes": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.75, "Esquive": 0.50, "Invisible": 0.45 } },
     },
     clanProfiles: {
       "Les Cohortes Sanglantes": { statWeights: { atk: 1.25, def: 0.90 }, likelyKeywords: { "Traque": 0.55, "Entrainement X": 0.50, "Gloire +X/+Y": 0.50, "Fureur": 0.45, "Catalyse": 0.45, "Convocation X": 0.40, "Entraide (Race)": 0.40, "Régénération X": 0.35, "Provocation": 0.35, "Célérité": 0.35, "Sacrifice": 0.30 } },
-      "Les Princes des Abîmes": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur": 0.50, "Persécution X": 0.45, "Pacte de sang": 0.40, "Carnage X": 0.40, "Vol": 0.30 } },
+      "Les Princes des Abîmes": { statWeights: { atk: 1.35, def: 0.80 }, likelyKeywords: { "Fureur": 0.65, "Sacrifice": 0.55, "Terreur X": 0.50, "Persécution X": 0.45, "Pacte de sang": 0.40, "Carnage X": 0.40, "Vol": 0.30 } },
       "La Forêt Maudite": { statWeights: { atk: 1.10, def: 0.90 }, likelyKeywords: { "Poison": 0.65, "Invisible": 0.55, "Ombre": 0.50, "Malédiction": 0.50, "Esquive": 0.45, "Drain de vie": 0.40 } },
       "La Garde Noire": { statWeights: { atk: 1.10, def: 1.15 }, likelyKeywords: { "Armure": 0.60, "Résistance X": 0.55, "Fureur": 0.45, "Provocation": 0.45, "Maléfice": 0.40, "Riposte X": 0.40 } },
     },

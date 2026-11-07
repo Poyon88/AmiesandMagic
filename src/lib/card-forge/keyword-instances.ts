@@ -97,6 +97,7 @@ const LIBELLE_RETOUR_FORCE: Record<string, string> = {
   // d'avant le passage au X) est inséré APRÈS la base dérivée et l'emporterait,
   // décochant la case à la réédition d'un token — capacité perdue en silence.
   commandement: "Commandement X",
+  terreur: "Terreur X",
   apprentissage: "Apprentissage X",
 };
 

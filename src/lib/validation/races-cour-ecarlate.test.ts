@@ -110,7 +110,7 @@ describe("table de mots-clés — le clan garde le noyau, les races le reste", (
 
   it("les Vampires récupèrent à l'identique ce que le clan a lâché", () => {
     expect(prof("Vampires").likelyKeywords).toEqual({
-      "Célérité": 0.45, "Régénération X": 0.45, "Terreur": 0.35, "Vol": 0.30,
+      "Célérité": 0.45, "Régénération X": 0.45, "Terreur X": 0.35, "Vol": 0.30,
     });
   });
 

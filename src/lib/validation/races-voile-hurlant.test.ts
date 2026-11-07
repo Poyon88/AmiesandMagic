@@ -147,7 +147,7 @@ describe("dégraissage PARTIEL de la table de clan", () => {
     // le Dullahan les porte autant que la Banshee. Les descendre aurait forcé à
     // les recopier cinq fois.
     expect(Object.keys(clan().likelyKeywords ?? {}).sort()).toEqual([
-      "Malédiction", "Maléfice", "Paralysie", "Terreur",
+      "Malédiction", "Maléfice", "Paralysie", "Terreur X",
     ]);
   });
 

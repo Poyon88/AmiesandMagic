@@ -111,8 +111,8 @@
         "desc": "Défaussez une carte de votre main, puis piochez deux cartes."
       },
       "terreur": {
-        "label": "Terreur",
-        "desc": "Les unités adverses perdent 1 ATK en présence de cette carte."
+        "label": "Terreur X",
+        "desc": "Les unités adverses perdent X ATK en présence de cette carte."
       },
       "pauvrete": {
         "label": "Pauvreté X",

@@ -461,7 +461,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
   pillage: "Pillage X", riposte: "Riposte X", chant: "Chant", lune: "Lune X", soleil: "Soleil X",
   rappel: "Rappel X", combustion: "Combustion",
-  terreur: "Terreur", pauvrete: "Pauvreté X", armure: "Armure",
+  terreur: "Terreur X", pauvrete: "Pauvreté X", armure: "Armure",
   commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
   canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", neutralisation: "Neutralisation", transformation: "Transformation", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",

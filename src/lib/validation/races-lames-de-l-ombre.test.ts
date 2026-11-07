@@ -83,7 +83,7 @@ describe("tables de pouvoirs — c'est elles qui distinguent les deux yōkai", (
   });
 
   it("l'oni terrifie, s'enrage et enfonce — rien de furtif", () => {
-    expect(pouvoirs("Oni")).toEqual(expect.arrayContaining(["Terreur", "Fureur", "Piétinement"]));
+    expect(pouvoirs("Oni")).toEqual(expect.arrayContaining(["Terreur X", "Fureur", "Piétinement"]));
     for (const furtif of ["Ombre", "Invisible", "Esquive", "Vol"]) {
       expect(pouvoirs("Oni"), furtif).not.toContain(furtif);
     }

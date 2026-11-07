@@ -276,11 +276,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
 
   // ─── Creature-only — Tier 2 ───────────────────────────────────────────────
+  // TERREUR X — `cost` inchangé : X = 1 garde le prix de l'ancien forfait. Comme
+  // Commandement, une aura de plateau est linéaire en X, d'où un escompte faible.
+  // `costPerX` est à revoir après essai.
   terreur: {
-    id: "terreur", label: "Terreur", symbol: "👁️",
-    desc: "Les unités adverses perdent 1 ATK en présence de cette carte.",
+    id: "terreur", label: "Terreur X", symbol: "👁️",
+    desc: "Les unités adverses perdent X ATK en présence de cette carte.",
     applicable_to: ["creature"],
-    creature: { cost: 11, costPerX: 0, se: 2.5, minTier: 2, scalable: false, zone: "Terrain" },
+    creature: { cost: 11, costPerX: 9, se: 2.5, minTier: 2, scalable: true, zone: "Terrain" },
   },
   // Drawback dynamique : X n'est PAS choisi à la forge mais calculé en jeu
   // (= taille de la main adverse), d'où costPerX 0 / scalable false. Câblé
@@ -1754,6 +1757,8 @@ export interface DerivedSpellKeywordDef {
 export const KEYWORD_DEFAULT_X: Readonly<Record<string, number>> = {
   // Aura de faction, forfaitaire à +1/+1 jusqu'au 2026-09-19.
   commandement: 1,
+  // Malus d'ATK de l'aura, forfaitaire à 1 jusqu'au 2026-11-07.
+  terreur: 1,
   // PV rendus au début du tour, forfaitaires à 2 jusqu'au 2026-09-19.
   regeneration: 2,
 };

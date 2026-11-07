@@ -4063,12 +4063,22 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
       .reduce((s, a) => s + a.stacks, 0);
   const playerCommandementStacks = heroAuraStacks(player, "commandement");
   const opponentCommandementStacks = heroAuraStacks(opponent, "commandement");
-  const playerTerreurStacks = heroAuraStacks(player, "terreur");
-  const opponentTerreurStacks = heroAuraStacks(opponent, "terreur");
+  // Un emblème de Terreur X vaut X par pile.
+  const emblemesTerreur = (p: PlayerState): number =>
+    (p.emblems ?? [])
+      .filter(a => a.abilityId === "terreur")
+      .reduce((s, a) => s + a.stacks * (a.params?.amount ?? KEYWORD_DEFAULT_X.terreur), 0);
 
-  // Terreur: enemy units -1 ATK per terreur unit (board) + per hero aura stack
-  const playerTerreurCount = player.board.filter(c => hasKw(c, "terreur")).length + playerTerreurStacks;
-  const opponentTerreurCount = opponent.board.filter(c => hasKw(c, "terreur")).length + opponentTerreurStacks;
+  // TERREUR X : les unités ennemies perdent X ATK par porteur, X lu sur chacun,
+  // plus les emblèmes de Terreur de son camp.
+  const terreurDe = (p: PlayerState): number => p.board
+    .filter(c => hasKw(c, "terreur"))
+    .reduce((total, c) => {
+      const propre = getKwX(c, "terreur", undefined, 0);
+      return total + (propre > 0 ? propre : (c.grantedKeywordX["terreur"] ?? KEYWORD_DEFAULT_X.terreur));
+    }, 0);
+  const playerTerreurCount = terreurDe(player) + emblemesTerreur(player);
+  const opponentTerreurCount = terreurDe(opponent) + emblemesTerreur(opponent);
   for (const c of opponent.board) {
     c.currentAttack = Math.max(0, c.currentAttack - playerTerreurCount);
   }

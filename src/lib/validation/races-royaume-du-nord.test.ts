@@ -58,7 +58,7 @@ describe("le clan GARDE ses stats", () => {
 
 describe("table de pouvoirs", () => {
   it("le yéti glace, épouvante et écrase", () => {
-    expect(pouvoirs()).toEqual(expect.arrayContaining(["Paralysie", "Terreur", "Piétinement"]));
+    expect(pouvoirs()).toEqual(expect.arrayContaining(["Paralysie", "Terreur X", "Piétinement"]));
   });
 
   it("ne double AUCUN pouvoir du clan (le poids de clan gagnerait, ligne morte)", () => {
