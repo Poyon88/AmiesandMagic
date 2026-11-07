@@ -45,6 +45,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
   "content.debuff": "inflige -{x}/-{y}",
   "content.destroy": "détruit",
+  "content.domination": "domine",
+  "domination.limit": "dans la limite des places",
   "content.bounce": "renvoie en main",
   "content.paralyze": "paralyse",
   // Entrave X : la durée se place APRÈS la cible (« paralyse une unité
@@ -354,6 +356,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.usurpation": "choisissez une créature à renforcer",
   "choice.debuff": "choisissez une créature à affaiblir",
   "choice.destroy": "choisissez une créature à détruire",
+  "choice.domination": "choisissez une créature à dominer",
   "choice.bounce": "choisissez une créature à renvoyer en main",
   "choice.paralyze": "choisissez une créature à paralyser",
   "choice.poison": "choisissez une créature à empoisonner",
@@ -431,6 +434,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "buff": return { symbol: "⬆️", keyword: "spell_renforcement" };
     case "debuff": return { symbol: "🔻", keyword: "affaiblissement" };
     case "destroy": return { symbol: "☠️", keyword: "spell_execution" };
+    case "domination": return { symbol: "👁️‍🗨️", keyword: "spell_domination" };
     case "bounce": return { symbol: "🔼", keyword: "spell_remontee" };
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
     case "poison": return { symbol: KEYWORD_SYMBOLS.poison, keyword: "poison" };
@@ -692,6 +696,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "usurpation": return frag(t, "content.usurpation", { x: xAff, y: yAff });
     case "debuff": return frag(t, "content.debuff", { x: xAff, y: yAff });
     case "destroy": return frag(t, "content.destroy");
+    case "domination": return frag(t, "content.domination");
     case "bounce": return frag(t, "content.bounce");
     case "paralyze": return frag(t, "content.paralyze");
     case "transformation": return frag(t, "content.transformation");
@@ -906,7 +911,7 @@ function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "bounce", "paralyze", "poison", "silence", "transformation"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "silence", "transformation"]);
 
 /** Libellé d'une appartenance de cible.
  *
@@ -1125,7 +1130,9 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
         eff.content === "grant_keyword" && cap.trigger === "on_play"),
     ].filter(Boolean).join(" ");
   const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
-    : eff.content === "transformation" ? carteDArrivee(eff, t) : "";
+    : eff.content === "transformation" ? carteDArrivee(eff, t)
+    : eff.content === "siphon" ? soinSiphonTexte(eff, t)
+    : eff.content === "domination" && eff.target?.count !== 1 ? frag(t, "domination.limit") : "";
   const phraseCorps = duree ? `${body} ${duree}` : body;
   const lead = describeEmblemLead(cap, t);
   // Sous un en-tête d'emblème, le corps est une SUBORDONNÉE (« … entre en jeu :

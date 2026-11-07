@@ -659,6 +659,13 @@ export interface Capability {
 
 export type ComposedEffectContent =
   | "deal_damage"
+  // SIPHON : les dégâts de `deal_damage`, plus X PV rendus au héros du contrôleur
+  // pour chaque cible touchée (1 par point en répartition au hasard).
+  | "siphon"
+  // DOMINATION : prise de contrôle PERMANENTE de chaque unité ennemie visée,
+  // dans la limite des places. Le plafond de coût est `target.maxCost` ; X n'a
+  // aucun rôle.
+  | "domination"
   | "heal"
   | "buff"
   | "debuff"

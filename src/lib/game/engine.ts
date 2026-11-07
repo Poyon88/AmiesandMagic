@@ -1808,6 +1808,7 @@ function applyComposedToUnit(
     // X = nombre de tours (Entrave X), lu RÉSOLU (Chant, Lune/Soleil…) ;
     // magnitude absente ⇒ 1, la durée des cartes d'avant X.
     case "paralyze": paralyser(u, composed.magnitude?.x == null ? 1 : x); break;
+    case "domination": prendreLeControle(u, owner, opponent); break;
     case "silence": appliquerSilence(u); break;
     // TRANSFORMATION : l'unité devient une des cartes désignées — tirée au sort
     // (rng semé, donc identique chez les deux joueurs) quand il y en a
@@ -1902,9 +1903,13 @@ function selectComposedTargets(
   // Unité retirée du pool AVANT la sélection (cf. exclutPorteuse) : retirée
   // après, un tirage au hasard tombé sur elle ne ferait plus rien du tout.
   exclue?: CardInstance | null,
+  // Domination portée par un SORT : Transcendance l'arrête même au hasard ou en
+  // « toutes », et le tirage doit se faire parmi les cibles volables.
+  sansTranscendance = false,
 ): ComposedTargetRef[] {
   const pool = buildComposedPool(spec, owner, opponent)
-    .filter((ref) => !exclue || ref.kind !== "unit" || ref.unit !== exclue);
+    .filter((ref) => !exclue || ref.kind !== "unit" || ref.unit !== exclue)
+    .filter((ref) => !sansTranscendance || ref.kind !== "unit" || !hasKw(ref.unit, "transcendance"));
 
   if (spec.count === "all") return pool;
   const n = typeof spec.count === "number" ? Math.max(0, spec.count) : 1;
@@ -2605,9 +2610,10 @@ function resolveComposedEffect(
   const harmful =
     estDegatsComposes(composed.content) || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze" ||
-    composed.content === "poison";
+    composed.content === "poison" || composed.content === "domination";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful,
-    exclutPorteuse(composed, opts?.trigger, source))) {
+    exclutPorteuse(composed, opts?.trigger, source),
+    composed.content === "domination" && fromSpell)) {
     if (t.kind === "hero") {
       applyComposedToHero(composed.content, t.hero, x, source);
       recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);

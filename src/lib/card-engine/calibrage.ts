@@ -23,8 +23,8 @@ export type CarteCalibree = CarteNotee & Pick<Card, "id" | "name"> & Partial<Pic
 
 /** Contenus composés rattachés à la capacité nommée équivalente (a priori). */
 const EQUIVALENCE_COMPOSE: Record<string, string> = {
-  deal_damage: "impact", heal: "guerison", buff: "renforcement", debuff: "affaiblissement",
-  draw_cards: "inspiration", summon_token: "convocation_simple", gain_mana: "afflux", destroy: "execution",
+  deal_damage: "impact", siphon: "siphon", heal: "guerison", buff: "renforcement", debuff: "affaiblissement",
+  draw_cards: "inspiration", summon_token: "convocation_simple", gain_mana: "afflux", destroy: "execution", domination: "domination",
   bounce: "boomerang", paralyze: "entrave", grant_keyword: "conferer", transformation: "metamorphose",
   appel: "appel_du_clan", poison: "poison", exhumation: "exhumation", rappel: "rappel",
   invocation: "invocation", appel_supreme: "appel_supreme", tuteur: "tuteur", epargne: "epargne",

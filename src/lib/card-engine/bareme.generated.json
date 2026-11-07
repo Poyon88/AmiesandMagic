@@ -1202,6 +1202,18 @@
     }
   },
   "composes": {
+    "domination": {
+      "base": 30.83,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
+    "siphon": {
+      "base": 6.66,
+      "perX": 5.23,
+      "perY": 0,
+      "n": 0
+    },
     "deal_damage": {
       "base": 6.66,
       "perX": 2.94,

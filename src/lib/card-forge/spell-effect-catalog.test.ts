@@ -10,7 +10,7 @@ import { composedKeywordName, describeComposedCap } from "@/lib/game/composed-di
 import type { Capability, ComposedEffect } from "@/lib/game/types";
 
 const CONTENTS = new Set([
-  "deal_damage", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
+  "deal_damage", "siphon", "domination", "heal", "buff", "debuff", "draw_cards", "discard", "summon_token",
   "gain_mana", "destroy", "bounce", "paralyze", "grant_keyword", "exhumation",
   "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "poison", "invocation", "epargne", "foi", "conquete", "exploration", "incineration", "devoration", "retour_differe",
   "appel", "rappel", "tuteur", "appel_supreme", "silence", "dechainement", "transformation", "forge",

@@ -864,6 +864,14 @@
         "on_wound": "Blessure",
         "on_delay": "Retard {d}"
       },
+      "siphon": {
+        "heal": "et soigne votre héros de {x} PV",
+        "heal_each": "et soigne votre héros de {x} PV par cible touchée",
+        "heal_scatter": "et soigne votre héros de {x} PV au total"
+      },
+      "domination": {
+        "limit": "dans la limite des places"
+      },
       "content": {
         "deal_damage_one": "inflige {x} dégât",
         "deal_damage_many": "inflige {x} dégâts",
@@ -872,6 +880,7 @@
         "usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
         "debuff": "inflige -{x}/-{y}",
         "destroy": "détruit",
+        "domination": "domine",
         "bounce": "renvoie en main",
         "paralyze": "paralyse",
         "transformation": "transforme",
@@ -1001,6 +1010,8 @@
       "choice": {
         "transformation": "choisissez une créature à transformer",
         "deal_damage": "choisissez une cible à blesser",
+        "siphon": "choisissez une cible à siphonner",
+        "domination": "choisissez une créature à dominer",
         "heal": "choisissez une cible à soigner",
         "buff": "choisissez une créature à renforcer",
         "usurpation": "choisissez une créature à renforcer",
@@ -2584,6 +2595,8 @@
     "target_scope_hint_all_allies": "Frappe toutes les unités alliées au lieu d'une cible choisie (ni héros ni objets).",
     "target_scope_hint_all": "Frappe toutes les unités des deux camps au lieu d'une cible choisie (ni héros ni objets).",
     "content_deal_damage": "Infliger des dégâts",
+    "content_siphon": "Siphon X (dégâts + soin du héros)",
+    "content_domination": "Domination (prendre le contrôle)",
     "content_heal": "Soigner",
     "content_buff": "Buff +X/+Y",
     "content_usurpation": "Usurpation +X/+Y (par carte adverse jouée)",

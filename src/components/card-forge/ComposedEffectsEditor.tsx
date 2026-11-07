@@ -40,6 +40,8 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "usurpation", l: "Usurpation +X/+Y (par carte adverse jouée)", target: "unit", xy: true },
   { v: "debuff", l: "Debuff -X/-Y", target: "unit", xy: true },
   { v: "destroy", l: "Détruire", target: "unit" },
+  // Domination : le camp est verrouillé sur l'ennemi et la zone sur le plateau.
+  { v: "domination", l: "Domination (prendre le contrôle)", target: "unit" },
   { v: "bounce", l: "Renvoyer en main", target: "unit" },
   { v: "paralyze", l: "Paralyser", target: "unit" },
   // État empoisonné subi (−1 PV/fin de tour) ≠ don du mot-clé Poison.
@@ -131,7 +133,7 @@ function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content
 
 /** Contenus incompatibles avec la répartition au hasard, malgré un bloc de
  *  cibles à l'écran : Exhumation puise dans le CIMETIÈRE (le tirage n'accepte
- *  que des unités vivantes, le pool serait toujours vide) et Incinération vise
+ *  que des unités vivantes, le pool serait toujours vide), Incinération vise
  *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
  *  ciblage. */
 const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration"]);
@@ -758,7 +760,13 @@ export default function ComposedEffectsEditor({
                 const nextTarget = m.target === "none" ? undefined
                   : v === "exhumation" || v === "rappel"
                     ? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const }
-                    : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
+                    : v === "domination"
+                      ? {
+                          ...prev, side: "enemy" as const, location: "board" as const,
+                          entity: prev.entity === "damage_source" ? prev.entity : "unit" as const,
+                          designation: prev.designation === "scatter" ? "random" as const : prev.designation,
+                        }
+                      : (prev.designation === "scatter" && !scatterOk ? { ...prev, designation: "random" as const } : prev);
                 // Un type « Objet » ne survit pas à un contenu qui ne sait pas
                 // agir sur un objet : il ciblerait des objets pour ne rien faire.
                 const sansObjet = nextTarget && (nextTarget.entity === "item" || nextTarget.entity === "unit_or_item")
@@ -838,7 +846,7 @@ export default function ComposedEffectsEditor({
               )}
               {/* Invocation DÉSIGNÉE et Tuteur : ni amplitude ni filtre de pool —
                   la carte est nommée, il n'y a rien à tirer. */}
-              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && (<>
+              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && eff.content !== "domination" && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {CONTENUS_COUT_X.has(eff.content)
@@ -972,7 +980,7 @@ export default function ComposedEffectsEditor({
                       ...(ACTION_TARGET_CONTENTS.has(eff.content) ? ["spell" as const] : []),
                       ...(ITEM_TARGET_CONTENTS.has(eff.content) ? ["item" as const] : []),
                       ...(meta.target === "unit_or_hero" ? ["hero" as const] : []),
-                      "self",
+                      ...(eff.content === "domination" ? [] : ["self" as const]),
                       // Propre au déclencheur Blessure : ce qui vient de blesser la porteuse.
                       ...(cap.trigger === "on_wound" ? ["damage_source" as const] : []),
                     ];
@@ -1000,8 +1008,10 @@ export default function ComposedEffectsEditor({
 
                   {/* "self" = la source : ni bord, ni nombre, ni choix. */}
                   {t.entity !== "self" && t.entity !== "damage_source" && (<>
+                  {eff.content !== "domination" && (<>
                   <span style={labelStyle}>{tr('label_side')}</span>
                   {sel(t.side, [{ v: "ally", l: tr('side_ally') }, { v: "enemy", l: tr('side_enemy') }, { v: "any", l: tr('side_any') }], (v) => patchTarget(idx, { side: v as TargetSpec["side"] }))}
+                  </>)}
 
                   {(t.entity === "unit" || t.entity === "both" || t.entity === "item" || t.entity === "unit_or_item") && (
                     <>
@@ -1033,6 +1043,7 @@ export default function ComposedEffectsEditor({
                         </>
                       )}
 
+                      {eff.content !== "domination" && (<>
                       <span style={labelStyle}>{tr('label_location')}</span>
                       {sel(t.location, [{ v: "board", l: tr('location_board') }, { v: "hand", l: tr('location_hand') }, { v: "deck", l: tr('location_deck') }, { v: "graveyard", l: tr('location_graveyard') }], (v) => {
                         const location = v as TargetSpec["location"];
@@ -1058,6 +1069,7 @@ export default function ComposedEffectsEditor({
                           },
                         }));
                       })}
+                      </>)}
 
                       <span style={labelStyle}>{tr('label_membership')}</span>
                       <RaceClanPicker
