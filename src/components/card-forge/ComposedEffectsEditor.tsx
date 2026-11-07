@@ -18,7 +18,7 @@ import LinkedCardsPicker from "./LinkedCardsPicker";
 import { ACTION_TARGET_CONTENTS, basculerType, cibleDesTypes, typesCoches, type TypeCible } from "./composed-target-types";
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
-import { ABILITIES, creatureEngineId, getCapabilityTriggers, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ABILITIES, creatureEngineId, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
@@ -183,19 +183,9 @@ const GRANTABLE = Object.values(ABILITIES)
   .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
   .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
-/** Déclencheurs qu'une capacité peut prendre une fois CONFÉRÉE.
- *
- *  `on_play` est retiré : la cible d'un don est déjà en jeu, donc son entrée est
- *  passée. Le laisser offrirait une option qui ne se déclenche jamais — le défaut
- *  même qu'on répare. Une liste vide ou à un seul élément ⇒ la capacité n'a pas
- *  de choix à faire (passive, ou râle d'agonie qui ne part qu'à la mort). */
-function grantTriggerOptions(abilityId: string): CapabilityTrigger[] {
-  return getCapabilityTriggers("creature", abilityId).filter((t) => t !== "on_play" && t !== "automatic");
-}
-
 /** Déclencheur proposé par défaut pour une capacité fraîchement choisie. */
-function defaultGrantTrigger(abilityId: string): CapabilityTrigger | undefined {
-  return grantTriggerOptions(abilityId)[0];
+function defaultGrantTrigger(abilityId: string, location?: TargetSpec["location"]): CapabilityTrigger | undefined {
+  return grantTriggersFor(abilityId, location)[0];
 }
 
 const DEFAULT_TARGET: TargetSpec = { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" };
@@ -782,7 +772,7 @@ export default function ComposedEffectsEditor({
                   content: v, target: cibleAjustee,
                   grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
                   grantTrigger: v === "grant_keyword"
-                    ? (eff.grantTrigger ?? defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? ""))
+                    ? (eff.grantTrigger ?? defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", eff.target?.location))
                     : undefined,
                   // Le filtre de pool ne survit pas à un changement vers un
                   // contenu qui n'en a pas (sinon champ fantôme en base).
@@ -885,7 +875,7 @@ export default function ComposedEffectsEditor({
 
               {eff.content === "grant_keyword" && (() => {
                 const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";
-                const optionsDecl = grantTriggerOptions(grantId);
+                const optionsDecl = grantTriggersFor(grantId, eff.target?.location);
                 return (
                   <>
                     <span style={labelStyle}>{tr('label_granted_ability')}</span>
@@ -899,9 +889,9 @@ export default function ComposedEffectsEditor({
                       // Le déclencheur suit la capacité : garder celui de la
                       // précédente le rendrait incohérent en silence (une Armure
                       // « à la mort », un râle « à l'attaque »).
-                      grantTrigger: grantTriggerOptions(v).includes(eff.grantTrigger as CapabilityTrigger)
+                      grantTrigger: grantTriggersFor(v, eff.target?.location).includes(eff.grantTrigger as CapabilityTrigger)
                         ? eff.grantTrigger
-                        : defaultGrantTrigger(v),
+                        : defaultGrantTrigger(v, eff.target?.location),
                     }))}
                     {optionsDecl.length > 1 && (
                       <>
@@ -1048,9 +1038,24 @@ export default function ComposedEffectsEditor({
                         // Quitter le plateau invalide la répartition (elle ne tire
                         // que des unités vivantes en jeu) : on la ramène au tirage
                         // simple plutôt que de laisser une désignation morte en base.
-                        patchTarget(idx, t.designation === "scatter" && !scatterAllowed(eff.content, location)
-                          ? { location, designation: "random" }
-                          : { location });
+                        // Revenir au plateau invalide de même un don « à l'entrée
+                        // en jeu » : il ne partirait jamais, sans rien signaler.
+                        const grantId = eff.content === "grant_keyword" ? eff.grantAbilityId : undefined;
+                        const grantTrigger = grantId
+                          && !grantTriggersFor(grantId, location).includes(eff.grantTrigger as CapabilityTrigger)
+                          ? defaultGrantTrigger(grantId, location)
+                          : eff.grantTrigger;
+                        onChange(value.map((c, i) => i !== idx ? c : {
+                          ...c,
+                          composed: {
+                            ...eff,
+                            grantTrigger,
+                            target: {
+                              ...t, location,
+                              ...(t.designation === "scatter" && !scatterAllowed(eff.content, location) ? { designation: "random" as const } : {}),
+                            },
+                          },
+                        }));
                       })}
 
                       <span style={labelStyle}>{tr('label_membership')}</span>

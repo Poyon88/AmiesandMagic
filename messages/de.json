@@ -1035,6 +1035,7 @@
         }
       },
       "grant_when": {
+        "on_play": ", das beim Eintritt ins Spiel ausgelöst wird",
         "on_death": ", das bei ihrem Tod ausgelöst wird",
         "on_activation": ", das bei ihrer Aktivierung ausgelöst wird",
         "on_return": ", das bei ihrer Rückkehr auf die Hand ausgelöst wird",

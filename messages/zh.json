@@ -1035,6 +1035,7 @@
         }
       },
       "grant_when": {
+        "on_play": "，将在其进场时触发",
         "on_death": "，将在其死亡时触发",
         "on_activation": "，将在其激活时触发",
         "on_return": "，将在其返回手牌时触发",

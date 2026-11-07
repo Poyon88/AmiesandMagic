@@ -1035,6 +1035,7 @@
         }
       },
       "grant_when": {
+        "on_play": ", qui se déclenchera à son entrée en jeu",
         "on_death": ", qui se déclenchera à sa mort",
         "on_activation": ", qui se déclenchera à son activation",
         "on_return": ", qui se déclenchera à son retour en main",

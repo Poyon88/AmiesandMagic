@@ -94,6 +94,7 @@ export const COMPOSED_FR: Record<string, string> = {
   // ce fragment, « confère Tempête 3 » ne disait pas si elle part à la mort, à
   // l'attaque ou en fin de tour — le texte de carte taisait le seul réglage qui
   // change ce que le joueur va voir.
+  "grant_when.on_play": ", qui se déclenchera à son entrée en jeu",
   "grant_when.on_death": ", qui se déclenchera à sa mort",
   "grant_when.on_activation": ", qui se déclenchera à son activation",
   "grant_when.on_return": ", qui se déclenchera à son retour en main",

@@ -1035,6 +1035,7 @@
         }
       },
       "grant_when": {
+        "on_play": ", which will trigger when it enters play",
         "on_death": ", which will trigger upon its death",
         "on_activation": ", which will trigger upon its activation",
         "on_return": ", which will trigger when it returns to hand",

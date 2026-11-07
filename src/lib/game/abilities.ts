@@ -24,6 +24,7 @@ import type {
   CardType,
   SpellKeywordId,
   SpellTargetType,
+  TargetSpec,
 } from "./types";
 import { hasRace } from "./races";
 
@@ -2150,6 +2151,22 @@ export function getCapabilityTriggers(cardType: CardType, abilityId: string): Ca
   return cardType === "spell"
     ? a.triggers.spellTriggers ?? ["spell_resolution"]
     : a.triggers.creatureTriggers ?? ["on_play"];
+}
+
+/** Déclencheurs qu'une capacité peut prendre une fois CONFÉRÉE, selon la zone
+ *  de la cible.
+ *
+ *  Sur le plateau, `on_play` est retiré : l'entrée en jeu est passée, l'option ne
+ *  se déclencherait jamais. En main ou dans le deck, elle est à venir : la
+ *  carte passera par la pose, et c'est même le seul moment où une capacité
+ *  comme Esprit de corps donne tout son gain. Au cimetière, elle reste retirée :
+ *  les chemins de retour en jeu ne déclenchent pas d'entrée.
+ *
+ *  Une liste vide ou à un seul élément ⇒ rien à choisir (passive, râle). */
+export function grantTriggersFor(abilityId: string, location: TargetSpec["location"] = "board"): CapabilityTrigger[] {
+  const entreeAVenir = location === "hand" || location === "deck";
+  return getCapabilityTriggers("creature", abilityId)
+    .filter((t) => t !== "automatic" && (entreeAVenir || t !== "on_play"));
 }
 
 /** Capacités proposables sur un OBJET, triées par libellé créature.
