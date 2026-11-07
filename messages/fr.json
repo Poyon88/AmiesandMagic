@@ -2220,6 +2220,11 @@
         "desc_one": "En plus du mana, replacez une carte de votre main, de votre choix, sur le dessus de votre deck.",
         "desc_many": "En plus du mana, replacez {n} cartes de votre main, de votre choix, sur le dessus de votre deck. La première choisie finit sur le dessus."
       },
+      "retraite": {
+        "title": "Retraite {n}",
+        "desc_one": "En plus du mana, remontez en main une de vos créatures en jeu, de votre choix. Impossible si votre main ne peut pas l'accueillir.",
+        "desc_many": "En plus du mana, remontez en main {n} de vos créatures en jeu, de votre choix. Impossible si votre main ne peut pas les accueillir."
+      },
       "eveil": {
         "title": "Éveil {n}",
         "desc": "Au lieu de la jouer, vous pouvez mettre cette carte en éveil. Vous versez ensuite ses {n} points avec votre mana, 1 point par mana, pendant vos tours. Au dernier point, elle entre en jeu comme si vous l'aviez jouée.",
@@ -2750,6 +2755,8 @@
     "sacrifice_label": "SACRIFICE",
     "exile_label": "EXIL",
     "topdeck_label": "REPLI",
+    "retreat_cost_hint": "Nombre de créatures alliées que le joueur remonte du plateau vers sa main. Elles gardent leurs bonus permanents et déclenchent leurs effets de retour. Coût de tempo, non réductible.",
+    "retreat_label": "RETRAITE",
     "spell_effects_label": "EFFETS DE L'ACTION",
     "spell_keywords_label": "MOTS-CLÉS D'ACTION",
     "token_to_summon": "TOKEN À INVOQUER",
@@ -3128,6 +3135,7 @@
     "cost_pay_title": "Payez les coûts de {name}",
     "cost_discard_label": "🃏 {count, plural, one {Défausser # carte} other {Défausser # cartes}}",
     "cost_topdeck_label": "{count, plural, one {Replier # carte sur le deck} other {Replier # cartes sur le deck}}",
+    "cost_retreat_label": "{count, plural, one {Remonter # créature en main} other {Remonter # créatures en main}}",
     "cost_topdeck_order_hint": "La première carte désignée finira sur le dessus du deck.",
     "cost_hand_order_hint": "Vos clics remplissent d'abord la défausse, puis le repli.",
     "topdeck_cost_caption": "{count, plural, one {Repli} other {Repli ×#}}",
@@ -3477,6 +3485,8 @@
     "cost_sacrifice": "Sacrifice",
     "cost_exile": "Exil",
     "cost_topdeck": "Repli",
+    "cost_retreat": "Retraite",
+    "cost_retreat_desc": "Ces cartes exigent de remonter des créatures du plateau vers votre main, en plus de leur coût en mana.",
     "cost_life_desc": "Ces cartes se paient aussi en points de vie du héros, en plus de leur coût en mana.",
     "cost_discard_desc": "Ces cartes exigent de défausser des cartes de votre main, en plus de leur coût en mana.",
     "cost_sacrifice_desc": "Ces cartes exigent de sacrifier des créatures que vous contrôlez, en plus de leur coût en mana.",

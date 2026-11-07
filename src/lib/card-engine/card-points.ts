@@ -36,7 +36,7 @@ export interface ScoreCarte {
 export type CarteNotee = Pick<Card, "card_type" | "mana_cost" | "attack" | "health"> &
   Partial<Pick<Card, "rarity" | "keywords" | "keyword_instances" | "spell_keywords" | "spell_effects" | "capabilities"
     | "convocation_token_id" | "convocation_tokens" | "lycanthropie_token_id" | "entraide_race" | "effect_text"
-    | "life_cost" | "discard_cost" | "sacrifice_cost" | "exile_cost" | "topdeck_cost" | "eveil_cost" | "equip_cost">>;
+    | "life_cost" | "discard_cost" | "sacrifice_cost" | "exile_cost" | "topdeck_cost" | "retreat_cost" | "eveil_cost" | "equip_cost">>;
 
 const NOM_DECLENCHEUR: Record<string, string> = {
   on_play: "entrée", on_death: "mort", on_return: "retour", on_activation: "activation",
@@ -228,6 +228,7 @@ export function termesCarte(b: Bareme, card: CarteNotee): { termes: Terme[]; add
   add("sacrifice", card.sacrifice_cost, "Coût de sacrifice");
   add("exile", card.exile_cost, "Coût d'exil");
   add("topdeck", card.topdeck_cost, "Coût de repli");
+  add("retreat", card.retreat_cost, "Coût de retraite");
   if (type === "item") add("equip", card.equip_cost, "Coût d'équipement");
   return { termes, additionnels };
 }

@@ -24,7 +24,7 @@ const CARD_COLUMNS =
   'image_url, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, ' +
   'convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, ' +
   'card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, ' +
-  'topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason';
+  'topdeck_cost, retreat_cost, eveil_cost, equip_cost, discoverable, status, status_reason';
 
 /** Garde-fou de volume : au-delà, l'appelant se trompe de route (qu'il prenne le
  *  catalogue). Une carte ne cite jamais 50 compagnons. */

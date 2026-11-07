@@ -29,6 +29,7 @@
     "sacrifice": -4.71,
     "exile": -1.67,
     "topdeck": -3.53,
+    "retreat": -3,
     "equip": -0.75
   },
   "plafondAdditionnel": 0.4,

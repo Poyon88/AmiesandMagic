@@ -128,6 +128,7 @@ interface DbCard {
   /** Bruitage propre d'entrée en jeu (remplace le son générique de pose). */
   sfx_play_url?: string | null;
   topdeck_cost: number | null;
+  retreat_cost?: number | null;
   eveil_cost: number | null;
   equip_cost?: number | null;
   capabilities: Capability[] | null;
@@ -602,6 +603,7 @@ export default function CardEditor() {
       sacrifice_cost: card.sacrifice_cost ?? 0,
       exile_cost: card.exile_cost ?? 0,
       topdeck_cost: card.topdeck_cost ?? 0,
+      retreat_cost: card.retreat_cost ?? 0,
       eveil_cost: card.eveil_cost ?? 0,
       equip_cost: card.equip_cost ?? 0,
     });
@@ -938,6 +940,7 @@ export default function CardEditor() {
         sacrifice_cost: (editFields.sacrifice_cost as number) || 0,
         exile_cost: (editFields.exile_cost as number) || 0,
         topdeck_cost: (editFields.topdeck_cost as number) || 0,
+        retreat_cost: (editFields.retreat_cost as number) || 0,
         eveil_cost: (editFields.eveil_cost as number) || 0,
         // Réservé aux objets : `null` ailleurs, comme l'écrit la forge.
         equip_cost: editFields.card_type === "item" ? ((editFields.equip_cost as number) || 0) : null,
@@ -1629,6 +1632,10 @@ export default function CardEditor() {
               <div style={{ flex: 1 }}>
                 <div style={S.label} title="REPLI : nombre de cartes que le joueur replace de sa main sur le DESSUS de son deck (elles ne vont pas au cimetière — il les repiochera). Coût de tempo, non réductible.">Coût <span style={{ color: REPLI_TEINTE }}>{REPLI_GLYPHE}</span> Repli</div>
                 <input type="number" min={0} max={5} value={(editFields.topdeck_cost as number) ?? 0} onChange={e => updateField("topdeck_cost", parseInt(e.target.value) || 0)} style={S.input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S.label} title="RETRAITE : nombre de créatures alliées que le joueur remonte du plateau vers sa main. Bonus permanents gardés, effets de retour déclenchés. Coût de tempo, non réductible.">Coût ⇧ Retraite</div>
+                <input type="number" min={0} max={5} value={(editFields.retreat_cost as number) ?? 0} onChange={e => updateField("retreat_cost", parseInt(e.target.value) || 0)} style={S.input} />
               </div>
               <div style={{ flex: 1 }}>
                 {/* Le seul coût ALTERNATIF de la rangée : il REMPLACE le coût en

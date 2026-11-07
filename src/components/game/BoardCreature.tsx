@@ -1,5 +1,6 @@
 "use client";
 
+import { RETRAITE_TEINTE, RETRAITE_GLYPHE } from "@/lib/game/repli-theme";
 import { useState, useRef, memo, useMemo } from "react";
 import { titleFontScale } from "@/lib/game/card-title";
 import { motion } from "framer-motion";
@@ -180,6 +181,9 @@ function BoardCreature({
   });
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const toggleSacrificeSelection = useGameStore(s => s.toggleSacrificeSelection);
+  const selectedRetreatIds = useGameStore(s => s.selectedRetreatIds);
+  const toggleRetreatSelection = useGameStore(s => s.toggleRetreatSelection);
+  const retraiteDemandee = useGameStore(s => (s.pendingCostCard?.retreatNeeded ?? 0) > 0);
   const activateTap = useGameStore(s => s.activateTap);
   const activateTapComposed = useGameStore(s => s.activateTapComposed);
   const isMyTurn = useGameStore(s => s.isMyTurn());
@@ -189,6 +193,7 @@ function BoardCreature({
   const isSelectedForSacrifice = selectedSacrificeIds.includes(creature.instanceId);
   // Only the player's own board creatures can be sacrificed for a cost.
   const canSelectForSacrifice = isCostPaymentMode && isOwn;
+  const isSelectedForRetreat = selectedRetreatIds.includes(creature.instanceId);
 
   // First tap-mode keyword instance the player can activate right now.
   // Returns the index inside `keywordInstances`; null when no eligible
@@ -265,6 +270,7 @@ function BoardCreature({
 
   let border = "2px solid #3d3d5c";
   if (isSelectedForSacrifice) border = "2px solid #a060a0";
+  else if (isSelectedForRetreat) border = `2px solid ${RETRAITE_TEINTE}`;
   else if (isSelected) border = "2px solid #f1c40f";
   else if (isValidTarget) border = `2px solid ${powerTargetColor ?? "#e74c3c"}`;
   else if (canAttack) border = "2px solid #2ecc71";
@@ -477,7 +483,9 @@ function BoardCreature({
           return;
         }
         if (canSelectForSacrifice) {
-          toggleSacrificeSelection(creature.instanceId);
+          // Une carte ne porte qu'un coût additionnel : le plateau paie l'un ou l'autre.
+          if (retraiteDemandee) toggleRetreatSelection(creature.instanceId);
+          else toggleSacrificeSelection(creature.instanceId);
         } else {
           onClick?.();
         }
@@ -541,6 +549,7 @@ function BoardCreature({
         background: "linear-gradient(160deg, #1a1a2e, #0d0d1a)",
         border,
         boxShadow: isSelectedForSacrifice ? "0 0 16px #a060a088"
+          : isSelectedForRetreat ? `0 0 16px ${RETRAITE_TEINTE}88`
           : isSelected ? "0 0 14px #f1c40f44"
           : isValidTarget ? `0 0 14px ${powerTargetColor ?? "#e74c3c"}44`
           : canAttack ? "0 0 12px #2ecc7166"
@@ -654,6 +663,18 @@ function BoardCreature({
         </div>
       )}
 
+
+      {/* Cost-payment retreat marker */}
+      {isSelectedForRetreat && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 4,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: `linear-gradient(135deg, ${RETRAITE_TEINTE}33, #00000022)`,
+          pointerEvents: "none",
+        }}>
+          <span style={{ fontSize: 60, color: RETRAITE_TEINTE, filter: "drop-shadow(0 0 6px #000)" }}>{RETRAITE_GLYPHE}</span>
+        </div>
+      )}
 
       {/* Summoning sickness overlay */}
       {creature.hasSummoningSickness && isOwn && (

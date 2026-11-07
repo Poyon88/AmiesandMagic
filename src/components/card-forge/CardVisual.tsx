@@ -205,6 +205,7 @@ interface CardData {
   sacrificeCost?: number;
   exileCost?: number;
   topdeckCost?: number;
+  retreatCost?: number;
   eveilCost?: number;
   /** OBJETS : coût d'équipement, second coût en mana. */
   equipCost?: number;
@@ -405,7 +406,7 @@ export default function CardVisual({ card, loading, compact = false, imageUrl, o
         awaken={awakenOf({ eveil_cost: card!.eveilCost ?? 0 }, 0)}
         cost={additionalCostOf({
           life_cost: card!.lifeCost ?? 0, discard_cost: card!.discardCost ?? 0, sacrifice_cost: card!.sacrificeCost ?? 0,
-          exile_cost: card!.exileCost ?? 0, topdeck_cost: card!.topdeckCost ?? 0,
+          exile_cost: card!.exileCost ?? 0, topdeck_cost: card!.topdeckCost ?? 0, retreat_cost: card!.retreatCost ?? 0,
         }, card!.name)}
       />
       {/* Les stats d'un OBJET sont le BONUS qu'il conférera : même paire de

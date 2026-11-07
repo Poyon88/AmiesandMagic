@@ -68,6 +68,8 @@ import {
   getDiscardCost,
   getSacrificeCost,
   getTopdeckCost,
+  getRetreatCost,
+  peutPayerRetraite,
   getTapActivateTargets,
   deferredKwTargetIds,
   endOfTurnTriggerTargets,
@@ -636,13 +638,15 @@ interface GameStore {
   // with a discard_cost, sacrifice_cost or topdeck_cost > 0. The player picks N
   // cards from hand (défausse et/ou repli) and/or N creatures from board, then
   // confirms via CostPaymentOverlay.
-  pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; topdeckNeeded: number; boardPosition: number | null } | null;
+  pendingCostCard: { instanceId: string; discardNeeded: number; sacrificeNeeded: number; topdeckNeeded: number; retreatNeeded: number; boardPosition: number | null } | null;
   selectedDiscardIds: string[];
   selectedSacrificeIds: string[];
   /** REPLI : cartes de la main désignées pour retourner sur le deck. L'ORDRE
    *  est significatif — la première désignée finira sur le dessus — donc on
    *  garde un tableau, jamais un Set. */
   selectedTopdeckIds: string[];
+  /** RETRAITE : créatures du plateau désignées pour remonter en main. */
+  selectedRetreatIds: string[];
   // True while the active selection overlay was opened by a hero power
   // (selection / renfort_royal / selection_magique). The next selectTarget
   // call dispatches a hero_power action instead of a play_card.
@@ -879,6 +883,7 @@ interface GameStore {
   clearDiscardFromHandEvent: () => void;
   toggleDiscardSelection: (instanceId: string) => void;
   toggleSacrificeSelection: (instanceId: string) => void;
+  toggleRetreatSelection: (instanceId: string) => void;
   toggleTopdeckSelection: (instanceId: string) => void;
   confirmCostPayment: () => GameAction | null;
   cancelCostPayment: () => void;
@@ -1875,6 +1880,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingCostCard: null,
   selectedDiscardIds: [],
   selectedSacrificeIds: [],
+  selectedRetreatIds: [],
   selectedTopdeckIds: [],
   pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
@@ -2101,8 +2107,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (action.type === "play_card") {
-      const { selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds } = get();
-      if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0 || selectedTopdeckIds.length > 0) {
+      const { selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds, selectedRetreatIds } = get();
+      if (selectedDiscardIds.length > 0 || selectedSacrificeIds.length > 0 || selectedTopdeckIds.length > 0 || selectedRetreatIds.length > 0) {
         action = {
           ...action,
           discardInstanceIds: action.discardInstanceIds ?? selectedDiscardIds,
@@ -2111,6 +2117,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           // décide de la carte qui finit sur le dessus : on le transmet tel
           // quel, l'adversaire rejouera la même pile.
           topdeckInstanceIds: action.topdeckInstanceIds ?? selectedTopdeckIds,
+          retreatInstanceIds: action.retreatInstanceIds ?? selectedRetreatIds,
         };
       }
     }
@@ -3456,6 +3463,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         pendingCostCard: null,
         selectedDiscardIds: [],
         selectedSacrificeIds: [],
+        selectedRetreatIds: [],
         selectedTopdeckIds: [],
         pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
@@ -3491,6 +3499,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedRetreatIds: [],
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
@@ -4164,12 +4173,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       const discardNeeded = getDiscardCost(card.card);
       const sacrificeNeeded = getSacrificeCost(card.card);
       const topdeckNeeded = getTopdeckCost(card.card);
-      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0) {
+      const retreatNeeded = getRetreatCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0 || retreatNeeded > 0) {
         set({
           targetingMode: "cost_payment",
-          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, boardPosition: boardPosition ?? null },
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, retreatNeeded, boardPosition: boardPosition ?? null },
           selectedDiscardIds: [],
           selectedSacrificeIds: [],
+          selectedRetreatIds: [],
           selectedTopdeckIds: [],
           selectedCardInstanceId: instanceId,
         });
@@ -4348,12 +4359,14 @@ export const useGameStore = create<GameStore>((set, get) => {
       const discardNeeded = getDiscardCost(card.card);
       const sacrificeNeeded = getSacrificeCost(card.card);
       const topdeckNeeded = getTopdeckCost(card.card);
-      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0) {
+      const retreatNeeded = getRetreatCost(card.card);
+      if (discardNeeded > 0 || sacrificeNeeded > 0 || topdeckNeeded > 0 || retreatNeeded > 0) {
         set({
           targetingMode: "cost_payment",
-          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, boardPosition: null },
+          pendingCostCard: { instanceId, discardNeeded, sacrificeNeeded, topdeckNeeded, retreatNeeded, boardPosition: null },
           selectedDiscardIds: [],
           selectedSacrificeIds: [],
+          selectedRetreatIds: [],
           selectedTopdeckIds: [],
           selectedCardInstanceId: instanceId,
         });
@@ -5339,6 +5352,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedRetreatIds: [],
       selectedTopdeckIds: [],
       pendingHeroPowerSelection: false,
   pendingEpargneSelection: false,
@@ -5469,6 +5483,24 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
   },
 
+  /** RETRAITE : désigne (ou retire) une créature alliée à remonter en main. Une
+   *  créature Ancrée n'est pas désignable : le moteur refuserait l'action. */
+  toggleRetreatSelection: (instanceId) => {
+    const { gameState, pendingCostCard, selectedRetreatIds } = get();
+    if (!gameState || !pendingCostCard) return;
+    const idx = selectedRetreatIds.indexOf(instanceId);
+    if (idx !== -1) {
+      const next = [...selectedRetreatIds];
+      next.splice(idx, 1);
+      set({ selectedRetreatIds: next });
+      return;
+    }
+    const creature = gameState.players[gameState.currentPlayerIndex].board.find(c => c.instanceId === instanceId);
+    if (creature && peutPayerRetraite(creature) && selectedRetreatIds.length < pendingCostCard.retreatNeeded) {
+      set({ selectedRetreatIds: [...selectedRetreatIds, instanceId] });
+    }
+  },
+
   /** REPLI : désigne (ou retire) une carte de la main à replacer sur le deck.
    *
    *  L'ordre des clics est CONSERVÉ et significatif — la première désignée
@@ -5491,11 +5523,12 @@ export const useGameStore = create<GameStore>((set, get) => {
   },
 
   confirmCostPayment: () => {
-    const { gameState, pendingCostCard, selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds } = get();
+    const { gameState, pendingCostCard, selectedDiscardIds, selectedSacrificeIds, selectedTopdeckIds, selectedRetreatIds } = get();
     if (!gameState || !pendingCostCard) return null;
     if (selectedDiscardIds.length !== pendingCostCard.discardNeeded) return null;
     if (selectedSacrificeIds.length !== pendingCostCard.sacrificeNeeded) return null;
     if (selectedTopdeckIds.length !== pendingCostCard.topdeckNeeded) return null;
+    if (selectedRetreatIds.length !== pendingCostCard.retreatNeeded) return null;
 
     const player = gameState.players[gameState.currentPlayerIndex];
     const card = carteJouable(player, pendingCostCard.instanceId);
@@ -5644,6 +5677,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       pendingCostCard: null,
       selectedDiscardIds: [],
       selectedSacrificeIds: [],
+      selectedRetreatIds: [],
       selectedTopdeckIds: [],
       selectedCardInstanceId: null,
     });

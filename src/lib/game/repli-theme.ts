@@ -19,3 +19,7 @@ export const REPLI_RGB = "95, 201, 232";
 /** Glyphe du repli : une carte qui remonte sur la pile. Utilisé partout où le
  *  coût doit se reconnaître sans texte (pastille, vignette de main). */
 export const REPLI_GLYPHE = "↥";
+
+// RETRAITE : orange brûlé, pour rester discernable des cinq autres pastilles.
+export const RETRAITE_TEINTE = "#e0893d";
+export const RETRAITE_GLYPHE = "⇧";

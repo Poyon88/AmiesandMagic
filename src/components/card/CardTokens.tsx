@@ -20,7 +20,7 @@ import { CostHelpBubble, useHoverRect } from "./CostHelpBubble";
 import { costHelp, type CostHelpKind } from "@/lib/game/cost-descriptions";
 import { useSafeT } from "@/i18n/useVocab";
 
-export type CostType = "vie" | "defausse" | "sacrifice" | "exil" | "repli";
+export type CostType = "vie" | "defausse" | "sacrifice" | "exil" | "repli" | "retraite";
 
 type Shape = {
   vb: string; from: string; to: string; sw: number; shift: string;
@@ -58,11 +58,15 @@ const SHAPES: Record<CostType, Shape> = {
     vb: "0 0 100 110", from: "#2F8A83", to: "#0A2320", sw: 5, shift: "translateX(9%)",
     d: "M92 10 H46 L8 57 L46 104 H92 Z",
   },
+  retraite: {
+    vb: "0 0 100 110", from: "#C2702B", to: "#3D1C07", sw: 5, shift: "translateY(5%)",
+    d: "M50 5 L94 50 H70 V104 H30 V50 H6 Z",
+  },
 };
 
 /** Libellés (aria-label, infobulles). */
 export const COST_LABEL: Record<CostType, string> = {
-  vie: "vie", defausse: "défausse", sacrifice: "sacrifice", exil: "exil", repli: "repli",
+  vie: "vie", defausse: "défausse", sacrifice: "sacrifice", exil: "exil", repli: "repli", retraite: "retraite",
 };
 
 const TOKEN_DIGIT: CSSProperties = {
@@ -215,18 +219,18 @@ export function RightSlots({ awaken, cost, onAwaken, awakenTitle, after }: Right
 }
 
 // ─── Lecture du modèle de données ────────────────────────────────────────────
-// Le dépôt porte CINQ colonnes indépendantes (life_cost, discard_cost,
-// sacrifice_cost, exile_cost, topdeck_cost) : la règle « un seul coût
+// Le dépôt porte SIX colonnes indépendantes (life_cost, discard_cost,
+// sacrifice_cost, exile_cost, topdeck_cost, retreat_cost) : la règle « un seul coût
 // additionnel » est appliquée à la sauvegarde (API). Ici, par sûreté, on ne
 // rend que le premier dans l'ordre ci-dessous et on signale le reste en dev.
 type CostColumns = {
   life_cost?: number | null; discard_cost?: number | null; sacrifice_cost?: number | null;
-  exile_cost?: number | null; topdeck_cost?: number | null; eveil_cost?: number | null;
+  exile_cost?: number | null; topdeck_cost?: number | null; retreat_cost?: number | null; eveil_cost?: number | null;
 };
 
 const COST_COLUMNS: [CostType, keyof CostColumns][] = [
   ["vie", "life_cost"], ["defausse", "discard_cost"], ["sacrifice", "sacrifice_cost"],
-  ["exil", "exile_cost"], ["repli", "topdeck_cost"],
+  ["exil", "exile_cost"], ["repli", "topdeck_cost"], ["retraite", "retreat_cost"],
 ];
 
 /** Tous les coûts additionnels non nuls d'une carte, dans l'ordre canonique. */

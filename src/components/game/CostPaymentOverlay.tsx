@@ -24,6 +24,7 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   const selectedDiscardIds = useGameStore(s => s.selectedDiscardIds);
   const selectedSacrificeIds = useGameStore(s => s.selectedSacrificeIds);
   const selectedTopdeckIds = useGameStore(s => s.selectedTopdeckIds);
+  const selectedRetreatIds = useGameStore(s => s.selectedRetreatIds);
   const confirmCostPayment = useGameStore(s => s.confirmCostPayment);
   const cancelCostPayment = useGameStore(s => s.cancelCostPayment);
   const gameState = useGameStore(s => s.gameState);
@@ -43,7 +44,8 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
   const discardOk = selectedDiscardIds.length === pendingCostCard.discardNeeded;
   const sacrificeOk = selectedSacrificeIds.length === pendingCostCard.sacrificeNeeded;
   const topdeckOk = selectedTopdeckIds.length === pendingCostCard.topdeckNeeded;
-  const canConfirm = discardOk && sacrificeOk && topdeckOk;
+  const retreatOk = selectedRetreatIds.length === pendingCostCard.retreatNeeded;
+  const canConfirm = discardOk && sacrificeOk && topdeckOk && retreatOk;
   // Défausse ET repli sur la même carte : les deux puisent dans la main, et un
   // clic ne peut pas payer les deux. HandCard remplit donc la défausse d'abord.
   // Cette règle est invisible depuis la main — d'où la ligne d'explication.
@@ -126,6 +128,18 @@ export default function CostPaymentOverlay({ onConfirmedAction }: Props) {
           {t('cost_sacrifice_label', { count: pendingCostCard.sacrificeNeeded })}
           {" — "}
           <strong>{selectedSacrificeIds.length}/{pendingCostCard.sacrificeNeeded}</strong>
+        </div>
+      )}
+
+      {pendingCostCard.retreatNeeded > 0 && (
+        <div style={{
+          fontSize: 13, color: retreatOk ? "#2ecc71" : "#bbb",
+          fontFamily: "'Crimson Text',serif",
+          textAlign: "center",
+        }}>
+          {t('cost_retreat_label', { count: pendingCostCard.retreatNeeded })}
+          {" — "}
+          <strong>{selectedRetreatIds.length}/{pendingCostCard.retreatNeeded}</strong>
         </div>
       )}
 

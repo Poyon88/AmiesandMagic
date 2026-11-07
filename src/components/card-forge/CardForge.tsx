@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import PlancherAleatoireInput from "@/components/card-forge/PlancherAleatoireInput";
 import BoutonCoutLibre from "@/components/card-forge/BoutonCoutLibre";
 import ExileGlyph from "@/components/cards/ExileGlyph";
-import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { REPLI_TEINTE, REPLI_GLYPHE, RETRAITE_TEINTE, RETRAITE_GLYPHE } from "@/lib/game/repli-theme";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import { OBJET_TEINTE, OBJET_GLYPHE } from "@/lib/game/objet-theme";
 import { SELECTABLE_IMAGE_MODELS } from "@/lib/ai/image-models";
@@ -206,6 +206,7 @@ interface ForgeCard {
   /** EXIL : cartes retirées du dessus du deck pour jouer la carte. */
   exileCost?: number;
   topdeckCost?: number;
+  retreatCost?: number;
   eveilCost?: number;
   /** OBJETS : coût d'équipement, second coût en mana payé à chaque équipement. */
   equipCost?: number;
@@ -1769,11 +1770,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const [manualSacrificeCost, setManualSacrificeCostBrut] = useState(0);
   const [manualExileCost, setManualExileCostBrut] = useState(0);
   const [manualTopdeckCost, setManualTopdeckCostBrut] = useState(0);
+  const [manualRetreatCost, setManualRetreatCostBrut] = useState(0);
   // UN SEUL coût additionnel par carte (brief compteurs blasons §7, contrainte
   // CHECK en base). Le formulaire l'applique à la saisie : poser un coût > 0
   // remet les quatre autres à zéro, au lieu de laisser l'aperçu en afficher un
   // seul en silence et l'API refuser la carte à l'enregistrement.
-  const exclusifs = [setManualLifeCostBrut, setManualDiscardCostBrut, setManualSacrificeCostBrut, setManualExileCostBrut, setManualTopdeckCostBrut] as const;
+  const exclusifs = [setManualLifeCostBrut, setManualDiscardCostBrut, setManualSacrificeCostBrut, setManualExileCostBrut, setManualTopdeckCostBrut, setManualRetreatCostBrut] as const;
   const poserCoutExclusif = (moi: (typeof exclusifs)[number], v: number) => {
     if (v > 0) for (const setter of exclusifs) if (setter !== moi) setter(0);
     moi(v);
@@ -1783,6 +1785,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
   const setManualSacrificeCost = (v: number) => poserCoutExclusif(setManualSacrificeCostBrut, v);
   const setManualExileCost = (v: number) => poserCoutExclusif(setManualExileCostBrut, v);
   const setManualTopdeckCost = (v: number) => poserCoutExclusif(setManualTopdeckCostBrut, v);
+  const setManualRetreatCost = (v: number) => poserCoutExclusif(setManualRetreatCostBrut, v);
   // OBJETS : second coût en mana, payé à chaque équipement.
   const [manualEquipCost, setManualEquipCost] = useState(0);
   /** La carte se saisit-elle comme une UNITÉ ? Vrai pour les unités et les
@@ -2012,7 +2015,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       lycanthropie_token_id: lycanthropieTokenId,
       entraide_race: gameKeywords.includes("entraide") ? (entraideRace || null) : null,
       life_cost: manualLifeCost, discard_cost: manualDiscardCost, sacrifice_cost: manualSacrificeCost,
-      exile_cost: manualExileCost, topdeck_cost: manualTopdeckCost, eveil_cost: manualEveilCost,
+      exile_cost: manualExileCost, topdeck_cost: manualTopdeckCost, retreat_cost: manualRetreatCost, eveil_cost: manualEveilCost,
       equip_cost: cardType === "item" ? manualEquipCost : null,
     } as unknown as Card;
     let caps: Capability[] = [];
@@ -2086,6 +2089,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     sacrificeCost: manualSacrificeCost || undefined,
     exileCost: manualExileCost || undefined,
     topdeckCost: manualTopdeckCost || undefined,
+    retreatCost: manualRetreatCost || undefined,
     eveilCost: manualEveilCost || undefined,
     equipCost: manualEquipCost || undefined,
   };
@@ -2435,7 +2439,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualIllustrationPrompt(""); setManualStyleGuideId(null); setManualExtraContext(""); setManualKeywords([]); setKeywordXValues({}); setKeywordModes({}); setKeywordSingulier({}); setKeywordDelay({}); setKeywordRandomX({}); setKeywordMinX({}); setCard(null);
     setEditedPrompt(null); setSaveResult(null);
     setSpellKeywords([]); setSpellEffectsData(null); setConvocationTokenId(null); setConvocationTokens([]); setLycanthropieTokenId(null); setEntraideRace(""); setAfY(1); setRfY(1); setGlY(1); setDcY(1); setDcRandomY(false); setFdaY(1); setConferAbilityId(""); setNeutraliseAbilityId(""); setConferX(1); setConferY(1); setInventionPart({}); setDeclenchementTriggers([]); setComposedCaps([]);
-    setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
+    setManualLifeCostBrut(0); setManualDiscardCostBrut(0); setManualSacrificeCostBrut(0); setManualExileCostBrut(0); setManualTopdeckCostBrut(0); setManualRetreatCostBrut(0); setManualEveilCost(0); setManualEquipCost(0);
     setCardImages(prev => Object.fromEntries(Object.entries(prev).filter(([k]) => k !== "manual_preview")));
   }, []);
 
@@ -2590,6 +2594,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     setManualSacrificeCostBrut(0);
     setManualExileCostBrut(0);
     setManualTopdeckCostBrut(0);
+    setManualRetreatCostBrut(0);
     setManualEquipCost(0);
     setManualEveilCost(0);
     // Mots-clés et leur paramétrage
@@ -2834,6 +2839,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             sacrifice_cost: forgeCard.sacrificeCost ?? 0,
             exile_cost: forgeCard.exileCost ?? 0,
             topdeck_cost: forgeCard.topdeckCost ?? 0,
+            retreat_cost: forgeCard.retreatCost ?? 0,
             eveil_cost: forgeCard.eveilCost ?? 0,
             // Null hors objet : la colonne n'a aucun sens ailleurs, et un 0
             // franc laisserait croire à un équipement gratuit sur un sort.
@@ -3626,6 +3632,12 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       <label style={{ fontSize: 8, color: REPLI_TEINTE, letterSpacing: 1 }} title={tf('topdeck_cost_hint')}>{REPLI_GLYPHE} {tf('topdeck_label')}</label>
                       <input type="number" min={0} max={5} value={manualTopdeckCost} onChange={e => setManualTopdeckCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                         style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${REPLI_TEINTE}44`, background: "#fff", color: "#2b7f99", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 8, color: RETRAITE_TEINTE, letterSpacing: 1 }} title={tf('retreat_cost_hint')}>{RETRAITE_GLYPHE} {tf('retreat_label')}</label>
+                      <input type="number" min={0} max={5} value={manualRetreatCost} onChange={e => setManualRetreatCost(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
+                        style={{ width: "100%", padding: "5px 4px", borderRadius: 6, border: `1px solid ${RETRAITE_TEINTE}44`, background: "#fff", color: "#a85f1f", fontFamily: "'Cinzel',serif", fontSize: 14, textAlign: "center", marginTop: 3 }}
                       />
                     </div>
                     {/* ÉQUIPEMENT — réservé aux OBJETS, d'où la garde : sur une

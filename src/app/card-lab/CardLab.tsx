@@ -18,7 +18,7 @@ function carte(over: Partial<Card>): Card {
     id: 900000 + seq++, name: "Haut Elfe", mana_cost: 3, card_type: "creature", attack: 3, health: 2,
     effect_text: "", keywords: ["ranged", "taunt", "charge"] as never, spell_keywords: null, spell_effects: null,
     image_url: ART, faction: "Elfes", rarity: "Commune", set_id: 1,
-    life_cost: 0, discard_cost: 0, sacrifice_cost: 0, exile_cost: 0, topdeck_cost: 0, eveil_cost: 0,
+    life_cost: 0, discard_cost: 0, sacrifice_cost: 0, exile_cost: 0, topdeck_cost: 0, retreat_cost: 0, eveil_cost: 0,
     ...over,
   } as Card;
 }
@@ -32,6 +32,7 @@ const CAS: { titre: string; card: Card; eveil?: { total: number; paid: number };
   { titre: "Sacrifice 2", card: carte({ name: "Autel noir", sacrifice_cost: 2 }) },
   { titre: "Exil 3", card: carte({ name: "Portail scellé", exile_cost: 3 }) },
   { titre: "Repli 2", card: carte({ name: "Retraite ordonnée", topdeck_cost: 2 }) },
+  { titre: "Retraite 2", card: carte({ name: "Repli stratégique", retreat_cost: 2 }) },
   { titre: "Éveil 4 / 7 (3 restants)", card: carte({ name: "Titan endormi", eveil_cost: 7, mana_cost: 9 }), eveil: { total: 7, paid: 4 } },
   { titre: "Éveil + défausse empilés", card: carte({ name: "Serment double", eveil_cost: 5, discard_cost: 1 }), eveil: { total: 5, paid: 1 } },
   { titre: "Badge ×3 sous un jeton", card: carte({ name: "Exemplaires", life_cost: 2 }), count: 3 },

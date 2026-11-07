@@ -31,7 +31,7 @@ export const GAME_CARD_COLUMNS =
   "keywords, keyword_instances, spell_keywords, spell_effects, capabilities, " +
   "image_url, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, " +
   "convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, " +
-  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status";
+  "card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, retreat_cost, eveil_cost, equip_cost, discoverable, status";
 
 /** Colonnes des cartes LIÉES : celles de la route /api/cards/by-ids qu'appelle
  *  la page de match (+ status_reason). Les objets doivent être identiques au

@@ -84,7 +84,7 @@ export async function GET() {
   // nous-mêmes les BROUILLONS pour qui n'est ni admin ni testeur.
   const { data: profil } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).maybeSingle();
   const voitBrouillons = profil?.role === 'admin' || profil?.role === 'testeur';
-  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id, created_at';
+  const COLONNES = 'id, name, mana_cost, card_type, attack, health, effect_text, flavor_text, keywords, keyword_instances, spell_keywords, spell_effects, capabilities, image_url, illustration_prompt, faction, race, race2, clan, rarity, card_alignment, convocation_token_id, convocation_tokens, lycanthropie_token_id, entraide_race, set_id, card_year, card_month, sfx_play_url, sfx_death_url, sfx_exile_url, life_cost, discard_cost, sacrifice_cost, exile_cost, topdeck_cost, retreat_cost, eveil_cost, equip_cost, discoverable, status, status_reason, status_changed_at, style_guide_id, created_at';
 
   // Lecture PAGINÉE : c'est la liste que charge l'éditeur de cartes. Sans
   // `.range()`, PostgREST plafonnait la réponse à 1 000 lignes sur les 1 713 de
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
         'convocation_token_id', 'convocation_tokens',
         'lycanthropie_token_id', 'entraide_race',
         'set_id', 'card_year', 'card_month',
-        'life_cost', 'discard_cost', 'sacrifice_cost', 'exile_cost', 'topdeck_cost',
+        'life_cost', 'discard_cost', 'sacrifice_cost', 'exile_cost', 'topdeck_cost', 'retreat_cost',
         // Coût ALTERNATIF d'éveil — même exigence : hors de cette liste, la
         // valeur saisie serait jetée en silence à l'édition.
         'eveil_cost',
@@ -309,7 +309,7 @@ export async function POST(request: Request) {
     {
       const additionnels = [
         ['vie', card.life_cost], ['défausse', card.discard_cost], ['sacrifice', card.sacrifice_cost],
-        ['exil', card.exile_cost], ['repli', card.topdeck_cost],
+        ['exil', card.exile_cost], ['repli', card.topdeck_cost], ['retraite', card.retreat_cost],
       ].filter(([, v]) => (Number(v) || 0) > 0).map(([k]) => k as string);
       if (additionnels.length > 1) {
         return NextResponse.json(
@@ -353,6 +353,7 @@ export async function POST(request: Request) {
       sacrifice_cost: card.sacrifice_cost ?? null,
       exile_cost: card.exile_cost ?? null,
       topdeck_cost: card.topdeck_cost ?? null,
+      retreat_cost: card.retreat_cost ?? null,
       eveil_cost: card.eveil_cost ?? null,
       equip_cost: card.equip_cost ?? null,
     };

@@ -1006,6 +1006,27 @@ export function getExileCost(card: Card): number {
 export function getTopdeckCost(card: Card): number {
   return Math.max(0, card.topdeck_cost ?? 0);
 }
+/** RETRAITE : créatures du plateau remontées en main pour jouer la carte. */
+export function getRetreatCost(card: Card): number {
+  return Math.max(0, card.retreat_cost ?? 0);
+}
+/** Une créature paie la Retraite sauf si elle est Ancrée. Ombre et Invisible ne
+ *  jouent pas : c'est le joueur qui désigne ses propres créatures, comme pour
+ *  l'auto-renvoi (resolveSelfBounce). */
+export function peutPayerRetraite(c: CardInstance): boolean {
+  return !hasKw(c, "ancre");
+}
+/** N créatures sont-elles disponibles, et la main peut-elle les accueillir ?
+ *  `mainApresJeu` est la taille de la main une fois la carte jouée partie. Une
+ *  créature volée retourne chez son vrai propriétaire : elle n'occupe aucune
+ *  place dans cette main, on la compte donc en priorité. */
+function retraitePossible(player: PlayerState, n: number, mainApresJeu: number): boolean {
+  if (n <= 0) return true;
+  const dispo = player.board.filter(peutPayerRetraite);
+  if (dispo.length < n) return false;
+  const volees = dispo.filter(c => c.trueOwnerId && c.trueOwnerId !== player.id).length;
+  return mainApresJeu + Math.max(0, n - volees) <= MAX_HAND_SIZE;
+}
 /** ÉVEIL : points à verser, un par mana, pour faire venir la carte.
  *
  *  Seul coût ALTERNATIF de la famille — il remplace le mana au lieu de s'y
@@ -5202,9 +5223,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   const sacrificeCost = getSacrificeCost(card);
   const exileCost = getExileCost(card);
   const topdeckCost = getTopdeckCost(card);
+  const retreatCost = getRetreatCost(card);
   const requestedDiscards = action.discardInstanceIds ?? [];
   const requestedSacrifices = action.sacrificeInstanceIds ?? [];
   const requestedTopdecks = action.topdeckInstanceIds ?? [];
+  const requestedRetreats = action.retreatInstanceIds ?? [];
   if (lifeCost > 0 && player.hero.hp - lifeCost <= 0) return state;
   // Un coût qui ne peut pas être payé INTÉGRALEMENT interdit de jouer la carte —
   // même règle que le coût en PV, qu'on ne paie pas « autant que possible ».
@@ -5213,6 +5236,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   if (requestedDiscards.length !== discardCost) return state;
   if (requestedSacrifices.length !== sacrificeCost) return state;
   if (requestedTopdecks.length !== topdeckCost) return state;
+  if (requestedRetreats.length !== retreatCost) return state;
   // The card being played cannot be selected as its own discard cost — even
   // though it still sits in the hand at this point. Idem pour le repli : se
   // replier soi-même reviendrait à ne pas jouer la carte du tout.
@@ -5236,6 +5260,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   }
   for (const id of requestedSacrifices) {
     if (!player.board.find(c => c.instanceId === id)) return state;
+  }
+  // RETRAITE : créatures à soi, distinctes, non Ancrées, et la main doit pouvoir
+  // les accueillir — le coût ne détruit jamais rien par surprise.
+  if (new Set(requestedRetreats).size !== requestedRetreats.length) return state;
+  const retraitantes: CardInstance[] = [];
+  for (const id of requestedRetreats) {
+    const c = player.board.find(u => u.instanceId === id);
+    if (!c || !peutPayerRetraite(c)) return state;
+    retraitantes.push(c);
+  }
+  if (retraitantes.length > 0) {
+    const mainApresJeu = player.hand.filter(c => c.instanceId !== action.cardInstanceId).length;
+    const retourEnMain = retraitantes.filter(c => !c.trueOwnerId || c.trueOwnerId === player.id).length;
+    if (mainApresJeu + retourEnMain > MAX_HAND_SIZE) return state;
   }
 
   // TEMPO (Lune, Soleil) — la condition se lit AVANT l'incrément : la carte en
@@ -5338,6 +5376,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       }
     }
     if (sacrificed.length > 0) processDeathTriggers(sacrificed, player, opponent);
+  }
+  // Retraite : même déplacement que Remontée, bonus permanents gardés, PV
+  // restaurés et effets « au retour en main » déclenchés.
+  for (const id of requestedRetreats) {
+    const creature = player.board.find(c => c.instanceId === id);
+    if (creature) moveBoardUnitToOwnerHand(creature, player, opponent);
   }
 
   if (card.card_type === "creature") {
@@ -13396,11 +13440,14 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   if (player.hand.length - 1 < discardCost + topdeckCost) return false;
   const sacrificeCost = getSacrificeCost(card.card);
   if (player.board.length < sacrificeCost) return false;
+  const retreatCost = getRetreatCost(card.card);
+  if (!retraitePossible(player, retreatCost, player.hand.length - 1)) return false;
   // Même règle que dans playCard : sans assez de cartes à exiler, injouable.
   if (getExileCost(card.card) > player.deck.length) return false;
-  // Sacrifices free up board slots, so the test compares the final board size.
+  // Sacrifices and retreats free up board slots, so the test compares the final
+  // board size.
   if (occupeUnePlace(card.card) &&
-      placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+      placesOccupees(player) - sacrificeCost - retreatCost + 1 > MAX_BOARD_SIZE) return false;
   // Un SORT qui réclame une cible et n'en trouve AUCUNE ne partirait que dans le
   // vide : il se consumerait sans effet, et le joueur perdrait carte et mana
   // sans rien obtenir. Vu en partie avec « Marque de Faiblesse » (Affaiblissement
@@ -13452,6 +13499,7 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
   // Sans le `-1` : le sort mémorisé ne puise pas dans la main.
   if (player.hand.length < getDiscardCost(spell.card) + getTopdeckCost(spell.card)) return false;
   if (player.board.length < getSacrificeCost(spell.card)) return false;
+  if (!retraitePossible(player, getRetreatCost(spell.card), player.hand.length)) return false;
   if (getExileCost(spell.card) > player.deck.length) return false;
 
   // Même garde que pour un sort joué depuis la main : un sort qui ne trouve
@@ -13514,9 +13562,11 @@ export function eveilArrivalBlocker(state: GameState, cardInstanceId: string): E
   if (player.hand.length < getDiscardCost(card) + getTopdeckCost(card)) return "main";
   const sacrificeCost = getSacrificeCost(card);
   if (player.board.length < sacrificeCost) return "plateau";
+  const retreatCost = getRetreatCost(card);
+  if (!retraitePossible(player, retreatCost, player.hand.length)) return "plateau";
   if (getExileCost(card) > player.deck.length) return "deck";
   if (occupeUnePlace(card)
-    && placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return "board_plein";
+    && placesOccupees(player) - sacrificeCost - retreatCost + 1 > MAX_BOARD_SIZE) return "board_plein";
   if (card.card_type === "spell") {
     const slots = getSpellTargetSlots(card);
     if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
@@ -14054,9 +14104,11 @@ export function canPlayFromGraveyard(state: GameState, cardInstanceId: string): 
   if (player.hand.length < getDiscardCost(card) + getTopdeckCost(card)) return false;
   const sacrificeCost = getSacrificeCost(card);
   if (player.board.length < sacrificeCost) return false;
+  const retreatCost = getRetreatCost(card);
+  if (!retraitePossible(player, retreatCost, player.hand.length)) return false;
   if (getExileCost(card) > player.deck.length) return false;
   if (occupeUnePlace(card)
-    && placesOccupees(player) - sacrificeCost + 1 > MAX_BOARD_SIZE) return false;
+    && placesOccupees(player) - sacrificeCost - retreatCost + 1 > MAX_BOARD_SIZE) return false;
   // Même garde que depuis la main : un sort sans AUCUNE cible se consumerait
   // dans le vide, et ici la carte n'aurait même plus de Seconde vie à retenter.
   if (card.card_type === "spell") {

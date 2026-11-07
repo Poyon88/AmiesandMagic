@@ -7,7 +7,7 @@
 // le repli sont choisis par le joueur, l'exil prend le dessus du deck.
 import type { SafeT } from "@/i18n/config";
 
-export type CostHelpKind = "vie" | "defausse" | "sacrifice" | "exil" | "repli" | "eveil" | "equipement";
+export type CostHelpKind = "vie" | "defausse" | "sacrifice" | "exil" | "repli" | "retraite" | "eveil" | "equipement";
 
 export const COST_HELP_FR: Record<string, string> = {
   "vie.title": "Coût en vie {n}",
@@ -24,6 +24,9 @@ export const COST_HELP_FR: Record<string, string> = {
   "repli.title": "Repli {n}",
   "repli.desc_one": "En plus du mana, replacez une carte de votre main, de votre choix, sur le dessus de votre deck.",
   "repli.desc_many": "En plus du mana, replacez {n} cartes de votre main, de votre choix, sur le dessus de votre deck. La première choisie finit sur le dessus.",
+  "retraite.title": "Retraite {n}",
+  "retraite.desc_one": "En plus du mana, remontez en main une de vos créatures en jeu, de votre choix. Impossible si votre main ne peut pas l'accueillir.",
+  "retraite.desc_many": "En plus du mana, remontez en main {n} de vos créatures en jeu, de votre choix. Impossible si votre main ne peut pas les accueillir.",
   "eveil.title": "Éveil {n}",
   "eveil.desc": "Au lieu de la jouer, vous pouvez mettre cette carte en éveil. Vous versez ensuite ses {n} points avec votre mana, 1 point par mana, pendant vos tours. Au dernier point, elle entre en jeu comme si vous l'aviez jouée.",
   "eveil.remaining": "Encore {left} points à verser sur {n}.",

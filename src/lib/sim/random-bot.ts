@@ -14,7 +14,7 @@ import {
   ciblesEffetPouvoir, effetPouvoirACible, getSpellTargetSlots, getValidTargets, heroPowerComposedChoice,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
   canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, pouvoirsActivables,
-  getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir,
+  getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir, peutPayerRetraite,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
@@ -117,6 +117,7 @@ export function candidateActions(state: GameState, rand: Rand, variantes = 1): G
     if (card.sacrifice_cost) couts.sacrificeInstanceIds = tirer(ids(me), card.sacrifice_cost);
     if (card.discard_cost) couts.discardInstanceIds = tirer(autresEnMain, card.discard_cost);
     if (card.topdeck_cost) couts.topdeckInstanceIds = tirer(autresEnMain, card.topdeck_cost);
+    if (card.retreat_cost) couts.retreatInstanceIds = tirer(me.board.filter(peutPayerRetraite).map((c) => c.instanceId), card.retreat_cost);
     const base = { type: "play_card" as const, cardInstanceId: ci.instanceId, boardPosition: me.board.length, ...couts };
     if (card.card_type === "spell") {
       const slots = getSpellTargetSlots(card)

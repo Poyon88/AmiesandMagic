@@ -32,7 +32,7 @@ import type { ClanProfile } from "@/lib/game/clan-profile";
 import type { SignatureEntry } from "@/lib/game/clan-signature";
 import type { AdditionalCost, CoutKind } from "@/lib/game/clan-costs";
 import { jaugeDilatee, type StatProfile } from "@/lib/game/clan-stat-profile";
-import { REPLI_TEINTE, REPLI_GLYPHE } from "@/lib/game/repli-theme";
+import { REPLI_TEINTE, REPLI_GLYPHE, RETRAITE_TEINTE, RETRAITE_GLYPHE } from "@/lib/game/repli-theme";
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
 import { useEncartSurvol } from "./useEncartSurvol";
@@ -81,6 +81,7 @@ function GlypheCout({ kind }: { kind: CoutKind }) {
   const teintes: Record<CoutKind, string> = {
     life: "#e74c3c", discard: "#bbbbbb", sacrifice: "#a060a0", exile: "#7f8fa6",
     topdeck: REPLI_TEINTE,
+    retreat: RETRAITE_TEINTE,
   };
   const couleur = teintes[kind];
   // Même gabarit que `KeywordIcon` dans la liste des capacités (15 px) : les
@@ -89,7 +90,7 @@ function GlypheCout({ kind }: { kind: CoutKind }) {
   if (kind === "exile") {
     return <span style={{ display: "inline-flex", lineHeight: 0 }}><ExileGlyph size={TAILLE} color={couleur} /></span>;
   }
-  const glyphe = kind === "life" ? "♥" : kind === "discard" ? "🃏" : kind === "topdeck" ? REPLI_GLYPHE : "☠";
+  const glyphe = kind === "life" ? "♥" : kind === "discard" ? "🃏" : kind === "topdeck" ? REPLI_GLYPHE : kind === "retreat" ? RETRAITE_GLYPHE : "☠";
   return (
     <span
       aria-hidden="true"

@@ -14,7 +14,7 @@
 // Module pur : il reçoit des cartes, il rend un constat.
 
 /** Les cinq coûts que le jeu sait demander en plus du mana. */
-export type CoutKind = "life" | "discard" | "sacrifice" | "exile" | "topdeck";
+export type CoutKind = "life" | "discard" | "sacrifice" | "exile" | "topdeck" | "retreat";
 
 export interface AdditionalCost {
   kind: CoutKind;
@@ -32,6 +32,7 @@ export interface CarteAvecCouts {
   sacrifice_cost?: number | null;
   exile_cost?: number | null;
   topdeck_cost?: number | null;
+  retreat_cost?: number | null;
 }
 
 /** En dessous, ce n'est pas une habitude de clan mais une carte qui dépasse. */
@@ -45,6 +46,7 @@ const LECTEURS: ReadonlyArray<readonly [CoutKind, (c: CarteAvecCouts) => number]
   ["sacrifice", (c) => c.sacrifice_cost ?? 0],
   ["exile", (c) => c.exile_cost ?? 0],
   ["topdeck", (c) => c.topdeck_cost ?? 0],
+  ["retreat", (c) => c.retreat_cost ?? 0],
 ];
 
 /** Les coûts additionnels REPRÉSENTATIFS du pool fourni.

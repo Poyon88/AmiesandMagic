@@ -1275,13 +1275,15 @@ export const STAT_COST = { atk: 5, def: 4 };
  *  (`mana × MANA_BUDGET_BASE × multiplicateur`). Il déplace donc la formule
  *  entière ; lui donner une valeur négative le compterait deux fois. */
 export const ADDITIONAL_COST_POINTS: {
-  life: number; discard: number; sacrifice: number; exile: number; topdeck: number; equip: number;
+  life: number; discard: number; sacrifice: number; exile: number; topdeck: number; retreat: number; equip: number;
 } = {
   life: -3,
   discard: -5,
   sacrifice: -12,
   exile: -2,
   topdeck: -3,
+  // Même famille que le repli : du tempo, rien de perdu. Provisoire.
+  retreat: -3,
   // OBJETS. Le coût d'équipement n'est pas un coût additionnel comme les
   // autres : c'est un SECOND coût en mana, sans lequel la carte ne fait
   // strictement rien. Un objet à 2 mana avec un équipement à 3 en demande donc
@@ -1304,6 +1306,7 @@ export function additionalCostPoints(c: {
   sacrificeCost?: number | null;
   exileCost?: number | null;
   topdeckCost?: number | null;
+  retreatCost?: number | null;
   equipCost?: number | null;
 }): number {
   const total = (c.lifeCost ?? 0) * ADDITIONAL_COST_POINTS.life
@@ -1311,6 +1314,7 @@ export function additionalCostPoints(c: {
     + (c.sacrificeCost ?? 0) * ADDITIONAL_COST_POINTS.sacrifice
     + (c.exileCost ?? 0) * ADDITIONAL_COST_POINTS.exile
     + (c.topdeckCost ?? 0) * ADDITIONAL_COST_POINTS.topdeck
+    + (c.retreatCost ?? 0) * ADDITIONAL_COST_POINTS.retreat
     + (c.equipCost ?? 0) * ADDITIONAL_COST_POINTS.equip;
   // `0 * -3` vaut −0 en JavaScript, et une carte SANS coût additionnel aurait
   // affiché « −0 » dans la jauge. `|| 0` le ramène à zéro positif.

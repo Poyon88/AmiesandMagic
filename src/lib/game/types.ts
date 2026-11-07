@@ -1127,6 +1127,8 @@ export interface Card {
    *  tempo (la main rétrécit tout de suite, et la prochaine pioche est déjà
    *  dépensée). La carte repliée n'est jamais révélée à l'adversaire. */
   topdeck_cost?: number | null;
+  /** RETRAITE : créatures du plateau remontées en main. Null/0 = inactif. */
+  retreat_cost?: number | null;
   /** ÉVEIL : coût ALTERNATIF au coût en mana, payé en PLUSIEURS TOURS.
    *
    *  Seul de sa famille : les cinq champs ci-dessus sont des coûts ADDITIONNELS
@@ -2299,6 +2301,9 @@ export interface PlayCardAction {
    *  premier. Transmis tel quel à l'adversaire pour que les deux moteurs
    *  reconstruisent le même deck. */
   topdeckInstanceIds?: string[];
+  /** RETRAITE : créatures du plateau à remonter en main (longueur égale à
+   *  card.retreat_cost). */
+  retreatInstanceIds?: string[];
   /** APPRENTISSAGE — le sort n'est PAS joué depuis la main : il est lancé par la
    *  créature qui l'a mémorisé, dont voici l'instanceId. Troisième source de
    *  `playCard`, sur le modèle de `fromGraveyard` : seule la provenance change,
