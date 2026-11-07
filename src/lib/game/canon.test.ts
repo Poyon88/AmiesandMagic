@@ -230,9 +230,16 @@ describe("forme COMPOSÉE — reconnue et nommée", () => {
     expect([...pertes(jouer(s, sort))].sort()).toEqual([0, 3]);
   });
 
-  it("les autres dégâts au hasard restent Tempête", () => {
-    const deux = { uid: "t", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
-      composed: { ...canonPreset(1), target: { ...canonPreset(1).target!, count: 2 } } } as Capability;
-    expect(composedIcon(deux).keyword).toBe("spell_tempete");
+  const cap = (target: object) => ({ uid: "t", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+    composed: { ...canonPreset(1), target: { ...canonPreset(1).target!, ...target } } }) as Capability;
+
+  it("plusieurs unités ennemies au hasard, chacune d'un bloc : Canon", () => {
+    expect(composedIcon(cap({ count: 3 })).keyword).toBe("canon");
+  });
+
+  it("une vraie répartition ou une cible plus large reste Tempête", () => {
+    expect(composedIcon(cap({ designation: "scatter" })).keyword).toBe("spell_tempete");
+    expect(composedIcon(cap({ side: "any" })).keyword).toBe("spell_tempete");
+    expect(composedIcon(cap({ entity: "character" })).keyword).toBe("spell_tempete");
   });
 });

@@ -412,8 +412,9 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
   switch (eff.content) {
     case "deal_damage": {
       const t = eff.target;
-      // UNE unité ennemie au hasard → Canon (forme exacte de canonPreset).
-      if (t && t.designation === "random" && t.entity === "unit" && t.count === 1 && t.side === "enemy") return { symbol: KEYWORD_SYMBOLS.canon, keyword: "canon" };
+      // N unités ennemies au hasard, chacune frappée d'un bloc → Canon. Tempête
+      // garde les vraies répartitions (scatter) et les cibles plus larges.
+      if (t && t.designation === "random" && t.entity === "unit" && typeof t.count === "number" && t.side === "enemy") return { symbol: KEYWORD_SYMBOLS.canon, keyword: "canon" };
       if (t?.designation === "random" || t?.designation === "scatter") return { symbol: "🌩️", keyword: "spell_tempete" };
       // Toutes les unités des DEUX camps (Unité / Indifférent / Toutes) → Cataclysme.
       if (t && t.entity === "unit" && t.count === "all" && t.side === "any") return { symbol: "☄️", keyword: "cataclysme" };
