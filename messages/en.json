@@ -3264,7 +3264,10 @@
     "search_placeholder": "Search for an ability…",
     "creature_abilities_group": "Creature Abilities ({count})",
     "spell_abilities_group": "Action abilities ({count})",
-    "no_ability_match": "No ability matches \"{query}\"."
+    "no_ability_match": "No ability matches \"{query}\".",
+    "goal_text": "Each player embodies a <hi>hero</hi> who starts with <hi>{min} to {max} hit points</hi> depending on the hero ({usual} most often): a powerful power costs a few HP, while a modest power is offset by a few extra HP. You win the game by reducing the opposing hero's hit points to <hi>{zero}</hi>. To do so, you summon creatures and play actions.",
+    "stat_hero_start_value": "{min}–{max} HP",
+    "stat_starting_hand_value": "{first} or {second} cards"
   },
   "deck": {
     "alignment_incompatible": "Good and Evil alignments are incompatible",

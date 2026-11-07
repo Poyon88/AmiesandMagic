@@ -6,6 +6,7 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { useMemo, useState } from "react";
+import { cinzel, crimson, GoalSection, Hi, P, Section, Stat } from "@/components/tutorial/TutorialParts";
 import HomeHeader from "@/components/home/HomeHeader";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
@@ -46,8 +47,6 @@ import CounterIcon, { type CounterKind } from "@/components/game/orbite/counter-
 import EmblemDiamond from "@/components/game/orbite/EmblemDiamond";
 
 // ── Design tokens (Arcane War-Codex design system) ────────────────────────────
-const cinzel = "font-[family-name:var(--font-cinzel),serif]";
-const crimson = "font-[family-name:var(--font-crimson),serif]";
 
 /** Carte « vitrine » illustrant un clan ou une faction, choisie côté serveur. */
 export interface ClanVisual {
@@ -143,36 +142,6 @@ function TrackButton({ active, onClick, label }: { active: boolean; onClick: () 
 }
 
 // ── Shared layout primitives ──────────────────────────────────────────────────
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-9 am-animate-rise">
-      <AmHeading as="h2" align="left" className="mb-5">
-        {title}
-      </AmHeading>
-      <AmPanel corners className="p-5 md:p-7">
-        {children}
-      </AmPanel>
-    </section>
-  );
-}
-
-function P({ children }: { children: React.ReactNode }) {
-  return (
-    <p className={`${crimson} text-am-ink/90 leading-[1.85] mb-4 last:mb-0`} style={{ fontSize: 17 }}>
-      {children}
-    </p>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="am-gild-border rounded-[var(--am-r-md)] bg-am-bg-1 px-4 py-3 text-center">
-      <div className={`${cinzel} am-foil-text font-bold`} style={{ fontSize: 22 }}>{value}</div>
-      <div className={`${crimson} italic text-am-ink-soft mt-1`} style={{ fontSize: 13 }}>{label}</div>
-    </div>
-  );
-}
-
 function Bullets({ items }: { items: React.ReactNode[] }) {
   return (
     <ul className="space-y-3">
@@ -185,10 +154,6 @@ function Bullets({ items }: { items: React.ReactNode[] }) {
     </ul>
   );
 }
-
-const Hi = ({ children }: { children: React.ReactNode }) => (
-  <strong className="text-am-gold-bright font-semibold">{children}</strong>
-);
 
 // ── Visuels de démonstration ──────────────────────────────────────────────────
 // Les écus, jetons, médaillons et losanges ci-dessous sont les COMPOSANTS DU JEU,
@@ -304,21 +269,7 @@ function BeginnerGuide() {
   const tt = useTranslations("tutorial");
   return (
     <>
-      <Section title={tt('goal_title')}>
-        <P>
-          Chaque joueur incarne un <Hi>héros</Hi> qui démarre avec <Hi>{HERO_HP_MIN} à {HERO_HP_MAX} points de
-          vie</Hi> selon le héros ({HERO_MAX_HP} le plus souvent) : un pouvoir puissant se paie de quelques PV en
-          moins, un pouvoir modeste se compense par quelques PV en plus. Vous gagnez
-          la partie en réduisant les points de vie du héros adverse à <Hi>0</Hi>. Pour cela, vous invoquez des
-          créatures et jouez des actions.
-        </P>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <Stat value={`${HERO_HP_MIN}–${HERO_HP_MAX} PV`} label={tt('stat_hero_start')} />
-          <Stat value={`${FIRST_PLAYER_HAND_SIZE} ou ${STARTING_HAND_SIZE} cartes`} label={tt('stat_starting_hand')} />
-          <Stat value={`${STARTING_MANA} → ${MAX_MANA}`} label={tt('stat_mana_growth')} />
-          <Stat value={`${MAX_BOARD_SIZE}`} label={tt('stat_max_board')} />
-        </div>
-      </Section>
+      <GoalSection />
 
       <Section title="Lire une carte">
         <P>

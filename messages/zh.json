@@ -3264,7 +3264,10 @@
     "search_placeholder": "搜索技能…",
     "creature_abilities_group": "随从技能（{count}）",
     "spell_abilities_group": "行动能力（{count}）",
-    "no_ability_match": "没有与「{query}」匹配的技能。"
+    "no_ability_match": "没有与「{query}」匹配的技能。",
+    "goal_text": "每位玩家扮演一名<hi>英雄</hi>,根据英雄不同,初始拥有<hi>{min}至{max}点生命值</hi>(通常为{usual}):强大的能力需要以少量生命值为代价,较弱的能力则由额外的生命值来补偿。当对手英雄的生命值降至<hi>{zero}</hi>时,你就赢得了对局。为此,你需要召唤生物并打出行动。",
+    "stat_hero_start_value": "{min}–{max} 点生命值",
+    "stat_starting_hand_value": "{first}或{second}张牌"
   },
   "deck": {
     "alignment_incompatible": "善良与邪恶阵营不可兼容",

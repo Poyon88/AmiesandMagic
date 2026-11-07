@@ -20,6 +20,9 @@ interface MenuTileProps {
    *  (`absolute inset-0`). Comme il contient du texte à lire, le titre passe
    *  sous sa moitié haute et le voile se réduit à un halo derrière lui. */
   bgContent?: ReactNode;
+  /** Avec `bgContent` : hauteur du titre, en pourcentage de la LARGEUR de la
+   *  tuile (son ratio est fixe), pour le placer sous ce que le fond doit montrer. */
+  bgContentTitleTop?: number;
 }
 
 // Reusable tile for the home + collection hub. Same overall shape as
@@ -28,7 +31,7 @@ interface MenuTileProps {
 // player can identify the section at a glance. Renders as a proper
 // <Link> so middle-click / right-click / keyboard activation behave
 // like real navigation.
-export default function MenuTile({ href, label, description, accent, glyph, bgImage, bgContent }: MenuTileProps) {
+export default function MenuTile({ href, label, description, accent, glyph, bgImage, bgContent, bgContentTitleTop = 30 }: MenuTileProps) {
   const accentColor = ACCENT_HEX[accent];
   const aUnFond = Boolean(bgImage || bgContent);
 
@@ -93,7 +96,7 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
             style={{
               background:
                 bgContent
-                  ? "radial-gradient(ellipse 42% 26% at 50% 63%, rgba(10,10,24,0.85) 0%, rgba(10,10,24,0.6) 60%, transparent 100%)"
+                  ? `radial-gradient(ellipse 42% 26% at 50% ${bgContentTitleTop / 0.625 + 15}%, rgba(10,10,24,0.85) 0%, rgba(10,10,24,0.6) 60%, transparent 100%)`
                   : "linear-gradient(180deg, rgba(10,10,24,0.25) 0%, rgba(10,10,24,0.55) 50%, rgba(10,10,24,0.9) 100%)",
             }}
             aria-hidden="true"
@@ -131,8 +134,7 @@ export default function MenuTile({ href, label, description, accent, glyph, bgIm
       {/* Content */}
       <div
         className={`relative z-[2] flex flex-col items-center h-full gap-3 text-center transition-transform duration-500 group-hover:scale-[1.02] ${bgContent ? "justify-start px-4 md:px-5" : "justify-center p-6 md:p-8"}`}
-        // Pourcentage de la LARGEUR : suit la tuile, dont le ratio est fixe (16/10).
-        style={bgContent ? { paddingTop: "30%" } : undefined}
+        style={bgContent ? { paddingTop: `${bgContentTitleTop}%` } : undefined}
       >
         {glyph && !aUnFond && (
           <div

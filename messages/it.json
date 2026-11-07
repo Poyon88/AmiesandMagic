@@ -3264,7 +3264,10 @@
     "search_placeholder": "Cerca un'abilità…",
     "creature_abilities_group": "Abilità creature ({count})",
     "spell_abilities_group": "Abilità d'azione ({count})",
-    "no_ability_match": "Nessuna abilità corrisponde a « {query} »."
+    "no_ability_match": "Nessuna abilità corrisponde a « {query} ».",
+    "goal_text": "Ogni giocatore interpreta un <hi>eroe</hi> che inizia con <hi>da {min} a {max} punti vita</hi> a seconda dell'eroe ({usual} nella maggior parte dei casi): un potere forte costa qualche PV in meno, un potere modesto è compensato da qualche PV in più. Vinci la partita riducendo i punti vita dell'eroe avversario a <hi>{zero}</hi>. Per farlo, evochi creature e giochi azioni.",
+    "stat_hero_start_value": "{min}–{max} PV",
+    "stat_starting_hand_value": "{first} o {second} carte"
   },
   "deck": {
     "alignment_incompatible": "Allineamento Buono e Malvagio incompatibili",

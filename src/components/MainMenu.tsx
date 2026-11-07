@@ -3,6 +3,7 @@
 import HomeHeader from "@/components/home/HomeHeader";
 import MenuTile from "@/components/home/MenuTile";
 import TournamentTileBackdrop from "@/components/tournaments/TournamentTileBackdrop";
+import RulesTileBackdrop from "@/components/tutorial/RulesTileBackdrop";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import NewsBanner, { type BannerNews } from "@/components/NewsBanner";
 import { useTranslations } from "next-intl";
@@ -118,12 +119,8 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
                 accent="heroes"
                 label={t('tutorial_label')}
                 description={t('tutorial_desc')}
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M32 16 Q22 10 10 12 V48 Q22 46 32 52 Q42 46 54 48 V12 Q42 10 32 16 Z" />
-                    <path d="M32 16 V52" />
-                  </svg>
-                }
+                bgContent={<RulesTileBackdrop />}
+                bgContentTitleTop={38}
               />
             </li>
           </ul>

@@ -3264,7 +3264,10 @@
     "search_placeholder": "Buscar uma habilidade…",
     "creature_abilities_group": "Habilidades de criatura ({count})",
     "spell_abilities_group": "Habilidades de ação ({count})",
-    "no_ability_match": "Nenhuma habilidade corresponde a «{query}»."
+    "no_ability_match": "Nenhuma habilidade corresponde a «{query}».",
+    "goal_text": "Cada jogador encarna um <hi>herói</hi> que começa com <hi>{min} a {max} pontos de vida</hi> conforme o herói ({usual} na maioria das vezes): um poder forte custa alguns PV a menos, um poder modesto é compensado por alguns PV a mais. Você vence a partida reduzindo os pontos de vida do herói adversário a <hi>{zero}</hi>. Para isso, você invoca criaturas e joga ações.",
+    "stat_hero_start_value": "{min}–{max} PV",
+    "stat_starting_hand_value": "{first} ou {second} cartas"
   },
   "deck": {
     "alignment_incompatible": "Alinhamentos Bom e Maléfico incompatíveis",

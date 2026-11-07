@@ -3264,7 +3264,10 @@
     "search_placeholder": "Fähigkeit suchen…",
     "creature_abilities_group": "Kreaturfähigkeiten ({count})",
     "spell_abilities_group": "Aktionsfähigkeiten ({count})",
-    "no_ability_match": "Keine Fähigkeit entspricht „{query}\"."
+    "no_ability_match": "Keine Fähigkeit entspricht „{query}\".",
+    "goal_text": "Jeder Spieler verkörpert einen <hi>Helden</hi>, der je nach Held mit <hi>{min} bis {max} Lebenspunkten</hi> startet ({usual} meistens): Eine mächtige Kraft kostet ein paar LP, eine bescheidene Kraft wird durch ein paar LP mehr ausgeglichen. Du gewinnst das Spiel, indem du die Lebenspunkte des gegnerischen Helden auf <hi>{zero}</hi> senkst. Dazu beschwörst du Kreaturen und spielst Aktionen.",
+    "stat_hero_start_value": "{min}–{max} LP",
+    "stat_starting_hand_value": "{first} oder {second} Karten"
   },
   "deck": {
     "alignment_incompatible": "Gutes und böses Alignment nicht kompatibel",

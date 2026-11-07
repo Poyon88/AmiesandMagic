@@ -3264,7 +3264,10 @@
     "search_placeholder": "Rechercher une capacité…",
     "creature_abilities_group": "Capacités de créature ({count})",
     "spell_abilities_group": "Capacités d'action ({count})",
-    "no_ability_match": "Aucune capacité ne correspond à « {query} »."
+    "no_ability_match": "Aucune capacité ne correspond à « {query} ».",
+    "goal_text": "Chaque joueur incarne un <hi>héros</hi> qui démarre avec <hi>{min} à {max} points de vie</hi> selon le héros ({usual} le plus souvent) : un pouvoir puissant se paie de quelques PV en moins, un pouvoir modeste se compense par quelques PV en plus. Vous gagnez la partie en réduisant les points de vie du héros adverse à <hi>{zero}</hi>. Pour cela, vous invoquez des créatures et jouez des actions.",
+    "stat_hero_start_value": "{min}–{max} PV",
+    "stat_starting_hand_value": "{first} ou {second} cartes"
   },
   "deck": {
     "alignment_incompatible": "Alignement Bon et Maléfique incompatibles",

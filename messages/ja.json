@@ -3264,7 +3264,10 @@
     "search_placeholder": "能力を検索…",
     "creature_abilities_group": "クリーチャー能力（{count}）",
     "spell_abilities_group": "アクション能力（{count}）",
-    "no_ability_match": "「{query}」に一致する能力はありません。"
+    "no_ability_match": "「{query}」に一致する能力はありません。",
+    "goal_text": "各プレイヤーは<hi>ヒーロー</hi>となり、ヒーローに応じて<hi>{min}~{max}のライフ</hi>(通常は{usual})で開始します。強力なパワーはライフが少し低く、控えめなパワーはライフが少し高くなります。相手ヒーローのライフを<hi>{zero}</hi>にすればゲームに勝利です。そのためにクリーチャーを召喚し、アクションをプレイしましょう。",
+    "stat_hero_start_value": "{min}–{max} HP",
+    "stat_starting_hand_value": "{first}枚または{second}枚"
   },
   "deck": {
     "alignment_incompatible": "善と悪のアライメントは共存できません",
