@@ -885,7 +885,11 @@ export default function ComposedEffectsEditor({
 
               {eff.content === "grant_keyword" && (() => {
                 const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";
-                const optionsDecl = grantTriggersFor(grantId, eff.target?.location);
+                // Elle se confère la capacité en quittant le plateau : sa prochaine
+                // entrée en jeu est à venir.
+                const donAvantRetour = eff.target?.entity === "self"
+                  && (cap.trigger === "on_death" || cap.trigger === "on_return") ? true : undefined;
+                const optionsDecl = grantTriggersFor(grantId, eff.target?.location, donAvantRetour);
                 return (
                   <>
                     <span style={labelStyle}>{tr('label_granted_ability')}</span>
@@ -899,7 +903,7 @@ export default function ComposedEffectsEditor({
                       // Le déclencheur suit la capacité : garder celui de la
                       // précédente le rendrait incohérent en silence (une Armure
                       // « à la mort », un râle « à l'attaque »).
-                      grantTrigger: grantTriggersFor(v, eff.target?.location).includes(eff.grantTrigger as CapabilityTrigger)
+                      grantTrigger: grantTriggersFor(v, eff.target?.location, donAvantRetour).includes(eff.grantTrigger as CapabilityTrigger)
                         ? eff.grantTrigger
                         : defaultGrantTrigger(v, eff.target?.location),
                     }))}

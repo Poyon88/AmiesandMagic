@@ -2179,9 +2179,15 @@ export function getCapabilityTriggers(cardType: CardType, abilityId: string): Ca
  *  comme Esprit de corps donne tout son gain. Au cimetière, elle reste retirée :
  *  les chemins de retour en jeu ne déclenchent pas d'entrée.
  *
+ *  `entreeAVenir` : une créature qui se confère la capacité à sa mort quitte le
+ *  plateau, sa prochaine entrée en jeu est donc à venir, si elle est rejouée.
+ *
  *  Une liste vide ou à un seul élément ⇒ rien à choisir (passive, râle). */
-export function grantTriggersFor(abilityId: string, location: TargetSpec["location"] = "board"): CapabilityTrigger[] {
-  const entreeAVenir = location === "hand" || location === "deck";
+export function grantTriggersFor(
+  abilityId: string,
+  location: TargetSpec["location"] = "board",
+  entreeAVenir = location === "hand" || location === "deck",
+): CapabilityTrigger[] {
   return getCapabilityTriggers("creature", abilityId)
     .filter((t) => t !== "automatic" && (entreeAVenir || t !== "on_play"));
 }

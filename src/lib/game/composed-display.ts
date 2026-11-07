@@ -851,7 +851,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "paralyze": return frag(t, "self.paralyze");
     case "transformation": return frag(t, "self.transformation");
     case "poison": return frag(t, "self.poison");
-    case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) });
+    case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) }) + describeGrantTrigger(eff, t);
     default: return null;
   }
 }
