@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "Profanación X",
-        "desc": "Exilia las últimas X cartas de tu cementerio para otorgar hasta +X/+X a la unidad."
+        "desc": "Exilia hasta X cartas de tu cementerio, empezando por las más recientes: +1/+1 por cada carta exiliada."
       },
       "prescience": {
         "label": "Presciencia X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "Vampirismo X",
-        "desc": "Roba X PV a una unidad enemiga objetivo y los añade a los PV de esta unidad."
+        "desc": "Roba hasta X PV a una unidad enemiga objetivo y se los suma a los PV de esta unidad."
       },
       "traque_du_destin": {
         "label": "Acecho del destino X",
@@ -2191,8 +2191,9 @@
         "benediction": "Cura completamente a {cibles}.",
         "malediction": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
         "tactique": "Otorga permanentemente X de sus habilidades permanentes, elegidas al azar, a {cibles} (un sorteo por unidad).",
-        "vampirisme": "Roba X PV a {cibles} y los añade a los PV de esta unidad.",
+        "vampirisme": "Roba hasta X PV a {cibles} y se los suma a los PV de esta unidad.",
         "devoration": "Destruye a {cibles}; esta unidad gana permanentemente su ATQ y su PV.",
+        "sacrifice": "Destruye todas las demás unidades aliadas para ganar sus PV y su ATK de forma permanente.",
         "renforcement": "Otorga +X ATQ y +Y PV de forma permanente a todas las demás unidades aliadas.",
         "discipline": "Si todos los costes de tu tablero tienen la misma paridad que el suyo, otorga +X/+Y permanente a todas las demás unidades aliadas.",
         "usurpation": "Otorga +X/+Y permanente a todas las demás unidades aliadas por cada carta del adversario que hayas jugado.",
@@ -2206,8 +2207,7 @@
         "force_des_ancetres": "Mientras tu cementerio contenga 7 o más criaturas, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "seuil_sacrificiel": "Mientras tu mazo tenga 25 cartas o menos, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
         "silence_soi": "Pierde todas sus palabras clave y sus estadísticas vuelven a su valor original.",
-        "guerison_soi": "Recupera X PV.",
-        "sacrifice": "Destruye todas las demás unidades aliadas para ganar sus PV y su ATK de forma permanente."
+        "guerison_soi": "Recupera X PV."
       },
       "cibles": {
         "all_enemies": "todas las unidades enemigas",

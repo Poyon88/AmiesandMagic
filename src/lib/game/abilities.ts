@@ -612,7 +612,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   profanation: {
     id: "profanation", label: "Profanation X", symbol: "⚰️",
-    desc: "Exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité.",
+    desc: "Exile jusqu'à X cartes de votre cimetière, les plus récentes d'abord : +1/+1 par carte exilée.",
     applicable_to: ["creature"],
     creature: { cost: 7, costPerX: 3, se: 2.5, minTier: 2, scalable: true, zone: "Cimetière" },
   },
@@ -788,7 +788,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   vampirisme: {
     id: "vampirisme", label: "Vampirisme X", symbol: "🧛",
-    desc: "Vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.",
+    desc: "Vole jusqu'à X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité.",
     applicable_to: ["creature"],
     creature: { cost: 20, costPerX: 5, se: 5.5, minTier: 4, scalable: true, zone: "Terrain" },
   },

@@ -6078,8 +6078,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Vampirisme X: vole X PV à une unité ennemie ciblée
     if (hasKwOnPlay(cardInstance, "vampirisme")) for (const tid of ciblesOnPlay(cardInstance, "vampirisme", action.targetInstanceId, player, opponent)) {
-      const vampXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = vampXVals["vampirisme"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      // X réglé d'abord ; texte d'effet puis moitié du coût pour les cartes anciennes.
+      const legacyX = parseXValuesFromEffectText(cardInstance.card.effect_text)["vampirisme"]
+        || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const x = getKwX(cardInstance, "vampirisme", undefined, legacyX);
       const vampTarget = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
       if (vampTarget) {
         const stolen = Math.min(x, vampTarget.currentHealth);
@@ -6181,8 +6183,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
 
     // Profanation X: exile X cartes du cimetière, +1/+1 par carte
     if (hasKwOnPlay(cardInstance, "profanation")) {
-      const profXVals = parseXValuesFromEffectText(cardInstance.card.effect_text);
-      const x = profXVals["profanation"] || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      // X réglé d'abord ; texte d'effet puis moitié du coût pour les cartes anciennes.
+      const legacyX = parseXValuesFromEffectText(cardInstance.card.effect_text)["profanation"]
+        || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
+      const x = getKwX(cardInstance, "profanation", undefined, legacyX);
       const toExile = Math.min(x, player.graveyard.length);
       for (let i = 0; i < toExile; i++) {
         player.graveyard.pop(); // exile (remove from game)

@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "Profanazione X",
-        "desc": "Esilia le ultime X carte dal tuo cimitero per concedere fino a +X/+X all'unità."
+        "desc": "Esilia fino a X carte dal tuo cimitero, partendo dalle più recenti: +1/+1 per ogni carta esiliata."
       },
       "prescience": {
         "label": "Prescienza X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "Vampirismo X",
-        "desc": "Ruba X PV a un'unità nemica bersaglio e li aggiunge ai PV di questa unità."
+        "desc": "Ruba fino a X PV a un'unità nemica bersaglio e li aggiunge ai PV di questa unità."
       },
       "traque_du_destin": {
         "label": "Caccia al destino X",
@@ -2191,8 +2191,9 @@
         "benediction": "Cura completamente {cibles}.",
         "malediction": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
         "tactique": "Assegna definitivamente X delle sue abilità permanenti, scelte a caso, a {cibles} (un'estrazione per unità).",
-        "vampirisme": "Ruba X PV a {cibles} e li aggiunge ai PV di questa unità.",
+        "vampirisme": "Ruba fino a X PV a {cibles} e li aggiunge ai PV di questa unità.",
         "devoration": "Distrugge {cibles}; questa unità ottiene definitivamente il loro ATT e i loro PV.",
+        "sacrifice": "Distruggi tutte le altre unità alleate per ottenere in modo permanente i loro PV e il loro ATT.",
         "renforcement": "Conferisce +X ATK e +Y PV in modo permanente a tutte le altre unità alleate.",
         "discipline": "Se tutti i costi della tua plancia hanno la stessa parità del suo, dona +X/+Y permanente a tutte le altre unità alleate.",
         "usurpation": "Conferisce +X/+Y in modo permanente a tutte le altre unità alleate per ogni carta dell'avversario che hai giocato.",
@@ -2206,8 +2207,7 @@
         "force_des_ancetres": "Finché il tuo cimitero contiene 7 o più creature, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
         "seuil_sacrificiel": "Finché il tuo mazzo contiene 25 carte o meno, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
         "silence_soi": "Perde tutte le sue parole chiave e le sue statistiche tornano al valore originale.",
-        "guerison_soi": "Recupera X PV.",
-        "sacrifice": "Distruggi tutte le altre unità alleate per ottenere in modo permanente i loro PV e il loro ATT."
+        "guerison_soi": "Recupera X PV."
       },
       "cibles": {
         "all_enemies": "tutte le unità nemiche",

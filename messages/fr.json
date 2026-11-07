@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "Profanation X",
-        "desc": "Exile les X dernières cartes de votre cimetière pour accorder jusqu'à +X/+X à l'unité."
+        "desc": "Exile jusqu'à X cartes de votre cimetière, les plus récentes d'abord : +1/+1 par carte exilée."
       },
       "prescience": {
         "label": "Prescience X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "Vampirisme X",
-        "desc": "Vole X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité."
+        "desc": "Vole jusqu'à X PV à une unité ennemie ciblée et les ajoute aux PV de cette unité."
       },
       "traque_du_destin": {
         "label": "Traque du destin X",
@@ -2191,7 +2191,7 @@
         "benediction": "Soigne complètement {cibles}.",
         "malediction": "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
         "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
-        "vampirisme": "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
+        "vampirisme": "Vole jusqu'à X PV à {cibles} et les ajoute aux PV de cette unité.",
         "devoration": "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
         "sacrifice": "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",
         "renforcement": "Donne +X ATK et +Y PV de façon permanente à toutes les autres unités alliées.",

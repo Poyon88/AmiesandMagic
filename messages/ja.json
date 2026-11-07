@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "冒涜 X",
-        "desc": "墓地の最後のX枚を追放し、そのユニットに最大+X/+Xを与える。"
+        "desc": "墓地のカードを最大X枚まで、新しいものから順に追放する:追放したカード1枚につき+1/+1。"
       },
       "prescience": {
         "label": "予知 X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "吸血 X",
-        "desc": "対象の敵ユニットからXPVを奪い、このユニットのPVに加える。"
+        "desc": "対象の敵ユニット1体から最大X点のHPを奪い、このユニットのHPに加える。"
       },
       "traque_du_destin": {
         "label": "運命追跡 X",
@@ -2191,8 +2191,9 @@
         "benediction": "{cibles}を完全に回復する。",
         "malediction": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
         "tactique": "{cibles}に、自身の永続能力からランダムにX個を永続的に付与する(ユニットごとに1回抽選)。",
-        "vampirisme": "{cibles}からHPをX奪い、このユニットのHPに加える。",
+        "vampirisme": "{cibles}から最大X点のHPを奪い、このユニットのHPに加える。",
         "devoration": "{cibles}を破壊する。このユニットはそれらのATKとHPを永続的に得る。",
+        "sacrifice": "自軍の他のユニットをすべて破壊し、そのHPとATKを永続的に獲得する。",
         "renforcement": "他のすべての味方ユニットに、ATK+XとHP+Yを永続的に与える。",
         "discipline": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、他のすべての味方ユニットに+X/+Yを永続的に与える。",
         "usurpation": "あなたがプレイした相手のカード1枚につき、他のすべての味方ユニットに+X/+Yを永続的に与える。",
@@ -2206,8 +2207,7 @@
         "force_des_ancetres": "自分の墓地にクリーチャーが7体以上ある限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "seuil_sacrificiel": "自分のデッキが25枚以下である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "silence_soi": "すべてのキーワードを失い、ステータスが元の値に戻る。",
-        "guerison_soi": "HPをX回復する。",
-        "sacrifice": "自軍の他のユニットをすべて破壊し、そのHPとATKを永続的に獲得する。"
+        "guerison_soi": "HPをX回復する。"
       },
       "cibles": {
         "all_enemies": "すべての敵ユニット",

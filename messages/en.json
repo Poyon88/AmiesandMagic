@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "Desecration X",
-        "desc": "Exiles the last X cards from your graveyard to grant up to +X/+X to the unit."
+        "desc": "Exile up to X cards from your graveyard, most recent first: +1/+1 for each card exiled."
       },
       "prescience": {
         "label": "Prescience X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "Vampirism X",
-        "desc": "Steals X HP from a targeted enemy unit and adds it to this unit's HP."
+        "desc": "Steals up to X HP from a targeted enemy unit and adds them to this unit's HP."
       },
       "traque_du_destin": {
         "label": "Fate Hunt X",
@@ -2191,8 +2191,9 @@
         "benediction": "Fully heals {cibles}.",
         "malediction": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
         "tactique": "Permanently grants X of its permanent abilities, chosen at random, to {cibles} (one draw per unit).",
-        "vampirisme": "Steals X HP from {cibles} and adds it to this unit's HP.",
+        "vampirisme": "Steals up to X HP from {cibles} and adds them to this unit's HP.",
         "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
+        "sacrifice": "Destroy all other allied units to permanently gain their HP and ATK.",
         "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
         "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
         "usurpation": "Permanently gives +X/+Y to all other allied units for each opponent's card you have played.",
@@ -2206,8 +2207,7 @@
         "force_des_ancetres": "While your graveyard holds 7 or more creatures, all other allied units gain +X ATK and +Y HP.",
         "seuil_sacrificiel": "While your deck holds 25 cards or fewer, all other allied units gain +X ATK and +Y HP.",
         "silence_soi": "Loses all its keywords and its stats revert to their original values.",
-        "guerison_soi": "Recovers X HP.",
-        "sacrifice": "Destroy all other allied units to permanently gain their HP and ATK."
+        "guerison_soi": "Recovers X HP."
       },
       "cibles": {
         "all_enemies": "all enemy units",

@@ -262,7 +262,7 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   ...DESC_TOUTES_COMMUNES,
   malediction: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
   tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
-  vampirisme: "Vole X PV à {cibles} et les ajoute aux PV de cette unité.",
+  vampirisme: "Vole jusqu'à X PV à {cibles} et les ajoute aux PV de cette unité.",
   devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
   // La source est exclue : « autres » le dit, {cibles} ne le dirait pas.
   sacrifice: "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",

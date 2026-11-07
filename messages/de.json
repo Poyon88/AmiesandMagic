@@ -217,7 +217,7 @@
       },
       "profanation": {
         "label": "Entweihung X",
-        "desc": "Verbannt die letzten X Karten aus eurem Friedhof, um der Einheit bis zu +X/+X zu gewähren."
+        "desc": "Exiliere bis zu X Karten aus deinem Friedhof, die neuesten zuerst: +1/+1 pro exilierter Karte."
       },
       "prescience": {
         "label": "Präszienz X",
@@ -318,7 +318,7 @@
       },
       "vampirisme": {
         "label": "Vampirismus X",
-        "desc": "Stiehlt X LP von einer anvisierten gegnerischen Einheit und fügt sie den eigenen LP hinzu."
+        "desc": "Stiehlt einer anvisierten feindlichen Einheit bis zu X LP und fügt sie den LP dieser Einheit hinzu."
       },
       "traque_du_destin": {
         "label": "Schicksalsjagd X",
@@ -2191,8 +2191,9 @@
         "benediction": "Heilt {cibles} vollständig.",
         "malediction": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "tactique": "Verleiht {cibles} dauerhaft X zufällig gezogene seiner permanenten Fähigkeiten (eine Ziehung pro Einheit).",
-        "vampirisme": "Stiehlt {cibles} X LP und fügt sie den LP dieser Einheit hinzu.",
+        "vampirisme": "Stiehlt {cibles} bis zu X LP und fügt sie den LP dieser Einheit hinzu.",
         "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
+        "sacrifice": "Zerstöre alle anderen verbündeten Einheiten, um dauerhaft ihre LP und ihren ANG zu erhalten.",
         "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
         "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
         "usurpation": "Gibt allen anderen verbündeten Einheiten dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
@@ -2206,8 +2207,7 @@
         "force_des_ancetres": "Solange euer Friedhof 7 oder mehr Kreaturen enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "seuil_sacrificiel": "Solange euer Deck 25 Karten oder weniger enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren auf den Ausgangswert zurück.",
-        "guerison_soi": "Stellt X LP wieder her.",
-        "sacrifice": "Zerstöre alle anderen verbündeten Einheiten, um dauerhaft ihre LP und ihren ANG zu erhalten."
+        "guerison_soi": "Stellt X LP wieder her."
       },
       "cibles": {
         "all_enemies": "alle feindlichen Einheiten",
