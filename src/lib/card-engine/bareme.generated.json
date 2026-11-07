@@ -1085,6 +1085,12 @@
       "perY": 4,
       "n": 91
     },
+    "lien_du_sang": {
+      "base": 1.4,
+      "perX": 3,
+      "perY": 0,
+      "n": 0
+    },
     "canon": {
       "base": 1.4,
       "perX": 3.4,

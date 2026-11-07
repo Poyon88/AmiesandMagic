@@ -435,6 +435,10 @@
         "label": "Discipline +X/+Y",
         "desc": "Si tous les coûts de votre plateau ont la parité du sien, donne +X/+Y permanent à une autre unité alliée ciblée."
       },
+      "lien_du_sang": {
+        "label": "Lien du sang X",
+        "desc": "Gagne +X/+X et vous perdez X PV, si vos PV le permettent."
+      },
       "usurpation": {
         "label": "Usurpation +X/+Y",
         "desc": "Donne +X/+Y permanent à une autre unité alliée ciblée par carte adverse que vous avez jouée."

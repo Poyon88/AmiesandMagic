@@ -5678,6 +5678,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (n > 0) bonusOnPlay(cardInstance, "usurpation", x * n, y * n, action.targetInstanceId, player, opponent);
     }
 
+    // Lien du sang (invocation) : le coût en vie de la carte a déjà été prélevé,
+    // la garde de PV voit donc ce qu'il reste réellement au héros.
+    if (hasKwOnPlay(cardInstance, "lien_du_sang")) {
+      resolveLienDuSang(cardInstance, player, getKwX(cardInstance, "lien_du_sang", undefined, 1), undefined);
+    }
+
     // Apprentissage (invocation) : la créature retire un sort de la main et le
     // mémorise. Le joueur l'a désigné dans la modale ; sans désignation (client
     // sans modale) rien n'est appris — mieux vaut ne rien faire que consommer
@@ -10229,9 +10235,9 @@ function buildComposedFrames(
  *  idempotent, donc deux points d'ancrage suffisent (fin d'applyAction + après
  *  chaque frame de drainStack) sans instrumenter les écritures de `hero.hp`
  *  une à une — et une carte posée alors que son contrôleur est DÉJÀ sous le
- *  seuil se déclenche au balayage suivant (règle voulue). Les deux seules
- *  écritures qui BAISSENT les PV (dealDamageToHero et le coût en vie de
- *  playCard) sont couvertes par ces deux points.
+ *  seuil se déclenche au balayage suivant (règle voulue). Les trois seules
+ *  écritures qui BAISSENT les PV (dealDamageToHero, le coût en vie de playCard
+ *  et resolveLienDuSang) sont couvertes par ces deux points.
  *
  *  Le flag est posé AVANT résolution : un effet low_hp qui blesse son propre
  *  héros ne se re-déclenche pas. Les cascades (effet low_hp → dégâts → autre
@@ -10645,6 +10651,17 @@ function applyRenforcementSelf(inst: CardInstance, x: number, y: number): void {
   inst.lastBuffMode = composedStrikeMode; // couleur de l'effet → teinte du popup
 }
 
+// Lien du sang X : +X/+X PERMANENT à la créature contre X PV de son
+// propriétaire. Perte DIRECTE, comme le coût en vie de playCard : l'armure ne
+// protège pas d'un paiement, et ce ne sont pas des dégâts (ni Seuil de colère,
+// ni Drain de vie). Même garde aussi : le héros doit rester à 1 PV minimum,
+// sinon ni perte ni bonus — on ne paie pas « autant que possible ».
+function resolveLienDuSang(source: CardInstance, owner: PlayerState, x: number, mode: import("./types").KeywordMode | undefined): void {
+  if (x <= 0 || owner.hero.hp - x <= 0) return;
+  owner.hero.hp -= x;
+  withComposedMode(mode, () => applyRenforcementSelf(source, x, x));
+}
+
 // ─── Discipline +X/+Y : la condition de parité ──────────────────────────────
 //
 // Discipline est un Renforcement SOUS CONDITION : mêmes deux faces (créature →
@@ -10994,6 +11011,13 @@ function resolveCuratedKeywordEffect(
       const n = usurpationCount(owner, source);
       if (n === 0) return;
       bonusHorsEntree(kw, source, owner, opponent, targetInstanceId, inst, parCarte.x * n, parCarte.y * n, parCarte);
+      return;
+    }
+    case "lien_du_sang": {
+      // Mort / attaque / tap / retour / fin de tour / pioche / PV bas : la garde
+      // relit les PV à chaque déclenchement. À la mort, le héros paie et le gain
+      // part au cimetière avec la carte, comme Renforcement.
+      resolveLienDuSang(source, owner, inst?.x ?? x, inst?.mode);
       return;
     }
     case "esprit_de_corps": {

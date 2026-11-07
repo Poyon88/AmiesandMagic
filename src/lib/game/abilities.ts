@@ -1166,6 +1166,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // compte pas elle-même, gain FIGÉ au déclenchement et CUMULATIF d'un
   // déclenchement à l'autre, sans plafond. Pas une aura : sa place est dans
   // CURATED_MULTIMODE_IDS, pas dans recalculateAuras.
+  // Lien du sang X : +X/+X permanent à la créature contre X PV de son
+  // propriétaire, si le héros reste à 1 PV minimum (sinon rien). Perte directe,
+  // automatique, tous déclencheurs. Arbitrages de l'auteur (2026-11-07).
+  lien_du_sang: {
+    id: "lien_du_sang", label: "Lien du sang X", symbol: "🫀",
+    desc: "Gagne +X/+X et vous perdez X PV, si vos PV le permettent.",
+    applicable_to: ["creature"],
+    creature: {
+      cost: 3, costPerX: 3, se: 2.5, minTier: 1, scalable: true, zone: "Terrain",
+      desc: "Gagne +X/+X et vous perdez X PV, si vos PV le permettent.",
+    },
+  },
   usurpation: {
     id: "usurpation", label: "Usurpation +X/+Y", symbol: "⚜️",
     desc: "+X/+Y permanent à une autre unité alliée ciblée par carte adverse que vous avez jouée (ou à elle-même, ou à toutes les autres).",
@@ -1894,7 +1906,7 @@ export function creatureEngineId(a: AbilityDef): string {
 export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "appel_du_clan", "combustion", "convocation", "convocations_multiples", "dedoublement", "entrainement", "inspiration", "afflux",
   "ombre_du_passe", "pillage", "prescience", "remontee",
-  "savant", "suprematie", "tempete", "canon", "vampirisme", "cataclysme", "renforcement", "discipline", "usurpation", "esprit_de_corps", "impact",
+  "savant", "suprematie", "tempete", "canon", "vampirisme", "cataclysme", "renforcement", "discipline", "usurpation", "lien_du_sang", "esprit_de_corps", "impact",
   // Chantier « tous déclencheurs » : effets d'invocation rejoués depuis
   // mort / attaque / retour / fin de tour / activation.
   "concentration", "loyaute", "catalyse", "solidarite", "appel_supreme", "rassemblement",

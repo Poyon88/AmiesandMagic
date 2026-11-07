@@ -158,6 +158,9 @@ export type Keyword =
   // contrôleur a jouée depuis la main pendant la partie. Bénéficiaire réglable
   // comme Renforcement ; gain figé au déclenchement.
   | "usurpation"
+  // +X/+X PERMANENT à la créature contre X PV de son propriétaire, si le héros
+  // reste à 1 PV minimum ; sinon rien (multi-trigger, perte directe).
+  | "lien_du_sang"
   // +X/+X aux créatures en main de la même faction que la source (multi-trigger)
   | "entrainement"
   // Polymorphic — +X/+Y PERMANENT à la 1re créature du DECK du propriétaire en
