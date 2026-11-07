@@ -2821,13 +2821,7 @@ function resolveCreatureKeywordAsHeroPower(
       target.originalOwnerId = opponent.id;
       target.trueOwnerId = proprietaireApresVol(target, player, opponent);
       resetTurnStateForNewController(target);
-      const list = target.card.keywords as string[];
-      if (!list.includes("charge")) {
-        target.card = {
-          ...target.card,
-          keywords: [...list, "charge"] as unknown as Keyword[],
-        };
-      }
+      poserTraqueDeCorruption(target);
       player.board.push(target);
       break;
     }
@@ -2943,6 +2937,19 @@ function resetTurnStateForNewController(inst: CardInstance): void {
   inst.targetsAttackedThisTurn = [];
 }
 
+/** La Traque de Corruption ne dure que le temps du vol : le marqueur distingue
+ *  celle-ci d'une Traque de naissance, qui, elle, reste. */
+function poserTraqueDeCorruption(inst: CardInstance): void {
+  if (inst.card.keywords.includes("charge")) return;
+  inst.card = { ...inst.card, keywords: [...inst.card.keywords, "charge"] };
+  inst.traqueDeCorruption = true;
+}
+function retirerTraqueDeCorruption(inst: CardInstance): void {
+  if (!inst.traqueDeCorruption) return;
+  inst.traqueDeCorruption = false;
+  inst.card = { ...inst.card, keywords: inst.card.keywords.filter(k => k !== "charge") };
+}
+
 /** DOMINATION composée : `owner` prend le contrôle PERMANENT d'une unité du
  *  plateau adverse, si une place est libre.
  *
@@ -2955,6 +2962,7 @@ function prendreLeControle(u: CardInstance, owner: PlayerState, opponent: Player
   opponent.board.splice(idx, 1);
   u.hasSummoningSickness = true;
   u.originalOwnerId = null;
+  retirerTraqueDeCorruption(u);
   u.trueOwnerId = proprietaireApresVol(u, owner, opponent);
   owner.board.push(u);
 }
@@ -3304,6 +3312,7 @@ function stripBoostsToBase(inst: CardInstance): void {
 }
 
 function returnInstanceToPlay(inst: CardInstance): void {
+  retirerTraqueDeCorruption(inst);
   // RETARD X : quitter le plateau annule les effets en attente. Une unité
   // rejouée depuis la main ré-arme un décompte complet (cf. armRetards).
   inst.retards = undefined;
@@ -4322,7 +4331,9 @@ export function startTurn(state: GameState): GameState {
   for (const creature of [...opponent.board]) {
     if (creature.originalOwnerId === player.id) {
       opponent.board = opponent.board.filter(c => c !== creature);
-      creature.hasSummoningSickness = true;
+      // Fin de la Corruption : sa Traque s'en va, une Traque de naissance reste.
+      retirerTraqueDeCorruption(creature);
+      creature.hasSummoningSickness = !hasKw(creature, "charge");
       if (placesOccupees(player) < MAX_BOARD_SIZE) {
         player.board.push(creature);
       } else {
@@ -5754,9 +5765,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         stealTarget.originalOwnerId = opponent.id;
         stealTarget.trueOwnerId = proprietaireApresVol(stealTarget, player, opponent);
         resetTurnStateForNewController(stealTarget); // Traque + compteurs de tour
-        if (!stealTarget.card.keywords.includes("charge")) {
-          stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
-        }
+        poserTraqueDeCorruption(stealTarget);
         player.board.push(stealTarget);
       }
     }
@@ -7440,9 +7449,7 @@ function resolveSpellKeywords(
         corrupted.originalOwnerId = ctx.opponent.id;
         corrupted.trueOwnerId = proprietaireApresVol(corrupted, ctx.caster, ctx.opponent);
         resetTurnStateForNewController(corrupted); // Traque + compteurs de tour
-        if (!corrupted.card.keywords.includes("charge")) {
-          corrupted.card = { ...corrupted.card, keywords: [...corrupted.card.keywords, "charge"] };
-        }
+        poserTraqueDeCorruption(corrupted);
         ctx.caster.board.push(corrupted);
         break;
       }
@@ -11693,9 +11700,7 @@ function resolveCuratedKeywordEffect(
       stealTarget.originalOwnerId = opponent.id;
       stealTarget.trueOwnerId = proprietaireApresVol(stealTarget, owner, opponent);
       resetTurnStateForNewController(stealTarget);
-      if (!stealTarget.card.keywords.includes("charge")) {
-        stealTarget.card = { ...stealTarget.card, keywords: [...stealTarget.card.keywords, "charge"] };
-      }
+      poserTraqueDeCorruption(stealTarget);
       owner.board.push(stealTarget);
       return;
     }

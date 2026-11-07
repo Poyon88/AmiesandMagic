@@ -1465,6 +1465,8 @@ export interface CardInstance {
   // Utilisé par Remontée pour renvoyer une unité dans la main de son
   // propriétaire initial, pas du contrôleur actuel.
   trueOwnerId: string | null;
+  /** Traque posée par Corruption, retirée à la fin du vol. */
+  traqueDeCorruption?: boolean;
   /** CONQUÊTE : id du joueur à qui cette carte a été PRISE (dans son deck).
    *  Le conquérant en devient le propriétaire pour toute la partie — d'où
    *  `trueOwnerId` laissé à null : Remontée, Retour différé et consorts la
