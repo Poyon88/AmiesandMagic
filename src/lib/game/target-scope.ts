@@ -28,7 +28,8 @@ const SORTS_HORS_PORTEE = new Set<string>(["rappel", "exhumation", "incineration
 
 function campsDuType(t: SpellTargetType | undefined): TargetScope[] {
   switch (t) {
-    case "enemy_creature": return ["all_enemies"];
+    case "enemy_creature":
+    case "enemy_any": return ["all_enemies"];
     case "friendly_creature":
     case "friendly_any": return ["all_allies"];
     case "any":
@@ -56,7 +57,7 @@ export function spellScopes(id: SpellKeywordId | string): TargetScope[] {
  *  Mimique, Métamorphose, Incinération. Conférer a SA propre portée
  *  (`grantScope`, « tous les alliés ») depuis bien avant ce module. */
 const CREATURE_SCOPES: Record<string, TargetScope[]> = {
-  impact: TOUS_CAMPS,
+  impact: ["all_enemies"],
   remontee: TOUS_CAMPS,
   retour_differe: TOUS_CAMPS,
   devoration: TOUS_CAMPS,

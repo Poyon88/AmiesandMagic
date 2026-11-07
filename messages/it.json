@@ -454,7 +454,7 @@
       },
       "impact": {
         "label": "Impatto X",
-        "desc": "Infligge X danni a un bersaglio scelto (creatura o eroe, qualsiasi lato)."
+        "desc": "Infligge X danni a un bersaglio nemico (unità o eroe)."
       },
       "inspiration": {
         "label": "Ispirazione X",
@@ -700,7 +700,7 @@
       },
       "impact": {
         "label": "Impatto X",
-        "desc": "Infligge X danni a un bersaglio (creatura o eroe, qualsiasi schieramento)."
+        "desc": "Infligge X danni a un bersaglio nemico (unità o eroe)."
       },
       "canon": {
         "label": "Cannone X",

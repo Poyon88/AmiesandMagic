@@ -454,7 +454,7 @@
       },
       "impact": {
         "label": "Impact X",
-        "desc": "Deal X damage to a target (creature or hero, either side)."
+        "desc": "Deals X damage to an enemy target (unit or hero)."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -700,7 +700,7 @@
       },
       "impact": {
         "label": "Impact X",
-        "desc": "Deal X damage to a target (creature or hero, either side)."
+        "desc": "Deals X damage to an enemy target (unit or hero)."
       },
       "canon": {
         "label": "Cannon X",

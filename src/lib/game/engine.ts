@@ -5900,7 +5900,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     }
 
     // Impact X (invocation) : X dégâts à la cible choisie (créature OU héros,
-    // tout bord). applyImpactTo gère les sentinelles héros avant tout board.find.
+    // ennemi). applyImpactTo gère les sentinelles héros avant tout board.find.
     if (hasKwOnPlay(cardInstance, "impact")) for (const tid of ciblesOnPlay(cardInstance, "impact", action.targetInstanceId, player, opponent)) {
       applyImpactTo(tid, getKwX(cardInstance, "impact", undefined, 1), cardInstance, player, opponent);
     }
@@ -12635,7 +12635,7 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
         .filter(c => canBeRemonteed(c, sourceInstanceId ?? null))
         .map(c => c.instanceId);
     case "impact":
-      // Créature OU héros, tout bord.
+      // Unité ou héros ENNEMI.
       return impactTargetIds(player, opponent);
     case "renforcement":
     case "discipline":
@@ -12964,6 +12964,8 @@ export function ciblesEffetPouvoir(state: GameState, heroDef: HeroDefinition, i:
       switch (spellDef.targetType) {
         case "any":
           return [...player.board.map(c => c.instanceId), ...opponent.board.map(c => c.instanceId), "enemy_hero", "friendly_hero"];
+        case "enemy_any":
+          return [...opponent.board.map(c => c.instanceId), "enemy_hero"];
         case "enemy_creature":
           return opponent.board.map(c => c.instanceId);
         case "friendly_creature":
@@ -13789,16 +13791,12 @@ export function getOnAttackTargets(state: GameState, card: Card): string[] {
   return composedChoiceTargetIds(cap.composed.target, player, opponent, false); // effet composé de créature (à l'attaque)
 }
 
-/** Cibles d'Impact (créature OU héros, TOUT bord) : instanceIds des créatures
+/** Cibles d'Impact (unité OU héros ENNEMI) : instanceIds des créatures
  *  des deux plateaux (hors invisible / ombre non révélée) + sentinelles héros.
  *  Les sentinelles "enemy_hero"/"friendly_hero" sont relatives au `controller`. */
-export function impactTargetIds(controller: PlayerState, other: PlayerState): string[] {
+export function impactTargetIds(_controller: PlayerState, other: PlayerState): string[] {
   const targetable = (c: CardInstance) => !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed);
-  return [
-    ...controller.board.filter(targetable).map(c => c.instanceId),
-    ...other.board.filter(targetable).map(c => c.instanceId),
-    "enemy_hero", "friendly_hero",
-  ];
+  return [...other.board.filter(targetable).map(c => c.instanceId), "enemy_hero"];
 }
 
 /** Applique X dégâts d'Impact à une cible (créature OU héros). Les sentinelles
@@ -13914,7 +13912,7 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       case "vampirisme":
         return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);
       case "impact":
-        // Créature OU héros, tout bord (la source n'est pas encore en jeu).
+        // Unité ou héros ENNEMI.
         return impactTargetIds(player, opponent);
       case "mimique":
       case "metamorphose":

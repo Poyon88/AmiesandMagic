@@ -454,7 +454,7 @@
       },
       "impact": {
         "label": "Impacto X",
-        "desc": "Inflige X daños a un objetivo (criatura o héroe, en cualquier lado)."
+        "desc": "Inflige X puntos de daño a un objetivo enemigo (unidad o héroe)."
       },
       "inspiration": {
         "label": "Inspiración X",
@@ -700,7 +700,7 @@
       },
       "impact": {
         "label": "Impacto X",
-        "desc": "Inflige X de daño a un objetivo (criatura o héroe, cualquier bando)."
+        "desc": "Inflige X puntos de daño a un objetivo enemigo (unidad o héroe)."
       },
       "canon": {
         "label": "Cañón X",

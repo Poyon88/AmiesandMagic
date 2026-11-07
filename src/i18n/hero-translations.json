@@ -8,12 +8,12 @@
     "24": {
       "name": "Elendil",
       "power_name": "Magic Arrow",
-      "power_description": "Deal 1 damage to a target"
+      "power_description": "Deal 1 damage to an enemy target"
     },
     "28": {
       "name": "Gorash the Strategist",
       "power_name": "Power Strike",
-      "power_description": "Deal 2 damage to a target"
+      "power_description": "Deal 2 damage to an enemy target"
     },
     "29": {
       "name": "Durgrim",
@@ -135,12 +135,12 @@
     "24": {
       "name": "Elendil",
       "power_name": "Flecha Mágica",
-      "power_description": "Inflige 1 de daño a un objetivo"
+      "power_description": "Inflige 1 de daño a un objetivo enemigo"
     },
     "28": {
       "name": "Gorash el Estratega",
       "power_name": "Golpe Poderoso",
-      "power_description": "Inflige 2 puntos de daño a un objetivo"
+      "power_description": "Inflige 2 puntos de daño a un objetivo enemigo"
     },
     "29": {
       "name": "Durgrim",
@@ -262,12 +262,12 @@
     "24": {
       "name": "Elendil",
       "power_name": "Magischer Pfeil",
-      "power_description": "Füge einem Ziel 1 Schaden zu"
+      "power_description": "Füge einem feindlichen Ziel 1 Schaden zu"
     },
     "28": {
       "name": "Gorash der Stratege",
       "power_name": "Kraftvoller Schlag",
-      "power_description": "Füge einem Ziel 2 Schadenspunkte zu"
+      "power_description": "Füge einem feindlichen Ziel 2 Schadenspunkte zu"
     },
     "29": {
       "name": "Durgrim",
@@ -389,12 +389,12 @@
     "24": {
       "name": "Elendil",
       "power_name": "Freccia Magica",
-      "power_description": "Infliggi 1 danno a un bersaglio"
+      "power_description": "Infliggi 1 danno a un bersaglio nemico"
     },
     "28": {
       "name": "Gorash lo Stratega",
       "power_name": "Colpo Potente",
-      "power_description": "Infliggi 2 danni a un bersaglio"
+      "power_description": "Infliggi 2 danni a un bersaglio nemico"
     },
     "29": {
       "name": "Durgrim",
@@ -516,12 +516,12 @@
     "24": {
       "name": "Elendil",
       "power_name": "Flecha Mágica",
-      "power_description": "Causa 1 de dano a um alvo"
+      "power_description": "Causa 1 de dano a um alvo inimigo"
     },
     "28": {
       "name": "Gorash, o Estrategista",
       "power_name": "Golpe Poderoso",
-      "power_description": "Causa 2 pontos de dano a um alvo"
+      "power_description": "Causa 2 pontos de dano a um alvo inimigo"
     },
     "29": {
       "name": "Durgrim",
@@ -643,12 +643,12 @@
     "24": {
       "name": "エレンディル",
       "power_name": "魔法の矢",
-      "power_description": "対象1体に1ダメージを与える"
+      "power_description": "敵の対象1体に1ダメージを与える"
     },
     "28": {
       "name": "ゴラシュ、策略家",
       "power_name": "強力な一撃",
-      "power_description": "対象1体に2ダメージを与える"
+      "power_description": "敵の対象1体に2ダメージを与える"
     },
     "29": {
       "name": "ダーグリム",
@@ -770,12 +770,12 @@
     "24": {
       "name": "埃伦迪尔",
       "power_name": "魔法箭",
-      "power_description": "对一个目标造成1点伤害"
+      "power_description": "对一个敌方目标造成1点伤害"
     },
     "28": {
       "name": "戈拉什·谋略家",
       "power_name": "强力打击",
-      "power_description": "对一个目标造成2点伤害"
+      "power_description": "对一个敌方目标造成2点伤害"
     },
     "29": {
       "name": "杜格林",

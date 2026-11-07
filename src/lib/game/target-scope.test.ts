@@ -54,11 +54,11 @@ describe("portée « toutes » — capacités d'action", () => {
     expect(nom(n, 1, "E1")!.currentHealth).toBe(4);
   });
 
-  it("Impact toutes (deux camps) : créatures seulement, jamais les héros", () => {
+  it("Impact toutes : unités ennemies seulement, jamais les alliées ni les héros", () => {
     const s = plateau();
     const heros = [s.players[0].hero.hp, s.players[1].hero.hp];
-    const n = jouer(s, sort({ id: "impact", amount: 2, targetScope: "all" }));
-    expect(nom(n, 0, "Alliée")!.currentHealth).toBe(4);
+    const n = jouer(s, sort({ id: "impact", amount: 2, targetScope: "all_enemies" }));
+    expect(nom(n, 0, "Alliée")!.currentHealth).toBe(nom(s, 0, "Alliée")!.currentHealth);
     expect(nom(n, 1, "E1")!.currentHealth).toBe(3);
     expect(nom(n, 1, "E2")).toBeUndefined(); // 2 PV → morte
     expect([n.players[0].hero.hp, n.players[1].hero.hp]).toEqual(heros);
@@ -138,7 +138,7 @@ describe("camps ouverts", () => {
   it("déduits du type de cible pour les actions, cimetières exclus", () => {
     expect(spellScopes("entrave")).toEqual(["all_enemies"]);
     expect(spellScopes("renforcement")).toEqual(["all_allies"]);
-    expect(spellScopes("impact")).toEqual(["all_enemies", "all_allies", "all"]);
+    expect(spellScopes("impact")).toEqual(["all_enemies"]);
     expect(spellScopes("exhumation")).toEqual([]);
     expect(spellScopes("deferlement")).toEqual([]);
   });
@@ -187,8 +187,8 @@ describe("description en portée « toutes »", () => {
     const { getSpellKeywordDesc } = await import("./spell-keywords");
     expect(getSpellKeywordDesc({ id: "entrave", amount: 3, targetScope: "all_enemies" }))
       .toBe("Paralyse toutes les unités ennemies pendant 3 tour(s).");
-    expect(getSpellKeywordDesc({ id: "impact", amount: 2, targetScope: "all" }))
-      .toBe("Inflige 2 dégâts à toutes les unités des deux camps.");
+    expect(getSpellKeywordDesc({ id: "impact", amount: 2, targetScope: "all_enemies" }))
+      .toBe("Inflige 2 dégâts à toutes les unités ennemies.");
     // Sans portée : description ordinaire.
     expect(getSpellKeywordDesc({ id: "entrave", amount: 3 })).toContain("une créature ennemie ciblée");
   });

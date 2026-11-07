@@ -454,7 +454,7 @@
       },
       "impact": {
         "label": "Impact X",
-        "desc": "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord)."
+        "desc": "Inflige X dégâts à une cible ennemie (unité ou héros)."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -700,7 +700,7 @@
       },
       "impact": {
         "label": "Impact X",
-        "desc": "Inflige X dégâts à une cible (créature ou héros, n'importe quel bord)."
+        "desc": "Inflige X dégâts à une cible ennemie (unité ou héros)."
       },
       "canon": {
         "label": "Canon X",

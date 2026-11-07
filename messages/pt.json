@@ -454,7 +454,7 @@
       },
       "impact": {
         "label": "Impacto X",
-        "desc": "Causa X de dano a um alvo escolhido (criatura ou herói, qualquer lado)."
+        "desc": "Causa X de dano a um alvo inimigo (unidade ou herói)."
       },
       "inspiration": {
         "label": "Inspiração X",
@@ -700,7 +700,7 @@
       },
       "impact": {
         "label": "Impacto X",
-        "desc": "Causa X de dano a um alvo (criatura ou herói, qualquer lado)."
+        "desc": "Causa X de dano a um alvo inimigo (unidade ou herói)."
       },
       "canon": {
         "label": "Canhão X",

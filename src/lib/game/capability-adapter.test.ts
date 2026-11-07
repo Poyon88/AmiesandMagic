@@ -46,7 +46,7 @@ describe("deriveCapabilities — sorts", () => {
       params: { x: 3 },
     });
     // Le label du slot reprend le label du spell keyword, comme getSpellTargetSlots.
-    expect(caps[0].targets).toEqual([{ type: "any", label: "Impact X" }]);
+    expect(caps[0].targets).toEqual([{ type: "enemy_any", label: "Impact X" }]);
   });
 
   it("un spell_keyword sans cible n'a pas de slot", () => {

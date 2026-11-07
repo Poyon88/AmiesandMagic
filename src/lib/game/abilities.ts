@@ -1047,13 +1047,14 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // ─── Spell-only ───────────────────────────────────────────────────────────
   impact: {
     id: "impact", label: "Impact X", symbol: "💥",
-    desc: "Inflige X dégâts à une cible (créature ou héros, n'importe quel bord).",
+    desc: "Inflige X dégâts à une cible ennemie (unité ou héros).",
     applicable_to: ["creature", "spell"],
     creature: {
       cost: 6, costPerX: 4, se: 3.0, minTier: 1, scalable: true, zone: "Terrain",
-      desc: "Inflige X dégâts à une cible ciblée (créature ou héros, n'importe quel bord).",
+      desc: "Inflige X dégâts à une cible ennemie (unité ou héros).",
     },
-    spell: { params: ["amount"], needsTarget: true, targetType: "any" },
+    // Viser ses alliés passe par un effet composé.
+    spell: { params: ["amount"], needsTarget: true, targetType: "enemy_any" },
   },
   deferlement: {
     id: "deferlement", label: "Déferlement X", symbol: "🌊",

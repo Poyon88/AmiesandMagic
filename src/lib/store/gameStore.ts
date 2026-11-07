@@ -308,7 +308,7 @@ function pendingTriggerOverlay(
   // fin de tour, on le dérive de la capability (ex. buff → « choisissez une
   // créature à renforcer ») au lieu du texte de Remontée qui était figé.
   const KW_PROMPTS: Record<string, string> = {
-    impact: `💥 Impact — choisissez une cible à frapper${t.x ? ` (${t.x})` : ""}`,
+    impact: `💥 Impact — choisissez une cible ennemie à frapper${t.x ? ` (${t.x})` : ""}`,
     remontee: "🔼 Remontée — choisissez l'unité à renvoyer en main",
     affaiblissement: `🔻 Affaiblissement — choisissez la créature ennemie à affaiblir${t.x != null ? ` (-${t.x}/-${t.y ?? 0})` : ""}`,
     benediction: "✝️ Bénédiction — choisissez l'unité alliée à soigner entièrement",
