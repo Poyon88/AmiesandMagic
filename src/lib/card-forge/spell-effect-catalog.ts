@@ -17,7 +17,7 @@
 //
 // Règle de tri d'une entrée : elle n'est `composed` que si la sémantique legacy
 // est reproduite À L'IDENTIQUE. Tout ce qui demanderait une décomposition en
-// plusieurs lignes (Siphon = dégâts + soin du héros) ou porte une contrainte
+// plusieurs lignes ou porte une contrainte
 // implicite non exprimable par un TargetSpec (Entrainement = « même faction que
 // le sort ») reste `curated` : mieux vaut une mécanique intacte qu'un preset
 // qui ment.

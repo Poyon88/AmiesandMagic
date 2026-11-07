@@ -37,6 +37,9 @@ export const COMPOSED_FR: Record<string, string> = {
 
   "content.deal_damage_one": "inflige {x} dégât",
   "content.deal_damage_many": "inflige {x} dégâts",
+  "siphon.heal": "et soigne votre héros de {x} PV",
+  "siphon.heal_each": "et soigne votre héros de {x} PV par cible touchée",
+  "siphon.heal_scatter": "et soigne votre héros de {x} PV au total",
   "content.heal": "soigne {x} PV",
   "content.buff": "octroie +{x}/+{y}",
   "content.usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
@@ -345,6 +348,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "scatter.target_unit": "à une unité {side} aléatoire",
 
   "choice.deal_damage": "choisissez une cible à blesser",
+  "choice.siphon": "choisissez une cible à siphonner",
   "choice.heal": "choisissez une cible à soigner",
   "choice.buff": "choisissez une créature à renforcer",
   "choice.usurpation": "choisissez une créature à renforcer",
@@ -411,6 +415,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
   const eff = cap.composed;
   if (!eff) return { symbol: "✦", keyword: "" };
   switch (eff.content) {
+    case "siphon": return { symbol: "🩸", keyword: "spell_siphon" };
     case "deal_damage": {
       const t = eff.target;
       // N unités ennemies au hasard, chacune frappée d'un bloc → Canon. Tempête
@@ -680,6 +685,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
   const y = eff.magnitude?.y ?? 0;
   const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
+    case "siphon":
     case "deal_damage": return frag(t, x > 1 ? "content.deal_damage_many" : "content.deal_damage_one", { x: xAff });
     case "heal": return frag(t, "content.heal", { x: xAff });
     case "buff": return frag(t, "content.buff", { x: xAff, y: yAff });
@@ -819,6 +825,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
   const y = eff.magnitude?.y ?? 0;
   const yAff = amplitudeAffichee(y, eff.magnitude?.randomY, t);
   switch (eff.content) {
+    case "siphon":
     case "deal_damage": return frag(t, x > 1 ? "self.deal_damage_many" : "self.deal_damage_one", { x: xAff });
     case "heal": return frag(t, "self.heal", { x: xAff });
     case "buff": return frag(t, "self.buff", { x: xAff, y: yAff });
@@ -1011,11 +1018,12 @@ function describeTarget(
 function describeScatter(eff: ComposedEffect, t?: SafeT): string | null {
   const tg = eff.target;
   if (!tg || tg.designation !== "scatter") return null;
-  if (eff.content !== "deal_damage" && eff.content !== "heal") return null;
+  if (eff.content !== "deal_damage" && eff.content !== "siphon" && eff.content !== "heal") return null;
   const x = eff.magnitude?.x ?? 0;
   const xAff = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
-  const action = eff.content === "deal_damage" ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
-  const unit = eff.content === "deal_damage" ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
+  const degats = eff.content !== "heal";
+  const action = degats ? frag(t, "scatter.action_damage") : frag(t, "scatter.action_heal");
+  const unit = degats ? frag(t, "scatter.unit_damage") : frag(t, "scatter.unit_heal");
   const side = sideAdj(t, tg.side, false);
   const mtxt = filtreLabel(tg, t);
   const targetTxt = tg.entity === "both"
@@ -1126,6 +1134,15 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
     ? lead + phraseCorps
     : phraseCorps.charAt(0).toUpperCase() + phraseCorps.slice(1);
   return phrase + ".";
+}
+
+/** Part « soin » d'un Siphon : X par cible touchée, X au total en répartition. */
+function soinSiphonTexte(eff: ComposedEffect, t?: SafeT): string {
+  const x = amplitudeAffichee(eff.magnitude?.x ?? 0, eff.magnitude?.randomX, t, eff.magnitude?.minX);
+  const tg = eff.target;
+  if (tg?.designation === "scatter") return frag(t, "siphon.heal_scatter", { x });
+  const plusieurs = tg?.count === "all" || (typeof tg?.count === "number" && tg.count > 1);
+  return frag(t, plusieurs ? "siphon.heal_each" : "siphon.heal", { x });
 }
 
 /** Carte d'arrivée d'une transformation : une désignée, ou l'une des N au hasard. */

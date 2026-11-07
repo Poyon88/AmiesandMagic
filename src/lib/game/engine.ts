@@ -542,11 +542,17 @@ function isLethalTouch(source: CardInstance | import("./types").HeroState | null
   return !!source && "instanceId" in source && hasKw(source, "touche_mortel");
 }
 
+/** Le contenu suit-il le chemin des dégâts ? Siphon est un dégât composé, plus un
+ *  soin du héros : il doit passer partout où passe `deal_damage`. */
+function estDegatsComposes(content: import("./types").ComposedEffectContent): boolean {
+  return content === "deal_damage" || content === "siphon";
+}
+
 /** Enregistre une frappe de pouvoir (flèche source→cible) pour un dégât composé,
  *  UNIQUEMENT pour les modes déclenchés colorés (mort/retour/attaque/fin de tour).
  *  Le tap et l'on-play (mode absent) sont ignorés ici. */
 function recordPowerStrike(source: CardInstance | null, targetId: string, content: import("./types").ComposedEffectContent, x: number): void {
-  if (content !== "deal_damage" || x <= 0 || !source) return;
+  if (!estDegatsComposes(content) || x <= 0 || !source) return;
   const mode = composedStrikeMode;
   if (mode !== "death" && mode !== "return" && mode !== "attack" && mode !== "end_of_turn" && mode !== "start_of_turn" && mode !== "wound") return;
   powerStrikeSink.push({ sourceId: source.instanceId, targetId, mode });
@@ -1611,8 +1617,21 @@ function applyComposedToHero(
   x: number,
   source?: CardInstance | null,
 ): void {
-  if (content === "deal_damage") dealDamageToHero(hero, x, source);
+  if (estDegatsComposes(content)) dealDamageToHero(hero, x, source);
   else if (content === "heal") soignerHeros(hero, x);
+}
+
+/** Part « soin » d'un Siphon composé, à appeler après chaque cible touchée. Le
+ *  montant ne dépend pas des dégâts réels, comme le Siphon d'action : un coup
+ *  absorbé soigne quand même. Un objet n'encaisse rien, il ne soigne donc pas. */
+function soinDeSiphon(
+  composed: import("./types").ComposedEffect,
+  owner: PlayerState,
+  montant: number,
+  cible?: CardInstance,
+): void {
+  if (composed.content !== "siphon" || cible?.card.card_type === "item") return;
+  soignerHeros(owner.hero, montant);
 }
 
 /** Un effet composé CIBLE-t-il ses unités ? Seul « au choix » désigne ; au
@@ -1734,6 +1753,7 @@ function applyComposedToUnit(
       }
       return;
     }
+    case "siphon":
     case "deal_damage": {
       // Riposte : la source à punir est la créature à l'origine de l'effet, sauf
       // quand l'effet vient d'un SORT (source = instance de sort, hors plateau)
@@ -2502,14 +2522,16 @@ function resolveComposedEffect(
     if (coupable) {
       recordPowerStrike(source, coupable.instanceId, composed.content, x);
       applyComposedToUnit(composed, coupable, x, y, source, owner, opponent, fromSpell);
+      soinDeSiphon(composed, owner, x, coupable);
       return;
     }
     const camp = o.heroOwnerId
       ?? (o.instanceId ? [owner, opponent].find(p => p.graveyard.some(c => c.instanceId === o.instanceId))?.id : undefined);
     const joueur = [owner, opponent].find(p => p.id === camp);
-    if (joueur && (composed.content === "deal_damage" || composed.content === "heal")) {
+    if (joueur && (estDegatsComposes(composed.content) || composed.content === "heal")) {
       recordPowerStrike(source, heroStrikeSentinel(joueur.hero, owner, opponent), composed.content, x);
       applyComposedToHero(composed.content, joueur.hero, x, source);
+      soinDeSiphon(composed, owner, x);
     }
     return;
   }
@@ -2538,7 +2560,7 @@ function resolveComposedEffect(
   // passe touche forcément une cible neuve — pas de doublon, pas de hasard sur
   // le nombre. Assumé : on ne détruit pas deux fois la même créature.
   if (target.designation === "scatter") {
-    const pointwise = composed.content === "deal_damage" || composed.content === "heal";
+    const pointwise = estDegatsComposes(composed.content) || composed.content === "heal";
     // "all" n'a pas de sens ici (scatter tire AVEC remise, il lui faut un nombre
     // de passes fini) : on retombe sur une passe unique plutôt que sur zéro,
     // qui rendrait l'effet silencieusement inerte.
@@ -2567,8 +2589,10 @@ function resolveComposedEffect(
         // pousser une entrée afficherait un faux « -1 ».
         if (pointwise) sequentialHitsSink.push({ targetInstanceId: `__hero_${idx}__`, type: seqType });
         recordPowerStrike(source, `__hero_${idx}__`, composed.content, px);
+        soinDeSiphon(composed, owner, px);
       } else {
         applyComposedToUnit(composed, ref.unit, px, py, source, owner, opponent, fromSpell);
+        soinDeSiphon(composed, owner, px, ref.unit);
         if (pointwise) sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
         recordPowerStrike(source, ref.unit.instanceId, composed.content, px);
       }
@@ -2579,7 +2603,7 @@ function resolveComposedEffect(
   // Contenus OFFENSIFS : leur repli auto ne doit jamais frapper le camp du
   // lanceur (cf. selectComposedTargets).
   const harmful =
-    composed.content === "deal_damage" || composed.content === "destroy" ||
+    estDegatsComposes(composed.content) || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze" ||
     composed.content === "poison";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful,
@@ -2587,9 +2611,11 @@ function resolveComposedEffect(
     if (t.kind === "hero") {
       applyComposedToHero(composed.content, t.hero, x, source);
       recordPowerStrike(source, heroStrikeSentinel(t.hero, owner, opponent), composed.content, x);
+      soinDeSiphon(composed, owner, x);
     } else {
       applyComposedToUnit(composed, t.unit, x, y, source, owner, opponent, fromSpell);
       recordPowerStrike(source, t.unit.instanceId, composed.content, x);
+      soinDeSiphon(composed, owner, x, t.unit);
     }
   }
 }
@@ -9943,7 +9969,7 @@ function frameNeedsChoice(state: GameState, frame: StackFrame): boolean {
  *  rejoue le payoff sortant sans tuer/renvoyer la source). Cf. plan §7. */
 function isSelfRemovalComposed(c: import("./types").ComposedEffect): boolean {
   if (c.target?.entity !== "self") return false;
-  if (c.content === "bounce" || c.content === "destroy" || c.content === "deal_damage") return true;
+  if (c.content === "bounce" || c.content === "destroy" || estDegatsComposes(c.content)) return true;
   if (c.content === "debuff" && (c.magnitude?.y ?? 0) > 0) return true;
   return false;
 }

@@ -142,7 +142,7 @@ function termesNommes(b: Bareme, cap: Capability, ligneForcee?: string, multExte
   return termesLineaires(`cap.${id}`, ligne, mult, xEffectif(x, random, p.minX), y);
 }
 
-const DEGATS_REPARTIS = new Set(["deal_damage", "heal"]);
+const DEGATS_REPARTIS = new Set(["deal_damage", "siphon", "heal"]);
 
 function termesComposes(b: Bareme, cap: Capability, c: ComposedEffect): Terme[] {
   const m = c.magnitude ?? {};

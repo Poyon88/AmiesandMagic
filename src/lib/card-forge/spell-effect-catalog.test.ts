@@ -36,7 +36,7 @@ describe("catalogue d'effets de sort", () => {
       if (eff.target) {
         // "scatter" n'a de sens que pour dégâts/soin (cf. resolveComposedEffect).
         if (eff.target.designation === "scatter") {
-          expect(["deal_damage", "heal"]).toContain(eff.content);
+          expect(["deal_damage", "siphon", "heal"]).toContain(eff.content);
         }
         // Une cible "self" sur un sort n'aurait pas de source unité.
         expect(eff.target.entity).not.toBe("self");

@@ -33,6 +33,7 @@ import RetardSelect from "./RetardSelect";
 
 const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" | "unit" | "unit_or_hero"; xy?: boolean }[] = [
   { v: "deal_damage", l: "Infliger des dégâts", target: "unit_or_hero" },
+  { v: "siphon", l: "Siphon X (dégâts + soin du héros)", target: "unit_or_hero" },
   { v: "heal", l: "Soigner", target: "unit_or_hero" },
   { v: "buff", l: "Buff +X/+Y", target: "unit", xy: true },
   // Usurpation : le buff, multiplié par les cartes adverses jouées.
@@ -145,7 +146,7 @@ function scatterAllowed(content: ComposedEffectContent, location: TargetSpec["lo
  *  amplitude X en passes de 1. Pour tous les autres contenus, X est l'amplitude
  *  de l'effet (ou n'a pas de sens) et c'est NOMBRE qui donne le nombre de passes. */
 function scatterIsPointwise(content: ComposedEffectContent): boolean {
-  return content === "deal_damage" || content === "heal";
+  return content === "deal_damage" || content === "siphon" || content === "heal";
 }
 
 const FACTION_OPTIONS = Object.keys(FACTIONS).sort((a, b) => a.localeCompare(b, "fr"));
