@@ -101,13 +101,13 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge", "enterrement"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge", "enterrement", "discard"]);
 
 /** Sous-ensemble dont le pool peut être restreint par type de carte.
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
  *  en jeu) ; Invocation n'invoque que des unités et Sélection magique ne
  *  propose que des sorts : le filtre n'y aurait aucun sens. */
-const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation", "enterrement"]);
+const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation", "enterrement", "discard"]);
 
 /** Contenus capables de viser un OBJET (types de cible « Objet » et « Unité ou
  *  objet ») : l'objet reçoit le buff, part en main / sous le deck, perd ses
@@ -124,11 +124,14 @@ const ITEM_TARGET_CONTENTS = new Set<ComposedEffectContent>(["buff", "bounce", "
 const TYPE_UNITE_OU_OBJET = new Set<ComposedEffectContent>(["appel", "invocation"]);
 
 function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content: ComposedEffectContent): ComposedPoolFilter | undefined {
-  if (!pool?.cardType) return pool;
+  if (!pool) return pool;
+  const { cardType, minCost, ...communs } = pool;
+  const reste: ComposedPoolFilter = communs;
   // Appel n'accepte que « Objets » : un « Sorts » hérité d'une Sélection lui
   // ferait chercher une unité de type sort, c'est-à-dire rien.
-  if (CARD_TYPE_POOL_CONTENTS.has(content) && (!TYPE_UNITE_OU_OBJET.has(content) || pool.cardType === "item")) return pool;
-  const { cardType: _retire, ...reste } = pool;
+  if (cardType && CARD_TYPE_POOL_CONTENTS.has(content) && (!TYPE_UNITE_OU_OBJET.has(content) || cardType === "item")) reste.cardType = cardType;
+  // Le coût minimum n'a de case que sur la défausse : ailleurs il filtrerait en silence.
+  if (minCost && content === "discard") reste.minCost = minCost;
   return Object.keys(reste).length > 0 ? reste : undefined;
 }
 
@@ -973,13 +976,20 @@ export default function ComposedEffectsEditor({
                     </>
                   )}
 
+                  {eff.content === "discard" && (
+                    <>
+                      <span style={labelStyle}>{tr('label_pool_min_cost')}</span>
+                      {numInput(eff.pool?.minCost ?? 0, (n) => patchPool(idx, { minCost: n || undefined }))}
+                    </>
+                  )}
+
                   <span style={labelStyle}>{tr('label_pool_keyword')}</span>
                   {sel(eff.pool?.keywordId ?? "", [{ v: "", l: tr('pool_any') }, ...POOL_KEYWORDS.map((k) => ({ v: k.id, l: k.label }))],
                     (v) => patchPool(idx, { keywordId: v || undefined }))}
 
                   <span style={labelStyle} />
                   <span style={{ fontSize: 9, color: "#8a6d3b", fontStyle: "italic" }}>
-                    {tr(eff.content === "invocation" ? 'pool_hint_invocation' : eff.content === "draw_cards" ? 'pool_hint_draw' : 'pool_hint')}
+                    {tr(eff.content === "invocation" ? 'pool_hint_invocation' : eff.content === "draw_cards" ? 'pool_hint_draw' : eff.content === "discard" ? 'pool_hint_discard' : 'pool_hint')}
                   </span>
                 </>
               )}

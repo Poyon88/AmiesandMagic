@@ -124,8 +124,10 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.ability_generic": "une capacité",
   "content.draw_cards_one": "piochez {x} carte",
   "content.draw_cards_many": "piochez {x} cartes",
-  "content.discard_one": "l'adversaire défausse {x} carte",
-  "content.discard_many": "l'adversaire défausse {x} cartes",
+  "content.discard_filtered_one": "l'adversaire défausse {x} carte{filter} au hasard",
+  "content.discard_filtered_many": "l'adversaire défausse {x} cartes{filter} au hasard",
+  "content.discard_one": "l'adversaire défausse {x} carte au hasard",
+  "content.discard_many": "l'adversaire défausse {x} cartes au hasard",
   "content.summon_one": "invoque un {token}",
   "content.summon_many": "invoque {x} {token}",
   "content.token_one": "token",
@@ -277,6 +279,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "pool.type_creature": " de type unité",
   "pool.type_spell": " de type action",
   "pool.type_item": " de type objet",
+  "pool.min_cost": " de coût {n} ou plus",
 
   // Cible « soi-même » : le français veut une tournure RÉFLÉCHIE, pas un
   // complément accolé — « Se renvoie en main », et non « Renvoie en main à
@@ -669,6 +672,7 @@ function describePoolFilter(eff: ComposedEffect, t?: SafeT): string {
   if (p.faction) parts.push(frag(t, "pool.faction", { v: getFactionDisplayName(p.faction, t) }));
   if (p.clan) parts.push(frag(t, "pool.clan", { v: getClanName(p.clan, t) }));
   if (p.cardType) parts.push(frag(t, `pool.type_${p.cardType}`));
+  if (p.minCost) parts.push(frag(t, "pool.min_cost", { n: p.minCost }));
   if (p.keywordId) parts.push(frag(t, "pool.keyword", { v: libelleMotCle(p.keywordId, t) }));
   return parts.join("");
 }
@@ -752,7 +756,11 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       if (cardType || autres) return frag(t, x > 1 ? "content.draw_filtered_many" : "content.draw_filtered_one", { x: xAff, filter: describePoolFilter(eff, t) });
     }
       return frag(t, x > 1 ? "content.draw_cards_many" : "content.draw_cards_one", { x: xAff });
-    case "discard": return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
+    case "discard": {
+      const filter = describePoolFilter(eff, t);
+      if (filter) return frag(t, x > 1 ? "content.discard_filtered_many" : "content.discard_filtered_one", { x: xAff, filter });
+      return frag(t, x > 1 ? "content.discard_many" : "content.discard_one", { x: xAff });
+    }
     case "summon_token": {
       // NOM SEUL. Les stats du token — et depuis peu ses effets composés, qu'une
       // phrase ne saurait de toute façon pas dire — vivent dans la pastille qui

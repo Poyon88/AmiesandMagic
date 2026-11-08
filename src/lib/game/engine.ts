@@ -2284,8 +2284,12 @@ function resolveComposedEffect(
       return;
     }
     case "discard":
-      for (let i = 0; i < x && owner.hand.length > 0; i++) {
-        discardFromHand(owner, Math.floor(rng() * owner.hand.length), [owner, opponent]);
+      // Au hasard parmi les cartes de la main ADVERSE qui passent le filtre,
+      // réévaluées à chaque carte : les index glissent après chaque retrait.
+      for (let i = 0; i < x; i++) {
+        const eligibles = opponent.hand.flatMap((c, idx) => matchesPoolFilter(c.card, composed.pool) ? [idx] : []);
+        if (eligibles.length === 0) break;
+        discardFromHand(opponent, eligibles[Math.floor(rng() * eligibles.length)], [owner, opponent]);
       }
       return;
     case "summon_token": {
@@ -14988,6 +14992,7 @@ function matchesPoolFilter(card: Card, filter?: ComposedPoolFilter): boolean {
   if (filter.faction && card.faction !== filter.faction) return false;
   if (filter.clan && card.clan !== filter.clan) return false;
   if (filter.cardType && card.card_type !== filter.cardType) return false;
+  if (filter.minCost && card.mana_cost < filter.minCost) return false;
   if (filter.keywordId && !getCapabilities(card).some(c => c.abilityId === filter.keywordId)) return false;
   return true;
 }

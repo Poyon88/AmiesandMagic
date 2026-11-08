@@ -960,6 +960,8 @@ export interface ComposedPoolFilter {
   /** Type de carte : ne garde que les unités, les sorts ou les objets.
    *  Proposé par l'éditeur pour les Sélections (1 parmi 3, Royale) et Faveur. */
   cardType?: CardType;
+  /** Coût de mana imprimé minimum (inclus). Proposé pour la défausse composée. */
+  minCost?: number;
 }
 
 // --- Composable effects ---
