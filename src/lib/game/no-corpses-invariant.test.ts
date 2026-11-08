@@ -66,6 +66,8 @@ const COUVERTURE: Record<GameAction["type"], Couverture> = {
   // invariant, pas une coïncidence, et `items-equipement.test.ts` le vérifie.
   equip_item: "sans dégâts",
   sacrifice_item: "sans dégâts",
+  // Réécrit une carte EN MAIN : aucune unité touchée.
+  mutate_card: "sans dégâts",
 };
 
 // ─── Outillage ──────────────────────────────────────────────────────────────

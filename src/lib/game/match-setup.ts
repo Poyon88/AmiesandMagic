@@ -146,6 +146,28 @@ export function missingLinkedCardIds(
   return Array.from(linkedIds).filter((id) => !loaded.has(id)).sort((a, b) => a - b);
 }
 
+/** MUTATION X — vivier de TOUTES les créatures communes, toutes factions et
+ *  tous alignements (le pool de faction, lui, s'arrête à l'alignement des
+ *  decks). Chargé à CHAQUE partie : une carte à Mutation peut arriver en cours
+ *  de partie par Sélection, Découverte, vol… Filtré côté base (créature,
+ *  commune, jouable, découvrable) pour limiter l'egress, puis par les mêmes
+ *  filtres purs que les autres pools ; trié par id pour que les deux clients et
+ *  le rejeu serveur bâtissent EXACTEMENT le même vivier. */
+export function fetchMutationPoolRows(db: SupabaseClient): Promise<Card[]> {
+  return fetchAllRows<Card>(
+    (from, to) => db.from("cards").select(GAME_CARD_COLUMNS)
+      .eq("card_type", "creature").eq("rarity", "Commune").eq("status", "playable").eq("discoverable", true)
+      .order("id").range(from, to).returns<Card[]>(),
+    { label: "Vivier de Mutation" },
+  );
+}
+
+export function buildMutationPool(rows: Card[], specialSetIds: ReadonlySet<number>): Card[] {
+  return onlyPlayable(excludeNonDiscoverable(excludeSpecialSets(rows, specialSetIds as Set<number>)))
+    .filter((c) => c.card_type === "creature" && (c.rarity ?? "Commune") === "Commune")
+    .sort((a, b) => a.id - b.id);
+}
+
 /** Pools de tirage filtrés, Étincelle de Mana garantie dans le pool de faction. */
 export function buildPools(
   factionCardsData: Card[],
@@ -176,6 +198,8 @@ export interface MatchSetup {
   p2Hero: HeroDefinition | null;
   factionCards: Card[];
   allSpells: Card[];
+  /** Vivier de Mutation X (cf. buildMutationPool). */
+  mutationPool: Card[];
   tokenTemplates: TokenTemplate[];
   machineTemplates: Card[];
   p1OwnedLimitedIds: number[];
@@ -219,7 +243,7 @@ export async function loadMatchSetup(db: SupabaseClient, match: MatchRow): Promi
   const p2Hero = mapHeroRow((p2DeckData.data?.heroes as unknown as HeroRow) ?? null);
 
   const factions = selectionFactionsFor([...p1Cards, ...p2Cards]);
-  const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes, machineTemplates] = await Promise.all([
+  const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes, machineTemplates, mutationRows] = await Promise.all([
     fetchAllRows<Card>(
       (from, to) => db.from("cards").select(GAME_CARD_COLUMNS).in("faction", factions).order("id").range(from, to).returns<Card[]>(),
       { label: "Pool des factions du match (serveur)" },
@@ -236,10 +260,12 @@ export async function loadMatchSetup(db: SupabaseClient, match: MatchRow): Promi
       const { data } = await db.from("cards").select(GAME_CARD_COLUMNS).eq("set_id", set.id).eq("card_type", "creature").order("id").returns<Card[]>();
       return data ?? [];
     })(),
+    fetchMutationPoolRows(db),
   ]);
 
   const specialSetIds = new Set((specialSetsRes.data ?? []).map((r) => r.id));
   const { factionCards, allSpells } = buildPools(factionCardsData, allSpellsData, manaSparkRes.data?.[0], specialSetIds);
+  const mutationPool = buildMutationPool(mutationRows, specialSetIds);
 
   const missing = missingLinkedCardIds([...p1Cards, ...p2Cards], factionCards, allSpells, [p1Hero, p2Hero]);
   const linkedCardIds: number[] = [];
@@ -260,6 +286,7 @@ export async function loadMatchSetup(db: SupabaseClient, match: MatchRow): Promi
     p2Hero,
     factionCards,
     allSpells,
+    mutationPool,
     tokenTemplates: (tokenRes.data ?? []) as TokenTemplate[],
     machineTemplates,
     p1OwnedLimitedIds: limitedIds(p1Prints.data),
@@ -289,6 +316,7 @@ export function initialStateFromSetup(setup: MatchSetup, decouverteAlternee = re
   );
   state.tokenTemplates = setup.tokenTemplates;
   state.machineTemplates = setup.machineTemplates;
+  state.mutationPool = setup.mutationPool;
   state.players[0].ownedLimitedCardIds = setup.p1OwnedLimitedIds;
   state.players[1].ownedLimitedCardIds = setup.p2OwnedLimitedIds;
   return state;
@@ -313,6 +341,8 @@ export interface MatchSetupSnapshot {
   tokenTemplates: TokenTemplate[];
   factionCardIds: number[];
   allSpellIds: number[];
+  /** Absent des captures d'avant Mutation X : vivier vide au rejeu. */
+  mutationCardIds?: number[];
   machineTemplateIds: number[];
   linkedCardIds: number[];
   p1OwnedLimitedIds: number[];
@@ -333,6 +363,7 @@ export function snapshotSetup(setup: MatchSetup, capturedAt = new Date()): Match
     tokenTemplates: setup.tokenTemplates,
     factionCardIds: setup.factionCards.map((c) => c.id),
     allSpellIds: setup.allSpells.map((c) => c.id),
+    mutationCardIds: setup.mutationPool.map((c) => c.id),
     machineTemplateIds: setup.machineTemplates.map((c) => c.id),
     linkedCardIds: setup.linkedCardIds,
     p1OwnedLimitedIds: setup.p1OwnedLimitedIds,
@@ -348,7 +379,7 @@ export async function setupFromSnapshot(
   db: SupabaseClient,
   snap: MatchSetupSnapshot,
 ): Promise<{ setup: MatchSetup; changedCardIds: number[]; missingCardIds: number[] }> {
-  const ids = Array.from(new Set([...snap.factionCardIds, ...snap.allSpellIds, ...snap.machineTemplateIds]));
+  const ids = Array.from(new Set([...snap.factionCardIds, ...snap.allSpellIds, ...(snap.mutationCardIds ?? []), ...snap.machineTemplateIds]));
   const byId = new Map<number, Card & { updated_at?: string | null }>();
   for (let i = 0; i < ids.length; i += 300) {
     const lot = ids.slice(i, i + 300);
@@ -385,6 +416,7 @@ export async function setupFromSnapshot(
       p2Hero: snap.p2Hero,
       factionCards: pick(snap.factionCardIds),
       allSpells: pick(snap.allSpellIds),
+      mutationPool: pick(snap.mutationCardIds ?? []),
       tokenTemplates: snap.tokenTemplates,
       machineTemplates: pick(snap.machineTemplateIds),
       p1OwnedLimitedIds: snap.p1OwnedLimitedIds,

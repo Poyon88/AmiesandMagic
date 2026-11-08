@@ -68,6 +68,8 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   conquete: { content: "conquete", magnitude: { x: 1 } },
   exploration: { content: "exploration", magnitude: { x: 1 } },
   incineration: { content: "incineration", magnitude: { x: 1 }, target: board({ entity: "hero", designation: "automatic" }) },
+  // Enterrement : composé pour ouvrir le FILTRE de cartes (race, capacité…).
+  enterrement: { content: "enterrement", magnitude: { x: 1 }, target: board({ entity: "hero", designation: "automatic" }) },
   retour_differe: { content: "retour_differe", target: board({ side: "any" }) },
   // Silence : la forme composée reproduit la curée À L'IDENTIQUE (une unité,
   // tout bord, au choix) — et ouvre en plus la cible, que la mécanique de sort
@@ -133,9 +135,20 @@ export const TRANSFORMATION_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "transformation", cardIds: [], target: board({}) },
 };
 
+/** Entrée « Tactique » COMPOSÉE : chaque unité visée reçoit X capacités tirées
+ *  au hasard parmi celles des créatures communes de SON coût (cf.
+ *  appliquerTactique). Autonome comme « Conférer » : Tactique n'est pas un
+ *  mot-clé de sort. Avant la refonte du 2026-11-08 elle était muette sur un sort
+ *  (elle partageait les capacités de la source) et restait donc hors catalogue.
+ *  Part sur une unité alliée au choix ; la cible se règle ensuite. */
+export const TACTIQUE_ENTRY: SpellEffectCatalogEntry = {
+  kind: "composed", id: "tactique_compose", label: "Tactique (capacités au hasard, même coût)", symbol: "📋",
+  preset: { content: "tactique", magnitude: { x: 1 }, target: board({ side: "ally" }) },
+};
+
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY, TACTIQUE_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

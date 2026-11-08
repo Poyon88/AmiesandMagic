@@ -37,7 +37,7 @@ const EQUIVALENCE_COMPOSE: Record<string, string> = {
 const DECLENCHEURS_A_PRIORI: Bareme["declencheur"] = {
   on_play: 1, automatic: 1, spell_resolution: 1,
   on_death: 0.7, on_return: 0.6, on_activation: 1.2, on_attack: 0.8,
-  on_end_of_turn: 1.5, on_end_of_turn_in_hand: 1, on_start_of_turn: 1.5, on_start_of_turn_in_hand: 1,
+  on_end_of_turn: 1.5, on_end_of_turn_in_hand: 1, on_end_of_turn_in_graveyard: 1, on_start_of_turn: 1.5, on_start_of_turn_in_hand: 1,
   on_draw: 0.8, on_low_hp: 0.6, on_wound: 0.8,
 };
 
@@ -214,7 +214,7 @@ interface Multiplicateur {
 
 function multiplicateurs(): Multiplicateur[] {
   const out: Multiplicateur[] = [];
-  const libres = ["on_death", "on_return", "on_activation", "on_attack", "on_end_of_turn", "on_end_of_turn_in_hand",
+  const libres = ["on_death", "on_return", "on_activation", "on_attack", "on_end_of_turn", "on_end_of_turn_in_hand", "on_end_of_turn_in_graveyard",
     "on_start_of_turn", "on_start_of_turn_in_hand", "on_draw", "on_low_hp", "on_wound", "spell_resolution"] as const;
   for (const t of libres) out.push({ nom: `declencheur.${t}`, lire: (b) => b.declencheur[t] ?? 1, ecrire: (b, v) => { b.declencheur[t] = v; }, min: 0.15, max: 4 });
   for (const p of ["all_enemies", "all_allies", "all"] as const) out.push({ nom: `portee.${p}`, lire: (b) => b.portee[p], ecrire: (b, v) => { b.portee[p] = v; }, min: 0.5, max: 5 });

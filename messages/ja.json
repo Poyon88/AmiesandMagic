@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "戦術 X",
-        "desc": "自身の永続能力のうちランダムなX個を、対象の味方ユニットに永続的に付与する。"
+        "desc": "対象の味方ユニットに、同じコストのクリーチャーの能力からランダムにX個を与える。"
       },
       "exhumation": {
         "label": "発掘 X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "治癒 X",
         "desc": "対象の他の味方ユニット1体または自分のヒーローのHPをX回復する。"
+      },
+      "mutation": {
+        "label": "変異X",
+        "desc": "手札で：コストXのコモンクリーチャーを2体発見する。このカードはそれらの最高のATKとHP、各1つの能力を得る。"
+      },
+      "infestation": {
+        "label": "侵食X",
+        "desc": "このユニットのコピーX枚をデッキに混ぜる。コピーを引くと召喚され、もう1枚引く。"
+      },
+      "enterrement": {
+        "label": "埋葬X",
+        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く（足りない1枚ごとに疲労）。"
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
+      },
+      "enterrement": {
+        "label": "埋葬X",
+        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "引かれたとき",
         "on_low_hp": "HP15未満",
         "on_wound": "負傷",
-        "on_delay": "遅延 {d}"
+        "on_delay": "遅延 {d}",
+        "on_end_of_turn_in_graveyard": "ターン終了時、墓地にある間",
+        "in_graveyard_suffix": "墓地"
       },
       "siphon": {
         "heal": "さらに自分のヒーローのHPを{x}回復する",
@@ -964,8 +982,8 @@
         "silence": "沈黙させる",
         "dechainement": "コスト{y}のアクションを{x}枚ランダムにプレイする",
         "dechainement_one": "コスト{y}のアクションを1枚ランダムにプレイする",
-        "tactique_one": "自身の永続能力を1つランダムに授ける",
-        "tactique_many": "自身の永続能力を{x}つランダムに授ける",
+        "tactique_one": "同じコストのクリーチャーの能力をランダムに1つ与える",
+        "tactique_many": "同じコストのクリーチャーの能力をランダムに{x}個与える",
         "retour_differe": "所有者のデッキの一番下に置く",
         "retour_differe_cible": "{target}を{proprio}のデッキの下に置く",
         "proprio_one": "その所有者",
@@ -999,7 +1017,9 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
+        "enterrement_one": "{deck}：一番上のカード{filter}を墓地に置く",
+        "enterrement_many": "{deck}：上から{x}枚のカード{filter}を墓地に置く"
       },
       "self": {
         "transformation": "変身する",
@@ -1170,6 +1190,11 @@
         "times": "{x}回、毎回1{unit}を",
         "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
         "target_unit": "ランダムな{side}ユニット1体に"
+      },
+      "enterrement": {
+        "deck_enemy": "相手のデッキ",
+        "deck_ally": "あなたのデッキ",
+        "deck_any": "対象のデッキ"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
         "malediction": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
-        "tactique": "{cibles}に、自身の永続能力からランダムにX個を永続的に付与する(ユニットごとに1回抽選)。",
+        "tactique": "{cibles}に、同じコストのクリーチャーの能力からランダムにX個を与える（ユニットごとに抽選）。",
         "vampirisme": "{cibles}から最大X点のHPを奪い、このユニットのHPに加える。",
         "devoration": "{cibles}を破壊する。このユニットはそれらのATKとHPを永続的に得る。",
         "sacrifice": "自軍の他のユニットをすべて破壊し、そのHPとATKを永続的に獲得する。",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "自分の墓地にクリーチャーが7体以上ある限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "seuil_sacrificiel": "自分のデッキが25枚以下である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "silence_soi": "すべてのキーワードを失い、ステータスが元の値に戻る。",
-        "guerison_soi": "HPをX回復する。"
+        "guerison_soi": "HPをX回復する。",
+        "tactique_soi": "同じコストのクリーチャーの能力からランダムにX個を得る。"
       },
       "cibles": {
         "all_enemies": "すべての敵ユニット",
@@ -3084,7 +3110,7 @@
     "content_exploration": "探索（カウンター、3でドロー）",
     "content_incineration": "焼却（墓地を戻す）",
     "content_devoration": "捕食（破壊して吸収）",
-    "content_tactique": "戦術（自身の永続能力を分け与える）",
+    "content_tactique": "戦術（ランダムな能力、同コスト）",
     "content_retour_differe": "遅延帰還（デッキの下へ）",
     "content_silence": "沈黙（対象から全て取り除く）",
     "content_dechainement": "解放 X/Y（ランダムなアクション）",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "遅延 X（X回後のターン開始時）",
     "retard_turns_title": "遅延：発動までのターン数",
     "retard_spell_title": "遅延：効果は使用者のX回後のターン開始時に発動し、対象はその時点で選ばれる",
-    "label_retard": "遅延"
+    "label_retard": "遅延",
+    "trigger_on_end_of_turn_in_graveyard": "ターン終了時、墓地にある間",
+    "content_enterrement": "埋葬（デッキ→墓地、絞り込み可）"
   },
   "game": {
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ いずれかを選択",
     "choix_ou_subtitle": "これらの効果のうち1つだけが解決される。",
     "activation_menu_title": "どの能力を起動しますか？",
-    "activation_learned": "{name}を唱える"
+    "activation_learned": "{name}を唱える",
+    "mutation_button": "変異",
+    "mutation_button_title": "変異：このカードを変化させる（無料・1回のみ）",
+    "mutation_discover": "変異 — 発見 {n}/2",
+    "mutation_discover_subtitle": "コスト{x}のコモンクリーチャーを1体選ぶ",
+    "mutation_pick_ability": "変異 — 能力 {n}/2",
+    "mutation_pick_subtitle": "このクリーチャーが受け継がせる能力を選ぶ",
+    "mutation_empty": "このコストのクリーチャーはいません。",
+    "mutation_cancel": "キャンセル",
+    "infestation_caption": "🪳 侵食",
+    "enterrement_caption": "⚰ 埋葬"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

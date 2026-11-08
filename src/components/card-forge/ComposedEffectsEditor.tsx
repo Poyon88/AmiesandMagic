@@ -72,11 +72,12 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "conquete", l: "Conquête (compteur)", target: "none" },
   { v: "exploration", l: "Exploration (compteur, pioche à 3)", target: "none" },
   { v: "incineration", l: "Incinération (recycler un cimetière)", target: "unit_or_hero" },
+  { v: "enterrement", l: "Enterrement (deck → cimetière, filtrable)", target: "unit_or_hero" },
   { v: "devoration", l: "Dévoration (détruire et absorber)", target: "unit" },
   // Tactique : la SOURCE partage X de ses capacités permanentes, tirées au
   // hasard. Réservé de fait aux créatures — un sort n'a pas de capacités
   // permanentes à donner, et l'effet reste alors muet (comme Dévoration).
-  { v: "tactique", l: "Tactique (partage ses capacités permanentes, créature)", target: "unit" },
+  { v: "tactique", l: "Tactique (capacités au hasard, même coût)", target: "unit" },
   { v: "retour_differe", l: "Retour différé (sous le deck)", target: "unit" },
   // Silence : même corps que la mécanique de sort, mais la cible se déclare —
   // « toutes les unités ennemies », « une au hasard »… deviennent possibles.
@@ -100,13 +101,13 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
 /** Contenus paramétrés par un filtre de pool (race / faction / clan / mot-clé).
  *  Pour eux, X est un PLAFOND DE COÛT des cartes révélées (comme exhumation),
  *  pas une amplitude. */
-const POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge"]);
+const POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "invocation", "selection", "selection_magique", "renfort_royal", "appel", "appel_supreme", "faveur", "tresor", "forge", "enterrement"]);
 
 /** Sous-ensemble dont le pool peut être restreint par type de carte.
  *  Appel depuis le deck ne pose qu'une unité OU un objet (un sort ne se met pas
  *  en jeu) ; Invocation n'invoque que des unités et Sélection magique ne
  *  propose que des sorts : le filtre n'y aurait aucun sens. */
-const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation"]);
+const CARD_TYPE_POOL_CONTENTS = new Set<ComposedEffectContent>(["draw_cards", "selection", "renfort_royal", "faveur", "appel_supreme", "appel", "invocation", "enterrement"]);
 
 /** Contenus capables de viser un OBJET (types de cible « Objet » et « Unité ou
  *  objet ») : l'objet reçoit le buff, part en main / sous le deck, perd ses
@@ -137,7 +138,7 @@ function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content
  *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
  *  ciblage — et Domination sort sa victime du pool, ce qui revient à « au
  *  hasard ». */
-const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination"]);
+const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination", "enterrement"]);
 
 /** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
  *  passe. Hors plateau, il n'y a rien à répartir. */
@@ -242,7 +243,7 @@ export default function ComposedEffectsEditor({
   const locale = useLocale();
   // Liste unifiée active seulement si l'appelant fournit le couple curated/onCuratedChange.
   const unified = !!curated && !!onCuratedChange && !singleEffect;
-  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }, { v: "on_delay", l: tr('trigger_on_delay') }];
+  const triggersUnite: { v: CapabilityTrigger; l: string }[] = [{ v: "on_play", l: tr('trigger_on_play') }, { v: "on_death", l: tr('trigger_on_death') }, { v: "on_return", l: tr('trigger_on_return') }, { v: "on_activation", l: tr('trigger_on_activation') }, { v: "on_attack", l: tr('trigger_on_attack') }, { v: "on_end_of_turn", l: tr('trigger_on_end_of_turn') }, { v: "on_end_of_turn_in_hand", l: tr('trigger_on_end_of_turn_in_hand') }, { v: "on_end_of_turn_in_graveyard", l: tr('trigger_on_end_of_turn_in_graveyard') }, { v: "on_start_of_turn", l: tr('trigger_on_start_of_turn') }, { v: "on_start_of_turn_in_hand", l: tr('trigger_on_start_of_turn_in_hand') }, { v: "on_draw", l: tr('trigger_on_draw') }, { v: "on_low_hp", l: tr('trigger_on_low_hp') }, { v: "on_wound", l: tr('trigger_on_wound') }, { v: "on_delay", l: tr('trigger_on_delay') }];
   const triggers: { v: CapabilityTrigger; l: string }[] = isUnit
     // Filtré par la MÊME règle que le moteur (`isTokenFiringTrigger`, dérivée de
     // TOKEN_FIRING_MODES) plutôt que par une liste tenue ici : deux listes qui

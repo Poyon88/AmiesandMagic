@@ -13,10 +13,11 @@ import {
   creatureNeedsTarget, deferredKwTargetIds, endOfTurnTriggerTargets, getCreatureTargets, getGraveyardTargets,
   ciblesEffetPouvoir, effetPouvoirACible, getSpellTargetSlots, getValidTargets, heroPowerComposedChoice,
   chantBonusForSpell, ordreSelectionsCreature, selectionAmplitudeOnPlay, selectionCardsForKeyword, tempoBonusForCard,
-  canPlayFromGraveyard, canSuspendToEveil, getComposedTapTargets, getConqueteOffer, pouvoirsActivables,
+  canPlayFromGraveyard, canSuspendToEveil, canMutate, getComposedTapTargets, getConqueteOffer, pouvoirsActivables,
   getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir, peutPayerRetraite,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
+import { mutationCapacites, mutationOffer, mutationX } from "@/lib/game/mutation";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import { getEquipCost, objetsDe, peutRecevoirObjet } from "@/lib/game/items";
 import type { GameAction, GameState, PlayerState, SelectionFamilyId, SpellTargetType } from "@/lib/game/types";
@@ -229,6 +230,22 @@ export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): 
     for (const c of plusieurs(rand, getConqueteOffer(state), variantes)) out.push({ type: "spend_conquete", cardInstanceId: c.instanceId });
   }
   if ((me.machine?.inventions ?? 0) >= 1 && !mainPleine) out.push({ type: "take_machine" });
+
+  // Mutation X : choix tirés au hasard dans les offres (re-validées par le moteur).
+  const pick = <T,>(xs: readonly T[]): T | undefined => xs[Math.floor(rand() * xs.length)];
+  for (const ci of me.hand) {
+    if (!canMutate(state, ci.instanceId)) continue;
+    const x = mutationX(ci.card);
+    for (let v = 0; v < Math.max(1, variantes); v++) {
+      const a = pick(mutationOffer(state.mutationPool, x, ci.instanceId, 1));
+      const b = a && pick(mutationOffer(state.mutationPool, x, ci.instanceId, 2, a.id));
+      const capA = a && pick(mutationCapacites(a));
+      const capB = b && pick(mutationCapacites(b));
+      if (a && b && capA && capB) {
+        out.push({ type: "mutate_card", cardInstanceId: ci.instanceId, creatureIds: [a.id, b.id], capUids: [capA.uid, capB.uid] });
+      }
+    }
+  }
 
   // Éveil : mettre une carte en éveil, verser des points, la faire arriver.
   for (const ci of me.hand) if (canSuspendToEveil(state, ci.instanceId)) out.push({ type: "suspend_eveil", cardInstanceId: ci.instanceId });

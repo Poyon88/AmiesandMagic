@@ -17,7 +17,7 @@ import type { GameState } from "./types";
  */
 
 // Fields excluded from the hash:
-//  - factionCardPool / allSpellsPool / tokenTemplates / machineTemplates : static, stripped from
+//  - factionCardPool / allSpellsPool / tokenTemplates / machineTemplates / mutationPool : static, stripped from
 //    the snapshot too; each client re-attaches its own copy.
 //  - turnStartedAt / choiceStartedAt : wall-clock Date.now() stamped per client;
 //    legitimately differs between clients and never affects gameplay.
@@ -33,6 +33,7 @@ const VOLATILE_KEYS = new Set([
   "allSpellsPool",
   "tokenTemplates",
   "machineTemplates",
+  "mutationPool",
   "turnStartedAt",
   "choiceStartedAt",
   "fureurStrikes",
@@ -50,6 +51,7 @@ const VOLATILE_KEYS = new Set([
   "animationCheckpoints",
   "deckEffectEvents",
   "compagnonsEvents",
+  "enterrementEvents",
   "powerStrikes",
   "recastEvents",
   "stackOverflowCount",

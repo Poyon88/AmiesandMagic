@@ -727,7 +727,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   tactique: {
     id: "tactique", label: "Tactique X", symbol: "📋",
-    desc: "Attribue définitivement à une unité alliée ciblée X de ses capacités permanentes, tirées au hasard.",
+    desc: "Donne à une unité alliée ciblée X capacités tirées au hasard parmi celles des créatures de même coût.",
     applicable_to: ["creature"],
     creature: { cost: 11, costPerX: 7, se: 4.0, minTier: 3, scalable: true, zone: "Terrain" },
   },
@@ -1230,6 +1230,40 @@ export const ABILITIES: Record<string, AbilityDef> = {
       desc: "Gagne +1 ATK ou +1 PV au hasard par Esprit de corps que vous avez déjà déclenché.",
     },
   },
+  // MUTATION X — activée EN MAIN, à son tour, gratuitement (cf.
+  // lib/game/mutation.ts). Deux Découvertes de créatures communes de coût X,
+  // toutes factions, puis une capacité choisie sur chacune : la carte garde son
+  // identité et ses autres capacités, prend l'ATK et les PV les plus hauts des
+  // deux élues, et ajoute les deux capacités. Une seule mutation par carte.
+  //
+  // Coût FORT par X : la mutante vaut une créature de coût X, quel que soit le
+  // coût de la carte. Avec 6/X, une Mutation très au-dessus du coût de la carte
+  // dépasse son budget et la forge la refuse. À recalibrer après simulation.
+  //
+  // Pas de déclencheur en jeu : elle n'agit que par l'action `mutate_card`.
+  mutation: {
+    id: "mutation", label: "Mutation X", symbol: "🧬",
+    desc: "En main : découvrez 2 créatures communes de coût X. Prend leurs meilleures ATK et PV et 1 capacité de chacune.",
+    applicable_to: ["creature"],
+    creature: {
+      cost: 6, costPerX: 6, se: 3.0, minTier: 2, scalable: true, zone: "Main",
+      desc: "En main : découvrez 2 créatures communes de coût X. Prend leurs meilleures ATK et PV et 1 capacité de chacune.",
+    },
+  },
+  // INFESTATION X — à son déclenchement, X copies de la porteuse (état actuel)
+  // sont mélangées au deck du contrôleur. Une copie PIOCHÉE est invoquée
+  // d'office (détruite si le plateau est plein) et remplacée par une autre
+  // pioche, comme Cycle éternel. Les copies gardent Infestation : boule de
+  // neige voulue, bornée par INFESTATION_DECK_CAP. Coût à recalibrer.
+  infestation: {
+    id: "infestation", label: "Infestation X", symbol: "🪳",
+    desc: "Mélange X copies de cette unité dans votre deck. Piochée, une copie est invoquée et vous piochez une autre carte.",
+    applicable_to: ["creature"],
+    creature: {
+      cost: 3, costPerX: 4, se: 2.5, minTier: 1, scalable: true, zone: "Mixte",
+      desc: "Mélange X copies de cette unité dans votre deck. Piochée, une copie est invoquée et vous piochez une autre carte.",
+    },
+  },
   affaiblissement: {
     id: "affaiblissement", label: "Affaiblissement -X/-Y", symbol: "🔻",
     desc: "Donne -X ATK et -Y PV à une créature ennemie ciblée",
@@ -1280,6 +1314,23 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
     spell: {
       desc: "Remet X cartes au hasard du cimetière ciblé sous le deck de son propriétaire",
+      params: ["amount"], needsTarget: true, targetType: "any",
+    },
+  },
+  // ENTERREMENT X — miroir d'Incinération : les X premières cartes du deck du
+  // joueur VISÉ (héros cliqué ; adversaire sans choix possible) partent dans son
+  // cimetière. Chaque carte manquante inflige la fatigue au héros visé. Aucun
+  // effet à l'arrivée (pas de râle). Coût à recalibrer.
+  enterrement: {
+    id: "enterrement", label: "Enterrement X", symbol: "⚰️",
+    desc: "Place les X premières cartes du deck du joueur ciblé dans son cimetière (fatigue par carte manquante).",
+    applicable_to: ["creature", "spell"],
+    creature: {
+      cost: 3, costPerX: 2, se: 2.0, minTier: 1, scalable: true, zone: "Cimetière",
+      desc: "Place les X premières cartes du deck du joueur ciblé dans son cimetière (fatigue par carte manquante).",
+    },
+    spell: {
+      desc: "Place les X premières cartes du deck du joueur ciblé dans son cimetière",
       params: ["amount"], needsTarget: true, targetType: "any",
     },
   },
@@ -1915,7 +1966,7 @@ export const CURATED_MULTIMODE_IDS: ReadonlySet<string> = new Set([
   "instinct_de_meute", "convocation_simple", "invocation", "invocations_multiples", "domination", "corruption", "exhumation",
   "rappel", "divination", "traque_du_destin", "selection", "faveur", "selection_magique", "renfort_royal", "tresor", "forge",
   "affaiblissement", "benediction", "tactique", "epargne", "foi", "conquete", "exploration", "invention",
-  "incineration", "creuser", "retour_differe", "devoration",
+  "incineration", "creuser", "retour_differe", "devoration", "infestation", "enterrement",
   "execution", "silence", "guerison",
   // Effets « deck » : la cible est dans le deck du contrôleur, la source n'a
   // pas besoin d'être en jeu → tous les déclencheurs sont légitimes.

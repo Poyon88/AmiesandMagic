@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "Tática X",
-        "desc": "Atribui permanentemente a uma unidade aliada alvo X das suas habilidades permanentes, escolhidas ao acaso."
+        "desc": "Dá a uma unidade aliada alvo X habilidades aleatórias de criaturas do mesmo custo."
       },
       "exhumation": {
         "label": "Exumação X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "Cura X",
         "desc": "Restaura X PV de outra unidade aliada alvo ou do seu herói."
+      },
+      "mutation": {
+        "label": "Mutação X",
+        "desc": "Na mão: descubra 2 criaturas comuns de custo X. Esta carta recebe o melhor ATQ e PV delas e 1 habilidade de cada."
+      },
+      "infestation": {
+        "label": "Infestação X",
+        "desc": "Embaralha X cópias desta unidade no seu baralho. Ao ser comprada, a cópia é invocada e você compra outra carta."
+      },
+      "enterrement": {
+        "label": "Enterro X",
+        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele (fadiga por carta em falta)."
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
+      },
+      "enterrement": {
+        "label": "Enterro X",
+        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "Ao ser comprada",
         "on_low_hp": "Abaixo de 15 PV",
         "on_wound": "Ferimento",
-        "on_delay": "Atraso {d}"
+        "on_delay": "Atraso {d}",
+        "on_end_of_turn_in_graveyard": "No fim do turno, enquanto estiver no cemitério",
+        "in_graveyard_suffix": "no cemitério"
       },
       "siphon": {
         "heal": "e cura seu herói em {x} PV",
@@ -964,8 +982,8 @@
         "silence": "silencia",
         "dechainement": "joga {x} ações aleatórias de custo {y}",
         "dechainement_one": "joga uma ação aleatória de custo {y}",
-        "tactique_one": "transmite ao acaso uma das suas habilidades permanentes",
-        "tactique_many": "transmite ao acaso {x} das suas habilidades permanentes",
+        "tactique_one": "dá uma habilidade aleatória de uma criatura do mesmo custo",
+        "tactique_many": "dá {x} habilidades aleatórias de criaturas do mesmo custo",
         "retour_differe": "coloca debaixo do deck de seu dono",
         "retour_differe_cible": "coloca {target} sob o deck {proprio}",
         "proprio_one": "do seu proprietário",
@@ -999,7 +1017,9 @@
         "appel_any": "coloca em jogo a 1ª unidade do seu baralho",
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
-        "dechainement_one_any": "joga uma ação aleatória"
+        "dechainement_one_any": "joga uma ação aleatória",
+        "enterrement_one": "coloca a primeira carta{filter} {deck}",
+        "enterrement_many": "coloca as {x} primeiras cartas{filter} {deck}"
       },
       "self": {
         "transformation": "se transforma",
@@ -1170,6 +1190,11 @@
         "times": "{x} vezes 1 {unit}, a cada vez",
         "target_both": "a um alvo {side} aleatório (unidade ou herói)",
         "target_unit": "a uma unidade {side} aleatória"
+      },
+      "enterrement": {
+        "deck_enemy": "do baralho adversário no cemitério dele",
+        "deck_ally": "do seu baralho no seu cemitério",
+        "deck_any": "do baralho alvo no respetivo cemitério"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "Assume o controle de {cibles}, dentro do limite de espaços.",
         "benediction": "Cura completamente {cibles}.",
         "malediction": "Amaldiçoa {cibles}: elas são exiladas ao final do próximo turno adversário.",
-        "tactique": "Concede permanentemente X de suas habilidades permanentes, sorteadas aleatoriamente, a {cibles} (um sorteio por unidade).",
+        "tactique": "Dá a {cibles} X habilidades aleatórias de criaturas do mesmo custo (um sorteio por unidade).",
         "vampirisme": "Rouba até X PV de {cibles} e os adiciona aos PV desta unidade.",
         "devoration": "Destrói {cibles}; esta unidade ganha permanentemente seu ATQ e seus PV.",
         "sacrifice": "Destrua todas as outras unidades aliadas para ganhar permanentemente os PV e o ATQ delas.",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "Enquanto seu cemitério contiver 7 ou mais criaturas, todas as outras unidades aliadas ganham +X ATK e +Y PV.",
         "seuil_sacrificiel": "Enquanto seu baralho tiver 25 cartas ou menos, todas as outras unidades aliadas ganham +X ATK e +Y PV.",
         "silence_soi": "Perde todas as suas palavras-chave e seus atributos voltam aos valores originais.",
-        "guerison_soi": "Recupera X PV."
+        "guerison_soi": "Recupera X PV.",
+        "tactique_soi": "Ganha X habilidades aleatórias de criaturas do mesmo custo."
       },
       "cibles": {
         "all_enemies": "todas as unidades inimigas",
@@ -3084,7 +3110,7 @@
     "content_exploration": "Exploração (contador, compra a 3)",
     "content_incineration": "Incineração (reciclar um cemitério)",
     "content_devoration": "Devoração (destruir e absorver)",
-    "content_tactique": "Tática (partilha as suas habilidades permanentes)",
+    "content_tactique": "Tática (habilidades aleatórias, mesmo custo)",
     "content_retour_differe": "Retorno adiado (sob o baralho)",
     "content_silence": "Silêncio (retira tudo ao alvo)",
     "content_dechainement": "Desencadeamento X/Y (ações aleatórias)",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "Atraso X (no início do X-ésimo turno seguinte)",
     "retard_turns_title": "Atraso: número de turnos antes do acionamento",
     "retard_spell_title": "Atraso: o efeito é acionado no início do X-ésimo turno seguinte do conjurador, com o alvo escolhido nesse momento",
-    "label_retard": "Atraso"
+    "label_retard": "Atraso",
+    "trigger_on_end_of_turn_in_graveyard": "No fim do turno, enquanto estiver no cemitério",
+    "content_enterrement": "Enterro (baralho → cemitério, filtrável)"
   },
   "game": {
     "hero_power_grant": "Concede {kw} a uma criatura",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ À escolha",
     "choix_ou_subtitle": "Só um destes efeitos será resolvido.",
     "activation_menu_title": "Qual poder ativar?",
-    "activation_learned": "Lançar {name}"
+    "activation_learned": "Lançar {name}",
+    "mutation_button": "Mutar",
+    "mutation_button_title": "Mutação: transformar esta carta (grátis, uma única vez)",
+    "mutation_discover": "Mutação — Descoberta {n}/2",
+    "mutation_discover_subtitle": "Escolha uma criatura comum de custo {x}",
+    "mutation_pick_ability": "Mutação — Habilidade {n}/2",
+    "mutation_pick_subtitle": "Escolha a habilidade que esta criatura transmite",
+    "mutation_empty": "Nenhuma criatura disponível a este custo.",
+    "mutation_cancel": "Cancelar",
+    "infestation_caption": "🪳 Infestação",
+    "enterrement_caption": "⚰ Enterro"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",

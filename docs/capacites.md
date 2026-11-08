@@ -62,7 +62,7 @@
 - 📜 **Héritage X** — Mort : chaque unité alliée en jeu gagne +X ATK et +X PV de manière permanente.
 - 🪞 **Mimique** — Invocation : copie toutes les capacités d'une unité ciblée et les attribue à cette unité de manière permanente.
 - 🦎 **Métamorphose** — Invocation : cette unité devient une copie exacte (ATK / PV / capacités) d'une unité ciblée.
-- 📋 **Tactique X** — Invocation : attribue X capacité(s) choisie(s) à une unité alliée ciblée de manière permanente.
+- 📋 **Tactique X** — Donne X capacités tirées au hasard parmi celles des créatures communes de même coût que l'unité qui les reçoit (copiées en entier : X, déclencheur, cibles, effets composés ; hors capacités inutiles sur le plateau). Bénéficiaire réglable : une autre unité ciblée (défaut), elle-même (« S ») ou toutes les unités alliées (« A », un tirage par unité).
 - 🏚️ **Héritage du cimetière** — Invocation : attribue à cette unité les capacités d'une unité ciblée dans votre cimetière.
 - 🩸 **Pacte de sang** — Quand cette unité meurt, invoque deux tokens 1/1 de sa race.
 - 👹 **Sacrifice démoniaque X** — À la mort de cette unité, répartit aléatoirement X réductions de coût (−1 mana chacune) parmi les Démons de votre main. Un Démon ne peut coûter moins de 1.
@@ -82,6 +82,9 @@
 - 🤜 **Solidarité X** — Invocation : piochez X cartes si vous contrôlez 2 autres unités de même race.
 - 📖 **Apprentissage X** — Retire un sort de coût ≤ X de votre main et le mémorise : la créature peut le lancer, autant de fois qu'elle peut s'activer, sans payer de mana (les coûts additionnels restent dus). X vide : n'importe quel coût
 - 🫂 **Esprit de corps** — Gagne +1 ATK ou +1 PV au hasard par Esprit de corps que vous avez déjà déclenché.
+- 🧬 **Mutation X** — En main, à votre tour, gratuitement et une seule fois : découvrez 2 créatures communes de coût X (toutes factions) et choisissez une capacité sur chacune. Cette carte garde son identité et ses capacités, prend la meilleure ATK et les meilleurs PV des deux, et gagne les 2 capacités choisies.
+- 🪳 **Infestation X** — Mélange X copies de cette unité (état actuel) dans votre deck. Une copie piochée est invoquée d'office (détruite si le plateau est plein) et vous piochez une autre carte. Les copies gardent Infestation ; deck plafonné à 60 cartes.
+- ⚰️ **Enterrement X** — Place les X premières cartes du deck du joueur ciblé (héros cliqué ; adversaire sans choix possible) dans son cimetière. Chaque carte manquante inflige la fatigue. Aucun effet à l'arrivée (pas de râle). Créature et action.
 
 ## Sort uniquement (9)
 

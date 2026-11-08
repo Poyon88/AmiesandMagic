@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "Taktik X",
-        "desc": "Verleiht einer anvisierten verbündeten Einheit dauerhaft X ihrer permanenten Fähigkeiten, zufällig gezogen."
+        "desc": "Gib einer verbündeten Zieleinheit X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten."
       },
       "exhumation": {
         "label": "Exhumierung X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "Heilung X",
         "desc": "Stellt einer anderen anvisierten verbündeten Einheit oder deinem Helden X LP wieder her."
+      },
+      "mutation": {
+        "label": "Mutation X",
+        "desc": "Auf der Hand: Entdecke 2 gewöhnliche Kreaturen mit Kosten X. Diese Karte erhält ihren besten ANG/LP und je 1 Fähigkeit."
+      },
+      "infestation": {
+        "label": "Befall X",
+        "desc": "Mische X Kopien dieser Einheit in dein Deck. Gezogen wird eine Kopie beschworen und du ziehst eine weitere Karte."
+      },
+      "enterrement": {
+        "label": "Begräbnis X",
+        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof (Erschöpfung pro fehlende Karte)."
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
+      },
+      "enterrement": {
+        "label": "Begräbnis X",
+        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "Beim Ziehen",
         "on_low_hp": "Unter 15 LP",
         "on_wound": "Verwundung",
-        "on_delay": "Verzögerung {d}"
+        "on_delay": "Verzögerung {d}",
+        "on_end_of_turn_in_graveyard": "Am Zugende, solange sie im Friedhof ist",
+        "in_graveyard_suffix": "im Friedhof"
       },
       "siphon": {
         "heal": "und heilt Euren Helden um {x} LP",
@@ -964,8 +982,8 @@
         "silence": "bringt zum Schweigen",
         "dechainement": "spielt {x} zufällige Aktionen mit Kosten {y}",
         "dechainement_one": "spielt eine zufällige Aktion mit Kosten {y}",
-        "tactique_one": "gibt zufällig eine ihrer permanenten Fähigkeiten weiter",
-        "tactique_many": "gibt zufällig {x} ihrer permanenten Fähigkeiten weiter",
+        "tactique_one": "gibt eine zufällige Fähigkeit einer Kreatur mit gleichen Kosten",
+        "tactique_many": "gibt {x} zufällige Fähigkeiten von Kreaturen mit gleichen Kosten",
         "retour_differe": "legt unter das Deck ihres Besitzers",
         "retour_differe_cible": "legt {target} unter das Deck von {proprio}",
         "proprio_one": "seinem Besitzer",
@@ -999,7 +1017,9 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion"
+        "dechainement_one_any": "spielt eine zufällige Aktion",
+        "enterrement_one": "legt die oberste Karte{filter} {deck}",
+        "enterrement_many": "legt die obersten {x} Karten{filter} {deck}"
       },
       "self": {
         "transformation": "verwandelt sich",
@@ -1170,6 +1190,11 @@
         "times": "{x} Mal 1 {unit}, jedes Mal",
         "target_both": "an ein zufälliges {side} Ziel (Einheit oder Held)",
         "target_unit": "an eine zufällige {side} Einheit"
+      },
+      "enterrement": {
+        "deck_enemy": "des gegnerischen Decks auf dessen Friedhof",
+        "deck_ally": "deines Decks auf deinen Friedhof",
+        "deck_any": "des Zieldecks auf dessen Friedhof"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
         "malediction": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
-        "tactique": "Verleiht {cibles} dauerhaft X zufällig gezogene seiner permanenten Fähigkeiten (eine Ziehung pro Einheit).",
+        "tactique": "Gib {cibles} X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten (je Einheit ein Wurf).",
         "vampirisme": "Stiehlt {cibles} bis zu X LP und fügt sie den LP dieser Einheit hinzu.",
         "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
         "sacrifice": "Zerstöre alle anderen verbündeten Einheiten, um dauerhaft ihre LP und ihren ANG zu erhalten.",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "Solange euer Friedhof 7 oder mehr Kreaturen enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "seuil_sacrificiel": "Solange euer Deck 25 Karten oder weniger enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren auf den Ausgangswert zurück.",
-        "guerison_soi": "Stellt X LP wieder her."
+        "guerison_soi": "Stellt X LP wieder her.",
+        "tactique_soi": "Erhält X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten."
       },
       "cibles": {
         "all_enemies": "alle feindlichen Einheiten",
@@ -3084,7 +3110,7 @@
     "content_exploration": "Erkundung (Zähler, Ziehen bei 3)",
     "content_incineration": "Einäscherung (Friedhof zurückführen)",
     "content_devoration": "Verschlingen (zerstören und aufnehmen)",
-    "content_tactique": "Taktik (teilt ihre permanenten Fähigkeiten)",
+    "content_tactique": "Taktik (zufällige Fähigkeiten, gleiche Kosten)",
     "content_retour_differe": "Verzögerte Rückkehr (unter das Deck)",
     "content_silence": "Stille (nimmt dem Ziel alles)",
     "content_dechainement": "Entfesselung X/Y (zufällige Aktionen)",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "Verzögerung X (zu Beginn des X-ten folgenden Zuges)",
     "retard_turns_title": "Verzögerung: Anzahl der Züge bis zur Auslösung",
     "retard_spell_title": "Verzögerung: Der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkenden ausgelöst, das Ziel wird erst dann gewählt",
-    "label_retard": "Verzögerung"
+    "label_retard": "Verzögerung",
+    "trigger_on_end_of_turn_in_graveyard": "Am Zugende, solange sie im Friedhof ist",
+    "content_enterrement": "Begräbnis (Deck → Friedhof, filterbar)"
   },
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ Wähle eines",
     "choix_ou_subtitle": "Nur einer dieser Effekte wird ausgeführt.",
     "activation_menu_title": "Welche Fähigkeit aktivieren?",
-    "activation_learned": "{name} wirken"
+    "activation_learned": "{name} wirken",
+    "mutation_button": "Mutieren",
+    "mutation_button_title": "Mutation: diese Karte verwandeln (kostenlos, nur einmal)",
+    "mutation_discover": "Mutation — Entdeckung {n}/2",
+    "mutation_discover_subtitle": "Wähle eine gewöhnliche Kreatur mit Kosten {x}",
+    "mutation_pick_ability": "Mutation — Fähigkeit {n}/2",
+    "mutation_pick_subtitle": "Wähle die Fähigkeit, die diese Kreatur weitergibt",
+    "mutation_empty": "Keine Kreatur zu diesen Kosten verfügbar.",
+    "mutation_cancel": "Abbrechen",
+    "infestation_caption": "🪳 Befall",
+    "enterrement_caption": "⚰ Begräbnis"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

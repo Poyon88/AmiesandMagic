@@ -43,6 +43,7 @@
     "on_attack": 0.791,
     "on_end_of_turn": 1.639,
     "on_end_of_turn_in_hand": 1.167,
+    "on_end_of_turn_in_graveyard": 1,
     "on_start_of_turn": 0.974,
     "on_start_of_turn_in_hand": 1,
     "on_draw": 0.72,
@@ -1199,6 +1200,24 @@
       "perX": 0,
       "perY": 0,
       "n": 5
+    },
+    "mutation": {
+      "base": 6,
+      "perX": 6,
+      "perY": 0,
+      "n": 0
+    },
+    "infestation": {
+      "base": 3,
+      "perX": 4,
+      "perY": 0,
+      "n": 0
+    },
+    "enterrement": {
+      "base": 3,
+      "perX": 2,
+      "perY": 0,
+      "n": 0
     }
   },
   "composes": {

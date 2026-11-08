@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "Tactics X",
-        "desc": "Permanently grants a targeted allied unit X of its own permanent abilities, drawn at random."
+        "desc": "Give a targeted allied unit X random abilities taken from creatures of the same cost."
       },
       "exhumation": {
         "label": "Exhumation X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "Healing X",
         "desc": "Restores X HP to a targeted other allied unit or to your hero."
+      },
+      "mutation": {
+        "label": "Mutation X",
+        "desc": "In hand: discover 2 common creatures costing X. This card takes their best ATK and HP and 1 ability from each."
+      },
+      "infestation": {
+        "label": "Infestation X",
+        "desc": "Shuffle X copies of this unit into your deck. When drawn, a copy is summoned and you draw another card."
+      },
+      "enterrement": {
+        "label": "Burial X",
+        "desc": "Put the top X cards of the targeted player's deck into their graveyard (fatigue for each missing card)."
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
+      },
+      "enterrement": {
+        "label": "Burial X",
+        "desc": "Put the top X cards of the targeted player's deck into their graveyard"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "When Drawn",
         "on_low_hp": "Below 15 HP",
         "on_wound": "Wound",
-        "on_delay": "Delay {d}"
+        "on_delay": "Delay {d}",
+        "on_end_of_turn_in_graveyard": "At end of turn, while in the graveyard",
+        "in_graveyard_suffix": "in graveyard"
       },
       "siphon": {
         "heal": "and heals your hero for {x} HP",
@@ -964,8 +982,8 @@
         "silence": "silences",
         "dechainement": "plays {x} random actions of cost {y}",
         "dechainement_one": "plays a random action of cost {y}",
-        "tactique_one": "passes on one of its permanent abilities at random",
-        "tactique_many": "passes on {x} of its permanent abilities at random",
+        "tactique_one": "gives a random ability from a creature of the same cost",
+        "tactique_many": "gives {x} random abilities from creatures of the same cost",
         "retour_differe": "places under its owner's deck",
         "retour_differe_cible": "places {target} at the bottom of {proprio}'s deck",
         "proprio_one": "its owner",
@@ -999,7 +1017,9 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action"
+        "dechainement_one_any": "plays a random action",
+        "enterrement_one": "puts the top card{filter} {deck}",
+        "enterrement_many": "puts the top {x} cards{filter} {deck}"
       },
       "self": {
         "transformation": "transforms",
@@ -1170,6 +1190,11 @@
         "times": "{x} times 1 {unit}, each time",
         "target_both": "to a random {side} target (unit or hero)",
         "target_unit": "to a random {side} unit"
+      },
+      "enterrement": {
+        "deck_enemy": "of the opponent's deck into their graveyard",
+        "deck_ally": "of your deck into your graveyard",
+        "deck_any": "of the targeted deck into its graveyard"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
         "malediction": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
-        "tactique": "Permanently grants X of its permanent abilities, chosen at random, to {cibles} (one draw per unit).",
+        "tactique": "Give {cibles} X random abilities taken from creatures of the same cost (one draw per unit).",
         "vampirisme": "Steals up to X HP from {cibles} and adds them to this unit's HP.",
         "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
         "sacrifice": "Destroy all other allied units to permanently gain their HP and ATK.",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "While your graveyard holds 7 or more creatures, all other allied units gain +X ATK and +Y HP.",
         "seuil_sacrificiel": "While your deck holds 25 cards or fewer, all other allied units gain +X ATK and +Y HP.",
         "silence_soi": "Loses all its keywords and its stats revert to their original values.",
-        "guerison_soi": "Recovers X HP."
+        "guerison_soi": "Recovers X HP.",
+        "tactique_soi": "Gains X random abilities taken from creatures of the same cost."
       },
       "cibles": {
         "all_enemies": "all enemy units",
@@ -3084,7 +3110,7 @@
     "content_exploration": "Exploration (counter, draw at 3)",
     "content_incineration": "Incineration (recycle a graveyard)",
     "content_devoration": "Devour (destroy and absorb)",
-    "content_tactique": "Tactics (shares its permanent abilities)",
+    "content_tactique": "Tactics (random abilities, same cost)",
     "content_retour_differe": "Delayed return (under the deck)",
     "content_silence": "Silence (strips the target)",
     "content_dechainement": "Unleash X/Y (random actions)",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "Delay X (at the start of the Xth following turn)",
     "retard_turns_title": "Delay: number of turns before it triggers",
     "retard_spell_title": "Delay: the effect triggers at the start of the caster's Xth following turn, with the target chosen at that time",
-    "label_retard": "Delay"
+    "label_retard": "Delay",
+    "trigger_on_end_of_turn_in_graveyard": "At end of turn, while in the graveyard",
+    "content_enterrement": "Burial (deck → graveyard, filterable)"
   },
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ Choose one",
     "choix_ou_subtitle": "Only one of these effects will resolve.",
     "activation_menu_title": "Which power to activate?",
-    "activation_learned": "Cast {name}"
+    "activation_learned": "Cast {name}",
+    "mutation_button": "Mutate",
+    "mutation_button_title": "Mutation: transform this card (free, once only)",
+    "mutation_discover": "Mutation — Discovery {n}/2",
+    "mutation_discover_subtitle": "Choose a common creature costing {x}",
+    "mutation_pick_ability": "Mutation — Ability {n}/2",
+    "mutation_pick_subtitle": "Choose the ability this creature passes on",
+    "mutation_empty": "No creature available at this cost.",
+    "mutation_cancel": "Cancel",
+    "infestation_caption": "🪳 Infestation",
+    "enterrement_caption": "⚰ Burial"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

@@ -115,6 +115,8 @@ export type Keyword =
   | "seconde_vie"
   // Recycle X cartes d'un cimetière sous le deck de son propriétaire
   | "incineration"
+  // Place les X premières cartes du deck du joueur visé dans son cimetière
+  | "enterrement"
   // Détruit une unité et absorbe définitivement ses stats
   | "devoration"
   // Regarde les X cartes du dessous du deck, en remonte une
@@ -158,6 +160,12 @@ export type Keyword =
   // contrôleur a jouée depuis la main pendant la partie. Bénéficiaire réglable
   // comme Renforcement ; gain figé au déclenchement.
   | "usurpation"
+  // Activée EN MAIN : la carte devient une mutante de deux créatures communes
+  // de coût X découvertes (cf. lib/game/mutation.ts).
+  | "mutation"
+  // Mélange X copies de la porteuse dans le deck du contrôleur ; une copie
+  // PIOCHÉE est invoquée d'office et remplacée par une autre pioche.
+  | "infestation"
   // +X/+X PERMANENT à la créature contre X PV de son propriétaire, si le héros
   // reste à 1 PV minimum ; sinon rien (multi-trigger, perte directe).
   | "lien_du_sang"
@@ -254,6 +262,7 @@ export type SpellKeywordId =
   | "exploration"
   | "invention"
   | "incineration"
+  | "enterrement"
   | "creuser"
   | "presage"
   | "retour_differe"
@@ -520,6 +529,11 @@ export type CapabilityTrigger =
    *  qu'elle emporte en jeu (les bonus survivent aux zones). Ne part jamais
    *  depuis le plateau, et jamais sur un jeton (jamais en main). */
   | "on_end_of_turn_in_hand"
+  /** À la fin du tour de son contrôleur, TANT QUE LA CARTE EST AU CIMETIÈRE.
+   *  Même file que `on_end_of_turn_in_hand` (après la main, avant les emblèmes) ;
+   *  la source est l'instance au cimetière. Créatures seulement, jamais sur un
+   *  jeton (un jeton ne va pas au cimetière). */
+  | "on_end_of_turn_in_graveyard"
   /** AU DÉBUT DU TOUR de son contrôleur, une fois la pioche faite, le plateau
    *  réveillé et le tic de Poison réglé (la porteuse est vivante et prête).
    *  Jumeau de `on_end_of_turn` : même file ordonnée gauche→droite, même pause
@@ -732,6 +746,10 @@ export type ComposedEffectContent =
   | "usurpation"
   // Recycle X cartes du cimetière du camp VISÉ sous son deck. Le camp vient de
   // `target.side` (aucune unité n'est touchée individuellement).
+  // ENTERREMENT : les X premières cartes du deck du camp visé partent au
+  // cimetière ; avec un filtre de pool, les X premières cartes QUI LE
+  // SATISFONT (le deck est parcouru depuis le dessus).
+  | "enterrement"
   | "incineration"
   // Détruit l'unité ciblée ; la SOURCE absorbe définitivement ses stats. Sans
   // instance source (effet porté par un sort), l'effet ne fait rien.
@@ -1444,6 +1462,10 @@ export interface CardInstance {
   diedOnTurn: number | null;
   // Cycle éternel: flag for auto-play when drawn
   cycleEternelAutoPlay: boolean;
+  /** INFESTATION : copie mélangée au deck par Infestation X. Piochée, elle est
+   *  invoquée d'office (détruite si le plateau est plein) et remplacée par une
+   *  autre pioche. Le marqueur tombe à ce moment-là. Optionnel (`?? false`). */
+  infestationAutoSummon?: boolean;
   /** Compagnons : une seule fois par instance, jamais réarmé (même patron que
    *  `lowHpTriggerFired`). Optionnel : undefined ⇒ pas encore déclenché
    *  (snapshots antérieurs au champ). Hashé, muté uniquement sous applyAction. */
@@ -1972,6 +1994,10 @@ export interface GameState {
    *  carte que fabrique la prise en main d'une machine (cf. buildMachineCard).
    *  Statique, chargé au démarrage du match comme les viviers. */
   machineTemplates?: Card[];
+  /** MUTATION X : toutes les créatures communes jouables et découvrables, toutes
+   *  factions (cf. buildMutationPool). Statique, hors clonage, hash et snapshot
+   *  comme les autres viviers. */
+  mutationPool?: Card[];
   factionCardPool?: Card[];  // cards from deck factions + Mercenaires for Sélection X
   // Global pool of all spell cards (every faction, every set). Loaded once
   // at match start and used by Concentration X to draw a random replacement
@@ -2120,9 +2146,14 @@ export interface GameState {
   // divulgue rien : elles sont choisies par l'auteur de la carte, pas tirées du
   // deck du joueur.
   // Vidé par le store après planification ; exclu du hash d'état.
+  /** ENTERREMENT : cartes passées du deck au cimetière pendant l'action, par
+   *  propriétaire. Animation seule : vidé par le store, exclu du hash. */
+  enterrementEvents?: Array<{ ownerId: string; cards: Card[] }>;
   compagnonsEvents?: Array<{
     ownerId: string;
     cards: Card[];
+    /** Habillage de l'overlay : absent = Compagnons. */
+    variant?: "infestation";
   }>;
   // Transient: chaque dégât infligé par un effet composé DÉCLENCHÉ (mort/retour/
   // attaque/fin de tour — PAS tap/on-play) est poussé ici {source, cible, mode}
@@ -2542,7 +2573,19 @@ export interface SacrificeItemAction {
   itemInstanceId: string;
 }
 
-export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | TakeMachineAction | SuspendEveilAction | PayEveilAction;
+/** MUTATION X — la carte en main devient une mutante. Toutes les réponses des
+ *  modales voyagent ensemble : les deux créatures retenues (une par
+ *  Découverte) et la capacité léguée par chacune (uid dans
+ *  `getCapabilities` de la créature). Le moteur recalcule les offres et refuse
+ *  tout ce qui en sort (cf. resoudreChoixMutation). */
+export interface MutateCardAction {
+  type: "mutate_card";
+  cardInstanceId: string;
+  creatureIds: [number, number];
+  capUids: [string, string];
+}
+
+export type GameAction = EquipItemAction | SacrificeItemAction | PlayCardAction | AttackAction | EndTurnAction | MulliganAction | HeroPowerAction | TapActivateAction | ConcedeAction | ResolvePendingTriggerAction | AutoResolvePendingTriggersAction | SpendEpargneAction | SpendFoiAction | SpendConqueteAction | TakeMachineAction | SuspendEveilAction | PayEveilAction | MutateCardAction;
 
 /** Déclencheur interactif en attente : le contrôleur doit choisir une cible
  *  avant que le jeu ne continue. Porté par l'état pour rester déterministe et
@@ -2567,6 +2610,9 @@ export interface EndOfTurnStep {
   /** Pas « en main » (on_end_of_turn_in_hand) : la source se cherche dans la
    *  MAIN du joueur sortant, pas sur son plateau. */
   inHand?: true;
+  /** Pas « au cimetière » (on_end_of_turn_in_graveyard) : la source se cherche
+   *  dans le CIMETIÈRE du joueur sortant. */
+  inGraveyard?: true;
   /** EMBLÈME composé : indice dans `PlayerState.emblems` du joueur sortant.
    *  Un pas d'emblème échappe au filtre « source absente ou morte » qui écarte
    *  les pas de créature — sans quoi tout emblème serait silencieusement sauté,

@@ -22,7 +22,7 @@ interface CycleEternelOverlayProps {
  *
  *  `cycle` : vert recyclage (Cycle éternel, la dépouille qui repart dans le deck).
  *  `compagnons` : ambre fauve (les cartes liées qu'on mélange au deck). */
-export type DeckReturnVariant = "cycle" | "compagnons";
+export type DeckReturnVariant = "cycle" | "compagnons" | "infestation" | "enterrement";
 
 const PALETTES: Record<DeckReturnVariant, {
   vif: string; profond: string; clair: string; fond: string;
@@ -43,6 +43,25 @@ const PALETTES: Record<DeckReturnVariant, {
     fond: "linear-gradient(135deg, #2a2016 0%, #443318 60%, #1d160c 100%)",
     teinteParticule: 35,
     captionKey: "compagnons_caption",
+  },
+  // Infestation : violet-vert maladif (copies d'une créature qui pullulent).
+  infestation: {
+    vif: "170, 210, 90",
+    profond: "120, 160, 60",
+    clair: "210, 235, 160",
+    fond: "linear-gradient(135deg, #1c2412 0%, #33401c 60%, #141a0c 100%)",
+    teinteParticule: 80,
+    captionKey: "infestation_caption",
+  },
+  // Enterrement : gris cendre (cartes qui partent au cimetière). Seule
+  // variante qui vise le CIMETIÈRE et non le deck.
+  enterrement: {
+    vif: "190, 180, 200",
+    profond: "120, 110, 130",
+    clair: "225, 220, 235",
+    fond: "linear-gradient(135deg, #1a181e 0%, #2e2a33 60%, #121015 100%)",
+    teinteParticule: 270,
+    captionKey: "enterrement_caption",
   },
 };
 
@@ -68,8 +87,11 @@ export default function CycleEternelOverlay({ event, onComplete, variant = "cycl
     const out: Resolved[] = [];
     for (let i = 0; i < event.entries.length; i++) {
       const entry = event.entries[i];
-      const sel = entry.ownerIsLocal ? '[data-cycle-deck="my"]' : '[data-cycle-deck="opponent"]';
-      const el = typeof document !== "undefined" ? document.querySelector(sel) : null;
+      const camp = entry.ownerIsLocal ? "my" : "opponent";
+      const sel = variant === "enterrement" ? `[data-graveyard-pile="${camp}"]` : `[data-cycle-deck="${camp}"]`;
+      const el = typeof document !== "undefined"
+        ? document.querySelector(sel) ?? document.querySelector(`[data-cycle-deck="${camp}"]`)
+        : null;
       let pos = { x: window.innerWidth / 2, y: window.innerHeight - 80 };
       if (el) {
         const rect = (el as HTMLElement).getBoundingClientRect();
@@ -78,7 +100,7 @@ export default function CycleEternelOverlay({ event, onComplete, variant = "cycl
       out.push({ card: entry.card, ownerIsLocal: entry.ownerIsLocal, deckPos: pos, index: i });
     }
     return out;
-  }, [event]);
+  }, [event, variant]);
 
   useEffect(() => {
     if (!event) return;

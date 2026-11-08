@@ -40,7 +40,7 @@ export type CarteNotee = Pick<Card, "card_type" | "mana_cost" | "attack" | "heal
 
 const NOM_DECLENCHEUR: Record<string, string> = {
   on_play: "entrée", on_death: "mort", on_return: "retour", on_activation: "activation",
-  on_attack: "attaque", on_end_of_turn: "fin de tour", on_end_of_turn_in_hand: "fin de tour (main)",
+  on_attack: "attaque", on_end_of_turn: "fin de tour", on_end_of_turn_in_hand: "fin de tour (main)", on_end_of_turn_in_graveyard: "fin de tour (cimetière)",
   on_start_of_turn: "début de tour", on_start_of_turn_in_hand: "début de tour (main)", on_draw: "pioche",
   on_low_hp: "PV bas", on_wound: "blessure", on_delay: "retard", automatic: "passif", spell_resolution: "résolution",
 };

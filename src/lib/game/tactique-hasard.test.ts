@@ -1,189 +1,164 @@
-// Tactique X — les capacités transmises sont TIRÉES AU HASARD, et seulement les
-// PERMANENTES.
-//
-// Avant : le joueur désignait lui-même les capacités dans une modale, et le
-// moteur n'en transmettait de toute façon qu'UNE SEULE quel que soit le X saisi
-// (`slice(0, 1)`), le X de la modale étant recalculé côté client à partir du
-// coût en mana. Trois choses sont donc verrouillées ici : le hasard, le respect
-// du X de la carte, et le filtre « icône blanche ».
+// TACTIQUE X — X capacités tirées au hasard parmi celles des créatures
+// COMMUNES (vivier de Mutation) de MÊME COÛT que l'unité qui les reçoit,
+// copiées EN ENTIER (X, déclencheur, cibles, effet composé). Bénéficiaire
+// réglable comme Renforcement : une autre unité ciblée (défaut), elle-même
+// (« S »), ou toutes les unités alliées (« A »).
 import { describe, expect, it } from "vitest";
 import { applyAction } from "./engine";
+import { getCapabilities } from "./capability-adapter";
+import { tactiqueVivier } from "./mutation";
 import { mkCard, mkInstance, mkState } from "./test-harness";
-import { composedIcon, describeComposedCap } from "./composed-display";
-import { KEYWORD_SYMBOLS } from "./keyword-labels";
-import type { GameState, Keyword } from "./types";
+import { describeComposedCap } from "./composed-display";
+import type { Capability, Card, CardInstance, GameAction, GameState, KeywordInstance } from "./types";
 
-/** Porteuse de Tactique X, avec ses propres capacités à partager. */
-function tacticienne(x: number, partage: Keyword[]) {
+let nextId = 5000;
+const commune = (cout: number, extra: Partial<Card>): Card => mkCard({
+  id: nextId++, name: `Commune ${nextId}`, mana_cost: cout, attack: 1, health: 1, rarity: "Commune", card_type: "creature", ...extra,
+} as Partial<Card>);
+
+const fureurFinDeTour: Capability = {
+  uid: "cx_0", trigger: "on_end_of_turn", effectKind: "immediate", abilityId: "_composed",
+  composed: { content: "deal_damage", magnitude: { x: 2 }, target: { entity: "hero", side: "enemy", count: 1, location: "board", designation: "automatic" } },
+};
+
+/** Vivier : des communes de coût 3 aux capacités variées, plus du bruit ailleurs. */
+function vivier(): Card[] {
+  return [
+    commune(3, { keywords: ["taunt"] as never }),
+    commune(3, { keywords: ["taunt"] as never }), // doublon : une seule entrée
+    commune(3, { keywords: ["divine_shield"] as never }),
+    commune(3, { keywords: ["resistance"] as never, keyword_instances: [{ id: "resistance", x: 2 }] as KeywordInstance[] }),
+    commune(3, { keywords: ["charge"] as never }),
+    commune(3, { keywords: [] as never, capabilities: [fureurFinDeTour] as never }),
+    commune(3, { keywords: ["selection"] as never, keyword_instances: [{ id: "selection", x: 2 }] as KeywordInstance[] }), // entrée en jeu : exclue
+    commune(5, { keywords: ["ranged"] as never }), // autre coût
+  ];
+}
+
+function tacticienne(x: number, extra: Partial<KeywordInstance> = {}, cout = 3): CardInstance {
   return mkInstance(mkCard({
-    name: "Colonne", attack: 2, health: 2,
-    keywords: ["tactique", ...partage] as never,
-    keyword_instances: [{ id: "tactique", x }] as never,
+    name: "Stratège", mana_cost: cout, attack: 2, health: 2,
+    keywords: ["tactique"] as never,
+    keyword_instances: [{ id: "tactique", x, ...extra }] as KeywordInstance[],
   }));
 }
+const allie = (cout = 3) => mkInstance(mkCard({ name: "Allié", mana_cost: cout, attack: 1, health: 5 }));
 
-/** Joue la tacticienne sur l'allié déjà en place, avec la graine `seed`. */
-function partager(source: ReturnType<typeof tacticienne>, seed = 1, allie = mkInstance(mkCard({ name: "Allié", attack: 1, health: 5 }))) {
+function etat(seed = 1): GameState {
   const s: GameState = { ...mkState(), rngState: seed };
-  s.players[0].deck.push(mkInstance(mkCard({})));
-  s.players[0].board.push(allie);
-  s.players[0].hand.push(source);
-  const apres = applyAction(s, {
-    type: "play_card",
-    cardInstanceId: source.instanceId,
-    targetInstanceId: allie.instanceId,
-  });
-  const cible = apres.players[0].board.find((c) => c.instanceId === allie.instanceId)!;
-  return cible.card.keywords as unknown as string[];
+  s.mutationPool = vivier();
+  for (const p of s.players) for (let i = 0; i < 5; i++) p.deck.push(mkInstance(mkCard({ name: `Pioche ${i}` })));
+  return s;
 }
+const jouer = (s: GameState, c: CardInstance, cible?: string) => {
+  s.players[0].hand.push(c);
+  return applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, targetInstanceId: cible } as GameAction);
+};
+const ids = (c: CardInstance) => getCapabilities(c.card).map((k) => k.abilityId);
 
-describe("Tactique X — tirage au hasard", () => {
-  it("transmet EXACTEMENT X capacités (et plus une seule, comme avant)", () => {
-    const recues = partager(tacticienne(2, ["taunt", "ranged", "premiere_frappe", "esquive"]));
-    expect(recues).toHaveLength(2);
-    for (const kw of recues) expect(["taunt", "ranged", "premiere_frappe", "esquive"]).toContain(kw);
+describe("le vivier", () => {
+  it("capacités distinctes des communes de MÊME coût, hors entrée en jeu", () => {
+    const v = tactiqueVivier(vivier(), allie(3).card).map((l) => l.cap.abilityId);
+    expect(v.sort()).toEqual(["_composed", "charge", "divine_shield", "resistance", "taunt"].sort());
   });
 
-  it("ne transmet jamais Tactique elle-même", () => {
-    expect(partager(tacticienne(3, ["taunt", "ranged", "premiere_frappe"]))).not.toContain("tactique");
+  it("un autre coût puise ailleurs ; coût sans commune : vivier vide", () => {
+    expect(tactiqueVivier(vivier(), allie(5).card).map((l) => l.cap.abilityId)).toEqual(["ranged"]);
+    expect(tactiqueVivier(vivier(), allie(9).card)).toEqual([]);
   });
 
-  it("le tirage dépend de la graine — c'est bien du hasard", () => {
-    const pool: Keyword[] = ["taunt", "ranged", "premiere_frappe", "esquive", "celerite"] as never;
-    const tirages = new Set<string>();
-    for (let seed = 1; seed <= 12; seed++) {
-      tirages.add([...partager(tacticienne(1, pool), seed)].sort().join("|"));
-    }
-    expect(tirages.size).toBeGreaterThan(1);
-  });
-
-  it("à graine égale, les deux clients tirent la MÊME chose (anti-désynchro)", () => {
-    const pool: Keyword[] = ["taunt", "ranged", "premiere_frappe", "esquive", "celerite"] as never;
-    expect(partager(tacticienne(2, pool), 7)).toEqual(partager(tacticienne(2, pool), 7));
+  it("écarte ce que la cible porte déjà", () => {
+    const porteuse = mkCard({ name: "Mur", mana_cost: 3, keywords: ["taunt"] as never });
+    expect(tactiqueVivier(vivier(), porteuse).map((l) => l.cap.abilityId)).not.toContain("taunt");
   });
 });
 
-describe("Tactique X — capacités PERMANENTES seulement (icône blanche)", () => {
-  it("écarte les capacités à déclencheur : une Invocation X n'est jamais transmise", () => {
-    // Invocation X part « à l'entrée en jeu » (icône jaune) : la donner à une
-    // unité DÉJÀ en jeu ne déclencherait jamais rien.
-    expect(partager(tacticienne(2, ["invocation", "taunt"] as never))).toEqual(["taunt"]);
+describe("le don", () => {
+  it("défaut : X capacités à l'alliée ciblée, rien à la porteuse", () => {
+    const s = etat();
+    const a = allie();
+    s.players[0].board.push(a);
+    const t = tacticienne(2);
+    const st = jouer(s, t, a.instanceId);
+    const recue = st.players[0].board.find((c) => c.instanceId === a.instanceId)!;
+    expect(ids(recue)).toHaveLength(2);
+    const porteuse = st.players[0].board.find((c) => c.instanceId === t.instanceId)!;
+    expect(ids(porteuse)).toEqual(["tactique"]);
   });
 
-  it("écarte aussi une permanente REDÉCLENCHÉE par son instance (icône colorée)", () => {
-    const source = mkInstance(mkCard({
-      name: "Colonne", attack: 2, health: 2,
-      keywords: ["tactique", "renforcement", "taunt"] as never,
-      keyword_instances: [
-        { id: "tactique", x: 2 },
-        { id: "renforcement", mode: "tap", x: 1, y: 1 },
-      ] as never,
-    }));
-    expect(partager(source)).toEqual(["taunt"]);
+  it("copie complète : X et déclencheur conservés, effet composé sous un nouvel uid", () => {
+    const s = etat();
+    const a = allie();
+    s.players[0].board.push(a);
+    const st = jouer(s, tacticienne(10), a.instanceId); // X > vivier : tout le vivier
+    const recue = st.players[0].board.find((c) => c.instanceId === a.instanceId)!;
+    const caps = getCapabilities(recue.card);
+    expect(caps).toHaveLength(5);
+    expect(caps.find((c) => c.abilityId === "resistance")?.params?.x).toBe(2);
+    const compose = caps.find((c) => c.composed)!;
+    expect(compose.trigger).toBe("on_end_of_turn");
+    expect(compose.uid).not.toBe("cx_0");
+    // Effets de bord du don : Bouclier levé, Traque active.
+    expect(recue.hasDivineShield).toBe(true);
+    expect(recue.hasSummoningSickness).toBe(false);
   });
 
-  it("aucune permanente à donner : la cible ne reçoit rien", () => {
-    expect(partager(tacticienne(2, ["invocation"] as never))).toEqual([]);
+  it("« sur elle-même » (S) : la porteuse se les donne, sans cible", () => {
+    const st = jouer(etat(), tacticienne(2, { recipient: "self" }));
+    const porteuse = st.players[0].board[0];
+    expect(ids(porteuse).filter((k) => k !== "tactique")).toHaveLength(2);
   });
 
-  it("ne redonne pas ce que la cible possède déjà", () => {
-    const allie = mkInstance(mkCard({ name: "Allié", attack: 1, health: 5, keywords: ["taunt"] as never }));
-    const recues = partager(tacticienne(1, ["taunt", "ranged"]), 3, allie);
-    expect(recues).toEqual(["taunt", "ranged"]); // « taunt » d'origine + le seul tirable
+  it("portée « toutes » (A) : chaque autre alliée reçoit, selon SON coût", () => {
+    const s = etat();
+    const a3 = allie(3), a5 = allie(5);
+    s.players[0].board.push(a3, a5);
+    const st = jouer(s, tacticienne(1, { targetScope: "all_allies" }));
+    const b = st.players[0].board;
+    expect(ids(b.find((c) => c.instanceId === a3.instanceId)!)).toHaveLength(1);
+    expect(ids(b.find((c) => c.instanceId === a5.instanceId)!)).toEqual(["ranged"]);
+  });
+
+  it("en fin de tour, une Tactique « sur elle-même » se renforce", () => {
+    const s = etat();
+    const t = tacticienne(1, { recipient: "self", mode: "end_of_turn" });
+    s.players[0].board.push(t);
+    const st = applyAction(s, { type: "end_turn" } as GameAction);
+    expect(ids(st.players[0].board[0]).filter((k) => k !== "tactique")).toHaveLength(1);
   });
 });
 
-describe("Tactique en effet COMPOSÉ", () => {
-  const capTactique = (x: number, side: "ally" | "enemy" = "ally") => ({
-    uid: "cx_0", trigger: "on_play", effectKind: "immediate", abilityId: "_composed",
-    composed: {
-      content: "tactique", magnitude: { x },
-      target: { entity: "unit", side, count: "all", location: "board", designation: "automatic" },
-    },
+describe("hasard et synchro", () => {
+  const tirage = (seed: number) => {
+    const s = etat(seed);
+    const a = allie();
+    s.players[0].board.push(a);
+    const st = jouer(s, tacticienne(1), a.instanceId);
+    return ids(st.players[0].board.find((c) => c.instanceId === a.instanceId)!).join("|");
+  };
+  it("même graine ⇒ même tirage", () => expect(tirage(7)).toBe(tirage(7)));
+  it("graines différentes ⇒ tirages variés", () => {
+    expect(new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(tirage)).size).toBeGreaterThan(1);
+  });
+});
+
+describe("effet composé", () => {
+  const capCompose = (x: number): Capability => ({
+    uid: "cx_t", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+    composed: { content: "tactique", magnitude: { x }, target: { entity: "unit", side: "ally", count: "all", location: "board", designation: "automatic" } },
   });
 
-  /** Joue `source` (qui porte la capacité composée) ; renvoie les capacités de chaque unité du bord visé. */
-  function jouer(source: ReturnType<typeof mkInstance>, bord: 0 | 1 = 0, temoins = 1) {
-    const s: GameState = { ...mkState(), rngState: 5 };
-    s.players[0].deck.push(mkInstance(mkCard({})));
-    const cibles = Array.from({ length: temoins }, (_, i) =>
-      mkInstance(mkCard({ name: `Témoin${i}`, attack: 1, health: 5 })));
-    for (const c of cibles) s.players[bord].board.push(c);
-    s.players[0].hand.push(source);
-    const apres = applyAction(s, { type: "play_card", cardInstanceId: source.instanceId });
-    return cibles.map((c) => {
-      const vivante = apres.players[bord].board.find((b) => b.instanceId === c.instanceId)!;
-      return vivante.card.keywords as unknown as string[];
-    });
-  }
-
-  it("partage X capacités permanentes à TOUTES les unités visées", () => {
-    const source = mkInstance(mkCard({
-      name: "Stratège", attack: 2, health: 3,
-      keywords: ["taunt", "ranged", "premiere_frappe"] as never,
-      capabilities: [capTactique(2)] as never,
-    }));
-    const recues = jouer(source, 0, 2);
-    expect(recues).toHaveLength(2);
-    for (const kws of recues) {
-      expect(kws).toHaveLength(2);
-      for (const kw of kws) expect(["taunt", "ranged", "premiere_frappe"]).toContain(kw);
-    }
-  });
-
-  it("filtre les permanentes comme la forme curée", () => {
-    const source = mkInstance(mkCard({
-      name: "Stratège", attack: 2, health: 3,
-      keywords: ["invocation", "taunt"] as never,
-      capabilities: [capTactique(2)] as never,
-    }));
-    expect(jouer(source)[0]).toEqual(["taunt"]);
-  });
-
-  it("se décrit en français sur la carte", () => {
-    const cap = {
-      uid: "cx_0", trigger: "on_play", effectKind: "immediate", abilityId: "_composed",
-      composed: {
-        content: "tactique", magnitude: { x: 2 },
-        target: { entity: "unit", side: "ally", count: 1, location: "board", designation: "choice" },
-      },
-    } as never;
-    expect(describeComposedCap(cap)).toBe(
-      "Transmet au hasard 2 de ses capacités permanentes à une unité alliée au choix.",
-    );
-    expect(composedIcon(cap)).toEqual({ symbol: KEYWORD_SYMBOLS.tactique, keyword: "tactique" });
-  });
-
-  it("porté par un SORT, l'effet ne fait rien (rien à partager)", () => {
-    const sort = mkInstance(mkCard({
-      name: "Ordre de bataille", card_type: "spell", attack: null, health: null,
-      // Les `keywords` d'un sort sont ce qu'il CONFÈRE : ce n'est pas à Tactique
-      // de les redistribuer (grant_keyword est là pour ça).
-      keywords: ["taunt", "ranged"] as never,
-      capabilities: [capTactique(2)] as never,
-    }));
-    const s: GameState = { ...mkState(), rngState: 5 };
-    s.players[0].deck.push(mkInstance(mkCard({})));
-    const temoin = mkInstance(mkCard({ name: "Témoin", attack: 1, health: 5 }));
-    s.players[0].board.push(temoin);
+  it("depuis un SORT : chaque unité visée reçoit X capacités de son coût", () => {
+    const s = etat();
+    const a = allie(3);
+    s.players[0].board.push(a);
+    const sort = mkInstance(mkCard({ name: "Conseil", card_type: "spell", mana_cost: 0, attack: null, health: null, keywords: [], capabilities: [capCompose(2)] as never }));
     s.players[0].hand.push(sort);
-    const apres = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId });
-    expect(apres.players[0].board.find((c) => c.instanceId === temoin.instanceId)!.card.keywords).toEqual([]);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId } as GameAction);
+    expect(ids(st.players[0].board.find((c) => c.instanceId === a.instanceId)!)).toHaveLength(2);
   });
 
-  it("la SOURCE ne se transmet rien à elle-même", () => {
-    // Cible « toutes les unités alliées » : la source en fait partie une fois
-    // posée. Elle doit ressortir avec ses capacités d'origine, ni plus ni moins.
-    const source = mkInstance(mkCard({
-      name: "Stratège", attack: 2, health: 3,
-      keywords: ["taunt", "ranged"] as never,
-      capabilities: [capTactique(1)] as never,
-    }));
-    const s: GameState = { ...mkState(), rngState: 5 };
-    s.players[0].deck.push(mkInstance(mkCard({})));
-    s.players[0].hand.push(source);
-    const apres = applyAction(s, { type: "play_card", cardInstanceId: source.instanceId });
-    const posee = apres.players[0].board.find((c) => c.instanceId === source.instanceId)!;
-    expect(posee.card.keywords).toEqual(["taunt", "ranged"]);
+  it("se décrit en français", () => {
+    expect(describeComposedCap(capCompose(2))).toMatch(/2 capacités de créatures de même coût/);
   });
 });

@@ -51,13 +51,16 @@ export default function ArenaDeckGraveyardCluster({
   return (
     <div className="flex items-end gap-2">
       <DeckTile cardBackUrl={cardBackUrl} count={deckCount} isOpponent={isOpponent} />
-      <GraveyardTile
-        topCard={topCard}
-        emptyImageUrl={emptyGraveyardImageUrl}
-        count={graveyard.length}
-        isOpponent={isOpponent}
-        onClick={onGraveyardClick}
-      />
+      {/* Ancre des animations qui VISENT le cimetière (Enterrement). */}
+      <div data-graveyard-pile={isOpponent ? "opponent" : "my"}>
+        <GraveyardTile
+          topCard={topCard}
+          emptyImageUrl={emptyGraveyardImageUrl}
+          count={graveyard.length}
+          isOpponent={isOpponent}
+          onClick={onGraveyardClick}
+        />
+      </div>
       {(eveil?.length ?? 0) > 0 && (
         <EveilTile entries={eveil!} isOpponent={isOpponent} onClick={onEveilClick} />
       )}

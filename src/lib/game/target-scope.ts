@@ -24,7 +24,7 @@ const TOUS_CAMPS: TargetScope[] = ["all_enemies", "all_allies", "all"];
 /** Capacités qui ciblent une CARTE du cimetière, pas une créature en jeu :
  *  « toutes » n'y a pas de sens. Incinération vise un camp entier (son
  *  cimetière), pas une unité. */
-const SORTS_HORS_PORTEE = new Set<string>(["rappel", "exhumation", "incineration"]);
+const SORTS_HORS_PORTEE = new Set<string>(["rappel", "exhumation", "incineration", "enterrement"]);
 
 function campsDuType(t: SpellTargetType | undefined): TargetScope[] {
   switch (t) {
@@ -191,7 +191,7 @@ export const SOI_ARIA_FR = "Sur elle-même";
 /** Capacités de créature dont le BÉNÉFICIAIRE est réglable : une autre unité
  *  désignée (défaut), elle-même (`recipient: "self"`, « S »), ou toutes
  *  (portée « A »). Source unique du moteur, de la forge et du rendu. */
-export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "usurpation", "silence", "guerison"]);
+export const BENEFICIAIRE_REGLABLE: ReadonlySet<string> = new Set(["renforcement", "discipline", "usurpation", "silence", "guerison", "tactique"]);
 
 /** AURAS conditionnelles (Pureté, Force des ancêtres, Seuil Sacrificiel) :
  *  elles-mêmes par DÉFAUT (« S »), ou toutes les autres unités alliées (« A »).
@@ -261,7 +261,7 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
 export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   ...DESC_TOUTES_COMMUNES,
   malediction: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
-  tactique: "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
+  tactique: "Donne à {cibles} X capacités tirées au hasard parmi celles des créatures de même coût (un tirage par unité).",
   vampirisme: "Vole jusqu'à X PV à {cibles} et les ajoute aux PV de cette unité.",
   devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
   // La source est exclue : « autres » le dit, {cibles} ne le dirait pas.
@@ -287,6 +287,7 @@ export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   usurpation_soi: "Gagne +X ATK et +Y PV de façon permanente par carte adverse que vous avez jouée.",
   silence_soi: "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
   guerison_soi: "Récupère X PV.",
+  tactique_soi: "Gagne X capacités tirées au hasard parmi celles des créatures de même coût.",
 };
 
 /** Gabarit de Renforcement / Discipline quand le bonus va à la créature

@@ -16,7 +16,7 @@ import { MANA_SPARK_NAMES } from "@/lib/game/mana-spark";
 import { INVENTION_SET_NAME } from "@/lib/game/constants";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { useTranslations } from "next-intl";
-import { GAME_CARD_COLUMNS, mapHeroRow, selectionFactionsFor, buildPools, missingLinkedCardIds, type HeroRow } from "@/lib/game/match-setup";
+import { GAME_CARD_COLUMNS, mapHeroRow, selectionFactionsFor, buildPools, buildMutationPool, fetchMutationPoolRows, missingLinkedCardIds, type HeroRow } from "@/lib/game/match-setup";
 import { vainqueurTransition } from "@/lib/game/match-result";
 
 interface MatchData {
@@ -250,7 +250,7 @@ export default function GamePage() {
         // coût 6) n'invoquait jamais rien, sans la moindre erreur. Ordre TOTAL
         // par `id`, exigé par le helper — et c'est aussi ce qui garantit aux
         // deux clients un pool identique.
-        const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes, machineTemplates] = await Promise.all([
+        const [factionCardsData, manaSparkRes, allSpellsData, specialSetsRes, machineTemplates, mutationRows] = await Promise.all([
           fetchAllRows<Card>(
             (from, to) => supabase.from("cards").select(GAME_CARD_COLUMNS).in("faction", Array.from(selectionFactions)).order("id").range(from, to).returns<Card[]>(),
             { label: "Pool des factions du match" },
@@ -277,6 +277,9 @@ export default function GamePage() {
             const { data } = await supabase.from("cards").select(GAME_CARD_COLUMNS).eq("set_id", set.id).eq("card_type", "creature").order("id").returns<Card[]>();
             return data ?? [];
           })(),
+          // MUTATION X : toutes les créatures communes, toutes factions (helper
+          // partagé avec le rejeu serveur — même requête, même tri).
+          fetchMutationPoolRows(supabase),
         ]);
         useGameStore.getState().setMachineTemplates(machineTemplates);
         // Les deux clients interrogent la même base au démarrage du match : ils
@@ -292,6 +295,7 @@ export default function GamePage() {
           );
         }
         const { factionCards, allSpells } = buildPools(factionCardsData, allSpellsData, manaSpark, specialSetIds);
+        useGameStore.getState().setMutationPool(buildMutationPool(mutationRows, specialSetIds));
 
         // Compagnons : les cartes LIÉES (linkedCardIds) doivent être résolvables
         // par id au déclenchement, or elles peuvent tomber hors des pools déjà
@@ -454,6 +458,7 @@ export default function GamePage() {
                     allSpellsPool: local.allSpellsPool,
                     tokenTemplates: local.tokenTemplates,
                     machineTemplates: local.machineTemplates,
+                    mutationPool: local.mutationPool,
                   });
                   lastSeqRef.current = snapSeq;
                 }
@@ -535,6 +540,7 @@ export default function GamePage() {
                   allSpellsPool: local.allSpellsPool,
                   tokenTemplates: local.tokenTemplates,
                   machineTemplates: local.machineTemplates,
+                  mutationPool: local.mutationPool,
                 });
                 console.warn("[match] checkpoint mismatch — adopted authoritative snapshot", { seq: cur.seq });
               }
@@ -768,8 +774,8 @@ export default function GamePage() {
     (seq: number) => {
       const gs = useGameStore.getState().gameState;
       if (!gs) return;
-      const { factionCardPool: _f, allSpellsPool: _a, tokenTemplates: _t, machineTemplates: _m, ...lean } = gs;
-      void _f; void _a; void _t; void _m;
+      const { factionCardPool: _f, allSpellsPool: _a, tokenTemplates: _t, machineTemplates: _m, mutationPool: _mu, ...lean } = gs;
+      void _f; void _a; void _t; void _m; void _mu;
       supabase
         .from("match_state")
         .upsert(

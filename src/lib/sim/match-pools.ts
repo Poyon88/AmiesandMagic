@@ -11,8 +11,9 @@ import { isManaSpark } from "@/lib/game/mana-spark";
 import { designatedCardIds } from "@/lib/game/tuteur";
 import type { Card, HeroDefinition } from "@/lib/game/types";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
+import { buildMutationPool } from "@/lib/game/match-setup";
 
-export interface Viviers { factionCardPool: Card[]; allSpellsPool: Card[] }
+export interface Viviers { factionCardPool: Card[]; allSpellsPool: Card[]; mutationPool: Card[] }
 
 /** Factions dont la page charge les cartes pour ce match : celles des decks,
  *  les Mercenaires, toutes les factions du même ALIGNEMENT, et le renfort
@@ -81,5 +82,8 @@ export function viviersDuMatch(
   const parIdMap = new Map(parId.map((c) => [c.id, c]));
   for (const id of manquants) { const c = parIdMap.get(id); if (c) factionCards.push(c); }
 
-  return { factionCardPool: factionCards, allSpellsPool: allSpells };
+  // Mutation X : même règle que buildMutationPool (match-setup.ts).
+  const mutationPool = buildMutationPool(parId, specialSetIds);
+
+  return { factionCardPool: factionCards, allSpellsPool: allSpells, mutationPool };
 }

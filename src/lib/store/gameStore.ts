@@ -413,6 +413,8 @@ export interface CycleEternelEntry {
 export interface CycleEternelEvent {
   entries: CycleEternelEntry[];
   timestamp: number;
+  /** Habillage de l'overlay (canal Compagnons) : absent = celui du canal. */
+  variant?: "infestation" | "enterrement";
 }
 
 /** Coût d'EXIL payé : X cartes retirées du dessus d'un deck. Elles ne rejoignent
@@ -749,6 +751,8 @@ interface GameStore {
   } | null;
   tokenTemplates: TokenTemplate[];
   machineTemplates: Card[];
+  /** Vivier de Mutation X, chargé par la page de match (cf. buildMutationPool). */
+  mutationPool: Card[];
   effectLog: { id: string; text: string; timestamp: number }[];
   // Bande latérale d'historique — les ACTION_HISTORY_MAX dernières entrées,
   // plus ancienne en tête (le composant inverse pour l'affichage).
@@ -761,6 +765,8 @@ interface GameStore {
   fireBreathEvent: FireBreathEvent | null;
   cycleEternelEvent: CycleEternelEvent | null;
   compagnonsEvent: CycleEternelEvent | null;
+  /** ENTERREMENT : cartes passées du deck au cimetière (overlay vers la pile). */
+  enterrementEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
   topdeckCostEvent: TopdeckCostEvent | null;
   eveilEvent: EveilEvent | null;
@@ -820,6 +826,7 @@ interface GameStore {
   setLocalPlayerId: (id: string) => void;
   setTokenTemplates: (templates: TokenTemplate[]) => void;
   setMachineTemplates: (templates: Card[]) => void;
+  setMutationPool: (pool: Card[]) => void;
   setBoardImageUrl: (url: string | null) => void;
   setBoardLayout: (layout: string) => void;
   setBoardGraveyardImageUrl: (url: string | null) => void;
@@ -869,6 +876,7 @@ interface GameStore {
   clearFireBreathEvent: () => void;
   clearCycleEternelEvent: () => void;
   clearCompagnonsEvent: () => void;
+  clearEnterrementEvent: () => void;
   clearTempeteEvent: () => void;
   clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
@@ -1916,6 +1924,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   pendingCreatureChain: null,
   tokenTemplates: [],
   machineTemplates: [],
+  mutationPool: [],
   effectLog: [],
   actionHistory: [],
   damageEvents: [],
@@ -1926,6 +1935,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   fireBreathEvent: null,
   cycleEternelEvent: null,
   compagnonsEvent: null,
+  enterrementEvent: null,
   exileCostEvent: null,
   topdeckCostEvent: null,
   eveilEvent: null,
@@ -1975,6 +1985,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;
     state.machineTemplates = get().machineTemplates;
+    state.mutationPool = get().mutationPool;
     set({ gameState: state });
   },
 
@@ -1982,6 +1993,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setMachineTemplates: (templates) => set({ machineTemplates: templates }),
+  setMutationPool: (pool) => set({ mutationPool: pool }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
   setBoardLayout: (layout) => set({ boardLayout: layout }),
   setBoardGraveyardImageUrl: (url) => set({ boardGraveyardImageUrl: url }),
@@ -2553,7 +2565,16 @@ export const useGameStore = create<GameStore>((set, get) => {
     const compagnonsEntries: CycleEternelEntry[] = rawCompagnons.flatMap((e) =>
       e.cards.map((card) => ({ card, ownerIsLocal: e.ownerId === localPlayerId })));
     const compagnonsEvent: CycleEternelEvent | null = compagnonsEntries.length > 0
-      ? { entries: compagnonsEntries, timestamp: Date.now() }
+      ? { entries: compagnonsEntries, timestamp: Date.now(), ...(rawCompagnons[0]?.variant ? { variant: rawCompagnons[0].variant } : {}) }
+      : null;
+
+    // ENTERREMENT : cartes révélées puis envoyées vers le cimetière visé.
+    const rawEnterrement = newState.enterrementEvents ?? [];
+    if (newState.enterrementEvents) newState.enterrementEvents = undefined;
+    const enterrementEntries: CycleEternelEntry[] = rawEnterrement.flatMap((e) =>
+      e.cards.map((card) => ({ card, ownerIsLocal: e.ownerId === localPlayerId })));
+    const enterrementEvent: CycleEternelEvent | null = enterrementEntries.length > 0
+      ? { entries: enterrementEntries, timestamp: Date.now(), variant: "enterrement" }
       : null;
 
     // Coût d'EXIL payé pendant l'action. Le moteur a noté combien de cartes ont
@@ -3324,14 +3345,15 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
-      const { factionCardPool, allSpellsPool, ...rest } = state;
+      const { factionCardPool, allSpellsPool, mutationPool, ...rest } = state;
       const cloned = JSON.parse(JSON.stringify(rest)) as GameState;
       cloned.factionCardPool = factionCardPool;
       cloned.allSpellsPool = allSpellsPool;
+      cloned.mutationPool = mutationPool;
       return cloned;
     };
 
@@ -3883,6 +3905,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
         ...(compagnonsEvent ? { compagnonsEvent } : {}),
+        ...(enterrementEvent ? { enterrementEvent } : {}),
         // FX: the new creatures mount in this same render — the Canvas layer
         // resolves each one's position from the DOM and bursts a portal there.
         // On EXCLUT les invocations de la vague de pouvoir (déjà portées à
@@ -3937,6 +3960,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(staggeredTriggerEvents.length > 0 ? { damageEvents: staggeredTriggerEvents } : {}),
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
         ...(compagnonsEvent ? { compagnonsEvent } : {}),
+        ...(enterrementEvent ? { enterrementEvent } : {}),
       });
     };
 
@@ -5401,6 +5425,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({ compagnonsEvent: null });
   },
 
+  clearEnterrementEvent: () => {
+    set({ enterrementEvent: null });
+  },
+
   clearTempeteEvent: () => {
     set({ tempeteEvent: null });
   },
@@ -6031,7 +6059,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 //
 // On retient donc les derniers viviers vus et on les ré-attache, par référence,
 // à tout état qui arrive sans — en le signalant, pour trouver la fuite.
-type Viviers = Pick<GameState, "factionCardPool" | "allSpellsPool" | "tokenTemplates" | "machineTemplates">;
+type Viviers = Pick<GameState, "factionCardPool" | "allSpellsPool" | "tokenTemplates" | "machineTemplates" | "mutationPool">;
 let viviersRetenus: Viviers | null = null;
 useGameStore.subscribe((s) => {
   const gs = s.gameState;
@@ -6042,6 +6070,7 @@ useGameStore.subscribe((s) => {
       allSpellsPool: gs.allSpellsPool,
       tokenTemplates: gs.tokenTemplates ?? viviersRetenus?.tokenTemplates,
       machineTemplates: gs.machineTemplates ?? viviersRetenus?.machineTemplates,
+      mutationPool: gs.mutationPool ?? viviersRetenus?.mutationPool,
     };
     return;
   }
@@ -6053,4 +6082,5 @@ useGameStore.subscribe((s) => {
   gs.allSpellsPool = viviersRetenus.allSpellsPool;
   gs.tokenTemplates ??= viviersRetenus.tokenTemplates;
   gs.machineTemplates ??= viviersRetenus.machineTemplates;
+  gs.mutationPool ??= viviersRetenus.mutationPool;
 });

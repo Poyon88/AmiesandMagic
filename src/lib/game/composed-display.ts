@@ -30,6 +30,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "trigger.on_start_of_turn": "Au début du tour",
   "trigger.on_start_of_turn_in_hand": "Au début du tour, tant qu'elle est en main",
   "trigger.in_hand_suffix": "en main",
+  "trigger.in_graveyard_suffix": "au cimetière",
+  "trigger.on_end_of_turn_in_graveyard": "À la fin du tour, tant qu'elle est au cimetière",
   "trigger.on_draw": "Quand cette carte est piochée",
   "trigger.on_low_hp": "Sous 15 PV",
   "trigger.on_wound": "Blessure",
@@ -187,6 +189,11 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
   "content.exploration": "ajoute {x} à votre compteur d'Exploration",
   "content.incineration": "remet {x} cartes du cimetière visé sous son deck",
+  "content.enterrement_one": "place la 1re carte{filter} {deck}",
+  "content.enterrement_many": "place les {x} premières cartes{filter} {deck}",
+  "enterrement.deck_enemy": "du deck adverse dans son cimetière",
+  "enterrement.deck_ally": "de votre deck dans votre cimetière",
+  "enterrement.deck_any": "du deck visé dans son cimetière",
   // Incinération dont la cible DÉCRIT les cartes recyclées (cimetière visé,
   // nombre, nature, filtres) : « remet toutes les cartes de votre cimetière
   // sous votre deck ». {cartes} porte nombre + nature + filtres + désignation.
@@ -217,8 +224,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.silence": "réduit au silence",
   "content.dechainement": "joue {x} actions aléatoires de coût {y}",
   "content.dechainement_one": "joue une action aléatoire de coût {y}",
-  "content.tactique_one": "transmet au hasard une de ses capacités permanentes",
-  "content.tactique_many": "transmet au hasard {x} de ses capacités permanentes",
+  "content.tactique_one": "donne au hasard une capacité d'une créature de même coût",
+  "content.tactique_many": "donne au hasard {x} capacités de créatures de même coût",
   "content.retour_differe": "place sous le deck de son propriétaire",
   // Retour différé AVEC sa cible au milieu : « place {target} sous le deck de
   // {proprio} » — le propriétaire s'accorde avec le nombre de cibles.
@@ -475,6 +482,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "usurpation": return { symbol: KEYWORD_SYMBOLS.usurpation, keyword: "usurpation" };
     case "exploration": return { symbol: KEYWORD_SYMBOLS.exploration, keyword: "exploration" };
     case "incineration": return { symbol: KEYWORD_SYMBOLS.incineration, keyword: "incineration" };
+    case "enterrement": return { symbol: KEYWORD_SYMBOLS.enterrement, keyword: "enterrement" };
     case "devoration": return { symbol: KEYWORD_SYMBOLS.devoration, keyword: "devoration" };
     // Silence n'existe QUE côté sort : sa clé prend le préfixe `spell_`, comme
     // Impact ou Déferlement, pour que le nom se résolve dans le bon vocabulaire.
@@ -532,6 +540,7 @@ export function composedTriggerMode(cap: Capability): KeywordMode | undefined {
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même couleur, badge suffixé « en main »
+    case "on_end_of_turn_in_graveyard": return "end_of_turn"; // badge suffixé « au cimetière »
     case "on_start_of_turn": return "start_of_turn";
     case "on_start_of_turn_in_hand": return "start_of_turn"; // idem, badge suffixé « en main »
     case "on_draw": return "draw";
@@ -571,6 +580,9 @@ function composedBadgeBase(cap: Capability, t?: SafeT): TriggerBadge | null {
     // doit savoir que l'effet ne part QUE tant que la carte attend en main.
     if (badge && (cap.trigger === "on_end_of_turn_in_hand" || cap.trigger === "on_start_of_turn_in_hand")) {
       return { ...badge, label: `${badge.label} · ${frag(t, "trigger.in_hand_suffix")}` };
+    }
+    if (badge && cap.trigger === "on_end_of_turn_in_graveyard") {
+      return { ...badge, label: `${badge.label} · ${frag(t, "trigger.in_graveyard_suffix")}` };
     }
     return badge;
   }
@@ -754,6 +766,13 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "conquete": return frag(t, "content.conquete", { x: xAff });
     case "exploration": return frag(t, "content.exploration", { x: xAff });
     case "incineration": return frag(t, "content.incineration", { x: xAff });
+    case "enterrement": {
+      // Le camp se dit DANS la phrase (« du deck adverse ») : le complément de
+      // cible habituel (« au héros adverse ») ne se lirait pas.
+      const bord = eff.target?.side === "enemy" ? "enemy" : eff.target?.side === "ally" ? "ally" : "any";
+      return frag(t, x > 1 ? "content.enterrement_many" : "content.enterrement_one",
+        { x: xAff, filter: describePoolFilter(eff, t), deck: frag(t, `enterrement.deck_${bord}`) });
+    }
     // Verbes transitifs directs : « Dévore une unité ennemie », sans préposition.
     case "devoration": return frag(t, "content.devoration");
     // Verbe transitif direct lui aussi : « réduit au silence une unité ennemie ».
@@ -1125,7 +1144,7 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
   // Exhumation : la phrase de contenu décrit déjà le nombre + la zone (cimetière)
   // → on n'y accole pas le descripteur de cible générique (qui dirait « à N unités
   // alliées du cimetière au choix », redondant).
-  const skipTarget = eff.content === "exhumation" || eff.content === "rappel";
+  const skipTarget = eff.content === "exhumation" || eff.content === "rappel" || eff.content === "enterrement";
   // Capacité qui se vise elle-même : tournure réfléchie, sans complément de
   // cible (« Se renvoie en main. »). Les contenus sans forme réfléchie
   // déclarée gardent l'assemblage contenu + « à elle-même ».

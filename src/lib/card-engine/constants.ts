@@ -75,6 +75,8 @@ export const CURATED_KEYWORD_MODES: Record<string, ReadonlySet<CuratedMode>> = {
   "Vampirisme X": ALL_MODES,
   "Tempête X": ALL_MODES,
   "Canon X": ALL_MODES,
+  "Infestation X": ALL_MODES,
+  "Enterrement X": ALL_MODES,
   "Cataclysme X": ALL_MODES,
   "Renforcement +X/+Y": ALL_MODES,
   // Discipline et Esprit de corps sont des Renforcements conditionnés : le

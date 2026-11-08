@@ -4709,7 +4709,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             return: tf('trigger_on_return'), on_return: tf('trigger_on_return'),
             end_of_turn: tf('trigger_on_end_of_turn'), on_end_of_turn: tf('trigger_on_end_of_turn'),
             start_of_turn: tf('trigger_on_start_of_turn'), on_start_of_turn: tf('trigger_on_start_of_turn'),
-            on_end_of_turn_in_hand: tf('trigger_on_end_of_turn_in_hand'), on_start_of_turn_in_hand: tf('trigger_on_start_of_turn_in_hand'),
+            on_end_of_turn_in_hand: tf('trigger_on_end_of_turn_in_hand'), on_end_of_turn_in_graveyard: tf('trigger_on_end_of_turn_in_graveyard'), on_start_of_turn_in_hand: tf('trigger_on_start_of_turn_in_hand'),
             attack: tf('trigger_on_attack'), on_attack: tf('trigger_on_attack'),
             // Absents jusqu'ici : la liste affichait alors l'id brut (« low_hp »).
             draw: tf('trigger_on_draw'), on_draw: tf('trigger_on_draw'),

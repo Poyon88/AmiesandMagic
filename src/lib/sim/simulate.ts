@@ -81,6 +81,8 @@ export interface EntreeJournal {
 export interface ViviersSim {
   factionCardPool: Card[];
   allSpellsPool: Card[];
+  /** Vivier de Mutation X ; absent ⇒ aucune mutation possible. */
+  mutationPool?: Card[];
   tokens: TokenTemplate[];
   machines?: Card[];
   formatCode?: FormatCode | null;
@@ -134,6 +136,7 @@ export function decrireCoup(s: GameState, a: GameAction): string {
     case "spend_conquete": return "dépense sa Conquête";
     case "take_machine": return "prend sa machine";
     case "suspend_eveil": return `met ${nomCarte(s, a.cardInstanceId)} en éveil`;
+    case "mutate_card": return `fait muter ${nomCarte(s, a.cardInstanceId)}`;
     case "pay_eveil": return `verse ${a.amount ?? 1} point(s) d'éveil à ${nomCarte(s, a.cardInstanceId)}`;
     case "resolve_pending_trigger": return `résout un déclencheur${cible(a.targetInstanceId)}`;
     case "auto_resolve_pending_triggers": return "résout les déclencheurs";
@@ -253,6 +256,7 @@ export function simulerPartie(
     state = initializeGame("p1", "p2", a.cards, b.cards, premier, seed, a.hero, b.hero, pools.factionCardPool, pools.allSpellsPool, pools.formatCode ?? null, options.regles);
     state.tokenTemplates = pools.tokens;
     state.machineTemplates = pools.machines ?? [];
+    state.mutationPool = pools.mutationPool ?? [];
     noterPioches(state);
 
     while (actions < MAX_ACTIONS) {

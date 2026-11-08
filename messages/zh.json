@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "战术 X",
-        "desc": "随机将自身的X个永久技能永久赋予一个目标我方单位。"
+        "desc": "使一个目标友方单位随机获得 X 项同费用生物的能力。"
       },
       "exhumation": {
         "label": "掘墓 X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "治疗 X",
         "desc": "为一个被选定的其他友方单位或你的英雄恢复 X 点生命值。"
+      },
+      "mutation": {
+        "label": "变异 X",
+        "desc": "在手牌中：发现 2 个费用为 X 的普通生物。此卡获得它们最高的攻击和生命值，以及各 1 项能力。"
+      },
+      "infestation": {
+        "label": "侵染 X",
+        "desc": "将此单位的 X 张复制洗入你的牌库。抽到复制时将其召唤，并再抽一张牌。"
+      },
+      "enterrement": {
+        "label": "埋葬 X",
+        "desc": "将目标玩家牌库顶的 X 张牌置入其墓地（每缺少一张受到疲劳伤害）。"
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "导师",
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
+      },
+      "enterrement": {
+        "label": "埋葬 X",
+        "desc": "将目标玩家牌库顶的 X 张牌置入其墓地"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "被抽到时",
         "on_low_hp": "生命值低于15",
         "on_wound": "受伤",
-        "on_delay": "延迟 {d}"
+        "on_delay": "延迟 {d}",
+        "on_end_of_turn_in_graveyard": "回合结束时，只要仍在墓地中",
+        "in_graveyard_suffix": "墓地中"
       },
       "siphon": {
         "heal": "并为你的英雄恢复{x}点生命值",
@@ -964,8 +982,8 @@
         "silence": "沉默",
         "dechainement": "打出{x}张费用为{y}的随机行动",
         "dechainement_one": "打出一张费用为{y}的随机行动",
-        "tactique_one": "随机传授自身的1个永久技能",
-        "tactique_many": "随机传授自身的{x}个永久技能",
+        "tactique_one": "随机给予一项同费用生物的能力",
+        "tactique_many": "随机给予 {x} 项同费用生物的能力",
         "retour_differe": "放到其拥有者牌库底",
         "retour_differe_cible": "将{target}置于{proprio}的牌库底部",
         "proprio_one": "其拥有者",
@@ -999,7 +1017,9 @@
         "appel_any": "将你牌库中的首个单位置入场上",
         "appel_item_any": "将你牌库中的首个物品置入场上",
         "dechainement_any": "打出{x}张随机行动牌",
-        "dechainement_one_any": "打出一张随机行动牌"
+        "dechainement_one_any": "打出一张随机行动牌",
+        "enterrement_one": "{deck}：将顶部一张牌{filter}置入墓地",
+        "enterrement_many": "{deck}：将顶部 {x} 张牌{filter}置入墓地"
       },
       "self": {
         "transformation": "自身变形",
@@ -1170,6 +1190,11 @@
         "times": "{x} 次，每次 1 点 {unit}，每次随机",
         "target_both": "对一个随机 {side} 目标（单位或英雄）",
         "target_unit": "对一个随机 {side} 单位"
+      },
+      "enterrement": {
+        "deck_enemy": "对手牌库",
+        "deck_ally": "你的牌库",
+        "deck_any": "目标牌库"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "在场地上限内，获得对{cibles}的控制权。",
         "benediction": "完全治愈{cibles}。",
         "malediction": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
-        "tactique": "永久将 X 项随机抽取的常驻能力赋予{cibles}(每个单位各抽取一次)。",
+        "tactique": "使{cibles}随机获得 X 项同费用生物的能力（每个单位分别抽取）。",
         "vampirisme": "从{cibles}处吸取至多X点生命值,并将其加到此单位的生命值上。",
         "devoration": "消灭{cibles};该单位永久获得它们的攻击力和生命值。",
         "sacrifice": "消灭所有其他友方单位,永久获得它们的生命值和攻击力。",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "只要你的墓地中有7个或更多生物，所有其他友方单位获得+X攻击力和+Y生命值。",
         "seuil_sacrificiel": "只要你的牌库中有25张或更少的牌，所有其他友方单位获得+X攻击力和+Y生命值。",
         "silence_soi": "失去所有关键词,属性恢复为原始值。",
-        "guerison_soi": "恢复 X 点生命值。"
+        "guerison_soi": "恢复 X 点生命值。",
+        "tactique_soi": "随机获得 X 项同费用生物的能力。"
       },
       "cibles": {
         "all_enemies": "所有敌方单位",
@@ -3084,7 +3110,7 @@
     "content_exploration": "探索（计数，满3抽卡）",
     "content_incineration": "焚化（回收墓地）",
     "content_devoration": "吞噬（消灭并吸收）",
-    "content_tactique": "战术（分享自身永久技能）",
+    "content_tactique": "战术（随机能力，同费用）",
     "content_retour_differe": "延迟归返（置于牌库底）",
     "content_silence": "沉默（移除目标的一切）",
     "content_dechainement": "释放X/Y（随机行动）",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "延迟 X（在之后第 X 个回合开始时）",
     "retard_turns_title": "延迟：触发前的回合数",
     "retard_spell_title": "延迟：效果在施放者之后第 X 个回合开始时触发，目标在那时选择",
-    "label_retard": "延迟"
+    "label_retard": "延迟",
+    "trigger_on_end_of_turn_in_graveyard": "回合结束时，只要仍在墓地中",
+    "content_enterrement": "埋葬（牌库→墓地，可筛选）"
   },
   "game": {
     "hero_power_grant": "赋予一个生物{kw}",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ 二者择一",
     "choix_ou_subtitle": "这些效果中只有一个会结算。",
     "activation_menu_title": "要激活哪个能力？",
-    "activation_learned": "施放{name}"
+    "activation_learned": "施放{name}",
+    "mutation_button": "变异",
+    "mutation_button_title": "变异：转化这张卡牌（免费，仅一次）",
+    "mutation_discover": "变异 — 发现 {n}/2",
+    "mutation_discover_subtitle": "选择一个费用为 {x} 的普通生物",
+    "mutation_pick_ability": "变异 — 能力 {n}/2",
+    "mutation_pick_subtitle": "选择该生物传承的能力",
+    "mutation_empty": "该费用没有可用的生物。",
+    "mutation_cancel": "取消",
+    "infestation_caption": "🪳 侵染",
+    "enterrement_caption": "⚰ 埋葬"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

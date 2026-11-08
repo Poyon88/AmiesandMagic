@@ -38,6 +38,7 @@ import type {
   StackFrame,
   FormatCode,
 } from "./types";
+import { carteMutante, leguerCapacites, mutationX, resoudreChoixMutation, tactiqueVivier } from "./mutation";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
@@ -48,7 +49,7 @@ import { coutAutreClan, coutValideLePlusProche, estTourDeDecouverte, identiteDuD
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
-import { KEYWORD_LABELS, isPermanentKeyword, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
+import { KEYWORD_LABELS, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { nombreDOccurrences } from "./composed-occurrences";
 import { appliquerInvention, buildMachineCard, machineVierge, type InventionPart } from "./machine";
 import {
@@ -199,7 +200,10 @@ let deckEffectSink: Array<{ ownerId: string; abilityId: "preincanter" | "fortifi
 // ICI les cartes : elles sont choisies par l'auteur de la carte, pas tirées du
 // deck du joueur — les révéler ne divulgue donc rien de sa pioche.
 // Vidé au début d'applyAction, rattaché à state.compagnonsEvents ; hors hash.
-let compagnonsSink: Array<{ ownerId: string; cards: Card[] }> = [];
+let compagnonsSink: Array<{ ownerId: string; cards: Card[]; variant?: "infestation" }> = [];
+// ENTERREMENT : cartes enterrées pendant l'action (animation). Même cycle de vie
+// que compagnonsSink ; rattaché à state.enterrementEvents, hors hash.
+let enterrementSink: Array<{ ownerId: string; cards: Card[] }> = [];
 /** Signale qu'un effet « deck » a réellement modifié une carte. À n'appeler que
  *  si quelque chose a changé : un no-op (aucun sort dans le deck, réduction déjà
  *  au plancher) ne doit rien animer, sinon le badge mentirait. */
@@ -290,8 +294,8 @@ function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLab
     && animationCheckpointSink.some(c => c.label === label)) return;
   const derniere = animationCheckpointSink[animationCheckpointSink.length - 1];
   if (derniere && derniere.empreinte === empreinteVisible(live)) return;
-  const fp = live.factionCardPool, ap = live.allSpellsPool, wave = live.onAttackWave;
-  live.factionCardPool = undefined; live.allSpellsPool = undefined; live.onAttackWave = undefined;
+  const fp = live.factionCardPool, ap = live.allSpellsPool, mp = live.mutationPool, wave = live.onAttackWave;
+  live.factionCardPool = undefined; live.allSpellsPool = undefined; live.mutationPool = undefined; live.onAttackWave = undefined;
   animationCheckpointSink.push({
     label,
     empreinte: empreinteVisible(live),
@@ -304,14 +308,14 @@ function markAnimationCheckpoint(label: import("./types").AnimationCheckpointLab
     // annonce puis résout ; le sort imbriqué pose sa frontière en sortant).
     recastsBefore: live.recastEvents?.length ?? 0,
   });
-  live.factionCardPool = fp; live.allSpellsPool = ap; live.onAttackWave = wave;
+  live.factionCardPool = fp; live.allSpellsPool = ap; live.mutationPool = mp; live.onAttackWave = wave;
 }
 // Pools de cartes de l'action en cours (set dans applyAction). Permet aux
 // résolveurs curés SANS accès au GameState (mort / retour en main) de générer
 // des options de Sélection ou de remplacer des sorts (Concentration). Même
 // patron que currentTokenTemplates. Absent (test appelant un handler en
 // direct) ⇒ les effets concernés fizzlent proprement (aucune option).
-let currentCardPools: { factionCardPool?: Card[]; allSpellsPool?: Card[] } = {};
+let currentCardPools: { factionCardPool?: Card[]; allSpellsPool?: Card[]; mutationPool?: Card[] } = {};
 // Code du format du match (set dans applyAction depuis state.formatCode). Lu
 // par Invocation X pour restreindre le pool aux cartes légales dans le format
 // en cours, y compris depuis les déclencheurs curés sans accès au GameState.
@@ -863,7 +867,7 @@ function ciblesOnPlay(
 /** Capacités dont le BONUS +X/+Y a un bénéficiaire réglable (cf.
  *  KeywordInstance.recipient) : une autre unité alliée (défaut), elle-même, ou
  *  toutes les autres (portée « toutes »). */
-const BONUS_A_BENEFICIAIRE = new Set<string>(["renforcement", "discipline", "usurpation"]);
+const BONUS_A_BENEFICIAIRE = new Set<string>(["renforcement", "discipline", "usurpation", "tactique"]);
 
 /** Le bonus va-t-il à UNE AUTRE unité DÉSIGNÉE ? C'est le défaut, comme sur la
  *  forme sort ; faux pour « elle-même » (`recipient: "self"`) et sous la portée
@@ -1740,17 +1744,9 @@ function applyComposedToUnit(
       return;
     }
     case "tactique": {
-      // Sans source UNITÉ, personne n'a de capacités à partager — même silence
-      // que Dévoration plutôt qu'un effet qui mentirait. Le cas du SORT est
-      // exclu explicitement : ses `keywords` sont les capacités qu'il CONFÈRE,
-      // pas des capacités qu'il porte, et les repartager ici doublerait
-      // `grant_keyword` avec une sémantique trouble. Et une source ne se
-      // transmet rien à elle-même.
-      if (!source || source.card.card_type === "spell") return;
-      if (u.instanceId === source.instanceId) return;
-      for (const kw of tactiqueKeywordsAHasard(source, u, x)) {
-        u.card = { ...u.card, keywords: [...u.card.keywords, kw] };
-      }
+      // Le vivier ne dépend plus de la source (créatures communes du coût de la
+      // CIBLE) : une source sort, ou la cible elle-même, sont donc légitimes.
+      appliquerTactique(u, x);
       return;
     }
     case "siphon":
@@ -2219,6 +2215,33 @@ function resolveComposedEffect(
     //     cimetière, comme le mot-clé.
     // Le camp se lit sur la cible réellement désignée : `target.side` ne suffit
     // pas, car à `side: "any"` c'est le joueur qui tranche.
+    case "enterrement": {
+      // Camp visé : le bord de la cible s'il est tranché, sinon le héros (ou
+      // l'unité) désigné, et à défaut l'adversaire — comme le mot-clé.
+      const spec = composed.target;
+      const chosen = chosenTargetIds ?? [];
+      const victim = spec?.side === "ally" ? owner
+        : spec?.side === "enemy" ? opponent
+        : incinerationVictim(chosen[0], owner, opponent);
+      const filtre = composed.pool;
+      const filtre_actif = !!filtre && Object.values(filtre).some((v) => v != null && v !== "");
+      if (!filtre_actif) { resolveEnterrement(victim, x); return; }
+      // FILTRÉ : les X premières cartes du deck qui satisfont le filtre, dans
+      // l'ordre du deck. Pas de fatigue quand il en manque : c'est une
+      // recherche, pas une meule (la fatigue reste la règle du deck trop court).
+      const enterrees: CardInstance[] = [];
+      for (let i = 0; i < x; i++) {
+        const idx = victim.deck.findIndex(c => matchesPoolFilter(c.card, filtre));
+        if (idx < 0) break;
+        const [carte] = victim.deck.splice(idx, 1);
+        carte.cycleEternelAutoPlay = false;
+        carte.infestationAutoSummon = false;
+        victim.graveyard.push(carte);
+        enterrees.push(carte);
+      }
+      if (enterrees.length > 0) enterrementSink.push({ ownerId: victim.id, cards: enterrees.map(c => c.card) });
+      return;
+    }
     case "incineration": {
       const spec = composed.target;
       const chosen = chosenTargetIds ?? [];
@@ -2692,6 +2715,7 @@ function triggerToKeywordMode(trigger: import("./types").CapabilityTrigger): imp
     case "on_attack": return "attack";
     case "on_end_of_turn": return "end_of_turn";
     case "on_end_of_turn_in_hand": return "end_of_turn"; // même teinte que la fin de tour
+    case "on_end_of_turn_in_graveyard": return "end_of_turn";
     case "on_start_of_turn": return "start_of_turn";
     case "on_start_of_turn_in_hand": return "start_of_turn"; // même teinte que le début de tour
     case "on_low_hp": return "low_hp";
@@ -4490,6 +4514,22 @@ function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
     if (autoPlayDepth < MAX_BOARD_SIZE) drawCard(player, autoPlayDepth + 1);
     return card;
   }
+  // INFESTATION : la copie piochée est invoquée d'office — ou DÉTRUITE si le
+  // plateau est plein (arbitrage de l'auteur ; ce n'est pas une mort : elle n'a
+  // jamais été en jeu, aucun râle). Dans les deux cas elle ne consomme pas la
+  // pioche : une carte de remplacement est tirée, avec la même borne que Cycle
+  // éternel. Ni effet d'entrée ni effet de pioche.
+  if (card.infestationAutoSummon && card.card.card_type === "creature" && autoPlayDepth < MAX_BOARD_SIZE) {
+    card.infestationAutoSummon = false;
+    if (placesOccupees(player) < MAX_BOARD_SIZE) {
+      card.hasSummoningSickness = true;
+      player.board.push(card);
+    } else {
+      player.graveyard.push(card);
+    }
+    drawCard(player, autoPlayDepth + 1);
+    return card;
+  }
   if (player.hand.length >= MAX_HAND_SIZE) {
     player.graveyard.push(card);
     return null;
@@ -4670,11 +4710,13 @@ type TurnPhase = "end_of_turn" | "start_of_turn";
 const TURN_PHASES: Record<TurnPhase, {
   trigger: import("./types").CapabilityTrigger;
   inHand: import("./types").CapabilityTrigger;
+  /** Déclencheur « tant qu'elle est au cimetière » de la phase, s'il existe. */
+  inGraveyard?: import("./types").CapabilityTrigger;
   /** Suffixe de l'id des déclencheurs d'EMBLÈME en attente (seule identité
    *  stable sans source en jeu). */
   emblemIdSuffix: string;
 }> = {
-  end_of_turn: { trigger: "on_end_of_turn", inHand: "on_end_of_turn_in_hand", emblemIdSuffix: "#eot" },
+  end_of_turn: { trigger: "on_end_of_turn", inHand: "on_end_of_turn_in_hand", inGraveyard: "on_end_of_turn_in_graveyard", emblemIdSuffix: "#eot" },
   start_of_turn: { trigger: "on_start_of_turn", inHand: "on_start_of_turn_in_hand", emblemIdSuffix: "#sot" },
 };
 
@@ -4788,6 +4830,18 @@ function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./t
     for (const cap of getCapabilities(carte.card)) {
       if (composeExecutable(cap) && cap.trigger === spec.inHand) {
         steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inHand: true });
+      }
+    }
+  }
+  // Créatures AU CIMETIÈRE portant un effet « …, au cimetière » : après la
+  // main, avant les emblèmes, dans l'ordre du cimetière (plus ancienne d'abord).
+  if (spec.inGraveyard) {
+    for (const carte of joueur.graveyard) {
+      if (carte.card.card_type !== "creature") continue;
+      for (const cap of getCapabilities(carte.card)) {
+        if (composeExecutable(cap) && cap.trigger === spec.inGraveyard) {
+          steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inGraveyard: true });
+        }
       }
     }
   }
@@ -4919,7 +4973,9 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
 
     const creature = step.inHand
       ? actif.hand.find(c => c.instanceId === step.sourceInstanceId)
-      : actif.board.find(c => c.instanceId === step.sourceInstanceId);
+      : step.inGraveyard
+        ? actif.graveyard.find(c => c.instanceId === step.sourceInstanceId)
+        : actif.board.find(c => c.instanceId === step.sourceInstanceId);
     // Source partie du plateau (ou de la main) entre pause et reprise → on saute ses effets.
     if (!creature) { queue.shift(); continue; }
     // Source ABATTUE par un effet situé à sa GAUCHE : elle ne parle plus. Les
@@ -4930,7 +4986,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
     // Même doctrine que le ciblage, qui écarte déjà les unités à 0 PV du
     // plateau comme des « cadavres en sursis », et que la résolution des sorts,
     // qui règle ses morts après chaque effet.
-    if (!step.inHand && creature.currentHealth <= 0) { queue.shift(); continue; }
+    if (!step.inHand && !step.inGraveyard && creature.currentHealth <= 0) { queue.shift(); continue; }
 
     // RETARD X d'une unité arrivé à terme : la capacité doit encore être portée
     // (un Silence l'a effacée). Elle reprend alors le chemin ordinaire d'un pas
@@ -4986,13 +5042,14 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
     const cap = getCapabilities(creature.card).find(c => c.uid === step.capUid && c.composed);
     queue.shift();
     if (!cap || !cap.composed) continue;
-    if (step.inHand) {
-      // Depuis la main : jamais de pause (aucun sélecteur ne peut s'ancrer sur
-      // une source hors plateau) — un « au choix » retombe sur le repli
-      // déterministe de selectComposedTargets.
+    if (step.inHand || step.inGraveyard) {
+      // Depuis la main ou le cimetière : jamais de pause (aucun sélecteur ne
+      // peut s'ancrer sur une source hors plateau) — un « au choix » retombe sur
+      // le repli déterministe de selectComposedTargets.
+      const trigger = step.inGraveyard ? spec.inGraveyard! : spec.inHand;
       withComposedMode(phase, () =>
         resolveComposedEffect(cap.composed!, creature, actif, opponent, undefined, false,
-          { trigger: spec.inHand, capUid: cap.uid }));
+          { trigger, capUid: cap.uid }));
       continue;
     }
     // `entity: "self"` vise toujours la source → jamais mis en file de choix
@@ -5650,6 +5707,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       resolveIncineration(victim, getKwX(cardInstance, "incineration", undefined, 1));
     }
 
+    // Enterrement X : les X premières cartes du deck du joueur visé (héros
+    // cliqué, ou camp de l'unité cliquée) partent dans son cimetière.
+    if (hasKwOnPlay(cardInstance, "enterrement")) {
+      resolveEnterrement(incinerationVictim(action.targetInstanceId, player, opponent), getKwX(cardInstance, "enterrement", undefined, 1));
+    }
+
     // Retour différé : l'unité ciblée repart sous le deck de son propriétaire.
     if (hasKwOnPlay(cardInstance, "retour_differe")) {
       const toutes = !!porteeOnPlay(cardInstance.card, "retour_differe");
@@ -6115,6 +6178,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       player.board.push(makeDedoublementClone(cardInstance));
     }
 
+    // Infestation (mode invocation) ; les autres modes passent par
+    // resolveCuratedKeywordEffect.
+    if (hasKwOnPlay(cardInstance, "infestation")) {
+      resolveInfestation(cardInstance, player, getKwX(cardInstance, "infestation", undefined, 1));
+    }
+
     // Combustion: défaussez une carte de votre main, piochez deux.
     // Gated on the play-mode instance so a Combustion entry living
     // only in tap/death mode doesn't auto-fire on summon.
@@ -6443,14 +6512,16 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Tactique X : attribue à un allié X capacités de la source, TIRÉES AU
     // HASARD. Le joueur ne désigne que le bénéficiaire ; le X vient de la carte
     // (l'ancien code en transmettait toujours une seule, X saisi ou non).
-    if (hasKwOnPlay(cardInstance, "tactique")) for (const tid of ciblesOnPlay(cardInstance, "tactique", action.targetInstanceId, player, opponent)) {
-      const tacticTarget = tid ? player.board.find(c => c.instanceId === tid && c !== cardInstance) : undefined;
-      if (tacticTarget) {
-        const x = getKwX(cardInstance, "tactique", undefined, 1);
-        for (const kw of tactiqueKeywordsAHasard(cardInstance, tacticTarget, x)) {
-          tacticTarget.card = { ...tacticTarget.card, keywords: [...tacticTarget.card.keywords, kw] };
-        }
-      }
+    if (hasKwOnPlay(cardInstance, "tactique")) {
+      const instT = instanceOnPlay(cardInstance.card, "tactique");
+      const x = getKwX(cardInstance, "tactique", undefined, 1);
+      // « Sur elle-même » (S) : la porteuse se donne ses capacités. Sinon une
+      // autre unité désignée, ou toutes (portée « A », via ciblesOnPlay).
+      const cibles = kwInstanceSoi(instT)
+        ? [cardInstance]
+        : ciblesOnPlay(cardInstance, "tactique", action.targetInstanceId, player, opponent)
+          .map(tid => tid ? player.board.find(c => c.instanceId === tid && c !== cardInstance) : undefined);
+      for (const t of cibles) if (t) appliquerTactique(t, x);
     }
 
     // Relancer X: rejoue les X derniers sorts lancés
@@ -7700,6 +7771,10 @@ function resolveSpellKeywords(
         resolveIncineration(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
         break;
       }
+      case "enterrement": {
+        resolveEnterrement(incinerationVictim(targetId, ctx.caster, ctx.opponent), kw.amount ?? 1);
+        break;
+      }
       case "creuser": {
         // Le choix voyage dans targetMap sous un slot dédié, comme `selection_0`
         // — le contexte de sort n'a pas à grossir d'un champ par mécanique.
@@ -8507,10 +8582,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
     }
 
     // Snapshot for wave 1 — pools stripped (the store diffs boards only).
-    const fp = newState.factionCardPool, ap = newState.allSpellsPool;
-    newState.factionCardPool = undefined; newState.allSpellsPool = undefined;
+    const fp = newState.factionCardPool, ap = newState.allSpellsPool, mp = newState.mutationPool;
+    newState.factionCardPool = undefined; newState.allSpellsPool = undefined; newState.mutationPool = undefined;
     newState.onAttackWave = { intermediate: deepClone(newState) };
-    newState.factionCardPool = fp; newState.allSpellsPool = ap;
+    newState.factionCardPool = fp; newState.allSpellsPool = ap; newState.mutationPool = mp;
     // Power could have killed the attacker itself (e.g. an AoE it's caught in)
     // → no combat, finalize.
     if (!player.board.find(c => c.instanceId === attacker.instanceId)) {
@@ -9055,7 +9130,7 @@ function appliquerComposeAObjet(
 }
 
 function cloneStateForAction(state: GameState): GameState {
-  const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined } as GameState);
+  const next = deepClone({ ...state, factionCardPool: undefined, allSpellsPool: undefined, mutationPool: undefined } as GameState);
   // Les VIVIERS sont écartés du clonage — ils pèsent des milliers de cartes et
   // ne changent jamais — puis RÉ-ATTACHÉS ICI, par référence.
   //
@@ -9072,6 +9147,7 @@ function cloneStateForAction(state: GameState): GameState {
   // sont désormais redondants, et inoffensifs.
   next.factionCardPool = state.factionCardPool;
   next.allSpellsPool = state.allSpellsPool;
+  next.mutationPool = state.mutationPool;
   currentBoardPlayers = next.players;
   currentActionState = next;
   return next;
@@ -9125,6 +9201,32 @@ function resolveIncineration(victim: PlayerState, x: number): void {
   // créature repiochée traînerait ses dégâts et ses bonus de la partie d'avant.
   for (const inst of picked) returnInstanceToPlay(inst);
   victim.deck.push(...shuffleArray(picked));
+}
+
+/** ENTERREMENT X — les X premières cartes du deck de `victim` passent, du
+ *  dessus vers le bas, dans son cimetière. Chaque carte MANQUANTE (deck trop
+ *  court) inflige la fatigue au héros visé, comme une pioche à vide — arbitrage
+ *  de l'auteur : Enterrement est un vrai plan de victoire.
+ *
+ *  Aucun effet à l'arrivée : la carte n'était pas en jeu (pas de râle). Les
+ *  marqueurs d'invocation automatique tombent : une copie d'Infestation ou une
+ *  carte de Cycle éternel enterrée n'est jamais invoquée. */
+function resolveEnterrement(victim: PlayerState, x: number): void {
+  if (x <= 0) return;
+  const enterrees: CardInstance[] = [];
+  for (let i = 0; i < x; i++) {
+    const carte = victim.deck.shift();
+    if (!carte) {
+      victim.fatigueDamage++;
+      dealDamageToHero(victim.hero, victim.fatigueDamage);
+      continue;
+    }
+    carte.cycleEternelAutoPlay = false;
+    carte.infestationAutoSummon = false;
+    victim.graveyard.push(carte);
+    enterrees.push(carte);
+  }
+  if (enterrees.length > 0) enterrementSink.push({ ownerId: victim.id, cards: enterrees.map(c => c.card) });
 }
 
 /** Camp propriétaire du CIMETIÈRE où se trouve `id`.
@@ -11020,32 +11122,29 @@ function applyPreincanter(owner: PlayerState, x: number): void {
   noteDeckEffect(owner.id, "preincanter", applied);
 }
 
-/** TACTIQUE X — les X capacités que la source transmet à un allié.
+/** TACTIQUE X — donne à `recipient` X capacités tirées au hasard parmi celles
+ *  des créatures COMMUNES de même coût (vivier de Mutation), copiées EN ENTIER :
+ *  X, déclencheur, cibles, effet composé (cf. tactiqueVivier / leguerCapacites).
  *
- *  TIRÉES AU HASARD, et non choisies : la capacité offre un partage d'aptitudes
- *  subi, pas un outil de composition. Le tirage passe par `shuffleArray`, donc
- *  par le RNG de `GameState` : les deux clients tirent la MÊME chose, sans quoi
- *  la partie désynchroniserait au premier partage.
+ *  Tirage par `shuffleArray`, donc par le RNG de `GameState` : les deux clients
+ *  tirent la MÊME chose. Un vivier de 0 ou 1 élément ne consomme aucun cran.
  *
- *  Le vivier est celui des capacités PROPRES de la source (Tactique exclue) que
- *  la cible n'a pas déjà — inutile de « donner » ce qu'elle possède, et le
- *  filtre évite un tirage qui n'offrirait rien.
- *
- *  Un vivier de 0 ou 1 élément ne consomme aucun cran de RNG (la boucle de
- *  mélange ne tourne pas), donc aucune partie existante ne dérive. */
-function tactiqueKeywordsAHasard(source: CardInstance, target: CardInstance, x: number): Keyword[] {
-  const vivier = source.card.keywords.filter(
-    (kw) =>
-      kw !== "tactique"
-      && !target.card.keywords.includes(kw)
-      // PERMANENTES seulement — les capacités à icône BLANCHE. Deux raisons qui
-      // n'en font qu'une : c'est la règle énoncée au joueur (la couleur de
-      // l'icône la lui dit sans texte), et un effet à déclencheur transmis nu
-      // serait de toute façon inerte chez sa nouvelle porteuse — une capacité
-      // « à l'entrée » donnée à une unité DÉJÀ en jeu ne partira jamais.
-      && isPermanentKeyword(kw, source.card.keyword_instances?.find((k) => k.id === kw)?.mode),
-  );
-  return shuffleArray(vivier).slice(0, Math.max(1, x));
+ *  Les effets de bord d'un DON sur une unité en jeu sont rejoués pour chaque
+ *  mot-clé légué (Bouclier levé, Traque, gardes armées, X gravés), comme
+ *  applyGrantedKeyword. */
+function appliquerTactique(recipient: CardInstance, x: number): void {
+  if (x <= 0) return;
+  const tires = shuffleArray(tactiqueVivier(currentCardPools.mutationPool, recipient.card)).slice(0, x);
+  if (tires.length === 0) return;
+  recipient.card = leguerCapacites(recipient.card, tires);
+  for (const { cap } of tires) {
+    if (cap.composed) continue;
+    const kwId = cap.abilityId;
+    if (kwId === "divine_shield") recipient.hasDivineShield = true;
+    if (kwId === "charge") recipient.hasSummoningSickness = false;
+    rearmGrantedKeyword(recipient, kwId, cap.params?.x);
+  }
+  stampKeywordXValues(recipient);
 }
 
 /** Vrai pendant qu'une portée « toutes » rejoue une capacité curée : la
@@ -11238,6 +11337,10 @@ function resolveCuratedKeywordEffect(
       owner.board.push(token);
       break;
     }
+    case "infestation": {
+      resolveInfestation(source, owner, x);
+      break;
+    }
     case "dedoublement": {
       // Mort / tap / retour / fin de tour / attaque : crée une copie exacte de
       // la source (même logique que l'effet on-play). Le clone entre frais ;
@@ -11335,6 +11438,11 @@ function resolveCuratedKeywordEffect(
     }
     case "incineration": {
       resolveIncineration(incinerationVictim(targetInstanceId, owner, opponent), x);
+      break;
+    }
+    case "enterrement": {
+      // Sans cible (mort, fin de tour…) : le repli vise l'adversaire.
+      resolveEnterrement(incinerationVictim(targetInstanceId, owner, opponent), x);
       break;
     }
     case "creuser": {
@@ -11785,15 +11893,12 @@ function resolveCuratedKeywordEffect(
       return;
     }
     case "tactique": {
-      // Attribue X capacités transmissibles de la source à un allié, tirées au
-      // hasard — même règle qu'à l'entrée en jeu (ce chemin n'en transmettait
-      // qu'une, quel que soit le X saisi).
+      // Mort / activation / attaque / fin de tour… : même règle qu'à l'entrée.
+      // « Sur elle-même » : la porteuse ; sinon l'alliée désignée, ou un repli.
+      if (kwInstanceSoi(inst)) { appliquerTactique(source, x); return; }
       const resolveTac = (tid: string) => {
         const t = owner.board.find(c => c.instanceId === tid && c.instanceId !== source.instanceId);
-        if (!t) return;
-        for (const k of tactiqueKeywordsAHasard(source, t, x)) {
-          t.card = { ...t.card, keywords: [...t.card.keywords, k] };
-        }
+        if (t) appliquerTactique(t, x);
       };
       if (targetInstanceId) { resolveTac(targetInstanceId); return; }
       const tidT = deferOrRandomTarget(kw, source, owner, opponent, inst);
@@ -12716,6 +12821,7 @@ export function tapKeywordNeedsTarget(kw: Keyword, inst?: KeywordInstance): bool
     case "renforcement":
     case "discipline":
     case "usurpation":
+    case "tactique":
       return bonusVersAutre(inst);
     // Elle-même (« S ») : rien à désigner.
     case "silence":
@@ -12727,12 +12833,12 @@ export function tapKeywordNeedsTarget(kw: Keyword, inst?: KeywordInstance): bool
     case "impact":
     case "affaiblissement":
     case "benediction":
-    case "tactique":
     case "sacrifice":
     case "permutation":
     case "malediction":
     case "mimique":
     case "metamorphose":
+    case "enterrement":
       return true;
     default:
       return false;
@@ -12755,6 +12861,9 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
   // aléatoire désignait sinon une cible, qui court-circuitait la portée).
   if (inst && (porteeValide(inst.targetScope, creatureScopes(inst.id)) || kwInstanceSoi(inst))) return null;
   switch (kw) {
+    case "enterrement":
+      // Le joueur dont le deck est enterré : un des deux héros.
+      return ["friendly_hero", "enemy_hero"];
     case "vampirisme":
       return filterTargetable(opponent.board).map(c => c.instanceId);
     case "execution":
@@ -13224,7 +13333,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // qui jetterait en plein enchaînement laisserait sinon le compteur en l'air
   // et brûlerait la marge de la SUIVANTE.
   drawTriggerDepth = 0;
-  currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool };
+  currentCardPools = { factionCardPool: state.factionCardPool, allSpellsPool: state.allSpellsPool, mutationPool: state.mutationPool };
   currentFormatCode = state.formatCode ?? null;
   pendingTriggerSink = [];
   frameSink = [];
@@ -13242,6 +13351,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   currentActionState = null;
   deckEffectSink = [];
   compagnonsSink = [];
+  enterrementSink = [];
   lethalSpellActive = false;
   woundSink = [];
   damageOriginCtx = null;
@@ -13289,6 +13399,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     case "take_machine": result = takeMachine(state, action); break;
     case "suspend_eveil": result = suspendEveil(state, action); break;
     case "pay_eveil": result = payEveil(state, action); break;
+    case "mutate_card": result = mutateCard(state, action); break;
     case "auto_resolve_pending_triggers": result = autoResolvePendingTriggers(state, action); break;
     default: result = state;
   }
@@ -13400,6 +13511,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     result.deckEffectEvents = [...(result.deckEffectEvents ?? []), ...deckEffectSink];
   }
   // Rattache les Compagnons mélangés au deck (cartes qui filent vers la pile).
+  if (enterrementSink.length > 0 && result !== state) {
+    result.enterrementEvents = [...(result.enterrementEvents ?? []), ...enterrementSink];
+  }
   if (compagnonsSink.length > 0 && result !== state) {
     result.compagnonsEvents = [...(result.compagnonsEvents ?? []), ...compagnonsSink];
   }
@@ -13588,6 +13702,48 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
  *  Source UNIQUE du moteur (qui refuse l'action) et de l'interface (qui grise
  *  la pastille) : un écart laisserait une pastille cliquable dont le clic ne
  *  ferait rien, indiscernable d'un bouton cassé. */
+/** MUTATION X — la carte peut-elle muter maintenant ? Source UNIQUE du moteur
+ *  et de l'interface : à son tour, partie en cours, aucun choix en attente,
+ *  créature en main portant Mutation X (X ≥ 1). Gratuit, et une seule fois par
+ *  carte (Mutation disparaît en mutant). */
+export function canMutate(state: GameState, cardInstanceId: string): boolean {
+  if (state.phase !== "playing" || (state.pendingTriggers?.length ?? 0) > 0) return false;
+  const player = state.players[state.currentPlayerIndex];
+  const carte = player.hand.find(c => c.instanceId === cardInstanceId);
+  if (!carte || carte.card.card_type !== "creature") return false;
+  return mutationX(carte.card) >= 1;
+}
+
+/** MUTATION X — réécrit la carte en main (cf. lib/game/mutation.ts). Les offres
+ *  sont RECALCULÉES ici : un choix hors offre laisse l'état inchangé. */
+export function mutateCard(state: GameState, action: import("./types").MutateCardAction): GameState {
+  if (!canMutate(state, action.cardInstanceId)) return state;
+  const player = state.players[state.currentPlayerIndex];
+  const carte = player.hand.find(c => c.instanceId === action.cardInstanceId)!;
+  const choix = resoudreChoixMutation(state.mutationPool, carte.card, carte.instanceId, {
+    creatureIds: action.creatureIds, capUids: action.capUids,
+  });
+  if (!choix) return state;
+
+  const newState = cloneStateForAction(state);
+  const me = newState.players[newState.currentPlayerIndex];
+  const inst = me.hand.find(c => c.instanceId === action.cardInstanceId);
+  if (!inst) return state;
+  const card = carteMutante(inst.card, choix.a, choix.capA, choix.b, choix.capB);
+  inst.card = card;
+  // Les stats de la mutante REMPLACENT celles de la carte (bonus reçus en main
+  // compris) ; elles deviennent aussi sa base, celle que Silence restaure.
+  inst.baseAttack = card.attack ?? 0;
+  inst.baseHealth = card.health ?? 1;
+  inst.currentAttack = card.attack ?? 0;
+  inst.currentHealth = card.health ?? 1;
+  inst.maxHealth = card.health ?? 1;
+  inst.hasDivineShield = card.keywords.includes("divine_shield");
+  stampKeywordXValues(inst);
+  newState.lastAction = action;
+  return newState;
+}
+
 export function canSuspendToEveil(state: GameState, cardInstanceId: string): boolean {
   const player = state.players[state.currentPlayerIndex];
   if ((player.eveil ?? []).length >= MAX_EVEIL) return false;
@@ -13728,7 +13884,8 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   "neutralisation",
   "sacrifice", "corruption", "malediction", "affaiblissement", "impact",
   "permutation", "vampirisme", "mimique", "metamorphose",
-  "benediction", "tactique", "remontee", "conferer",
+  // Tactique : ciblage selon l'instance (cf. BONUS_A_BENEFICIAIRE).
+  "benediction", "remontee", "conferer",
   // Dévoration : `getCreatureTargets` savait DÉJÀ bâtir sa liste de cibles,
   // mais son absence ici rendait `creatureNeedsTarget` faux — le picker ne
   // s'ouvrait jamais et le moteur retombait sur le tirage au sort. Deux listes
@@ -13740,6 +13897,8 @@ const CREATURE_TARGETING_KEYWORDS: Keyword[] = [
   // `resolveRetourDiffere`). Les deux savaient pourtant se faire cibler.
   // `creature-targeting-coverage.test.ts` interdit désormais la récidive.
   "incineration", "retour_differe",
+  // Enterrement désigne un CAMP (héros), comme Incinération.
+  "enterrement",
 ];
 
 /** Première capacité composée à l'entrée demandant un ciblage interactif :
@@ -14036,11 +14195,11 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       }
       case "sacrifice":
       case "benediction":
-      case "tactique":
         return player.board.map(c => c.instanceId);
       case "renforcement":
       case "discipline":
       case "usurpation":
+      case "tactique":
         // Sur elle-même : aucune cible, on passe au mot-clé suivant.
         if (!bonusVersAutre(instanceOnPlay(card, kw))) continue;
         return player.board.map(c => c.instanceId);
@@ -14087,6 +14246,9 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
           ...player.graveyard.map(c => c.instanceId),
           ...opponent.graveyard.map(c => c.instanceId),
         ];
+      case "enterrement":
+        // La cible désigne le joueur dont le deck est enterré : un héros.
+        return ["friendly_hero", "enemy_hero"];
     }
   }
   // Repli : cible d'un effet composé à l'entrée "au choix" (unité et/ou héros).
@@ -14532,6 +14694,29 @@ function resolveCompagnons(
   owner.deck = shuffleArray(owner.deck);
   // Après l'ajout : une liste vide (aucune carte liée résolue) n'anime rien.
   compagnonsSink.push({ ownerId: owner.id, cards: added.map((i) => i.card) });
+}
+
+/** INFESTATION — plafond du deck : au-delà, plus aucune copie n'est ajoutée.
+ *  Les copies gardent Infestation (effet boule de neige voulu par l'auteur) ;
+ *  ce plafond empêche seulement l'état de grossir sans fin. */
+export const INFESTATION_DECK_CAP = 60;
+
+/** INFESTATION X — mélange X copies de `source` dans le deck de `owner`.
+ *  Copies de l'état ACTUEL (bonus permanents compris, comme Dédoublement), un
+ *  objet carte par copie (des copies qui partageraient leur `card` se
+ *  modifieraient ensemble). */
+function resolveInfestation(source: CardInstance, owner: PlayerState, x: number): void {
+  const n = Math.min(Math.max(0, x), INFESTATION_DECK_CAP - owner.deck.length);
+  if (n <= 0) return;
+  const added: CardInstance[] = [];
+  for (let i = 0; i < n; i++) {
+    const copie = createCardInstance({ ...source.card });
+    copie.infestationAutoSummon = true;
+    added.push(copie);
+  }
+  owner.deck.push(...added);
+  owner.deck = shuffleArray(owner.deck);
+  compagnonsSink.push({ ownerId: owner.id, cards: added.map((i) => i.card), variant: "infestation" });
 }
 
 /** Enchaîne une Invocation par coût listé, dans l'ordre. Chaque entrée suit les

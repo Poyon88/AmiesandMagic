@@ -285,7 +285,7 @@
       },
       "tactique": {
         "label": "Tactique X",
-        "desc": "Attribue définitivement à une unité alliée ciblée X de ses capacités permanentes, tirées au hasard."
+        "desc": "Donne à une unité alliée ciblée X capacités tirées au hasard parmi celles des créatures de même coût."
       },
       "exhumation": {
         "label": "Exhumation X",
@@ -572,6 +572,18 @@
       "guerison": {
         "label": "Guérison X",
         "desc": "Restaure X PV à une autre unité alliée ciblée ou à votre héros."
+      },
+      "mutation": {
+        "label": "Mutation X",
+        "desc": "En main : découvrez 2 créatures communes de coût X. Prend leurs meilleures ATK et PV et 1 capacité de chacune."
+      },
+      "infestation": {
+        "label": "Infestation X",
+        "desc": "Mélange X copies de cette unité dans votre deck. Piochée, une copie est invoquée et vous piochez une autre carte."
+      },
+      "enterrement": {
+        "label": "Enterrement X",
+        "desc": "Place les X premières cartes du deck du joueur ciblé dans son cimetière (fatigue par carte manquante)."
       }
     },
     "spell_keywords": {
@@ -845,6 +857,10 @@
       "tuteur": {
         "label": "Tuteur",
         "desc": "Ajoute à votre main les cartes désignées à la création (une même carte peut l'être plusieurs fois)."
+      },
+      "enterrement": {
+        "label": "Enterrement X",
+        "desc": "Place les X premières cartes du deck du joueur ciblé dans son cimetière"
       }
     },
     "composed": {
@@ -862,7 +878,9 @@
         "on_draw": "Quand cette carte est piochée",
         "on_low_hp": "Sous 15 PV",
         "on_wound": "Blessure",
-        "on_delay": "Retard {d}"
+        "on_delay": "Retard {d}",
+        "on_end_of_turn_in_graveyard": "À la fin du tour, tant qu'elle est au cimetière",
+        "in_graveyard_suffix": "au cimetière"
       },
       "siphon": {
         "heal": "et soigne votre héros de {x} PV",
@@ -964,8 +982,8 @@
         "silence": "réduit au silence",
         "dechainement": "joue {x} actions aléatoires de coût {y}",
         "dechainement_one": "joue une action aléatoire de coût {y}",
-        "tactique_one": "transmet au hasard une de ses capacités permanentes",
-        "tactique_many": "transmet au hasard {x} de ses capacités permanentes",
+        "tactique_one": "donne au hasard une capacité d'une créature de même coût",
+        "tactique_many": "donne au hasard {x} capacités de créatures de même coût",
         "retour_differe": "place sous le deck de son propriétaire",
         "retour_differe_cible": "place {target} sous le deck de {proprio}",
         "proprio_one": "son propriétaire",
@@ -999,7 +1017,9 @@
         "appel_any": "met en jeu la 1re unité de votre deck",
         "appel_item_any": "met en jeu le 1er objet de votre deck",
         "dechainement_any": "joue {x} actions aléatoires",
-        "dechainement_one_any": "joue une action aléatoire"
+        "dechainement_one_any": "joue une action aléatoire",
+        "enterrement_one": "place la 1re carte{filter} {deck}",
+        "enterrement_many": "place les {x} premières cartes{filter} {deck}"
       },
       "self": {
         "transformation": "se transforme",
@@ -1170,6 +1190,11 @@
         "times": "{x} fois 1 {unit}, à chaque fois",
         "target_both": "à une cible {side} aléatoire (unité ou héros)",
         "target_unit": "à une unité {side} aléatoire"
+      },
+      "enterrement": {
+        "deck_enemy": "du deck adverse dans son cimetière",
+        "deck_ally": "de votre deck dans votre cimetière",
+        "deck_any": "du deck visé dans son cimetière"
       }
     },
     "factions": {
@@ -2190,7 +2215,7 @@
         "domination": "Prend le contrôle de {cibles}, dans la limite des places.",
         "benediction": "Soigne complètement {cibles}.",
         "malediction": "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
-        "tactique": "Attribue définitivement X de ses capacités permanentes, tirées au hasard, à {cibles} (un tirage par unité).",
+        "tactique": "Donne à {cibles} X capacités tirées au hasard parmi celles des créatures de même coût (un tirage par unité).",
         "vampirisme": "Vole jusqu'à X PV à {cibles} et les ajoute aux PV de cette unité.",
         "devoration": "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
         "sacrifice": "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",
@@ -2207,7 +2232,8 @@
         "force_des_ancetres": "Tant que votre cimetière compte 7 créatures ou plus, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
         "seuil_sacrificiel": "Tant que votre deck compte 25 cartes ou moins, toutes les autres unités alliées gagnent +X ATK et +Y PV.",
         "silence_soi": "Perd tous ses mots-clés et ses stats reviennent à leur valeur d'origine.",
-        "guerison_soi": "Récupère X PV."
+        "guerison_soi": "Récupère X PV.",
+        "tactique_soi": "Gagne X capacités tirées au hasard parmi celles des créatures de même coût."
       },
       "cibles": {
         "all_enemies": "toutes les unités ennemies",
@@ -3084,7 +3110,7 @@
     "content_exploration": "Exploration (compteur, pioche à 3)",
     "content_incineration": "Incinération (recycler un cimetière)",
     "content_devoration": "Dévoration (détruire et absorber)",
-    "content_tactique": "Tactique (partage ses capacités permanentes)",
+    "content_tactique": "Tactique (capacités au hasard, même coût)",
     "content_retour_differe": "Retour différé (sous le deck)",
     "content_silence": "Silence (retire tout à la cible)",
     "content_dechainement": "Déchainement X/Y (actions aléatoires)",
@@ -3094,7 +3120,9 @@
     "trigger_on_delay": "Retard X (au début du X-ième tour suivant)",
     "retard_turns_title": "Retard : nombre de tours avant le déclenchement",
     "retard_spell_title": "Retard : l'effet se déclenche au début du X-ième tour suivant du lanceur, cible choisie à ce moment-là",
-    "label_retard": "Retard"
+    "label_retard": "Retard",
+    "trigger_on_end_of_turn_in_graveyard": "À la fin du tour, tant qu'elle est au cimetière",
+    "content_enterrement": "Enterrement (deck → cimetière, filtrable)"
   },
   "game": {
     "hero_power_grant": "Confère {kw} à une créature",
@@ -3258,7 +3286,17 @@
     "choix_ou_title": "⚖️ Au choix",
     "choix_ou_subtitle": "Un seul de ces effets se résoudra.",
     "activation_menu_title": "Quel pouvoir activer ?",
-    "activation_learned": "Lancer {name}"
+    "activation_learned": "Lancer {name}",
+    "mutation_button": "Muter",
+    "mutation_button_title": "Mutation : transformer cette carte (gratuit, une seule fois)",
+    "mutation_discover": "Mutation — Découverte {n}/2",
+    "mutation_discover_subtitle": "Choisissez une créature commune de coût {x}",
+    "mutation_pick_ability": "Mutation — Capacité {n}/2",
+    "mutation_pick_subtitle": "Choisissez la capacité que cette créature lègue",
+    "mutation_empty": "Aucune créature disponible à ce coût.",
+    "mutation_cancel": "Annuler",
+    "infestation_caption": "🪳 Infestation",
+    "enterrement_caption": "⚰ Enterrement"
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",

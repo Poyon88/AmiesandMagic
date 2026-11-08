@@ -137,7 +137,7 @@ export function isItemFiringTrigger(trigger: CapabilityTrigger): boolean {
   // premier lot ; le rouvrir tient à cette seule ligne.
   // `on_delay` (Retard X) : armé quand une CRÉATURE est jouée — un objet ne
   // passe pas par ce chemin, son Retard ne partirait jamais.
-  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_wound" && trigger !== "on_delay";
+  return trigger !== "on_end_of_turn_in_hand" && trigger !== "on_start_of_turn_in_hand" && trigger !== "on_end_of_turn_in_graveyard" && trigger !== "on_wound" && trigger !== "on_delay";
 }
 
 /** Cadences auxquelles un EMBLÈME peut réagir.

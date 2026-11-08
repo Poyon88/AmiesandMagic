@@ -10,7 +10,7 @@ import { ancrageDuBadge } from "@/lib/game/choice-timer";
 import { useVocab } from "@/i18n/useVocab";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
-import { canPlayCard, canSuspendToEveil, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
+import { canPlayCard, canSuspendToEveil, canMutate, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import HeroOrbit from "./orbite/HeroOrbit";
 import DelayedSpellStrip from "./DelayedSpellStrip";
@@ -27,6 +27,7 @@ import EveilOverlay from "./EveilOverlay";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import DivinationOverlay from "./DivinationOverlay";
 import SelectionOverlay from "./SelectionOverlay";
+import MutationOverlay from "./MutationOverlay";
 import ChoixOuOverlay from "./ChoixOuOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
@@ -143,8 +144,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearFireBreathEvent,
     cycleEternelEvent,
     compagnonsEvent,
+    enterrementEvent,
     clearCycleEternelEvent,
     clearCompagnonsEvent,
+    clearEnterrementEvent,
     exileCostEvent,
     deckEffectEvent,
     clearDeckEffectEvent,
@@ -193,6 +196,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // ÉVEIL — quel camp est déplié. Même forme que `graveyardView` : la zone est
   // publique, on peut donc consulter celle de l'adversaire (en lecture seule).
   const [eveilView, setEveilView] = useState<"my" | "opponent" | null>(null);
+  // MUTATION X : carte en main dont les modales de mutation sont ouvertes.
+  const [mutationEnCours, setMutationEnCours] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [hoveredTargetId, setHoveredTargetId] = useState<string | null>(null);
@@ -482,6 +487,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const myPlayer = getMyPlayerState();
   const opponent = getOpponentPlayerState();
   const myTurn = isMyTurn() && !isAnimating;
+  // Fin du tour (chrono compris) ou carte devenue inmutable : les modales se
+  // ferment sans rien envoyer — la carte reste intacte.
+  useEffect(() => {
+    if (!mutationEnCours) return;
+    if (!gameState || !isMyTurn() || !canMutate(gameState, mutationEnCours)) setMutationEnCours(null);
+  }, [gameState, mutationEnCours, isMyTurn]);
   const pendingEquipItemId = useGameStore((s) => s.pendingEquipItemId);
   // `myPlayer` peut être null avant le retour anticipé plus bas, et un hook ne
   // peut pas attendre celui-ci (règle des hooks) : les deux dérivés ci-dessous
@@ -1387,6 +1398,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         {!isMtgo && (
         <div className="absolute top-[2%] left-[2%] z-30 flex items-center gap-3">
           <button
+            data-graveyard-pile="opponent"
             onClick={() => setGraveyardView("opponent")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
           >
@@ -1601,6 +1613,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         {!isMtgo && (
         <div className="absolute bottom-[18%] left-[2%] z-40 flex items-center gap-3">
           <button
+            data-graveyard-pile="my"
             onClick={() => setGraveyardView("my")}
             className="flex flex-col items-center text-foreground/40 hover:text-foreground/60 transition-colors"
           >
@@ -1829,7 +1842,25 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             return (
               // Repliée : les cartes ne réagissent plus (ni survol-zoom ni clic),
               // seul le liseré du conteneur répond.
-              <div key={cardInstance.instanceId} style={{ pointerEvents: handHidden ? "none" : "auto" }}>
+              <div key={cardInstance.instanceId} style={{ pointerEvents: handHidden ? "none" : "auto", position: "relative" }}>
+                {/* MUTATION X : bouton au-dessus de la carte, seulement quand la
+                    mutation est réellement possible (cf. canMutate). */}
+                {myTurn && !handHidden && canMutate(gameState, cardInstance.instanceId) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMutationEnCours(cardInstance.instanceId); }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title={t("mutation_button_title")}
+                    style={{
+                      position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", zIndex: 40,
+                      padding: "2px 10px", borderRadius: 999, border: "1px solid #a855f7",
+                      background: "linear-gradient(180deg, #3b1d5e, #1e0f33)", color: "#e9d5ff",
+                      fontFamily: "'Cinzel', serif", fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      boxShadow: "0 0 10px #a855f788", whiteSpace: "nowrap",
+                    }}
+                  >
+                    🧬 {t("mutation_button")}
+                  </button>
+                )}
                 <HandCard
                   cardInstance={cardInstance}
                   canPlay={playable}
@@ -2055,6 +2086,21 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           }}
         />
       )}
+      {mutationEnCours && (() => {
+        const carte = myPlayer.hand.find((c) => c.instanceId === mutationEnCours);
+        if (!carte) return null;
+        return (
+          <MutationOverlay
+            carte={carte}
+            pool={gameState.mutationPool}
+            onCancel={() => setMutationEnCours(null)}
+            onConfirm={(action) => {
+              setMutationEnCours(null);
+              broadcast(dispatchAction(action));
+            }}
+          />
+        );
+      })()}
       {targetingMode === "selection" && selectionCards.length > 0 && !overlayPeeked && (
         <SelectionOverlay
           cards={selectionCards}
@@ -2154,7 +2200,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <CycleEternelOverlay event={cycleEternelEvent} onComplete={clearCycleEternelEvent} />
       {/* Compagnons — même mise en scène, habillage ambre : les cartes liées
           filent vers la pile de deck du contrôleur. */}
-      <CycleEternelOverlay event={compagnonsEvent} onComplete={clearCompagnonsEvent} variant="compagnons" />
+      <CycleEternelOverlay event={compagnonsEvent} onComplete={clearCompagnonsEvent} variant={compagnonsEvent?.variant ?? "compagnons"} />
+      <CycleEternelOverlay event={enterrementEvent} onComplete={clearEnterrementEvent} variant="enterrement" />
       <ExileCostOverlay event={exileCostEvent} onComplete={clearExileCostEvent} />
       <TopdeckCostOverlay event={topdeckCostEvent} onComplete={clearTopdeckCostEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
