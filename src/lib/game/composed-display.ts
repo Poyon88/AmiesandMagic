@@ -16,6 +16,7 @@ import { getRaceCountForm } from "@/lib/card-engine/race-forms";
 import { triggerBadge, type TriggerBadge } from "./keyword-display";
 import { singulierHelp, singulierLabel } from "./desc-markers";
 import { SINGULIER_COLOR } from "./singulier";
+import { zonesDeCible } from "./target-scope";
 import type { SafeT } from "@/i18n/config";
 
 // ─── fragments FR (source unique : repli runtime + graine vocab.composed) ────
@@ -354,6 +355,13 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.side_ally_many": "alliées",
   "target.side_enemy_one": "ennemie",
   "target.side_enemy_many": "ennemies",
+  "target.locs_board": "du plateau",
+  "target.locs_hand": "de la main",
+  "target.locs_deck": "du deck",
+  "target.locs_graveyard": "du cimetière",
+  "target.locs_sep": ", ",
+  "target.locs_and": " et ",
+  "target.locs_wrap": "{zones}",
   "target.loc_hand": "en main",
   "target.loc_deck": "du deck",
   "target.loc_graveyard": "du cimetière",
@@ -806,7 +814,9 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       const who = ((ent === "unit" ? nomCompteDeRace(eff.target, t) : null)
         ?? (typeof n === "number" && n > 1 ? frag(t, `content.${q}upto`, { n })
           : n === "all" ? frag(t, `content.${q}all`)
-          : frag(t, `content.${q}one`)) + appartenance(eff.target, t)) + plafond;
+          : frag(t, `content.${q}one`)) + appartenance(eff.target, t)) + plafond
+        // Le moteur tire vraiment dans ce cas (cf. case "exhumation") ; « toutes » ne tire rien.
+        + (eff.target?.designation === "random" && n !== "all" ? ` ${frag(t, "target.des_random")}` : "");
       const camp = eff.target?.side === "enemy" ? "_enemy" : eff.target?.side === "any" ? "_both" : "";
       return frag(t, libre(`${ent === "item" || ent === "unit_or_item" ? "content.exhumation_item" : "content.exhumation"}${camp}`), { who, x });
     }
@@ -822,8 +832,9 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
         ?? (typeof n === "number" && n > 1 ? frag(t, `content.rappel_upto_${kind}`, { n })
           : n === "all" ? frag(t, `content.rappel_all_${kind}`)
           : frag(t, `content.rappel_one_${kind}`)) + appartenance(eff.target, t);
+      const whoTire = who + (eff.target?.designation === "random" && n !== "all" ? ` ${frag(t, "target.des_random")}` : "");
       const cost = eff.target?.maxCost != null ? frag(t, "content.rappel_cost", { max: eff.target.maxCost }) : "";
-      return frag(t, "content.rappel", { who, cost });
+      return frag(t, "content.rappel", { who: whoTire, cost });
     }
     case "invocation":
       {
@@ -1047,7 +1058,8 @@ function describeTarget(
     : frag(tr, aut ? "target.count_n_autres" : `${q}count_n`, { n: t.count });
   const sideTxt = sideAdj(tr, t.side, many, t.entity === "item" || t.entity === "unit_or_item");
   const mtxt = filtreLabel(t, tr);
-  const locTxt = t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
+  const zones = zonesDeCible(t);
+  const locTxt = zones.length > 1 ? listeZones(zones, tr) : t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
     : (t.count !== "all" ? frag(tr, "target.des_choice") : "");
@@ -1055,6 +1067,13 @@ function describeTarget(
   // autres, d'où le test sur `undefined` (cf. TargetSpec.maxCost).
   const costTxt = t.maxCost != null ? frag(tr, "target.max_cost", { n: t.maxCost }) : "";
   return [count, sideTxt, mtxt && `(${mtxt})`, motCleLabel(t, tr), costTxt, locTxt, desTxt].filter(Boolean).join(" ");
+}
+
+/** « du plateau, de la main et du deck » : plusieurs zones visées par « toutes ». */
+function listeZones(zones: TargetSpec["location"][], tr?: SafeT): string {
+  const noms = zones.map((z) => frag(tr, `target.locs_${z}`));
+  const liste = `${noms.slice(0, -1).join(frag(tr, "target.locs_sep"))}${frag(tr, "target.locs_and")}${noms[noms.length - 1]}`;
+  return frag(tr, "target.locs_wrap", { zones: liste });
 }
 
 /** Répartition point par point (designation "scatter") : décrit les X points

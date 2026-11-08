@@ -10,6 +10,7 @@
 import type { Capability, Card, CardType, ComposedEffect, TargetSpec } from "@/lib/game/types";
 import { getCapabilities } from "@/lib/game/capability-adapter";
 import { ABILITIES, COUT_OPTIONNEL, KEYWORD_DEFAULT_X, xEquivalentCoutLibre } from "@/lib/game/abilities";
+import { zonesDeCible } from "@/lib/game/target-scope";
 import type { Bareme, CoutLineaire } from "./bareme";
 
 export interface Terme {
@@ -93,6 +94,7 @@ function multCible(b: Bareme, t: TargetSpec | undefined, ignoreCount: boolean): 
   if (t.entity === "hero") return m;
   if (t.count === "all") {
     m *= t.side === "enemy" ? b.portee.all_enemies : t.side === "ally" ? b.portee.all_allies : b.portee.all;
+    m *= 1 + b.cible.zoneSupp * (zonesDeCible(t).length - 1);
   } else if (!ignoreCount && typeof t.count === "number" && t.count > 1) {
     m *= 1 + b.cible.parCible * (t.count - 1);
   }
@@ -164,7 +166,7 @@ function termesComposes(b: Bareme, cap: Capability, c: ComposedEffect): Terme[] 
     * (cap.singulier ? b.singulier : 1)
     * multRetard(b, cap.delay)
     * Math.max(1, c.occurrences ?? 1);
-  const ligne = `${c.content}${m.x ? ` ${m.x}` : ""}${t?.count === "all" ? " (toutes)" : ""} · ${libelleDeclencheur(cap.trigger)}`;
+  const ligne = `${c.content}${m.x ? ` ${m.x}` : ""}${t?.count === "all" ? ` (toutes${t && zonesDeCible(t).length > 1 ? `, ${zonesDeCible(t).length} zones` : ""})` : ""} · ${libelleDeclencheur(cap.trigger)}`;
   const out = termesLineaires(`comp.${c.content}`, ligne, mult, xEffectif(m.x, random, m.minX), m.y);
   // Don d'une capacité : le contenu a son socle, plus une part de la valeur de
   // la capacité conférée — sous le déclencheur qu'elle portera chez son hôte.

@@ -67,7 +67,7 @@ import {
   LOW_HP_TRIGGER_THRESHOLD,
 } from "./constants";
 import { displayCardOf, isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
-import { ciblesDePortee, creatureScopes, creaturesDePortee, kwInstanceSoi, porteeValide, spellScopes } from "./target-scope";
+import { ciblesDePortee, creatureScopes, creaturesDePortee, kwInstanceSoi, porteeValide, spellScopes, zonesDeCible } from "./target-scope";
 import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 import { effetsDuPouvoir, uidEffetPouvoir, cibleEffetPouvoir, selectionEffetPouvoir, choixDeckEffetPouvoir } from "./hero-power";
@@ -1511,7 +1511,7 @@ function cibleComposee(
 ): import("./types").TargetSpec | undefined {
   const t = composed.target;
   if (!t || t.cardKind || CONTENUS_CIBLANT_ACTIONS.has(composed.content)) return t;
-  if (t.location === "board" || !visesUnites(t.entity)) return t;
+  if (zonesDeCible(t).every((z) => z === "board") || !visesUnites(t.entity)) return t;
   return { ...t, cardKind: "creature" };
 }
 
@@ -1524,12 +1524,14 @@ function composedTargetPool(
   // leur propre zone ; ailleurs, on trie les cartes de la zone par type.
   const unites = visesUnites(spec.entity);
   const objets = visesObjets(spec.entity);
-  const zoneOf = (p: PlayerState): CardInstance[] =>
-    spec.location === "board" ? [...(unites ? p.board : []), ...(objets ? objetsDe(p) : [])]
-      : (spec.location === "hand" ? p.hand
-        : spec.location === "deck" ? p.deck
-          : p.graveyard)
-        .filter((c) => (c.card.card_type === "item" ? objets : unites));
+  const zones = zonesDeCible(spec);
+  const zoneOf = (p: PlayerState): CardInstance[] => zones.flatMap((zone) =>
+    zone === "board"
+      // Sur le PLATEAU, une unité à 0 PV est un cadavre en sursis (voir plus bas).
+      ? [...(unites ? p.board : []), ...(objets ? objetsDe(p) : [])]
+        .filter((c) => c.card.card_type === "item" || c.currentHealth > 0)
+      : (zone === "hand" ? p.hand : zone === "deck" ? p.deck : p.graveyard)
+        .filter((c) => (c.card.card_type === "item" ? objets : unites)));
   let pool: CardInstance[] =
     spec.side === "ally" ? [...zoneOf(owner)]
       : spec.side === "enemy" ? [...zoneOf(opponent)]
@@ -1543,10 +1545,7 @@ function composedTargetPool(
   // On ne filtre QUE le plateau : cimetière/main/deck n'ont pas de notion de PV
   // vivants (Exhumation, Résurrection… ciblent justement des cartes « mortes »).
   // Un OBJET n'a pas de PV propres (sa colonne `health` est un BONUS) : le
-  // filtre des cadavres ne le concerne pas.
-  if (spec.location === "board") {
-    pool = pool.filter((c) => c.card.card_type === "item" || c.currentHealth > 0);
-  }
+  // filtre des cadavres ne le concerne pas. Appliqué zone par zone dans zoneOf.
   // APPARTENANCE — deux niveaux, et il faut les distinguer :
   //   • DANS une catégorie, les valeurs sont alternatives (race Elfes OU Nains) ;
   //   • ENTRE catégories, elles se CUMULENT (race Elfes ET clan Les Sylvains).
@@ -2345,7 +2344,10 @@ function resolveComposedEffect(
           const eligible = composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, owner, opponent)
             .filter((c) => !dejaRappelees.has(c));
           if (eligible.length === 0) break;
-          const inst = eligible[eligible.length - 1];
+          // « Au hasard » tire ; sinon repli déterministe sur la dernière arrivée.
+          const inst = spec.designation === "random"
+            ? eligible[Math.floor(rng() * eligible.length)]
+            : eligible[eligible.length - 1];
           dejaRappelees.add(inst);
           if (!recall(inst)) break;
           done++;
@@ -8440,8 +8442,9 @@ function composedSlotType(t: import("./types").TargetSpec, content?: import("./t
   // Exhumation composée : picker cimetière, le pool exact (camp compris) vient
   // de getComposedGraveyardTargets. Pour les autres contenus, cimetière allié
   // seulement.
-  if (t.location === "graveyard") {
-    if (t.side !== "ally" && content !== "exhumation") return undefined;
+  // La MAIN alliée passe par le même sélecteur : une modale de cartes hors plateau.
+  if (t.location === "graveyard" || t.location === "hand") {
+    if (t.side !== "ally" && (t.location === "hand" || content !== "exhumation")) return undefined;
     if (t.entity === "unit") return "friendly_graveyard_to_board";
     // Objets du cimetière : tout le cimetière, restreint ensuite au pool exact
     // par restreindreCreneauCompose.
@@ -10388,6 +10391,11 @@ function figerAmplitudeAleatoire(composed: import("./types").ComposedEffect): im
   // hasard porte sur la créature. Le drapeau est donc CONSERVÉ pour que le
   // résolveur le lise — toujours idempotent, rien n'est tiré ici.
   if (composed.content === "invocation") return composed;
+  // EXHUMATION : X est un plafond de coût, et le choix a lieu AU LANCEMENT, sur
+  // ce plafond. Tirer X à la résolution rejetait les cartes désignées au-dessus
+  // du tirage (Réveil des Tombeaux scellés). Sans désignation, rien à rejeter :
+  // « au hasard » garde son tirage.
+  if (composed.content === "exhumation" && composed.target?.designation !== "random") return composed;
   // SÉLECTIONS : même arbitrage, pour la même raison, depuis que leur coût est
   // EXACT. Le « ? » n'y désigne plus un X tiré une fois pour toute l'offre mais
   // un coût tiré POUR CHAQUE carte, entre 1 et X — tirer X ici ramènerait les
@@ -13678,7 +13686,15 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
   if (card.card.card_type === "spell") {
     const slots = getSpellTargetSlots(card.card);
     if (slots.length > 0
-      && slots.every(sl => getSpellTargets(state, card.card, sl.type).length === 0)) {
+      && slots.every(sl => {
+        // Créneau composé « en main » : son type de sélecteur est celui du
+        // cimetière, mais ses cibles sont dans la main.
+        const uid = sl.slot.includes("#") ? sl.slot.split("#")[0] : null;
+        const enMain = !!uid && getCapabilities(card.card).find(c => c.uid === uid)?.composed?.target?.location === "hand";
+        return (enMain
+          ? getComposedGraveyardTargets(state, card.card, uid, card.instanceId)
+          : getSpellTargets(state, card.card, sl.type)).length === 0;
+      })) {
       return false;
     }
   }
@@ -13948,7 +13964,7 @@ function firstOnPlayComposedGraveyardChoiceCap(card: Card): import("./types").Ca
     const t = c.composed?.target;
     return composeExecutable(c) && c.trigger === "on_play" && !!t
       && t.designation === "choice" && typeof t.count === "number" && t.count >= 1
-      && (t.entity === "unit" || visesObjets(t.entity)) && t.location === "graveyard" && t.side === "ally";
+      && (t.entity === "unit" || visesObjets(t.entity)) && (t.location === "graveyard" || t.location === "hand") && t.side === "ally";
   });
 }
 
@@ -15695,7 +15711,14 @@ export function getSpellGraveyardTargets(state: GameState, card: Card, slotIndex
  *  filtré-par-coût partagé par tous les sites d'ouverture du picker — les pools
  *  composés génériques (composedTargetPool / getSpellTargets) n'appliquent AUCUN
  *  filtre de coût, d'où ce helper dédié. */
-export function getComposedGraveyardTargets(state: GameState, card: Card, capUid: string): string[] {
+export function getComposedGraveyardTargets(
+  state: GameState,
+  card: Card,
+  capUid: string,
+  // Carte en cours de lancement : encore en main pendant le choix, elle ne peut
+  // pas se désigner elle-même.
+  sourceInstanceId?: string | null,
+): string[] {
   const player = state.players[state.currentPlayerIndex];
   const cap = getCapabilities(card).find(c => c.uid === capUid && c.composed);
   // La FRAME SUSPENDUE fait autorité quand elle existe : c'est là qu'une
@@ -15720,8 +15743,9 @@ export function getComposedGraveyardTargets(state: GameState, card: Card, capUid
   if (composed && composed.content !== "exhumation") {
     const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
     const spec = composed.target ?? { entity: "unit" as const, count: 1 as const, side: "ally" as const, location: "graveyard" as const, designation: "choice" as const };
-    return composedTargetPool({ ...spec, side: "ally", location: "graveyard" }, player, opponent)
-      .filter(c => c.card.card_type === "creature")
+    const location = spec.location === "hand" ? "hand" as const : "graveyard" as const;
+    return composedTargetPool({ ...spec, side: "ally", location }, player, opponent)
+      .filter(c => c.card.card_type === "creature" && c.instanceId !== sourceInstanceId)
       .map(c => c.instanceId);
   }
   // EXHUMATION : même plafond que la résolution, bonus de Chant compris (cf.

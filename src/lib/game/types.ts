@@ -844,6 +844,9 @@ export interface TargetSpec {
   keywordId?: string;
   /** Zone où chercher les cibles. */
   location: "board" | "hand" | "deck" | "graveyard";
+  /** Zones visées EN PLUS de `location`, lues seulement quand `count` vaut
+   *  "all" (cf. zonesDeCible). Absent ⇒ `location` seule. */
+  extraLocations?: ("board" | "hand" | "deck" | "graveyard")[];
   /** Désignation :
    *  - "choice"    : cibles choisies par le joueur (un slot de ciblage par cible) ;
    *  - "random"    : `count` cibles tirées au sort, chacune subit l'effet plein ;

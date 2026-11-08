@@ -31,6 +31,8 @@ interface GraveyardOverlayProps {
    *  candidates encore libres. */
   highlightedInstanceIds?: string[];
   onSelectCard?: (instanceId: string) => void;
+  /** Modale réutilisée hors cimetière (choix en main) : pas de consigne « du cimetière ». */
+  sansConsigneCimetiere?: boolean;
   /** JOUER une carte depuis le cimetière (Seconde vie) exige un DOUBLE-clic,
    *  comme en main : c'est un déclenchement irréversible, pas une désignation.
    *
@@ -60,6 +62,7 @@ export default function GraveyardOverlay({
   onSelectCard,
   selectOnDoubleClick: exigeDoubleClic = false,
   notice,
+  sansConsigneCimetiere = false,
 }: GraveyardOverlayProps) {
   const t = useTranslations("game");
   // Mode sélection : il faut des ids sélectionnables qui désignent réellement une
@@ -132,7 +135,7 @@ export default function GraveyardOverlay({
         </div>
 
         {/* Instruction */}
-        {isSelectionMode && (
+        {isSelectionMode && !sansConsigneCimetiere && (
           <div className="px-4 pt-3">
             <p className="text-sm text-primary font-medium text-center">
               {t('graveyard_select_prompt')}

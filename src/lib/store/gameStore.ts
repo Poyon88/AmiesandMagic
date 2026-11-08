@@ -167,6 +167,33 @@ function echelonnerPoints(hits: Array<{ type: string }>): { delais: number[]; de
  *  Un seul point de résolution plutôt qu'une quinzaine de `hand.find` élargis
  *  un à un : c'est ce qui garantit qu'un chemin oublié se voie tout de suite
  *  (la carte reste introuvable) au lieu de se comporter à moitié. */
+/** File des capacités composées à choisir au cimetière à partir d'un créneau
+ *  donné, bornée par les cartes éligibles, et cibles de la première. */
+function capsCimetiereComposees(
+  gs: GameState,
+  card: Card,
+  slots: SpellTargetSlot[],
+  fromIndex: number,
+  sourceInstanceId: string | null,
+): { caps: { uid: string; count: number }[]; firstTargets: string[] } {
+  const uids: string[] = [];
+  for (const sl of slots.slice(fromIndex)) {
+    if ((sl.type !== "friendly_graveyard" && sl.type !== "friendly_graveyard_to_board") || !sl.slot.includes("#")) continue;
+    const u = sl.slot.split("#")[0];
+    if (!uids.includes(u)) uids.push(u);
+  }
+  const caps = uids
+    .map(u => ({
+      uid: u,
+      count: Math.min(
+        slots.filter(sl => sl.slot.startsWith(`${u}#`)).length,
+        getComposedGraveyardTargets(gs, card, u, sourceInstanceId).length,
+      ),
+    }))
+    .filter(c => c.count > 0);
+  return { caps, firstTargets: caps.length > 0 ? getComposedGraveyardTargets(gs, card, caps[0].uid, sourceInstanceId) : [] };
+}
+
 function carteJouable(player: PlayerState, instanceId: string | null | undefined): CardInstance | undefined {
   if (!instanceId) return undefined;
   const enMain = player.hand.find((c) => c.instanceId === instanceId);
@@ -4230,7 +4257,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // mot-clé (qui passent par graveyardTargetInstanceId).
     if (card && creatureNeedsComposedGraveyardTarget(card.card)) {
       const choice = getCreatureComposedGraveyardChoice(card.card)!;
-      const gravTargets = getComposedGraveyardTargets(gameState, card.card, choice.uid);
+      const gravTargets = getComposedGraveyardTargets(gameState, card.card, choice.uid, instanceId);
       if (gravTargets.length > 0) {
         set({
           selectedCardInstanceId: instanceId,
@@ -4533,11 +4560,11 @@ export const useGameStore = create<GameStore>((set, get) => {
               // par les créatures éligibles disponibles (« jusqu'à N »).
               count: Math.min(
                 selectableSlots.filter(s => s.slot.startsWith(`${u}#`)).length,
-                getComposedGraveyardTargets(gameState, card.card, u).length,
+                getComposedGraveyardTargets(gameState, card.card, u, instanceId).length,
               ),
             }))
             .filter(c => c.count > 0);
-          const firstTargets = caps.length > 0 ? getComposedGraveyardTargets(gameState, card.card, caps[0].uid) : [];
+          const firstTargets = caps.length > 0 ? getComposedGraveyardTargets(gameState, card.card, caps[0].uid, instanceId) : [];
           if (caps.length > 0 && firstTargets.length > 0) {
             set({
               selectedCardInstanceId: instanceId,
@@ -4793,6 +4820,25 @@ export const useGameStore = create<GameStore>((set, get) => {
         // If the next slot targets a graveyard, switch to graveyard mode
         // so the UI surfaces the cimetière picker instead of board targets.
         if (nextSlot.type === "friendly_graveyard" || nextSlot.type === "friendly_graveyard_to_board") {
+          // Créneau COMPOSÉ (`${uid}#i`) après une cible sur le plateau, ex.
+          // « Fracture de l'Âme » : Exécution puis Exhumation composée.
+          if (nextSlot.slot.includes("#")) {
+            const { caps, firstTargets } = (gs && card)
+              ? capsCimetiereComposees(gs, card.card, spellTargetSlots, nextIndex, selectedCardInstanceId)
+              : { caps: [], firstTargets: [] };
+            if (caps.length > 0 && firstTargets.length > 0) {
+              set({
+                validTargets: firstTargets,
+                currentTargetSlotIndex: nextIndex,
+                collectedTargetMap: newMap,
+                targetingMode: "graveyard",
+                creatureComposedCollected: [],
+                pendingComposedGraveyard: { caps, capIndex: 0, picked: {}, context: "spell" },
+              });
+              return null;
+            }
+            return get().dispatchAction({ type: "play_card", cardInstanceId: selectedCardInstanceId, targetMap: newMap });
+          }
           const kwIndex = parseInt(nextSlot.slot.replace("kw_", ""));
           const nextTargets = (card && gs) ? getSpellGraveyardTargets(gs, card.card, kwIndex) : [];
           set({
@@ -4886,7 +4932,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         .find(c => c.instanceId === get().selectedCardInstanceId);
       for (let j = capIndex + 1; j < caps.length; j++) {
         const pool = (gsNow && selCard)
-          ? getComposedGraveyardTargets(gsNow, selCard.card, caps[j].uid).filter(id => !alreadyPicked.has(id))
+          ? getComposedGraveyardTargets(gsNow, selCard.card, caps[j].uid, selCard.instanceId).filter(id => !alreadyPicked.has(id))
           : [];
         if (pool.length === 0) continue; // plus rien d'éligible → capacité sautée
         set({
@@ -4942,23 +4988,9 @@ export const useGameStore = create<GameStore>((set, get) => {
             // sur la collecte composée, la cible du mot-clé déjà choisie
             // (`newMap`) voyageant jusqu'au dispatch.
             if (nextSlot.slot.includes("#")) {
-              const uids: string[] = [];
-              for (let j = nextIndex; j < spellTargetSlots.length; j++) {
-                const sl = spellTargetSlots[j];
-                if ((sl.type !== "friendly_graveyard" && sl.type !== "friendly_graveyard_to_board") || !sl.slot.includes("#")) continue;
-                const u = sl.slot.split("#")[0];
-                if (!uids.includes(u)) uids.push(u);
-              }
-              const caps = uids
-                .map(u => ({
-                  uid: u,
-                  count: Math.min(
-                    spellTargetSlots.filter(sl => sl.slot.startsWith(`${u}#`)).length,
-                    gs ? getComposedGraveyardTargets(gs, cardInHand.card, u).length : 0,
-                  ),
-                }))
-                .filter(c => c.count > 0);
-              const firstTargets = gs && caps.length > 0 ? getComposedGraveyardTargets(gs, cardInHand.card, caps[0].uid) : [];
+              const { caps, firstTargets } = gs
+                ? capsCimetiereComposees(gs, cardInHand.card, spellTargetSlots, nextIndex, selectedCardInstanceId)
+                : { caps: [], firstTargets: [] };
               if (caps.length > 0 && firstTargets.length > 0) {
                 set({
                   validTargets: firstTargets,

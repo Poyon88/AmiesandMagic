@@ -70,7 +70,7 @@ export function baremeAPriori(): Bareme {
     plafondAdditionnel: 0.4,
     declencheur: { ...DECLENCHEURS_A_PRIORI },
     portee: { all_enemies: 2, all_allies: 2, all: 1.5 },
-    cible: { hero: 0.7, both: 1.5, self: 0.8, parCible: 0.7 },
+    cible: { hero: 0.7, both: 1.5, self: 0.8, parCible: 0.7, zoneSupp: 0.5 },
     filtre: { a: 0.4 },
     parts: {},
     hasard: 0.8,

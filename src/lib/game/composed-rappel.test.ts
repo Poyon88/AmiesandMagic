@@ -1,6 +1,7 @@
 // Rappel : (1) contenu COMPOSÉ « cimetière → main » avec filtre de nature
 // (`target.cardKind` : unités / sorts) ; (2) forme SORT du mot-clé ouverte aux
 // sorts du cimetière (elle ne proposait et ne rendait que des créatures).
+import { describeComposedCap } from "./composed-display";
 import { describe, expect, it } from "vitest";
 import { applyAction, getComposedGraveyardTargets, getSpellSlotTargets, getSpellTargetSlots, getSpellTargets, initRNG } from "./engine";
 import { mkCard, mkInstance, mkState } from "./test-harness";
@@ -21,6 +22,21 @@ const main = (s: GameState) => s.players[0].hand.map(c => c.card.name).sort();
 const noms = (s: GameState, ids: string[]) => ids.map(id => s.players[0].graveyard.find(c => c.instanceId === id)!.card.name).sort();
 
 describe("Rappel composé", () => {
+  it("au hasard : tire réellement et l'annonce", () => {
+    const vues = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const s = cimetiere(mkState(), unite("Ancienne"), unite("Recente"));
+      s.rngState = i + 1;
+      const c = sortRappelCompose({ designation: "random" });
+      s.players[0].hand.push(c);
+      vues.add(main(applyAction(s, { type: "play_card", cardInstanceId: c.instanceId })).join());
+    }
+    expect(vues).toEqual(new Set(["Ancienne", "Recente"]));
+    const cap = sortRappelCompose({ designation: "random", count: 2 }).card.capabilities![0];
+    expect(describeComposedCap(cap)).toContain("au hasard");
+    expect(describeComposedCap(sortRappelCompose({ count: 2 }).card.capabilities![0])).not.toContain("au hasard");
+  });
+
   it("le picker propose sorts ET unités sans filtre, et filtre par nature", () => {
     const s = cimetiere(mkState(), unite("Garde"), sort("Éclair"));
     const tout = sortRappelCompose();

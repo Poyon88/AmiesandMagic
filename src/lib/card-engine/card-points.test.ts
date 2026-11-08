@@ -67,6 +67,22 @@ describe("scoreCarte", () => {
     expect(elfes).toBeLessThan(toutes);
   });
 
+  it("chaque zone en plus d'un effet « toutes » coûte +50 %, don compris", () => {
+    const b = neutre();
+    const base = { entity: "unit", count: "all", side: "ally", location: "board", designation: "automatic" } as NonNullable<ComposedEffect["target"]>;
+    const capa = (composed: ComposedEffect): Capability => ({ ...cap("_composed", "spell_resolution"), composed });
+    const score = (c: ComposedEffect) => scoreCarte(b, { card_type: "spell", mana_cost: 4, rarity: "Commune", keywords: [], capabilities: [c].map(capa) } as never).utilise;
+    const buff = (target: NonNullable<ComposedEffect["target"]>): ComposedEffect => ({ content: "buff", magnitude: { x: 2, y: 2 }, target });
+    const vide = score({ content: "buff", magnitude: { x: 0, y: 0 } });
+    const seule = score(buff(base)) - vide;
+    const quatre = score(buff({ ...base, extraLocations: ["hand", "deck", "graveyard"] })) - vide;
+    expect(seule).toBeGreaterThan(0);
+    expect(quatre).toBeGreaterThan(seule * 2);
+    // Zones en plus sans « toutes » : ignorées par le moteur, donc gratuites.
+    const un = { ...base, count: 1 as const };
+    expect(score(buff({ ...un, extraLocations: ["hand"] }))).toBe(score(buff(un)));
+  });
+
   it("l'éveil élargit le budget d'un mana équivalent", () => {
     const b = neutre();
     b.eveil = 0.5;

@@ -491,6 +491,7 @@ function SectionsBareme({ b, champB, filtre, setFiltre, lignesCouts }: {
             {ligne("Cible : héros + unités", ["cible", "both"])}
             {ligne("Cible : la source elle-même", ["cible", "self"])}
             {ligne("Par cible supplémentaire", ["cible", "parCible"], "count = n ⇒ 1 + valeur × (n − 1)")}
+            {ligne("Par zone en plus", ["cible", "zoneSupp"], "« toutes » sur n zones ⇒ 1 + valeur × (n − 1)")}
             {ligne("Filtre : valeur résiduelle", ["filtre", "a"], "a + (1 − a) × part du catalogue visée (race, clan, faction, mot-clé, coût)")}
             {ligne("Hasard", ["hasard"], "X « ? » (valorisé à la moyenne), désignation au hasard, répartition")}
             {ligne("Singulier", ["singulier"])}

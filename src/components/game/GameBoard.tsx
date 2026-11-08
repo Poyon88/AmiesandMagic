@@ -23,6 +23,7 @@ import BoardCreature from "./BoardCreature";
 import BoardItem from "./BoardItem";
 import HandCard from "./HandCard";
 import GraveyardOverlay from "./GraveyardOverlay";
+import { cimetieresDuChoix } from "@/lib/game/target-scope";
 import EveilOverlay from "./EveilOverlay";
 import { EVEIL_TEINTE, EVEIL_GLYPHE } from "@/lib/game/eveil-theme";
 import DivinationOverlay from "./DivinationOverlay";
@@ -2053,10 +2054,21 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       )}
       {targetingMode === "graveyard" && !overlayPeeked && (
         <GraveyardOverlay
-          // Une Exhumation peut viser le cimetière adverse : seules ses cartes
-          // désignables s'y ajoutent, le reste de ce cimetière n'a rien à faire ici.
-          cards={[...myPlayer.graveyard, ...opponent.graveyard.filter((c) => validTargets.includes(c.instanceId))]}
-          title={graveyardPickProgress ? `${t("choose_card")} ${graveyardPickProgress}` : t("choose_card")}
+          // Une Exhumation peut viser le cimetière adverse : on n'ouvre que le ou
+          // les cimetières où se trouvent réellement les cartes désignables.
+          // Un don « au choix en main » réutilise cette modale, sur la main seule.
+          sansConsigneCimetiere={myPlayer.hand.some((c) => validTargets.includes(c.instanceId))}
+          cards={myPlayer.hand.some((c) => validTargets.includes(c.instanceId))
+            ? myPlayer.hand.filter((c) => validTargets.includes(c.instanceId))
+            : cimetieresDuChoix(myPlayer.graveyard, opponent.graveyard, validTargets)}
+          title={[
+            t("choose_card"),
+            graveyardPickProgress,
+            opponent.graveyard.some((c) => validTargets.includes(c.instanceId))
+              && !myPlayer.graveyard.some((c) => validTargets.includes(c.instanceId))
+              ? `— ${t("zone_graveyard_opponent")}`
+              : null,
+          ].filter(Boolean).join(" ")}
           onClose={clearSelection}
           selectableInstanceIds={validTargets}
           onSelectCard={(id) => {

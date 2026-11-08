@@ -59,7 +59,8 @@
     "hero": 0.785,
     "both": 0.897,
     "self": 0.659,
-    "parCible": 0.533
+    "parCible": 0.533,
+    "zoneSupp": 0.5
   },
   "filtre": {
     "a": 0.545

@@ -26,7 +26,7 @@ import { buildSpellEffectCatalog, instantiatePreset } from "@/lib/card-forge/spe
 import { getAllRaces, FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
 import { MAX_MANA } from "@/lib/game/constants";
 import type { CardType, Capability, ComposedEffect, ComposedEffectContent, ComposedPoolFilter, CapabilityTrigger, SpellKeywordId, SpellKeywordInstance, TargetSpec, TokenTemplate } from "@/lib/game/types";
-import { BENEFICIAIRE_REGLABLE, porteeValide, spellScopes } from "@/lib/game/target-scope";
+import { BENEFICIAIRE_REGLABLE, porteeValide, spellScopes, zonesDeCible } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
 import MachinePartEditor from "./MachinePartEditor";
 import RetardSelect from "./RetardSelect";
@@ -145,6 +145,24 @@ const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incinera
 
 /** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
  *  passe. Hors plateau, il n'y a rien à répartir. */
+/** Contenus proposant plusieurs localisations : ceux dont l'effet garde un sens
+ *  sur une carte hors plateau, appliqué à « toutes » les cartes de chaque zone. */
+const MULTI_ZONE_CONTENTS = new Set<ComposedEffectContent>(["buff", "debuff", "grant_keyword"]);
+const ZONES_CIBLE = ["board", "hand", "deck", "graveyard"] as const;
+
+function multiZonesPossible(content: ComposedEffectContent, t: TargetSpec): boolean {
+  return MULTI_ZONE_CONTENTS.has(content) && t.count === "all"
+    && (t.entity === "unit" || t.entity === "item" || t.entity === "unit_or_item");
+}
+
+/** Zone qui décide des déclencheurs proposés pour un don : dès qu'une zone
+ *  d'où l'on rejoue la carte est cochée, « à l'entrée en jeu » a du sens. */
+function zoneDuDon(t: TargetSpec | undefined): TargetSpec["location"] | undefined {
+  if (!t) return undefined;
+  const zones = zonesDeCible(t);
+  return zones.find((z) => z === "hand" || z === "deck") ?? t.location;
+}
+
 function scatterAllowed(content: ComposedEffectContent, location: TargetSpec["location"]): boolean {
   return location === "board" && !SCATTER_EXCLUDED.has(content);
 }
@@ -391,7 +409,10 @@ export default function ComposedEffectsEditor({
   const patchTarget = (idx: number, p: Partial<TargetSpec>) => onChange(value.map((c, i) => {
     if (i !== idx) return c;
     const eff = c.composed as ComposedEffect;
-    return { ...c, composed: { ...eff, target: { ...(eff.target ?? DEFAULT_TARGET), ...p } } };
+    const target = { ...(eff.target ?? DEFAULT_TARGET), ...p };
+    // Plus de « toutes » ou plus d'unités : les zones en plus n'ont plus de case.
+    if (!multiZonesPossible(eff.content, target)) delete target.extraLocations;
+    return { ...c, composed: { ...eff, target } };
   }));
   /** Champ de COÛT optionnel : vide ⇒ `undefined` (n'importe quel coût). */
   // Un bouton « ∞ » EXPLICITE en plus du champ vidable : vider un champ
@@ -758,7 +779,9 @@ export default function ComposedEffectsEditor({
               {sel(eff.content, COMPOSED_CONTENTS.map((o) => ({ v: o.v, l: libelleContenu(o) }))
                 .sort((a, b) => a.l.localeCompare(b.l, locale, { sensitivity: "base" })), (v) => {
                 const m = COMPOSED_CONTENTS.find((c) => c.v === v)!;
-                const prev = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" };
+                const prevBrut = eff.target ?? { ...DEFAULT_TARGET, entity: "unit" as const };
+                const prev = { ...prevBrut };
+                if (!multiZonesPossible(v, prev)) delete prev.extraLocations;
                 const scatterOk = scatterAllowed(v, prev.location);
                 // Exhumation : cible pré-remplie cimetière allié « au choix » (sinon
                 // composedSlotType ne produirait pas de picker). Champs éditables ensuite.
@@ -893,7 +916,7 @@ export default function ComposedEffectsEditor({
                 // entrée en jeu est à venir.
                 const donAvantRetour = eff.target?.entity === "self"
                   && (cap.trigger === "on_death" || cap.trigger === "on_return") ? true : undefined;
-                const optionsDecl = grantTriggersFor(grantId, eff.target?.location, donAvantRetour);
+                const optionsDecl = grantTriggersFor(grantId, zoneDuDon(eff.target), donAvantRetour);
                 return (
                   <>
                     <span style={labelStyle}>{tr('label_granted_ability')}</span>
@@ -907,9 +930,9 @@ export default function ComposedEffectsEditor({
                       // Le déclencheur suit la capacité : garder celui de la
                       // précédente le rendrait incohérent en silence (une Armure
                       // « à la mort », un râle « à l'attaque »).
-                      grantTrigger: grantTriggersFor(v, eff.target?.location, donAvantRetour).includes(eff.grantTrigger as CapabilityTrigger)
+                      grantTrigger: grantTriggersFor(v, zoneDuDon(eff.target), donAvantRetour).includes(eff.grantTrigger as CapabilityTrigger)
                         ? eff.grantTrigger
-                        : defaultGrantTrigger(v, eff.target?.location),
+                        : defaultGrantTrigger(v, zoneDuDon(eff.target)),
                     }))}
                     {optionsDecl.length > 1 && (
                       <>
@@ -1074,30 +1097,51 @@ export default function ComposedEffectsEditor({
 
                       {eff.content !== "domination" && (<>
                       <span style={labelStyle}>{tr('label_location')}</span>
-                      {sel(t.location, [{ v: "board", l: tr('location_board') }, { v: "hand", l: tr('location_hand') }, { v: "deck", l: tr('location_deck') }, { v: "graveyard", l: tr('location_graveyard') }], (v) => {
-                        const location = v as TargetSpec["location"];
+                      {(() => {
+                        const opts = ZONES_CIBLE.map((z) => ({ v: z, l: tr(`location_${z}`) }));
                         // Quitter le plateau invalide la répartition (elle ne tire
                         // que des unités vivantes en jeu) : on la ramène au tirage
                         // simple plutôt que de laisser une désignation morte en base.
                         // Revenir au plateau invalide de même un don « à l'entrée
                         // en jeu » : il ne partirait jamais, sans rien signaler.
-                        const grantId = eff.content === "grant_keyword" ? eff.grantAbilityId : undefined;
-                        const grantTrigger = grantId
-                          && !grantTriggersFor(grantId, location).includes(eff.grantTrigger as CapabilityTrigger)
-                          ? defaultGrantTrigger(grantId, location)
-                          : eff.grantTrigger;
-                        onChange(value.map((c, i) => i !== idx ? c : {
-                          ...c,
-                          composed: {
-                            ...eff,
-                            grantTrigger,
-                            target: {
-                              ...t, location,
-                              ...(t.designation === "scatter" && !scatterAllowed(eff.content, location) ? { designation: "random" as const } : {}),
+                        const changerZones = (zones: TargetSpec["location"][]) => {
+                          const [location, ...autres] = zones;
+                          const { extraLocations: _anciennes, ...base } = t;
+                          const suivante: TargetSpec = { ...base, location, ...(autres.length > 0 ? { extraLocations: autres } : {}) };
+                          const zoneDon = zoneDuDon(suivante) ?? location;
+                          const grantId = eff.content === "grant_keyword" ? eff.grantAbilityId : undefined;
+                          const grantTrigger = grantId
+                            && !grantTriggersFor(grantId, zoneDon).includes(eff.grantTrigger as CapabilityTrigger)
+                            ? defaultGrantTrigger(grantId, zoneDon)
+                            : eff.grantTrigger;
+                          const sansRepartition = t.designation === "scatter" && (autres.length > 0 || !scatterAllowed(eff.content, location));
+                          onChange(value.map((c, i) => i !== idx ? c : {
+                            ...c,
+                            composed: {
+                              ...eff,
+                              grantTrigger,
+                              target: { ...suivante, ...(sansRepartition ? { designation: "random" as const } : {}) },
                             },
-                          },
-                        }));
-                      })}
+                          }));
+                        };
+                        if (!multiZonesPossible(eff.content, t)) {
+                          return sel(t.location, opts, (v) => changerZones([v]));
+                        }
+                        const cochees = zonesDeCible(t);
+                        return (
+                          <span style={{ display: "inline-flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                            {opts.map((o) => (
+                              <label key={o.v} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontFamily: "'Cinzel',serif" }}>
+                                <input type="checkbox" checked={cochees.includes(o.v)}
+                                  // La dernière zone cochée reste : une cible sans zone n'existe pas.
+                                  disabled={cochees.length === 1 && cochees[0] === o.v}
+                                  onChange={(e) => changerZones(ZONES_CIBLE.filter((z) => z === o.v ? e.target.checked : cochees.includes(z)))} />
+                                {o.l}
+                              </label>
+                            ))}
+                          </span>
+                        );
+                      })()}
                       </>)}
 
                       <span style={labelStyle}>{tr('label_membership')}</span>
@@ -1132,7 +1176,7 @@ export default function ComposedEffectsEditor({
                           { v: "choice", l: tr('designation_choice') },
                           { v: "random", l: tr('designation_random') },
                           // Répartition au hasard : toute cible vivante du plateau.
-                          ...(scatterAllowed(eff.content, t.location)
+                          ...(scatterAllowed(eff.content, t.location) && zonesDeCible(t).length === 1
                             ? [{ v: "scatter" as const, l: tr('designation_scatter') }]
                             : []),
                           { v: "automatic", l: tr('designation_automatic') },

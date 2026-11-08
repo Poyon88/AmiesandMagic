@@ -14,10 +14,18 @@
 //   - quelles créatures une portée désigne à un instant donné ;
 //   - comment la portée se nomme.
 
-import type { Capability, CardInstance, KeywordInstance, PlayerState, SpellKeywordId, SpellKeywordInstance, SpellTargetType, TargetScope } from "./types";
+import type { TargetSpec, Capability, CardInstance, KeywordInstance, PlayerState, SpellKeywordId, SpellKeywordInstance, SpellTargetType, TargetScope } from "./types";
 import { SPELL_KEYWORDS } from "./abilities";
 
 export type { TargetScope };
+
+/** Cartes à montrer pour un choix dans le cimetière : uniquement le ou les
+ *  cimetières qui contiennent une cible valide. Sans aucune cible, le sien. */
+export function cimetieresDuChoix(mien: CardInstance[], adverse: CardInstance[], cibles: string[]): CardInstance[] {
+  const contientCible = (pile: CardInstance[]) => pile.some(c => cibles.includes(c.instanceId));
+  if (contientCible(adverse)) return contientCible(mien) ? [...mien, ...adverse] : adverse;
+  return mien;
+}
 
 const TOUS_CAMPS: TargetScope[] = ["all_enemies", "all_allies", "all"];
 
@@ -174,11 +182,20 @@ export function kwInstanceScope(inst: Pick<KeywordInstance, "id" | "targetScope"
   return inst.grantScope === "all_allies" ? "all_allies" : undefined;
 }
 
+/** Zones réellement visées par une cible composée, sans doublon, dans l'ordre
+ *  plateau → main → deck → cimetière. Les zones en plus ne valent que pour
+ *  « toutes » : un tirage ou un choix porte sur une seule zone. */
+export function zonesDeCible(t: Pick<TargetSpec, "location" | "extraLocations" | "count">): TargetSpec["location"][] {
+  if (t.count !== "all" || !t.extraLocations?.length) return [t.location];
+  const zones = new Set([t.location, ...t.extraLocations]);
+  return (["board", "hand", "deck", "graveyard"] as const).filter((z) => zones.has(z));
+}
+
 /** Portée « toutes » d'un effet COMPOSÉ : désignation de TOUTES les unités d'un
  *  plateau. Les autres désignations (au choix, au hasard, N unités) n'en ont pas. */
 export function composedScope(cap: Pick<Capability, "composed"> | null | undefined): TargetScope | undefined {
   const t = cap?.composed?.target;
-  if (!t || t.count !== "all" || t.location !== "board") return undefined;
+  if (!t || t.count !== "all" || zonesDeCible(t).length > 1 || t.location !== "board") return undefined;
   if (t.entity !== "unit" && t.entity !== "both") return undefined;
   return t.side === "ally" ? "all_allies" : t.side === "enemy" ? "all_enemies" : "all";
 }

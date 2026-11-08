@@ -53,6 +53,9 @@ export interface Bareme {
     self: number;
     /** Par cible supplémentaire (count = n ⇒ 1 + parCible × (n − 1)). */
     parCible: number;
+    /** Par zone visée en plus de la première (« toutes », n zones ⇒
+     *  1 + zoneSupp × (n − 1)). Posé à la main : aucune carte pour le calibrer. */
+    zoneSupp: number;
   };
   /** Filtre race/clan/faction/mot-clé/coût : mult = a + (1 − a) × part du
    *  catalogue visée. `a` = valeur résiduelle d'un groupe minuscule. */
