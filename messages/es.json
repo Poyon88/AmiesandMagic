@@ -1087,7 +1087,11 @@
         "on_attack": ", que se activará cuando ataque",
         "on_draw": ", que se activará al robarla",
         "on_low_hp": ", que se activará por debajo de 15 PV",
-        "on_wound": ", que se activará cuando resulte herida sin morir"
+        "on_wound": ", que se activará cuando resulte herida sin morir",
+        "on_end_of_turn_in_hand": ", que se activará al final del turno mientras esté en la mano",
+        "on_start_of_turn_in_hand": ", que se activará al inicio del turno mientras esté en la mano",
+        "on_end_of_turn_in_graveyard": ", que se activará al final del turno mientras esté en el cementerio",
+        "on_delay": ", que se activará en {n} turno(s)"
       },
       "incin": {
         "zone_ally": "de tu cementerio",

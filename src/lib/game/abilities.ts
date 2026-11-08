@@ -2218,14 +2218,20 @@ export function getCapabilityTriggers(cardType: CardType, abilityId: string): Ca
     : a.triggers.creatureTriggers ?? ["on_play"];
 }
 
+/** Déclencheurs de ZONE qu'un don peut poser en plus (2026-11-08) : la capacité
+ *  part depuis la main ou le cimetière, ou après X tours (Retard, décompte
+ *  démarré au don). Réservés aux curées multi-déclencheurs ; les zones hors
+ *  plateau sont refusées à celles qui exigent leur source en jeu. */
+const DECLENCHEURS_DE_ZONE: CapabilityTrigger[] = ["on_end_of_turn_in_hand", "on_start_of_turn_in_hand", "on_end_of_turn_in_graveyard"];
+
 /** Déclencheurs qu'une capacité peut prendre une fois CONFÉRÉE, selon la zone
  *  de la cible.
  *
- *  Sur le plateau, `on_play` est retiré : l'entrée en jeu est passée, l'option ne
- *  se déclencherait jamais. En main ou dans le deck, elle est à venir : la
- *  carte passera par la pose, et c'est même le seul moment où une capacité
- *  comme Esprit de corps donne tout son gain. Au cimetière, elle reste retirée :
- *  les chemins de retour en jeu ne déclenchent pas d'entrée.
+ *  `on_play` est TOUJOURS proposé (arbitrage de l'auteur, 2026-11-08) : sur une
+ *  unité en jeu il ne partira que si elle revient en main puis est rejouée
+ *  (combos de renvoi). En main ou dans le deck, l'entrée est à venir : il passe
+ *  alors EN PREMIER (c'est le défaut de la forge) ; sinon il va en dernier, pour
+ *  ne pas devenir le défaut d'un don sur le plateau.
  *
  *  `entreeAVenir` : une créature qui se confère la capacité à sa mort quitte le
  *  plateau, sa prochaine entrée en jeu est donc à venir, si elle est rejouée.
@@ -2236,8 +2242,17 @@ export function grantTriggersFor(
   location: TargetSpec["location"] = "board",
   entreeAVenir = location === "hand" || location === "deck",
 ): CapabilityTrigger[] {
-  return getCapabilityTriggers("creature", abilityId)
-    .filter((t) => t !== "automatic" && (entreeAVenir || t !== "on_play"));
+  const base: CapabilityTrigger[] = getCapabilityTriggers("creature", abilityId).filter((t) => t !== "automatic");
+  if (base.length <= 1) return base;
+  // Une capacité qui n'a PAS d'entrée en jeu (Transformation) n'en gagne pas.
+  const avecEntree = base.includes("on_play");
+  const cid = creatureEngineId(ABILITIES[abilityId] ?? Object.values(ABILITIES).find((x) => creatureEngineId(x) === abilityId)!);
+  const extras: CapabilityTrigger[] = CURATED_MULTIMODE_IDS.has(cid)
+    ? [...(CURATED_ONBOARD_ONLY_IDS.has(cid) ? [] : DECLENCHEURS_DE_ZONE), "on_delay"]
+    : [];
+  const sansEntree = [...base.filter((t) => t !== "on_play"), ...extras.filter((t) => !base.includes(t))];
+  if (!avecEntree) return sansEntree;
+  return entreeAVenir ? ["on_play", ...sansEntree] : [...sansEntree, "on_play"];
 }
 
 /** Capacités proposables sur un OBJET, triées par libellé créature.

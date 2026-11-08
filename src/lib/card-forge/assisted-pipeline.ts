@@ -15,6 +15,8 @@ const MODE_LABEL: Record<KeywordMode, string> = {
   return: BRIEF_TRIGGER_LABELS.return, attack: BRIEF_TRIGGER_LABELS.attack, end_of_turn: BRIEF_TRIGGER_LABELS.end_of_turn,
   start_of_turn: BRIEF_TRIGGER_LABELS.start_of_turn, draw: BRIEF_TRIGGER_LABELS.draw, low_hp: BRIEF_TRIGGER_LABELS.low_hp,
   wound: BRIEF_TRIGGER_LABELS.wound, delay: "à retardement",
+  end_of_turn_in_hand: "à la fin du tour, en main", start_of_turn_in_hand: "au début du tour, en main",
+  end_of_turn_in_graveyard: "à la fin du tour, au cimetière",
 };
 
 /** Déclencheurs des effets composés tirés (composed-generator.ts). */

@@ -1087,7 +1087,11 @@
         "on_attack": ", que se ativará quando ela atacar",
         "on_draw": ", que se ativará quando ela for comprada",
         "on_low_hp": ", que se ativará abaixo de 15 PV",
-        "on_wound": ", que se ativará quando ela for ferida sem morrer"
+        "on_wound": ", que se ativará quando ela for ferida sem morrer",
+        "on_end_of_turn_in_hand": ", que será ativada no fim do turno enquanto estiver na mão",
+        "on_start_of_turn_in_hand": ", que será ativada no início do turno enquanto estiver na mão",
+        "on_end_of_turn_in_graveyard": ", que será ativada no fim do turno enquanto estiver no cemitério",
+        "on_delay": ", que será ativada em {n} turno(s)"
       },
       "incin": {
         "zone_ally": "do seu cemitério",

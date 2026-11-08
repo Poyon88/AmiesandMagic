@@ -34,9 +34,10 @@ function apresMort(): GameState {
 const sangs = (s: GameState) => s.players[0].board.filter((c) => c.card.name === "Sang");
 
 describe("don à la mort, effet à l'entrée en jeu", () => {
-  it("la forge propose l'entrée en jeu pour ce cas seulement", () => {
-    expect(grantTriggersFor("dedoublement", "board", true)).toContain("on_play");
-    expect(grantTriggersFor("dedoublement", "board")).not.toContain("on_play");
+  it("l'entrée en jeu est le défaut dans ce cas, et seulement proposée en dernier sinon", () => {
+    expect(grantTriggersFor("dedoublement", "board", true)[0]).toBe("on_play");
+    const surPlateau = grantTriggersFor("dedoublement", "board");
+    expect(surPlateau[surPlateau.length - 1]).toBe("on_play");
   });
 
   it("la mort ne crée aucune copie", () => {

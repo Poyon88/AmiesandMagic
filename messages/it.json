@@ -1087,7 +1087,11 @@
         "on_attack": ", che si attiverà quando attacca",
         "on_draw": ", che si attiverà alla sua pescata",
         "on_low_hp": ", che si attiverà sotto 15 PV",
-        "on_wound": ", che si attiverà quando sarà ferita senza morire"
+        "on_wound": ", che si attiverà quando sarà ferita senza morire",
+        "on_end_of_turn_in_hand": ", che si attiverà a fine turno finché è in mano",
+        "on_start_of_turn_in_hand": ", che si attiverà a inizio turno finché è in mano",
+        "on_end_of_turn_in_graveyard": ", che si attiverà a fine turno finché è nel cimitero",
+        "on_delay": ", che si attiverà tra {n} turno/i"
       },
       "incin": {
         "zone_ally": "del tuo cimitero",

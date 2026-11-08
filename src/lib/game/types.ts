@@ -327,7 +327,10 @@ export type SpellKeywordId =
  *  of keywords accept non-play modes — see plan. */
 /** "delay" = RETARD X : l'effet part UNE fois, au début du X-ième tour suivant
  *  du contrôleur (X dans `KeywordInstance.delay`), cf. lib/game/retard.ts. */
-export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "start_of_turn" | "draw" | "low_hp" | "wound" | "delay";
+export type KeywordMode = "entry" | "spell" | "death" | "tap" | "return" | "attack" | "end_of_turn" | "start_of_turn" | "draw" | "low_hp" | "wound" | "delay"
+  // Zones hors plateau (capacités CONFÉRÉES) : la carte déclenche tant qu'elle
+  // est en main / au cimetière (cf. buildTurnPhaseQueue).
+  | "end_of_turn_in_hand" | "start_of_turn_in_hand" | "end_of_turn_in_graveyard";
 
 /** Per-instance metadata for a creature keyword. Lives in
  *  `Card.keywordInstances` alongside the string `keywords` array so each
@@ -918,6 +921,9 @@ export interface ComposedEffect {
    *  un mode indéfini) : `automatic` pour les passives, `on_death` pour les
    *  râles d'agonie. Ignoré par celles qui n'ont qu'un seul déclencheur possible. */
   grantTrigger?: CapabilityTrigger;
+  /** RETARD X du don (`grantTrigger: "on_delay"`) : tours avant le
+   *  déclenchement (1–3). Le décompte démarre AU DON. */
+  grantDelay?: number;
   /** content === "summon_token" : token à invoquer. */
   tokenId?: number | null;
   /** content === "invocation" : carte DÉSIGNÉE à invoquer (id de la table

@@ -34,12 +34,13 @@ export function keywordModeColor(mode: KeywordMode | undefined): string | null {
   if (mode === "tap") return "#F68D09";   // orange vif (pouvoir activé — distinct de l'arrivée jaune)
   if (mode === "return") return "#3a7dd4"; // blue (retour en main)
   if (mode === "attack") return "#E735F6"; // magenta (à l'attaque)
-  if (mode === "end_of_turn") return "#2faa3f"; // green (fin du tour)
+  // Zones hors plateau : même teinte que la phase (comme les effets composés).
+  if (mode === "end_of_turn" || mode === "end_of_turn_in_hand" || mode === "end_of_turn_in_graveyard") return "#2faa3f"; // green (fin du tour)
   // Argent BLEUTÉ, pas argent pur : le blanc est réservé aux passifs (c'est
   // une règle de jeu lisible, cf. isPermanentKeyword) et un #C0C0C0 s'y
   // confondait sur une illustration claire. La pointe de bleu acier l'en
   // écarte sans le rapprocher du bleu franc du retour en main.
-  if (mode === "start_of_turn") return "#A9B8CC"; // argent bleuté (début du tour)
+  if (mode === "start_of_turn" || mode === "start_of_turn_in_hand") return "#A9B8CC"; // argent bleuté (début du tour)
   if (mode === "draw") return "#17b6c4"; // cyan (à la pioche)
   if (mode === "low_hp") return "#8B5CF6"; // violet (« Sous 15 PV »)
   if (mode === "wound") return "#B6E62E"; // vert citron (Blessure : blessée sans mourir)

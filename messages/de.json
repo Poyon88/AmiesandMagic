@@ -1087,7 +1087,11 @@
         "on_attack": ", das ausgelöst wird, wenn sie angreift",
         "on_draw": ", das ausgelöst wird, wenn sie gezogen wird",
         "on_low_hp": ", das unter 15 LP ausgelöst wird",
-        "on_wound": ", das ausgelöst wird, wenn sie verwundet wird, ohne zu sterben"
+        "on_wound": ", das ausgelöst wird, wenn sie verwundet wird, ohne zu sterben",
+        "on_end_of_turn_in_hand": ", die am Zugende auslöst, solange sie auf der Hand ist",
+        "on_start_of_turn_in_hand": ", die zu Zugbeginn auslöst, solange sie auf der Hand ist",
+        "on_end_of_turn_in_graveyard": ", die am Zugende auslöst, solange sie im Friedhof ist",
+        "on_delay": ", die in {n} Zug/Zügen auslöst"
       },
       "incin": {
         "zone_ally": "aus deinem Friedhof",

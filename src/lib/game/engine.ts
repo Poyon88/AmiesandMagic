@@ -47,7 +47,7 @@ import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
 import { coutAutreClan, coutValideLePlusProche, estTourDeDecouverte, identiteDuDeck, rangDeDecouverte, tirerCoutDecouverte } from "./decouverte";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
-import { armRetards, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
+import { armRetards, clampRetard, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
 import { KEYWORD_LABELS, orderedKeywordSlots, parseXValuesFromEffectText } from "./keyword-labels";
 import { nombreDOccurrences } from "./composed-occurrences";
@@ -1269,7 +1269,7 @@ function restaurerDonsTemporaires(inst: CardInstance): void {
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
-  params?: { amount?: number; amountY?: number; attack?: number; health?: number },
+  params?: { amount?: number; amountY?: number; attack?: number; health?: number; delay?: number },
   // Don PONCTUEL (sort, effet composé, Conférer, pouvoir de héros) → réarme les
   // capacités à usage. Les auras laissent ce drapeau à faux (cf.
   // rearmGrantedKeyword).
@@ -1337,11 +1337,22 @@ function applyGrantedKeyword(
         ...(porteRale ? {} : { mode: modeConfere }),
         ...(typeof params?.amount === "number" ? { x: params.amount } : {}),
         ...(typeof params?.amountY === "number" ? { y: params.amountY } : {}),
+        ...(modeConfere === "delay" ? { delay: clampRetard(params?.delay) } : {}),
       };
       creature.card = {
         ...creature.card,
         keyword_instances: [...(creature.card.keyword_instances ?? []), instance],
       };
+    }
+    // RETARD X CONFÉRÉ : le décompte démarre AU DON (et non à la pose, déjà
+    // passée pour une unité en jeu). Une unité jouée plus tard réarme de zéro
+    // (armRetards), et tickRetards ne décompte que le plateau.
+    if (modeConfere === "delay" && !porteRale) {
+      const key = `kw:${kwId}`;
+      creature.retards = [
+        ...(creature.retards ?? []).filter((e) => e.key !== key),
+        { key, turnsLeft: clampRetard(params?.delay) },
+      ];
     }
   }
   // Re-graver les X FIGÉS sur l'instance. Ces cinq-là sont posés à la NAISSANCE
@@ -1841,7 +1852,7 @@ function applyComposedToUnit(
         // (entrée en jeu), déjà passé pour une créature en jeu.
         applyGrantedKeyword(
           u, composed.grantAbilityId,
-          grantParamsFor(composed.grantAbilityId, x, y), true,
+          { ...grantParamsFor(composed.grantAbilityId, x, y), delay: composed.grantDelay }, true,
           composed.grantTrigger,
         );
       }
@@ -4825,8 +4836,13 @@ function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./t
   // Cartes EN MAIN (créatures) portant un effet « …, en main » : après le
   // plateau, avant les emblèmes, dans l'ordre de la main. Source = l'instance
   // en main ; l'effet s'y résout (buff self accumulé tour après tour).
+  const modeEnMain = `${phase}_in_hand` as import("./types").KeywordMode;
   for (const carte of joueur.hand) {
     if (carte.card.card_type !== "creature") continue;
+    // Capacités CURÉES conférées « …, en main » (mode de zone), puis composées.
+    for (const inst of carte.card.keyword_instances ?? []) {
+      if (inst.mode === modeEnMain) steps.push({ sourceInstanceId: carte.instanceId, curated: inst, inHand: true });
+    }
     for (const cap of getCapabilities(carte.card)) {
       if (composeExecutable(cap) && cap.trigger === spec.inHand) {
         steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inHand: true });
@@ -4838,6 +4854,9 @@ function buildTurnPhaseQueue(joueur: PlayerState, phase: TurnPhase): import("./t
   if (spec.inGraveyard) {
     for (const carte of joueur.graveyard) {
       if (carte.card.card_type !== "creature") continue;
+      for (const inst of carte.card.keyword_instances ?? []) {
+        if (inst.mode === "end_of_turn_in_graveyard") steps.push({ sourceInstanceId: carte.instanceId, curated: inst, inGraveyard: true });
+      }
       for (const cap of getCapabilities(carte.card)) {
         if (composeExecutable(cap) && cap.trigger === spec.inGraveyard) {
           steps.push({ sourceInstanceId: carte.instanceId, capUid: cap.uid, inGraveyard: true });
@@ -12054,7 +12073,11 @@ function deferOrRandomTarget(
 ): string | null | undefined {
   const pool = deferredKwTargetIds(kw, owner, opponent, source.instanceId);
   if (pool.length === 0) return undefined;
-  if (inst?.mode !== "attack") {
+  // Depuis la MAIN ou le CIMETIÈRE (modes de zone conférés), aucun sélecteur ne
+  // peut s'ancrer sur la source : tirage au hasard, comme à l'attaque.
+  const horsPlateau = inst?.mode === "end_of_turn_in_hand" || inst?.mode === "start_of_turn_in_hand"
+    || inst?.mode === "end_of_turn_in_graveyard";
+  if (inst?.mode !== "attack" && !horsPlateau) {
     pendingTriggerSink.push({
       id: `${source.instanceId}#${kw}`,
       kw,

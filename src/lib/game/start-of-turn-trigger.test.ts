@@ -262,7 +262,9 @@ describe("Début de tour — affichage, adaptateur, forge", () => {
 
   it("adaptateur : mode ↔ déclencheur, jetons, objets, emblèmes", () => {
     expect(modeForCreatureTrigger("on_start_of_turn")).toBe("start_of_turn");
-    expect(modeForCreatureTrigger("on_start_of_turn_in_hand")).toBeUndefined();
+    // Mode de ZONE (capacités conférées, 2026-11-08) — jamais sur un jeton.
+    expect(modeForCreatureTrigger("on_start_of_turn_in_hand")).toBe("start_of_turn_in_hand");
+    expect(isTokenFiringTrigger("on_start_of_turn_in_hand")).toBe(false);
     expect(TOKEN_FIRING_MODES.has("start_of_turn")).toBe(true);
     expect(isTokenFiringTrigger("on_start_of_turn")).toBe(true);
     expect(isItemFiringTrigger("on_start_of_turn")).toBe(true);

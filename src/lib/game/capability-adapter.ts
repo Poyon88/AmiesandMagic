@@ -66,6 +66,9 @@ function triggerForCreatureMode(id: string, mode: KeywordMode | undefined): Capa
   if (mode === "low_hp") return "on_low_hp";
   if (mode === "wound") return "on_wound";
   if (mode === "delay") return "on_delay";
+  if (mode === "end_of_turn_in_hand") return "on_end_of_turn_in_hand";
+  if (mode === "start_of_turn_in_hand") return "on_start_of_turn_in_hand";
+  if (mode === "end_of_turn_in_graveyard") return "on_end_of_turn_in_graveyard";
   // mode === undefined
   if (CURATED_MULTIMODE_IDS.has(id)) return "on_play";
   if (DEATH_NATURE_IDS.has(id)) return "on_death";
@@ -98,6 +101,9 @@ export function modeForCreatureTrigger(trigger: CapabilityTrigger): KeywordMode 
     case "on_low_hp": return "low_hp";
     case "on_wound": return "wound";
     case "on_delay": return "delay";
+    case "on_end_of_turn_in_hand": return "end_of_turn_in_hand";
+    case "on_start_of_turn_in_hand": return "start_of_turn_in_hand";
+    case "on_end_of_turn_in_graveyard": return "end_of_turn_in_graveyard";
     default: return undefined;
   }
 }

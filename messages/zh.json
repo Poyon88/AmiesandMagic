@@ -1087,7 +1087,11 @@
         "on_attack": "，将在其攻击时触发",
         "on_draw": "，将在其被抽到时触发",
         "on_low_hp": "，将在生命值低于15点时触发",
-        "on_wound": "，将在其受伤但未死亡时触发"
+        "on_wound": "，将在其受伤但未死亡时触发",
+        "on_end_of_turn_in_hand": "，只要在手牌中，于回合结束时触发",
+        "on_start_of_turn_in_hand": "，只要在手牌中，于回合开始时触发",
+        "on_end_of_turn_in_graveyard": "，只要在墓地中，于回合结束时触发",
+        "on_delay": "，于 {n} 回合后触发"
       },
       "incin": {
         "zone_ally": "你墓地中的",

@@ -1087,7 +1087,11 @@
         "on_attack": "、攻撃時に発動する",
         "on_draw": "、ドロー時に発動する",
         "on_low_hp": "、HPが15を下回ると発動する",
-        "on_wound": "、致命傷を受けずに負傷した時に発動する"
+        "on_wound": "、致命傷を受けずに負傷した時に発動する",
+        "on_end_of_turn_in_hand": "（手札にある間、ターン終了時に誘発）",
+        "on_start_of_turn_in_hand": "（手札にある間、ターン開始時に誘発）",
+        "on_end_of_turn_in_graveyard": "（墓地にある間、ターン終了時に誘発）",
+        "on_delay": "（{n}ターン後に誘発）"
       },
       "incin": {
         "zone_ally": "あなたの墓地の",

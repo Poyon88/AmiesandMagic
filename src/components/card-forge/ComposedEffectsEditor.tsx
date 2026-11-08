@@ -917,8 +917,21 @@ export default function ComposedEffectsEditor({
                           // contient que ses deux moments à lui, et le déclencheur du don
                           // — un événement de créature — s'affichait par son id brut.
                           optionsDecl.map((t) => ({ v: t, l: triggersUnite.find((x) => x.v === t)?.l ?? t })),
-                          (v) => patchEffect(idx, { grantTrigger: v as CapabilityTrigger }),
+                          // Retard X : 1 tour par défaut en y passant, effacé sinon.
+                          (v) => patchEffect(idx, { grantTrigger: v as CapabilityTrigger, grantDelay: v === "on_delay" ? (eff.grantDelay ?? 1) : undefined }),
                         )}
+                      </>
+                    )}
+                    {eff.grantTrigger === "on_delay" && (
+                      <>
+                        <span style={labelStyle}>{tr('label_retard')}</span>
+                        <span>
+                          <RetardSelect
+                            value={eff.grantDelay ?? 1}
+                            title={tr('retard_turns_title')}
+                            onChange={(n) => patchEffect(idx, { grantDelay: n ?? 1 })}
+                          />
+                        </span>
                       </>
                     )}
                   </>

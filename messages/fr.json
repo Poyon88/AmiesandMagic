@@ -1087,7 +1087,11 @@
         "on_attack": ", qui se déclenchera quand elle attaque",
         "on_draw": ", qui se déclenchera à sa pioche",
         "on_low_hp": ", qui se déclenchera sous 15 PV",
-        "on_wound": ", qui se déclenchera quand elle sera blessée sans mourir"
+        "on_wound": ", qui se déclenchera quand elle sera blessée sans mourir",
+        "on_end_of_turn_in_hand": ", qui se déclenchera à la fin du tour tant qu'elle est en main",
+        "on_start_of_turn_in_hand": ", qui se déclenchera au début du tour tant qu'elle est en main",
+        "on_end_of_turn_in_graveyard": ", qui se déclenchera à la fin du tour tant qu'elle est au cimetière",
+        "on_delay": ", qui se déclenchera dans {n} tour(s)"
       },
       "incin": {
         "zone_ally": "de votre cimetière",

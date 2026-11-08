@@ -32,14 +32,19 @@ describe("Déclencheurs d'un don selon la zone de la cible", () => {
   });
 
   it("ne la propose ni sur le plateau ni au cimetière", () => {
-    expect(grantTriggersFor("esprit_de_corps", "board")).not.toContain("on_play");
-    expect(grantTriggersFor("esprit_de_corps", "graveyard")).not.toContain("on_play");
-    expect(grantTriggersFor("esprit_de_corps")).not.toContain("on_play");
+    // Proposée (combos de renvoi en main), mais jamais en défaut hors main/deck.
+    for (const loc of ["board", "graveyard", undefined] as const) {
+      const l = grantTriggersFor("esprit_de_corps", loc);
+      expect(l[0]).not.toBe("on_play");
+      expect(l[l.length - 1]).toBe("on_play");
+    }
   });
 
-  it("garde tous les autres déclencheurs", () => {
+  it("garde tous les autres déclencheurs, plus ceux de zone et Retard", () => {
     const tous = getCapabilityTriggers("creature", "esprit_de_corps").filter((t) => t !== "on_play");
-    expect(grantTriggersFor("esprit_de_corps", "board")).toEqual(tous);
+    expect(grantTriggersFor("esprit_de_corps", "board")).toEqual([
+      ...tous, "on_end_of_turn_in_hand", "on_start_of_turn_in_hand", "on_end_of_turn_in_graveyard", "on_delay", "on_play",
+    ]);
   });
 
   it("ne donne aucun choix à une passive", () => {

@@ -1087,7 +1087,11 @@
         "on_attack": ", which will trigger when it attacks",
         "on_draw": ", which will trigger when it is drawn",
         "on_low_hp": ", which will trigger below 15 HP",
-        "on_wound": ", which will trigger when it is wounded without dying"
+        "on_wound": ", which will trigger when it is wounded without dying",
+        "on_end_of_turn_in_hand": ", which triggers at end of turn while it is in hand",
+        "on_start_of_turn_in_hand": ", which triggers at start of turn while it is in hand",
+        "on_end_of_turn_in_graveyard": ", which triggers at end of turn while it is in the graveyard",
+        "on_delay": ", which triggers in {n} turn(s)"
       },
       "incin": {
         "zone_ally": "from your graveyard",

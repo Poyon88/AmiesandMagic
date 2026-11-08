@@ -111,6 +111,10 @@ export const COMPOSED_FR: Record<string, string> = {
   "grant_when.on_draw": ", qui se déclenchera à sa pioche",
   "grant_when.on_low_hp": ", qui se déclenchera sous 15 PV",
   "grant_when.on_wound": ", qui se déclenchera quand elle sera blessée sans mourir",
+  "grant_when.on_end_of_turn_in_hand": ", qui se déclenchera à la fin du tour tant qu'elle est en main",
+  "grant_when.on_start_of_turn_in_hand": ", qui se déclenchera au début du tour tant qu'elle est en main",
+  "grant_when.on_end_of_turn_in_graveyard": ", qui se déclenchera à la fin du tour tant qu'elle est au cimetière",
+  "grant_when.on_delay": ", qui se déclenchera dans {n} tour(s)",
   "content.random_range": "1 à {max}",
   "content.random_range_from": "{min} à {max}",
   // « met en jeu la 1re unité de votre deck de coût ≤ 2 » (+ filtre de pool
@@ -628,7 +632,7 @@ function describeGrantTrigger(eff: ComposedEffect, t?: SafeT): string {
   const id = grantedEngineId(eff);
   if (!eff.grantTrigger || !id) return "";
   if (getCapabilityTriggers("creature", id).length <= 1) return "";
-  return frag(t, `grant_when.${eff.grantTrigger}`);
+  return frag(t, `grant_when.${eff.grantTrigger}`, eff.grantTrigger === "on_delay" ? { n: String(eff.grantDelay ?? 1) } : undefined);
 }
 
 /** Restriction de pool d'une Sélection composée, en fragment accolable au
