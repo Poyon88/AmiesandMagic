@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 
 /**
  * Pièce d'or — SVG dessiné, et non l'emoji 🪙.
@@ -22,12 +21,13 @@ export default function GoldCoin({
   className?: string;
   title?: string;
 }) {
-  // `useId` : plusieurs pièces coexistent sur un même écran (la boutique en
-  // affiche trois). Des identifiants de dégradé en dur seraient dupliqués, et
-  // un `<defs>` démonté emporterait la teinte des pièces restantes.
-  const uid = useId().replace(/:/g, "");
-  const face = `coin-face-${uid}`;
-  const rim = `coin-rim-${uid}`;
+  // Identifiant FIXE, et non `useId` : `useId` dépend de la position dans
+  // l'arbre React, qui différait entre le rendu serveur et le navigateur
+  // (erreur d'hydratation sur l'accueil). Le dégradé est le même pour toutes
+  // les icônes : des `id` répétés y renvoient tous au même dessin, et si un
+  // `<defs>` est démonté, le navigateur se rabat sur le suivant.
+  const face = "am-coin-face";
+  const rim = "am-coin-rim";
 
   return (
     <svg

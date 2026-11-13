@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 
 /**
  * Essence — cristal arcanique dessiné (même principe que <GoldCoin /> : pas
@@ -17,9 +16,13 @@ export default function EssenceIcon({
   className?: string;
   title?: string;
 }) {
-  const uid = useId().replace(/:/g, "");
-  const face = `ess-face-${uid}`;
-  const side = `ess-side-${uid}`;
+  // Identifiant FIXE, et non `useId` : `useId` dépend de la position dans
+  // l'arbre React, qui différait entre le rendu serveur et le navigateur
+  // (erreur d'hydratation sur l'accueil). Le dégradé est le même pour toutes
+  // les icônes : des `id` répétés y renvoient tous au même dessin, et si un
+  // `<defs>` est démonté, le navigateur se rabat sur le suivant.
+  const face = "am-ess-face";
+  const side = "am-ess-side";
 
   return (
     <svg

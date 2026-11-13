@@ -161,4 +161,25 @@ describe("effet composé", () => {
   it("se décrit en français", () => {
     expect(describeComposedCap(capCompose(2))).toMatch(/2 capacités de créatures de même coût/);
   });
+
+  // Forme de « Leçon posthume » : UNE alliée désignée reçoit 2 capacités (et
+  // non le mot-clé Tactique 2, qu'elle portait comme un don inerte).
+  it("depuis un SORT, sur l'alliée DÉSIGNÉE : elle reçoit X capacités, pas le mot-clé Tactique", () => {
+    const cap: Capability = {
+      uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+      composed: { content: "tactique", magnitude: { x: 2 }, target: { entity: "unit", side: "ally", count: 1, location: "board", designation: "choice" } },
+    };
+    const s = etat();
+    const visee = allie(3);
+    const autre = allie(3);
+    s.players[0].board.push(visee, autre);
+    const sort = mkInstance(mkCard({ name: "Leçon", card_type: "spell", mana_cost: 0, attack: null, health: null, keywords: [], capabilities: [cap] as never }));
+    s.players[0].hand.push(sort);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: sort.instanceId, targetMap: { "cx_0#0": visee.instanceId } } as GameAction);
+    const v = st.players[0].board.find((c) => c.instanceId === visee.instanceId)!;
+    expect(ids(v)).toHaveLength(2);
+    expect(ids(v)).not.toContain("tactique");
+    expect(ids(st.players[0].board.find((c) => c.instanceId === autre.instanceId)!)).toHaveLength(0);
+    expect(describeComposedCap(cap)).toMatch(/2 capacités/);
+  });
 });

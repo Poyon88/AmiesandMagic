@@ -2,10 +2,14 @@
 
 // Crédit marché — jeton azur frappé d'un marteau d'enchère, dessiné en SVG
 // comme <GoldCoin /> et <EssenceIcon /> (aucune dépendance à une police).
-import { useId } from "react";
 
 export default function CreditIcon({ size = 16, className, title }: { size?: number; className?: string; title?: string }) {
-  const uid = useId().replace(/:/g, "");
+  // Identifiant FIXE, et non `useId` : `useId` dépend de la position dans
+  // l'arbre React, qui différait entre le rendu serveur et le navigateur
+  // (erreur d'hydratation sur l'accueil). Le dégradé est le même pour toutes
+  // les icônes : des `id` répétés y renvoient tous au même dessin, et si un
+  // `<defs>` est démonté, le navigateur se rabat sur le suivant.
+  const uid = "am";
   return (
     <svg
       width={size}

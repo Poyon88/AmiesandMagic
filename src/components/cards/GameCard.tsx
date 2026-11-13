@@ -603,11 +603,17 @@ export default function GameCard({
         {(() => {
           if (enJeu) return null;
           const mp = maxPrints || (!card.set_id && card.card_year && card.rarity ? LIMITED_PRINT_COUNTS[card.rarity] : undefined);
+          // Tirage à UN exemplaire (rareté Unique) : « 1/1 » ou « /1 » n'apprend
+          // rien — la carte est unique par définition. Le numéro est MASQUÉ mais
+          // garde sa place : retiré, il faisait descendre la rangée d'icônes
+          // sous le niveau des caractéristiques, contrairement aux autres
+          // éditions limitées.
           return mp ? (
-            <span style={{
+            <span aria-hidden={mp === 1 || undefined} style={{
               fontSize: 9 * s, color: "#ffffff", fontWeight: 600, fontFamily: "'Cinzel',serif",
               letterSpacing: 0.5,
               textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+              visibility: mp === 1 ? "hidden" : undefined,
             }}>{printNumber ? `${printNumber}/${mp}` : `/${mp}`}</span>
           ) : null;
         })()}
