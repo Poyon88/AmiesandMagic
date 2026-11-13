@@ -9,6 +9,7 @@
 // transaction. Cette route ne fait que porter l'identité de l'appelant.
 import { NextResponse } from "next/server";
 import { getAuthUser, getAdminClient } from "@/lib/payments/stripe";
+import { gateFeature } from "@/lib/geo/rules";
 
 /** Messages destinés au joueur. Les codes viennent du moteur ; les traduire
  *  ici, en un seul endroit, évite que chaque écran invente les siens. */
@@ -28,6 +29,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const tournamentId = typeof body?.tournament_id === "string" ? body.tournament_id : "";
   if (!tournamentId) return NextResponse.json({ error: "tournament_id requis" }, { status: 400 });
+
+  // Tournois à ticket fermés dans certains pays (réglage /admin/pays).
+  const geo = await gateFeature(request, "tickets");
+  if (geo.error) return geo.error;
 
   const supabase = getAdminClient();
   const { data, error } = await supabase.rpc("enter_tournament_with_ticket", {

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { AmButton } from "@/components/ui/AmButton";
+import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
 
 export default function TournamentSignup({
   tournamentId,
@@ -26,6 +27,7 @@ export default function TournamentSignup({
   ticketDebt: number;
 }) {
   const t = useTranslations("tournaments");
+  const geo = useGeo();
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(alreadyEntered);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +60,11 @@ export default function TournamentSignup({
 
   if (entered) {
     return <p className="text-sm font-semibold text-emerald-400">{t("signup_done")}</p>;
+  }
+
+  // Tournois à ticket fermés dans ce pays : inutile d'envoyer à la boutique.
+  if (requiresTicket && !geo.features.tickets) {
+    return <GeoNotice className="max-w-xs" />;
   }
 
   if (seatsLeft <= 0) {

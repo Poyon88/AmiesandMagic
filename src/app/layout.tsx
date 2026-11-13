@@ -6,6 +6,9 @@ import "./globals.css";
 import AudioProvider from "@/components/AudioProvider";
 import KeywordIconPreloader from "@/components/KeywordIconPreloader";
 import LocaleMigration from "@/components/LocaleMigration";
+import { headers } from "next/headers";
+import { GeoProvider } from "@/components/shared/GeoProvider";
+import { geoContext } from "@/lib/geo/rules";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +54,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  // Pays de connexion et fonctions qu'il ouvre (réglage /admin/pays) : lu une
+  // fois ici, pour que chaque écran affiche d'emblée ce qui est disponible.
+  const { country, rules } = await geoContext(await headers());
+  const geo = {
+    country,
+    features: {
+      gold_purchases: rules.gold_purchases,
+      tickets: rules.tickets,
+      auctions: rules.auctions,
+      cash_prizes: rules.cash_prizes,
+    },
+    minAge: rules.min_age,
+  };
   return (
     <html
       lang={locale}
@@ -75,7 +91,7 @@ export default async function RootLayout({
           <LocaleMigration />
           <AudioProvider />
           <KeywordIconPreloader />
-          {children}
+          <GeoProvider value={geo}>{children}</GeoProvider>
         </NextIntlClientProvider>
       </body>
     </html>

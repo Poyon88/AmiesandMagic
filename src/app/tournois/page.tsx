@@ -9,6 +9,8 @@ import PageChrome from "@/components/shared/PageChrome";
 import CircuitExplainer from "@/components/tournaments/CircuitExplainer";
 import { GrandTournamentCard, QualificationCard } from "@/components/tournaments/TournamentRewardCards";
 import { CASH_BY_WINS, CASH_PRIZES_ENABLED, CREDIT_LIFETIME_DAYS } from "@/lib/tournaments/config";
+import { headers } from "next/headers";
+import { geoContext } from "@/lib/geo/rules";
 
 export async function generateMetadata() {
   const t = await getTranslations("tournaments");
@@ -30,6 +32,9 @@ export default async function TournoisPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Prix en euros : interrupteur global ET réglage du pays de connexion.
+  const cashPrizes = CASH_PRIZES_ENABLED && (await geoContext(await headers())).rules.cash_prizes;
 
   const { data: tournaments } = await supabase
     .from("tournaments")
@@ -141,7 +146,7 @@ export default async function TournoisPage() {
           <p className="mx-auto mt-6 max-w-3xl text-center text-xs text-am-ink-faint">
             {t.rich("footnote_rounds", { i: (chunks) => <i>{chunks}</i> })}{" "}
             {t("footnote_credits", { days: CREDIT_LIFETIME_DAYS })}
-            {CASH_PRIZES_ENABLED && ` ${t("footnote_cash", { wins: Math.min(...Object.keys(CASH_BY_WINS).map(Number)) })}`}
+            {cashPrizes && ` ${t("footnote_cash", { wins: Math.min(...Object.keys(CASH_BY_WINS).map(Number)) })}`}
             {" "}{t("footnote_all")}
           </p>
         </section>

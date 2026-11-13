@@ -3689,5 +3689,14 @@
     "game_title": "The match ran into an error",
     "game_body": "The match display was interrupted. Reload it: it will resume where it left off.",
     "game_reload": "Reload the match"
+  },
+  "geo": {
+    "unavailable": "This feature is not yet available in your country. The game remains fully accessible.",
+    "age_title": "Age Confirmation",
+    "age_intro": "Purchases are restricted to people aged {age} or older. You will only be asked to confirm this once.",
+    "age_checkbox": "I certify that I am at least {age} years old.",
+    "age_confirm": "Confirm and continue",
+    "age_cancel": "Cancel",
+    "age_error": "Saving failed. Please try again."
   }
 }

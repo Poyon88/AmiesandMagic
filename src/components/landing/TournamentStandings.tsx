@@ -12,8 +12,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FACTIONS } from "@/lib/card-engine/constants";
-import { CASH_PRIZES_ENABLED, GRAND_DEFAULT_SIZE } from "@/lib/tournaments/config";
+import { GRAND_DEFAULT_SIZE } from "@/lib/tournaments/config";
 import { prizePool, rewardTable, type RewardRow } from "@/lib/tournaments/rewards";
+import { useCashPrizes } from "@/components/shared/GeoProvider";
 import EssenceIcon from "@/components/shared/EssenceIcon";
 import { CreditIcon } from "@/components/tournaments/RewardIcons";
 import { nombre } from "@/components/tournaments/RewardParts";
@@ -77,6 +78,7 @@ export default function TournamentStandings({
 }) {
   const t = useTranslations("tournaments");
   const tl = useTranslations("landing");
+  const cash = useCashPrizes();
   const rows = rewardTable("grand", GRAND_DEFAULT_SIZE);
   const pool = prizePool("grand", GRAND_DEFAULT_SIZE);
   const places = JOUEURS.map((j, i) => {
@@ -134,7 +136,7 @@ export default function TournamentStandings({
               {t("prize_pool")}
             </div>
             <div className="font-display text-2xl font-bold leading-none tabular-nums text-am-gold-bright">
-              {CASH_PRIZES_ENABLED && pool.cash > 0 ? euros(pool.cash) : nombre(pool.credits)}
+              {cash && pool.cash > 0 ? euros(pool.cash) : nombre(pool.credits)}
             </div>
           </div>
         </div>
@@ -168,7 +170,7 @@ export default function TournamentStandings({
                     place === 1 ? "text-lg" : "text-base"
                   }`}
                 >
-                  {CASH_PRIZES_ENABLED && j.reward.cash ? euros(j.reward.cash) : "—"}
+                  {cash && j.reward.cash ? euros(j.reward.cash) : "—"}
                 </div>
                 <div className="flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-am-azure">
                   <CreditIcon size={11} /> {t("credits_count", { count: nombre(j.reward.credits) })}
@@ -183,7 +185,7 @@ export default function TournamentStandings({
           <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_4.5rem_3.5rem_3.75rem] gap-1.5 border-b border-am-gold/15 px-2.5 pb-1.5 font-display text-[9px] font-bold uppercase tracking-widest text-am-ink-faint">
             <span />
             <span />
-            {CASH_PRIZES_ENABLED ? <span className="text-right">{t("col_money")}</span> : <span />}
+            {cash ? <span className="text-right">{t("col_money")}</span> : <span />}
             <span className="text-right">{t("col_credits")}</span>
             <span className="text-right">{t("col_essence")}</span>
           </div>
@@ -202,7 +204,7 @@ export default function TournamentStandings({
                   </span>
                 </span>
                 <span className="text-right font-semibold text-am-gold-bright">
-                  {CASH_PRIZES_ENABLED && j.reward.cash ? euros(j.reward.cash) : "—"}
+                  {cash && j.reward.cash ? euros(j.reward.cash) : "—"}
                 </span>
                 <span className="text-right text-am-azure">{nombre(j.reward.credits)}</span>
                 <span className="flex items-center justify-end gap-1 text-am-arcane-bright">

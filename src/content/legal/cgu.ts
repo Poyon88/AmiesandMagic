@@ -66,10 +66,15 @@ export const CGU: LegalDocument = {
           `consentement au traitement de leurs données peut être donné seul (15 ans en ` +
           `France, 16 ans au Luxembourg, sauf abaissement légal). En deçà, l'accord d'un ` +
           `titulaire de l'autorité parentale est nécessaire.`,
+        `Les achats payants (pièces d'or, tickets de tournoi) sont réservés aux personnes ` +
+          `majeures : 18 ans, ou l'âge supérieur indiqué au moment de l'achat lorsque le droit ` +
+          `de votre pays l'exige. Avant votre premier achat, vous déclarez sur l'honneur ` +
+          `avoir cet âge ; cette déclaration est datée et conservée. Un achat effectué au ` +
+          `moyen d'une fausse déclaration peut être annulé et le compte suspendu.`,
       ],
       todo:
-        "À COMPLÉTER : fixer l'âge minimum retenu et le mécanisme de recueil du " +
-        "consentement parental, en cohérence avec la juridiction choisie.",
+        "À COMPLÉTER : mécanisme de recueil du consentement parental pour le jeu gratuit, " +
+        "en cohérence avec la juridiction choisie.",
     },
     {
       title: "Monnaie de jeu, cartes et achats",
@@ -86,6 +91,12 @@ export const CGU: LegalDocument = {
         `La revente de cartes entre joueurs contre de l'argent réel n'est pas proposée. ` +
           `Les échanges internes éventuels s'effectuent exclusivement au moyen de la monnaie ` +
           `de jeu.`,
+        `Le jeu gratuit est accessible partout. Les fonctions payantes ou à enjeu (achat ` +
+          `d'or, tickets de tournoi, enchères, récompenses en argent) ne sont proposées que ` +
+          `dans certains pays, selon votre pays de connexion, et cette liste peut évoluer. ` +
+          `Lorsqu'une fonction n'est pas proposée dans votre pays, il est interdit de ` +
+          `contourner cette restriction, notamment en masquant votre localisation. L'adresse ` +
+          `de facturation demandée lors d'un paiement est conservée à des fins fiscales.`,
         `Pour tout achat payant, vous disposez des droits que la loi vous reconnaît en tant ` +
           `que consommateur. S'agissant d'un contenu numérique fourni immédiatement, ` +
           `l'exécution peut, avec votre accord exprès, commencer avant la fin du délai de ` +

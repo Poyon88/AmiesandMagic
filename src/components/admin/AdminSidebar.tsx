@@ -16,6 +16,7 @@ const menuItems = [
   { label: "Bruitages", href: "/admin/sfx", icon: "🔊" },
   { label: "Enchères", href: "/admin/auctions", icon: "🔨" },
   { label: "Tournois", href: "/admin/tournaments", icon: "🏆" },
+  { label: "Pays", href: "/admin/pays", icon: "🌍" },
   { label: "Showcase", href: "/admin/showcase", icon: "🎭" },
   { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
   { label: "Joueurs", href: "/admin/players", icon: "👥" },

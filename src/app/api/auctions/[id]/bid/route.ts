@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { PlaceBidPayload } from '@/lib/auction/types';
+import { gateFeature } from '@/lib/geo/rules';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -34,6 +35,9 @@ export async function POST(
 ) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const geo = await gateFeature(request, 'auctions');
+  if (geo.error) return geo.error;
 
   const { id } = await params;
   const body = await request.json() as PlaceBidPayload;

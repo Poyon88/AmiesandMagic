@@ -10,6 +10,7 @@ import MyAuctions from "./MyAuctions";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import { AmButton, AmLinkButton } from "@/components/ui/AmButton";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
+import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
 
 import { AUCTIONABLE_RARITIES } from "@/lib/auction/pricing";
 interface AuctionHouseProps {
@@ -36,6 +37,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"browse" | "my">("browse");
   const sellingEnabled = isPlayerSellingEnabled();
+  const geo = useGeo();
 
   const [filters, setFilters] = useState<AuctionFilters>({
     sort: "ending_soon",
@@ -108,6 +110,8 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   return (
     <div className="relative mx-auto max-w-[1200px] px-4 py-8">
       <AmAtmosphere />
+
+      {!geo.features.auctions && <GeoNotice className="mb-6" />}
 
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between am-animate-rise">

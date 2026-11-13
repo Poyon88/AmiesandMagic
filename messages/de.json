@@ -3689,5 +3689,14 @@
     "game_title": "In der Partie ist ein Fehler aufgetreten",
     "game_body": "Die Anzeige der Partie wurde unterbrochen. Lade sie neu: Sie wird dort fortgesetzt, wo sie stehen geblieben ist.",
     "game_reload": "Partie neu laden"
+  },
+  "geo": {
+    "unavailable": "Diese Funktion ist in deinem Land noch nicht verfügbar. Das Spiel bleibt vollständig zugänglich.",
+    "age_title": "Bestätigung deines Alters",
+    "age_intro": "Käufe sind Personen ab {age} Jahren vorbehalten. Diese Bestätigung wird nur einmal abgefragt.",
+    "age_checkbox": "Ich bestätige, dass ich mindestens {age} Jahre alt bin.",
+    "age_confirm": "Bestätigen und fortfahren",
+    "age_cancel": "Abbrechen",
+    "age_error": "Die Speicherung ist fehlgeschlagen. Versuche es erneut."
   }
 }

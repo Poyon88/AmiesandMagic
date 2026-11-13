@@ -3689,5 +3689,14 @@
     "game_title": "对局遇到错误",
     "game_body": "对局画面已中断。重新加载后将从中断处继续。",
     "game_reload": "重新加载对局"
+  },
+  "geo": {
+    "unavailable": "您所在的国家/地区暂未开放此功能。游戏仍可完整使用。",
+    "age_title": "年龄确认",
+    "age_intro": "购买功能仅限年满 {age} 岁的用户使用。此确认只需进行一次。",
+    "age_checkbox": "我确认我已年满 {age} 岁。",
+    "age_confirm": "确认并继续",
+    "age_cancel": "取消",
+    "age_error": "保存失败,请重试。"
   }
 }

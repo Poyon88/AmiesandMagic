@@ -14,13 +14,14 @@
 //
 // `inert` + `pointer-events-none` : purement décoratif ici. Un clic ou une
 // tabulation doit rester celui du lien de la tuile.
-import { CASH_PRIZES_ENABLED } from "@/lib/tournaments/config";
+import { useCashPrizes } from "@/components/shared/GeoProvider";
 import { podium, prizePool, rewardedRows, rewardTable } from "@/lib/tournaments/rewards";
 import { Podium, PrizePoolSummary, RewardTable } from "./RewardParts";
 
 const TAILLE_AFFICHEE = 1024;
 
 export default function TournamentTileBackdrop() {
+  const cash = useCashPrizes();
   return (
     <div
       aria-hidden="true"
@@ -31,11 +32,11 @@ export default function TournamentTileBackdrop() {
         className="flex flex-col gap-4 p-5"
         style={{ width: "150%", marginLeft: "-25%", transform: "scale(0.6667)", transformOrigin: "top center" }}
       >
-        <PrizePoolSummary pool={prizePool("grand", TAILLE_AFFICHEE)} withCash={CASH_PRIZES_ENABLED} />
-        <Podium rows={podium("grand", TAILLE_AFFICHEE)} withCash={CASH_PRIZES_ENABLED} />
+        <PrizePoolSummary pool={prizePool("grand", TAILLE_AFFICHEE)} withCash={cash} />
+        <Podium rows={podium("grand", TAILLE_AFFICHEE)} withCash={cash} />
         <RewardTable
-          rows={rewardedRows(rewardTable("grand", TAILLE_AFFICHEE), CASH_PRIZES_ENABLED)}
-          firstColumn={CASH_PRIZES_ENABLED ? "cash" : null}
+          rows={rewardedRows(rewardTable("grand", TAILLE_AFFICHEE), cash)}
+          firstColumn={cash ? "cash" : null}
         />
       </div>
     </div>

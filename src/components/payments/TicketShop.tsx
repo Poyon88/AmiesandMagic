@@ -9,6 +9,8 @@ import { useEffect, useState } from "react";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
+import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
+import AdultConfirm from "@/components/shared/AdultConfirm";
 
 interface PublicTicketPack {
   code: string;
@@ -32,6 +34,11 @@ const jour = (iso: string) =>
 export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const geo = useGeo();
+  const ouvert = geo.features.tickets;
+  // Achat mis en attente par la déclaration de majorité : relancé une fois
+  // celle-ci enregistrée.
+  const [majorite, setMajorite] = useState<{ code: string; minAge: number } | null>(null);
   const [state, setState] = useState<TicketState | null>(null);
 
   useEffect(() => {
@@ -51,6 +58,11 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
         body: JSON.stringify({ pack_code: code }),
       });
       const data = await res.json();
+      if (data.code === "age_required") {
+        setMajorite({ code, minAge: data.minAge ?? geo.minAge });
+        setPending(null);
+        return;
+      }
       if (!res.ok || !data.url) {
         setError(data.error ?? "Le paiement n'a pas pu être ouvert.");
         setPending(null);
@@ -96,6 +108,8 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
 
       {error && <p className="mt-6 text-center text-sm text-red-300" role="alert">{error}</p>}
 
+      {!ouvert && <GeoNotice className="mx-auto mt-8 max-w-xl" />}
+
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         {packs.map((p) => (
           <AmPanel key={p.code} corners className="flex flex-col items-center gap-4 p-8 text-center">
@@ -111,9 +125,11 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
                 soit {euros(Math.round(p.displayPriceCents / p.tickets))} le ticket
               </span>
             )}
-            <AmButton onClick={() => buy(p.code)} disabled={pending !== null} className="mt-2 w-full">
-              {pending === p.code ? "Redirection…" : "Acheter"}
-            </AmButton>
+            {ouvert && (
+              <AmButton onClick={() => buy(p.code)} disabled={pending !== null} className="mt-2 w-full">
+                {pending === p.code ? "Redirection…" : "Acheter"}
+              </AmButton>
+            )}
           </AmPanel>
         ))}
       </div>
@@ -123,6 +139,13 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
         transférable, ni revendable, ni convertible en euros. Un ticket dépensé dans un tournoi qui
         est ensuite annulé vous est rendu, avec sa date d&apos;expiration d&apos;origine.
       </p>
+      {majorite && (
+        <AdultConfirm
+          minAge={majorite.minAge}
+          onCancel={() => setMajorite(null)}
+          onConfirmed={() => { const { code } = majorite; setMajorite(null); void buy(code); }}
+        />
+      )}
     </section>
   );
 }

@@ -3689,5 +3689,14 @@
     "game_title": "La partita ha riscontrato un errore",
     "game_body": "La visualizzazione della partita si è interrotta. Ricaricala: riprenderà da dove si era fermata.",
     "game_reload": "Ricarica la partita"
+  },
+  "geo": {
+    "unavailable": "Questa funzione non è ancora disponibile nel tuo paese. Il gioco resta interamente accessibile.",
+    "age_title": "Conferma della tua età",
+    "age_intro": "Gli acquisti sono riservati alle persone di almeno {age} anni. Questa conferma ti verrà richiesta una sola volta.",
+    "age_checkbox": "Dichiaro di avere almeno {age} anni.",
+    "age_confirm": "Conferma e continua",
+    "age_cancel": "Annulla",
+    "age_error": "Registrazione non riuscita. Riprova."
   }
 }

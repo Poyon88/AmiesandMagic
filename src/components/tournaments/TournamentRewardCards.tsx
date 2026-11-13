@@ -7,13 +7,13 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import AmPanel from "@/components/ui/AmPanel";
 import {
-  CASH_PRIZES_ENABLED,
   GRAND_DEFAULT_SIZE,
   GRAND_SIZES,
   QUALIFICATION_SIZE,
 } from "@/lib/tournaments/config";
 import { podium, prizePool, rewardTable, rewardedRows } from "@/lib/tournaments/rewards";
 import { CosmeticIcon, GoldenTicketIcon } from "./RewardIcons";
+import { useCashPrizes } from "@/components/shared/GeoProvider";
 import { nombre, Podium, PrizePoolSummary, RewardTable } from "./RewardParts";
 
 function CardHeader({ tag, size, access, gold }: { tag: string; size: React.ReactNode; access: React.ReactNode; gold?: boolean }) {
@@ -70,6 +70,7 @@ export function QualificationCard() {
 export function GrandTournamentCard({ initialSize = GRAND_DEFAULT_SIZE }: { initialSize?: number }) {
   const t = useTranslations("tournaments");
   const [size, setSize] = useState<number>(initialSize);
+  const cash = useCashPrizes();
   const rows = rewardTable("grand", size);
   return (
     <AmPanel corners className="flex min-w-0 flex-col gap-4 p-5">
@@ -103,9 +104,9 @@ export function GrandTournamentCard({ initialSize = GRAND_DEFAULT_SIZE }: { init
         </div>
       </div>
 
-      <PrizePoolSummary pool={prizePool("grand", size)} withCash={CASH_PRIZES_ENABLED} />
-      <Podium rows={podium("grand", size)} withCash={CASH_PRIZES_ENABLED} />
-      <RewardTable rows={rewardedRows(rows, CASH_PRIZES_ENABLED)} firstColumn={CASH_PRIZES_ENABLED ? "cash" : null} />
+      <PrizePoolSummary pool={prizePool("grand", size)} withCash={cash} />
+      <Podium rows={podium("grand", size)} withCash={cash} />
+      <RewardTable rows={rewardedRows(rows, cash)} firstColumn={cash ? "cash" : null} />
 
       <div className="flex items-center gap-3 rounded-xl border border-am-arcane/40 bg-am-arcane/10 px-4 py-3">
         <CosmeticIcon size={26} className="text-am-arcane-bright" />

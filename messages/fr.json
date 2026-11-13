@@ -3689,5 +3689,14 @@
     "game_title": "La partie a rencontré une erreur",
     "game_body": "L'affichage de la partie s'est interrompu. Rechargez-la : elle reprendra là où elle en était.",
     "game_reload": "Recharger la partie"
+  },
+  "geo": {
+    "unavailable": "Cette fonction n'est pas encore disponible dans votre pays. Le jeu reste entièrement accessible.",
+    "age_title": "Confirmation de votre âge",
+    "age_intro": "Les achats sont réservés aux personnes d'au moins {age} ans. Cette confirmation ne vous sera demandée qu'une fois.",
+    "age_checkbox": "Je certifie avoir au moins {age} ans.",
+    "age_confirm": "Confirmer et continuer",
+    "age_cancel": "Annuler",
+    "age_error": "L'enregistrement a échoué. Réessayez."
   }
 }

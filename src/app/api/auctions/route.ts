@@ -7,6 +7,7 @@ import { isPlayerSellingEnabled } from '@/lib/auction/flags';
 import { minStartingBidForLot, forbiddenRarities } from '@/lib/auction/pricing';
 import { ALL_KEYWORDS } from '@/lib/game/keyword-labels';
 import { attachPrintNumbers } from '@/lib/auction/prints';
+import { gateFeature } from '@/lib/geo/rules';
 import type { Keyword } from '@/lib/game/types';
 
 async function getAuthUser() {
@@ -225,6 +226,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+
+  const geo = await gateFeature(request, 'auctions');
+  if (geo.error) return geo.error;
 
   const supabase = getAdminClient();
 

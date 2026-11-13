@@ -10,6 +10,8 @@ import AmPanel from "@/components/ui/AmPanel";
 import GoldCoin from "@/components/shared/GoldCoin";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
+import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
+import AdultConfirm from "@/components/shared/AdultConfirm";
 
 interface PublicPack {
   code: string;
@@ -24,6 +26,11 @@ const euros = (cents: number) =>
 export default function GoldShop({ packs }: { packs: PublicPack[] }) {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const geo = useGeo();
+  const ouvert = geo.features.gold_purchases;
+  // Achat mis en attente par la déclaration de majorité : relancé une fois
+  // celle-ci enregistrée.
+  const [majorite, setMajorite] = useState<{ code: string; minAge: number } | null>(null);
   const [debt, setDebt] = useState(0);
 
   useEffect(() => {
@@ -46,6 +53,11 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
         body: JSON.stringify({ pack_code: code }),
       });
       const data = await res.json();
+      if (data.code === "age_required") {
+        setMajorite({ code, minAge: data.minAge ?? geo.minAge });
+        setPending(null);
+        return;
+      }
       if (!res.ok || !data.url) {
         setError(data.error ?? "Le paiement n'a pas pu être ouvert.");
         setPending(null);
@@ -79,6 +91,8 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
         <p className="mt-6 text-center text-sm text-red-300" role="alert">{error}</p>
       )}
 
+      {!ouvert && <GeoNotice className="mx-auto mt-8 max-w-xl" />}
+
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         {packs.map((p) => (
           <AmPanel key={p.code} corners className="flex flex-col items-center gap-4 p-8 text-center">
@@ -90,13 +104,15 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
               <GoldCoin size={30} />
             </span>
             <span className="text-lg text-am-ink-2">{euros(p.displayPriceCents)}</span>
-            <AmButton
-              onClick={() => buy(p.code)}
-              disabled={pending !== null}
-              className="mt-2 w-full"
-            >
-              {pending === p.code ? "Redirection…" : "Acheter"}
-            </AmButton>
+            {ouvert && (
+              <AmButton
+                onClick={() => buy(p.code)}
+                disabled={pending !== null}
+                className="mt-2 w-full"
+              >
+                {pending === p.code ? "Redirection…" : "Acheter"}
+              </AmButton>
+            )}
           </AmPanel>
         ))}
       </div>
@@ -104,8 +120,15 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
       <p className="mt-10 text-center text-xs text-am-ink-3">
         Les pièces d&apos;or sont une monnaie interne au jeu. Elles ne sont ni convertibles en
         euros, ni transférables, ni remboursables — hors remboursement du paiement d&apos;origine.
-        Paiement traité par Stripe : aucune donnée bancaire ne transite par Armies&nbsp;&amp;&nbsp;Magic.
+        Paiement traité par Stripe : aucune donnée bancaire ne transite par Armies of Legends.
       </p>
+      {majorite && (
+        <AdultConfirm
+          minAge={majorite.minAge}
+          onCancel={() => setMajorite(null)}
+          onConfirmed={() => { const { code } = majorite; setMajorite(null); void buy(code); }}
+        />
+      )}
     </section>
   );
 }
