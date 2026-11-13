@@ -12,7 +12,8 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  // Visiteur non connecté : la vitrine, comme dans le proxy.
+  if (!user) redirect("/landing");
 
   const [profileResult, { data: wallet }, { data: activeNews }, locale] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),

@@ -385,17 +385,19 @@ export default function CardEditor() {
       .map(c => c.clan)
       .filter(Boolean) as string[],
   )].sort(), [cards, factionFilter]);
-  // Clans proposés dans l'édition : union des clans déjà utilisés ET des
-  // clans canoniques déclarés dans FACTIONS pour la faction sélectionnée.
-  // Sans ça, un nouveau clan (ex: "Incas") n'apparaît jamais en suggestion
-  // tant qu'aucune carte ne l'a sauvegardé, et il reste invisible à l'admin.
+  // Clans proposés dans l'édition : ceux de la faction sélectionnée — les clans
+  // canoniques déclarés dans FACTIONS (un nouveau clan apparaît donc avant
+  // qu'une carte ne le porte), plus ceux que portent déjà des cartes de cette
+  // faction (noms historiques). L'union avec TOUS les clans en base proposait
+  // jusqu'ici ceux des autres factions. Le clan actuel de la carte reste
+  // affiché même hors liste, pour ne jamais vider le champ en silence.
   const editClans = useMemo(() => {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
-    const canonical: string[] = editFaction
-      ? getAllClanNames(editFaction)
-      : Object.keys(FACTIONS).flatMap(getAllClanNames);
-    return [...new Set([...canonical, ...allClans])].sort();
-  }, [allClans, editFields]);
+    const actuel = typeof editFields?.clan === "string" && editFields.clan ? [editFields.clan] : [];
+    if (!editFaction) return [...new Set([...Object.keys(FACTIONS).flatMap(getAllClanNames), ...allClans, ...actuel])].sort();
+    const portes = cards.filter(c => c.faction === editFaction && c.clan).map(c => c.clan as string);
+    return [...new Set([...getAllClanNames(editFaction), ...portes, ...actuel])].sort();
+  }, [allClans, cards, editFields]);
   const editRaces = useMemo(() => {
     const editFaction = (typeof editFields?.faction === "string" ? editFields.faction : null) as string | null;
     // Races de la faction + pool neutre des Mercenaires (cf. getAssignableRaces),

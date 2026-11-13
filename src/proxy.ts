@@ -54,10 +54,13 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users to login (except on public pages)
+  // Redirect unauthenticated users to login (except on public pages). La
+  // RACINE fait exception : c'est l'adresse que tape un visiteur, et elle doit
+  // lui montrer la vitrine du jeu, pas un formulaire de connexion. `/` reste le
+  // menu du joueur une fois connecté.
   if (!user && !isPublicPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = request.nextUrl.pathname === "/" ? "/landing" : "/login";
     return NextResponse.redirect(url);
   }
 
