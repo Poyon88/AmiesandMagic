@@ -243,6 +243,20 @@ export default function GameCard({
   const bonusAtk = card.attack ?? 0;
   const bonusPv = card.health ?? 0;
 
+  // ILLUSTRATION : une nouvelle tentative en cas d'échec. Plus de la moitié
+  // des illustrations sont des JPEG d'environ 900 Ko (et non les webp légers
+  // que supposait le commentaire plus bas) : sur une page de 200 cartes, le
+  // navigateur en abandonne parfois quelques-unes, et la carte restait vide.
+  // Deux nouvelles tentatives espacées, puis le fond de repli.
+  const [tentativeImage, setTentativeImage] = useState(0);
+  const [imageEnEchec, setImageEnEchec] = useState(false);
+  const surErreurImage = () => {
+    if (tentativeImage >= 2) { setImageEnEchec(true); return; }
+    window.setTimeout(() => setTentativeImage((n) => n + 1), 800 * (tentativeImage + 1));
+  };
+  // Nouvelle illustration (carte réutilisée par une liste) : on repart de zéro.
+  useEffect(() => { setTentativeImage(0); setImageEnEchec(false); }, [card.image_url]);
+
   // `sizes` hint for the art slot (kept for the underlying <img> even though
   // the card art is served unoptimized — see the Image below). Values track the
   // rendered width with a little headroom for the 1.5× hover zoom.
@@ -353,10 +367,16 @@ export default function GameCard({
     >
       {/* ── Full-bleed art ── */}
       <div style={{ position: "absolute", inset: 0 }}>
-        {card.image_url ? (
+        {card.image_url && !imageEnEchec ? (
           <Image
-            src={card.image_url}
-            alt={card.name}
+            // La clé force un vrai nouveau chargement à chaque tentative.
+            key={tentativeImage}
+            src={tentativeImage === 0 ? card.image_url : `${card.image_url}${card.image_url.includes("?") ? "&" : "?"}r=${tentativeImage}`}
+            // Texte alternatif VIDE : une image en échec affichait le nom de la
+            // carte en clair par-dessus le titre. Le nom est déjà porté par le
+            // titre et par l'aria-label de la carte.
+            alt=""
+            onError={surErreurImage}
             fill
             className="object-cover"
             sizes={artSizes}

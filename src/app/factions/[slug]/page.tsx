@@ -18,6 +18,8 @@ import { additionalCostsFromCards } from "@/lib/game/clan-costs";
 import { statProfileFromCards } from "@/lib/game/clan-stat-profile";
 import FactionClansPage, { type HeroDeClan } from "@/components/factions/FactionClansPage";
 import type { Card } from "@/lib/game/types";
+import { excludeSpecialSets } from "@/lib/game/deck-rules";
+import { getAdminClient } from "@/lib/admin/requireAdmin";
 
 /** Les neuf factions présentées sont connues à la compilation. */
 export function generateStaticParams() {
@@ -57,7 +59,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   // sur les seules communes donnerait une signature amputée du quart le plus
   // caractérisé du clan — ses cartes rares. La seconde requête ne ramène donc
   // que ce qu'il faut pour compter : deux colonnes, toutes raretés.
-  const [{ data }, { data: pourCompter }, { data: herosData }] = await Promise.all([
+  const [{ data }, { data: pourCompter }, { data: herosData }, { data: setsSpeciaux }] = await Promise.all([
     supabase
     .from("cards")
     .select(COLONNES_CARTE)
@@ -74,7 +76,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       // `capabilities` porte les effets COMPOSÉS, invisibles des deux autres
       // colonnes et pourtant bien des capacités du clan.
       // `attack`/`health` servent au profil de jeu, mesuré sur les créatures.
-      .select("clan, keywords, spell_keywords, capabilities, keyword_instances, card_type, attack, health")
+      .select("clan, keywords, spell_keywords, capabilities, keyword_instances, card_type, attack, health, set_id")
       .eq("faction", factionId)
       .not("clan", "is", null),
     // Les héros de la faction, pour donner un visage à chaque clan.
@@ -87,10 +89,17 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
       // Ordre EXPLICITE : plusieurs héros peuvent partager un clan sans qu'aucun
       // ne soit désigné. Sans tri, celui qui s'affiche dépend de la base.
       .order("name"),
+    // Sets SPÉCIAUX (Forêt Enchantée, Inventions…) : hors de la vitrine d'une
+    // faction, ni montrés ni comptés dans la signature du clan. Lus en
+    // service_role : la page est publique, et la RLS de `sets` ne laisse rien
+    // lire à un visiteur non connecté — la liste revenait vide, et le filtre
+    // ne retirait rien. Seuls des identifiants de sets sont lus.
+    getAdminClient().from("sets").select("id").eq("type", "special"),
   ]);
+  const idsSpeciaux = new Set((setsSpeciaux ?? []).map((s: { id: number }) => s.id));
 
   const locale = normalizeLocale(await getLocale());
-  const cartes = await localizeCardsInPlace(supabase, (data ?? []) as unknown as Card[], locale);
+  const cartes = await localizeCardsInPlace(supabase, excludeSpecialSets((data ?? []) as unknown as Card[], idsSpeciaux), locale);
 
   // Regroupement par clan, dans l'ordre où le moteur déclare les clans — pas
   // dans l'ordre de la base.
@@ -108,7 +117,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   // Capacités réellement portées, par clan, toutes raretés confondues.
   const aCompter = new Map<string, CarteComptable[]>();
-  for (const c of (pourCompter ?? []) as unknown as (CarteComptable & { clan: string | null })[]) {
+  for (const c of excludeSpecialSets((pourCompter ?? []) as unknown as (CarteComptable & { clan: string | null; set_id: number | null })[], idsSpeciaux)) {
     if (!c.clan) continue;
     const liste = aCompter.get(c.clan);
     if (liste) liste.push(c);

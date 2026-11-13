@@ -324,9 +324,9 @@ describe("affichage et forge", () => {
   const texte = (e: ComposedEffect) => describeComposedCap(cap("spell_resolution", e));
 
   it("décrit la cible, le plafond et la limite des places", () => {
-    expect(texte(effet({ designation: "choice" }))).toContain("omine une unité ennemie");
+    expect(texte(effet({ designation: "choice" }))).toContain("Prend le contrôle d'une unité ennemie");
     const n = texte(effet({ count: 2, maxCost: 4 }));
-    expect(n).toContain("omine 2 unités ennemies");
+    expect(n).toContain("Prend le contrôle de 2 unités ennemies");
     expect(n).toContain("4");
     expect(n).toContain("dans la limite des places");
   });

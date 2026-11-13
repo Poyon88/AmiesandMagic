@@ -1,4 +1,5 @@
 import { NextResponse, after } from 'next/server';
+import { toWebp } from '@/lib/images/toWebp';
 import { createServerClient } from '@supabase/ssr';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
@@ -291,12 +292,13 @@ export async function POST(request: Request) {
     // Upload image if provided
     let image_url: string | null = null;
     if (imageBase64 && imageMimeType) {
-      const buffer = Buffer.from(imageBase64, 'base64');
-      const ext = imageMimeType.split('/')[1] || 'webp';
-      const filePath = `forge_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+      // Converti en webp à la même résolution avant l'envoi (cf. toWebp) : les
+      // générateurs rendent des JPEG ~6 fois plus lourds pour la même image.
+      const image = await toWebp(Buffer.from(imageBase64, 'base64'), imageMimeType);
+      const filePath = `forge_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.${image.ext}`;
       const { error: uploadErr } = await supabaseAdmin.storage
         .from('card-images')
-        .upload(filePath, buffer, { upsert: true, contentType: imageMimeType, cacheControl: '31536000' });
+        .upload(filePath, image.buffer, { upsert: true, contentType: image.mimeType, cacheControl: '31536000' });
       if (uploadErr) throw new Error(`Image: ${uploadErr.message}`);
       const { data: urlData } = supabaseAdmin.storage.from('card-images').getPublicUrl(filePath);
       image_url = urlData.publicUrl;

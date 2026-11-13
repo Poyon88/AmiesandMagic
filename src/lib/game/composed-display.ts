@@ -48,7 +48,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.usurpation": "octroie, par carte adverse jouée, +{x}/+{y}",
   "content.debuff": "inflige -{x}/-{y}",
   "content.destroy": "détruit",
-  "content.domination": "domine",
+  "content.domination": "prend le contrôle de",
   "domination.limit": "dans la limite des places",
   "content.bounce": "renvoie en main",
   "content.paralyze": "paralyse",
@@ -1188,7 +1188,11 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
       describeContent(eff, tokens, t),
       skipTarget ? "" : describeTarget(eff.target, t, DIRECT_OBJECT_CONTENT.has(eff.content),
         eff.content === "grant_keyword" && cap.trigger === "on_play"),
-    ].filter(Boolean).join(" ");
+    ].filter(Boolean).join(" ")
+      // Élision française : « prend le contrôle de une unité » → « d'une unité ».
+      // Ancrée sur la tournure française elle-même, pour ne jamais toucher un
+      // « de un » espagnol ou portugais.
+      .replace(/prend le contrôle de (une?|au plus)\b/g, "prend le contrôle d'$1");
   const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
     : eff.content === "transformation" ? carteDArrivee(eff, t)
     : eff.content === "siphon" ? soinSiphonTexte(eff, t)

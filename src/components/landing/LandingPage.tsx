@@ -12,6 +12,7 @@ import { useMessages, useTranslations } from "next-intl";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { factionSlug } from "@/lib/game/faction-slug";
 import { useFactionOwnership, type Possession } from "@/components/factions/useFactionOwnership";
+import TournamentStandings from "@/components/landing/TournamentStandings";
 
 // ─── Translations ───────────────────────────────────────────────────────────
 
@@ -220,7 +221,10 @@ export default function LandingPage({ showcaseCards, factionHeroUrls, iconCard }
     { title: txt.f3_title, desc: txt.f3_desc, accent: "crown" },
     // Juste avant l'arène mobile : la lisibilité des cartes, preuve à l'appui.
     ...(iconCard ? [{ title: txt.f_icons_title, desc: txt.f_icons_desc, accent: "icons", card: iconCard }] : []),
-    { title: txt.f4_title, desc: txt.f4_desc, accent: "trophy" },
+    {
+      title: txt.f4_title, desc: txt.f4_desc, accent: "trophy",
+      visual: <TournamentStandings factionHeroUrls={factionHeroUrls} factionNames={messages.vocab?.factions} />,
+    },
   ];
 
   const floatingCards = useMemo(() => showcaseCards.slice(0, 3), [showcaseCards]);
@@ -725,7 +729,7 @@ function HeroSection({ txt, floatingCards, onPlay }: HeroSectionProps) {
 
 // ─── Features ──────────────────────────────────────────────────────────────
 
-type Feature = { title: string; desc: string; accent: string; card?: Card };
+type Feature = { title: string; desc: string; accent: string; card?: Card; visual?: React.ReactNode };
 
 interface FeaturesSectionProps {
   id?: string;
@@ -806,7 +810,7 @@ function FeatureBlock({
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          {feature.card ? <CarteZoomee card={feature.card} /> : <FeatureGlyph accent={feature.accent} />}
+          {feature.card ? <CarteZoomee card={feature.card} /> : feature.visual ?? <FeatureGlyph accent={feature.accent} />}
         </div>
         {/* Corner ornaments */}
         <div className="absolute top-3 left-3 w-8 h-8 border-t-2 border-l-2 border-[#c8a84e]/50" />
