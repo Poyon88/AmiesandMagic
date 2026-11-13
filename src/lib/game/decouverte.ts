@@ -67,14 +67,18 @@ export function identiteDuDeck(
 }
 
 /** Poids des coûts 1 → 10 de la carte du CLAN, par rang de découverte (1ʳᵉ,
- *  2ᵉ… ; la dernière ligne vaut pour la 5ᵉ et au-delà). Chaque ligne fait 100. */
+ *  2ᵉ… ; la dernière ligne vaut pour la 5ᵉ et au-delà). Chaque ligne fait 100.
+ *
+ *  Réglage du 2026-11-14 : les coûts 8-10 sortaient trop souvent (10 % au
+ *  tour 2, 23 % au tour 10+) — part divisée par deux, et coûts 1-2 relevés
+ *  à partir de la 2ᵉ découverte (16 % au lieu de 8 % en fin de partie). */
 export const TABLE_COUTS_DECOUVERTE: readonly (readonly number[])[] = [
   //  1   2   3   4   5   6   7   8   9  10
-  [ 14, 18, 18, 15, 11,  8,  6,  4,  3,  3], // 1ʳᵉ (tour 2)
-  [  8, 12, 16, 17, 15, 12,  8,  5,  4,  3], // 2ᵉ  (tour 4)
-  [  5,  8, 13, 16, 17, 15, 11,  7,  5,  3], // 3ᵉ  (tour 6)
-  [  4,  6, 11, 15, 17, 16, 12,  9,  6,  4], // 4ᵉ  (tour 8)
-  [  3,  5, 10, 14, 16, 16, 13, 10,  7,  6], // 5ᵉ et plus (tour 10+)
+  [ 15, 19, 19, 16, 13,  8,  5,  2,  2,  1], // 1ʳᵉ (tour 2)
+  [ 11, 15, 16, 17, 15, 12,  8,  3,  2,  1], // 2ᵉ  (tour 4)
+  [  9, 12, 13, 17, 17, 15, 10,  4,  2,  1], // 3ᵉ  (tour 6)
+  [  8, 10, 12, 16, 17, 16, 11,  5,  3,  2], // 4ᵉ  (tour 8)
+  [  7,  9, 11, 16, 17, 16, 12,  5,  4,  3], // 5ᵉ et plus (tour 10+)
 ];
 
 export const COUT_MAX_DECOUVERTE = 10;
