@@ -148,7 +148,7 @@ export async function POST(request: Request) {
     ? `Cette carte appartient à la race ${raceId} (apparence : ${raceVisualDesc}). La faction ${factionId} donne le thème/ambiance mais tout personnage montré est un(e) ${raceId}, PAS un(e) ${fac?.races?.[0] || factionId}.`
     : `Cette carte appartient à la faction ${factionId} (${facDesc}).`;
 
-  const prompt = `Tu es un game designer expert pour "Armies & Magic", un CCG médiéval-fantastique.
+  const prompt = `Tu es un game designer expert pour "Armies of Legends", un CCG médiéval-fantastique.
 Génère les textes pour cette carte :
 
 SUJET PRINCIPAL — ${creatureSubject}

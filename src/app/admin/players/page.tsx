@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import PlayerManager from "@/components/admin/PlayerManager";
 
-export const metadata = { title: "Joueurs — Admin | Armies & Magic" };
+export const metadata = { title: "Joueurs — Admin | Armies of Legends" };
 
 export default async function AdminPlayersPage() {
   const supabase = await createClient();

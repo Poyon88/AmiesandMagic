@@ -51,7 +51,7 @@ function sb(path, init = {}) {
 function buildPrompt(cards, locale) {
   const lang = LANG_NAMES[locale];
   const payload = cards.map((c) => ({ id: c.id, name: c.name ?? "", flavor_text: c.flavor_text ?? "" }));
-  return `You are a professional game localizer for "Armies & Magic", a dark-fantasy collectible card game. Translate the following card fields into ${lang}.
+  return `You are a professional game localizer for "Armies of Legends", a dark-fantasy collectible card game. Translate the following card fields into ${lang}.
 
 Rules:
 - The source text may be in French OR English — detect it and translate into idiomatic ${lang}.

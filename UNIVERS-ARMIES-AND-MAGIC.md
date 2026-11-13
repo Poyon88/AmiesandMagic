@@ -1,6 +1,6 @@
-# Armies & Magic — Guide de l'univers et des règles
+# Armies of Legends — Guide de l'univers et des règles
 
-> Document de référence pour comprendre l'univers d'**Armies & Magic** : les factions, les races, les clans, les alignements, l'ensemble des capacités (pouvoirs), les règles de partie et de construction de deck, ainsi que **les pouvoirs le plus souvent associés à chaque faction / race / clan**.
+> Document de référence pour comprendre l'univers d'**Armies of Legends** : les factions, les races, les clans, les alignements, l'ensemble des capacités (pouvoirs), les règles de partie et de construction de deck, ainsi que **les pouvoirs le plus souvent associés à chaque faction / race / clan**.
 >
 > Source : extrait du code du jeu (`src/lib/card-engine/constants.ts`, `src/lib/game/abilities.ts`, `src/lib/game/constants.ts`, `deck-rules.ts`). C'est la source de vérité du design.
 
@@ -28,7 +28,7 @@
 
 ## 1. Le jeu en bref
 
-Armies & Magic est un jeu de cartes à collectionner (TCG) tour par tour. Chaque joueur incarne un **héros** doté d'un pouvoir, et affronte l'adversaire avec un deck de créatures et de sorts.
+Armies of Legends est un jeu de cartes à collectionner (TCG) tour par tour. Chaque joueur incarne un **héros** doté d'un pouvoir, et affronte l'adversaire avec un deck de créatures et de sorts.
 
 | Constante | Valeur |
 |---|---|
@@ -367,7 +367,7 @@ Codes de format = `mode-étendue`, ex. `classique-standard`, `expert-etendu`.
 | Peu Commune | U | vert | ×1.05 | 1000 |
 | Rare | R | bleu | ×1.10 | 100 |
 | Épique | É | violet | ×1.15 | 10 |
-| Légendaire | L | or | ×1.20 | 1 |
+| Unique (id interne « Légendaire ») | L | or | ×1.20 | 1 |
 
 Les cartes **datées** (séries limitées / éditions forgées) existent en nombre fixe d'exemplaires selon leur rareté ; certaines capacités comme **Sélection Royale** exploitent ces éditions limitées.
 

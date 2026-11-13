@@ -2,7 +2,7 @@
 
 ## Contexte
 
-Le système de capacités d'Armies & Magic est aujourd'hui éclaté sur **trois structures
+Le système de capacités d'Armies of Legends est aujourd'hui éclaté sur **trois structures
 parallèles** par carte (`keywords[]`, `keyword_instances[]`, `spell_keywords[]`), plus des
 colonnes scalaires et un arbre `SpellComposableEffects` typé mais inutilisé. Le moteur
 (`engine.ts`, ~4300 lignes) est piloté par ~150 `card.keywords.includes(id)`. Cette

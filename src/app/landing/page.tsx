@@ -7,7 +7,7 @@ import type { Card } from "@/lib/game/types";
 import { FACTIONS, getFactionForRace } from "@/lib/card-engine/constants";
 
 export const metadata = {
-  title: "Armies & Magic — A Fantasy Collectible Card Game",
+  title: "Armies of Legends — A Fantasy Collectible Card Game",
   description: "Collectionnez, combattez, échangez. Le jeu de cartes à collectionner fantasy qui réinvente le genre.",
 };
 

@@ -11,7 +11,7 @@ import GameCard from "@/components/cards/GameCard";
 import CardThumb from "@/components/cards/CardThumb";
 import { VirtuosoGrid } from "react-virtuoso";
 import { ALL_KEYWORDS, KEYWORD_LABELS, KEYWORD_SYMBOLS } from "@/lib/game/keyword-labels";
-import { getAllRaces, KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces } from "@/lib/card-engine/constants";
+import { getAllRaces, KEYWORDS as KEYWORD_DEFS, FACTIONS, ALIGNMENTS, alignementAEnregistrer, getFactionDisplayName, getAllClanNames, getEffectiveAlignment, CURATED_KEYWORD_MODES, getAssignableRaces, getRarityLabel } from "@/lib/card-engine/constants";
 import { cardRaces, formatRaces, hasRace } from "@/lib/game/races";
 import { SPELL_KEYWORDS, ALL_SPELL_KEYWORDS, SPELL_KEYWORD_LABELS } from "@/lib/game/spell-keywords";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -1688,7 +1688,7 @@ export default function CardEditor() {
             <div style={{ marginBottom: 8 }}>
               <div style={S.label}>Rareté</div>
               <select value={(editFields.rarity as string) || ""} onChange={e => updateField("rarity", e.target.value)} style={S.select}>
-                {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
+                {RARITIES.map(r => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
               </select>
             </div>
 

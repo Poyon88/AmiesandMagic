@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FactionPicker from "@/components/auth/FactionPicker";
 
-export const metadata = { title: "Choisis ta faction | Armies & Magic" };
+export const metadata = { title: "Choisis ta faction | Armies of Legends" };
 
 // Deuxième et dernier écran d'onboarding, après le choix du pseudo. Le joueur
 // y choisit la faction dont il reçoit les communes.

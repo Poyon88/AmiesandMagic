@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import CollectionHub from "@/components/home/CollectionHub";
 import { getHubBgCandidates } from "@/lib/collection/hubBackgrounds";
 
-export const metadata = { title: "Ma collection | Armies & Magic" };
+export const metadata = { title: "Ma collection | Armies of Legends" };
 export const dynamic = "force-dynamic";
 
 export default async function CollectionHubPage() {

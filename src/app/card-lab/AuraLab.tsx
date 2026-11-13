@@ -22,7 +22,7 @@ const CAS: { titre: string; nom: string; url: string; rarete: string }[] = [
   { titre: "Peu Commune", nom: "Turlin", url: PORTRAITS.turlin, rarete: "Peu Commune" },
   { titre: "Rare", nom: "Asteria", url: PORTRAITS.asteria, rarete: "Rare" },
   { titre: "Épique", nom: "Vaelkor", url: PORTRAITS.vaelkor, rarete: "Épique" },
-  { titre: "Légendaire", nom: "Asteria", url: PORTRAITS.asteria, rarete: "Légendaire" },
+  { titre: "Unique", nom: "Asteria", url: PORTRAITS.asteria, rarete: "Légendaire" },
 ];
 
 export default function AuraLab() {

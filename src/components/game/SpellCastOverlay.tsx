@@ -319,7 +319,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
                 <div style={{ display: "flex", justifyContent: "center", gap: 10, fontSize: "0.7rem", color: "#ccc", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>
                   {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
                   <span style={{ color: "#74b9ff", fontWeight: 700 }}>💧 {card.mana_cost}</span>
-                  {card.rarity && <span style={{ color: "#bbb", fontStyle: "italic" }}>{card.rarity}</span>}
+                  {card.rarity && <span style={{ color: "#bbb", fontStyle: "italic" }}>{vocab.rarityLabel(card.rarity)}</span>}
                 </div>
 
                 {/* Spacer pushes the text description toward the bottom so the middle of the card stays visible */}

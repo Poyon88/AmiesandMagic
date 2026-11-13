@@ -60,7 +60,7 @@ const FIELD_DESC = {
 async function translateField(rows, field, locale) {
   // rows: [{id, text}] non vides
   const payload = rows.map((r) => ({ id: r.id, text: r.text.replace(/[\t\n]+/g, " ").trim() }));
-  const prompt = `You are a professional game localizer for "Armies & Magic", a dark-fantasy collectible card game. Translate the following ${field} values into ${LANG[locale]}.
+  const prompt = `You are a professional game localizer for "Armies of Legends", a dark-fantasy collectible card game. Translate the following ${field} values into ${LANG[locale]}.
 
 Each value is ${FIELD_DESC[field]}. The source may be French or English — detect and translate into idiomatic ${LANG[locale]}.
 

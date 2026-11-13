@@ -255,7 +255,7 @@ export default function LandingPage({ showcaseCards, factionHeroUrls, iconCard }
             </svg>
           </span>
           <div className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl md:text-2xl font-bold tracking-wider">
-            Armies &amp; Magic
+            Armies of Legends
           </div>
         </div>
         <div className="flex items-center gap-3 md:gap-4">

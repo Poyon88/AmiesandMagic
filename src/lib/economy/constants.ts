@@ -24,8 +24,8 @@ export const REWARD_QUEST_LARGE = 50;
 export const ESSENCE_NAME = 'Essence';
 export const ESSENCE_CRAFT_COST = 2000;
 export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odds: string; rarity: string }> = [
-  { key: 'hero', label: 'Héros légendaire', odds: '1 sur 10 000', rarity: 'Légendaire' },
-  { key: 'Légendaire', label: 'Légendaire', odds: '1 sur 1 000', rarity: 'Légendaire' },
+  { key: 'hero', label: 'Héros unique', odds: '1 sur 10 000', rarity: 'Légendaire' },
+  { key: 'Légendaire', label: 'Unique', odds: '1 sur 1 000', rarity: 'Légendaire' },
   { key: 'Épique', label: 'Épique', odds: '1 sur 100', rarity: 'Épique' },
   { key: 'Rare', label: 'Rare', odds: '1 sur 10', rarity: 'Rare' },
   { key: 'Peu Commune', label: 'Peu Commune', odds: 'le reste', rarity: 'Peu Commune' },

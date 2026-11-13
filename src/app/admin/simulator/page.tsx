@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import SimulatorPanel from "@/components/admin/simulator/SimulatorPanel";
 
-export const metadata = { title: "Simulateur — Admin | Armies & Magic" };
+export const metadata = { title: "Simulateur — Admin | Armies of Legends" };
 
 export default async function AdminSimulatorPage() {
   const supabase = await createClient();

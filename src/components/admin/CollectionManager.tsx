@@ -1,5 +1,6 @@
 "use client";
 
+import { getRarityLabel } from "@/lib/card-engine/constants";
 import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 
@@ -393,7 +394,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                             <span style={{ fontSize: 12, color: "#4fc3f7", fontWeight: "bold", marginRight: 8 }}>{card.mana_cost}</span>
                             <span style={{ fontSize: 13 }}>{card.name}</span>
                             {card.rarity && (
-                              <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({card.rarity})</span>
+                              <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({getRarityLabel(card.rarity)})</span>
                             )}
                           </div>
                           <button
@@ -426,7 +427,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                             <span style={{ fontSize: 12, color: "#4fc3f7", fontWeight: "bold", marginRight: 8 }}>{card.mana_cost}</span>
                             <span style={{ fontSize: 13 }}>{card.name}</span>
                             {card.rarity && (
-                              <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({card.rarity})</span>
+                              <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({getRarityLabel(card.rarity)})</span>
                             )}
                           </div>
                           <button
@@ -477,7 +478,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                           <span style={{ fontSize: 12, color: "#4fc3f7", fontWeight: "bold", marginRight: 8 }}>{card.mana_cost}</span>
                           <span style={{ fontSize: 13 }}>{card.name}</span>
                           {card.rarity && (
-                            <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({card.rarity})</span>
+                            <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({getRarityLabel(card.rarity)})</span>
                           )}
                         </div>
                         <span style={{ fontSize: 10, color: "#aaa" }}>{card.card_year}/{String(card.card_month).padStart(2, "0")}</span>
@@ -500,7 +501,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                         <div>
                           <h3 style={{ fontSize: 16, fontWeight: "bold", margin: 0 }}>{selectedLimitedCard.name}</h3>
                           <span style={{ fontSize: 12, color: "#888" }}>
-                            {selectedLimitedCard.rarity} — {prints.length} exemplaires — {assignedCount} attribués, {availableCount} disponibles
+                            {getRarityLabel(selectedLimitedCard.rarity)} — {prints.length} exemplaires — {assignedCount} attribués, {availableCount} disponibles
                           </span>
                         </div>
                       </div>
@@ -604,7 +605,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                       >
                         <div>
                           <span style={{ fontSize: 13, fontWeight: 600 }}>{board.name}</span>
-                          <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({board.rarity})</span>
+                          <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({getRarityLabel(board.rarity)})</span>
                         </div>
                         <span style={{ fontSize: 10, color: "#aaa" }}>{board.max_prints ?? "?"} ex.</span>
                       </div>
@@ -626,7 +627,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                         <div>
                           <h3 style={{ fontSize: 16, fontWeight: "bold", margin: 0 }}>{selectedBoard.name}</h3>
                           <span style={{ fontSize: 12, color: "#888" }}>
-                            {selectedBoard.rarity} — {boardPrints.length} exemplaires — {assignedBoardCount} attribués, {availableBoardCount} disponibles
+                            {getRarityLabel(selectedBoard.rarity)} — {boardPrints.length} exemplaires — {assignedBoardCount} attribués, {availableBoardCount} disponibles
                           </span>
                         </div>
                       </div>
@@ -735,7 +736,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                       >
                         <div>
                           <span style={{ fontSize: 13, fontWeight: 600 }}>{cb.name}</span>
-                          <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({cb.rarity})</span>
+                          <span style={{ fontSize: 11, color: "#888", marginLeft: 8 }}>({getRarityLabel(cb.rarity)})</span>
                         </div>
                         <span style={{ fontSize: 10, color: "#aaa" }}>{cb.max_prints ?? "?"} ex.</span>
                       </div>
@@ -756,7 +757,7 @@ export default function CollectionManager({ profiles, allCards, allBoards, allCa
                         <div>
                           <h3 style={{ fontSize: 16, fontWeight: "bold", margin: 0 }}>{selectedCardBack.name}</h3>
                           <span style={{ fontSize: 12, color: "#888" }}>
-                            {selectedCardBack.rarity} — {cardBackPrints.length} exemplaires — {assignedCardBackCount} attribués, {availableCardBackCount} disponibles
+                            {getRarityLabel(selectedCardBack.rarity)} — {cardBackPrints.length} exemplaires — {assignedCardBackCount} attribués, {availableCardBackCount} disponibles
                           </span>
                         </div>
                       </div>

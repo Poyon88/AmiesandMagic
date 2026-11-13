@@ -45,7 +45,7 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
               animationDelay: "0.1s",
             }}
           >
-            Armies &amp; Magic
+            Armies of Legends
           </h1>
           <p
             className="am-animate-rise font-[family-name:var(--font-crimson),serif] italic text-am-ink-soft mt-3"

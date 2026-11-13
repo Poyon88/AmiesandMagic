@@ -2,7 +2,7 @@ import LegalDocumentView from "@/components/legal/LegalDocumentView";
 import { CONFIDENTIALITE } from "@/content/legal/confidentialite";
 
 export const metadata = {
-  title: "Politique de confidentialité | Armies & Magic",
+  title: "Politique de confidentialité | Armies of Legends",
   // Brouillon non validé : ne pas indexer tant que le texte porte encore des
   // mentions [À COMPLÉTER] et n'a pas été relu.
   robots: { index: false, follow: false },

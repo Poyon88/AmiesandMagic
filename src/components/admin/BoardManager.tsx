@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { FACTIONS, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 
 const FACTION_IDS = Object.keys(FACTIONS);
 
@@ -294,7 +294,7 @@ export default function BoardManager() {
               }}
               style={{ width: "100%", padding: "6px 10px", borderRadius: 5, border: "1px solid #e0e0e0", fontSize: 12, marginTop: 4 }}
             >
-              {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
+              {RARITIES.map((r) => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
             </select>
           </div>
           <div style={{ minWidth: 140 }}>
@@ -396,7 +396,7 @@ export default function BoardManager() {
                     }}
                     style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid #e0e0e0", fontSize: 11 }}
                   >
-                    {RARITIES.map((r) => <option key={r} value={r}>{r}</option>)}
+                    {RARITIES.map((r) => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
                   </select>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

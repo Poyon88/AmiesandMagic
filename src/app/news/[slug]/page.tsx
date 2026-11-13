@@ -27,11 +27,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const news = await fetchNews(slug);
-  if (!news) return { title: "Armies & Magic" };
+  if (!news) return { title: "Armies of Legends" };
   const locale = normalizeLocale(await getLocale());
   const { title, teaser } = resolveNewsLocale(news, locale);
   return {
-    title: `${title} — Armies & Magic`,
+    title: `${title} — Armies of Legends`,
     description: teaser || undefined,
     openGraph: {
       title,

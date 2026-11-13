@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import MusicManager from "@/components/admin/MusicManager";
 
-export const metadata = { title: "Musiques — Admin | Armies & Magic" };
+export const metadata = { title: "Musiques — Admin | Armies of Legends" };
 
 export default async function MusicPage() {
   const supabase = await createClient();

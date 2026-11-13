@@ -28,9 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const id = factionFromSlug(slug);
   const faction = id ? FACTIONS[id] : null;
-  if (!faction) return { title: "Armies & Magic" };
+  if (!faction) return { title: "Armies of Legends" };
   return {
-    title: `${faction.displayName} — Armies & Magic`,
+    title: `${faction.displayName} — Armies of Legends`,
     description: faction.description,
   };
 }

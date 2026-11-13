@@ -1,4 +1,4 @@
-# Armies & Magic — Project Guidelines
+# Armies of Legends — Project Guidelines
 
 ## Debugging
 

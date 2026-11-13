@@ -15,7 +15,7 @@
 //      et les cartes créées par chaque lancement.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ABILITIES } from "@/lib/game/abilities";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 import {
   BRIEF_COST_LABELS, BRIEF_MAX_CARDS, BRIEF_TRIGGER_LABELS, COST_FREQ_SHARE, emptyBrief, type CardBrief,
 } from "@/lib/card-engine/brief";
@@ -470,7 +470,7 @@ export default function AssistedForge() {
                 <div key={i} style={{ border: "1px solid #eee", borderRadius: 6, padding: 8, opacity: conceptsAttente === i ? 0.5 : 1 }}>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 10, color: "#555" }}>
                     <strong>#{i + 1}</strong>
-                    <span>{b ? `${b.plan.type} ${b.plan.rarity} · ${b.plan.mana} mana${b.plan.type === "Unité" ? ` · ${b.attack}/${b.health} · ${b.plan.gender}` : ""}` : "—"}</span>
+                    <span>{b ? `${b.plan.type} ${getRarityLabel(b.plan.rarity)} · ${b.plan.mana} mana${b.plan.type === "Unité" ? ` · ${b.attack}/${b.health} · ${b.plan.gender}` : ""}` : "—"}</span>
                     <span style={{ flex: 1 }} />
                     <select value={c.echelle ?? ""} disabled={enCours} onChange={(e) => modifierEchelle(i, e.target.value as Echelle)} title="Échelle de la scène" style={{ fontSize: 10 }}>
                       {!c.echelle && <option value="">échelle libre</option>}

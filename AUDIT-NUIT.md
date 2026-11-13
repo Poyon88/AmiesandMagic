@@ -1,4 +1,4 @@
-# Audit nocturne — Armies & Magic
+# Audit nocturne — Armies of Legends
 
 **Date :** 2026-07-05 (nuit) · **Branche :** `audit/nuit-2026-07-05` · **Base :** `main` (b3c4ecb)
 **Méthode :** fan-out de 5 sous-agents en lecture seule (sécurité API, sécurité infra, moteur de jeu, qualité/dette, perf/tests) + vérification et recoupement manuels. Tous les correctifs de cette branche ont été appliqués et vérifiés (`tsc`, `eslint`, `vitest`). **Aucun push, aucune modification de `main`, aucune migration appliquée en prod.**

@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import AnalyticsTabs from "@/components/admin/analytics/AnalyticsTabs";
 
-export const metadata = { title: "Équilibrage — Admin | Armies & Magic" };
+export const metadata = { title: "Équilibrage — Admin | Armies of Legends" };
 
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient();

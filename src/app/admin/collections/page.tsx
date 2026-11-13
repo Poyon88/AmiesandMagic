@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import CollectionManager from "@/components/admin/CollectionManager";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 
-export const metadata = { title: "Collections — Admin | Armies & Magic" };
+export const metadata = { title: "Collections — Admin | Armies of Legends" };
 
 export default async function CollectionsPage() {
   const supabase = await createClient();

@@ -5,7 +5,7 @@ import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 
 type ShowcaseCard = React.ComponentProps<typeof ShowcaseManager>["cards"][number];
 
-export const metadata = { title: "Showcase — Admin | Armies & Magic" };
+export const metadata = { title: "Showcase — Admin | Armies of Legends" };
 
 export default async function AdminShowcasePage() {
   const supabase = await createClient();

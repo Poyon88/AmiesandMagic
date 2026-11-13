@@ -19,7 +19,7 @@
 | Rareté Peu Commune | 1,1 |
 | Rareté Rare | 1,2 |
 | Rareté Épique | 1,3 |
-| Rareté Légendaire | 1,4 |
+| Rareté Unique (id interne « Légendaire ») | 1,4 |
 | Éveil (mana équivalent par point) | 0,02 |
 | Plafond du rabais additionnel | 40 % du budget |
 | Coût additionnel life (par unité) | -1,64 |

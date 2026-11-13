@@ -28,6 +28,7 @@ const RESERVED = new Set([
   "admin", "administrateur", "administrator", "moderateur", "moderator", "mod",
   "staff", "support", "officiel", "official", "system", "systeme", "root",
   "armies", "armiesandmagic", "armiesmagic", "am",
+  "armiesoflegends", "armieslegends", "aol",
   "null", "undefined", "anonymous", "anonyme",
 ]);
 

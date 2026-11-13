@@ -22,7 +22,7 @@ function buildPrompt(locale: Locale, title: string, teaser: string, bodyMd: stri
   const lang = LANG_NAMES[locale] ?? locale;
   // Même esprit que buildPrompt() de scripts/translate-messages.mjs
   // (localisateur du jeu), plus les règles Markdown propres aux news.
-  return `You are a professional game localizer for "Armies & Magic", a dark-fantasy card game. Translate the following news post from French into idiomatic ${lang}.
+  return `You are a professional game localizer for "Armies of Legends", a dark-fantasy card game. Translate the following news post from French into idiomatic ${lang}.
 
 Rules:
 - Keep the tone of a game announcement (enthusiastic but concise).

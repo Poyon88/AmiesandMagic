@@ -26,7 +26,7 @@ const NOM = "Charte élargie";
 const CHAMPS = ["lighting", "environments", "materials", "motifs"] as const;
 type Proposition = { id: number; clan: string } & Record<typeof CHAMPS[number], string>;
 
-const SYSTEM = `Tu es directeur artistique d'« Armies & Magic », un CCG médiéval-fantastique. On te donne la charte graphique d'un clan. Elle est trop étroite : toutes les illustrations du clan finissent à la même heure, devant le même décor phare, dans le même costume. Tu réécris QUATRE champs pour qu'un lot de 20 cartes puisse être varié tout en restant reconnaissable.
+const SYSTEM = `Tu es directeur artistique d'« Armies of Legends », un CCG médiéval-fantastique. On te donne la charte graphique d'un clan. Elle est trop étroite : toutes les illustrations du clan finissent à la même heure, devant le même décor phare, dans le même costume. Tu réécris QUATRE champs pour qu'un lot de 20 cartes puisse être varié tout en restant reconnaissable.
 
 Chaque champ est une LISTE d'options séparées par des points-virgules (pas de phrases liées entre elles : le générateur en tire quelques-unes au hasard pour chaque carte, chaque option doit donc se suffire à elle-même).
 

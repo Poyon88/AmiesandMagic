@@ -20,7 +20,7 @@ Un seul principe : **le webhook fait foi**. La redirection de succès ne crédit
 rien — elle peut ne jamais arriver, et son URL est devinable.
 
 ```
-navigateur          serveur A&M                Stripe
+navigateur          serveur AoL                Stripe
     │  clic « acheter »   │                        │
     ├────────────────────►│  crée la session       │
     │                     ├───────────────────────►│   (prix = price_id serveur)

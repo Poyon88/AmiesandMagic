@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import HeroManager from "@/components/admin/HeroManager";
 
-export const metadata = { title: "Héros — Admin | Armies & Magic" };
+export const metadata = { title: "Héros — Admin | Armies of Legends" };
 
 export default async function HeroesPage() {
   const supabase = await createClient();

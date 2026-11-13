@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import type { AuctionWithDetails, AuctionFilters, AuctionSettings } from "@/lib/auction/types";
 import AuctionCard from "./AuctionCard";
 import CreateAuctionModal from "./CreateAuctionModal";
@@ -27,6 +28,7 @@ const SELECT_CLASS =
 
 export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const t = useTranslations("auction");
+  const vocab = useVocab();
   const [auctions, setAuctions] = useState<AuctionWithDetails[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -213,7 +215,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
               {/* Les communes ne sont jamais mises en vente : les proposer au
                   filtre ne rendrait jamais aucun résultat. */}
               {AUCTIONABLE_RARITIES.map((r) => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r} value={r}>{vocab.rarityLabel(r)}</option>
               ))}
             </select>
             <select

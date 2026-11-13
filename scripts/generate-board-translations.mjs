@@ -53,7 +53,7 @@ async function fetchBoards() {
 // ─── TSV translation (nom seul) ──────────────────────────────────────────────
 async function translateNames(rows, locale) {
   const payload = rows.map((r) => ({ id: r.id, text: r.name.replace(/[\t\n]+/g, " ").trim() }));
-  const prompt = `You are a professional game localizer for "Armies & Magic", a dark-fantasy collectible card game. Translate the following game-board (battle arena background) names into ${LANG[locale]}.
+  const prompt = `You are a professional game localizer for "Armies of Legends", a dark-fantasy collectible card game. Translate the following game-board (battle arena background) names into ${LANG[locale]}.
 
 Each value is a short evocative name for a location / biome / arena (e.g. an elemental realm, a cavern, a battlefield). Translate the meaningful words naturally and keep it evocative. Do NOT translate a proper name that should stay as-is. Keep any trailing numbers. The source may be French or English — detect and translate into idiomatic ${LANG[locale]}.
 

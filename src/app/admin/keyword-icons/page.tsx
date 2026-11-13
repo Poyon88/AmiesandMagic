@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import KeywordIconManager from "@/components/admin/KeywordIconManager";
 
-export const metadata = { title: "Icônes Capacités — Admin | Armies & Magic" };
+export const metadata = { title: "Icônes Capacités — Admin | Armies of Legends" };
 
 export default async function AdminKeywordIconsPage() {
   const supabase = await createClient();

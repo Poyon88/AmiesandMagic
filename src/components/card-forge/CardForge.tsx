@@ -16,7 +16,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { generateCardStats, buildId } from "@/lib/card-engine/generator";
-import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getAllRaces, alignementAEnregistrer, RARITIES, FACTIONS, TYPES, KEYWORDS, CREATURE_LABEL_TO_ENGINE_ID, RARITY_WEIGHTS_BY_MANA, RARITY_MAP, ALIGNMENTS, CURATED_KEYWORD_MODES, getClanNamesForRace, getFactionForRace, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 import CardVisual, { KEYWORD_SYMBOLS } from "./CardVisual";
 import ComposedEffectsEditor, { BONUS_BENEFICIAIRE_FORGE, RecipientButtons, ScopeButtons } from "./ComposedEffectsEditor";
 import BalanceEditor from "./BalanceEditor";
@@ -3031,7 +3031,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
             }}>← {tf('menu')}</Link>
             <span style={{ fontSize: 18 }}>⚗️</span>
             <span style={{ fontSize: 15, fontWeight: 700, color: "#333", letterSpacing: 2.5 }}>CARD FORGE</span>
-            <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES & MAGIC</span>
+            <span style={{ fontSize: 8, color: "#aaa", letterSpacing: 2 }}>ARMIES OF LEGENDS</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
             {([["forge", `⚒ ${tf('tab_forge')}`], ["capacites", `✨ ${tf('tab_capacities')}`], ["edition", `✏ ${tf('tab_edition')}`], ["tokens", `🎭 ${tf('tab_tokens')}`], ["card-backs", `🎴 ${tf('tab_card_backs')}`], ["boards", `🗺 ${tf('tab_boards')}`], ["kw-icons", `🪄 ${tf('tab_icons')}`], ["sets", `📦 ${tf('tab_sets')}`], ["formats", `🎮 ${tf('tab_formats')}`], ["bulk", `🤖 ${tf('tab_bulk')}`], ["budget", `⚖ ${tf('tab_budget')}`], ["schema", `📋 ${tf('tab_schema')}`], ["prints", `🏷 ${tf('tab_prints')}`], ["news", `📰 ${tf('tab_news')}`], ["chartes", `🎨 ${tf('tab_style_guides')}`]] as const).map(([t, l]) => (
@@ -4559,7 +4559,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                     {/* Keyword tooltip */}
                     {hoveredKw && KEYWORDS[hoveredKw.id] && (() => {
                       const kwDef = KEYWORDS[hoveredKw.id];
-                      const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Légendaire"][kwDef.minTier] || "";
+                      const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Unique"][kwDef.minTier] || "";
                       return (
                         <div style={{
                           position: "fixed",
@@ -5326,7 +5326,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       without needing the manual-mode block to be mounted. */}
                   {hoveredKw && KEYWORDS[hoveredKw.id] && (() => {
                     const kwDef = KEYWORDS[hoveredKw.id];
-                    const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Légendaire"][kwDef.minTier] || "";
+                    const tierLabel = ["Commune+", "Peu Commune+", "Rare+", "Épique+", "Unique"][kwDef.minTier] || "";
                     return (
                       <div style={{
                         position: "fixed",
@@ -5593,7 +5593,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         if (r !== "Commune") setCbIsDefault(false);
                       }}
                         style={{ width: "100%", padding: "6px 8px", borderRadius: 6, border: "1px solid #ddd", fontSize: 11, fontFamily: "'Cinzel',serif", marginTop: 2 }}>
-                        {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map(r => <option key={r} value={r}>{r}</option>)}
+                        {["Commune", "Peu Commune", "Rare", "Épique", "Légendaire"].map(r => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
                       </select>
                     </div>
                     {cbRarity !== "Commune" && (
@@ -5974,7 +5974,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         <option value="Peu Commune">Peu Commune</option>
                         <option value="Rare">Rare</option>
                         <option value="Épique">Épique</option>
-                        <option value="Légendaire">Légendaire</option>
+                        <option value="Légendaire">Unique</option>
                       </select>
                     </div>
                     {bdRarity !== "Commune" ? (
@@ -6652,7 +6652,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                 </div>
                 <div style={{ marginTop: 10, fontSize: 8, color: "#333", lineHeight: 1.8 }}>
                   En mode Bulk : le mana est tiré en premier (1–10), puis la rareté est tirée selon ces probabilités. &nbsp;
-                  Une carte à 10 mana a <strong style={{ color: "#ffd54f" }}>10× plus de chances</strong> d&apos;être Légendaire qu&apos;une carte à 1 mana, tout en restant possible à toutes les raretés.
+                  Une carte à 10 mana a <strong style={{ color: "#ffd54f" }}>10× plus de chances</strong> d&apos;être Unique qu&apos;une carte à 1 mana, tout en restant possible à toutes les raretés.
                 </div>
               </Panel>
 
@@ -6802,7 +6802,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                           <span>
                             <span style={{ color: "#4fc3f7", fontWeight: 700, marginRight: 6 }}>{c.mana_cost}</span>
                             {c.name}
-                            {c.rarity && <span style={{ color: "#aaa", marginLeft: 6 }}>({c.rarity})</span>}
+                            {c.rarity && <span style={{ color: "#aaa", marginLeft: 6 }}>({getRarityLabel(c.rarity)})</span>}
                           </span>
                           <span style={{ fontSize: 9, color: "#bbb" }}>{c.card_year}/{String(c.card_month).padStart(2, "0")}</span>
                         </div>

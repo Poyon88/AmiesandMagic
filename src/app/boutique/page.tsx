@@ -7,7 +7,7 @@ import EssenceForge from "@/components/essence/EssenceForge";
 import { publicGoldPacks, publicTicketPacks } from "@/lib/payments/config";
 import PageChrome from "@/components/shared/PageChrome";
 
-export const metadata = { title: "Boutique — Armies & Magic" };
+export const metadata = { title: "Boutique — Armies of Legends" };
 
 export default async function BoutiquePage() {
   const supabase = await createClient();

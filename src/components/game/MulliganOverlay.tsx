@@ -366,7 +366,7 @@ function MulliganCard({
               letterSpacing: 3,
             }}
           >
-            A&amp;M
+            AoL
           </div>
         )}
       </div>

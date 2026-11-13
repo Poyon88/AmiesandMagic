@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import FormatManager from "@/components/admin/FormatManager";
 
-export const metadata = { title: "Formats — Admin | Armies & Magic" };
+export const metadata = { title: "Formats — Admin | Armies of Legends" };
 
 export default async function FormatsPage() {
   const supabase = await createClient();

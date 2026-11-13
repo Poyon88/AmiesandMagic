@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import HeroesPage from "@/components/home/HeroesPage";
 
-export const metadata = { title: "Mes héros | Armies & Magic" };
+export const metadata = { title: "Mes héros | Armies of Legends" };
 
 export default async function HeroesRoute() {
   const supabase = await createClient();

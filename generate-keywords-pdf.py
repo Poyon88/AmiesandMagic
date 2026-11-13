@@ -17,7 +17,7 @@ class KeywordsPDF(FPDF):
     def header(self):
         self.set_font("Main", "B", 20)
         self.set_text_color(180, 140, 60)
-        self.cell(0, 14, "Armies & Magic", align="C", new_x="LMARGIN", new_y="NEXT")
+        self.cell(0, 14, "Armies of Legends", align="C", new_x="LMARGIN", new_y="NEXT")
         self.set_font("Main", "", 12)
         self.set_text_color(120, 120, 120)
         self.cell(0, 8, "Liste des Capacités", align="C", new_x="LMARGIN", new_y="NEXT")

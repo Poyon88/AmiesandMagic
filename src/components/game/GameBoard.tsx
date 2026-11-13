@@ -1307,7 +1307,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-secondary via-card-bg to-secondary flex items-center justify-center">
                   <div className="w-20 h-28 rounded border border-primary/20 bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary/40 text-xl font-bold">A&amp;M</span>
+                    <span className="text-primary/40 text-xl font-bold">AoL</span>
                   </div>
                 </div>
               )}

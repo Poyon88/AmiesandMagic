@@ -3,7 +3,7 @@
 // Historique des mouvements d'essence du joueur (/compte/essence).
 import { useEffect, useState } from "react";
 import EssenceIcon from "@/components/shared/EssenceIcon";
-import { RARITY_MAP, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { RARITY_MAP, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 import type { EssenceTransaction } from "@/lib/economy/types";
 
 const LIBELLES: Record<string, string> = {
@@ -16,7 +16,7 @@ const LIBELLES: Record<string, string> = {
 function detail(tx: EssenceTransaction): string | null {
   if (tx.type !== "craft") return tx.description;
   const m = tx.metadata as { kind?: string; rarity?: string; faction?: string; clan?: string; print_number?: number; max_prints?: number };
-  const quoi = m.kind === "hero" ? "Héros légendaire" : m.rarity;
+  const quoi = m.kind === "hero" ? "Héros unique" : getRarityLabel(m.rarity);
   const ou = [m.faction ? getFactionDisplayName(m.faction) : null, m.clan].filter(Boolean).join(" · ");
   return `${quoi}${ou ? ` — ${ou}` : ""}${m.print_number ? ` (n°${m.print_number}/${m.max_prints})` : ""}`;
 }

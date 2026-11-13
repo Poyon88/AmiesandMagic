@@ -41,7 +41,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Armies & Magic",
+  title: "Armies of Legends",
   description: "A fantasy collectible card game",
 };
 

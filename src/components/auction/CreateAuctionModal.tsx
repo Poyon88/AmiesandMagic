@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import type { AuctionSettings } from "@/lib/auction/types";
 import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { useVocab } from "@/i18n/useVocab";
 
 import { minStartingBidForLot, isAuctionableRarity } from "@/lib/auction/pricing";
 interface CardOption {
@@ -37,6 +38,7 @@ const DURATION_LABEL_KEYS: Record<number, string> = {
 
 export default function CreateAuctionModal({ userId, settings, onClose, onCreated }: CreateAuctionModalProps) {
   const t = useTranslations("auction");
+  const vocab = useVocab();
   const [cards, setCards] = useState<CardOption[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [startingBid, setStartingBid] = useState("10");
@@ -252,7 +254,7 @@ export default function CreateAuctionModal({ userId, settings, onClose, onCreate
                       <div>
                         <span style={{ color: "#e0e0e0", fontWeight: 500 }}>{card.name}</span>
                         <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
-                          {card.rarity}
+                          {vocab.rarityLabel(card.rarity)}
                           {card.kind === "board" ? ` · ${t("board")}`
                             : card.kind === "card_back" ? ` · ${t("card_back")}`
                             : card.faction ? ` — ${getFactionDisplayName(card.faction)}` : ""}

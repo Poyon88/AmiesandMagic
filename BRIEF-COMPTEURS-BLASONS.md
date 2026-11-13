@@ -1,7 +1,7 @@
 # Brief Claude Code — Compteurs de carte « blasons héraldiques »
 
 > Document unique et à jour (12/09). Il remplace toutes les versions précédentes de ce brief : ne pas se référer aux anciens addenda, tout est consolidé ici.
-> Maquette de référence : artifact **Compteurs Armies & Magic** — sections « Blasons héraldiques », « Les blasons à l'épreuve des deux chiffres », « La famille des coûts additionnels », « Le compteur d'Éveil », « Le jeton de défausse ».
+> Maquette de référence : artifact **Compteurs Armies of Legends** — sections « Blasons héraldiques », « Les blasons à l'épreuve des deux chiffres », « La famille des coûts additionnels », « Le compteur d'Éveil », « Le jeton de défausse ».
 
 ## Mission
 

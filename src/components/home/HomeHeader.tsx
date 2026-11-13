@@ -99,7 +99,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
             <Link
               href="/landing"
               className="group flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-am-gold focus-visible:ring-offset-2 focus-visible:ring-offset-am-bg-0 rounded"
-              aria-label="Armies & Magic — Landing page"
+              aria-label="Armies of Legends — Landing page"
             >
               {/* Sigil mark */}
               <span
@@ -117,7 +117,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
               <span
                 className="am-foil-text font-display text-base md:text-xl font-bold tracking-wider truncate"
               >
-                Armies &amp; Magic
+                Armies of Legends
               </span>
             </Link>
           )}

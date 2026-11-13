@@ -1,6 +1,6 @@
 import PaymentResult from "@/components/payments/PaymentResult";
 
-export const metadata = { title: "Paiement — Armies & Magic" };
+export const metadata = { title: "Paiement — Armies of Legends" };
 
 export default async function PaiementSuccesPage({
   searchParams,

@@ -4,7 +4,7 @@ import SfxManager from "@/components/admin/SfxManager";
 import AbilitySfxManager from "@/components/admin/AbilitySfxManager";
 import VoiceSfxManager from "@/components/admin/VoiceSfxManager";
 
-export const metadata = { title: "Bruitages — Admin | Armies & Magic" };
+export const metadata = { title: "Bruitages — Admin | Armies of Legends" };
 
 export default async function SfxPage() {
   const supabase = await createClient();

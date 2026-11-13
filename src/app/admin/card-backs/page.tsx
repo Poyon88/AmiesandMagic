@@ -1,6 +1,6 @@
 import CardBackManager from "@/components/admin/CardBackManager";
 
-export const metadata = { title: "Dos de cartes — Admin | Armies & Magic" };
+export const metadata = { title: "Dos de cartes — Admin | Armies of Legends" };
 
 export default function AdminCardBacksPage() {
   return (

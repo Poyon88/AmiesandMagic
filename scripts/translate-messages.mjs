@@ -85,7 +85,7 @@ function buildPrompt(entries, locale) {
   const lang = LANG_NAMES[locale];
   // entries: [{key, value}]. On envoie clé + valeur, on ne traduit QUE la valeur.
   const lines = entries.map((e) => `${e.key}\t${e.value.replace(/\n/g, "\\n")}`).join("\n");
-  return `You are a professional game localizer for "Armies & Magic", a dark-fantasy fantasy card game UI. Translate the VALUES below from French into idiomatic ${lang}.
+  return `You are a professional game localizer for "Armies of Legends", a dark-fantasy fantasy card game UI. Translate the VALUES below from French into idiomatic ${lang}.
 
 You receive one entry per line: a key, a TAB, then the French value. Rules:
 - Translate ONLY the value. Never translate or alter the key.

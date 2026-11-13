@@ -4,7 +4,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import CreditLedger from "@/components/credits/CreditLedger";
 import PageChrome from "@/components/shared/PageChrome";
 
-export const metadata = { title: "Mes crédits marché — Armies & Magic" };
+export const metadata = { title: "Mes crédits marché — Armies of Legends" };
 
 export default async function CreditsPage() {
   const supabase = await createClient();

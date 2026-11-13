@@ -7,7 +7,7 @@ export const RARITIES = [
   { id: "Peu Commune", label: "Peu Commune", code: "U", multiplier: 1.05, color: "#4caf50", glow: "#43a047", tier: 1 },
   { id: "Rare",        label: "Rare",        code: "R", multiplier: 1.10, color: "#4fc3f7", glow: "#0288d1", tier: 2 },
   { id: "Épique",      label: "Épique",      code: "É", multiplier: 1.15, color: "#ce93d8", glow: "#8e24aa", tier: 3 },
-  { id: "Légendaire",  label: "Légendaire",  code: "L", multiplier: 1.20, color: "#ffd54f", glow: "#ffb300", tier: 4 },
+  { id: "Légendaire",  label: "Unique",      code: "L", multiplier: 1.20, color: "#ffd54f", glow: "#ffb300", tier: 4 },
 ];
 
 export const RARITY_MAP = Object.fromEntries(RARITIES.map(r => [r.id, r]));
@@ -1346,7 +1346,7 @@ export const RARITY_WEIGHTS_GLOBAL = [0.35, 0.25, 0.20, 0.12, 0.08];
 
 // Distribution du mana par rareté — forge simple
 // Basé sur les données réelles d'Hearthstone (7886 cartes analysées)
-// Le mana 0 de HS est redistribué dans 1-2 (A&M commence à 1 mana)
+// Le mana 0 de HS est redistribué dans 1-2 (AoL commence à 1 mana)
 // Peu Commune interpolé entre Commune et Rare
 //                 1     2     3     4     5     6     7     8     9    10
 export const MANA_WEIGHTS_BY_RARITY: Record<string, number[]> = {

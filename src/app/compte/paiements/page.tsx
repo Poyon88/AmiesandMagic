@@ -4,7 +4,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import PaymentHistory from "@/components/payments/PaymentHistory";
 import PageChrome from "@/components/shared/PageChrome";
 
-export const metadata = { title: "Mes paiements — Armies & Magic" };
+export const metadata = { title: "Mes paiements — Armies of Legends" };
 
 export default async function PaiementsPage() {
   const supabase = await createClient();

@@ -5,7 +5,7 @@ import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 
 type AuctionCard = React.ComponentProps<typeof AuctionManager>["cards"][number];
 
-export const metadata = { title: "Enchères — Admin | Armies & Magic" };
+export const metadata = { title: "Enchères — Admin | Armies of Legends" };
 
 export default async function AdminAuctionsPage() {
   const supabase = await createClient();

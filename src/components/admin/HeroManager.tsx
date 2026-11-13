@@ -8,7 +8,7 @@ import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
 import type { TokenTemplate, Capability, ComposedEffect, HeroPowerEffect } from "@/lib/game/types";
 import TokenCascadePicker from "@/components/admin/TokenCascadePicker";
 import ComposedEffectsEditor from "@/components/card-forge/ComposedEffectsEditor";
-import { FACTIONS, getFactionDisplayName, getClanNamesForRace } from "@/lib/card-engine/constants";
+import { FACTIONS, getFactionDisplayName, getClanNamesForRace, getRarityLabel } from "@/lib/card-engine/constants";
 import { ABILITIES, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
 import { MAX_EFFETS_POUVOIR } from "@/lib/game/hero-power";
@@ -1065,7 +1065,7 @@ export default function HeroManager() {
                   setMaxPrints(r === "Commune" ? null : (DEFAULT_MAX_PRINTS[r] ?? null));
                   if (r !== "Commune") setIsDefault(false);
                 }} style={STYLE.input}>
-                  {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
+                  {RARITIES.map(r => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
                 </select>
               </div>
             </div>
@@ -1938,7 +1938,7 @@ export default function HeroManager() {
                       handleUpdateField(hero, { rarity: newR, max_prints: mp, ...(newR !== "Commune" && hero.is_default ? { is_default: false } : {}) });
                     }}
                     style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid #c9c9c9", background: "#fff", color: "#1a1a1a", fontSize: 12 }}>
-                    {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
+                    {RARITIES.map(r => <option key={r} value={r}>{getRarityLabel(r)}</option>)}
                   </select>
                 </div>
                 {(hero.rarity ?? "Commune") !== "Commune" && (

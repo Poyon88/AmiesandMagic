@@ -152,7 +152,7 @@ export async function POST(request: Request) {
   const apparences = races.map((r) => `- ${r} : ${RACE_VISUALS[r] ?? r}${RACE_TYPICAL_GEAR[r] ? ` (équipement habituel, facultatif : ${RACE_TYPICAL_GEAR[r]})` : ''}`).join('\n');
   const catalogue = resumeCatalogue(await chargerCatalogue(auth.supabase, races, clans).catch(() => []));
 
-  const system = `Tu es le directeur artistique et narratif d'« Armies & Magic », un CCG médiéval-fantastique. On te confie un LOT de cartes déjà conçues mécaniquement (type, rareté, coût, capacités) ; tu inventes pour chacune un CONCEPT : qui elle représente, dans quelle scène, sous quel nom et avec quelle voix. Un autre appel rédigera ensuite chaque carte à partir de ton concept.
+  const system = `Tu es le directeur artistique et narratif d'« Armies of Legends », un CCG médiéval-fantastique. On te confie un LOT de cartes déjà conçues mécaniquement (type, rareté, coût, capacités) ; tu inventes pour chacune un CONCEPT : qui elle représente, dans quelle scène, sous quel nom et avec quelle voix. Un autre appel rédigera ensuite chaque carte à partir de ton concept.
 
 OBJECTIF : des cartes ORIGINALES et DIFFÉRENTES les unes des autres, qui complètent le catalogue au lieu de le répéter.
 

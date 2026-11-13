@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
+import { getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 
 interface CardRow {
   id: number;
@@ -182,7 +182,7 @@ export default function ShowcaseManager({ cards }: ShowcaseManagerProps) {
                       color: RARITY_COLORS[sc.card.rarity] ?? "#999",
                     }}
                   >
-                    {sc.card.rarity}
+                    {getRarityLabel(sc.card.rarity)}
                   </span>
                   <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{getFactionDisplayName(sc.card.faction)}</span>
                 </div>
@@ -277,7 +277,7 @@ export default function ShowcaseManager({ cards }: ShowcaseManagerProps) {
                     color: RARITY_COLORS[card.rarity] ?? "#999",
                   }}
                 >
-                  {card.rarity}
+                  {getRarityLabel(card.rarity)}
                 </span>
                 <span style={{ marginLeft: 6, fontSize: 11, color: "#999" }}>{getFactionDisplayName(card.faction)}</span>
               </div>

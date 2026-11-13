@@ -12,7 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import GameCard from "@/components/cards/GameCard";
 import PremiumAura from "@/components/heroes/PremiumAura";
 import { HaloBloom, ExpandingRing, OrbitingSparkles, RadialFlash } from "@/components/game/OverlayPrimitives";
-import { RARITY_MAP, getFactionDisplayName } from "@/lib/card-engine/constants";
+import { RARITY_MAP, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
 import type { Card } from "@/lib/game/types";
 import type { CraftResult } from "@/lib/economy/types";
 
@@ -27,7 +27,7 @@ function rgb(hex: string): string {
 
 /** Libellé de rareté de l'étape 1 : un héros est annoncé comme tel. */
 function libelleRarete(r: CraftResult): string {
-  return r.kind === "hero" ? "Héros légendaire" : r.rarity;
+  return r.kind === "hero" ? "Héros unique" : getRarityLabel(r.rarity);
 }
 
 export default function EssenceReveal({

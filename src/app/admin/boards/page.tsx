@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import BoardManager from "@/components/admin/BoardManager";
 
-export const metadata = { title: "Plateaux — Admin | Armies & Magic" };
+export const metadata = { title: "Plateaux — Admin | Armies of Legends" };
 
 export default async function BoardsPage() {
   const supabase = await createClient();

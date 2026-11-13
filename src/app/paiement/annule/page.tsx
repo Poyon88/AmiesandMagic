@@ -3,7 +3,7 @@ import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmLinkButton } from "@/components/ui/AmButton";
 
-export const metadata = { title: "Paiement annulé — Armies & Magic" };
+export const metadata = { title: "Paiement annulé — Armies of Legends" };
 
 export default function PaiementAnnulePage() {
   return (

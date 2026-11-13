@@ -95,7 +95,7 @@ export default function AuthShell({ heading, sub, children, footer }: AuthShellP
             <ShieldMark />
           </span>
           <span className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl font-bold tracking-wider">
-            Armies &amp; Magic
+            Armies of Legends
           </span>
         </Link>
 

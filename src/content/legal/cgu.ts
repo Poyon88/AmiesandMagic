@@ -23,7 +23,7 @@ export const CGU: LegalDocument = {
   updated: "[À COMPLÉTER : date de mise en ligne]",
   intro: [
     `Les présentes conditions générales d'utilisation (les « Conditions ») régissent ` +
-      `l'accès et l'usage du jeu de cartes à collectionner en ligne Armies & Magic ` +
+      `l'accès et l'usage du jeu de cartes à collectionner en ligne Armies of Legends ` +
       `(le « Service »), édité par ${P_EDITEUR}.`,
     `En créant un compte ou en utilisant le Service, vous reconnaissez avoir pris ` +
       `connaissance des présentes Conditions et les accepter sans réserve. Si vous ` +

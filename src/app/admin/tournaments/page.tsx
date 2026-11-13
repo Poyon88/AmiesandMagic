@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import TournamentManager from "@/components/admin/TournamentManager";
 
-export const metadata = { title: "Tournois — Admin | Armies & Magic" };
+export const metadata = { title: "Tournois — Admin | Armies of Legends" };
 
 export default async function TournamentsAdminPage() {
   const supabase = await createClient();

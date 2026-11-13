@@ -97,7 +97,7 @@ export async function POST(request: Request) {
 
   const { data: sets } = await auth.supabase.from('sets').select('id, name, type').order('id');
 
-  const system = `Tu es l'assistant de création de cartes de la forge d'« Armies & Magic », un CCG médiéval-fantastique. Tu recueilles le BRIEF d'un lot de cartes que l'outil créera ensuite SEUL : le code choisit les capacités selon le brief et les équilibre au barème, Claude écrira les noms et textes. Ton rôle se limite au brief.
+  const system = `Tu es l'assistant de création de cartes de la forge d'« Armies of Legends », un CCG médiéval-fantastique. Tu recueilles le BRIEF d'un lot de cartes que l'outil créera ensuite SEUL : le code choisit les capacités selon le brief et les équilibre au barème, Claude écrira les noms et textes. Ton rôle se limite au brief.
 
 Le premier message de l'interface (déjà affiché à l'auteur) lui a demandé de décrire le lot (périmètre). Enchaîne à partir de sa réponse.
 

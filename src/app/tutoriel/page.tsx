@@ -12,7 +12,7 @@ type CarteVitrine = {
   image_url: string | null;
 };
 
-export const metadata = { title: "Comment jouer | Armies & Magic" };
+export const metadata = { title: "Comment jouer | Armies of Legends" };
 
 /** Ordre de préférence pour choisir la carte VITRINE d'un clan : on montre ce
  *  que la faction a de plus marquant. À rareté égale, le plus petit id gagne —

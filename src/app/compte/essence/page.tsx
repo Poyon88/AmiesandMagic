@@ -4,7 +4,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import EssenceHistory from "@/components/essence/EssenceHistory";
 import PageChrome from "@/components/shared/PageChrome";
 
-export const metadata = { title: "Mon essence — Armies & Magic" };
+export const metadata = { title: "Mon essence — Armies of Legends" };
 
 export default async function EssencePage() {
   const supabase = await createClient();
