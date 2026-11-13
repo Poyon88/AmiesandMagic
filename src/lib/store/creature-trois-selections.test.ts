@@ -90,7 +90,20 @@ describe("créature à trois Sélections", () => {
     const s = table();
     const c = voyante();
     s.players[0].hand.push(c);
-    const apres = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, selectionCardId: s.factionCardPool![0].id });
-    expect(apres.players[0].hand).toHaveLength(1);
+    // Une carte de l'OFFRE de la première Sélection (coût exact 3) : le moteur
+    // refuse désormais toute carte hors offre.
+    const offerte = s.factionCardPool!.find(k => k.name === "Vétéran")!;
+    const apres = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, selectionCardId: offerte.id });
+    expect(apres.players[0].hand.map(k => k.card.name)).toEqual(["Vétéran"]);
+  });
+
+  it("une carte hors de l'offre n'est pas donnée", () => {
+    const s = table();
+    const c = voyante();
+    s.players[0].hand.push(c);
+    const horsOffre = s.factionCardPool!.find(k => k.name === "Champion")!; // coût 5, Sélection 3
+    const apres = applyAction(s, { type: "play_card", cardInstanceId: c.instanceId, selectionCardIds: { selection: horsOffre.id } });
+    expect(apres.players[0].board.map(k => k.card.name)).toEqual(["Voyante des Quatre Horizons"]);
+    expect(apres.players[0].hand).toHaveLength(0);
   });
 });

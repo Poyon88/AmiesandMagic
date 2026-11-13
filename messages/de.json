@@ -1258,7 +1258,7 @@
       "Peu Commune": "Ungewöhnlich",
       "Rare": "Selten",
       "Épique": "Episch",
-      "Légendaire": "Legendär"
+      "Légendaire": "Einzigartig"
     },
     "clans": {
       "Les Sylvains": "Die Waldläufer",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "Spielen",
     "hero_eyebrow": "Fantasy TCG — Neue Generation",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "Schmiede deine Legende. Führe deine Fraktion. Schreib deine Geschichte.",
     "hero_cta": "Die Arena betreten",
     "hero_cta_secondary": "Entdecken",
     "hero_proof": "Über 500 Karten gratis ab dem ersten Spiel",
-    "features_title": "Warum Armies & Magic",
+    "features_title": "Warum Armies of Legends",
     "f1_title": "Die Tiefe der Legenden.",
-    "f1_desc": "Armies & Magic verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
+    "f1_desc": "Armies of Legends verbindet die Strategie kultiger TCGs mit Mechaniken, die für die Champions von heute entwickelt wurden.",
     "f2_title": "Maximale Kartenzahl von Anfang an.",
     "f2_desc": "Erhaltet kostenlos alle klassischen Karten der Fraktion eurer Wahl (über 300 Karten). Sichert euch alle Fraktionen (rund 2.500 Karten) für einen Bruchteil der Kosten eines klassischen TCG.",
     "f3_title": "Jedes Experten-Deck ein Unikat.",
     "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
     "f_icons_title": "Auf einen Blick lesbar.",
-    "f_icons_desc": "Liebevoll illustriert, sind die Karten von Armies & Magic ebenso schön wie lesbar: Dank eines Farbcodes der Symbole, der jedem Auslöser eigen ist, erfassen Sie ihre Wirkung auf einen Blick – ganz ohne den Text zu lesen.",
+    "f_icons_desc": "Liebevoll illustriert, sind die Karten von Armies of Legends ebenso schön wie lesbar: Dank eines Farbcodes der Symbole, der jedem Auslöser eigen ist, erfassen Sie ihre Wirkung auf einen Blick – ganz ohne den Text zu lesen.",
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
     "f4_desc": "Turniere mit seltenen Karten und Geldpreisen — ein Niveau, das bisher den größten Desktop-TCGs vorbehalten war.",
     "factions_title": "Neun Fraktionen. Eine Legende.",
@@ -2368,7 +2368,7 @@
     "cta_title": "Die Arena wartet auf dich.",
     "cta_sub": "Schließ dich den Beschwörern im Kampf an.",
     "cta_btn": "Abenteuer beginnen",
-    "footer": "Armies & Magic — Alle Rechte vorbehalten",
+    "footer": "Armies of Legends — Alle Rechte vorbehalten",
     "factions": {
       "Humains": {
         "tagline": "Vereint unter dem Banner"
@@ -2489,8 +2489,8 @@
     "unknown_card": "Unbekannte Karte",
     "ends_at": "Endet: {date}",
     "status_active": "Aktiv",
-    "page_title": "Auktionshaus — Armies & Magic",
-    "detail_page_title": "Auktionsdetail — Armies & Magic"
+    "page_title": "Auktionshaus — Armies of Legends",
+    "detail_page_title": "Auktionsdetail — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "Bitte gib deine E-Mail-Adresse ein, bevor du eine Zurücksetzung anforderst.",
@@ -2587,7 +2587,7 @@
     "no_notifications": "Keine Benachrichtigungen",
     "see_auction": "Auktion ansehen",
     "rotate_device": "Gerät drehen",
-    "rotate_device_hint": "Armies & Magic wird im Querformat gespielt. Drehen Sie Ihr Gerät horizontal, um fortzufahren."
+    "rotate_device_hint": "Armies of Legends wird im Querformat gespielt. Drehen Sie Ihr Gerät horizontal, um fortzufahren."
   },
   "forge": {
     "forge_first_card": "Schmiedet eure erste Karte",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",
-    "page_subtitle": "Armies & Magic — mittelalterlich-fantastisches Kartenduell",
+    "page_subtitle": "Armies of Legends — mittelalterlich-fantastisches Kartenduell",
     "page_title": "Spielanleitung",
     "track_beginner": "Einsteiger — vollständige Anleitung",
     "track_tcg": "TCG-Spieler — das Wesentliche",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "Karten / Deck (genau)",
     "stat_hand_range": "Hand (Start → Max)",
     "stat_mana_per_turn": "Mana (+1 / Runde)",
-    "tcg_gameloop_title": "Spielablauf (A&M-Besonderheiten)",
+    "tcg_gameloop_title": "Spielablauf (AoL-Besonderheiten)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Kampf — Abwicklung",
     "tcg_hero_spells_title": "Helden & Aktionen",
@@ -3401,7 +3401,7 @@
     "all_sets": "Sets",
     "year": "Jahr",
     "rarity_abbr_uncommon": "UC",
-    "rarity_abbr_legendary": "Leg.",
+    "rarity_abbr_legendary": "Einz.",
     "expert_only_title": "Nur Expertenkarten anzeigen (nicht-gewöhnliche)",
     "expert": "Experte",
     "preparation": "Vorbereitung",
@@ -3629,7 +3629,7 @@
     "col_reward": "Belohnung",
     "col_credits": "Guthaben",
     "col_essence": "Essenz",
-    "meta_title": "Turniere — Armies & Magic",
+    "meta_title": "Turniere — Armies of Legends",
     "page_eyebrow": "Wettkampfzirkel",
     "page_subtitle": "Ein Ticket öffnet ein Qualifikationsturnier; dessen Sieger erhält ein Golden Ticket für das große Monatsturnier. Jeder Sieg bringt Marktguthaben und Essenz.",
     "page_title": "Turniere",
@@ -3677,5 +3677,16 @@
     "signup_free": "Anmelden (kostenlos)",
     "signup_seats": "{count, plural, one {# Platz übrig} other {# Plätze übrig}}",
     "signup_tickets_in_hand": "{count, plural, one {# Ticket auf der Hand} other {# Tickets auf der Hand}}"
+  },
+  "errors": {
+    "title": "Ein Fehler ist aufgetreten",
+    "body": "Auf unserer Seite ist etwas schiefgelaufen. Du kannst es erneut versuchen; besteht das Problem weiter, kehre zur Startseite zurück.",
+    "retry": "Erneut versuchen",
+    "home": "Zurück zur Startseite",
+    "not_found_title": "Seite nicht gefunden",
+    "not_found_body": "Diese Seite existiert nicht oder wurde verschoben.",
+    "game_title": "In der Partie ist ein Fehler aufgetreten",
+    "game_body": "Die Anzeige der Partie wurde unterbrochen. Lade sie neu: Sie wird dort fortgesetzt, wo sie stehen geblieben ist.",
+    "game_reload": "Partie neu laden"
   }
 }

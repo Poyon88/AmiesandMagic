@@ -19,7 +19,7 @@ export const CONFIDENTIALITE: LegalDocument = {
   updated: "[À COMPLÉTER : date de mise en ligne]",
   intro: [
     `La présente politique décrit comment vos données personnelles sont traitées dans le ` +
-      `cadre du jeu Armies & Magic (le « Service »), conformément au Règlement général sur ` +
+      `cadre du jeu Armies of Legends (le « Service »), conformément au Règlement général sur ` +
       `la protection des données (RGPD).`,
   ],
   sections: [
@@ -65,8 +65,9 @@ export const CONFIDENTIALITE: LegalDocument = {
       body: [
         `Nous faisons appel à des prestataires techniques agissant en qualité de ` +
           `sous-traitants, pour notre compte et selon nos instructions : Supabase ` +
-          `(authentification, base de données et stockage), Netlify (hébergement de ` +
-          `l'application), Cloudflare (protection anti-robot Turnstile), ainsi qu'un ` +
+          `(authentification, base de données et stockage), Vercel (hébergement de ` +
+          `l'application), Stripe (paiement en ligne), Cloudflare (protection anti-robot ` +
+          `Turnstile), ainsi qu'un ` +
           `prestataire d'envoi d'emails transactionnels.`,
         `Ces prestataires peuvent héberger ou traiter des données en dehors de votre pays. ` +
           `Lorsque des données sont transférées hors de l'Espace économique européen, ce ` +
@@ -74,7 +75,7 @@ export const CONFIDENTIALITE: LegalDocument = {
       ],
       todo:
         "À COMPLÉTER : nommer le prestataire d'emails retenu, préciser les régions " +
-        "d'hébergement Supabase / Netlify, et vérifier les garanties de transfert de chaque " +
+        "d'hébergement Supabase / Vercel, et vérifier les garanties de transfert de chaque " +
         "sous-traitant.",
     },
     {

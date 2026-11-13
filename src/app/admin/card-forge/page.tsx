@@ -1,18 +1,14 @@
-import { createClient } from "@/lib/supabase/server";
 import { getAdminClient } from "@/lib/admin/requireAdmin";
+import { requireAdminPage } from "@/lib/admin/requireAdminPage";
 import { sanitizeBalanceOverrides } from "@/lib/card-engine/balance";
-import { redirect } from "next/navigation";
 import CardForge from "@/components/card-forge/CardForge";
 
-export const metadata = { title: "Card Forge — Admin | Armies & Magic" };
+export const metadata = { title: "Card Forge — Admin | Armies of Legends" };
 
 export default async function CardForgePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+  // Rôle revérifié ici, pas seulement dans le layout : la page lit en
+  // service_role juste en dessous.
+  await requireAdminPage();
 
   // BARÈME : lu ICI, côté serveur, et non par la forge une fois montée. Le
   // modèle de coût doit être en place AVANT le premier rendu, sinon la jauge et

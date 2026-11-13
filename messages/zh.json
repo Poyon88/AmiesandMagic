@@ -1258,7 +1258,7 @@
       "Peu Commune": "非凡",
       "Rare": "稀有",
       "Épique": "史诗",
-      "Légendaire": "传说"
+      "Légendaire": "唯一"
     },
     "clans": {
       "Les Sylvains": "林地族",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "开始游戏",
     "hero_eyebrow": "幻想卡牌对战——新世代",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "铸就传奇。统率阵营。书写历史。",
     "hero_cta": "进入竞技场",
     "hero_cta_secondary": "探索游戏",
     "hero_proof": "首局即赠超过500张卡牌",
-    "features_title": "为何选择 Armies & Magic",
+    "features_title": "为何选择 Armies of Legends",
     "f1_title": "传奇的深度。",
-    "f1_desc": "Armies & Magic 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
+    "f1_desc": "Armies of Legends 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
     "f2_title": "从一开始就拥有海量卡牌。",
     "f2_desc": "免费获得您所选阵营的全部经典卡牌（超过300张）。以传统集换式卡牌游戏一小部分的价格，拥有全部阵营（约2500张卡牌）。",
     "f3_title": "每套专家牌组，皆为孤品。",
     "f3_desc": "限量发行的卡牌让每套专家牌组独一无二。统一配额确保胜负只取决于您的策略。",
     "f_icons_title": "一眼读懂。",
-    "f_icons_desc": "Armies & Magic 的卡牌插画精心绘制，既美观又易读：每种触发条件都有专属的彩色图标，无需阅读文字，一眼就能看懂卡牌效果。",
+    "f_icons_desc": "Armies of Legends 的卡牌插画精心绘制，既美观又易读：每种触发条件都有专属的彩色图标，无需阅读文字，一眼就能看懂卡牌效果。",
     "f4_title": "移动竞技场，终于名副其实。",
     "f4_desc": "锦标赛设有稀有卡牌与现金奖励——这一级别的对决此前只属于最顶级的桌面 TCG。",
     "factions_title": "九大阵营。一段传奇。",
@@ -2368,7 +2368,7 @@
     "cta_title": "竞技场在等待你。",
     "cta_sub": "加入召唤师，共赴战场。",
     "cta_btn": "开启冒险",
-    "footer": "Armies & Magic — 保留所有权利",
+    "footer": "Armies of Legends — 保留所有权利",
     "factions": {
       "Humains": {
         "tagline": "旗帜下的团结"
@@ -2489,8 +2489,8 @@
     "unknown_card": "未知卡牌",
     "ends_at": "截止：{date}",
     "status_active": "进行中",
-    "page_title": "拍卖行 — Armies & Magic",
-    "detail_page_title": "拍卖详情 — Armies & Magic"
+    "page_title": "拍卖行 — Armies of Legends",
+    "detail_page_title": "拍卖详情 — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "请先输入邮箱地址，再申请重置密码。",
@@ -2587,7 +2587,7 @@
     "no_notifications": "暂无通知",
     "see_auction": "查看拍卖",
     "rotate_device": "请旋转设备",
-    "rotate_device_hint": "Armies & Magic 需横屏游玩，请将设备横置后继续。"
+    "rotate_device_hint": "Armies of Legends 需横屏游玩，请将设备横置后继续。"
   },
   "forge": {
     "forge_first_card": "锻造您的第一张卡牌",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",
-    "page_subtitle": "Armies & Magic — 中世纪奇幻卡牌对决",
+    "page_subtitle": "Armies of Legends — 中世纪奇幻卡牌对决",
     "page_title": "如何游玩",
     "track_beginner": "新手 — 完整指南",
     "track_tcg": "TCG玩家 — 核心要点",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "牌组卡牌数（精确）",
     "stat_hand_range": "手牌数（初始 → 上限）",
     "stat_mana_per_turn": "法力值（+1 / 回合）",
-    "tcg_gameloop_title": "游戏循环（A&M特有机制）",
+    "tcg_gameloop_title": "游戏循环（AoL特有机制）",
     "tcg_deckbuilding_title": "构筑牌组",
     "tcg_combat_title": "战斗结算",
     "tcg_hero_spells_title": "英雄与行动",
@@ -3401,7 +3401,7 @@
     "all_sets": "系列",
     "year": "年份",
     "rarity_abbr_uncommon": "非普",
-    "rarity_abbr_legendary": "传奇",
+    "rarity_abbr_legendary": "唯一",
     "expert_only_title": "仅显示专家牌（非普通）",
     "expert": "专家",
     "preparation": "准备",
@@ -3629,7 +3629,7 @@
     "col_reward": "奖励",
     "col_credits": "积分",
     "col_essence": "精华",
-    "meta_title": "锦标赛 — Armies & Magic",
+    "meta_title": "锦标赛 — Armies of Legends",
     "page_eyebrow": "竞技赛事",
     "page_subtitle": "一张门票可参加一场资格赛;资格赛冠军将获得月度大型锦标赛的黄金门票。每场胜利都能赢得市场积分和精华。",
     "page_title": "锦标赛",
@@ -3677,5 +3677,16 @@
     "signup_free": "报名(免费)",
     "signup_seats": "{count, plural, one {剩余 # 个名额} other {剩余 # 个名额}}",
     "signup_tickets_in_hand": "{count, plural, one {持有 # 张门票} other {持有 # 张门票}}"
+  },
+  "errors": {
+    "title": "发生错误",
+    "body": "我们这边出了点问题。你可以重试；如果问题仍然存在，请返回首页。",
+    "retry": "重试",
+    "home": "返回首页",
+    "not_found_title": "页面未找到",
+    "not_found_body": "此页面不存在或已被移动。",
+    "game_title": "对局遇到错误",
+    "game_body": "对局画面已中断。重新加载后将从中断处继续。",
+    "game_reload": "重新加载对局"
   }
 }

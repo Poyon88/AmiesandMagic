@@ -16,23 +16,7 @@
 //      plus rien dire.
 import { beforeEach, describe, expect, it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-const ROOT = process.cwd();
-const sql = (f: string) => readFileSync(join(ROOT, f), "utf8");
-
-const PREAMBLE = `
-  CREATE SCHEMA IF NOT EXISTS auth;
-  CREATE TABLE auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text);
-  CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
-  CREATE TABLE profiles (
-    id uuid PRIMARY KEY,
-    starter_faction text,
-    all_commons_unlocked boolean NOT NULL DEFAULT false,
-    legacy_full_access boolean NOT NULL DEFAULT false
-  );
-`;
+import { loadPaymentsSqlChain } from "@/lib/payments/__tests__/sql-chain";
 
 interface Boutique {
   db: PGlite;
@@ -49,15 +33,12 @@ interface Boutique {
 
 async function boutique(): Promise<Boutique> {
   const db = new PGlite();
-  await db.exec(PREAMBLE);
-  // La VRAIE chaîne de migrations, dans l'ordre de production : la boutique se
-  // termine en redéfinissant `apply_charge_refunded`, qui s'appuie sur les
-  // tables des deux migrations de paiement. Charger un extrait isolé aurait
-  // testé un SQL qui n'existe nulle part.
-  await db.exec(sql("supabase-economy.sql"));
-  await db.exec(sql("supabase-migration-stripe-payments.sql"));
-  await db.exec(sql("supabase-migration-tournament-tickets.sql"));
-  await db.exec(sql("supabase-migration-faction-shop.sql"));
+  // La VRAIE chaîne de migrations, dans l'ordre de production (liste unique,
+  // cf. sql-chain.ts) : la boutique se termine en redéfinissant
+  // `apply_charge_refunded`, qui s'appuie sur les tables des deux migrations de
+  // paiement. Charger un extrait isolé aurait testé un SQL qui n'existe nulle
+  // part.
+  await loadPaymentsSqlChain(db);
 
   const un = async <T>(q: string, p: unknown[] = []): Promise<T> => (await db.query<T>(q, p)).rows[0];
 

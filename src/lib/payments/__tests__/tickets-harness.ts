@@ -1,24 +1,13 @@
 // Banc d'essai des TICKETS. Même principe que ses voisins : le vrai PL/pgSQL de
 // production dans un Postgres in-process (PGlite), sans aucun bouchon.
 //
-// Charge les TROIS migrations dans l'ordre où elles s'appliquent en production
-// — économie, paiements, tickets — pour que les redéfinitions de fonctions
+// Charge la chaîne complète des paiements dans l'ordre où elle s'applique en
+// production (cf. sql-chain.ts), pour que les redéfinitions de fonctions
 // (`apply_checkout_completed` en particulier) soient exercées dans le même
 // ordre qu'en vrai.
 
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-const ROOT = process.cwd();
-const loadSql = (f: string) => readFileSync(join(ROOT, f), "utf8");
-
-const PREAMBLE = `
-  CREATE SCHEMA IF NOT EXISTS auth;
-  CREATE TABLE auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text);
-  CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-    LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
-`;
+import { loadPaymentsSqlChain } from "./sql-chain";
 
 export interface TicketsDb {
   db: PGlite;
@@ -72,10 +61,7 @@ export type WebhookResult = {
 
 export async function createTicketsDb(): Promise<TicketsDb> {
   const db = new PGlite();
-  await db.exec(PREAMBLE);
-  await db.exec(loadSql("supabase-economy.sql"));
-  await db.exec(loadSql("supabase-migration-stripe-payments.sql"));
-  await db.exec(loadSql("supabase-migration-tournament-tickets.sql"));
+  await loadPaymentsSqlChain(db);
 
   const one = async <T>(sql: string, params: unknown[] = []): Promise<T> => {
     const { rows } = await db.query<T>(sql, params);

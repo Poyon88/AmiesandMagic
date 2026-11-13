@@ -1601,6 +1601,20 @@ export function selectPowerTargetingColor(s: GameStore): string | null {
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
+  // ÉPOQUE D'ANIMATION. `dispatchAction` programme ses phases par minuteries ;
+  // rien ne les annulait, si bien qu'une concession (ou un état adopté de
+  // l'extérieur) arrivant en pleine séquence se faisait réécrire par les phases
+  // encore en vol — l'écran de victoire revenait à un état intermédiaire, puis
+  // `phaseUnlock` dépilait des actions sur une partie terminée. Chaque phase
+  // retient l'époque de sa planification et ne fait rien si elle a changé.
+  let animEpoch = 0;
+  const schedule = (fn: () => void, ms: number) => {
+    const epoch = animEpoch;
+    return setTimeout(() => {
+      if (epoch === animEpoch) fn();
+    }, ms);
+  };
+
   // After on-board target collection finishes for a spell (e.g. Renforcement),
   // check if the same spell also carries a selection-style picker
   // (selection / selection_magique / renfort_royal). If yes, switch the UI
@@ -2013,10 +2027,24 @@ export const useGameStore = create<GameStore>((set, get) => {
     state.tokenTemplates = get().tokenTemplates;
     state.machineTemplates = get().machineTemplates;
     state.mutationPool = get().mutationPool;
-    set({ gameState: state });
+    // Nouvelle partie : les phases d'une séquence antérieure sont périmées, et
+    // leur `phaseUnlock` ne viendra donc plus lever le verrou — on le lève ici.
+    animEpoch++;
+    set({ gameState: state, isAnimating: false, pendingIncomingActions: [] });
   },
 
-  setGameState: (state) => set({ gameState: state, ...pendingTriggerOverlay(state, get().localPlayerId) }),
+  setGameState: (state) => {
+    // État adopté de l'extérieur (instantané serveur) : il fait autorité, les
+    // phases en vol ne doivent plus le réécrire. Les appelants n'adoptent qu'au
+    // repos ; si une séquence jouait malgré tout, son `phaseUnlock` est périmé
+    // lui aussi — on lève le verrou pour ne pas figer la partie.
+    animEpoch++;
+    set({
+      gameState: state,
+      ...(get().isAnimating ? { isAnimating: false } : {}),
+      ...pendingTriggerOverlay(state, get().localPlayerId),
+    });
+  },
   setLocalPlayerId: (id) => set({ localPlayerId: id }),
   setTokenTemplates: (templates) => set({ tokenTemplates: templates }),
   setMachineTemplates: (templates) => set({ machineTemplates: templates }),
@@ -2048,6 +2076,9 @@ export const useGameStore = create<GameStore>((set, get) => {
     // VICTORY/DEFEAT overlay surfaces immediately on both clients.
     if (action.type === "concede") {
       const next = applyAction(gameState, action);
+      // C'est ICI que la séquence en cours est réellement interrompue : ses
+      // phases programmées deviennent sans effet (cf. `schedule`).
+      animEpoch++;
       set({
         gameState: next,
         isAnimating: false,
@@ -3631,7 +3662,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         // sequentially (one lunge per surviving strike).
         for (let i = 0; i < fureurStrikes.length; i++) {
           const s = fureurStrikes[i];
-          setTimeout(
+          schedule(
             () => playAttackLunge(s.attackerInstanceId, s.victimInstanceId),
             FUREUR_FIRST_DELAY_MS + i * FUREUR_LUNGE_GAP_MS,
           );
@@ -3859,15 +3890,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       // salve qui suit est la leur. Même écart que les révélations d'avant la
       // salve principale, tenu ≥ la lecture pleine de la carte (RECAST_GAP_MS).
       for (const reveal of v.reveals) {
-        setTimeout(() => set({ spellCastEvent: reveal }), c);
+        schedule(() => set({ spellCastEvent: reveal }), c);
         c += RECAST_GAP_MS;
       }
       const aPeindre = v.dmg.length > 0 || v.hasDeaths;
       if (!aPeindre) return c;
-      setTimeout(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
+      schedule(() => set({ gameState: v.impactState, damageEvents: v.dmg }), c);
       c += IMPACT_MS + (v.seqCount > 0 ? v.seqDuree + lent(500) : 0);
       if (v.hasDeaths) {
-        setTimeout(() => set({
+        schedule(() => set({
           gameState: v.finState,
           deathEvents: v.dead.map((mort) => {
             const pos = getElementCenter(mort.instanceId);
@@ -4033,7 +4064,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       phasePowerImpacts(); // t=0
       cursor += IMPACT_MS;
       if (powerHasDeaths) {
-        setTimeout(phasePowerDeaths, cursor);
+        schedule(phasePowerDeaths, cursor);
         cursor += DEATH_MS;
       }
     }
@@ -4041,13 +4072,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     // card reads as a paid prerequisite, not a consequence of the spell.
     if (costDiscardEvent || exileCostEvent || topdeckCostEvent || eveilEvent) {
       if (cursor === 0) phaseCostDiscard();
-      else setTimeout(phaseCostDiscard, cursor);
+      else schedule(phaseCostDiscard, cursor);
       cursor += COST_DISCARD_MS;
     }
     // Phase A (Overlay) — fires at t=cursor (0 if no power wave / cost discard).
     const overlayAt = cursor;
     if (cursor === 0) phaseOverlay();
-    else setTimeout(phaseOverlay, cursor);
+    else schedule(phaseOverlay, cursor);
 
     // Fin de tour : révèle les flèches de pouvoir une par une, gauche→droite.
     // Émission CUMULATIVE avec le MÊME timestamp que powerArrowEvent : le
@@ -4062,7 +4093,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         const cumulative = { arrows: groups.slice(0, i + 1), timestamp: ts };
         const at = overlayAt + i * STAGGER_MS;
         if (at === 0) set({ powerArrowEvent: cumulative });
-        else setTimeout(() => set({ powerArrowEvent: cumulative }), at);
+        else schedule(() => set({ powerArrowEvent: cumulative }), at);
       }
     }
 
@@ -4079,10 +4110,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     // son assaut se jouer d'abord (cf. l'exception plus haut). Le retrait tombe
     // maintenant, juste après le lunge.
     if (attaquantSeRetire) {
-      setTimeout(phasePowerImpacts, cursor);
+      schedule(phasePowerImpacts, cursor);
       cursor += IMPACT_MS;
       if (powerHasDeaths) {
-        setTimeout(phasePowerDeaths, cursor);
+        schedule(phasePowerDeaths, cursor);
         cursor += DEATH_MS;
       }
     }
@@ -4108,16 +4139,16 @@ export const useGameStore = create<GameStore>((set, get) => {
       ...faveurSpells,
     ];
     for (const reveal of revelationsAvantImpacts) {
-      setTimeout(() => set({ spellCastEvent: reveal }), cursor);
+      schedule(() => set({ spellCastEvent: reveal }), cursor);
       cursor += RECAST_GAP_MS;
     }
 
     // Phase B (Impacts) — always run if there's anything beyond the overlay.
-    setTimeout(phaseImpacts, cursor);
+    schedule(phaseImpacts, cursor);
     cursor += IMPACT_MS + FUREUR_PHASE_EXTRA_MS + SEQ_PHASE_EXTRA_MS;
 
     if (hasDeaths) {
-      setTimeout(phaseDeaths, cursor);
+      schedule(phaseDeaths, cursor);
       cursor += DEATH_MS;
     }
 
@@ -4129,22 +4160,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     for (const v of vaguesAvantPioche) cursor = programmerVague(v, cursor);
 
     if (hasSummons) {
-      setTimeout(phaseSummons, cursor);
+      schedule(phaseSummons, cursor);
       cursor += SUMMON_MS;
     } else if (!hasDraws) {
       // No summons and no draws — commit the pre-draw state (= final state)
       // so faction pool and buff deltas land.
-      setTimeout(phaseFinalize, cursor);
+      schedule(phaseFinalize, cursor);
       cursor += 50;
     } else {
       // Draws but no summons: still need to land on preDrawState first so the
       // draw phase has a correct pre-state.
-      setTimeout(phaseFinalize, cursor);
+      schedule(phaseFinalize, cursor);
       cursor += 50;
     }
 
     if (discardFromHandEvent) {
-      setTimeout(phaseDiscard, cursor);
+      schedule(phaseDiscard, cursor);
       cursor += DISCARD_MS;
     }
 
@@ -4153,13 +4184,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     // et son effet peint ses dégâts / ses morts.
     if (drawWave) {
       for (const reveal of drawTriggerSpells) {
-        setTimeout(() => set({ spellCastEvent: reveal }), cursor);
+        schedule(() => set({ spellCastEvent: reveal }), cursor);
         cursor += RECAST_GAP_MS;
       }
     }
 
     if (hasDraws) {
-      setTimeout(phaseDraws, cursor);
+      schedule(phaseDraws, cursor);
       cursor += DRAW_MS;
     }
 
@@ -4173,7 +4204,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Effet sans dégât ni mort : rien n'a été programmé, mais l'écran est
       // resté sur la frontière — on engage l'état final.
       if (cursor === avant) {
-        setTimeout(() => set({ gameState: newState }), cursor);
+        schedule(() => set({ gameState: newState }), cursor);
         cursor += 50;
       }
     }
@@ -4184,11 +4215,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     // un pouvoir de héros, ni sur une simple pose de créature à Fortifier.
     // Placé après la pioche quand il y en a une, pour que la pile ait déjà bougé.
     if (deckEffectEvent) {
-      setTimeout(() => set({ deckEffectEvent }), cursor);
+      schedule(() => set({ deckEffectEvent }), cursor);
       cursor += 120;
     }
 
-    setTimeout(phaseUnlock, cursor);
+    schedule(phaseUnlock, cursor);
 
     return action;
   },

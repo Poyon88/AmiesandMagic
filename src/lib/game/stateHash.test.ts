@@ -28,6 +28,14 @@ describe("syncHash", () => {
     expect(syncHash(baseState())).toBe(syncHash(baseState()));
   });
 
+  it("ignore lastBuffMode porté par une instance (indice cosmétique)", () => {
+    const avec = baseState();
+    const sans = baseState();
+    (avec.players[0].board as unknown[]).push({ instanceId: "i1", currentAttack: 2, lastBuffMode: "on_play" });
+    (sans.players[0].board as unknown[]).push({ instanceId: "i1", currentAttack: 2 });
+    expect(syncHash(avec)).toBe(syncHash(sans));
+  });
+
   it("ignores turnStartedAt (per-client wall clock)", () => {
     expect(syncHash(baseState({ turnStartedAt: 1 }))).toBe(
       syncHash(baseState({ turnStartedAt: 999_999_999 }))

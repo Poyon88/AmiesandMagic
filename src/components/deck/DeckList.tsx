@@ -41,6 +41,10 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
   const vocab = useVocab();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  // Refus de suppression renvoyé par l'API (deck engagé dans une partie en
+  // cours…) : affiché sur la carte du deck, sinon le deck « reste là » sans
+  // explication.
+  const [deleteError, setDeleteError] = useState<{ id: number; message: string } | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<string>(ALL);
 
   // Distinct format buckets present among the user's decks, in format-id order,
@@ -68,6 +72,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
 
   async function handleDelete(deckId: number) {
     setDeletingId(deckId);
+    setDeleteError(null);
     try {
       const res = await fetch("/api/decks", {
         method: "DELETE",
@@ -75,11 +80,13 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
         body: JSON.stringify({ id: deckId }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        console.error("Delete failed:", data.error);
+        const data = await res.json().catch(() => null);
+        console.error("Delete failed:", data?.error);
+        setDeleteError({ id: deckId, message: data?.error || `Suppression impossible (${res.status})` });
       }
     } catch (err) {
       console.error("Delete error:", err);
+      setDeleteError({ id: deckId, message: "Suppression impossible : erreur réseau." });
     }
     setConfirmDeleteId(null);
     setDeletingId(null);
@@ -300,6 +307,11 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
                       </button>
                     )}
                   </div>
+                  {deleteError?.id === deck.id && (
+                    <p role="alert" className="mt-2 text-sm text-am-ember">
+                      {deleteError.message}
+                    </p>
+                  )}
                 </div>
               );
             })}

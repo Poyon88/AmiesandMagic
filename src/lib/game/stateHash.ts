@@ -57,6 +57,12 @@ const VOLATILE_KEYS = new Set([
   "stackOverflowCount",
 ]);
 
+// Indices cosmétiques portés par les INSTANCES (donc à n'importe quelle
+// profondeur) : `lastBuffMode` teinte le popup « +X/+Y » et applyAction
+// l'efface avant même de savoir si l'action sera acceptée — haché, une action
+// refusée changeait le hash d'un état de jeu inchangé.
+const NESTED_VOLATILE_KEYS = new Set<string>(["lastBuffMode"]);
+
 // Deterministic JSON: object keys emitted in sorted order so two structurally
 // equal states always stringify identically regardless of key insertion order.
 // Arrays keep their order (gameplay order is significant and must match).
@@ -72,6 +78,7 @@ function stableStringify(value: unknown, dropTopLevelVolatile = false): string {
   const parts: string[] = [];
   for (const k of keys) {
     if (dropTopLevelVolatile && VOLATILE_KEYS.has(k)) continue;
+    if (NESTED_VOLATILE_KEYS.has(k)) continue;
     if (obj[k] === undefined) continue;
     parts.push(JSON.stringify(k) + ":" + stableStringify(obj[k]));
   }

@@ -1922,8 +1922,11 @@ function selectComposedTargets(
   if (spec.designation === "choice" && chosenTargetIds?.length) {
     return chosenTargetIds
       .map((id): ComposedTargetRef | undefined =>
-        id === "enemy_hero" ? { kind: "hero", hero: opponent.hero }
-          : id === "friendly_hero" ? { kind: "hero", hero: owner.hero }
+        // Un héros n'est une cible valable que s'il est dans le POOL (entité et
+        // camp de la spec) : rendu d'office, une action forgée dirigeait sur
+        // lui « 3 dégâts à une unité ».
+        id === "enemy_hero" ? pool.find((t) => t.kind === "hero" && t.hero === opponent.hero)
+          : id === "friendly_hero" ? pool.find((t) => t.kind === "hero" && t.hero === owner.hero)
             : pool.find((t) => t.kind === "unit" && t.unit.instanceId === id))
       .filter((t): t is ComposedTargetRef => !!t)
       .slice(0, n);
@@ -4287,13 +4290,25 @@ export function recalculateAuras(player: PlayerState, opponent: PlayerState) {
   for (const board of [player.board, opponent.board]) {
     for (const c of board) {
       if (hasKw(c, "totem") && c.card.race) {
+        // Comptabilité des mots-clés COPIÉS, comme pour les emblèmes : sans
+        // elle la copie était collante, et le Totem gardait les capacités d'une
+        // unité morte ou repartie. On repart donc de ses mots-clés PROPRES, et
+        // l'on ne copie que les mots-clés propres des autres — deux Totems de
+        // même race s'entretiendraient sinon l'un l'autre indéfiniment.
+        const propres = (u: CardInstance) => {
+          const copies = new Set<string>(u.totemGrantedKeywords ?? []);
+          return u.card.keywords.filter(k => !copies.has(k));
+        };
+        const siens = propres(c);
         const sameRaceKeywords = board
           .filter(a => a !== c && sharesRace(a.card, c.card))
-          .flatMap(a => a.card.keywords);
-        const newKeywords = [...new Set([...c.card.keywords, ...sameRaceKeywords])];
-        if (newKeywords.length !== c.card.keywords.length) {
-          c.card = { ...c.card, keywords: newKeywords };
-        }
+          .flatMap(propres);
+        const copies = [...new Set(sameRaceKeywords)].filter(k => !siens.includes(k));
+        const newKeywords = [...siens, ...copies];
+        const inchange = newKeywords.length === c.card.keywords.length
+          && newKeywords.every(k => c.card.keywords.includes(k));
+        if (!inchange) c.card = { ...c.card, keywords: newKeywords };
+        c.totemGrantedKeywords = copies;
       }
     }
   }
@@ -4451,9 +4466,20 @@ export function startTurn(state: GameState): GameState {
       };
       tokenCard = applyTokenTemplate(tokenCard, tmpl);
       creature.card = tokenCard;
-      creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.richesseATKBonus + creature.loyauteATKBonus + creature.auraHealthBonus;
+      creature.currentAttack = x + creature.summonBonusATK + creature.necrophagieATKBonus + creature.richesseATKBonus + creature.loyauteATKBonus;
       creature.currentHealth = x + creature.necrophagiePVBonus + creature.richessePVBonus + creature.loyautePVBonus;
       creature.maxHealth = x + creature.necrophagiePVBonus + creature.richessePVBonus + creature.loyautePVBonus;
+      // Les PV viennent d'être réécrits SANS les bonus d'aura : leurs compteurs
+      // différentiels repartent de zéro, pour que le recalcul des auras les
+      // repose. Laissés tels quels, il ne voyait aucun écart — la forme
+      // transformée sortait sans ses PV d'aura, puis en perdait autant (qu'elle
+      // n'avait jamais eus) au départ de la source.
+      creature.auraHealthBonus = 0;
+      creature.sangMeleHealthBonus = 0;
+      creature.equipHealthBonus = 0;
+      creature.forceAncetresHealthBonus = 0;
+      creature.seuilSacrificielHealthBonus = 0;
+      creature.pureteHealthBonus = 0;
       creature.hasSummoningSickness = false; // Traque
     }
 
@@ -5021,7 +5047,7 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
       const r = resolveRetardKey(creature.card, step.retardKey);
       if (!r) continue;
       queue.unshift(r.curated
-        ? { sourceInstanceId: creature.instanceId, curated: r.curated }
+        ? { sourceInstanceId: creature.instanceId, curated: r.curated, fromRetard: true }
         : { sourceInstanceId: creature.instanceId, capUid: r.capUid });
       continue;
     }
@@ -5029,6 +5055,13 @@ function advanceTurnPhase(newState: GameState, phase: TurnPhase): GameState {
     if (step.curated) {
       const inst = step.curated;
       queue.shift();
+      // L'instance voyage avec le pas, figée à la construction de la file : un
+      // Silence posé par un pas situé à GAUCHE ne l'atteignait donc pas, et la
+      // capacité partait quand même. Même re-vérification que pour un pas
+      // composé (qui recherche sa capacité par uid) ; le Retard vient de faire
+      // la sienne juste au-dessus.
+      if (!step.fromRetard
+        && !(creature.card.keyword_instances ?? []).some(i => i.id === inst.id && i.mode === inst.mode)) continue;
       // Sélection / Sélection magique / Renfort Royal : interactif (modale
       // « 1 parmi 3 »). File seulement s'il existe une carte éligible.
       if (inst.id === "selection" || inst.id === "selection_magique" || inst.id === "renfort_royal" || inst.id === "tresor") {
@@ -5273,10 +5306,12 @@ function finishEndTurn(newState: GameState): GameState {
       if (restant > 0) creature.paralysisTurnsLeft = restant;
       else levierParalysie(creature);
     }
-    // Reset Fureur's trigger guard at end of turn so the creature can
-    // fire again next turn if hit. No ATK to revert — Fureur is now a
-    // pure extra-attack effect.
-    creature.fureurActive = false;
+  }
+  // Garde de Fureur : « une fois par tour », et un tour est celui de CHAQUE
+  // joueur. Ne la lever que chez le sortant laissait muette, pendant tout son
+  // propre tour, l'unité qui avait déclenché sa Fureur en défense.
+  for (const p of newState.players) {
+    for (const creature of p.board) creature.fureurActive = false;
   }
 
   newState.currentPlayerIndex = newState.currentPlayerIndex === 0 ? 1 : 0;
@@ -5431,6 +5466,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
   // les deux, et un doublon DANS le repli ferait replier deux fois la même
   // carte — le second `findIndex` retomberait sur une autre, choisie par le
   // moteur et non par le joueur.
+  // Même règle pour la défausse et le sacrifice : le même id donné deux fois
+  // payait un coût de 2 avec une seule carte.
+  if (new Set(requestedDiscards).size !== requestedDiscards.length) return state;
+  if (new Set(requestedSacrifices).size !== requestedSacrifices.length) return state;
   const dejaEngagees = new Set(requestedDiscards);
   for (const id of requestedTopdecks) {
     if (dejaEngagees.has(id)) return state;
@@ -6356,6 +6395,14 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
           repliConsomme = true;
         }
         if (id == null) continue;
+        // La carte réclamée doit figurer dans l'OFFRE. Elle se recalcule sur
+        // l'état d'AVANT l'action (`state`), celui que le client avait sous les
+        // yeux en ouvrant sa modale : l'offre est semée dessus, pas tirée de la
+        // RNG partagée. Sans ce contrôle, une action forgée réclamait n'importe
+        // quelle carte du vivier, et le rejeu serveur l'acceptait.
+        const amp = selectionAmplitudeOnPlay(cardInstance.card, kw);
+        const offre = selectionCardsForKeyword(kw, state, amp.x, cardInstance.card, undefined, undefined, amp.randomX, amp.minX);
+        if (!offre.some(c => c.id === id)) continue;
         const chosenCard = newState.factionCardPool?.find(c => c.id === id)
           ?? newState.allSpellsPool?.find(c => c.id === id);
         if (chosenCard && player.hand.length < MAX_HAND_SIZE) {
@@ -8721,7 +8768,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Rien à échanger.
     } else if (hasFirstStrike) {
       const targetHpBefore = target.currentHealth;
-      dealDamageToCreature(target, attackPower, attackerHasPrecision, false, attacker, undefined, true);
+      // Double Attaque double aussi ce coup-ci : Première Frappe ne change que
+      // l'ORDRE de l'échange, pas sa force (elle annulait le doublement).
+      const firstStrikePower = hasDoubleAttack ? attackPower * 2 : attackPower;
+      dealDamageToCreature(target, firstStrikePower, attackerHasPrecision, false, attacker, undefined, true);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
         dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
@@ -10697,11 +10747,10 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Héritage X: chaque allié gagne +X ATK et +X PV
     if (hasKw(c, "heritage") && c.heritageX > 0) {
-      for (const ally of owner.board) {
-        ally.currentAttack += c.heritageX;
-        ally.currentHealth += c.heritageX;
-        ally.maxHealth += c.heritageX;
-      }
+      // Bonus GRAVÉ dans la carte, comme Renforcement : posé sur currentAttack
+      // seul, le recalcul des auras qui suit toute mort le ramenait à la base
+      // et l'allié ne gardait que les PV.
+      for (const ally of owner.board) applyRenforcementSelf(ally, c.heritageX, c.heritageX);
     }
 
     // Résurrection: revient avec 1 PV, perd Résurrection. La créature
@@ -12176,8 +12225,11 @@ export function tapActivate(state: GameState, action: TapActivateAction): GameSt
     // Sélection au tap : la carte choisie (modale « 1 parmi 3 ») est ajoutée en
     // main. Lookup dans les deux pools comme pour l'invocation.
     if (action.selectionCardId != null && player.hand.length < MAX_HAND_SIZE) {
-      const chosenCard = newState.factionCardPool?.find(c => c.id === action.selectionCardId)
-        ?? newState.allSpellsPool?.find(c => c.id === action.selectionCardId);
+      // Même contrôle qu'à l'entrée en jeu : la carte doit être dans l'offre,
+      // recalculée sur l'état d'avant l'action avec les arguments du client.
+      const offre = selectionCardsForKeyword(instance.id, state, instance.x ?? 0, source.card, undefined, undefined,
+        instance.randomX === true, instance.minX);
+      const chosenCard = offre.find(c => c.id === action.selectionCardId);
       if (chosenCard) player.hand.push(createCardInstance(chosenCard));
     }
   } else {
@@ -12562,7 +12614,11 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
   recalculateAuras(newState.players[0], newState.players[1]);
   newState.lastAction = action;
   checkWinCondition(newState);
-  // Le choix qui vient d'être tranché a pu vider le pool du choix SUIVANT.
+  // Le choix qui vient d'être tranché a pu vider le pool du choix SUIVANT — ou,
+  // par un râle, en déposer un NOUVEAU dans le puits : on le rapatrie avant de
+  // décider d'une bascule (même garde que finalizeEndOfTurn), sinon le tour
+  // passait par-dessus et le choix du sortant se posait au tour de l'entrant.
+  rapatrierLePuits(newState);
   pruneUnresolvableTriggers(newState);
 
   // Reprise de la séquence de fin de tour dans l'ordre strict du plateau : s'il
@@ -12810,6 +12866,7 @@ export function autoResolvePendingTriggers(state: GameState, action?: AutoResolv
     }
     recalculateAuras(st.players[0], st.players[1]);
     checkWinCondition(st);
+    rapatrierLePuits(st);
     pruneUnresolvableTriggers(st);
     // Tant qu'un choix du même joueur attend encore, la séquence de phase
     // reste en pause : on ne la reprend qu'une fois sa part de file vidée.
@@ -13392,6 +13449,19 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   damageOriginCtx = null;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
+  // GARDES DE PHASE — le moteur est la seule barrière commune aux deux clients
+  // et au rejeu serveur ; les gardes du store ne valent que pour le client local.
+  // Une partie terminée n'accepte plus rien (un second abandon inversait le
+  // vainqueur) ; un mulligan hors phase, ou rejoué par le même joueur,
+  // remélangeait les decks et relançait le tour ; la phase mulligan n'accepte
+  // qu'un mulligan ou un abandon.
+  if (state.phase === "finished") return state;
+  if (action.type === "mulligan") {
+    const idx = state.players.findIndex(p => p.id === action.playerId);
+    if (state.phase !== "mulligan" || idx === -1 || state.mulliganReady[idx]) return state;
+  } else if (state.phase === "mulligan" && action.type !== "concede") {
+    return state;
+  }
   // Indice cosmétique (hors hash) : on efface la provenance de buff sur toutes
   // les instances pour que le popup « +X/+Y » de CETTE action ne soit teinté
   // que par un effet déclenché MAINTENANT — sinon un mode périmé d'une action
@@ -13592,11 +13662,11 @@ export function applyAction(state: GameState, action: GameAction): GameState {
 }
 
 function concede(state: GameState, action: { playerId: string }): GameState {
+  // Un abandon signé d'un inconnu terminait la partie SANS vainqueur.
+  if (!state.players.some((p) => p.id === action.playerId)) return state;
   const next = deepClone(state);
   const conceder = next.players.findIndex((p) => p.id === action.playerId);
-  if (conceder !== -1) {
-    next.winner = next.players[conceder === 0 ? 1 : 0].id;
-  }
+  next.winner = next.players[conceder === 0 ? 1 : 0].id;
   next.phase = "finished";
   return next;
 }

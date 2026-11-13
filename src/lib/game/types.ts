@@ -1529,6 +1529,10 @@ export interface CardInstance {
    *  d'où cette trace — on ne purge que ce qu'on a soi-même posé, sans toucher
    *  aux mots-clés natifs de la carte ni aux dons ponctuels d'un sort. */
   emblemGrantedKeywords?: string[];
+  /** Mots-clés COPIÉS par Totem sur les alliés de même race. Même comptabilité
+   *  que les emblèmes : recalculée à chaque passe d'auras, pour que la copie
+   *  tombe quand sa source quitte le plateau. */
+  totemGrantedKeywords?: string[];
   /** Mots-clés que l'OBJET ÉQUIPÉ a ajoutés à cette créature au dernier passage
    *  de `recalculateAuras`. Suivi SÉPARÉ de celui des emblèmes : les deux
    *  sources donnent au même endroit et doivent pouvoir se retirer sans
@@ -2632,6 +2636,9 @@ export interface EndOfTurnStep {
   /** RETARD X d'une créature arrivé à terme : clé de l'entrée (cf. RetardEntry).
    *  La capacité doit encore exister sur la carte (un Silence l'annule). */
   retardKey?: string;
+  /** Pas curé issu d'un Retard : sa capacité vient d'être relue sur la carte,
+   *  elle n'a pas à l'être une seconde fois dans `keyword_instances`. */
+  fromRetard?: true;
   /** RETARD X d'un SORT arrivé à terme : l'effet voyage avec le pas (le sort
    *  n'a pas de source en jeu, comme un emblème). */
   delayedSpell?: DelayedSpell;

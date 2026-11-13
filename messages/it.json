@@ -1258,7 +1258,7 @@
       "Peu Commune": "Non Comune",
       "Rare": "Rara",
       "Épique": "Epica",
-      "Légendaire": "Leggendaria"
+      "Légendaire": "Unica"
     },
     "clans": {
       "Les Sylvains": "I Silvani",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "Gioca",
     "hero_eyebrow": "Fantasy TCG — Nuova generazione",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "Forgia la tua leggenda. Guida la tua fazione. Scrivi la tua storia.",
     "hero_cta": "Entra nell'arena",
     "hero_cta_secondary": "Scopri",
     "hero_proof": "Più di 500 carte offerte già dalla prima partita",
-    "features_title": "Perché Armies & Magic",
+    "features_title": "Perché Armies of Legends",
     "f1_title": "La profondità delle leggende.",
-    "f1_desc": "Armies & Magic unisce la strategia dei TCG di culto a meccaniche pensate per i campioni di oggi.",
+    "f1_desc": "Armies of Legends unisce la strategia dei TCG di culto a meccaniche pensate per i campioni di oggi.",
     "f2_title": "Il massimo delle carte fin dall'inizio.",
     "f2_desc": "Ottieni gratuitamente l'intero set di carte classiche della fazione che preferisci (oltre 300 carte). Disponi di tutte le fazioni (circa 2.500 carte) per una frazione del costo di un TCG classico.",
     "f3_title": "Ogni mazzo Expert, un'opera unica.",
     "f3_desc": "Le carte in tiratura limitata rendono ogni mazzo Expert irripetibile. La quota comune garantisce che solo la tua strategia faccia la differenza.",
     "f_icons_title": "Leggibili a colpo d'occhio.",
-    "f_icons_desc": "Illustrate con cura, le carte di Armies & Magic sono tanto belle quanto leggibili: grazie a un codice di icone colorate proprio di ogni innesco, ne capisci l'effetto con una semplice occhiata, senza nemmeno leggere il testo.",
+    "f_icons_desc": "Illustrate con cura, le carte di Armies of Legends sono tanto belle quanto leggibili: grazie a un codice di icone colorate proprio di ogni innesco, ne capisci l'effetto con una semplice occhiata, senza nemmeno leggere il testo.",
     "f4_title": "L'arena mobile, finalmente all'altezza.",
     "f4_desc": "Tornei premiati con carte rare e montepremi in denaro — un livello di sfida finora riservato ai più grandi TCG desktop.",
     "factions_title": "Nove fazioni. Una leggenda.",
@@ -2368,7 +2368,7 @@
     "cta_title": "L'arena ti aspetta.",
     "cta_sub": "Unisciti agli evocatori in battaglia.",
     "cta_btn": "Inizia l'avventura",
-    "footer": "Armies & Magic — Tutti i diritti riservati",
+    "footer": "Armies of Legends — Tutti i diritti riservati",
     "factions": {
       "Humains": {
         "tagline": "Uniti sotto la bandiera"
@@ -2489,8 +2489,8 @@
     "unknown_card": "Carta sconosciuta",
     "ends_at": "Fine: {date}",
     "status_active": "Attiva",
-    "page_title": "Casa d'Aste — Armies & Magic",
-    "detail_page_title": "Dettaglio Asta — Armies & Magic"
+    "page_title": "Casa d'Aste — Armies of Legends",
+    "detail_page_title": "Dettaglio Asta — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "Inserisci la tua email prima di richiedere un reset.",
@@ -2587,7 +2587,7 @@
     "no_notifications": "Nessuna notifica",
     "see_auction": "Guarda l'asta",
     "rotate_device": "Ruota il telefono",
-    "rotate_device_hint": "Armies & Magic si gioca in modalità orizzontale. Ruota il dispositivo per continuare."
+    "rotate_device_hint": "Armies of Legends si gioca in modalità orizzontale. Ruota il dispositivo per continuare."
   },
   "forge": {
     "forge_first_card": "Forgia la tua prima carta",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",
-    "page_subtitle": "Armies & Magic — duello di carte medievale-fantasy",
+    "page_subtitle": "Armies of Legends — duello di carte medievale-fantasy",
     "page_title": "Come si gioca",
     "track_beginner": "Principiante — guida completa",
     "track_tcg": "Giocatore di TCG — l'essenziale",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "Carte / mazzo (esatto)",
     "stat_hand_range": "Mano (inizio → max)",
     "stat_mana_per_turn": "Mana (+1 / turno)",
-    "tcg_gameloop_title": "Ciclo di gioco (specificità A&M)",
+    "tcg_gameloop_title": "Ciclo di gioco (specificità AoL)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combattimento — risoluzione",
     "tcg_hero_spells_title": "Eroi & azioni",
@@ -3401,7 +3401,7 @@
     "all_sets": "Set",
     "year": "Anno",
     "rarity_abbr_uncommon": "NC",
-    "rarity_abbr_legendary": "Leg.",
+    "rarity_abbr_legendary": "Uni.",
     "expert_only_title": "Mostra solo le carte esperte (non comuni)",
     "expert": "Esperto",
     "preparation": "Preparazione",
@@ -3629,7 +3629,7 @@
     "col_reward": "Ricompensa",
     "col_credits": "Crediti",
     "col_essence": "Essenza",
-    "meta_title": "Tornei — Armies & Magic",
+    "meta_title": "Tornei — Armies of Legends",
     "page_eyebrow": "Circuito competitivo",
     "page_subtitle": "Un biglietto apre un torneo di qualificazione; il suo vincitore ottiene un Golden Ticket per il grande torneo mensile. Ogni vittoria fa guadagnare crediti mercato ed essenza.",
     "page_title": "Tornei",
@@ -3677,5 +3677,16 @@
     "signup_free": "Iscriviti (gratis)",
     "signup_seats": "{count, plural, one {# posto rimasto} other {# posti rimasti}}",
     "signup_tickets_in_hand": "{count, plural, one {# biglietto in mano} other {# biglietti in mano}}"
+  },
+  "errors": {
+    "title": "Si è verificato un errore",
+    "body": "Qualcosa è andato storto da parte nostra. Puoi riprovare; se il problema persiste, torna alla home.",
+    "retry": "Riprova",
+    "home": "Torna alla home",
+    "not_found_title": "Pagina non trovata",
+    "not_found_body": "Questa pagina non esiste o è stata spostata.",
+    "game_title": "La partita ha riscontrato un errore",
+    "game_body": "La visualizzazione della partita si è interrotta. Ricaricala: riprenderà da dove si era fermata.",
+    "game_reload": "Ricarica la partita"
   }
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { enforceAiQuota } from "@/lib/ai/rate-limit";
+import { requireAdmin } from "@/lib/admin/requireAdmin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,22 +9,6 @@ export const maxDuration = 300; // 5 min — Meshy image-to-3D usually finishes 
 const MESHY_BASE = "https://api.meshy.ai/openapi/v1";
 const POLL_INTERVAL_MS = 4000;
 const POLL_TIMEOUT_MS = 240_000; // 4 min
-
-async function getAuthUser() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() { /* read-only */ },
-      },
-    },
-  );
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
 
 type MeshyTask = {
   id: string;
@@ -86,10 +69,10 @@ async function pollTask(apiKey: string, taskId: string): Promise<MeshyTask> {
 // completes (up to 4 min). Ephemeral: URL is valid on Meshy's CDN, no DB
 // persistence for this prototype.
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const quota = await enforceAiQuota(user.id, "figurine_3d");
+  const quota = await enforceAiQuota(auth.user.id, "figurine_3d");
   if (!quota.ok) return quota.response;
 
   const apiKey = process.env.MESHY_API_KEY;

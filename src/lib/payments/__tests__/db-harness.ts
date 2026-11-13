@@ -11,19 +11,7 @@
 // ici, c'est rappeler la fonction, pas simuler un appel.
 
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-const ROOT = process.cwd();
-const loadSql = (f: string) => readFileSync(join(ROOT, f), "utf8");
-
-// Objets Supabase attendus par les migrations mais définis ailleurs.
-const PREAMBLE = `
-  CREATE SCHEMA IF NOT EXISTS auth;
-  CREATE TABLE auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text);
-  CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
-    LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
-`;
+import { loadPaymentsSqlChain } from "./sql-chain";
 
 export interface PaymentsDb {
   db: PGlite;
@@ -88,9 +76,9 @@ export type WebhookResult = {
 
 export async function createPaymentsDb(): Promise<PaymentsDb> {
   const db = new PGlite();
-  await db.exec(PREAMBLE);
-  await db.exec(loadSql("supabase-economy.sql"));
-  await db.exec(loadSql("supabase-migration-stripe-payments.sql"));
+  // Chaîne COMPLÈTE (cf. sql-chain.ts) : les fonctions du webhook sont
+  // redéfinies par les tickets puis par la boutique de factions.
+  await loadPaymentsSqlChain(db);
 
   const one = async <T>(sql: string, params: unknown[] = []): Promise<T> => {
     const { rows } = await db.query<T>(sql, params);

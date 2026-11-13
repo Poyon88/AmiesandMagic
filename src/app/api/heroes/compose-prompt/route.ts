@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { enforceAiQuota } from '@/lib/ai/rate-limit';
 import { buildHeroPortraitPrompt } from '@/lib/ai/hero-portrait-prompt';
 import { loadStyleGuide } from '@/lib/ai/style-guide';
-import { getAdminClient } from '@/lib/admin/requireAdmin';
+import { getAdminClient, requireAdmin } from '@/lib/admin/requireAdmin';
 import { FACTIONS, getAllClanNames } from '@/lib/card-engine/constants';
 
 const LEGACY_SIMPLIFIED_RACES = new Set([
@@ -16,22 +14,6 @@ const FACTION_GRANULAR_RACES = new Set(
 );
 function isAllowedRace(race: string): boolean {
   return LEGACY_SIMPLIFIED_RACES.has(race) || FACTION_GRANULAR_RACES.has(race);
-}
-
-async function getAuthUser() {
-  const cookieStore = await cookies();
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() { /* read-only */ },
-      },
-    },
-  );
-  const { data: { user } } = await supabaseAuth.auth.getUser();
-  return user;
 }
 
 // Asks Claude to weave the user-provided extra context into the deterministic
@@ -92,10 +74,10 @@ async function enrichWithLLM(basePrompt: string, extraContext: string): Promise<
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
-  const quota = await enforceAiQuota(user.id, 'prompt_compose');
+  const quota = await enforceAiQuota(auth.user.id, 'prompt_compose');
   if (!quota.ok) return quota.response;
 
   const body = await request.json().catch(() => ({})) as {

@@ -1,10 +1,15 @@
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import { requireAdminPage } from "@/lib/admin/requireAdminPage";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Sans ce contrôle, toute personne connectée ouvrait /admin/* : le proxy ne
+  // vérifie que la session, et aucune page ne regardait le rôle.
+  await requireAdminPage();
+
   return (
     // `am-admin` porte la règle de lisibilité des champs (cf. globals.css) :
     // l'administration est peinte sur fond BLANC, alors que la couleur de texte

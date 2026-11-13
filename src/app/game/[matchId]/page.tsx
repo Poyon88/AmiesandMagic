@@ -114,11 +114,12 @@ export default function GamePage() {
   const pendingCheckpointRef = useRef<{ seq: number; hash: string } | null>(null);
   const reconcileRef = useRef<(() => void) | null>(null);
 
-  const {
-    setLocalPlayerId,
-    initGame,
-    setOwnedLimitedCardIds,
-  } = useGameStore();
+  // Sélecteurs INDIVIDUELS : ces actions sont stables, alors qu'un
+  // `useGameStore()` nu abonnait la page au store entier — elle se re-rendait,
+  // et `GameBoard` avec elle, à chaque `set`.
+  const setLocalPlayerId = useGameStore((s) => s.setLocalPlayerId);
+  const initGame = useGameStore((s) => s.initGame);
+  const setOwnedLimitedCardIds = useGameStore((s) => s.setOwnedLimitedCardIds);
 
   // Initialize match
   useEffect(() => {
@@ -177,7 +178,10 @@ export default function GamePage() {
             .select("hero_id, board_id, card_back_id, format_id, heroes(*), card_back:card_back_id(image_url)")
             .eq("id", match.player2_deck_id)
             .single(),
-          fetch("/api/token-templates").then((r) => (r.ok ? r.json() : [])),
+          fetch("/api/token-templates").then((r) => {
+            if (!r.ok) throw new Error(`[match] modèles de jetons : HTTP ${r.status}`);
+            return r.json();
+          }),
           supabase
             .from("game_boards")
             .select("id")
@@ -187,9 +191,38 @@ export default function GamePage() {
           // Owned-limited card ids for both players. RLS on card_prints
           // hides the opponent's rows from a direct supabase read, so we
           // proxy through /api/collections (service role).
-          fetch(`/api/collections?userId=${match.player1_id}`).then((r) => (r.ok ? r.json() : { limitedCardIds: [] })),
-          fetch(`/api/collections?userId=${match.player2_id}`).then((r) => (r.ok ? r.json() : { limitedCardIds: [] })),
+          fetch(`/api/collections?userId=${match.player1_id}`).then((r) => {
+            if (!r.ok) throw new Error(`[match] collection du joueur 1 : HTTP ${r.status}`);
+            return r.json();
+          }),
+          fetch(`/api/collections?userId=${match.player2_id}`).then((r) => {
+            if (!r.ok) throw new Error(`[match] collection du joueur 2 : HTTP ${r.status}`);
+            return r.json();
+          }),
         ]);
+
+        // Une lecture en échec sur UN SEUL client lançait la partie avec un deck
+        // vide ou sans héros : désynchronisation immédiate, et muette. Tout ce
+        // qui entre dans l'état de jeu doit être lu ou faire échouer le
+        // chargement (même règle que le rejeu serveur, cf. match-setup.ts).
+        for (const [quoi, res] of [
+          ["cartes du deck 1", p1DeckCards],
+          ["cartes du deck 2", p2DeckCards],
+          ["deck 1", p1DeckData],
+          ["deck 2", p2DeckData],
+        ] as const) {
+          if (res.error) throw new Error(`[match] ${quoi} : ${res.error.message}`);
+        }
+        for (const [quoi, lignes] of [["deck 1", p1DeckCards.data], ["deck 2", p2DeckCards.data]] as const) {
+          if (!lignes || lignes.length === 0) throw new Error(`[match] ${quoi} : aucune carte`);
+          // Carte masquée par la RLS ou supprimée : l'embed revient à null.
+          if (lignes.some((dc) => !dc.cards)) throw new Error(`[match] ${quoi} : carte illisible`);
+        }
+        // Un deck SANS héros (hero_id nul) reste permis ; un héros désigné mais
+        // illisible, non.
+        for (const [quoi, deck] of [["deck 1", p1DeckData.data], ["deck 2", p2DeckData.data]] as const) {
+          if (deck?.hero_id != null && !deck.heroes) throw new Error(`[match] ${quoi} : héros illisible`);
+        }
 
         // Store token templates
         useGameStore.getState().setTokenTemplates(Array.isArray(tokenTemplatesJson) ? tokenTemplatesJson : []);
@@ -220,11 +253,12 @@ export default function GamePage() {
           ?? ((p2DeckData.data as { format_id?: number | null } | null)?.format_id ?? null);
         let matchFormatCode: FormatCode | null = null;
         if (matchFormatId != null) {
-          const { data: fmtRow } = await supabase
+          const { data: fmtRow, error: fmtErr } = await supabase
             .from("formats")
             .select("code")
             .eq("id", matchFormatId)
             .maybeSingle();
+          if (fmtErr) throw new Error(`[match] format : ${fmtErr.message}`);
           matchFormatCode = (fmtRow?.code as FormatCode | undefined) ?? null;
         }
 
@@ -272,15 +306,22 @@ export default function GamePage() {
           // INVENTION : modèles de machine (set « Inventions », un par coût).
           // Ils n'habillent que la machine — hors de tout vivier de tirage.
           (async (): Promise<Card[]> => {
-            const { data: set } = await supabase.from("sets").select("id").eq("name", INVENTION_SET_NAME).order("id").limit(1).maybeSingle<{ id: number }>();
+            const { data: set, error: setErr } = await supabase.from("sets").select("id").eq("name", INVENTION_SET_NAME).order("id").limit(1).maybeSingle<{ id: number }>();
+            if (setErr) throw new Error(`[match] set Inventions : ${setErr.message}`);
             if (!set) return [];
-            const { data } = await supabase.from("cards").select(GAME_CARD_COLUMNS).eq("set_id", set.id).eq("card_type", "creature").order("id").returns<Card[]>();
+            const { data, error } = await supabase.from("cards").select(GAME_CARD_COLUMNS).eq("set_id", set.id).eq("card_type", "creature").order("id").returns<Card[]>();
+            if (error) throw new Error(`[match] modèles de machine : ${error.message}`);
             return data ?? [];
           })(),
           // MUTATION X : toutes les créatures communes, toutes factions (helper
           // partagé avec le rejeu serveur — même requête, même tri).
           fetchMutationPoolRows(supabase),
         ]);
+        // Le VIDE est légitime pour ces deux lectures (aucun set spécial, pas
+        // d'Étincelle en base) ; l'ERREUR, non : elle changerait les viviers
+        // d'un seul client.
+        if (specialSetsRes.error) throw new Error(`[match] sets spéciaux : ${specialSetsRes.error.message}`);
+        if (manaSparkRes.error) throw new Error(`[match] Étincelle de Mana : ${manaSparkRes.error.message}`);
         useGameStore.getState().setMachineTemplates(machineTemplates);
         // Les deux clients interrogent la même base au démarrage du match : ils
         // bâtissent donc des pools identiques, condition de la synchro des
@@ -385,12 +426,14 @@ export default function GamePage() {
         // Fallback: default card back if a deck has none configured.
         let fallbackBackUrl: string | null = null;
         if (!myBackUrl || !oppBackUrl) {
-          const { data: def } = await supabase
+          const { data: def, error: defErr } = await supabase
             .from("card_backs")
             .select("image_url")
             .eq("is_default", true)
             .eq("is_active", true)
             .maybeSingle();
+          // Purement cosmétique, hors état de jeu : on trace sans bloquer.
+          if (defErr) console.warn("[game] default card back load error:", defErr);
           fallbackBackUrl = def?.image_url ?? null;
         }
         useGameStore.getState().setMyCardBackUrl(myBackUrl ?? fallbackBackUrl);
@@ -448,8 +491,11 @@ export default function GamePage() {
                 .maybeSingle();
               const snapSeq = snap?.seq as number | undefined;
               if (snap && snapSeq != null && snapSeq > lastSeqRef.current) {
-                const local = useGameStore.getState().gameState;
-                if (local) {
+                // Re-test APRÈS l'await (comme reconcileCheckpoint) : une action
+                // a pu démarrer son animation pendant la lecture.
+                const apres = useGameStore.getState();
+                const local = apres.gameState;
+                if (local && !apres.isAnimating) {
                   // Ré-attache les pools statiques retirés du snapshot (chaque
                   // client les a déjà en mémoire depuis l'init du match).
                   useGameStore.getState().setGameState({

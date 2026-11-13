@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 
 // Champs d'affichage traduits, exposés en PLUS des champs canoniques.
 // ⚠️ Les champs canoniques (`name`, `effect_text`, `flavor_text`) restent en FR
@@ -48,6 +49,9 @@ export function localizeCards<T extends TranslatableCard>(
   });
 }
 
+/** Au-delà, le filtre `.in("card_id", …)` cède la place à une jointure en mémoire. */
+const IN_FILTER_MAX_IDS = 200;
+
 // Récupère et fusionne en une passe : charge les traductions des `cards`
 // visibles pour la locale donnée, puis applique localizeCards. En FR, court-
 // circuite sans requête DB.
@@ -59,13 +63,28 @@ export async function withLocalizedCards<T extends TranslatableCard>(
   if (locale === DEFAULT_LOCALE || cards.length === 0) {
     return localizeCards(cards, [], locale);
   }
-  const ids = cards.map((c) => c.id);
-  const { data } = await supabase
-    .from("card_translations")
-    .select("card_id, name, flavor_text, effect_text")
-    .eq("locale", locale)
-    .in("card_id", ids);
-  return localizeCards(cards, (data as TranslationRow[]) ?? [], locale);
+  // PAGINÉ (PostgREST plafonne à 1 000 lignes en silence). Petite liste : on
+  // filtre côté base. Grande liste (catalogue entier) : un `.in()` de milliers
+  // d'ids fabriquait une URL énorme — on lit la locale entière et
+  // `localizeCards` joint en mémoire, les lignes en trop étant ignorées.
+  const ids = cards.length <= IN_FILTER_MAX_IDS ? cards.map((c) => c.id) : null;
+  try {
+    const rows = await fetchAllRows<TranslationRow>(
+      (from, to) => {
+        const q = supabase
+          .from("card_translations")
+          .select("card_id, name, flavor_text, effect_text")
+          .eq("locale", locale);
+        return (ids ? q.in("card_id", ids) : q).order("card_id").range(from, to).returns<TranslationRow[]>();
+      },
+      { label: "Traductions des cartes" },
+    );
+    return localizeCards(cards, rows, locale);
+  } catch (err) {
+    // Une traduction indisponible ne doit jamais casser l'affichage : repli FR.
+    console.warn("[i18n] traductions de cartes indisponibles — repli français :", err);
+    return localizeCards(cards, [], locale);
+  }
 }
 
 // Variante pour surfaces d'AFFICHAGE PUR (collection, deck builder) : remplace

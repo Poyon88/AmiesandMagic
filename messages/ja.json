@@ -1258,7 +1258,7 @@
       "Peu Commune": "アンコモン",
       "Rare": "レア",
       "Épique": "エピック",
-      "Légendaire": "レジェンド"
+      "Légendaire": "ユニーク"
     },
     "clans": {
       "Les Sylvains": "森人衆",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "プレイ",
     "hero_eyebrow": "ファンタジーTCG — 新世代",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "伝説を鍛えろ。勢力を率いろ。歴史を刻め。",
     "hero_cta": "アリーナへ",
     "hero_cta_secondary": "詳しく見る",
     "hero_proof": "初回プレイから500枚以上のカードを進呈",
-    "features_title": "Armies & Magicを選ぶ理由",
+    "features_title": "Armies of Legendsを選ぶ理由",
     "f1_title": "伝説の深み。",
-    "f1_desc": "Armies & Magicは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
+    "f1_desc": "Armies of Legendsは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
     "f2_title": "最初から圧倒的な枚数のカードを。",
     "f2_desc": "お好きな陣営のクラシックカードを全て無料で入手できます(300枚以上)。通常のTCGの数分の一のコストで、全陣営(約2,500枚)を揃えられます。",
     "f3_title": "エキスパートデッキは、それぞれが唯一の作品。",
     "f3_desc": "限定カードがエキスパートデッキに個性をもたらします。共通枠の仕組みにより、勝敗を決めるのはあなたの戦略のみ。",
     "f_icons_title": "ひと目でわかる。",
-    "f_icons_desc": "丁寧に描かれた Armies & Magic のカードは、美しさと読みやすさを兼ね備えています。発動条件ごとに色分けされたアイコンのおかげで、テキストを読まなくても、ひと目で効果がわかります。",
+    "f_icons_desc": "丁寧に描かれた Armies of Legends のカードは、美しさと読みやすさを兼ね備えています。発動条件ごとに色分けされたアイコンのおかげで、テキストを読まなくても、ひと目で効果がわかります。",
     "f4_title": "モバイルアリーナが、ついに本気になった。",
     "f4_desc": "レアカードや賞金が懸かったトーナメント——これまで大手デスクトップTCGだけに許されていた真剣勝負の舞台。",
     "factions_title": "九つの勢力。一つの伝説。",
@@ -2368,7 +2368,7 @@
     "cta_title": "アリーナがあなたを待っている。",
     "cta_sub": "召喚師たちの戦いに加われ。",
     "cta_btn": "冒険を始める",
-    "footer": "Armies & Magic — 無断転載禁止",
+    "footer": "Armies of Legends — 無断転載禁止",
     "factions": {
       "Humains": {
         "tagline": "旗の下に結束せし者"
@@ -2489,8 +2489,8 @@
     "unknown_card": "不明なカード",
     "ends_at": "終了: {date}",
     "status_active": "開催中",
-    "page_title": "オークションハウス — Armies & Magic",
-    "detail_page_title": "オークション詳細 — Armies & Magic"
+    "page_title": "オークションハウス — Armies of Legends",
+    "detail_page_title": "オークション詳細 — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "リセットをリクエストする前にメールアドレスを入力してください。",
@@ -2587,7 +2587,7 @@
     "no_notifications": "通知はありません",
     "see_auction": "オークションを見る",
     "rotate_device": "端末を回転させてください",
-    "rotate_device_hint": "Armies & Magicは横画面でプレイします。端末を横向きにしてください。"
+    "rotate_device_hint": "Armies of Legendsは横画面でプレイします。端末を横向きにしてください。"
   },
   "forge": {
     "forge_first_card": "最初のカードを鍛造する",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",
-    "page_subtitle": "Armies & Magic — 中世ファンタジー・カード決闘",
+    "page_subtitle": "Armies of Legends — 中世ファンタジー・カード決闘",
     "page_title": "遊び方",
     "track_beginner": "初心者 — 完全ガイド",
     "track_tcg": "TCGプレイヤー — 要点のみ",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "カード枚数 / デッキ（固定）",
     "stat_hand_range": "手札（開始時 → 上限）",
     "stat_mana_per_turn": "マナ（+1 / ターン）",
-    "tcg_gameloop_title": "ゲームループ（A&M固有のルール）",
+    "tcg_gameloop_title": "ゲームループ（AoL固有のルール）",
     "tcg_deckbuilding_title": "デッキ構築",
     "tcg_combat_title": "戦闘 — 解決順",
     "tcg_hero_spells_title": "ヒーロー＆アクション",
@@ -3401,7 +3401,7 @@
     "all_sets": "セット",
     "year": "年",
     "rarity_abbr_uncommon": "アン",
-    "rarity_abbr_legendary": "伝説",
+    "rarity_abbr_legendary": "ユニ",
     "expert_only_title": "エキスパートカード（アンコモン以上）のみ表示",
     "expert": "エキスパート",
     "preparation": "準備",
@@ -3629,7 +3629,7 @@
     "col_reward": "報酬",
     "col_credits": "クレジット",
     "col_essence": "エッセンス",
-    "meta_title": "トーナメント — Armies & Magic",
+    "meta_title": "トーナメント — Armies of Legends",
     "page_eyebrow": "competitive circuit",
     "page_subtitle": "チケット1枚で予選トーナメントに参加でき、優勝者は月例グランドトーナメントへのゴールデンチケットを獲得します。勝利するたびにマーケットクレジットとエッセンスを獲得できます。",
     "page_title": "トーナメント",
@@ -3677,5 +3677,16 @@
     "signup_free": "登録する(無料)",
     "signup_seats": "{count, plural, one {残り#枠} other {残り#枠}}",
     "signup_tickets_in_hand": "{count, plural, one {所持チケット: #枚} other {所持チケット: #枚}}"
+  },
+  "errors": {
+    "title": "エラーが発生しました",
+    "body": "こちら側で問題が発生しました。もう一度お試しください。問題が解決しない場合は、ホームに戻ってください。",
+    "retry": "再試行",
+    "home": "ホームに戻る",
+    "not_found_title": "ページが見つかりません",
+    "not_found_body": "このページは存在しないか、移動されました。",
+    "game_title": "対戦中にエラーが発生しました",
+    "game_body": "対戦の表示が中断されました。再読み込みすると、中断したところから再開します。",
+    "game_reload": "対戦を再読み込み"
   }
 }

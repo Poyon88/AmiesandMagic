@@ -58,8 +58,22 @@ export async function POST(request: Request) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed": {
+      // `async_payment_succeeded` : moyen de paiement différé (virement,
+      // prélèvement…) dont les fonds viennent d'arriver. Même chemin de crédit
+      // que `completed` — l'idempotence est portée par la fonction PL/pgSQL.
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // « Complétée » ne veut pas dire « payée » : avec un moyen de paiement
+        // différé, la session se termine en `unpaid` et l'argent n'arrive
+        // (ou pas) que plus tard. On ne crédite que sur `paid` ; le paiement
+        // reste `pending` et sera crédité par `async_payment_succeeded`.
+        if (session.payment_status !== "paid") {
+          console.info("[stripe/webhook] session non payée, aucun crédit", session.id, event.type, session.payment_status);
+          break;
+        }
+
         const { data, error } = await supabase.rpc("apply_checkout_completed", {
           p_session_id: session.id,
           p_payment_intent_id: typeof session.payment_intent === "string"

@@ -1,30 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
-
-async function getAuthUser() {
-  const cookieStore = await cookies();
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() { /* read-only */ },
-      },
-    },
-  );
-  const { data: { user } } = await supabaseAuth.auth.getUser();
-  return user;
-}
-
-function getAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
+import { requireAdmin } from '@/lib/admin/requireAdmin';
 
 // POST /api/boards/upload-url
 //
@@ -36,15 +11,15 @@ function getAdminClient() {
 // Input (optional): { ext?: "png" | "jpg" | "jpeg" | "webp" }
 // Output: { signedUrl, token, path, publicUrl }
 export async function POST(request: Request) {
-  const user = await getAuthUser();
-  if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
 
   const body = await request.json().catch(() => ({}));
   const rawExt = typeof body?.ext === 'string' ? body.ext.toLowerCase().replace(/^\./, '') : 'webp';
   const ext = /^(png|jpg|jpeg|webp)$/.test(rawExt) ? rawExt : 'webp';
   const filePath = `board_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  const supabase = getAdminClient();
+  const supabase = auth.supabase;
   const { data, error } = await supabase.storage
     .from('board-images')
     .createSignedUploadUrl(filePath);

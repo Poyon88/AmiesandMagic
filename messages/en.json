@@ -1258,7 +1258,7 @@
       "Peu Commune": "Uncommon",
       "Rare": "Rare",
       "Épique": "Epic",
-      "Légendaire": "Legendary"
+      "Légendaire": "Unique"
     },
     "clans": {
       "Les Sylvains": "The Sylvans",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "Play",
     "hero_eyebrow": "Next-gen Fantasy TCG",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "Forge your legend. Lead your faction. Write your own saga.",
     "hero_cta": "Enter the arena",
     "hero_cta_secondary": "Discover",
     "hero_proof": "Over 500 cards, free from your very first game",
-    "features_title": "Why Armies & Magic",
+    "features_title": "Why Armies of Legends",
     "f1_title": "The depth of legends.",
-    "f1_desc": "Armies & Magic unites the strategy of iconic TCGs with mechanics built for today's champions.",
+    "f1_desc": "Armies of Legends unites the strategy of iconic TCGs with mechanics built for today's champions.",
     "f2_title": "As many cards as possible, right from the start.",
     "f2_desc": "Get every classic card of the faction of your choice, free (over 300 cards). And unlock every faction (around 2,500 cards) for a fraction of the cost of a traditional TCG.",
     "f3_title": "Every Expert deck, a singular work.",
     "f3_desc": "Limited-print cards make every Expert deck unique. A shared quota ensures only your strategy decides.",
     "f_icons_title": "Readable at a glance.",
-    "f_icons_desc": "Lovingly illustrated, Armies & Magic cards are as readable as they are beautiful: thanks to a colour code of icons unique to each trigger, you grasp their effect at a single glance, without even reading the text.",
+    "f_icons_desc": "Lovingly illustrated, Armies of Legends cards are as readable as they are beautiful: thanks to a colour code of icons unique to each trigger, you grasp their effect at a single glance, without even reading the text.",
     "f4_title": "Mobile, at last worthy of the stakes.",
     "f4_desc": "Tournaments rewarded with rare cards and cash prizes — a level of stakes once reserved for desktop TCGs.",
     "factions_title": "Nine factions. One legend.",
@@ -2368,7 +2368,7 @@
     "cta_title": "The arena awaits.",
     "cta_sub": "Join the summoners on the battlefield.",
     "cta_btn": "Begin the adventure",
-    "footer": "Armies & Magic — All rights reserved",
+    "footer": "Armies of Legends — All rights reserved",
     "factions": {
       "Humains": {
         "tagline": "United under the banner"
@@ -2489,8 +2489,8 @@
     "unknown_card": "Unknown card",
     "ends_at": "Ends: {date}",
     "status_active": "Active",
-    "page_title": "Auction House — Armies & Magic",
-    "detail_page_title": "Auction Detail — Armies & Magic"
+    "page_title": "Auction House — Armies of Legends",
+    "detail_page_title": "Auction Detail — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "Enter your email before requesting a password reset.",
@@ -2587,7 +2587,7 @@
     "no_notifications": "No Notifications",
     "see_auction": "View auction",
     "rotate_device": "Rotate Your Device",
-    "rotate_device_hint": "Armies & Magic is played in landscape mode. Turn your device sideways to continue."
+    "rotate_device_hint": "Armies of Legends is played in landscape mode. Turn your device sideways to continue."
   },
   "forge": {
     "forge_first_card": "Forge Your First Card",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",
-    "page_subtitle": "Armies & Magic — medieval fantasy card duels",
+    "page_subtitle": "Armies of Legends — medieval fantasy card duels",
     "page_title": "How to Play",
     "track_beginner": "Beginner — Full Guide",
     "track_tcg": "TCG Player — The Essentials",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "Cards / Deck (exact)",
     "stat_hand_range": "Hand (start → max)",
     "stat_mana_per_turn": "Mana (+1 / turn)",
-    "tcg_gameloop_title": "Game Loop (A&M Specifics)",
+    "tcg_gameloop_title": "Game Loop (AoL Specifics)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combat — Resolution",
     "tcg_hero_spells_title": "Heroes & Actions",
@@ -3401,7 +3401,7 @@
     "all_sets": "Sets",
     "year": "Year",
     "rarity_abbr_uncommon": "UC",
-    "rarity_abbr_legendary": "Leg.",
+    "rarity_abbr_legendary": "Uni.",
     "expert_only_title": "Show expert (non-common) cards only",
     "expert": "Expert",
     "preparation": "Preparation",
@@ -3629,7 +3629,7 @@
     "col_reward": "Reward",
     "col_credits": "Credits",
     "col_essence": "Essence",
-    "meta_title": "Tournaments — Armies & Magic",
+    "meta_title": "Tournaments — Armies of Legends",
     "page_eyebrow": "Competitive circuit",
     "page_subtitle": "A ticket opens a qualifying tournament; its winner earns a Golden Ticket for the grand monthly tournament. Every win earns market credits and essence.",
     "page_title": "Tournaments",
@@ -3677,5 +3677,16 @@
     "signup_free": "Register (free)",
     "signup_seats": "{count, plural, one {# spot left} other {# spots left}}",
     "signup_tickets_in_hand": "{count, plural, one {# ticket in hand} other {# tickets in hand}}"
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "body": "Something went wrong on our side. You can try again; if the problem persists, head back to the home page.",
+    "retry": "Try again",
+    "home": "Back to home",
+    "not_found_title": "Page not found",
+    "not_found_body": "This page does not exist or has been moved.",
+    "game_title": "The match ran into an error",
+    "game_body": "The match display was interrupted. Reload it: it will resume where it left off.",
+    "game_reload": "Reload the match"
   }
 }

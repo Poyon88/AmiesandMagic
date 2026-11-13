@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { useLocale, useTranslations } from "next-intl";
 import { normalizeLocale, DEFAULT_LOCALE } from "@/i18n/config";
 
@@ -55,20 +56,29 @@ export default function CardTextProvider({ children }: { children: React.ReactNo
     }
     let cancelled = false;
     const supabase = createClient();
-    // Lecture publique (RLS lecture ouverte sur card_translations). Le pool tient
-    // en une requête (≤ 1 ligne par carte pour la locale).
-    supabase
-      .from("card_translations")
-      .select("card_id, name, flavor_text")
-      .eq("locale", locale)
-      .then(({ data, error }) => {
-        if (cancelled || error || !data) return;
-        const m = new Map<number, { name: string | null; flavor_text: string | null }>();
-        for (const r of data as { card_id: number; name: string | null; flavor_text: string | null }[]) {
-          m.set(r.card_id, { name: r.name, flavor_text: r.flavor_text });
-        }
-        setMap(m);
-      });
+    // Lecture publique (RLS lecture ouverte sur card_translations). PAGINÉE :
+    // PostgREST plafonne à 1 000 lignes en silence, et le catalogue les dépasse
+    // — au-delà, les cartes restaient en français sans raison apparente. Ordre
+    // total par `card_id` (une ligne par carte pour la locale). En cas d'échec :
+    // repli identité (texte français), jamais de plantage.
+    type Ligne = { card_id: number; name: string | null; flavor_text: string | null };
+    fetchAllRows<Ligne>(
+      (from, to) => supabase
+        .from("card_translations")
+        .select("card_id, name, flavor_text")
+        .eq("locale", locale)
+        .order("card_id")
+        .range(from, to)
+        .returns<Ligne[]>(),
+      { label: "Traductions des cartes" },
+    ).then((rows) => {
+      if (cancelled) return;
+      const m = new Map<number, { name: string | null; flavor_text: string | null }>();
+      for (const r of rows) m.set(r.card_id, { name: r.name, flavor_text: r.flavor_text });
+      setMap(m);
+    }).catch((err) => {
+      console.warn("[i18n] traductions de cartes indisponibles — repli français :", err);
+    });
     return () => {
       cancelled = true;
     };

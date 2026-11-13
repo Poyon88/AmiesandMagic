@@ -141,6 +141,23 @@ describe("le webhook", () => {
     expect(src).toMatch(/type ignoré/);
   });
 
+  it("ne crédite qu'une session PAYÉE — la garde précède l'appel de crédit", () => {
+    // Une session « complétée » peut être `unpaid` (moyen de paiement différé).
+    const garde = src.search(/session\.payment_status !== "paid"/);
+    const credit = src.indexOf('rpc("apply_checkout_completed"');
+    expect(garde, "garde payment_status absente").toBeGreaterThan(-1);
+    expect(credit).toBeGreaterThan(-1);
+    expect(garde, "la garde doit précéder le crédit").toBeLessThan(credit);
+    // Un seul appel de crédit : aucun chemin ne peut contourner la garde.
+    expect(src.split("apply_checkout_completed").length - 1).toBe(1);
+  });
+
+  it("crédite un paiement différé abouti par le MÊME chemin que `completed`", () => {
+    expect(src).toMatch(
+      /case "checkout\.session\.completed":\s*case "checkout\.session\.async_payment_succeeded":\s*\{/,
+    );
+  });
+
   it("délègue tout effet de bord aux fonctions PL/pgSQL idempotentes", () => {
     // Aucune écriture directe : sans cela, l'atomicité et l'idempotence
     // reposeraient sur l'ordre des appels dans le handler.

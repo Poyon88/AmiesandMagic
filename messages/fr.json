@@ -1258,7 +1258,7 @@
       "Peu Commune": "Peu Commune",
       "Rare": "Rare",
       "Épique": "Épique",
-      "Légendaire": "Légendaire"
+      "Légendaire": "Unique"
     },
     "clans": {
       "Les Sylvains": "Les Sylvains",
@@ -2345,20 +2345,20 @@
   "landing": {
     "nav_play": "Jouer",
     "hero_eyebrow": "Fantasy TCG — Nouvelle génération",
-    "hero_title": "Armies & Magic",
+    "hero_title": "Armies of Legends",
     "hero_sub": "Forge ta légende. Mène ta faction. Écris ton histoire.",
     "hero_cta": "Entrer dans l'arène",
     "hero_cta_secondary": "Découvrir",
     "hero_proof": "Plus de 500 cartes offertes dès la première partie",
-    "features_title": "Pourquoi Armies & Magic",
+    "features_title": "Pourquoi Armies of Legends",
     "f1_title": "La profondeur des légendes.",
-    "f1_desc": "Armies & Magic unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
+    "f1_desc": "Armies of Legends unit la stratégie des TCG cultes à des mécaniques pensées pour les champions d'aujourd'hui.",
     "f2_title": "Un maximum de cartes dès le début.",
     "f2_desc": "Obtenez gratuitement l'ensemble des cartes classiques de la faction de votre choix (plus de 300 cartes). Disposez de l'ensemble des factions (environ 2 500 cartes) pour une fraction du coût d'un TCG classique.",
     "f3_title": "Chaque deck Expert, une œuvre unique.",
     "f3_desc": "Les cartes en tirage limité rendent chaque deck Expert singulier. Le quota commun garantit que seule votre stratégie décide.",
     "f_icons_title": "Lisibles d'un coup d'œil.",
-    "f_icons_desc": "Illustrées avec soin, les cartes d’Armies & Magic sont aussi belles que lisibles : grâce à un code d’icônes colorées propre à chaque déclencheur, vous comprenez leur effet d’un simple coup d’œil, sans même lire le texte.",
+    "f_icons_desc": "Illustrées avec soin, les cartes d’Armies of Legends sont aussi belles que lisibles : grâce à un code d’icônes colorées propre à chaque déclencheur, vous comprenez leur effet d’un simple coup d’œil, sans même lire le texte.",
     "f4_title": "L'arène mobile, enfin à la hauteur.",
     "f4_desc": "Des tournois récompensés en cartes rares et en dotations financières — un niveau d'enjeu jusqu'ici réservé aux plus grands TCG desktop.",
     "factions_title": "Neuf factions. Une légende.",
@@ -2368,7 +2368,7 @@
     "cta_title": "L'arène t'attend.",
     "cta_sub": "Rejoins les invocateurs dans la bataille.",
     "cta_btn": "Commencer l'aventure",
-    "footer": "Armies & Magic — Tous droits réservés",
+    "footer": "Armies of Legends — Tous droits réservés",
     "factions": {
       "Humains": {
         "tagline": "Unis sous la bannière"
@@ -2489,8 +2489,8 @@
     "unknown_card": "Carte inconnue",
     "ends_at": "Fin: {date}",
     "status_active": "Active",
-    "page_title": "Hôtel des Enchères — Armies & Magic",
-    "detail_page_title": "Détail Enchère — Armies & Magic"
+    "page_title": "Hôtel des Enchères — Armies of Legends",
+    "detail_page_title": "Détail Enchère — Armies of Legends"
   },
   "auth": {
     "forgot_email_required": "Entrez votre email avant de demander une réinitialisation.",
@@ -2587,7 +2587,7 @@
     "no_notifications": "Aucune notification",
     "see_auction": "Voir l'enchère",
     "rotate_device": "Tournez votre téléphone",
-    "rotate_device_hint": "Armies & Magic se joue en mode paysage. Mettez votre appareil à l'horizontale pour continuer."
+    "rotate_device_hint": "Armies of Legends se joue en mode paysage. Mettez votre appareil à l'horizontale pour continuer."
   },
   "forge": {
     "forge_first_card": "Forgez votre première carte",
@@ -3316,7 +3316,7 @@
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",
-    "page_subtitle": "Armies & Magic — duel de cartes médiéval-fantastique",
+    "page_subtitle": "Armies of Legends — duel de cartes médiéval-fantastique",
     "page_title": "Comment jouer",
     "track_beginner": "Débutant — guide complet",
     "track_tcg": "Joueur de TCG — l'essentiel",
@@ -3343,7 +3343,7 @@
     "stat_deck_exact": "Cartes / deck (exact)",
     "stat_hand_range": "Main (départ → max)",
     "stat_mana_per_turn": "Mana (+1 / tour)",
-    "tcg_gameloop_title": "Boucle de jeu (spécificités A&M)",
+    "tcg_gameloop_title": "Boucle de jeu (spécificités AoL)",
     "tcg_deckbuilding_title": "Deckbuilding",
     "tcg_combat_title": "Combat — résolution",
     "tcg_hero_spells_title": "Héros & actions",
@@ -3401,7 +3401,7 @@
     "all_sets": "Sets",
     "year": "Année",
     "rarity_abbr_uncommon": "PC",
-    "rarity_abbr_legendary": "Lég.",
+    "rarity_abbr_legendary": "Uni.",
     "expert_only_title": "Afficher uniquement les cartes expertes (non-communes)",
     "expert": "Expert",
     "preparation": "Préparation",
@@ -3629,7 +3629,7 @@
     "col_reward": "Récompense",
     "col_credits": "Crédits",
     "col_essence": "Essence",
-    "meta_title": "Tournois — Armies & Magic",
+    "meta_title": "Tournois — Armies of Legends",
     "page_eyebrow": "Circuit compétitif",
     "page_subtitle": "Un ticket ouvre un tournoi de qualification ; son vainqueur décroche un Golden Ticket pour le grand tournoi mensuel. Chaque victoire rapporte crédits marché et essence.",
     "page_title": "Tournois",
@@ -3677,5 +3677,16 @@
     "signup_free": "S'inscrire (gratuit)",
     "signup_seats": "{count, plural, one {# place restante} other {# places restantes}}",
     "signup_tickets_in_hand": "{count, plural, one {# ticket en main} other {# tickets en main}}"
+  },
+  "errors": {
+    "title": "Une erreur est survenue",
+    "body": "Quelque chose s'est mal passé de notre côté. Vous pouvez réessayer ; si le problème persiste, revenez à l'accueil.",
+    "retry": "Réessayer",
+    "home": "Retour à l'accueil",
+    "not_found_title": "Page introuvable",
+    "not_found_body": "Cette page n'existe pas ou a été déplacée.",
+    "game_title": "La partie a rencontré une erreur",
+    "game_body": "L'affichage de la partie s'est interrompu. Rechargez-la : elle reprendra là où elle en était.",
+    "game_reload": "Recharger la partie"
   }
 }
