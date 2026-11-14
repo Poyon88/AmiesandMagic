@@ -3313,6 +3313,7 @@
     "mutation_empty": "该费用没有可用的生物。",
     "mutation_cancel": "取消",
     "infestation_caption": "🪳 侵染",
+    "infestation_eclosion_caption": "🪳 侵染 — 孵化",
     "enterrement_caption": "⚰ 埋葬"
   },
   "tutorial": {

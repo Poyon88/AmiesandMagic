@@ -204,6 +204,10 @@ let compagnonsSink: Array<{ ownerId: string; cards: Card[]; variant?: "infestati
 // ENTERREMENT : cartes enterrées pendant l'action (animation). Même cycle de vie
 // que compagnonsSink ; rattaché à state.enterrementEvents, hors hash.
 let enterrementSink: Array<{ ownerId: string; cards: Card[] }> = [];
+// ÉCLOSION : copies d'Infestation piochées et invoquées d'office pendant
+// l'action. Animation seule (la copie sort de la pile et rejoint le plateau) ;
+// rattaché à state.eclosionEvents, hors hash.
+let eclosionSink: Array<{ ownerId: string; cards: Card[] }> = [];
 /** Signale qu'un effet « deck » a réellement modifié une carte. À n'appeler que
  *  si quelque chose a changé : un no-op (aucun sort dans le deck, réduction déjà
  *  au plancher) ne doit rien animer, sinon le badge mentirait. */
@@ -4567,6 +4571,9 @@ function drawCard(player: PlayerState, autoPlayDepth = 0): CardInstance | null {
     if (placesOccupees(player) < MAX_BOARD_SIZE) {
       card.hasSummoningSickness = true;
       player.board.push(card);
+      // Sans annonce, la copie apparaissait en jeu sans que rien ne dise d'où
+      // elle venait : le joueur croyait qu'Infestation ne faisait rien.
+      eclosionSink.push({ ownerId: player.id, cards: [card.card] });
     } else {
       player.graveyard.push(card);
     }
@@ -8812,10 +8819,8 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // désormais sur les dégâts NETS (après Bouclier / Résistance / Armure) et
     // non plus sur l'ATK brute.
 
-    // Liaison de vie: damage taken shared with enemy hero
-    if (!cibleTombeeAuSouffle && hasKw(target, "liaison_de_vie")) {
-      dealDamageToHero(player.hero, attackPower, target);
-    }
+    // Liaison de vie : centralisée dans dealDamageToCreature (tout dégât subi,
+    // pas seulement l'attaque reçue). Plus de bloc dédié ici.
 
     // Riposte X : désormais centralisée dans dealDamageToCreature (déclenchée
     // par TOUTE source de dégât, pas seulement le combat) — cf. la passe de
@@ -9898,6 +9903,19 @@ function dealDamageToCreature(
     } else {
       dealDamageToHero(source, creature.riposteX, creature);
     }
+  }
+
+  // LIAISON DE VIE : « partage les dégâts subis avec le héros adverse ». Tout
+  // dégât RÉELLEMENT subi (après Bouclier / Résistance / Armure / immunités),
+  // d'où qu'il vienne : attaque reçue, riposte encaissée en attaquant, sort,
+  // capacité, zone. Avant, seul le cas « elle est attaquée » comptait, avec
+  // l'ATK brute de l'attaquant : la capacité semblait ne rien faire dès que la
+  // créature attaquait elle-même ou prenait un sort, et blessait le héros même
+  // quand un Bouclier avait tout absorbé. Uniquement en jeu (plateau).
+  if (hasKw(creature, "liaison_de_vie")) {
+    const proprietaire = currentBoardPlayers.find(p => p.board.includes(creature));
+    const adverse = proprietaire && currentBoardPlayers.find(p => p !== proprietaire);
+    if (adverse) dealDamageToHero(adverse.hero, damage, creature);
   }
 
   // Drain de vie : après toutes les réductions et la soustraction des PV, on
@@ -13444,6 +13462,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   deckEffectSink = [];
   compagnonsSink = [];
   enterrementSink = [];
+  eclosionSink = [];
   lethalSpellActive = false;
   woundSink = [];
   damageOriginCtx = null;
@@ -13618,6 +13637,9 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // Rattache les Compagnons mélangés au deck (cartes qui filent vers la pile).
   if (enterrementSink.length > 0 && result !== state) {
     result.enterrementEvents = [...(result.enterrementEvents ?? []), ...enterrementSink];
+  }
+  if (eclosionSink.length > 0 && result !== state) {
+    result.eclosionEvents = [...(result.eclosionEvents ?? []), ...eclosionSink];
   }
   if (compagnonsSink.length > 0 && result !== state) {
     result.compagnonsEvents = [...(result.compagnonsEvents ?? []), ...compagnonsSink];

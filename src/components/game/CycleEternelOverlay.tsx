@@ -22,7 +22,7 @@ interface CycleEternelOverlayProps {
  *
  *  `cycle` : vert recyclage (Cycle éternel, la dépouille qui repart dans le deck).
  *  `compagnons` : ambre fauve (les cartes liées qu'on mélange au deck). */
-export type DeckReturnVariant = "cycle" | "compagnons" | "infestation" | "enterrement";
+export type DeckReturnVariant = "cycle" | "compagnons" | "infestation" | "enterrement" | "eclosion";
 
 const PALETTES: Record<DeckReturnVariant, {
   vif: string; profond: string; clair: string; fond: string;
@@ -62,6 +62,17 @@ const PALETTES: Record<DeckReturnVariant, {
     fond: "linear-gradient(135deg, #1a181e 0%, #2e2a33 60%, #121015 100%)",
     teinteParticule: 270,
     captionKey: "enterrement_caption",
+  },
+  // Éclosion : une copie d'Infestation piochée, invoquée d'office. Même teinte
+  // qu'Infestation, mais c'est la seule variante qui joue À L'ENVERS : la carte
+  // SORT de la pile, se montre, puis descend vers le plateau de son camp.
+  eclosion: {
+    vif: "170, 210, 90",
+    profond: "120, 160, 60",
+    clair: "210, 235, 160",
+    fond: "linear-gradient(135deg, #1c2412 0%, #33401c 60%, #141a0c 100%)",
+    teinteParticule: 80,
+    captionKey: "infestation_eclosion_caption",
   },
 };
 
@@ -145,6 +156,9 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
   const startY = window.innerHeight / 2;
   const { deckPos } = entry;
   const delay = entry.index * (ENTRY_STAGGER_MS / 1000);
+  // Éclosion : trajet inversé (pile → centre → plateau du camp).
+  const sortDuDeck = variant === "eclosion";
+  const versPlateau = (entry.ownerIsLocal ? 1 : -1) * window.innerHeight * 0.16;
 
   // Randomised per-particle offsets — computed once per mount so React's
   // pure-render rule isn't violated by Math.random() during render.
@@ -208,23 +222,27 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
             ? `url(${entry.card.image_url}) center/cover`
             : pal.fond,
         }}
-        initial={{
-          x: 0,
-          y: 0,
-          scale: 0.4,
-          opacity: 0,
-          rotate: -8,
-        }}
-        animate={{
-          x: [0, 0, deckPos.x - startX],
-          y: [0, -30, deckPos.y - startY],
-          scale: [0.4, 1, 0.18],
-          opacity: [0, 1, 1, 0.6],
-          rotate: [-8, 0, 12],
-        }}
+        initial={sortDuDeck
+          ? { x: deckPos.x - startX, y: deckPos.y - startY, scale: 0.18, opacity: 0, rotate: 12 }
+          : { x: 0, y: 0, scale: 0.4, opacity: 0, rotate: -8 }}
+        animate={sortDuDeck
+          ? {
+            x: [deckPos.x - startX, 0, 0, 0],
+            y: [deckPos.y - startY, -20, -20, versPlateau],
+            scale: [0.18, 1.1, 1.1, 0.55],
+            opacity: [0.7, 1, 1, 0],
+            rotate: [12, 0, 0, 0],
+          }
+          : {
+            x: [0, 0, deckPos.x - startX],
+            y: [0, -30, deckPos.y - startY],
+            scale: [0.4, 1, 0.18],
+            opacity: [0, 1, 1, 0.6],
+            rotate: [-8, 0, 12],
+          }}
         transition={{
           duration: ENTRY_DURATION_MS / 1000,
-          times: [0, 0.35, 1],
+          times: sortDuDeck ? [0, 0.4, 0.75, 1] : [0, 0.35, 1],
           ease: [0.45, 0.1, 0.6, 1],
           delay,
         }}
@@ -258,7 +276,7 @@ function CycleEntry({ entry, variant }: { entry: Resolved; variant: DeckReturnVa
             delay,
           }}
         >
-          ♻️ {localizeName(entry.card)}
+          {sortDuDeck ? "🪳" : "♻️"} {localizeName(entry.card)}
         </motion.div>
       </motion.div>
 

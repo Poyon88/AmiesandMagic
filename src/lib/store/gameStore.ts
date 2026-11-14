@@ -441,7 +441,7 @@ export interface CycleEternelEvent {
   entries: CycleEternelEntry[];
   timestamp: number;
   /** Habillage de l'overlay (canal Compagnons) : absent = celui du canal. */
-  variant?: "infestation" | "enterrement";
+  variant?: "infestation" | "enterrement" | "eclosion";
 }
 
 /** Coût d'EXIL payé : X cartes retirées du dessus d'un deck. Elles ne rejoignent
@@ -576,6 +576,14 @@ export interface HeroPowerCastEvent {
 
 export interface GraveyardAffectEvent {
   cards: Card[];
+  timestamp: number;
+}
+
+/** Créature dont les caractéristiques ont changé ALORS QU'ELLE EST AU CIMETIÈRE
+ *  (déclencheur « fin de tour, au cimetière », effet visant le cimetière…).
+ *  `card` porte les NOUVELLES valeurs, `attack` / `health` le gain. */
+export interface GraveyardBuffEvent {
+  entries: Array<{ card: Card; attack: number; health: number; ownerIsLocal: boolean }>;
   timestamp: number;
 }
 
@@ -794,6 +802,7 @@ interface GameStore {
   compagnonsEvent: CycleEternelEvent | null;
   /** ENTERREMENT : cartes passées du deck au cimetière (overlay vers la pile). */
   enterrementEvent: CycleEternelEvent | null;
+  eclosionEvent: CycleEternelEvent | null;
   exileCostEvent: ExileCostEvent | null;
   topdeckCostEvent: TopdeckCostEvent | null;
   eveilEvent: EveilEvent | null;
@@ -813,6 +822,7 @@ interface GameStore {
   emblemFireEvent: EmblemFireEvent | null;
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
+  graveyardBuffEvent: GraveyardBuffEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
   boardImageUrl: string | null;
   // Layout variant carried by the active game_board. "classic" = legacy
@@ -904,6 +914,7 @@ interface GameStore {
   clearCycleEternelEvent: () => void;
   clearCompagnonsEvent: () => void;
   clearEnterrementEvent: () => void;
+  clearEclosionEvent: () => void;
   clearTempeteEvent: () => void;
   clearPowerArrowEvent: () => void;
   clearManaReductionEvent: () => void;
@@ -915,6 +926,7 @@ interface GameStore {
   clearEmblemFireEvent: () => void;
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
+  clearGraveyardBuffEvent: () => void;
   clearDiscardFromHandEvent: () => void;
   toggleDiscardSelection: (instanceId: string) => void;
   toggleSacrificeSelection: (instanceId: string) => void;
@@ -1977,6 +1989,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   cycleEternelEvent: null,
   compagnonsEvent: null,
   enterrementEvent: null,
+  eclosionEvent: null,
   exileCostEvent: null,
   topdeckCostEvent: null,
   eveilEvent: null,
@@ -1992,6 +2005,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   emblemFireEvent: null,
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
+        graveyardBuffEvent: null,
   discardFromHandEvent: null,
   isAnimating: false,
   pendingIncomingActions: [],
@@ -2092,6 +2106,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         cycleEternelEvent: null,
         heroPowerCastEvent: null,
         graveyardAffectEvent: null,
+        graveyardBuffEvent: null,
         discardFromHandEvent: null,
         tempeteEvent: null,
         powerArrowEvent: null,
@@ -2633,6 +2648,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       e.cards.map((card) => ({ card, ownerIsLocal: e.ownerId === localPlayerId })));
     const enterrementEvent: CycleEternelEvent | null = enterrementEntries.length > 0
       ? { entries: enterrementEntries, timestamp: Date.now(), variant: "enterrement" }
+      : null;
+
+    // ÉCLOSION : copies d'Infestation piochées et posées d'office en jeu.
+    const rawEclosion = newState.eclosionEvents ?? [];
+    if (newState.eclosionEvents) newState.eclosionEvents = undefined;
+    const eclosionEntries: CycleEternelEntry[] = rawEclosion.flatMap((e) =>
+      e.cards.map((card) => ({ card, ownerIsLocal: e.ownerId === localPlayerId })));
+    const eclosionEvent: CycleEternelEvent | null = eclosionEntries.length > 0
+      ? { entries: eclosionEntries, timestamp: Date.now(), variant: "eclosion" }
       : null;
 
     // Coût d'EXIL payé pendant l'action. Le moteur a noté combien de cartes ont
@@ -3269,6 +3293,28 @@ export const useGameStore = create<GameStore>((set, get) => {
         ? { cards: graveyardRemoved, timestamp: Date.now() }
         : null;
 
+    // Créatures RESTÉES au cimetière dont l'ATK ou les PV ont changé pendant
+    // l'action. Les buffs permanents sont cuits dans `card.attack` /
+    // `card.health` : c'est donc là qu'on lit l'écart. Une carte qui ENTRE au
+    // cimetière pendant l'action n'est pas concernée (elle n'y était pas avant).
+    const graveyardBuffEntries: GraveyardBuffEvent["entries"] = [];
+    for (let i = 0; i < 2; i++) {
+      const avant = new Map(gameState.players[i].graveyard.map((c) => [c.instanceId, c]));
+      for (const apres of newState.players[i].graveyard) {
+        const old = avant.get(apres.instanceId);
+        if (!old || apres.card.card_type !== "creature") continue;
+        const dAtk = (apres.card.attack ?? 0) - (old.card.attack ?? 0);
+        const dHp = (apres.card.health ?? 0) - (old.card.health ?? 0);
+        if (dAtk === 0 && dHp === 0) continue;
+        graveyardBuffEntries.push({
+          card: apres.card, attack: dAtk, health: dHp,
+          ownerIsLocal: newState.players[i].id === localPlayerId,
+        });
+      }
+    }
+    const graveyardBuffEvent: GraveyardBuffEvent | null =
+      graveyardBuffEntries.length > 0 ? { entries: graveyardBuffEntries, timestamp: Date.now() } : null;
+
     // Detect cards forced from a player's hand into their graveyard during
     // this action. Two distinct cases:
     //   • COST discard — the player paid `discard_cost` to play the card.
@@ -3403,7 +3449,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!graveyardBuffEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eclosionEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -3933,6 +3979,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         damageEvents: staggeredDmgEvents,
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
+        ...(graveyardBuffEvent ? { graveyardBuffEvent } : {}),
         ...(tempeteEvent ? { tempeteEvent } : {}),
         // Épargne posée ICI et pas en phase morts : cette phase est la seule à
         // être planifiée inconditionnellement, et un gain d'Épargne ne tue
@@ -3964,6 +4011,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
         ...(compagnonsEvent ? { compagnonsEvent } : {}),
         ...(enterrementEvent ? { enterrementEvent } : {}),
+        ...(eclosionEvent ? { eclosionEvent } : {}),
         // FX: the new creatures mount in this same render — the Canvas layer
         // resolves each one's position from the DOM and bursts a portal there.
         // On EXCLUT les invocations de la vague de pouvoir (déjà portées à
@@ -4019,6 +4067,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         ...(cycleEvent ? { cycleEternelEvent: cycleEvent } : {}),
         ...(compagnonsEvent ? { compagnonsEvent } : {}),
         ...(enterrementEvent ? { enterrementEvent } : {}),
+        ...(eclosionEvent ? { eclosionEvent } : {}),
       });
     };
 
@@ -5492,6 +5541,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     set({ enterrementEvent: null });
   },
 
+  clearEclosionEvent: () => {
+    set({ eclosionEvent: null });
+  },
+
   clearTempeteEvent: () => {
     set({ tempeteEvent: null });
   },
@@ -5538,6 +5591,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearGraveyardAffectEvent: () => {
     set({ graveyardAffectEvent: null });
+  },
+
+  clearGraveyardBuffEvent: () => {
+    set({ graveyardBuffEvent: null });
   },
 
   clearDiscardFromHandEvent: () => {

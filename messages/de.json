@@ -3313,6 +3313,7 @@
     "mutation_empty": "Keine Kreatur zu diesen Kosten verfügbar.",
     "mutation_cancel": "Abbrechen",
     "infestation_caption": "🪳 Befall",
+    "infestation_eclosion_caption": "🪳 Befall — Schlüpfen",
     "enterrement_caption": "⚰ Begräbnis"
   },
   "tutorial": {

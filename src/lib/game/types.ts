@@ -2164,6 +2164,9 @@ export interface GameState {
   /** ENTERREMENT : cartes passées du deck au cimetière pendant l'action, par
    *  propriétaire. Animation seule : vidé par le store, exclu du hash. */
   enterrementEvents?: Array<{ ownerId: string; cards: Card[] }>;
+  /** ÉCLOSION : copies d'Infestation piochées et invoquées d'office pendant
+   *  l'action, par propriétaire. Animation seule : vidé par le store, exclu du hash. */
+  eclosionEvents?: Array<{ ownerId: string; cards: Card[] }>;
   compagnonsEvents?: Array<{
     ownerId: string;
     cards: Card[];

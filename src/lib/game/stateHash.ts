@@ -52,6 +52,7 @@ const VOLATILE_KEYS = new Set([
   "deckEffectEvents",
   "compagnonsEvents",
   "enterrementEvents",
+  "eclosionEvents",
   "powerStrikes",
   "recastEvents",
   "stackOverflowCount",

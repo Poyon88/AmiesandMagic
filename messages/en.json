@@ -3313,6 +3313,7 @@
     "mutation_empty": "No creature available at this cost.",
     "mutation_cancel": "Cancel",
     "infestation_caption": "🪳 Infestation",
+    "infestation_eclosion_caption": "🪳 Infestation — hatching",
     "enterrement_caption": "⚰ Burial"
   },
   "tutorial": {

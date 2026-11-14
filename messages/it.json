@@ -3313,6 +3313,7 @@
     "mutation_empty": "Nessuna creatura disponibile a questo costo.",
     "mutation_cancel": "Annulla",
     "infestation_caption": "🪳 Infestazione",
+    "infestation_eclosion_caption": "🪳 Infestazione — schiusa",
     "enterrement_caption": "⚰ Sepoltura"
   },
   "tutorial": {

@@ -3313,6 +3313,7 @@
     "mutation_empty": "このコストのクリーチャーはいません。",
     "mutation_cancel": "キャンセル",
     "infestation_caption": "🪳 侵食",
+    "infestation_eclosion_caption": "🪳 侵食 — 孵化",
     "enterrement_caption": "⚰ 埋葬"
   },
   "tutorial": {

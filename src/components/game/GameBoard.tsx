@@ -46,6 +46,7 @@ import ExileCostOverlay from "./ExileCostOverlay";
 import TopdeckCostOverlay from "./TopdeckCostOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
+import GraveyardBuffOverlay from "./GraveyardBuffOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
 import ManaReductionOverlay from "./ManaReductionOverlay";
@@ -146,9 +147,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     cycleEternelEvent,
     compagnonsEvent,
     enterrementEvent,
+    eclosionEvent,
     clearCycleEternelEvent,
     clearCompagnonsEvent,
     clearEnterrementEvent,
+    clearEclosionEvent,
     exileCostEvent,
     deckEffectEvent,
     clearDeckEffectEvent,
@@ -159,6 +162,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearHeroPowerCastEvent,
     graveyardAffectEvent,
     clearGraveyardAffectEvent,
+    graveyardBuffEvent,
+    clearGraveyardBuffEvent,
     discardFromHandEvent,
     clearDiscardFromHandEvent,
     tempeteEvent,
@@ -2214,10 +2219,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           filent vers la pile de deck du contrôleur. */}
       <CycleEternelOverlay event={compagnonsEvent} onComplete={clearCompagnonsEvent} variant={compagnonsEvent?.variant ?? "compagnons"} />
       <CycleEternelOverlay event={enterrementEvent} onComplete={clearEnterrementEvent} variant="enterrement" />
+      <CycleEternelOverlay event={eclosionEvent} onComplete={clearEclosionEvent} variant="eclosion" />
       <ExileCostOverlay event={exileCostEvent} onComplete={clearExileCostEvent} />
       <TopdeckCostOverlay event={topdeckCostEvent} onComplete={clearTopdeckCostEvent} />
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
+      <GraveyardBuffOverlay event={graveyardBuffEvent} onComplete={clearGraveyardBuffEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
       <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
       <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />

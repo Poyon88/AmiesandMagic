@@ -3313,6 +3313,7 @@
     "mutation_empty": "No hay criaturas disponibles a este coste.",
     "mutation_cancel": "Cancelar",
     "infestation_caption": "🪳 Infestación",
+    "infestation_eclosion_caption": "🪳 Infestación — eclosión",
     "enterrement_caption": "⚰ Entierro"
   },
   "tutorial": {

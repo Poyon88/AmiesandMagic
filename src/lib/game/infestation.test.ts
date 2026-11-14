@@ -87,6 +87,18 @@ describe("la pioche d'une copie", () => {
     expect(p.hand.some((c) => c.instanceId === copie.instanceId)).toBe(false);
   });
 
+  it("annonce l'éclosion à l'écran — et rien si le plateau est plein", () => {
+    const { s, copie } = avecCopieAuDessus();
+    s.currentPlayerIndex = 1;
+    const st = applyAction(s, { type: "end_turn" } as GameAction);
+    expect(st.eclosionEvents).toEqual([{ ownerId: st.players[0].id, cards: [copie.card] }]);
+
+    const plein = avecCopieAuDessus();
+    plein.s.players[0].board = Array.from({ length: MAX_BOARD_SIZE }, (_, i) => mkInstance(mkCard({ name: `Mur ${i}`, attack: 0, health: 5 })));
+    plein.s.currentPlayerIndex = 1;
+    expect(applyAction(plein.s, { type: "end_turn" } as GameAction).eclosionEvents ?? []).toHaveLength(0);
+  });
+
   it("sans effet d'entrée : la copie invoquée ne réinfeste pas", () => {
     const { s } = avecCopieAuDessus();
     s.currentPlayerIndex = 1;
