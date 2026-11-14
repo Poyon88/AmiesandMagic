@@ -2,6 +2,7 @@
 
 import { RETRAITE_TEINTE, RETRAITE_GLYPHE } from "@/lib/game/repli-theme";
 import { useState, useRef, memo, useMemo } from "react";
+import { useCoupDiffere } from "./useCoupDiffere";
 import { titleFontScale } from "@/lib/game/card-title";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -40,6 +41,9 @@ interface BoardCreatureProps {
   isSelected?: boolean;
   isValidTarget?: boolean;
   damageAmount?: number | null;
+  /** Délai du popup de cette cible (effet de zone échelonné) : le clignotement
+   *  et la baisse des PV attendent son arrivée. */
+  damageDelayMs?: number;
   /** A positive event landed on this unit this action — drives a graceful
    *  upward "power-up" pulse (distinct from the violent hit reaction). */
   boostKind?: "buff" | "empower" | null;
@@ -124,6 +128,7 @@ function BoardCreature({
   isSelected = false,
   isValidTarget = false,
   damageAmount = null,
+  damageDelayMs = 0,
   boostKind = null,
   summoning = false,
   entering = false,
@@ -238,9 +243,10 @@ function BoardCreature({
         : (card.race ? tokenTemplates.find(t => t.race === card.race) : null))
     : null;
   const resolvedImageUrl = card.image_url ?? tokenTemplate?.image_url ?? null;
-  const isDamaged = creature.currentHealth < creature.maxHealth;
+  const { frappe, valeurAffichee: pvAffiche } = useCoupDiffere(damageAmount, damageDelayMs, creature.currentHealth);
+  const isDamaged = pvAffiche < creature.maxHealth;
   const isBuffedAtk = creature.currentAttack > (card.attack ?? 0);
-  const isBuffedHp = creature.currentHealth > (card.health ?? 0);
+  const isBuffedHp = pvAffiche > (card.health ?? 0);
   const [isHovered, setIsHovered] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const creatureRef = useRef<HTMLDivElement>(null);
@@ -291,7 +297,7 @@ function BoardCreature({
   // Hit reaction: a brief white flash only — no recoil/knockback or squash.
   // The damage number and Canvas burst still convey direction; the card itself
   // stays put when struck. Bigger hits flash a touch brighter.
-  const isHit = damageAmount != null && damageAmount > 0;
+  const isHit = frappe && damageAmount != null && damageAmount > 0;
   const bigHit = isHit && isBigHit(damageAmount as number);
   const hitAnimate = {
     x: 0,
@@ -561,7 +567,7 @@ function BoardCreature({
         cursor: "pointer",
         transition: "border-color 0.2s, box-shadow 0.2s",
       }}
-      title={`${localizeName(card)} (${creature.currentAttack}/${creature.currentHealth})`}
+      title={`${localizeName(card)} (${creature.currentAttack}/${pvAffiche})`}
     >
       {/* Rarity frame — fades in only on hover-zoom for non-Commune
           creatures. Inset=6 (border 2 + 4px ring) and borderRadius=14
@@ -951,7 +957,7 @@ function BoardCreature({
       {/* ATK / PV : écus héraldiques en bas à droite. Le TON du chiffre dit
           l'état (buff vert, dégâts ou malus rouge), l'or ne change jamais. */}
       <StatShields
-        atk={creature.currentAttack} hp={creature.currentHealth}
+        atk={creature.currentAttack} hp={pvAffiche}
         atkTone={isBuffedAtk ? "buff" : creature.currentAttack < (card.attack ?? 0) ? "debuff" : "neutral"}
         hpTone={isDamaged ? "debuff" : isBuffedHp ? "buff" : "neutral"}
       />
@@ -960,7 +966,7 @@ function BoardCreature({
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2,
         // À droite : la place des écus ATK / PV (absolus).
-        padding: `6px ${statShieldsReserve(creature.currentAttack, creature.currentHealth)}cqw 5px 6px`,
+        padding: `6px ${statShieldsReserve(creature.currentAttack, pvAffiche)}cqw 5px 6px`,
         background: "linear-gradient(0deg, #0d0d1add 0%, #0d0d1a88 40%, transparent 65%)",
         display: "flex", flexDirection: "column", gap: 3,
       }}>
@@ -1040,7 +1046,7 @@ function BoardCreature({
         largeur={W - 4}
         card={card}
         enJeu={{
-          atk: creature.currentAttack, hp: creature.currentHealth,
+          atk: creature.currentAttack, hp: pvAffiche,
           atkTone: isBuffedAtk ? "buff" : creature.currentAttack < (card.attack ?? 0) ? "debuff" : "neutral",
           hpTone: isDamaged ? "debuff" : isBuffedHp ? "buff" : "neutral",
           statuts: statutsEnJeu(),
@@ -1073,6 +1079,7 @@ function propsEqual(a: BoardCreatureProps, b: BoardCreatureProps): boolean {
     a.isSelected === b.isSelected &&
     a.isValidTarget === b.isValidTarget &&
     a.damageAmount === b.damageAmount &&
+    a.damageDelayMs === b.damageDelayMs &&
     a.boostKind === b.boostKind &&
     a.summoning === b.summoning &&
     a.entering === b.entering

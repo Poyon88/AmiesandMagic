@@ -28,6 +28,11 @@ export const RALENTI_JEU = 1;
 /** Une durée (ms ou s) ralentie du facteur global. */
 export const lent = (duree: number): number => duree * RALENTI_JEU;
 
+/** Trajet d'un éclair de Tempête, du nuage à sa cible. Partagé par l'overlay et
+ *  le store : le « -1 » d'une goutte s'affiche à l'ARRIVÉE de son éclair, le
+ *  store décale donc les popups de ce même trajet. */
+export const TEMPETE_BOLT_MS = lent(260);
+
 // ---- Timing (seconds unless suffixed Ms) -----------------------------------
 export const OVERLAY = {
   /** Reveal card display window. Kept in lockstep with the store's

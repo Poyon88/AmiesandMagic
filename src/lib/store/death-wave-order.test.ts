@@ -204,8 +204,11 @@ describe("les DEUX frontières dans la même action", () => {
       "dégâts de fin de tour",
       "mort du Vengeur",
       "dégâts du râle",
-      "carte en main",
+      // La carte se lit PUIS arrive en main (arbitrage auteur du 2026-10-24).
+      // L'ordre inverse n'apparaissait ici que par un clignotement : la vague
+      // de fin de tour peignait déjà la main du tour suivant.
       "révélation",
+      "carte en main",
       "dégâts de la pioche",
       "mort du Diablotin",
     ]);

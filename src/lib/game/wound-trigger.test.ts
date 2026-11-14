@@ -8,7 +8,9 @@
 //   2. la source est le LANCEMENT ou l'EXEMPLAIRE, pas le nom de la carte :
 //      un sort qui frappe trois fois = 1, deux exemplaires = 2, une même
 //      créature par deux canaux = 1 ;
-//   3. « sans mourir » se juge à la frontière d'effet, pas au premier point ;
+//   3. « sans mourir » se juge à la GOUTTE pour Tempête et la répartition au
+//      hasard (le pouvoir interrompt les gouttes suivantes), à la frontière
+//      d'effet pour le reste ;
 //   4. la mémoire des sources tombe à chaque fin de tour ;
 //   5. Poison (tick) et Vampirisme (vol de PV) comptent, hors canal de dégâts ;
 //   6. la cible « damage_source » vise le coupable, héros de son camp à défaut.
@@ -132,7 +134,7 @@ describe("blessure — une fois par SOURCE", () => {
     expect(declenchements(st)).toBe(1);
   });
 
-  it("« sans mourir » se juge le sort FINI : 3×1 sur une 2 PV ne déclenche rien", () => {
+  it("« sans mourir » se juge à la GOUTTE : 3×1 sur une 2 PV répond à la 1re, puis meurt", () => {
     const s = mkState();
     s.players[1].board = [ecorchee(2)];
     const sort = sortDegats(3, true);
@@ -141,7 +143,7 @@ describe("blessure — une fois par SOURCE", () => {
     const st = lance(s, sort.instanceId);
 
     expect(st.players[1].board).toHaveLength(0);
-    expect(declenchements(st)).toBe(0);
+    expect(declenchements(st)).toBe(1);
   });
 
   it("deux exemplaires de la MÊME carte sont deux sources", () => {
@@ -388,7 +390,9 @@ describe("blessure — mots-clés curés et multijoueur", () => {
 
     const st = lance(s, sort.instanceId);
 
-    const avant = (st.animationCheckpoints ?? []).at(-1);
+    // La frontière qui précède la réponse (une autre suit la résolution de la
+    // frame, depuis que la pile pose une frontière par effet).
+    const avant = (st.animationCheckpoints ?? []).find(c => c.state.players[1].board[0]?.currentHealth === 4);
     expect(avant?.label).toBe("effet");
     // Instantané : l'Écorchée a déjà pris son point, le héros de P1 rien encore.
     expect(avant!.state.players[1].board[0].currentHealth).toBe(4);
@@ -408,5 +412,106 @@ describe("blessure — mots-clés curés et multijoueur", () => {
     const a = lance(x.s, x.id);
     const b = lance(JSON.parse(JSON.stringify(x.s)), x.id);
     expect(syncHash(a)).toBe(syncHash(b));
+  });
+});
+
+// ── Interruption goutte par goutte (Tempête, répartition au hasard) ─────────
+//
+// La blessée répond AVANT la goutte suivante. Preuve par la survie : une
+// créature à 2 PV qui se donne +0/+5 en réponse encaisse les gouttes restantes
+// au lieu de mourir à la 2e.
+const SOI: TargetSpec = { entity: "self", count: 1, side: "ally", location: "board", designation: "automatic" };
+
+function coriace(pv = 2) {
+  return mkInstance(mkCard({
+    name: "Coriace", mana_cost: 3, attack: 0, health: pv,
+    capabilities: [capWound({ content: "buff", magnitude: { x: 0, y: 5 }, target: SOI })],
+  }));
+}
+
+function sortTempete(x: number) {
+  return mkInstance(mkCard({
+    name: "Orage", card_type: "spell", mana_cost: 0, attack: null, health: null,
+    spell_keywords: [{ id: "tempete", amount: x }] as never,
+  }));
+}
+
+describe("blessure — interrompt Tempête et la répartition au hasard", () => {
+  it("répartition au hasard : la réponse passe entre deux gouttes", () => {
+    const s = mkState();
+    s.players[1].board = [coriace(2)];
+    const sort = sortDegats(3, true);
+    s.players[0].hand = [sort];
+
+    const st = lance(s, sort.instanceId);
+
+    // 2 − 1 = 1, +5 ⇒ 6, puis −2 ⇒ 4. Sans interruption : morte à la 2e goutte.
+    expect(st.players[1].board).toHaveLength(1);
+    expect(st.players[1].board[0].currentHealth).toBe(4);
+    expect(st.effectStack ?? []).toEqual([]);
+  });
+
+  it("Tempête d'un sort : même interruption", () => {
+    const s = mkState();
+    s.players[1].board = [coriace(2)];
+    const sort = sortTempete(3);
+    s.players[0].hand = [sort];
+
+    const st = lance(s, sort.instanceId);
+
+    expect(st.players[1].board).toHaveLength(1);
+    expect(st.players[1].board[0].currentHealth).toBe(4);
+  });
+
+  it("Tempête à l'entrée en jeu d'une créature : même interruption", () => {
+    const s = mkState();
+    s.players[1].board = [coriace(2)];
+    const orageuse = mkInstance(mkCard({
+      name: "Orageuse", mana_cost: 0, attack: 1, health: 1,
+      keywords: ["tempete"] as never,
+      keyword_instances: [{ id: "tempete", x: 3 }] as never,
+    }));
+    s.players[0].hand = [orageuse];
+
+    const st = lance(s, orageuse.instanceId);
+
+    expect(st.players[1].board).toHaveLength(1);
+    expect(st.players[1].board[0].currentHealth).toBe(4);
+  });
+
+  it("la riposte qui tue la source en pleine Tempête ne l'empêche pas de finir", () => {
+    // Vengeresse : 2 dégâts au coupable. Le coupable d'une Tempête de sort est
+    // le héros lanceur — il perd 2 PV, et les gouttes restantes partent quand même.
+    const s = mkState();
+    s.players[1].board = [vengeresse(5)];
+    const sort = sortTempete(3);
+    s.players[0].hand = [sort];
+
+    const st = lance(s, sort.instanceId);
+
+    expect(st.players[1].board[0].currentHealth).toBe(2);
+    expect(st.players[0].hero.hp).toBe(28);
+  });
+
+  it("un pouvoir « au choix » en pleine Tempête se résout au hasard, sans question", () => {
+    const s = mkState();
+    const choisie = mkInstance(mkCard({
+      name: "Choisie", mana_cost: 3, attack: 0, health: 5,
+      capabilities: [capWound({
+        content: "deal_damage", magnitude: { x: 1 },
+        target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "choice" },
+      })],
+    }));
+    s.players[1].board = [choisie];
+    const cible = attaquant(1, 5);
+    s.players[0].board = [cible];
+    const sort = sortTempete(2);
+    s.players[0].hand = [sort];
+
+    const st = lance(s, sort.instanceId);
+
+    expect(st.pendingTriggers ?? []).toEqual([]);
+    expect(st.effectStack ?? []).toEqual([]);
+    expect(st.players[0].board[0].currentHealth).toBe(4);
   });
 });

@@ -471,6 +471,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     return evt ? evt.amount : null;
   }
 
+  /** Délai du PREMIER coup reçu par cette cible dans la vague (effet de zone
+   *  échelonné par cible) : le clignotement et la baisse des PV l'attendent. */
+  function getDamageDelay(targetId: string): number {
+    let min = Infinity;
+    for (const e of damageEvents) {
+      if (e.targetId === targetId && (e.type ?? "damage") === "damage") min = Math.min(min, e.delayMs ?? 0);
+    }
+    return Number.isFinite(min) ? min : 0;
+  }
+
   // A positive boost (stat buff or capability gained) landed on this unit →
   // drives BoardCreature's graceful power-up pulse. Damage takes precedence.
   function getBoost(targetId: string): "buff" | "empower" | null {
@@ -1342,6 +1352,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             isValidTarget={validTargets.includes("enemy_hero")}
             validTargetColor={powerTargetColor}
             damageAmount={getDamage("enemy_hero")}
+            damageDelayMs={getDamageDelay("enemy_hero")}
             onClick={handleOppHeroClick}
             onContextMenu={handleOppHeroContextMenu}
             onMouseEnter={
@@ -1453,11 +1464,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         <div
           className="absolute top-[14%] left-0 right-0 h-[24%] flex justify-center items-center gap-2 px-8 overflow-visible"
         >
-          {opponent.board.length === 0 ? (
+          {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
+              n'était pas vide, il était démonté avec ses enfants quand la
+              dernière créature mourait, et celle-ci s'effaçait sans jouer
+              sa sortie (animation de mort). Le message de plateau vide est
+              un frère, plus une alternative. */}
+          {opponent.board.length === 0 && (
             <div className="text-foreground/10 text-sm">
               {t("no_creatures")}
             </div>
-          ) : (
+          )}
             <AnimatePresence>
               {opponent.board.map((creature) => (
                 <BoardCreature
@@ -1467,6 +1483,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                   equippedItems={objetsDe(opponent).filter(o => o.equippedToInstanceId === creature.instanceId)}
                   isValidTarget={validTargets.includes(creature.instanceId)}
                   damageAmount={getDamage(creature.instanceId)}
+                  damageDelayMs={getDamageDelay(creature.instanceId)}
                   boostKind={getBoost(creature.instanceId)}
                   summoning={summonEvents.includes(creature.instanceId)}
                   entering={entryEvents.includes(creature.instanceId)}
@@ -1488,7 +1505,6 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                 />
               ))}
             </AnimatePresence>
-          )}
           {/* OBJETS ADVERSES — au bout de sa ligne, après ses créatures. Ils
               occupent une de ses places, il faut donc les VOIR : sans eux, un
               plateau adverse « à trois créatures » paraîtrait avoir cinq places
@@ -1525,7 +1541,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             <div className="text-success/50 text-sm font-medium">
               {t("drop_hint")}
             </div>
-          ) : (
+          ) : null}
+          {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
+              n'était pas vide, il était démonté avec ses enfants quand la
+              dernière créature mourait, et celle-ci s'effaçait sans jouer
+              sa sortie (animation de mort). Le message de plateau vide est
+              un frère, plus une alternative. */}
             <>
               <AnimatePresence>
                 {myPlayer.board.flatMap((creature, i) => {
@@ -1554,6 +1575,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
                       }
                       isValidTarget={validTargets.includes(creature.instanceId)}
                       damageAmount={getDamage(creature.instanceId)}
+                      damageDelayMs={getDamageDelay(creature.instanceId)}
                       boostKind={getBoost(creature.instanceId)}
                       summoning={summonEvents.includes(creature.instanceId)}
                       entering={entryEvents.includes(creature.instanceId)}
@@ -1582,14 +1604,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               </AnimatePresence>
               {/* Aperçu déposé en BOUT de file : la boucle ci-dessus ne peut pas
                   l'insérer, sa position valant board.length. */}
-              {pendingPreview && pendingPreview.position >= myPlayer.board.length && (
+              {/* Plateau vide : l'aperçu et le repère de dépôt sont déjà rendus
+                  par les messages ci-dessus. */}
+              {myPlayer.board.length > 0 && pendingPreview && pendingPreview.position >= myPlayer.board.length && (
                 <PendingCreaturePreview instance={pendingPreview.inst} />
               )}
-              {isDragOver && dropIndex === myPlayer.board.length && (
+              {myPlayer.board.length > 0 && isDragOver && dropIndex === myPlayer.board.length && (
                 <div className="w-1 h-20 rounded-full bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0" />
               )}
             </>
-          )}
           {/* MES OBJETS — après mes créatures, dans la même ligne : ils
               partagent le même plafond de places, et les montrer ailleurs
               donnerait à croire le contraire.
@@ -1682,6 +1705,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             isValidTarget={validTargets.includes("friendly_hero")}
             validTargetColor={powerTargetColor}
             damageAmount={getDamage("friendly_hero")}
+            damageDelayMs={getDamageDelay("friendly_hero")}
             onClick={handleMyHeroClick}
             onDoubleClick={handleMyHeroDoubleClick}
             onContextMenu={handleMyHeroContextMenu}

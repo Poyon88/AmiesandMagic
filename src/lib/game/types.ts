@@ -2198,7 +2198,7 @@ export interface GameState {
   // attaches the post-power / pre-combat board here so the store can animate the
   // power in a first wave (its damage/deaths) then combat in a second wave.
   // Cleared by the store after scheduling, like fureurStrikes. Pools stripped.
-  onAttackWave?: { intermediate: GameState } | null;
+  onAttackWave?: { intermediate: GameState; checkpointsBefore?: number } | null;
   /** Attaque SUSPENDUE entre ses effets « à l'attaque » et son combat : un de
    *  ces effets a posé un choix (Sélection…), qui se tranche AVANT les dégâts.
    *  Le joueur actif émet la reprise (`AttackAction.reprise`) dès la file vide ;
@@ -2240,6 +2240,11 @@ export interface GameState {
      *  résout, puis le suivant » — au lieu d'enchaîner les sept révélations
      *  avant de peindre la première salve. */
     recastsBefore: number;
+    /** Rang dans `powerStrikes` (flèches de pouvoir) à cet instant. Absent sur
+     *  les états antérieurs ⇒ tout appartient à la première vague. */
+    powerStrikesBefore?: number;
+    /** Rang dans `abilitySfxEvents` (bruitages de capacité) à cet instant. */
+    abilitySfxBefore?: number;
   }>;
   // Transient : un end_turn est en pause sur des déclencheurs « fin de tour »
   // interactifs (cibles au choix). Tant que c'est vrai et que des
