@@ -56,7 +56,17 @@ export const TOUTES_CAPACITES = "*";
  *  La porteuse se lit sur sa vue d'AFFICHAGE : une porteuse elle-même
  *  neutralisée garde sa Neutralisation (cf. `retirer`), mais on ne veut pas
  *  dépendre de cet invariant pour savoir qui neutralise qui. */
-export function neutralisationsSubies(victime: CardInstance, camp: PlayerState): string[] {
+export function neutralisationsSubies(victime: CardInstance, camp: PlayerState, allie?: PlayerState): string[] {
+  // Neutralisation par un EFFET composé sans porteuse (action, emblème) : une
+  // durée portée par la victime.
+  if ((victime.neutralisationTurnsLeft ?? 0) > 0) return [TOUTES_CAPACITES];
+  // Effet composé porté par une CRÉATURE en jeu, de n'importe quel camp : il
+  // tient tant qu'elle y reste (cf. `neutralisationComposeIds`).
+  for (const p of allie ? [camp, allie] : [camp]) {
+    for (const src of p.board) {
+      if (src !== victime && src.neutralisationComposeIds?.includes(victime.instanceId)) return [TOUTES_CAPACITES];
+    }
+  }
   for (const src of camp.board) {
     const carte = displayNeutralisee(src);
     if (!(carte.keywords ?? []).includes(NEUTRALISATION_ID as Keyword)) continue;
@@ -208,7 +218,7 @@ export function poserNeutralisations(a: PlayerState, b: PlayerState, tour: numbe
   // toujours (Neutralisation ne peut pas viser Neutralisation).
   const plan = [a, b].map((p, i) => {
     const adverse = i === 0 ? b : a;
-    return p.board.map((inst) => [inst, neutralisationsSubies(inst, adverse)] as const);
+    return p.board.map((inst) => [inst, neutralisationsSubies(inst, adverse, p)] as const);
   });
   for (const lignes of plan) for (const [inst, ids] of lignes) poserNeutralisationInstance(inst, ids, tour);
 }

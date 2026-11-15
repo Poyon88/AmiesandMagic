@@ -149,9 +149,18 @@ export const TACTIQUE_ENTRY: SpellEffectCatalogEntry = {
   preset: { content: "tactique", magnitude: { x: 1 }, target: board({ side: "ally" }) },
 };
 
+/** Entrée « Neutraliser » COMPOSÉE : l'unité visée est paralysée et ses
+ *  capacités sont sans effet pendant X tours. Autonome : Neutralisation n'est
+ *  pas un mot-clé d'action (la capacité de créature dure « tant qu'elle est en
+ *  jeu », ce qu'une action ne peut pas porter). */
+export const NEUTRALISE_ENTRY: SpellEffectCatalogEntry = {
+  kind: "composed", id: "neutralise_compose", label: "Neutraliser X tours (paralysée, capacités sans effet)", symbol: "🚷",
+  preset: { content: "neutralise", magnitude: { x: 1 }, target: board({}) },
+};
+
 /** Catalogue complet, dans l'ordre d'affichage du sélecteur d'ajout. */
 export function buildSpellEffectCatalog(allSpellKeywordIds: SpellKeywordId[]): SpellEffectCatalogEntry[] {
-  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY, TACTIQUE_ENTRY];
+  const entries: SpellEffectCatalogEntry[] = [GRANT_ENTRY, APPEL_ENTRY, TUTEUR_ENTRY, TRANSFORMATION_ENTRY, TACTIQUE_ENTRY, NEUTRALISE_ENTRY];
   for (const id of allSpellKeywordIds) {
     const label = SPELL_KEYWORD_LABELS[id] ?? id;
     const symbol = SPELL_KEYWORD_SYMBOLS[id] ?? "✦";

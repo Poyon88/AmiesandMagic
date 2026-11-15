@@ -909,6 +909,11 @@
         "heal_each": "et soigne votre héros de {x} PV par cible touchée",
         "heal_scatter": "et soigne votre héros de {x} PV au total"
       },
+      "neutralise": {
+        "suite_one": ": paralysée, capacités sans effet",
+        "suite_many": ": paralysées, capacités sans effet",
+        "tant_que": "tant qu'elle est en jeu"
+      },
       "malediction": {
         "suite_one": ", exilée à la fin du prochain tour adverse",
         "suite_many": ", exilées à la fin du prochain tour adverse"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "pendant {n} tours",
         "poison": "empoisonne",
         "malediction": "maudit",
+        "neutralise": "neutralise",
         "grant_keyword": "confère {ability}",
         "random_range": "1 à {max}",
         "random_range_from": "{min} à {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "se paralyse",
         "poison": "s'empoisonne",
         "malediction": "se maudit",
+        "neutralise": "se neutralise",
         "grant_keyword": "se confère {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "choisissez une créature à paralyser",
         "poison": "choisissez une créature à empoisonner",
         "malediction": "choisissez une créature à maudire",
+        "neutralise": "choisissez une créature à neutraliser",
         "grant_keyword": "choisissez une créature à qui conférer la capacité",
         "exhumation": "choisissez une créature à ressusciter",
         "rappel": "choisissez une carte à reprendre en main",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Paralyser",
     "content_poison": "Empoisonner (−1 PV par tour)",
     "content_malediction": "Maudire (exil à la fin du prochain tour adverse)",
+    "content_neutralise": "Neutraliser (paralysée, capacités sans effet)",
     "invocation_costs_label": "COÛTS DES INVOCATIONS",
     "invocation_costs_hint": "Une créature aléatoire de votre collection est invoquée pour chaque coût listé.",
     "add_invocation": "+ Invocation",

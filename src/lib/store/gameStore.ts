@@ -13,6 +13,7 @@ import { playAttackLunge } from "@/lib/game/animations";
 import { findInstanceEl, overlayRect, OVERLAY, lent, TEMPETE_BOLT_MS } from "@/lib/fx/overlayMotion";
 import { parseXValuesFromEffectText, KEYWORD_LABELS, KEYWORD_SYMBOLS, keywordModeColor } from "@/lib/game/keyword-labels";
 import { composedCapsOf, composedTriggerMode, composedChoicePrompt } from "@/lib/game/composed-display";
+import { creaturesMaudites } from "@/lib/game/malediction";
 import { getCapabilities } from "@/lib/game/capability-adapter";
 import {
   initializeGame,
@@ -595,6 +596,13 @@ export interface GraveyardAffectEvent {
 /** Créature dont les caractéristiques ont changé ALORS QU'ELLE EST AU CIMETIÈRE
  *  (déclencheur « fin de tour, au cimetière », effet visant le cimetière…).
  *  `card` porte les NOUVELLES valeurs, `attack` / `health` le gain. */
+/** Créatures qui viennent d'être MAUDITES pendant l'action (exil différé) :
+ *  un sceau se referme sur chacune. */
+export interface MaledictionEvent {
+  ids: string[];
+  timestamp: number;
+}
+
 export interface GraveyardBuffEvent {
   entries: Array<{ card: Card; attack: number; health: number; ownerIsLocal: boolean }>;
   timestamp: number;
@@ -836,6 +844,7 @@ interface GameStore {
   heroPowerCastEvent: HeroPowerCastEvent | null;
   graveyardAffectEvent: GraveyardAffectEvent | null;
   graveyardBuffEvent: GraveyardBuffEvent | null;
+  maledictionEvent: MaledictionEvent | null;
   discardFromHandEvent: DiscardFromHandEvent | null;
   boardImageUrl: string | null;
   // Layout variant carried by the active game_board. "classic" = legacy
@@ -940,6 +949,7 @@ interface GameStore {
   clearHeroPowerCastEvent: () => void;
   clearGraveyardAffectEvent: () => void;
   clearGraveyardBuffEvent: () => void;
+  clearMaledictionEvent: () => void;
   clearDiscardFromHandEvent: () => void;
   toggleDiscardSelection: (instanceId: string) => void;
   toggleSacrificeSelection: (instanceId: string) => void;
@@ -2029,6 +2039,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   heroPowerCastEvent: null,
   graveyardAffectEvent: null,
         graveyardBuffEvent: null,
+        maledictionEvent: null,
   discardFromHandEvent: null,
   isAnimating: false,
   pendingIncomingActions: [],
@@ -2130,6 +2141,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         heroPowerCastEvent: null,
         graveyardAffectEvent: null,
         graveyardBuffEvent: null,
+        maledictionEvent: null,
         discardFromHandEvent: null,
         tempeteEvent: null,
         powerArrowEvent: null,
@@ -3378,6 +3390,14 @@ export const useGameStore = create<GameStore>((set, get) => {
     const graveyardBuffEvent: GraveyardBuffEvent | null =
       graveyardBuffEntries.length > 0 ? { entries: graveyardBuffEntries, timestamp: Date.now() } : null;
 
+    // Créatures NOUVELLEMENT maudites : absentes de l'ensemble avant l'action,
+    // présentes après. Lu sur l'état final — la malédiction ne se voit dans
+    // aucune zone, seule cette comparaison la révèle.
+    const mauditesAvant = creaturesMaudites(gameState);
+    const nouvellesMaudites = [...creaturesMaudites(newState)].filter((id) => !mauditesAvant.has(id));
+    const maledictionEvent: MaledictionEvent | null =
+      nouvellesMaudites.length > 0 ? { ids: nouvellesMaudites, timestamp: Date.now() } : null;
+
     // Detect cards forced from a player's hand into their graveyard during
     // this action. Two distinct cases:
     //   • COST discard — the player paid `discard_cost` to play the card.
@@ -3514,7 +3534,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = frontieres.length > 0 || hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!graveyardBuffEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eclosionEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = frontieres.length > 0 || hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!graveyardBuffEvent || !!maledictionEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eclosionEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -4146,6 +4166,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         lastSfxEvents: impactSfx,
         ...(graveyardAffectEvent ? { graveyardAffectEvent } : {}),
         ...(graveyardBuffEvent ? { graveyardBuffEvent } : {}),
+        ...(maledictionEvent ? { maledictionEvent } : {}),
         ...(tempeteEvent ? { tempeteEvent } : {}),
         // Épargne posée ICI et pas en phase morts : cette phase est la seule à
         // être planifiée inconditionnellement, et un gain d'Épargne ne tue
@@ -5784,6 +5805,10 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   clearGraveyardBuffEvent: () => {
     set({ graveyardBuffEvent: null });
+  },
+
+  clearMaledictionEvent: () => {
+    set({ maledictionEvent: null });
   },
 
   clearDiscardFromHandEvent: () => {

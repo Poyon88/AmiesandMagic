@@ -909,6 +909,11 @@
         "heal_each": "and heals your hero for {x} HP per target hit",
         "heal_scatter": "and heals your hero for {x} HP in total"
       },
+      "neutralise": {
+        "suite_one": ": paralyzed, abilities have no effect",
+        "suite_many": ": paralyzed, abilities have no effect",
+        "tant_que": "while it is in play"
+      },
       "malediction": {
         "suite_one": ", exiled at the end of the opponent's next turn",
         "suite_many": ", exiled at the end of the opponent's next turn"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "for {n} turns",
         "poison": "poisons",
         "malediction": "curses",
+        "neutralise": "neutralizes",
         "grant_keyword": "grants {ability}",
         "random_range": "1 to {max}",
         "random_range_from": "{min} to {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "paralyzes itself",
         "poison": "poisons itself",
         "malediction": "curses itself",
+        "neutralise": "neutralizes itself",
         "grant_keyword": "grants itself {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "choose a creature to paralyze",
         "poison": "choose a creature to poison",
         "malediction": "choose a creature to curse",
+        "neutralise": "choose a creature to neutralize",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "rappel": "choose a card to return to hand",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Paralyze",
     "content_poison": "Poison (−1 HP per turn)",
     "content_malediction": "Curse (exile at the end of the opponent's next turn)",
+    "content_neutralise": "Neutralize (paralyzed, abilities have no effect)",
     "invocation_costs_label": "SUMMON COSTS",
     "invocation_costs_hint": "A random creature from your collection is summoned for each listed cost.",
     "add_invocation": "+ Summon",

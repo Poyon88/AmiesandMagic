@@ -909,6 +909,11 @@
         "heal_each": "e cura seu herói em {x} PV por alvo atingido",
         "heal_scatter": "e cura seu herói em {x} PV no total"
       },
+      "neutralise": {
+        "suite_one": ": paralisada, habilidades sem efeito",
+        "suite_many": ": paralisadas, habilidades sem efeito",
+        "tant_que": "enquanto estiver em jogo"
+      },
       "malediction": {
         "suite_one": ", exilada no fim do próximo turno do adversário",
         "suite_many": ", exiladas no fim do próximo turno do adversário"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "por {n} turnos",
         "poison": "envenena",
         "malediction": "amaldiçoa",
+        "neutralise": "neutraliza",
         "grant_keyword": "concede {ability}",
         "random_range": "1 a {max}",
         "random_range_from": "{min} a {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "paralisa-se",
         "poison": "se envenena",
         "malediction": "amaldiçoa a si mesma",
+        "neutralise": "neutraliza-se",
         "grant_keyword": "concede-se {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "escolha uma criatura para paralisar",
         "poison": "escolha uma criatura para envenenar",
         "malediction": "escolha uma criatura para amaldiçoar",
+        "neutralise": "escolha uma criatura para neutralizar",
         "grant_keyword": "escolha uma criatura para receber a habilidade",
         "exhumation": "escolha uma criatura para ressuscitar",
         "rappel": "escolha uma carta para retornar à mão",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Paralisar",
     "content_poison": "Envenenar (−1 PV por turno)",
     "content_malediction": "Amaldiçoar (exílio no fim do próximo turno do adversário)",
+    "content_neutralise": "Neutralizar (paralisada, habilidades sem efeito)",
     "invocation_costs_label": "CUSTOS DAS INVOCAÇÕES",
     "invocation_costs_hint": "Uma criatura aleatória da sua coleção é invocada para cada custo listado.",
     "add_invocation": "+ Invocação",

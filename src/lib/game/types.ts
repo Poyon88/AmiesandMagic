@@ -716,6 +716,11 @@ export type ComposedEffectContent =
   // action : un emblème n'a pas de créature source. Plafond de coût :
   // `target.maxCost`, comme Domination ; X n'a aucun rôle.
   | "malediction"
+  // NEUTRALISATION composée : chaque unité visée est NEUTRALISÉE pendant X
+  // tours (paralysée, toutes ses capacités sans effet — cf. neutralisation.ts).
+  // Portée par une CRÉATURE en jeu : tant qu'elle y reste, comme la capacité
+  // (X ignoré). Action, emblème, râle : pas de porteuse, donc X tours (absent = 1).
+  | "neutralise"
   | "exhumation"
   // RAPPEL composé : renvoie des cartes du cimetière du contrôleur dans sa
   // main. Contrairement au mot-clé (une carte, au choix ou au hasard), il se
@@ -1316,6 +1321,15 @@ export interface CardInstance {
    *  déclenchement de cette capacité (toute source, tout joueur) donne +X/+X à
    *  cette créature. Absent ⇒ pas encore choisie. Effacée par Silence, retour
    *  en main et mort. Vérité de jeu — hachée. */
+  /** NEUTRALISATION composée : tours restants pendant lesquels cette unité est
+   *  neutralisée par un EFFET (action, emblème, effet de créature), en plus de
+   *  toute porteuse adverse. Décompté à chaque fin de tour de son contrôleur,
+   *  comme la paralysie. Vérité de jeu — hachée. */
+  neutralisationTurnsLeft?: number;
+  /** NEUTRALISATION composée portée par une CRÉATURE : unités que cette
+   *  créature-ci neutralise TANT QU'ELLE EST EN JEU (comme la capacité). Effacé
+   *  quand elle quitte le plateau ou subit un Silence. Hachée. */
+  neutralisationComposeIds?: string[];
   synergieAbilityId?: string;
   /** SYNERGIE X — clés des sources déjà comptées CE TOUR (même schéma que
    *  `woundSourcesThisTurn`). Vidé à chaque bascule de tour. Hachée. */

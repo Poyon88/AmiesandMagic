@@ -909,6 +909,11 @@
         "heal_each": "さらに命中した対象1体につき、自分のヒーローのHPを{x}回復する",
         "heal_scatter": "さらに自分のヒーローのHPを合計{x}回復する"
       },
+      "neutralise": {
+        "suite_one": "：麻痺し、能力は無効",
+        "suite_many": "：麻痺し、能力は無効",
+        "tant_que": "場にいる間"
+      },
       "malediction": {
         "suite_one": "、次の相手ターン終了時に追放される",
         "suite_many": "、次の相手ターン終了時に追放される"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "{n}ターンの間",
         "poison": "毒を与える",
         "malediction": "呪う",
+        "neutralise": "無力化する",
         "grant_keyword": "{ability}を付与する",
         "random_range": "1から{max}",
         "random_range_from": "{min}から{max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "自身を麻痺させる",
         "poison": "自らを毒に冒す",
         "malediction": "自らに呪いをかける",
+        "neutralise": "自身を無力化する",
         "grant_keyword": "自身に{ability}を付与する"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "麻痺させるクリーチャーを選んでください",
         "poison": "毒を与えるクリーチャーを選択してください",
         "malediction": "呪うクリーチャーを選ぶ",
+        "neutralise": "無力化するクリーチャーを選ぶ",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "rappel": "手札に戻すカードを1枚選ぶ",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "麻痺させる",
     "content_poison": "毒を与える(ターンごとにHP−1)",
     "content_malediction": "呪う(次の相手ターン終了時に追放)",
+    "content_neutralise": "無力化(麻痺、能力は効果なし)",
     "invocation_costs_label": "召喚コスト",
     "invocation_costs_hint": "コレクションからランダムなクリーチャーが、記載された各コストにつき1体召喚される。",
     "add_invocation": "＋召喚",

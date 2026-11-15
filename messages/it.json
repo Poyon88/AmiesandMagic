@@ -909,6 +909,11 @@
         "heal_each": "e cura il tuo eroe di {x} PV per ogni bersaglio colpito",
         "heal_scatter": "e cura il tuo eroe di {x} PV in totale"
       },
+      "neutralise": {
+        "suite_one": ": paralizzata, abilità senza effetto",
+        "suite_many": ": paralizzate, abilità senza effetto",
+        "tant_que": "finché è in gioco"
+      },
       "malediction": {
         "suite_one": ", esiliata alla fine del prossimo turno avversario",
         "suite_many": ", esiliate alla fine del prossimo turno avversario"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "per {n} turni",
         "poison": "avvelena",
         "malediction": "maledice",
+        "neutralise": "neutralizza",
         "grant_keyword": "conferisce {ability}",
         "random_range": "Da 1 a {max}",
         "random_range_from": "da {min} a {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "si paralizza",
         "poison": "si avvelena",
         "malediction": "si maledice",
+        "neutralise": "si neutralizza",
         "grant_keyword": "si conferisce {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "scegli una creatura da paralizzare",
         "poison": "scegli una creatura da avvelenare",
         "malediction": "scegli una creatura da maledire",
+        "neutralise": "scegli una creatura da neutralizzare",
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "rappel": "scegliete una carta da riprendere in mano",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Paralizzare",
     "content_poison": "Avvelenare (−1 PV a turno)",
     "content_malediction": "Maledire (esilio alla fine del prossimo turno avversario)",
+    "content_neutralise": "Neutralizza (paralizzata, abilità senza effetto)",
     "invocation_costs_label": "COSTI DELLE EVOCAZIONI",
     "invocation_costs_hint": "Una creatura casuale della tua collezione viene evocata per ogni costo elencato.",
     "add_invocation": "+ Evocazione",

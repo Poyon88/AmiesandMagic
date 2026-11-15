@@ -909,6 +909,11 @@
         "heal_each": "und heilt Euren Helden um {x} LP pro getroffenem Ziel",
         "heal_scatter": "und heilt Euren Helden insgesamt um {x} LP"
       },
+      "neutralise": {
+        "suite_one": ": gelähmt, Fähigkeiten wirkungslos",
+        "suite_many": ": gelähmt, Fähigkeiten wirkungslos",
+        "tant_que": "solange sie im Spiel ist"
+      },
       "malediction": {
         "suite_one": ", am Ende des nächsten gegnerischen Zuges verbannt",
         "suite_many": ", am Ende des nächsten gegnerischen Zuges verbannt"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "für {n} Runden",
         "poison": "vergiftet",
         "malediction": "verflucht",
+        "neutralise": "neutralisiert",
         "grant_keyword": "verleiht {ability}",
         "random_range": "1 bis {max}",
         "random_range_from": "{min} bis {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "paralysiert sich selbst",
         "poison": "vergiftet sich",
         "malediction": "verflucht sich selbst",
+        "neutralise": "wird neutralisiert",
         "grant_keyword": "verleiht sich selbst {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "wähle eine Kreatur zum Lähmen",
         "poison": "Wählt eine Kreatur zum Vergiften",
         "malediction": "Wähle eine Kreatur, die verflucht werden soll",
+        "neutralise": "wähle eine Kreatur, die neutralisiert werden soll",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Lähmen",
     "content_poison": "Vergiften (−1 LP pro Runde)",
     "content_malediction": "Verfluchen (Verbannung am Ende des nächsten gegnerischen Zuges)",
+    "content_neutralise": "Neutralisieren (gelähmt, Fähigkeiten wirkungslos)",
     "invocation_costs_label": "BESCHWÖRUNGSKOSTEN",
     "invocation_costs_hint": "Für jede aufgelistete Kosten wird eine zufällige Kreatur aus deiner Sammlung beschworen.",
     "add_invocation": "+ Beschwörung",

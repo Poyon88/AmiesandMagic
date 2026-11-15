@@ -1330,6 +1330,12 @@
       "perY": 5,
       "n": 5
     },
+    "neutralise": {
+      "base": 8,
+      "perX": 5,
+      "perY": 0,
+      "n": 0
+    },
     "malediction": {
       "base": 17.82,
       "perX": 0,

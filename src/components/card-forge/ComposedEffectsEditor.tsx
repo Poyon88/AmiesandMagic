@@ -18,6 +18,7 @@ import LinkedCardsPicker from "./LinkedCardsPicker";
 import { ACTION_TARGET_CONTENTS, basculerType, cibleDesTypes, typesCoches, type TypeCible } from "./composed-target-types";
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
+import { neutraliseTantQuEnJeu } from "@/lib/game/composed-display";
 import { ABILITIES, COUT_OPTIONNEL, creatureEngineId, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
@@ -48,6 +49,8 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "poison", l: "Empoisonner", target: "unit" },
   // Malédiction : exil différé. Plafond de coût par le filtre « coût max ».
   { v: "malediction", l: "Maudire (exil à la fin du prochain tour adverse)", target: "unit" },
+  // Neutralisation : X = nombre de tours.
+  { v: "neutralise", l: "Neutraliser (paralysée, capacités sans effet)", target: "unit" },
   { v: "grant_keyword", l: "Conférer une capacité", target: "unit" },
   // Aucune cible en jeu : l'appelée se cherche dans le DECK, via le filtre de
   // pool ci-dessous (POOL_CONTENTS).
@@ -143,7 +146,7 @@ function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content
  *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
  *  ciblage — et Domination sort sa victime du pool, ce qui revient à « au
  *  hasard ». */
-const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination", "enterrement", "malediction"]);
+const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination", "enterrement", "malediction", "neutralise"]);
 
 /** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
  *  passe. Hors plateau, il n'y a rien à répartir. */
@@ -886,7 +889,9 @@ export default function ComposedEffectsEditor({
               )}
               {/* Invocation DÉSIGNÉE et Tuteur : ni amplitude ni filtre de pool —
                   la carte est nommée, il n'y a rien à tirer. */}
-              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && eff.content !== "domination" && (<>
+              {!(eff.content === "invocation" && designatedCardIds(eff).length > 0) && eff.content !== "rappel" && eff.content !== "tuteur" && eff.content !== "transformation" && eff.content !== "domination"
+                // Neutraliser portée par une créature : tant qu'elle est en jeu, pas de X.
+                && !(eff.content === "neutralise" && isUnit && !pourObjet && neutraliseTantQuEnJeu(cap)) && (<>
               <span style={labelStyle}>{tr('label_magnitude')}</span>
               <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <label style={{ fontSize: 9, color: "#666" }}>X {CONTENUS_COUT_X.has(eff.content)

@@ -48,6 +48,7 @@ import TopdeckCostOverlay from "./TopdeckCostOverlay";
 import HeroPowerOverlay from "./HeroPowerOverlay";
 import GraveyardAffectOverlay from "./GraveyardAffectOverlay";
 import GraveyardBuffOverlay from "./GraveyardBuffOverlay";
+import MaledictionOverlay from "./MaledictionOverlay";
 import DiscardFromHandOverlay from "./DiscardFromHandOverlay";
 import TempeteOverlay from "./TempeteOverlay";
 import ManaReductionOverlay from "./ManaReductionOverlay";
@@ -165,6 +166,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     clearGraveyardAffectEvent,
     graveyardBuffEvent,
     clearGraveyardBuffEvent,
+    maledictionEvent,
+    clearMaledictionEvent,
     discardFromHandEvent,
     clearDiscardFromHandEvent,
     tempeteEvent,
@@ -2260,6 +2263,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <HeroPowerOverlay event={heroPowerCastEvent} onComplete={clearHeroPowerCastEvent} />
       <GraveyardAffectOverlay event={graveyardAffectEvent} onComplete={clearGraveyardAffectEvent} />
       <GraveyardBuffOverlay event={graveyardBuffEvent} onComplete={clearGraveyardBuffEvent} />
+      <MaledictionOverlay event={maledictionEvent} onComplete={clearMaledictionEvent} />
       <DiscardFromHandOverlay event={discardFromHandEvent} onComplete={clearDiscardFromHandEvent} />
       <TempeteOverlay event={tempeteEvent} onComplete={clearTempeteEvent} />
       <ManaReductionOverlay event={manaReductionEvent} onComplete={clearManaReductionEvent} />

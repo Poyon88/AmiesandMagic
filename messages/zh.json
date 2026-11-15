@@ -909,6 +909,11 @@
         "heal_each": "并为你的英雄每命中一个目标恢复{x}点生命值",
         "heal_scatter": "并为你的英雄总共恢复{x}点生命值"
       },
+      "neutralise": {
+        "suite_one": ":被麻痹,能力无效",
+        "suite_many": ":被麻痹,能力无效",
+        "tant_que": "只要其在场"
+      },
       "malediction": {
         "suite_one": ",在对手下个回合结束时被放逐",
         "suite_many": ",在对手下个回合结束时被放逐"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "{n}回合",
         "poison": "中毒",
         "malediction": "诅咒",
+        "neutralise": "中和",
         "grant_keyword": "赋予 {ability}",
         "random_range": "1至{max}",
         "random_range_from": "{min} 到 {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "使自身麻痹",
         "poison": "使自己中毒",
         "malediction": "诅咒自身",
+        "neutralise": "自身被中和",
         "grant_keyword": "为自身赋予{ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "选择一个麻痹的生物",
         "poison": "选择一个要使其中毒的生物",
         "malediction": "选择一个要诅咒的生物",
+        "neutralise": "选择一个要中和的生物",
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "rappel": "选择一张卡牌收回手牌",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "麻痹",
     "content_poison": "中毒（每回合−1生命值）",
     "content_malediction": "诅咒(在对手下个回合结束时放逐)",
+    "content_neutralise": "中和(麻痹,能力无效)",
     "invocation_costs_label": "召唤费用",
     "invocation_costs_hint": "对于列出的每个费用，都会从你的收藏中召唤一个随机生物。",
     "add_invocation": "+ 召唤",

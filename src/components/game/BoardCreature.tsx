@@ -33,6 +33,7 @@ import { SOI_ARIA_FR, composedScope, composedSoi, creatureScopes, kwInstanceScop
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
 import { keywordIconFor, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
 import { estNeutralisee, neutralisedIds } from "@/lib/game/neutralisation";
+import { creaturesMaudites } from "@/lib/game/malediction";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -172,6 +173,8 @@ function BoardCreature({
   // de l'unité et non sur le joueur local — une Esprit de corps adverse affiche
   // le compteur de son propre camp, ce qui rend lisible un compteur que rien
   // d'autre ne montre.
+  // Maudite : promise à l'exil au début du prochain tour de celui qui l'a maudite.
+  const maudite = useGameStore(s => creaturesMaudites(s.gameState).has(creature.instanceId));
   const espritCount = useGameStore(s => {
     if (!s.gameState) return null;
     const owner = s.gameState.players.find(p => p.board.some(c => c.instanceId === creature.instanceId));
@@ -347,7 +350,8 @@ function BoardCreature({
           const statuses: { kw: Keyword; label: string; color: string }[] = [];
           if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
           // Neutralisée : paralysée et muette tant que la porteuse adverse est en jeu.
-          if (estNeutralisee(creature)) statuses.push({ kw: "neutralisation" as Keyword, label: "Neutralisé", color: "#8b5cf6" });
+          if (estNeutralisee(creature)) statuses.push({ kw: "neutralisation" as Keyword, label: (creature.neutralisationTurnsLeft ?? 0) > 1 ? `Neutralisé (${creature.neutralisationTurnsLeft} tours)` : "Neutralisé", color: "#8b5cf6" });
+          if (maudite) statuses.push({ kw: "malediction" as Keyword, label: "Maudit — exilé à la fin du prochain tour adverse", color: "#a855f7" });
           // Synergie : la capacité choisie, celle dont chaque déclenchement la renforce.
           if (creature.synergieAbilityId) {
             statuses.push({
@@ -815,6 +819,18 @@ function BoardCreature({
           side="left"
           title={(creature.paralysisTurnsLeft ?? 1) > 1 ? `Paralysé (${creature.paralysisTurnsLeft} tours)` : "Paralysé"}
         />
+      )}
+
+      {/* Malédiction : la créature est promise à l'exil */}
+      {maudite && (
+        <>
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+            boxShadow: "inset 0 0 14px 3px rgba(168, 85, 247, 0.75)",
+            animation: "paralyze-pulse 2s ease-in-out infinite",
+          }} />
+          <StatusPip keyword={"malediction" as Keyword} color="#a855f7" top={38} side="right" title="Maudit — exilé à la fin du prochain tour adverse" />
+        </>
       )}
 
       {/* Synergie : icône de la capacité choisie */}

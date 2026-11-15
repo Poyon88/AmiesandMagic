@@ -59,6 +59,22 @@ describe("Malédiction X — une cible", () => {
   });
 });
 
+describe("Malédiction — la source meurt", () => {
+  it("la victime est exilée quand même : la malédiction tient sans la créature qui a maudit", () => {
+    const victime = cible("Victime", 1);
+    const s = etat([victime]);
+    const source = maudisseur({ x: 2 });
+    s.players[0].hand.push(source);
+    let st = applyAction(s, { type: "play_card", cardInstanceId: source.instanceId, targetInstanceId: victime.instanceId } as GameAction);
+    // La source est tuée pendant le tour adverse (cas vu en partie : Éclaireur sans tête).
+    st = applyAction(st, { type: "end_turn" } as GameAction);
+    st.players[0].board = [];
+    st = applyAction(st, { type: "end_turn" } as GameAction);
+    expect(st.players[1].board.map((c) => c.card.name)).toEqual([]);
+    expect(st.players[1].graveyard.some((c) => c.card.name === "Victime")).toBe(false); // exil, pas cimetière
+  });
+});
+
 describe("Malédiction X — portée « toutes »", () => {
   it("toutes les créatures adverses de coût ≤ X sont exilées, les autres restent", () => {
     const s = etat([cible("Un", 1), cible("Trois", 3), cible("Quatre", 4), cible("Neuf", 9)]);

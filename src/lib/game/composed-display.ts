@@ -65,6 +65,12 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.paralyze_turns_many": "pendant {n} tours",
   "content.poison": "empoisonne",
   "content.malediction": "maudit",
+  "content.neutralise": "neutralise",
+  // Ce que FAIT la neutralisation, après la durée : « neutralise une unité
+  // ennemie au choix pendant 2 tours : paralysée, capacités sans effet ».
+  "neutralise.suite_one": ": paralysée, capacités sans effet",
+  "neutralise.suite_many": ": paralysées, capacités sans effet",
+  "neutralise.tant_que": "tant qu'elle est en jeu",
   // Ce que FAIT la malédiction, à la suite de la cible : « maudit une unité
   // ennemie au choix : elle est exilée à la fin du prochain tour adverse ».
   "malediction.suite_one": ", exilée à la fin du prochain tour adverse",
@@ -303,6 +309,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "self.paralyze": "se paralyse",
   "self.poison": "s'empoisonne",
   "self.malediction": "se maudit",
+  "self.neutralise": "se neutralise",
   "self.grant_keyword": "se confère {ability}",
 
   // Variantes SANS préposition, pour les verbes transitifs directs (détruit,
@@ -397,6 +404,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.paralyze": "choisissez une créature à paralyser",
   "choice.poison": "choisissez une créature à empoisonner",
   "choice.malediction": "choisissez une créature à maudire",
+  "choice.neutralise": "choisissez une créature à neutraliser",
   "choice.grant_keyword": "choisissez une créature à qui conférer la capacité",
   "choice.exhumation": "choisissez une créature à ressusciter",
   "choice.rappel": "choisissez une carte à reprendre en main",
@@ -416,6 +424,9 @@ function frag(t: SafeT | undefined, key: string, params?: Record<string, string 
 export function composedValueText(cap: Capability): string | null {
   const m = cap.composed?.magnitude;
   if (!m) return null;
+  // Neutralisation portée par une créature : elle dure tant que la créature est
+  // en jeu, son X n'a aucun rôle — un « I » à côté de l'icône n'annonçait rien.
+  if (cap.composed!.content === "neutralise" && neutraliseTantQuEnJeu(cap)) return null;
   // Invocation désignée : X ne compte plus, rien à peindre.
   if (cap.composed!.content === "invocation" && designatedCardIds(cap.composed).length > 0) return null;
   if (cap.composed!.content === "tuteur" || cap.composed!.content === "transformation") return null;
@@ -476,6 +487,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
     case "poison": return { symbol: KEYWORD_SYMBOLS.poison, keyword: "poison" };
     case "malediction": return { symbol: KEYWORD_SYMBOLS.malediction, keyword: "malediction" };
+    case "neutralise": return { symbol: KEYWORD_SYMBOLS.neutralisation, keyword: "neutralisation" };
     // Une capacité conférée s'affiche avec l'icône de LA capacité conférée
     // (ex. Armure), pas avec l'icône générique « Conférer » : c'est ce que la
     // créature gagne qui compte, pas le fait qu'on le lui donne. L'astérisque
@@ -746,6 +758,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "transformation": return frag(t, "content.transformation");
     case "poison": return frag(t, "content.poison");
     case "malediction": return frag(t, "content.malediction");
+    case "neutralise": return frag(t, "content.neutralise");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
     case "appel": {
@@ -903,6 +916,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "transformation": return frag(t, "self.transformation");
     case "poison": return frag(t, "self.poison");
     case "malediction": return frag(t, "self.malediction");
+    case "neutralise": return frag(t, "self.neutralise");
     case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) }) + describeGrantTrigger(eff, t);
     default: return null;
   }
@@ -973,7 +987,7 @@ function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "malediction", "silence", "transformation"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "malediction", "neutralise", "silence", "transformation"]);
 
 /** Libellé d'une appartenance de cible.
  *
@@ -1204,6 +1218,8 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
       // « de un » espagnol ou portugais.
       .replace(/prend le contrôle de (une?|au plus)\b/g, "prend le contrôle d'$1");
   const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
+    : eff.content === "neutralise"
+      ? `${neutraliseTantQuEnJeu(cap) ? frag(t, "neutralise.tant_que") : dureeNeutralisation(eff, t)} ${frag(t, eff.target?.count === 1 ? "neutralise.suite_one" : "neutralise.suite_many")}`
     : eff.content === "transformation" ? carteDArrivee(eff, t)
     : eff.content === "siphon" ? soinSiphonTexte(eff, t)
     : eff.content === "domination" && eff.target?.count !== 1 ? frag(t, "domination.limit")
@@ -1236,6 +1252,23 @@ function carteDArrivee(eff: ComposedEffect, t?: SafeT): string {
 
 /** Durée d'une paralysie composée (Entrave X). Magnitude absente ⇒ 1 tour, la
  *  durée que le moteur applique aux cartes d'avant X. */
+/** NEUTRALISATION composée : tient-elle « tant que la porteuse est en jeu » ?
+ *  Oui quand l'effet part d'une CRÉATURE qui reste sur le plateau ; non pour
+ *  une action, un emblème, ou un déclencheur qui part hors du plateau (mort,
+ *  main, cimetière) — ceux-là comptent en tours. Le moteur tranche sur la
+ *  présence réelle de la source ; ceci en est le reflet pour le texte et la
+ *  forge. */
+export function neutraliseTantQuEnJeu(cap: Pick<Capability, "trigger" | "effectKind">): boolean {
+  if (cap.effectKind === "emblem") return false;
+  return !["spell_resolution", "on_death", "on_end_of_turn_in_hand", "on_start_of_turn_in_hand", "on_end_of_turn_in_graveyard", "on_draw"]
+    .includes(cap.trigger as string);
+}
+/** Durée d'une Neutralisation en tours : jamais moins de 1 (X nul ou absent). */
+function dureeNeutralisation(eff: ComposedEffect, t?: SafeT): string {
+  const x = Math.max(1, eff.magnitude?.x ?? 1);
+  return frag(t, x > 1 ? "content.paralyze_turns_many" : "content.paralyze_turns_one", { n: x });
+}
+
 function dureeParalysie(eff: ComposedEffect, t?: SafeT): string {
   const x = eff.magnitude?.x ?? 1;
   const n = amplitudeAffichee(x, eff.magnitude?.randomX, t, eff.magnitude?.minX);
@@ -1275,7 +1308,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "siphon", "heal", "buff", "usurpation", "debuff", "destroy", "domination", "bounce", "paralyze", "poison", "malediction", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
+  const key = ["deal_damage", "siphon", "heal", "buff", "usurpation", "debuff", "destroy", "domination", "bounce", "paralyze", "poison", "malediction", "neutralise", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);

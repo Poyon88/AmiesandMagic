@@ -909,6 +909,11 @@
         "heal_each": "y cura a tu héroe {x} PV por cada objetivo alcanzado",
         "heal_scatter": "y cura a tu héroe {x} PV en total"
       },
+      "neutralise": {
+        "suite_one": ": paralizada, habilidades sin efecto",
+        "suite_many": ": paralizadas, habilidades sin efecto",
+        "tant_que": "mientras esté en juego"
+      },
       "malediction": {
         "suite_one": ", exiliada al final del próximo turno rival",
         "suite_many": ", exiliadas al final del próximo turno rival"
@@ -934,6 +939,7 @@
         "paralyze_turns_many": "durante {n} turnos",
         "poison": "envenena",
         "malediction": "maldice",
+        "neutralise": "neutraliza",
         "grant_keyword": "otorga {ability}",
         "random_range": "1 a {max}",
         "random_range_from": "{min} a {max}",
@@ -1063,6 +1069,7 @@
         "paralyze": "se paraliza",
         "poison": "se envenena",
         "malediction": "se maldice",
+        "neutralise": "se neutraliza",
         "grant_keyword": "se otorga {ability}"
       },
       "choice": {
@@ -1079,6 +1086,7 @@
         "paralyze": "elige una criatura para paralizar",
         "poison": "elige una criatura para envenenar",
         "malediction": "elige una criatura para maldecir",
+        "neutralise": "elige una criatura para neutralizar",
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
         "rappel": "elige una carta para recuperar en la mano",
@@ -2697,6 +2705,7 @@
     "content_paralyze": "Paralizar",
     "content_poison": "Envenenar (−1 PV por turno)",
     "content_malediction": "Maldecir (exilio al final del próximo turno adversario)",
+    "content_neutralise": "Neutralizar (paralizada, habilidades sin efecto)",
     "invocation_costs_label": "COSTES DE INVOCACIÓN",
     "invocation_costs_hint": "Se invoca una criatura aleatoria de tu colección por cada coste indicado.",
     "add_invocation": "+ Invocación",

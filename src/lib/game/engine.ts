@@ -1117,21 +1117,30 @@ function idSousPlafond(id: string, xMax: number | undefined, a: PlayerState, b: 
 /** Vrai pendant la Malédiction d'ENTRÉE EN JEU (instance sans mode). */
 let modeMaledictionEnCours = false;
 
-/** MALÉDICTION — marque `target` pour l'exil au début du tour de son
- *  propriétaire. La source ne mémorisait qu'UNE victime ; la portée « toutes »
- *  range les suivantes dans `maledictionExtraIds`. */
+/** MALÉDICTION — marque `target` pour l'exil au début du prochain tour de
+ *  celui qui maudit.
+ *
+ *  La malédiction est portée par le JOUEUR (`PlayerState.maledictions`), comme
+ *  celle d'une action ou d'un effet composé — règle de l'auteur du 2026-11-15.
+ *  Avant, la CRÉATURE la portait (`maledictionTargetId`) : la tuer levait la
+ *  malédiction, ce que le texte de la carte ne disait pas et qui passait pour
+ *  un bug. Les champs de la créature restent LUS (parties en cours), plus
+ *  jamais écrits. */
 function maudire(source: CardInstance, target: CardInstance): void {
   // MALÉDICTION X : la victime doit coûter X ou moins. Vérifié ICI, au point de
   // passage unique, pour couvrir aussi la portée « toutes » (toutes les
   // créatures adverses de coût ≤ X) et les tirages au hasard.
   const mode = modeMaledictionEnCours;
   if (!respecteCoutMax(target.card, maledictionCoutMax(source.card, mode))) return;
-  if (!source.maledictionTargetId || source.maledictionTargetId === target.instanceId) {
-    source.maledictionTargetId = target.instanceId;
-    return;
-  }
-  const extra = source.maledictionExtraIds ?? [];
-  if (!extra.includes(target.instanceId)) source.maledictionExtraIds = [...extra, target.instanceId];
+  // Celui qui maudit : le contrôleur de la source ; à défaut (source déjà au
+  // cimetière : Malédiction à la mort) l'adversaire du détenteur de la victime
+  // — Malédiction ne vise que des ennemies.
+  const detenteur = currentBoardPlayers.find(p => p.board.includes(target));
+  const maudisseur = currentBoardPlayers.find(p => p.board.includes(source))
+    ?? currentBoardPlayers.find(p => p !== detenteur);
+  if (!maudisseur) return;
+  const deja = maudisseur.maledictions ?? [];
+  if (!deja.includes(target.instanceId)) maudisseur.maledictions = [...deja, target.instanceId];
 }
 
 /** CANON X — l'effet composé « X dégâts à une unité ennemie au hasard ». Source
@@ -1910,6 +1919,7 @@ function appliquerSilence(target: CardInstance): void {
   // Rien à rendre : le Silence a tout pris, capacités neutralisées comprises.
   delete target.neutralisationStash;
   delete target.neutralisationTargetId;
+  delete target.neutralisationComposeIds;
   target.apprentissageSpell = undefined;
   delete target.synergieAbilityId;
   delete target.synergieSourcesThisTurn;
@@ -2041,6 +2051,24 @@ function applyComposedToUnit(
     // contrôleur de l'effet. Portée par le joueur, pas par la source : un
     // emblème n'en a pas, et une créature source qui meurt entre-temps ne
     // lève donc pas la malédiction.
+    // NEUTRALISATION composée : X tours (absent ⇒ 1), sans jamais raccourcir une
+    // neutralisation plus longue déjà en cours. L'effet lui-même — paralysie,
+    // capacités muettes — est posé par le recalcul d'auras de fin d'action.
+    case "neutralise": {
+      // Portée par une CRÉATURE en jeu : la neutralisation tient tant qu'elle y
+      // reste, comme la capacité — pas de durée, X est ignoré.
+      const porteuse = source && source !== u && source.card.card_type === "creature"
+        && currentBoardPlayers.some(p => p.board.includes(source)) ? source : null;
+      if (porteuse) {
+        const ids = porteuse.neutralisationComposeIds ?? [];
+        if (!ids.includes(u.instanceId)) porteuse.neutralisationComposeIds = [...ids, u.instanceId];
+        break;
+      }
+      // Sans porteuse (action, emblème, râle…) : X tours, X absent ou nul ⇒ 1.
+      const tours = Math.max(1, Math.floor(composed.magnitude?.x == null ? 1 : x));
+      u.neutralisationTurnsLeft = Math.max(u.neutralisationTurnsLeft ?? 0, tours);
+      break;
+    }
     case "malediction": {
       const deja = owner.maledictions ?? [];
       if (!deja.includes(u.instanceId)) owner.maledictions = [...deja, u.instanceId];
@@ -2912,7 +2940,7 @@ function resolveComposedEffect(
     estDegatsComposes(composed.content) || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze" ||
     composed.content === "poison" || composed.content === "domination" ||
-    composed.content === "malediction";
+    composed.content === "malediction" || composed.content === "neutralise";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful,
     exclutPorteuse(composed, opts?.trigger, source),
     composed.content === "domination" && fromSpell)) {
@@ -3605,6 +3633,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   // choisira de nouveau.
   delete inst.synergieAbilityId;
   delete inst.synergieSourcesThisTurn;
+  delete inst.neutralisationTurnsLeft;
 
   // Une valeur relevée par un emblème ou un objet ne suit pas la créature hors
   // du plateau : la purge de `recalculateAuras` ne balaie que le plateau, elle
@@ -3658,6 +3687,7 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.maledictionTargetId = null;
   delete inst.maledictionExtraIds;
   delete inst.neutralisationTargetId;
+  delete inst.neutralisationComposeIds;
   inst.ombreRevealed = false;
   desarmerGardes(inst);
   inst.fureurActive = false;
@@ -5579,6 +5609,11 @@ function finishEndTurn(newState: GameState): GameState {
   // Entrave X : chaque fin de tour du camp paralysé consomme un tour ; la
   // paralysie ne tombe qu'au dernier.
   for (const creature of outgoing.board) {
+    // Neutralisation composée : même décompte que la paralysie.
+    if ((creature.neutralisationTurnsLeft ?? 0) > 0) {
+      creature.neutralisationTurnsLeft! -= 1;
+      if (creature.neutralisationTurnsLeft! <= 0) delete creature.neutralisationTurnsLeft;
+    }
     if (creature.isParalyzed) {
       const restant = (creature.paralysisTurnsLeft ?? 1) - 1;
       if (restant > 0) creature.paralysisTurnsLeft = restant;
@@ -10366,7 +10401,7 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
   }
 
   player.board = alive;
-  for (const d of dead) { delete d.synergieAbilityId; delete d.synergieSourcesThisTurn; }
+  for (const d of dead) { delete d.synergieAbilityId; delete d.synergieSourcesThisTurn; delete d.neutralisationTurnsLeft; delete d.neutralisationComposeIds; }
   player.graveyard.push(...dead);
 
   // UNITÉS TUÉES EN MAIN (dégâts d'un effet qui vise la main) : elles partent
