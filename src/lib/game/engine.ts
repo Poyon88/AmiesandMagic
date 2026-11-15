@@ -4710,6 +4710,11 @@ export function startTurn(state: GameState): GameState {
     // Un effet composé peut viser n'importe quel camp : une unité du lanceur
     // maudite par lui-même est exilée aussi.
     player.board = player.board.filter(c => !ids.has(c.instanceId));
+    // Carte maudite EN MAIN (« maudit une unité ennemie en main ») : restée en
+    // main, elle est exilée de là ; jouée entre-temps, elle l'est du plateau.
+    // Sans cela la malédiction d'une carte gardée en main ne faisait rien.
+    opponent.hand = opponent.hand.filter(c => !ids.has(c.instanceId));
+    player.hand = player.hand.filter(c => !ids.has(c.instanceId));
     delete player.maledictions;
   }
 
