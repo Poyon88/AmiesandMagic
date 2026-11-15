@@ -282,6 +282,16 @@ function pendingTriggerOverlay(
       alternativeOptions: t.alternativeOptions,
     };
   }
+  // SYNERGIE : la question porte sur une CAPACITÉ, pas sur une cible. Comme le
+  // « OU », aucune unité à surligner : la modale (SynergieOverlay) parle, et le
+  // mode reste "pending_trigger" pour le chrono de choix.
+  if (t.kw === "synergie") {
+    return {
+      targetingMode: "pending_trigger" as const, validTargets: [], pendingTriggerId: t.id,
+      pendingTriggerPrompt: "🧬 Synergie", pendingTriggerNeeded: 1, pendingTriggerPicked: [],
+      alternativeOptions: [],
+    };
+  }
   // Variante « Traque du destin » de fin/début de tour : même modale qu'à
   // l'invocation, sur les X cartes du dessus du deck du contrôleur (le deck ne
   // bouge pas tant que le choix est en attente).
@@ -1615,6 +1625,16 @@ export function selectPowerTargetingColor(s: GameStore): string | null {
   return null;
 }
 
+/** Remontée X : les créneaux `kw_i`, `kw_i:1`… d'une même capacité ne doivent
+ *  pas proposer deux fois la même unité. Sans effet sur les autres créneaux. */
+function sansCiblesDejaPrises(cibles: string[], slot: string, dejaChoisies: Record<string, string>): string[] {
+  const base = slot.split(":")[0];
+  if (base === slot) return cibles; // premier créneau, ou créneau ordinaire
+  const prises = new Set(Object.entries(dejaChoisies)
+    .filter(([s]) => s === base || s.startsWith(`${base}:`)).map(([, id]) => id));
+  return cibles.filter((id) => !prises.has(id));
+}
+
 export const useGameStore = create<GameStore>((set, get) => {
   // ÉPOQUE D'ANIMATION. `dispatchAction` programme ses phases par minuteries ;
   // rien ne les annulait, si bien qu'une concession (ou un état adopté de
@@ -2428,7 +2448,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const couleur = h.type === "buff" ? couleurBoost(h.targetInstanceId) : undefined;
       return {
         targetId: h.targetInstanceId,
-        amount: 1,
+        amount: h.amount ?? 1,
         type: h.type,
         ...(h.label ? { label: h.label } : {}),
         ...(couleur ? { color: couleur } : {}),
@@ -3988,7 +4008,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         const targetId = m
           ? (newState.players[+m[1]]?.id === localPlayerId ? "friendly_hero" : "enemy_hero")
           : h.targetInstanceId;
-        return { targetId, amount: 1, type: h.type, ...getElementCenter(targetId), delayMs: delaisIntervalle[i] };
+        return { targetId, amount: h.amount ?? 1, type: h.type, ...getElementCenter(targetId), delayMs: delaisIntervalle[i] };
       });
       const seqCibles = new Set(seq.map((e) => e.targetId));
       // Même règle qu'en vague 1 : pour une cible touchée point par point, on
@@ -4766,7 +4786,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     // then opened from selectTarget once all targets are in, carrying the
     // collected targetMap into the final dispatch.
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
-      const slots = getSpellTargetSlots(card.card);
+      // L'état est passé pour Remontée X : pas plus de créneaux que de cibles.
+      const slots = getSpellTargetSlots(card.card, gameState);
       const selectableSlots = slots.filter(s => requiresPlayerSelection(s.type));
 
       if (selectableSlots.length === 0) {
@@ -5088,7 +5109,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           });
           return null;
         }
-        const nextTargets = card ? getSpellSlotTargets(gs!, card.card, nextSlot) : [];
+        const nextTargets = card ? sansCiblesDejaPrises(getSpellSlotTargets(gs!, card.card, nextSlot), nextSlot.slot, newMap) : [];
         set({
           validTargets: nextTargets,
           currentTargetSlotIndex: nextIndex,
@@ -5106,7 +5127,11 @@ export const useGameStore = create<GameStore>((set, get) => {
         const choice = cardInst0 ? getCreatureComposedChoice(cardInst0.card) : null;
         if (choice && choice.count >= 2) {
           const collected = [...get().creatureComposedCollected, targetId];
-          if (collected.length < choice.count) {
+          // On s'arrête aussi quand il ne reste plus de cible à désigner (moins
+          // d'unités en jeu que de cibles demandées) : sans cela la saisie
+          // restait ouverte sur une liste vide.
+          const restantes = get().validTargets.filter(t => t !== targetId);
+          if (collected.length < choice.count && restantes.length > 0) {
             set({
               creatureComposedCollected: collected,
               validTargets: get().validTargets.filter(t => t !== targetId),
@@ -5253,7 +5278,7 @@ export const useGameStore = create<GameStore>((set, get) => {
               // targetingMode stays "graveyard"
             });
           } else {
-            const nextTargets = gs ? getSpellSlotTargets(gs, cardInHand.card, nextSlot) : [];
+            const nextTargets = gs ? sansCiblesDejaPrises(getSpellSlotTargets(gs, cardInHand.card, nextSlot), nextSlot.slot, newMap) : [];
             set({
               validTargets: nextTargets,
               currentTargetSlotIndex: nextIndex,
@@ -5565,6 +5590,11 @@ export const useGameStore = create<GameStore>((set, get) => {
         triggerId: pendingTriggerId,
         alternativeCapUid: targetId,
       });
+    } else if (targetingMode === "pending_trigger" && get().gameState?.pendingTriggers?.[0]?.kw === "synergie") {
+      // SYNERGIE : `targetId` porte l'id de la CAPACITÉ choisie.
+      const { pendingTriggerId } = get();
+      if (!pendingTriggerId) return null;
+      return get().dispatchAction({ type: "resolve_pending_trigger", triggerId: pendingTriggerId, abilityId: targetId });
     } else if (targetingMode === "pending_trigger") {
       const { pendingTriggerId, pendingTriggerNeeded, pendingTriggerPicked, validTargets: vt } = get();
       if (!pendingTriggerId) return null;
@@ -5929,7 +5959,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
 
     if (card.card.card_type === "spell" && needsTarget(card.card)) {
-      const slots = getSpellTargetSlots(card.card);
+      // L'état est passé pour Remontée X : pas plus de créneaux que de cibles.
+      const slots = getSpellTargetSlots(card.card, gameState);
       const selectableSlots = slots.filter(s => requiresPlayerSelection(s.type));
       if (selectableSlots.length > 0) {
         const firstSlot = selectableSlots[0];

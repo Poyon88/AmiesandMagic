@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Präzision",
-        "desc": "Ignoriert Resistenz, Rüstung und Schild."
+        "desc": "Ignoriert Widerstand, Rüstung, Schild und die Obergrenze von Ätherisch."
       },
       "drain_de_vie": {
         "label": "Lebensraub",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "Neutralisierung",
-        "desc": "Solange sie im Spiel ist, neutralisiert sie {ability} {neutralise_cible}."
+        "desc": "Solange sie im Spiel ist, ist die anvisierte feindliche Einheit gelähmt und ihre Fähigkeiten bleiben wirkungslos."
       },
       "transformation": {
         "label": "Verwandlung",
@@ -176,8 +176,9 @@
         "desc_any": "Beschwört eine zufällige Kreatur aus deiner Sammlung ({alignment}, aktuelles Format)."
       },
       "malediction": {
-        "label": "Fluch",
-        "desc": "Zielt auf eine gegnerische Einheit; sie wird am Ende der nächsten gegnerischen Runde verbannt."
+        "label": "Fluch X",
+        "desc": "Wähle eine gegnerische Einheit mit Kosten ≤ X; sie wird am Ende des nächsten gegnerischen Zuges verbannt.",
+        "desc_any": "Zielt auf eine gegnerische Einheit; sie wird am Ende der nächsten gegnerischen Runde verbannt."
       },
       "necrophagie": {
         "label": "Nekrophagie",
@@ -251,6 +252,14 @@
         "label": "Übeltat",
         "desc": "Beim Tod: Fügt allen Einheiten (Verbündeten und Feinden) X Schaden zu; X = ihre ATK."
       },
+      "synergie": {
+        "label": "Synergie X",
+        "desc": "Wähle beim Erscheinen eine Fähigkeit: Erhält bei jeder ihrer Auslösungen +X/+X (1-mal pro Quelle und Zug)."
+      },
+      "etheree": {
+        "label": "Ätherisch",
+        "desc": "Erleidet im Kampf höchstens 1 Schaden pro Treffer. Der Schaden durch Aktionen, den sie erleidet, wird verdoppelt."
+      },
       "indestructible": {
         "label": "Unzerstörbar",
         "desc": "Erleidet keinen Kampfschaden."
@@ -260,8 +269,9 @@
         "desc": "Stellt zu Beginn deines Zuges X LP wieder her."
       },
       "corruption": {
-        "label": "Korruption",
-        "desc": "Konvertiert die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Jagdinstinkt."
+        "label": "Korruption X",
+        "desc": "Bekehrt eine feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Hetzjagd.",
+        "desc_any": "Konvertiert die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Jagdinstinkt."
       },
       "carnage": {
         "label": "Gemetzel X",
@@ -305,8 +315,9 @@
         "desc": "Fügt beim Angriff allen feindlichen Einheiten X Schaden zu (z. B.: Feueratem 2 = 2 Schaden)."
       },
       "domination": {
-        "label": "Dominanz",
-        "desc": "Übernimmt bei ihrer Beschwörung die Kontrolle über eine zufällige feindliche Einheit."
+        "label": "Dominanz X",
+        "desc": "Übernimmt bei ihrer Beschwörung die Kontrolle über eine zufällige feindliche Einheit mit Kosten ≤ X.",
+        "desc_any": "Übernimmt bei ihrer Beschwörung die Kontrolle über eine zufällige feindliche Einheit."
       },
       "resurrection": {
         "label": "Auferstehung",
@@ -505,16 +516,17 @@
         "desc": "Sieh dir die untersten X Karten deines Decks an; lege eine davon oben auf."
       },
       "retour_differe": {
-        "label": "Verzögerte Rückkehr",
-        "desc": "Legt die anvisierte Einheit unter das Deck ihres Besitzers."
+        "label": "Verzögerte Rückkehr X",
+        "desc": "Legt die ausgewählte Einheit mit Kosten ≤ X unter das Deck ihres Besitzers.",
+        "desc_any": "Legt die anvisierte Einheit unter das Deck ihres Besitzers."
       },
       "concentration": {
         "label": "Konzentration X",
         "desc": "Jede Aktion auf der Hand wird zu einer zufälligen Aktion mit Kosten +X, reduziert um X (alle Fraktionen)."
       },
       "remontee": {
-        "label": "Aufschwung",
-        "desc": "Gibt eine gezielte Einheit in die Hand ihres ursprünglichen Besitzers zurück."
+        "label": "Aufschwung X",
+        "desc": "Schickt X Zieleinheit(en) zurück auf die Hand ihres ursprünglichen Besitzers."
       },
       "entrainement": {
         "label": "Training X",
@@ -562,8 +574,9 @@
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       },
       "execution": {
-        "label": "Hinrichtung",
-        "desc": "Zerstört eine anvisierte feindliche Einheit."
+        "label": "Hinrichtung X",
+        "desc": "Zerstört eine ausgewählte feindliche Einheit mit Kosten ≤ X.",
+        "desc_any": "Zerstört eine anvisierte feindliche Einheit."
       },
       "silence": {
         "label": "Stille",
@@ -639,13 +652,20 @@
         "label": "Weissagung",
         "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten ab, in gewählter Reihenfolge."
       },
+      "malediction": {
+        "label": "Fluch X",
+        "desc": "Verflucht die gewählte gegnerische Einheit mit Kosten ≤ X: Sie wird am Ende des nächsten gegnerischen Zuges verbannt",
+        "desc_any": "Verflucht die gewählte gegnerische Einheit: Sie wird am Ende des nächsten gegnerischen Zuges verbannt"
+      },
       "corruption": {
-        "label": "Korruption",
-        "desc": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
+        "label": "Korruption X",
+        "desc": "Bekehrt die ausgewählte feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Hetzjagd.",
+        "desc_any": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
       },
       "domination": {
-        "label": "Dominanz",
-        "desc": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
+        "label": "Dominanz X",
+        "desc": "Übernimmt die Kontrolle über die ausgewählte feindliche Einheit mit Kosten ≤ X.",
+        "desc_any": "Übernimmt die Kontrolle über die anvisierte gegnerische Einheit."
       },
       "appel_du_clan": {
         "label": "Clanruf X",
@@ -739,8 +759,9 @@
         "desc": "Paralysiert eine anvisierte gegnerische Kreatur für X Runde(n)"
       },
       "execution": {
-        "label": "Hinrichtung",
-        "desc": "Zerstört eine anvisierte Kreatur oder einen anvisierten Gegenstand"
+        "label": "Hinrichtung X",
+        "desc": "Zerstört eine ausgewählte Kreatur oder einen ausgewählten Gegenstand mit Kosten ≤ X",
+        "desc_any": "Zerstört eine anvisierte Kreatur oder einen anvisierten Gegenstand"
       },
       "silence": {
         "label": "Stille",
@@ -783,8 +804,9 @@
         "desc": "Deckt die obersten 3 Karten des Decks in beliebiger Reihenfolge auf; wählt die oberste aus, um sie auf die Hand zu nehmen, und mischt anschließend das Deck."
       },
       "retour_differe": {
-        "label": "Verzögerte Rückkehr",
-        "desc": "Legt die anvisierte Einheit oder den anvisierten Gegenstand unter das Deck des Besitzers"
+        "label": "Verzögerte Rückkehr X",
+        "desc": "Legt die ausgewählte Einheit oder den ausgewählten Gegenstand mit Kosten ≤ X unter das Deck des Besitzers",
+        "desc_any": "Legt die anvisierte Einheit oder den anvisierten Gegenstand unter das Deck des Besitzers"
       },
       "epargne": {
         "label": "Sparen X",
@@ -811,8 +833,8 @@
         "desc": "Ziehe X Karten."
       },
       "remontee": {
-        "label": "Rückzug",
-        "desc": "Schickt eine anvisierte Einheit oder einen anvisierten Gegenstand zurück in die Hand des ursprünglichen Besitzers."
+        "label": "Rückzug X",
+        "desc": "Schickt X Zieleinheit(en) oder Ziel-Gegenstand/-Gegenstände zurück auf die Hand ihres ursprünglichen Besitzers."
       },
       "entrainement": {
         "label": "Training X",
@@ -887,6 +909,10 @@
         "heal_each": "und heilt Euren Helden um {x} LP pro getroffenem Ziel",
         "heal_scatter": "und heilt Euren Helden insgesamt um {x} LP"
       },
+      "malediction": {
+        "suite_one": ", am Ende des nächsten gegnerischen Zuges verbannt",
+        "suite_many": ", am Ende des nächsten gegnerischen Zuges verbannt"
+      },
       "domination": {
         "limit": "im Rahmen der verfügbaren Plätze"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "für {n} Runde",
         "paralyze_turns_many": "für {n} Runden",
         "poison": "vergiftet",
+        "malediction": "verflucht",
         "grant_keyword": "verleiht {ability}",
         "random_range": "1 bis {max}",
         "random_range_from": "{min} bis {max}",
@@ -1035,6 +1062,7 @@
         "bounce": "kehrt auf die Hand zurück",
         "paralyze": "paralysiert sich selbst",
         "poison": "vergiftet sich",
+        "malediction": "verflucht sich selbst",
         "grant_keyword": "verleiht sich selbst {ability}"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
         "paralyze": "wähle eine Kreatur zum Lähmen",
         "poison": "Wählt eine Kreatur zum Vergiften",
+        "malediction": "Wähle eine Kreatur, die verflucht werden soll",
         "grant_keyword": "wähle eine Kreatur, der die Fähigkeit verliehen werden soll",
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "Fügt {cibles} X Schaden zu.",
         "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
-        "retour_differe": "Legt {cibles} unter das Deck ihres Besitzers.",
+        "retour_differe": "Legt {cibles} mit Kosten ≤ X unter das Deck des jeweiligen Besitzers.",
+        "retour_differe_any": "Legt {cibles} unter das Deck ihres Besitzers.",
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
-        "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
-        "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
+        "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "corruption": "Bekehrt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite, im Rahmen der freien Plätze; sie erhalten Hetzjagd.",
+        "corruption_any": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
+        "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, im Rahmen der freien Plätze.",
+        "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
         "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
-        "execution": "Zerstört {cibles}, einschließlich Gegenstände.",
+        "execution": "Zerstört {cibles} mit Kosten ≤ X, einschließlich Gegenstände.",
+        "execution_any": "Zerstört {cibles}, einschließlich Gegenstände.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, einschließlich Gegenstände, und setzt deren Werte auf den Ausgangswert zurück.",
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
@@ -2221,14 +2256,19 @@
         "guerison": "Stellt {cibles} und deinem Helden X LP wieder her."
       },
       "creature": {
+        "neutralisation": "Solange sie im Spiel ist, sind {cibles} gelähmt und ihre Fähigkeiten wirkungslos.",
         "impact": "Fügt {cibles} X Schaden zu.",
         "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
-        "retour_differe": "Legt {cibles} unter das Deck ihres Besitzers.",
+        "retour_differe": "Legt {cibles} mit Kosten ≤ X unter das Deck des jeweiligen Besitzers.",
+        "retour_differe_any": "Legt {cibles} unter das Deck ihres Besitzers.",
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
-        "corruption": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
-        "domination": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
+        "corruption": "Wechselt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf Eure Seite, soweit Plätze vorhanden sind; sie erhalten Hetzjagd.",
+        "corruption_any": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
+        "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, soweit Plätze vorhanden sind.",
+        "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
-        "malediction": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "tactique": "Gib {cibles} X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten (je Einheit ein Wurf).",
         "vampirisme": "Stiehlt {cibles} bis zu X LP und fügt sie den LP dieser Einheit hinzu.",
         "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
         "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
         "usurpation_soi": "Erhält dauerhaft +X ANG und +Y LP für jede gegnerische Karte, die Ihr gespielt habt.",
-        "execution": "Zerstört {cibles}, einschließlich Gegenstände.",
+        "execution": "Zerstört {cibles} mit Kosten ≤ X, einschließlich Gegenständen.",
+        "execution_any": "Zerstört {cibles}, einschließlich Gegenstände.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, einschließlich Gegenstände, und setzt deren Werte auf den Ausgangswert zurück.",
         "guerison": "Stellt allen anderen verbündeten Einheiten und deinem Helden X LP wieder her.",
         "purete": "Solange euer Friedhof leer ist, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
@@ -2655,6 +2696,7 @@
     "content_bounce": "Auf die Hand zurückschicken",
     "content_paralyze": "Lähmen",
     "content_poison": "Vergiften (−1 LP pro Runde)",
+    "content_malediction": "Verfluchen (Verbannung am Ende des nächsten gegnerischen Zuges)",
     "invocation_costs_label": "BESCHWÖRUNGSKOSTEN",
     "invocation_costs_hint": "Für jede aufgelistete Kosten wird eine zufällige Kreatur aus deiner Sammlung beschworen.",
     "add_invocation": "+ Beschwörung",
@@ -3301,6 +3343,12 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "Der letzte Punkt ist das Ins-Spiel-Kommen: Er wird separat gezahlt, zusammen mit der Zielwahl.",
     "choix_ou_title": "⚖️ Wähle eines",
+    "synergie_title": "Synergie – Wähle eine Fähigkeit",
+    "synergie_subtitle": "Diese Kreatur erhält ihren Bonus bei jeder Auslösung der gewählten Fähigkeit, bei dir wie beim Gegner.",
+    "synergie_search": "Fähigkeit suchen …",
+    "synergie_in_play": "Im Spiel vorhanden",
+    "synergie_others": "Weitere Fähigkeiten",
+    "synergie_none": "Keine Fähigkeit passt.",
     "choix_ou_subtitle": "Nur einer dieser Effekte wird ausgeführt.",
     "activation_menu_title": "Welche Fähigkeit aktivieren?",
     "activation_learned": "{name} wirken",

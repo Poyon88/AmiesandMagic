@@ -97,7 +97,7 @@ describe("tables de pouvoirs", () => {
   });
 
   it("la sphinx pose l'énigme, lit l'avenir et condamne — sans voler", () => {
-    expect(pouvoirs("Sphinx")).toEqual(expect.arrayContaining(["Présage", "Divination", "Malédiction"]));
+    expect(pouvoirs("Sphinx")).toEqual(expect.arrayContaining(["Présage", "Divination", "Malédiction X"]));
     expect(pouvoirs("Sphinx")).not.toContain("Vol");
   });
 

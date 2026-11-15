@@ -31,8 +31,8 @@ import DetailEnJeu from "@/components/cards/DetailEnJeu";
 import MenuActivation from "./MenuActivation";
 import { SOI_ARIA_FR, composedScope, composedSoi, creatureScopes, kwInstanceScope, kwInstanceSoi, porteeValide, scopeAriaLabel } from "@/lib/game/target-scope";
 import AllAlliesMarker from "@/components/cards/AllAlliesMarker";
-import { keywordIconFor } from "@/lib/game/keyword-labels";
-import { neutralisedIds } from "@/lib/game/neutralisation";
+import { keywordIconFor, KEYWORD_LABELS } from "@/lib/game/keyword-labels";
+import { estNeutralisee, neutralisedIds } from "@/lib/game/neutralisation";
 
 interface BoardCreatureProps {
   creature: CardInstance;
@@ -346,6 +346,16 @@ function BoardCreature({
   const statutsEnJeu = () => {
           const statuses: { kw: Keyword; label: string; color: string }[] = [];
           if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
+          // Neutralisée : paralysée et muette tant que la porteuse adverse est en jeu.
+          if (estNeutralisee(creature)) statuses.push({ kw: "neutralisation" as Keyword, label: "Neutralisé", color: "#8b5cf6" });
+          // Synergie : la capacité choisie, celle dont chaque déclenchement la renforce.
+          if (creature.synergieAbilityId) {
+            statuses.push({
+              kw: creature.synergieAbilityId as Keyword,
+              label: `Synergie : ${(KEYWORD_LABELS[creature.synergieAbilityId as Keyword] ?? creature.synergieAbilityId).replace(/\s*[+-]?X(\/[+-]?Y)?$/, "")}`,
+              color: "#22d3ee",
+            });
+          }
           if (creature.isParalyzed) {
             // Entrave X : tours restants, celui en cours compris.
             const n = creature.paralysisTurnsLeft ?? 1;
@@ -784,8 +794,9 @@ function BoardCreature({
         <StatusPip keyword={"divine_shield" as Keyword} color="#f1c40f" top={4} side="right" title="Bouclier divin" />
       )}
 
-      {/* Paralyzed overlay */}
-      {creature.isParalyzed && (
+      {/* Paralyzed overlay — aussi pour une créature NEUTRALISÉE (paralysée
+          tant que la porteuse adverse est en jeu). */}
+      {(creature.isParalyzed || estNeutralisee(creature)) && (
         <div style={{
           position: "absolute", inset: 0, zIndex: 1,
           background: "rgba(139, 92, 246, 0.15)",
@@ -796,13 +807,24 @@ function BoardCreature({
 
       {/* Paralyzed indicator (stacked below the mana orb, then below poison
           when poison is also active) */}
-      {creature.isParalyzed && (
+      {(creature.isParalyzed || estNeutralisee(creature)) && (
         <StatusPip
           keyword={"paralysie" as Keyword}
           color="#8b5cf6"
           top={creature.isPoisoned ? 36 : 14}
           side="left"
           title={(creature.paralysisTurnsLeft ?? 1) > 1 ? `Paralysé (${creature.paralysisTurnsLeft} tours)` : "Paralysé"}
+        />
+      )}
+
+      {/* Synergie : icône de la capacité choisie */}
+      {creature.synergieAbilityId && (
+        <StatusPip
+          keyword={creature.synergieAbilityId as Keyword}
+          color="#22d3ee"
+          top={64}
+          side="left"
+          title={`Synergie : ${(KEYWORD_LABELS[creature.synergieAbilityId as Keyword] ?? creature.synergieAbilityId).replace(/\s*[+-]?X(\/[+-]?Y)?$/, "")}`}
         />
       )}
 

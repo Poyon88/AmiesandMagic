@@ -26,7 +26,7 @@ const EQUIVALENCE_COMPOSE: Record<string, string> = {
   deal_damage: "impact", siphon: "siphon", heal: "guerison", buff: "renforcement", debuff: "affaiblissement",
   draw_cards: "inspiration", summon_token: "convocation_simple", gain_mana: "afflux", destroy: "execution", domination: "domination",
   bounce: "boomerang", paralyze: "entrave", grant_keyword: "conferer", transformation: "metamorphose",
-  appel: "appel_du_clan", poison: "poison", exhumation: "exhumation", rappel: "rappel",
+  appel: "appel_du_clan", poison: "poison", malediction: "malediction", exhumation: "exhumation", rappel: "rappel",
   invocation: "invocation", appel_supreme: "appel_supreme", tuteur: "tuteur", epargne: "epargne",
   foi: "foi", conquete: "conquete", usurpation: "usurpation", exploration: "exploration", incineration: "incineration",
   devoration: "devoration", tactique: "tactique", retour_differe: "retour_differe", silence: "silence",

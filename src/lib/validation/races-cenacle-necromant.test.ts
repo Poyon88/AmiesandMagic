@@ -127,13 +127,13 @@ describe("tables de pouvoirs — ce qui distingue les trois", () => {
     // laisser au clan aurait fait de la vermine une érudite, le poids de clan
     // gagnant pouvoir par pouvoir.
     expect(Object.keys(clan().likelyKeywords ?? {}).sort()).toEqual([
-      "Domination", "Héritage du cimetière", "Ombre du passé", "Résurrection",
+      "Domination X", "Héritage du cimetière", "Ombre du passé", "Résurrection",
     ]);
   });
 
   it("chacune joue son propre registre", () => {
     expect(Object.keys(prof("Momies").likelyKeywords ?? {})).toContain("Armure");
-    expect(Object.keys(prof("Momies").likelyKeywords ?? {})).toContain("Malédiction");
+    expect(Object.keys(prof("Momies").likelyKeywords ?? {})).toContain("Malédiction X");
     expect(Object.keys(prof("Chimères nécrotiques").likelyKeywords ?? {})).toContain("Double Attaque");
     expect(Object.keys(prof("Vermines mortuaires").likelyKeywords ?? {})).toContain("Instinct de meute X");
   });

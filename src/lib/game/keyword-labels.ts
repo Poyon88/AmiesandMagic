@@ -3,7 +3,6 @@ import type { SafeT } from "@/i18n/config";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { AUTOMATIC_ABILITY_IDS, DEATH_NATURE_IDS, CURATED_MULTIMODE_IDS, KEYWORD_DEFAULT_X, COUT_OPTIONNEL } from "./abilities";
 import { SINGULIER_COLOR } from "./singulier";
-import { idNeutralise } from "./neutralisation";
 import { badgeAleatoire } from "./random-range";
 
 /** Mode d'affichage d'un mot-clé SANS mode explicite : un effet d'arrivée en
@@ -403,7 +402,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   "paralysie", "permutation", "persecution", "pietinement",
   "catalyse", "ombre_du_passe", "profanation", "prescience", "suprematie", "divination", "savant",
   "liaison_de_vie", "ombre", "sacrifice", "malefice",
-  "indestructible", "regeneration", "corruption",
+  "indestructible", "etheree", "synergie", "regeneration", "corruption",
   "carnage", "heritage", "mimique", "metamorphose", "tactique",
   // Dédoublement : la FORGE le proposait depuis toujours, l'ÉDITION non. Écart
   // sans justification — la capacité ne porte aucune donnée annexe que
@@ -469,18 +468,18 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   commandement: "Commandement X", fureur: "Fureur", double_attaque: "Double Attaque", invisible: "Invisible",
   canalisation: "Canalisation", contresort: "Contresort X", exclusion: "Exclusion X", maitre_darme: "Maître d'arme", neutralisation: "Neutralisation", transformation: "Transformation", convocation: "Convocation X",
   convocation_simple: "Convocation", invocation: "Invocation X",
-  malediction: "Malédiction", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
+  malediction: "Malédiction X", necrophagie: "Nécrophagie", richesse: "Richesse X", sacrifice_demoniaque: "Sacrifice démoniaque X",
   paralysie: "Paralysie", permutation: "Permutation", persecution: "Persécution X",
   pietinement: "Piétinement",
   catalyse: "Catalyse", ombre_du_passe: "Ombre du passé", profanation: "Profanation X",
   prescience: "Prescience X", suprematie: "Suprématie", divination: "Divination",
   savant: "Savant",
   liaison_de_vie: "Liaison de vie", ombre: "Ombre", sacrifice: "Sacrifice", malefice: "Maléfice",
-  indestructible: "Indestructible", regeneration: "Régénération X", corruption: "Corruption",
+  indestructible: "Indestructible", etheree: "Éthérée", synergie: "Synergie X", regeneration: "Régénération X", corruption: "Corruption X",
   carnage: "Carnage X", heritage: "Héritage X", mimique: "Mimique",
   metamorphose: "Métamorphose", dedoublement: "Dédoublement", tactique: "Tactique X",
   exhumation: "Exhumation X", heritage_du_cimetiere: "Héritage du cimetière",
-  pacte_de_sang: "Pacte de sang", souffle_de_feu: "Souffle de feu X", domination: "Domination",
+  pacte_de_sang: "Pacte de sang", souffle_de_feu: "Souffle de feu X", domination: "Domination X",
   resurrection: "Résurrection", transcendance: "Transcendance",
   vampirisme: "Vampirisme X",
   traque_du_destin: "Traque du destin X", sang_mele: "Sang mêlé",
@@ -513,13 +512,13 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   presage: "Présage",
   apprentissage: "Apprentissage X",
   impact: "Impact X",
-  execution: "Exécution",
+  execution: "Exécution X",
   silence: "Silence",
   guerison: "Guérison X",
   inspiration: "Inspiration X", afflux: "Afflux X", epargne: "Épargne X", foi: "Foi X", conquete: "Conquête X", exploration: "Exploration X", invention: "Invention +X/+Y",
-  seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé",
+  seconde_vie: "Seconde vie X", incineration: "Incinération X", devoration: "Dévoration", creuser: "Creuser X", retour_differe: "Retour différé X",
   concentration: "Concentration X",
-  remontee: "Remontée",
+  remontee: "Remontée X",
   entrainement: "Entrainement X",
   fortifier: "Fortifier +X/+Y",
   preincanter: "Préincanter X",
@@ -682,7 +681,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   prescience: "🃏", suprematie: "👊", divination: "🔍",
   savant: "📚",
   liaison_de_vie: "🔗", ombre: "🌑", sacrifice: "💔", malefice: "🕯️",
-  indestructible: "♾️", regeneration: "💚", corruption: "🖤",
+  indestructible: "♾️", etheree: "🌫️", synergie: "🧬", regeneration: "💚", corruption: "🖤",
   carnage: "💥", heritage: "📜", mimique: "🪞",
   metamorphose: "🦎", dedoublement: "👯", tactique: "📋",
   exhumation: "🪦", heritage_du_cimetiere: "🏚️",
@@ -750,10 +749,7 @@ export function keywordIconFor(
   instance?: Pick<KeywordInstance, "grantAbilityId"> | null,
   neutralises?: Set<string>,
 ): { symbol: string; keyword: string; barred: boolean } {
-  if (kw === "neutralisation") {
-    const id = idNeutralise(instance?.grantAbilityId);
-    if (id) return { symbol: KEYWORD_SYMBOLS[id as Keyword] || "✦", keyword: id, barred: true };
-    return { symbol: KEYWORD_SYMBOLS.neutralisation, keyword: "neutralisation", barred: false };
-  }
+  // Neutralisation a désormais SON icône : elle ne vise plus une capacité
+  // précise (`grantAbilityId` n'est plus lu), mais toutes celles de la victime.
   return { symbol: KEYWORD_SYMBOLS[kw as Keyword] || "✦", keyword: kw, barred: neutralises?.has(kw) ?? false };
 }

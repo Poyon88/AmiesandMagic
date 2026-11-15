@@ -18,7 +18,7 @@ import LinkedCardsPicker from "./LinkedCardsPicker";
 import { ACTION_TARGET_CONTENTS, basculerType, cibleDesTypes, typesCoches, type TypeCible } from "./composed-target-types";
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
-import { ABILITIES, creatureEngineId, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ABILITIES, COUT_OPTIONNEL, creatureEngineId, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
@@ -46,6 +46,8 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   { v: "paralyze", l: "Paralyser", target: "unit" },
   // État empoisonné subi (−1 PV/fin de tour) ≠ don du mot-clé Poison.
   { v: "poison", l: "Empoisonner", target: "unit" },
+  // Malédiction : exil différé. Plafond de coût par le filtre « coût max ».
+  { v: "malediction", l: "Maudire (exil à la fin du prochain tour adverse)", target: "unit" },
   { v: "grant_keyword", l: "Conférer une capacité", target: "unit" },
   // Aucune cible en jeu : l'appelée se cherche dans le DECK, via le filtre de
   // pool ci-dessous (POOL_CONTENTS).
@@ -141,7 +143,7 @@ function poolSansTypeHorsPerimetre(pool: ComposedPoolFilter | undefined, content
  *  un CAMP entier, pas des unités — son contenu se résout avant même le bloc de
  *  ciblage — et Domination sort sa victime du pool, ce qui revient à « au
  *  hasard ». */
-const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination", "enterrement"]);
+const SCATTER_EXCLUDED = new Set<ComposedEffectContent>(["exhumation", "incineration", "domination", "enterrement", "malediction"]);
 
 /** La répartition au hasard tire des cibles VIVANTES sur le plateau, passe par
  *  passe. Hors plateau, il n'y a rien à répartir. */
@@ -532,8 +534,18 @@ export default function ComposedEffectsEditor({
               <span style={labelStyle}>{tr('label_content')}</span>
               <span style={{ fontSize: 11, color: "#444", fontFamily: "'Cinzel',serif", display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
                 {def.desc}
-                {def.params.includes("amount") && (
-                  <label style={{ fontSize: 9, color: "#9b59b6" }}>X {numInput(kw.amount ?? 1, (n) => patchCurated(idx, { amount: Math.max(1, n) }), 1)}</label>
+                {def.params.includes("amount") && (COUT_OPTIONNEL[kw.id]
+                  // Coût optionnel (Domination X, Exécution X, Malédiction X…) :
+                  // champ VIDABLE — vide = aucune limite de coût.
+                  ? (
+                    <label style={{ fontSize: 9, color: "#9b59b6" }}>X{" "}
+                      <input type="number" min={1} max={20} placeholder="∞" title="Vide = n'importe quel coût"
+                        value={kw.amount ?? ""}
+                        onChange={(e) => patchCurated(idx, { amount: e.target.value === "" ? undefined : Math.max(1, parseInt(e.target.value) || 1) })}
+                        style={{ width: 44, padding: "2px 4px", fontSize: 11, border: "1px solid #d5c8e6", borderRadius: 4 }} />
+                    </label>
+                  )
+                  : <label style={{ fontSize: 9, color: "#9b59b6" }}>X {numInput(kw.amount ?? 1, (n) => patchCurated(idx, { amount: Math.max(1, n) }), 1)}</label>
                 )}
                 {kw.id === "forge" && (
                   <PlancherAleatoireInput value={kw.minX} plafond={kw.amount || 20}

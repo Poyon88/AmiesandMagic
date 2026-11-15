@@ -30,8 +30,14 @@ describe("planBatch", () => {
     expect(p.cards.filter((c) => c.gender === "femme")).toHaveLength(10);
     const total = p.cards.reduce((s, c) => s + c.abilities.length, 0);
     const res = p.cards.filter((c) => c.abilities.includes("resistance")).length;
-    expect(Math.abs(res - Math.round(total * 0.4))).toBeLessThanOrEqual(1);
-    expect(p.quotas.find((q) => q.id === "resistance")?.pose).toBe(res);
+    // Le quota se calcule sur les emplacements PRÉVUS ; `total` compte les
+    // capacités réellement posées, qui bouge d'une unité ou deux dès qu'une
+    // capacité est ajoutée au registre (tirages décalés). On vérifie donc le
+    // quota lui-même à l'exact, et la part de 40 % avec une marge de 2.
+    expect(Math.abs(res - Math.round(total * 0.4))).toBeLessThanOrEqual(2);
+    const quota = p.quotas.find((q) => q.id === "resistance")!;
+    expect(quota.pose).toBe(res);
+    expect(quota.pose).toBe(quota.demande);
   });
 
   it("aucune capacité interdite, obligatoires posés, un coût additionnel au plus", () => {

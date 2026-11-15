@@ -44,7 +44,6 @@ import NewsForge from "@/components/card-forge/NewsForge";
 import { CARD_BACK_FRAMES, autoTrimDarkBorders, composeCardBack, getCardBackFrame } from "@/lib/card-back-frames";
 import { AURA_SOI_OU_TOUTES, creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
-import NeutralisationPicker from "./NeutralisationPicker";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
 import RetardSelect from "./RetardSelect";
 
@@ -4498,10 +4497,6 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                         </div>
                       </div>
                     )}
-                    {/* Neutralisation — capacité rendue muette chez l'ennemi */}
-                    {manualKeywords.includes("Neutralisation") && (
-                      <NeutralisationPicker value={neutraliseAbilityId} onChange={setNeutraliseAbilityId} />
-                    )}
                     {/* Déclenchement — sous-ensemble figé de déclencheurs rejoués */}
                     {manualKeywords.includes("Déclenchement") && (
                       <div style={{ marginTop: 6, padding: 6, borderRadius: 6, border: `1px solid ${declenchementTriggers.length ? "#8a6d3b44" : "#e74c3c"}`, background: "#fffdf6" }}>
@@ -4721,8 +4716,8 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           };
           // Capacités créature qui réclament une cible à l'entrée (informatif).
           const CREATURE_TARGET_LABELS = new Set([
-            "Sacrifice", "Corruption", "Malédiction", "Permutation", "Vampirisme X",
-            "Mimique", "Métamorphose", "Bénédiction", "Tactique X", "Remontée",
+            "Sacrifice", "Corruption X", "Malédiction X", "Permutation", "Vampirisme X",
+            "Mimique", "Métamorphose", "Bénédiction", "Tactique X", "Remontée X",
           ]);
           const abilityForLabel = (label: string): AbilityDef | undefined => {
             const engineId = FORGE_TO_GAME_KEYWORD[label];
@@ -4761,7 +4756,10 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
           const addCreatureCap = (label: string) => {
             if (!label || manualKeywords.includes(label)) return;
             setManualKeywords(prev => [...prev, label]);
-            if (KEYWORDS[label]?.scalable) setKeywordXValues(prev => ({ ...prev, [label]: 1 }));
+            // Coût optionnel (Rappel X, Domination X, Malédiction X…) : ajoutée
+            // SANS X, c'est-à-dire sans limite — un X = 1 posé d'office en ferait
+            // une capacité presque sans effet que l'auteur n'a pas choisie.
+            if (KEYWORDS[label]?.scalable && !coutOpt(label)) setKeywordXValues(prev => ({ ...prev, [label]: 1 }));
           };
           // (l'ajout d'un effet de sort est passé dans la liste unifiée —
           //  cf. addFromCatalog dans ComposedEffectsEditor)

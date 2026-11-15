@@ -136,7 +136,7 @@ describe("le clan GARDE ses stats — et il ne peut pas faire autrement", () => 
 describe("tables de pouvoirs — c'est elles qui séparent les trois", () => {
   it("chacune joue son propre registre", () => {
     expect(Object.keys(prof("Ondins").likelyKeywords ?? {})).toContain("Riposte X");
-    expect(Object.keys(prof("Sirènes").likelyKeywords ?? {})).toContain("Domination");
+    expect(Object.keys(prof("Sirènes").likelyKeywords ?? {})).toContain("Domination X");
     expect(Object.keys(prof("Léviathans").likelyKeywords ?? {})).toContain("Piétinement");
   });
 

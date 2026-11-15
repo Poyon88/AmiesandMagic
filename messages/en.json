@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precision",
-        "desc": "Ignores Resistance, Armor, and Shield."
+        "desc": "Ignores Resistance, Armor, Shield, and the Ethereal cap."
       },
       "drain_de_vie": {
         "label": "Lifedrain",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "Neutralize",
-        "desc": "As long as it is in play, neutralizes {ability} {neutralise_cible}."
+        "desc": "While it is in play, the targeted enemy unit is paralyzed and its abilities have no effect."
       },
       "transformation": {
         "label": "Transformation",
@@ -176,8 +176,9 @@
         "desc_any": "Summons a random creature from your collection ({alignment}, current format)."
       },
       "malediction": {
-        "label": "Curse",
-        "desc": "Target an enemy unit; it is exiled at the end of the opponent's next turn."
+        "label": "Curse X",
+        "desc": "Target an enemy unit with cost ≤ X; it is exiled at the end of the opponent's next turn.",
+        "desc_any": "Target an enemy unit; it is exiled at the end of the opponent's next turn."
       },
       "necrophagie": {
         "label": "Necrophagy",
@@ -251,6 +252,14 @@
         "label": "Hex",
         "desc": "On death, deal X damage to all units (allies and enemies), where X equals its ATK."
       },
+      "synergie": {
+        "label": "Synergy X",
+        "desc": "When it arrives, choose an ability: gains +X/+X each time that ability triggers (once per source per turn)."
+      },
+      "etheree": {
+        "label": "Ethereal",
+        "desc": "Takes at most 1 damage per hit in combat. Damage it takes from actions is doubled."
+      },
       "indestructible": {
         "label": "Indestructible",
         "desc": "Takes no combat damage."
@@ -260,8 +269,9 @@
         "desc": "Restores X HP at the start of your turn."
       },
       "corruption": {
-        "label": "Corruption",
-        "desc": "Convert a target enemy unit to your side until end of turn; it gains Charge until end of turn."
+        "label": "Corruption X",
+        "desc": "Converts an enemy unit with cost ≤ X to your side until end of turn; it gains Hunt.",
+        "desc_any": "Convert a target enemy unit to your side until end of turn; it gains Charge until end of turn."
       },
       "carnage": {
         "label": "Carnage X",
@@ -305,8 +315,9 @@
         "desc": "Deal X damage to all enemy units when attacking (e.g. Fire Breath 2 = 2 damage)."
       },
       "domination": {
-        "label": "Domination",
-        "desc": "Takes control of a random enemy unit upon summoning."
+        "label": "Domination X",
+        "desc": "Takes control of a random enemy unit with cost ≤ X when summoned.",
+        "desc_any": "Takes control of a random enemy unit upon summoning."
       },
       "resurrection": {
         "label": "Resurrection",
@@ -505,16 +516,17 @@
         "desc": "Look at the bottom X cards of your deck; place one of them on top."
       },
       "retour_differe": {
-        "label": "Delayed Return",
-        "desc": "Places the targeted unit under its owner's deck."
+        "label": "Delayed Return X",
+        "desc": "Places the targeted unit with cost ≤ X beneath its owner's deck.",
+        "desc_any": "Places the targeted unit under its owner's deck."
       },
       "concentration": {
         "label": "Focus X",
         "desc": "Each action in hand becomes a random action of cost +X, reduced by X (all factions)."
       },
       "remontee": {
-        "label": "Comeback",
-        "desc": "Return a targeted unit to its owner's hand."
+        "label": "Comeback X",
+        "desc": "Returns X targeted unit(s) to their original owner's hand."
       },
       "entrainement": {
         "label": "Training X",
@@ -562,8 +574,9 @@
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       },
       "execution": {
-        "label": "Execution",
-        "desc": "Destroys a targeted enemy unit."
+        "label": "Execution X",
+        "desc": "Destroys a targeted enemy unit with cost ≤ X.",
+        "desc_any": "Destroys a targeted enemy unit."
       },
       "silence": {
         "label": "Silence",
@@ -639,13 +652,20 @@
         "label": "Divination",
         "desc": "Reveals the top 3 cards of your deck; place 1 on top and 2 on the bottom, in the order chosen."
       },
+      "malediction": {
+        "label": "Curse X",
+        "desc": "Curses the targeted enemy unit with cost ≤ X: it is exiled at the end of the opponent's next turn",
+        "desc_any": "Curses the targeted enemy unit: it is exiled at the end of the opponent's next turn"
+      },
       "corruption": {
-        "label": "Corruption",
-        "desc": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
+        "label": "Corruption X",
+        "desc": "Converts the targeted enemy unit with cost ≤ X to your side until end of turn; it gains Hunt.",
+        "desc_any": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
       },
       "domination": {
-        "label": "Domination",
-        "desc": "Takes control of the targeted enemy unit."
+        "label": "Domination X",
+        "desc": "Takes control of the targeted enemy unit with cost ≤ X.",
+        "desc_any": "Takes control of the targeted enemy unit."
       },
       "appel_du_clan": {
         "label": "Clan Call X",
@@ -739,8 +759,9 @@
         "desc": "Paralyzes a targeted enemy creature for X turn(s)"
       },
       "execution": {
-        "label": "Execution",
-        "desc": "Destroys a targeted creature or item"
+        "label": "Execution X",
+        "desc": "Destroys a targeted creature or item with cost ≤ X",
+        "desc_any": "Destroys a targeted creature or item"
       },
       "silence": {
         "label": "Silence",
@@ -783,8 +804,9 @@
         "desc": "Reveals the top 3 cards in random order; choose the top one to take into hand, then shuffle the deck."
       },
       "retour_differe": {
-        "label": "Delayed Return",
-        "desc": "Places the targeted unit or item under its owner's deck"
+        "label": "Delayed Return X",
+        "desc": "Places the targeted unit or item with cost ≤ X beneath its owner's deck",
+        "desc_any": "Places the targeted unit or item under its owner's deck"
       },
       "epargne": {
         "label": "Thrift X",
@@ -811,8 +833,8 @@
         "desc": "Draw X cards."
       },
       "remontee": {
-        "label": "Recall",
-        "desc": "Returns a targeted unit or item to its original owner's hand."
+        "label": "Recall X",
+        "desc": "Returns X targeted unit(s) or item(s) to their original owner's hand."
       },
       "entrainement": {
         "label": "Training X",
@@ -887,6 +909,10 @@
         "heal_each": "and heals your hero for {x} HP per target hit",
         "heal_scatter": "and heals your hero for {x} HP in total"
       },
+      "malediction": {
+        "suite_one": ", exiled at the end of the opponent's next turn",
+        "suite_many": ", exiled at the end of the opponent's next turn"
+      },
       "domination": {
         "limit": "as space allows"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "for {n} turn",
         "paralyze_turns_many": "for {n} turns",
         "poison": "poisons",
+        "malediction": "curses",
         "grant_keyword": "grants {ability}",
         "random_range": "1 to {max}",
         "random_range_from": "{min} to {max}",
@@ -1035,6 +1062,7 @@
         "bounce": "returns itself to hand",
         "paralyze": "paralyzes itself",
         "poison": "poisons itself",
+        "malediction": "curses itself",
         "grant_keyword": "grants itself {ability}"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "choose a creature to return to hand",
         "paralyze": "choose a creature to paralyze",
         "poison": "choose a creature to poison",
+        "malediction": "choose a creature to curse",
         "grant_keyword": "choose a creature to grant the ability to",
         "exhumation": "choose a creature to resurrect",
         "rappel": "choose a card to return to hand",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "Deals X damage to {cibles}.",
         "affaiblissement": "Gives -X ATK and -Y HP to {cibles}.",
-        "retour_differe": "Places {cibles} on the bottom of their owner's deck.",
+        "retour_differe": "Places {cibles} with cost ≤ X beneath their owner's deck.",
+        "retour_differe_any": "Places {cibles} on the bottom of their owner's deck.",
         "remontee": "Returns {cibles} to their original owner's hand.",
-        "corruption": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
-        "domination": "Takes control of {cibles}, up to the available slots.",
+        "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
+        "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
+        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Traque.",
+        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
+        "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
+        "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
         "poison": "Poisons {cibles}: they lose 1 HP at the end of each turn.",
         "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
-        "execution": "Destroys {cibles}, items included.",
+        "execution": "Destroys {cibles} with cost ≤ X, items included.",
+        "execution_any": "Destroys {cibles}, items included.",
         "silence": "Removes all keywords from {cibles}, items included, and resets their stats to their original values.",
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
@@ -2221,14 +2256,19 @@
         "guerison": "Restores X HP to {cibles} and to your hero."
       },
       "creature": {
+        "neutralisation": "While it is in play, {cibles} are paralyzed and their abilities have no effect.",
         "impact": "Deals X damage to {cibles}.",
         "affaiblissement": "Gives -X ATK and -Y HP to {cibles}.",
-        "retour_differe": "Places {cibles} on the bottom of their owner's deck.",
+        "retour_differe": "Places {cibles} with cost ≤ X beneath their owner's deck.",
+        "retour_differe_any": "Places {cibles} on the bottom of their owner's deck.",
         "remontee": "Returns {cibles} to their original owner's hand.",
-        "corruption": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
-        "domination": "Takes control of {cibles}, up to the available slots.",
+        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Trample.",
+        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
+        "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
+        "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
-        "malediction": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
+        "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
+        "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
         "tactique": "Give {cibles} X random abilities taken from creatures of the same cost (one draw per unit).",
         "vampirisme": "Steals up to X HP from {cibles} and adds them to this unit's HP.",
         "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
         "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
         "usurpation_soi": "Permanently gains +X ATK and +Y HP for each opponent's card you have played.",
-        "execution": "Destroys {cibles}, items included.",
+        "execution": "Destroys {cibles} with cost ≤ X, items included.",
+        "execution_any": "Destroys {cibles}, items included.",
         "silence": "Removes all keywords from {cibles}, items included, and resets their stats to their original values.",
         "guerison": "Restores X HP to all other allied units and to your hero.",
         "purete": "While your graveyard is empty, all other allied units gain +X ATK and +Y HP.",
@@ -2655,6 +2696,7 @@
     "content_bounce": "Return to hand",
     "content_paralyze": "Paralyze",
     "content_poison": "Poison (−1 HP per turn)",
+    "content_malediction": "Curse (exile at the end of the opponent's next turn)",
     "invocation_costs_label": "SUMMON COSTS",
     "invocation_costs_hint": "A random creature from your collection is summoned for each listed cost.",
     "add_invocation": "+ Summon",
@@ -3301,6 +3343,12 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "The last point is the card entering play: it is paid separately, along with target selection.",
     "choix_ou_title": "⚖️ Choose one",
+    "synergie_title": "Synergy — choose an ability",
+    "synergie_subtitle": "This creature will gain its bonus each time the chosen ability triggers, on your side or your opponent's.",
+    "synergie_search": "Search for an ability…",
+    "synergie_in_play": "In play",
+    "synergie_others": "Other abilities",
+    "synergie_none": "No matching abilities.",
     "choix_ou_subtitle": "Only one of these effects will resolve.",
     "activation_menu_title": "Which power to activate?",
     "activation_learned": "Cast {name}",

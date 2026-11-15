@@ -41,7 +41,7 @@ import type {
 import { carteMutante, leguerCapacites, mutationX, resoudreChoixMutation, tactiqueVivier } from "./mutation";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { ABILITIES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
+import { ABILITIES, CAPACITES_A_COUT_MAX_CIBLE, CAPACITES_SYNERGISABLES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
@@ -68,7 +68,8 @@ import {
 } from "./constants";
 import { displayCardOf, isSingletonDeck, syncSingulier, syncSingulierPlayer } from "./singulier";
 import { ciblesDePortee, creatureScopes, creaturesDePortee, kwInstanceSoi, porteeValide, spellScopes, zonesDeCible } from "./target-scope";
-import { idNeutralise, instanceNeutralisation, leverNeutralisations, poserNeutralisations } from "./neutralisation";
+import { estNeutralisee, leverNeutralisations, poserNeutralisations } from "./neutralisation";
+import { composedIcon } from "./composed-display";
 import { getFactionForRace, getEffectiveAlignment, FACTIONS } from "@/lib/card-engine/constants";
 import { effetsDuPouvoir, uidEffetPouvoir, cibleEffetPouvoir, selectionEffetPouvoir, choixDeckEffetPouvoir } from "./hero-power";
 import { cardRaces, hasRace, sharesRace } from "./races";
@@ -117,7 +118,12 @@ let frameSink: StackFrame[] = [];
 // appliqués dans la même action se fondent donc en un seul popup agrégé. Ce
 // canal est la réponse — il porte chaque point individuellement, et le store
 // écarte l'agrégat pour les cibles qui y figurent.
-let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" | "buff"; label?: string }> = [];
+let sequentialHitsSink: Array<{ targetInstanceId: string; type: "damage" | "heal" | "buff"; label?: string; amount?: number }> = [];
+// PV réellement retirés par le DERNIER appel à dealDamageToCreature (0 si le
+// coup a été absorbé). Lu juste après l'appel par les sites « point par point »
+// pour étiqueter le popup : un point d'action sur une Éthérée retire 2, pas 1.
+let dernierDegatNet = 0;
+const montantDuPoint = (): { amount?: number } => (dernierDegatNet > 1 ? { amount: dernierDegatNet } : {});
 // Registre de TOUS les paquets de dégâts réellement appliqués à une créature
 // pendant l'action (après immunités, Bouclier, Résistance, Armure). Le store
 // diffe les PV pour animer les survivants, mais une créature TUÉE quitte le
@@ -221,6 +227,62 @@ function noteDeckEffect(
 }
 /** Signale qu'une capacité nommée vient de résoudre. Dédoublonné par
  *  (id, déclencheur) : deux Tempête dans la même action ne sonnent qu'une fois. */
+/** Clé de SOURCE d'un déclenchement, sur le modèle de Blessure (woundOriginOf) :
+ *  `c:<instance>` pour une créature (un objet porté compte pour son porteur),
+ *  sinon le contexte d'origine en cours (`s:<n>` action, `e:<joueur>:<i>`
+ *  emblème, `h:<joueur>` héros), sinon « ? ». */
+function cleCreature(c: CardInstance): string {
+  return `c:${c.equippedToInstanceId ?? c.instanceId}`;
+}
+function cleSourceCourante(source?: CardInstance | import("./types").HeroState | null): string {
+  return woundOriginOf(source ?? null).key;
+}
+/** Capacité nommée ÉQUIVALENTE d'un effet composé : celle dont la carte montre
+ *  l'icône et le nom (composedIcon). « Inflige 3 dégâts à une unité » compte
+ *  donc pour Impact, « à toutes les ennemies » pour Déferlement. */
+function idEquivalentCompose(composed: import("./types").ComposedEffect): string {
+  return composedIcon({ composed, abilityId: "_composed" } as import("./types").Capability).keyword.replace(/^spell_/, "");
+}
+
+/** SYNERGIE — capacité tirée quand le joueur n'a pas répondu : parmi les
+ *  capacités synergisables portées par les créatures EN JEU (celles qui ont une
+ *  chance de se déclencher), à défaut parmi toute la liste. Triées avant
+ *  tirage : l'ordre d'un Set ne doit pas entrer dans le résultat. */
+function tirerCapaciteSynergie(state: GameState): string {
+  const enJeu = new Set<string>();
+  for (const p of state.players) for (const c of p.board) {
+    for (const cap of getCapabilities(c.card)) {
+      const id = cap.composed ? idEquivalentCompose(cap.composed) : cap.abilityId;
+      if (CAPACITES_SYNERGISABLES.has(id)) enJeu.add(id);
+    }
+  }
+  const vivier = (enJeu.size > 0 ? [...enJeu] : [...CAPACITES_SYNERGISABLES]).sort();
+  return vivier[Math.floor(rng() * vivier.length)];
+}
+
+/** UNE CAPACITÉ VIENT DE SE DÉCLENCHER — canal de vérité de jeu, distinct de
+ *  `noteAbilitySfx` (bruitages : dédoublonné, sans source, composés exclus).
+ *  Appelé à chaque déclenchement, qu'il produise un effet ou non, quelle que
+ *  soit la source (créature, action, pouvoir de héros, emblème, composé).
+ *
+ *  Seul consommateur aujourd'hui : SYNERGIE X. Chaque créature en jeu qui a
+ *  choisi cette capacité gagne +X/+X permanent, UNE fois par source et par
+ *  tour (`synergieSourcesThisTurn`, vidé à la bascule de tour). */
+function noterDeclenchement(abilityId: string | undefined | null, cle: string): void {
+  if (!abilityId || abilityId === "_composed" || abilityId === "synergie") return;
+  const id = abilityId === "vol" ? "ranged" : abilityId;
+  for (const p of currentBoardPlayers) {
+    for (const c of p.board) {
+      if (c.synergieAbilityId !== id || c.currentHealth <= 0 || !hasKw(c, "synergie" as Keyword)) continue;
+      const vues = (c.synergieSourcesThisTurn ??= []);
+      if (vues.includes(cle)) continue;
+      vues.push(cle);
+      const x = getKwX(c, "synergie" as Keyword, undefined, 1);
+      applyRenforcementSelf(c, x, x);
+    }
+  }
+}
+
 function noteAbilitySfx(abilityId: string, trigger: import("./types").CapabilityTrigger): void {
   if (!abilityId || abilityId === "_composed") return;
   if (abilitySfxSink.some(e => e.abilityId === abilityId && e.trigger === trigger)) return;
@@ -749,6 +811,8 @@ export function peutActiverPouvoir(source: CardInstance): boolean {
   // pas : Traque le contourne, et la paralysie peut être appliquée après
   // l'untap, pendant le tour même de la créature.)
   if (source.isParalyzed) return false;
+  // Neutralisée : paralysée tant que la porteuse adverse est en jeu.
+  if (estNeutralisee(source)) return false;
   // Traque (charge) autorise le pouvoir activable dès l'invocation, même si
   // Traque est gagnée en cours de tour (où hasSummoningSickness peut rester vrai).
   if (source.hasSummoningSickness && !hasKw(source, "charge")) return false;
@@ -1016,10 +1080,52 @@ function bonusHorsEntree(
   buff(source);
 }
 
+/** MALÉDICTION X — plafond de coût (imprimé) de la victime. X vide ⇒ aucun
+ *  plafond (convention du coût optionnel, cf. `coutLibre`) : les cartes
+ *  d'avant « Malédiction X » gardent leur comportement. `onPlay` choisit
+ *  l'instance à l'entrée (sans mode) ou l'instance déclenchée (avec mode). */
+function maledictionCoutMax(card: Card, onPlay: boolean): number | undefined {
+  return coutMaxCible(card, "malediction", onPlay);
+}
+/** PLAFOND DE COÛT DE LA CIBLE — capacités « X = coût maximum de la créature
+ *  (ou de l'objet) affectée » : Malédiction, Domination, Corruption, Exécution,
+ *  Retour différé (cf. CAPACITES_A_COUT_MAX_CIBLE). X vide ⇒ aucun plafond.
+ *
+ *  ⚠️ Toujours lu ICI, dans les CAPACITÉS de la carte : les appelants des
+ *  résolveurs curés passent `inst.x ?? 1`, si bien qu'un X vide y arrive à 1 —
+ *  ce qui se lirait « coût ≤ 1 ». `onPlay` choisit la capacité d'entrée en jeu
+ *  ou la capacité déclenchée. */
+function coutMaxCible(card: Card, kw: Keyword, onPlay: boolean): number | undefined {
+  const caps = getCapabilities(card).filter(c => c.abilityId === kw);
+  const cap = caps.find(c => (c.trigger === "on_play") === onPlay) ?? caps[0];
+  return cap?.params?.x ?? undefined;
+}
+/** Plafond d'une capacité DÉCLENCHÉE : l'instance fait foi quand elle est
+ *  fournie (son X vide vaut « libre »), sinon la capacité de la carte. */
+function coutMaxDeclenche(source: CardInstance, kw: Keyword, inst?: KeywordInstance): number | undefined {
+  return inst ? (inst.x ?? undefined) : coutMaxCible(source.card, kw, false);
+}
+/** La créature ou l'objet `id` respecte-t-il le plafond ? Un identifiant qui
+ *  n'est ni l'un ni l'autre (héros) n'est pas concerné. */
+function idSousPlafond(id: string, xMax: number | undefined, a: PlayerState, b: PlayerState): boolean {
+  if (coutLibre(xMax)) return true;
+  const unite = findCreatureOnBoard(a, id) ?? findCreatureOnBoard(b, id);
+  if (unite) return respecteCoutMax(unite.card, xMax);
+  const objet = trouverObjet(a, b, id);
+  return objet ? respecteCoutMax(objet.item.card, xMax) : true;
+}
+/** Vrai pendant la Malédiction d'ENTRÉE EN JEU (instance sans mode). */
+let modeMaledictionEnCours = false;
+
 /** MALÉDICTION — marque `target` pour l'exil au début du tour de son
  *  propriétaire. La source ne mémorisait qu'UNE victime ; la portée « toutes »
  *  range les suivantes dans `maledictionExtraIds`. */
 function maudire(source: CardInstance, target: CardInstance): void {
+  // MALÉDICTION X : la victime doit coûter X ou moins. Vérifié ICI, au point de
+  // passage unique, pour couvrir aussi la portée « toutes » (toutes les
+  // créatures adverses de coût ≤ X) et les tirages au hasard.
+  const mode = modeMaledictionEnCours;
+  if (!respecteCoutMax(target.card, maledictionCoutMax(source.card, mode))) return;
   if (!source.maledictionTargetId || source.maledictionTargetId === target.instanceId) {
     source.maledictionTargetId = target.instanceId;
     return;
@@ -1805,6 +1911,8 @@ function appliquerSilence(target: CardInstance): void {
   delete target.neutralisationStash;
   delete target.neutralisationTargetId;
   target.apprentissageSpell = undefined;
+  delete target.synergieAbilityId;
+  delete target.synergieSourcesThisTurn;
   // RETARD X : les effets en attente étaient des capacités de l'unité.
   target.retards = undefined;
   target.hasDivineShield = false;
@@ -1929,6 +2037,15 @@ function applyComposedToUnit(
     // la cible subit le poison, elle ne devient pas empoisonneuse. Même effet
     // que le mot-clé de sort `poison` (cf. resolveSpellKeywords).
     case "poison": u.isPoisoned = true; break;
+    // MALÉDICTION composée : l'unité est exilée au début du prochain tour du
+    // contrôleur de l'effet. Portée par le joueur, pas par la source : un
+    // emblème n'en a pas, et une créature source qui meurt entre-temps ne
+    // lève donc pas la malédiction.
+    case "malediction": {
+      const deja = owner.maledictions ?? [];
+      if (!deja.includes(u.instanceId)) owner.maledictions = [...deja, u.instanceId];
+      break;
+    }
     // « Se renvoie en main » (entity "self") passe par l'auto-renvoi : le chemin
     // Remontée exclut la source et ne ferait RIEN, en silence. Le cas était déjà
     // routé à part pour la mort (wantsSelfReturnOnDeath) mais pour elle seule —
@@ -1964,6 +2081,14 @@ function exclutPorteuse(
   trigger: import("./types").CapabilityTrigger | undefined,
   source: CardInstance | null,
 ): CardInstance | null {
+  // RENVOI EN MAIN : une créature ne se renvoie jamais elle-même par « renvoie
+  // une / toutes les unités » — même règle que la capacité Remontée, qui écarte
+  // sa source (canBeRemonteed). Pour qu'elle reparte, l'auteur vise « elle-même »
+  // (`entity: "self"`). Sans cela, « à l'attaque : renvoie tous les alliés »
+  // rappelait aussi l'attaquante.
+  if (composed.content === "bounce" && composed.target?.entity !== "self") {
+    return source && source.card.card_type !== "spell" ? source : null;
+  }
   if (composed.content !== "grant_keyword" || trigger !== "on_play") return null;
   return source && source.card.card_type !== "spell" ? source : null;
 }
@@ -2171,6 +2296,8 @@ function resolveComposedEffect(
     woundOrigin?: { instanceId?: string; heroOwnerId?: string };
   },
 ): void {
+  // Synergie : l'effet composé compte pour la capacité dont il porte le nom.
+  noterDeclenchement(idEquivalentCompose(composed), cleSourceCourante(source));
   // Blessure : un EMBLÈME est une source de dégâts à part entière (une par
   // emblème). Posé ici plutôt qu'à chaque site appelant — il y en a trois (fin
   // de tour, choix différé, événement) et un oubli serait muet. La garde sur la
@@ -2769,7 +2896,9 @@ function resolveComposedEffect(
       } else {
         applyComposedToUnit(composed, ref.unit, px, py, source, owner, opponent, fromSpell);
         soinDeSiphon(composed, owner, px, ref.unit);
-        if (pointwise) sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType });
+        // Le montant n'a de sens que pour un point de DÉGÂT (le dernier appel à
+        // dealDamageToCreature est alors celui de ce point).
+        if (pointwise) sequentialHitsSink.push({ targetInstanceId: ref.unit.instanceId, type: seqType, ...(seqType === "damage" ? montantDuPoint() : {}) });
         recordPowerStrike(source, ref.unit.instanceId, composed.content, px);
       }
       interrompreSurBlessure();
@@ -2782,7 +2911,8 @@ function resolveComposedEffect(
   const harmful =
     estDegatsComposes(composed.content) || composed.content === "destroy" ||
     composed.content === "debuff" || composed.content === "paralyze" ||
-    composed.content === "poison" || composed.content === "domination";
+    composed.content === "poison" || composed.content === "domination" ||
+    composed.content === "malediction";
   for (const t of selectComposedTargets(target, owner, opponent, chosenTargetIds, harmful,
     exclutPorteuse(composed, opts?.trigger, source),
     composed.content === "domination" && fromSpell)) {
@@ -3471,6 +3601,10 @@ function returnInstanceToPlay(inst: CardInstance): void {
   // Dédoublement…) — c'est la ceinture qui rend la règle vraie sans avoir à
   // recenser chaque chemin de retour.
   inst.apprentissageSpell = undefined;
+  // Synergie : une créature qui quitte le jeu oublie son choix — rejouée, elle
+  // choisira de nouveau.
+  delete inst.synergieAbilityId;
+  delete inst.synergieSourcesThisTurn;
 
   // Une valeur relevée par un emblème ou un objet ne suit pas la créature hors
   // du plateau : la purge de `recalculateAuras` ne balaie que le plateau, elle
@@ -3720,6 +3854,7 @@ function triggerRichesse(players: PlayerState[]) {
   for (const p of players) {
     for (const unit of p.board) {
       if (hasKw(unit, "richesse")) {
+        noterDeclenchement("richesse", cleCreature(unit));
         // X lu depuis [Richesse N] de effect_text (patron des automatiques
         // scalables : persecution, carnage). Repli mana/3 si non annoté.
         const x = parseXValuesFromEffectText(unit.card.effect_text)["richesse"]
@@ -4453,6 +4588,8 @@ export function startTurn(state: GameState): GameState {
   // tour sortant sont déjà dans `woundSink` : elles partiront quand même.
   for (const p of newState.players) {
     for (const c of p.board) if (c.woundSourcesThisTurn?.length) c.woundSourcesThisTurn = [];
+    // Synergie : « une fois par source et par tour ».
+    for (const c of p.board) if (c.synergieSourcesThisTurn?.length) c.synergieSourcesThisTurn = [];
   }
   // Wall-clock anchor for the per-turn countdown timer. Both clients read
   // this from game state so their local TurnTimer renders the same value
@@ -4517,6 +4654,17 @@ export function startTurn(state: GameState): GameState {
     }
   }
 
+  // Malédictions lancées par une ACTION : portées par le joueur, elles tombent
+  // au même moment que celles des créatures.
+  if (player.maledictions?.length) {
+    const ids = new Set(player.maledictions);
+    opponent.board = opponent.board.filter(c => !ids.has(c.instanceId));
+    // Un effet composé peut viser n'importe quel camp : une unité du lanceur
+    // maudite par lui-même est exilée aussi.
+    player.board = player.board.filter(c => !ids.has(c.instanceId));
+    delete player.maledictions;
+  }
+
   // Process Malédiction: exile cursed enemy units at start of their owner's turn
   for (const creature of [...player.board]) {
     if (creature.maledictionTargetId) {
@@ -4556,6 +4704,7 @@ export function startTurn(state: GameState): GameState {
     // Lycanthropie X: permanent transformation into X/X token with Traque
     if (hasKw(creature, "lycanthropie") && !creature.hasTransformedLycanthropie) {
       creature.hasTransformedLycanthropie = true;
+      noterDeclenchement("lycanthropie", cleCreature(creature));
       const xVals = parseXValuesFromEffectText(creature.card.effect_text);
       const x = xVals["lycanthropie"] || Math.max(1, Math.floor(creature.card.mana_cost / 2));
       const tmpl = findTokenTemplate(creature.card.lycanthropie_token_id);
@@ -4605,6 +4754,7 @@ export function startTurn(state: GameState): GameState {
     // ne portent aucun X : sans ce défaut elles se soigneraient d'un cran de
     // moins du jour au lendemain.
     if (hasKw(creature, "regeneration")) {
+      noterDeclenchement("regeneration", cleCreature(creature));
       // Ordre de lecture calqué sur Résistance X : le X de la carte d'abord,
       // celui d'un DON ensuite (une passive conférée ne pose pas d'instance,
       // son amplitude ne voyage que par `grantedKeywordX`), 2 en dernier.
@@ -5909,7 +6059,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "retour_differe")) {
       const toutes = !!porteeOnPlay(cardInstance.card, "retour_differe");
       for (const tid of ciblesOnPlay(cardInstance, "retour_differe", action.targetInstanceId, player, opponent)) {
-        resolveRetourDiffere(tid, cardInstance.instanceId, player, opponent, false, !toutes);
+        resolveRetourDiffere(tid, cardInstance.instanceId, player, opponent, false, !toutes, coutMaxCible(cardInstance.card, "retour_differe", true));
       }
     }
 
@@ -5991,9 +6141,13 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Corruption: vole une unité ennemie jusqu'à fin du tour, elle gagne Traque
     if (hasKwOnPlay(cardInstance, "corruption")) for (const targetId of ciblesOnPlay(cardInstance, "corruption", action.targetInstanceId, player, opponent)) {
       if (opponent.board.length === 0) break;
+      // Corruption X : seules les créatures de coût ≤ X sont convertibles.
+      const xCorr = coutMaxCible(cardInstance.card, "corruption", true);
+      const convertibles = opponent.board.filter(c => respecteCoutMax(c.card, xCorr));
+      if (convertibles.length === 0) break;
       const stealTarget = targetId
-        ? opponent.board.find(c => c.instanceId === targetId)
-        : opponent.board[Math.floor(rng() * opponent.board.length)];
+        ? convertibles.find(c => c.instanceId === targetId)
+        : convertibles[Math.floor(rng() * convertibles.length)];
       if (stealTarget && placesOccupees(player) < MAX_BOARD_SIZE) {
         opponent.board = opponent.board.filter(c => c !== stealTarget);
         stealTarget.originalOwnerId = opponent.id;
@@ -6009,7 +6163,12 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     if (hasKwOnPlay(cardInstance, "domination")) for (const tid of ciblesOnPlay(cardInstance, "domination", undefined, player, opponent)) {
       if (opponent.board.length === 0) break;
       if (placesOccupees(player) < MAX_BOARD_SIZE) {
-        const idx = tid ? opponent.board.findIndex(c => c.instanceId === tid) : Math.floor(rng() * opponent.board.length);
+        // Domination X : seules les créatures de coût ≤ X peuvent être prises.
+        const xDom = coutMaxCible(cardInstance.card, "domination", true);
+        const prenables = opponent.board.filter(c => respecteCoutMax(c.card, xDom));
+        if (prenables.length === 0) break;
+        const prise = tid ? prenables.find(c => c.instanceId === tid) : prenables[Math.floor(rng() * prenables.length)];
+        const idx = prise ? opponent.board.indexOf(prise) : -1;
         if (idx < 0) continue;
         const stolen = opponent.board.splice(idx, 1)[0];
         stolen.hasSummoningSickness = true;
@@ -6023,8 +6182,19 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // propriétaire d'origine. Cible choisie par le joueur (action.targetInstanceId).
     if (hasKwOnPlay(cardInstance, "remontee")) {
       const toutes = !!porteeOnPlay(cardInstance.card, "remontee");
-      for (const tid of ciblesOnPlay(cardInstance, "remontee", action.targetInstanceId, player, opponent)) {
-        resolveRemontee(tid, cardInstance.instanceId, player, opponent, false, !toutes);
+      if (toutes) {
+        for (const tid of ciblesOnPlay(cardInstance, "remontee", action.targetInstanceId, player, opponent)) {
+          resolveRemontee(tid, cardInstance.instanceId, player, opponent, false, false);
+        }
+      } else {
+        // Remontée X : X cibles désignées (`kw:remontee#k` quand X ≥ 2, sinon la
+        // cible unique de l'action), complétées au hasard s'il en manque.
+        const xRem = getKwX(cardInstance, "remontee", undefined, 1);
+        const ids = [
+          ...Array.from({ length: xRem }, (_, k) => action.targetMap?.[`${REMONTEE_CHOIX_UID}#${k}`]),
+          action.targetInstanceId,
+        ];
+        resolveRemonteeMultiple(ids, xRem, cardInstance.instanceId, player, opponent);
       }
     }
 
@@ -6262,17 +6432,20 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // Malédiction: cible une unité ennemie, exilée fin du prochain tour adverse
     if (hasKwOnPlay(cardInstance, "malediction")) for (const tid of ciblesOnPlay(cardInstance, "malediction", action.targetInstanceId, player, opponent)) {
       const cursedTarget = tid ? opponent.board.find(c => c.instanceId === tid) : undefined;
-      if (cursedTarget) maudire(cardInstance, cursedTarget);
+      if (cursedTarget) {
+        modeMaledictionEnCours = true;
+        try { maudire(cardInstance, cursedTarget); } finally { modeMaledictionEnCours = false; }
+      }
     }
 
     // NEUTRALISATION (mode ciblé) : la porteuse MÉMORISE sa cible, rien de plus.
-    // L'effet lui-même — retrait de la capacité, rendu à sa sortie — passe par
-    // le recalcul d'auras (cf. neutralisation.ts). Une cible qui n'a pas (ou
-    // plus) la capacité visée n'est pas retenue.
+    // L'effet lui-même — paralysie et retrait de TOUTES les capacités, rendues
+    // à sa sortie — passe par le recalcul d'auras (cf. neutralisation.ts).
+    // N'importe quelle unité ennemie convient, même sans capacité : elle sera
+    // au moins paralysée.
     if (hasKwOnPlay(cardInstance, "neutralisation") && !porteeOnPlay(cardInstance.card, "neutralisation")) {
-      const id = idNeutralise(instanceNeutralisation(cardInstance.card)?.grantAbilityId);
-      const cible = id && action.targetInstanceId
-        ? opponent.board.find(c => c.instanceId === action.targetInstanceId && displayCardOf(c).keywords.includes(id as Keyword))
+      const cible = action.targetInstanceId
+        ? opponent.board.find(c => c.instanceId === action.targetInstanceId)
         : undefined;
       if (cible) cardInstance.neutralisationTargetId = cible.instanceId;
     }
@@ -6299,7 +6472,8 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const cibles = scope ? ciblesDePortee(kw, scope, player, opponent, cardInstance.instanceId)
         : kwInstanceSoi(instanceOnPlay(cardInstance.card, kw)) ? [cardInstance.instanceId]
         : [action.targetInstanceId];
-      for (const tid of cibles) applyActionCibleeDeCreature(kw, tid, getKwX(cardInstance, kw, undefined, 1), player, opponent);
+      const plafond = kw === "execution" ? coutMaxCible(cardInstance.card, kw, true) : undefined;
+      for (const tid of cibles) applyActionCibleeDeCreature(kw, tid, getKwX(cardInstance, kw, undefined, 1), player, opponent, plafond);
     }
 
     // Paralysie: now a combat effect (applied when dealing damage, like poison)
@@ -6657,7 +6831,11 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
         //
         // Le chemin de REJEU (mort / activation / retour) passait déjà la
         // créature : c'est l'entrée en jeu qui était l'exception.
-        dealDamageToCreature(target, 1, false, true, cardInstance);
+        // `fromSpell: false` : Tempête d'ENTRÉE EN JEU est une capacité de
+        // créature, comme sur le chemin curé (resolveCuratedKeywordEffect). Sans
+        // lui elle passait pour une action — bloquée par Transcendance ici mais
+        // pas là-bas, et elle aurait été doublée contre une Éthérée.
+        dealDamageToCreature(target, 1, false, true, cardInstance, false);
         sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
         interrompreSurBlessure();
       }
@@ -6761,7 +6939,10 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
     // silence — et l'alternative coûterait quarante instrumentations.
     // Les composés sont exclus ici : ils sonnent depuis buildComposedFrames.
     for (const cap of getCapabilities(cardInstance.card)) {
-      if (cap.trigger === "on_play" && !cap.composed) noteAbilitySfx(cap.abilityId, "on_play");
+      if (cap.trigger === "on_play" && !cap.composed) {
+        noteAbilitySfx(cap.abilityId, "on_play");
+        noterDeclenchement(cap.abilityId, cleCreature(cardInstance));
+      }
     }
 
     // EMBLÈMES. On DÉCLENCHE d'abord ceux déjà en place — une créature qui
@@ -7604,6 +7785,7 @@ function resolveSpellKeywords(
     const def = SPELL_KEYWORDS[kw.id];
     if (!def) continue;
     noteAbilitySfx(kw.id, "spell_resolution");
+    noterDeclenchement(kw.id, cleSourceCourante());
     // Resolve target: use keyword's implicit slot or first target slot
     const slot = def.needsTarget ? `kw_${i}` : undefined;
     // PORTÉE « TOUTES » : la mécanique se rejoue telle quelle sur chaque
@@ -7626,7 +7808,13 @@ function resolveSpellKeywords(
         // Sort → respecte Transcendance.
         // Portée « toutes » : désignation NON ciblée (Ombre, Invisible ne
         // protègent pas d'un effet de zone), comme un composé « toutes ».
-        resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true, !scope);
+        if (scope) { resolveRemontee(targetId, null, ctx.caster, ctx.opponent, true, false); break; }
+        // Remontée X : les X créneaux de l'action (`kw_i`, `kw_i:1`…), complétés
+        // au hasard — une action relancée sans cible tire ses X unités.
+        resolveRemonteeMultiple(
+          slot ? creneauxRemontee(slot, kw.amount ?? 1).map((c, k) => ctx.targetMap[c] ?? (k === 0 ? ctx.targetMap["target_0"] : undefined)) : [],
+          kw.amount ?? 1, null, ctx.caster, ctx.opponent, true,
+        );
         break;
       }
       case "impact": {
@@ -7702,6 +7890,21 @@ function resolveSpellKeywords(
         }
         break;
       }
+      case "malediction": {
+        // MALÉDICTION X en action : maudit la cible CHOISIE si elle coûte X ou
+        // moins (X vide ⇒ tout coût). Sans cible explicite (action relancée),
+        // tirage parmi les créatures éligibles. C'est le LANCEUR qui porte la
+        // malédiction : l'exil tombe au début de son prochain tour (startTurn),
+        // comme pour la forme créature.
+        const eligibles = ctx.opponent.board.filter(c => respecteCoutMax(c.card, kw.amount));
+        const maudite = targetId
+          ? eligibles.find(c => c.instanceId === targetId)
+          : eligibles[Math.floor(rng() * eligibles.length)];
+        if (!maudite) break;
+        const deja = ctx.caster.maledictions ?? [];
+        if (!deja.includes(maudite.instanceId)) ctx.caster.maledictions = [...deja, maudite.instanceId];
+        break;
+      }
       case "corruption": {
         // Le SORT convertit lui-même la cible CHOISIE. Contrôle TEMPORAIRE :
         // `originalOwnerId` la fait repartir chez son propriétaire au début de
@@ -7709,9 +7912,12 @@ function resolveSpellKeywords(
         // pose que `trueOwnerId` et garde l'unité définitivement.
         // Sans cible explicite (sort relancé), tirage — comme le chemin créature.
         if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
+        // Corruption X : coût ≤ X (X vide ⇒ tout coût).
+        const convertibles = ctx.opponent.board.filter(c => respecteCoutMax(c.card, kw.amount));
+        if (convertibles.length === 0) break;
         const corrupted = targetId
-          ? ctx.opponent.board.find(c => c.instanceId === targetId)
-          : ctx.opponent.board[Math.floor(rng() * ctx.opponent.board.length)];
+          ? convertibles.find(c => c.instanceId === targetId)
+          : convertibles[Math.floor(rng() * convertibles.length)];
         if (!corrupted) break;
         ctx.opponent.board = ctx.opponent.board.filter(c => c !== corrupted);
         corrupted.originalOwnerId = ctx.opponent.id;
@@ -7727,9 +7933,13 @@ function resolveSpellKeywords(
         // Sans cible explicite — sort relancé, cibles tirées au sort — on
         // retombe sur un tirage, comme le reste du chemin « Relancer ».
         if (placesOccupees(ctx.caster) >= MAX_BOARD_SIZE || ctx.opponent.board.length === 0) break;
-        const domIdx = targetId
-          ? ctx.opponent.board.findIndex(c => c.instanceId === targetId)
-          : Math.floor(rng() * ctx.opponent.board.length);
+        // Domination X : coût ≤ X (X vide ⇒ tout coût).
+        const prenables = ctx.opponent.board.filter(c => respecteCoutMax(c.card, kw.amount));
+        if (prenables.length === 0) break;
+        const prise = targetId
+          ? prenables.find(c => c.instanceId === targetId)
+          : prenables[Math.floor(rng() * prenables.length)];
+        const domIdx = prise ? ctx.opponent.board.indexOf(prise) : -1;
         if (domIdx < 0) break;
         const dominated = ctx.opponent.board.splice(domIdx, 1)[0];
         dominated.hasSummoningSickness = true;
@@ -7769,7 +7979,8 @@ function resolveSpellKeywords(
         break;
       }
       case "execution": {
-        if (targetId) {
+        // Exécution X : créature ou objet de coût ≤ X (X vide ⇒ tout coût).
+        if (targetId && idSousPlafond(targetId, kw.amount, ctx.caster, ctx.opponent)) {
           const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
           if (target) target.currentHealth = 0;
           // OBJET ciblé : il quitte la table pour le cimetière de son
@@ -8022,7 +8233,7 @@ function resolveSpellKeywords(
       }
       case "retour_differe": {
         // Sort → respecte Transcendance, comme Remontée.
-        resolveRetourDiffere(targetId, null, ctx.caster, ctx.opponent, true, !scope);
+        resolveRetourDiffere(targetId, null, ctx.caster, ctx.opponent, true, !scope, kw.amount);
         break;
       }
       case "pillage": {
@@ -8047,7 +8258,7 @@ function resolveSpellKeywords(
           if (alive.length === 0) break;
           const target = alive[Math.floor(rng() * alive.length)];
           dealDamageToCreature(target, 1, spellPierces, true, ctx.caster.hero);
-          sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage" });
+          sequentialHitsSink.push({ targetInstanceId: target.instanceId, type: "damage", ...montantDuPoint() });
           interrompreSurBlessure();
         }
         break;
@@ -8557,7 +8768,7 @@ export function requiresPlayerSelection(targetType: SpellTargetType): boolean {
     || targetType === "friendly_graveyard" || targetType === "friendly_graveyard_to_board";
 }
 
-export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
+export function getSpellTargetSlots(card: Card, state?: GameState): SpellTargetSlot[] {
   // Les effets à Retard choisissent leurs cibles au déclenchement, pas au
   // lancement : seule la vue immédiate réclame des créneaux.
   card = immediateSpellView(card);
@@ -8572,6 +8783,15 @@ export function getSpellTargetSlots(card: Card): SpellTargetSlot[] {
       // Portée « toutes » : rien à désigner.
       if (porteeValide(kw.targetScope, spellScopes(kw.id))) return;
       if (def.needsTarget && def.targetType) {
+        // Remontée X : un créneau par unité à renvoyer. Avec l'état en main
+        // (interface), on n'en ouvre pas plus qu'il n'existe de cibles — un
+        // créneau sans cible possible bloquerait la saisie.
+        if (kw.id === "remontee") {
+          let n = Math.max(1, kw.amount ?? 1);
+          if (state) n = Math.max(1, Math.min(n, getSpellTargets(state, card, def.targetType).length));
+          for (const c of creneauxRemontee(`kw_${i}`, n)) slots.push({ slot: c, type: def.targetType, label: def.label });
+          return;
+        }
         slots.push({ slot: `kw_${i}`, type: def.targetType, label: def.label });
       }
     });
@@ -8690,6 +8910,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
   // Contrôles de DÉCLARATION — déjà passés si c'est une reprise.
   if (!action.reprise) {
     if (attacker.attacksRemaining <= 0) return state;
+    // Neutralisée : paralysée tant que la porteuse adverse est en jeu. Garde
+    // VIVANTE (et non un compteur remis à zéro en début de tour) : la créature
+    // retrouve son attaque dès que la porteuse quitte le plateau.
+    if (estNeutralisee(attacker)) return state;
     // Tapped via a tap-mode keyword this turn → no attack allowed.
     if (attacker.tapped) return state;
     if (attacker.hasSummoningSickness && !hasKw(attacker, "raid")) return state;
@@ -8840,6 +9064,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Souffle de feu X: X dégâts à toutes les unités ennemies
     if (hasKw(attacker, "souffle_de_feu")) {
       [...opponent.board].forEach(c => dealDamageToCreature(c, souffleDeFeuX(attacker), false, false, attacker));
+      noterDeclenchement("souffle_de_feu", cleCreature(attacker));
     }
 
     dealDamageToHero(opponent.hero, attackPower, attacker);
@@ -8854,11 +9079,13 @@ export function attack(state: GameState, action: AttackAction): GameState {
 
     // Augure: piochez une carte quand dégâts au héros adverse
     if (hasKw(attacker, "augure")) {
+      noterDeclenchement("augure", cleCreature(attacker));
       drawCard(player);
     }
 
     // Persécution X: dégâts bonus au héros adverse
     if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
+      noterDeclenchement("persecution", cleCreature(attacker));
       dealDamageToHero(opponent.hero, attacker.persecutionX, attacker);
     }
 
@@ -8887,6 +9114,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Esquive: évite automatiquement la 1re attaque chaque tour
     if (hasKw(target, "esquive") && !target.esquiveUsedThisTurn) {
       target.esquiveUsedThisTurn = true;
+      noterDeclenchement("esquive", cleCreature(target));
       attacker.attacksRemaining--;
       attacker.targetsAttackedThisTurn.push(effectiveTarget);
       attacker.hasAttacked = attacker.attacksRemaining <= 0;
@@ -8902,6 +9130,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // souffle ne faisait que le retirer ensuite). Même ordre que sur un héros.
     if (hasKw(attacker, "souffle_de_feu")) {
       [...opponent.board].forEach(c => dealDamageToCreature(c, souffleDeFeuX(attacker), false, false, attacker));
+      noterDeclenchement("souffle_de_feu", cleCreature(attacker));
     }
     // Cible abattue par le souffle : l'attaque est dépensée, sans échange ni
     // riposte (même règle que la cible tuée par un pouvoir d'attaque).
@@ -8930,9 +9159,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // Double Attaque double aussi ce coup-ci : Première Frappe ne change que
       // l'ORDRE de l'échange, pas sa force (elle annulait le doublement).
       const firstStrikePower = hasDoubleAttack ? attackPower * 2 : attackPower;
-      dealDamageToCreature(target, firstStrikePower, attackerHasPrecision, false, attacker, undefined, true);
+      dealDamageToCreature(target, firstStrikePower, attackerHasPrecision, false, attacker, undefined, true, hasDoubleAttack ? 2 : 1);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
+        noterDeclenchement("pietinement", cleCreature(attacker));
         dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
       }
 
@@ -8954,9 +9184,10 @@ export function attack(state: GameState, action: AttackAction): GameState {
       // doit donc pas riposter avec une ATK gonflée par la Gloire qu'elle vient
       // de gagner en survivant à ce même coup.
       const retaliationPower = target.currentAttack;
-      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker, undefined, true);
+      dealDamageToCreature(target, finalAttackPower, attackerHasPrecision, false, attacker, undefined, true, hasDoubleAttack ? 2 : 1);
 
       if (attackerHasTrample && target.currentHealth < 0 && targetHpBefore > 0) {
+        noterDeclenchement("pietinement", cleCreature(attacker));
         dealDamageToHero(opponent.hero, -target.currentHealth, attacker);
       }
 
@@ -8997,6 +9228,7 @@ export function attack(state: GameState, action: AttackAction): GameState {
     // Augure: if attacker hits hero (doesn't apply in creature combat)
     // Persécution X: X dégâts au héros adverse on each attack
     if (hasKw(attacker, "persecution") && attacker.persecutionX > 0) {
+      noterDeclenchement("persecution", cleCreature(attacker));
       dealDamageToHero(opponent.hero, attacker.persecutionX, attacker);
     }
 
@@ -9044,6 +9276,7 @@ function runFureurChain(
   if (creature.fureurActive) return;
   if (creature.currentHealth <= 0) return;
   creature.fureurActive = true;
+  noterDeclenchement("fureur", cleCreature(creature));
   const MAX_FUREUR_CHAIN = 20;
   let iteration = 0;
   while (creature.currentHealth > 0 && iteration < MAX_FUREUR_CHAIN) {
@@ -9514,7 +9747,11 @@ function resolveRetourDiffere(
   sourceIsSpell = false,
   // Même contrat que resolveRemontee : false pour une désignation NON ciblée.
   targeted = true,
+  // Retour différé X : coût maximum de la créature ou de l'objet renvoyé
+  // (vide ⇒ tout coût). Vaut pour la cible désignée comme pour le tirage.
+  coutMax?: number,
 ): void {
+  if (targetInstanceId && !idSousPlafond(targetInstanceId, coutMax, controller, other)) return;
   // OBJET ciblé : sous le deck de son propriétaire.
   if (targetInstanceId && deplacerObjet(controller, other, targetInstanceId, "deck")) return;
   let target: CardInstance | undefined;
@@ -9526,7 +9763,8 @@ function resolveRetourDiffere(
     // Sans cible explicite (sort relancé, mode attaque) : tirage au sort, comme
     // Remontée — le flux synchrone ne peut pas ouvrir de picker.
     const pool = [...controller.board, ...other.board]
-      .filter(c => canBeRemonteed(c, sourceInstanceId, sourceIsSpell));
+      .filter(c => canBeRemonteed(c, sourceInstanceId, sourceIsSpell))
+      .filter(c => respecteCoutMax(c.card, coutMax));
     if (pool.length > 0) target = pool[Math.floor(rng() * pool.length)];
   }
   if (!target) return;
@@ -9888,6 +10126,7 @@ function applyLifesteal(
     return;
   }
   soignerHeros(owner.hero, dealt);
+  noterDeclenchement("drain_de_vie", cleCreature(source));
 }
 
 // `source` = ce qui inflige les dégâts. Optionnel : les sources sans agresseur
@@ -9943,7 +10182,12 @@ function dealDamageToCreature(
   // ne sont ni des sorts ni du combat, et ne doivent donc pas nourrir Gloire.
   // Seuls les sites d'appel du flux d'attaque passent `true`.
   isCombatDamage = false,
+  // Nombre de COUPS que représente `damage` : 2 pour le coup d'une attaquante
+  // à Double attaque (un seul paquet doublé). Seule Éthérée le lit — son
+  // plafond vaut 1 dégât PAR COUP.
+  coups = 1,
 ) {
+  dernierDegatNet = 0;
   if (damage <= 0) return;
 
   // Seuil de colère : le premier paquet de dégâts DU SORT emporte le bonus.
@@ -9984,8 +10228,18 @@ function dealDamageToCreature(
   // Bouclier (Divine Shield) absorbs first hit — Précision bypasses it
   if (creature.hasDivineShield && !ignoreDR) {
     creature.hasDivineShield = false;
+    noterDeclenchement("divine_shield", cleCreature(creature));
     return;
   }
+
+  // ÉTHÉRÉE (1/2) — les dégâts des ACTIONS qu'elle subit sont doublés. Même
+  // lecture de « vraie source-sort » que Transcendance : les capacités de
+  // créature qui empruntent le canal « sort » (`fromSpell: false`) ne sont pas
+  // doublées. Placé après les immunités (un Bouclier absorbe le coup entier,
+  // doublé ou non) et avant Résistance / Armure. Précision n'y change rien :
+  // c'est une contrepartie, pas une protection.
+  const etheree = hasKw(creature, "etheree");
+  if (etheree && (fromSpell ?? isSpellDamage)) damage *= 2;
 
   // Damage reduction (unless attacker has Precision)
   if (!ignoreDR) {
@@ -9999,10 +10253,17 @@ function dealDamageToCreature(
     if (hasKw(creature, "armure") && !isSpellDamage) {
       damage = Math.ceil(damage / 2);
     }
+    // ÉTHÉRÉE (2/2) — jamais plus de 1 dégât PAR COUP en combat : attaque
+    // reçue, riposte encaissée quand elle attaque, assaut de Fureur. Précision
+    // perce ce plafond comme elle perce Bouclier, Résistance et Armure (d'où sa
+    // place dans ce bloc). Les capacités de créature ne sont ni plafonnées ni
+    // doublées.
+    if (etheree && isCombatDamage) damage = Math.min(damage, Math.max(1, coups));
   }
 
   if (damage <= 0) return;
   creature.currentHealth -= damage;
+  dernierDegatNet = damage;
   damageLedgerSink.push({ targetInstanceId: creature.instanceId, amount: damage });
   // Blessure : PV réellement perdus, toutes immunités et réductions passées.
   noteWound(creature, woundOriginOf(source));
@@ -10023,10 +10284,10 @@ function dealDamageToCreature(
   // passage unique, après réductions et immunités (une blessure RÉELLE) et sur
   // une cible SURVIVANTE ; jamais sur elle-même (Cataclysme touche son camp).
   if (creature.currentHealth > 0 && source && "instanceId" in source && source !== creature) {
-    if (hasKw(source, "paralysie")) paralyser(creature, 1);
+    if (hasKw(source, "paralysie")) { paralyser(creature, 1); noterDeclenchement("paralysie", cleCreature(source)); }
     // POISON : même règle — « les unités blessées » par une créature qui le
     // porte, quel que soit le chemin des dégâts, pas seulement le combat.
-    if (hasKw(source, "poison")) creature.isPoisoned = true;
+    if (hasKw(source, "poison")) { creature.isPoisoned = true; noterDeclenchement("poison", cleCreature(source)); }
   }
 
   // Gloire +X/+Y : l'unité qui encaisse des dégâts de COMBAT et y survit gagne
@@ -10037,6 +10298,7 @@ function dealDamageToCreature(
   // blessure à surmonter.
   if (isCombatDamage && creature.currentHealth > 0 && hasKw(creature, "gloire")) {
     applyGloire(creature);
+    noterDeclenchement("gloire", cleCreature(creature));
   }
 
   // Riposte X : dès que cette unité subit RÉELLEMENT des dégâts (on est passé
@@ -10046,6 +10308,7 @@ function dealDamageToCreature(
   // source, donc elle ne peut pas re-déclencher une riposte : pas de boucle
   // riposte↔riposte. On ne se riposte jamais soi-même.
   if (source && source !== creature && hasKw(creature, "riposte") && creature.riposteX > 0) {
+    noterDeclenchement("riposte", cleCreature(creature));
     if ("instanceId" in source) {
       // Contre-riposte infligée SANS source (pas de boucle riposte↔riposte) —
       // mais pour Blessure le coupable est bien cette créature-ci, la même
@@ -10068,6 +10331,7 @@ function dealDamageToCreature(
     const proprietaire = currentBoardPlayers.find(p => p.board.includes(creature));
     const adverse = proprietaire && currentBoardPlayers.find(p => p !== proprietaire);
     if (adverse) dealDamageToHero(adverse.hero, damage, creature);
+    if (adverse) noterDeclenchement("liaison_de_vie", cleCreature(creature));
   }
 
   // Drain de vie : après toutes les réductions et la soustraction des PV, on
@@ -10102,6 +10366,7 @@ function cleanDeadCreatures(player: PlayerState): CardInstance[] {
   }
 
   player.board = alive;
+  for (const d of dead) { delete d.synergieAbilityId; delete d.synergieSourcesThisTurn; }
   player.graveyard.push(...dead);
 
   // UNITÉS TUÉES EN MAIN (dégâts d'un effet qui vise la main) : elles partent
@@ -10258,6 +10523,38 @@ function resolveRemontee(
   if (!target) return;
   moveBoardUnitToOwnerHand(target, controller, other);
 }
+
+/** REMONTÉE X — renvoie jusqu'à X unités. `ids` : les cibles DÉSIGNÉES par le
+ *  joueur (une par créneau) ; elles sont renvoyées d'abord, puis le reste est
+ *  complété AU HASARD jusqu'à X. Une Remontée déclenchée sans interlocuteur
+ *  (mort hors choix, attaque, action relancée) part donc avec `ids` vide et
+ *  tire ses X cibles ; une activation ou un choix différé, qui ne savent
+ *  désigner qu'UNE cible, la prennent puis tirent les X − 1 autres.
+ *
+ *  Une cible désignée mais invalide COMPTE (pas de tirage de remplacement) :
+ *  avec X = 1 et une cible, aucun appel à la RNG — les parties d'avant le X se
+ *  rejouent à l'identique. */
+function resolveRemonteeMultiple(
+  ids: (string | undefined)[],
+  x: number,
+  sourceInstanceId: string | null,
+  controller: PlayerState,
+  other: PlayerState,
+  sourceIsSpell = false,
+): void {
+  const n = Math.max(1, x);
+  const designees = [...new Set(ids.filter((id): id is string => !!id))].slice(0, n);
+  for (const id of designees) resolveRemontee(id, sourceInstanceId, controller, other, sourceIsSpell, true);
+  for (let k = designees.length; k < n; k++) resolveRemontee(undefined, sourceInstanceId, controller, other, sourceIsSpell);
+}
+
+/** Créneaux de cibles d'une Remontée X d'ACTION : `kw_i`, puis `kw_i:1`,
+ *  `kw_i:2`… (jamais « # », réservé aux créneaux composés). */
+function creneauxRemontee(slot: string, x: number): string[] {
+  return Array.from({ length: Math.max(1, x) }, (_, k) => (k === 0 ? slot : `${slot}:${k}`));
+}
+/** Clé de `targetMap` des cibles d'une Remontée X d'ENTRÉE EN JEU (créature). */
+export const REMONTEE_CHOIX_UID = "kw:remontee";
 
 /** Retire une unité du PLATEAU et la met dans la main de son propriétaire
  *  d'origine. Cœur commun de Remontée (cible désignée ou tirée) et de
@@ -10905,6 +11202,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
   {
     // Maléfice: inflige X dégâts à TOUTES les unités (alliés et ennemis), X = ATK
     if (hasKw(c, "malefice")) {
+      noterDeclenchement("malefice", cleCreature(c));
       const maleficeDmg = c.card.attack ?? 0;
       dealDamageToHero(enemy.hero, maleficeDmg, c);
       // Capacités de créature (Maléfice/Carnage) : non bloquées par Transcendance.
@@ -10914,6 +11212,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Carnage X: inflige X dégâts à TOUTES les unités en jeu
     if (hasKw(c, "carnage") && c.carnageX > 0) {
+      noterDeclenchement("carnage", cleCreature(c));
       [...enemy.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c, false));
       [...owner.board].forEach(e => dealDamageToCreature(e, c.carnageX, false, true, c, false));
     }
@@ -10924,6 +11223,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // défaut 1) pour les instances qui ne passent pas par playCard — notamment
     // les TOKENS, qui sinon auraient sacrificeDemoniaqueX = 0.
     if (hasKw(c, "sacrifice_demoniaque")) {
+      noterDeclenchement("sacrifice_demoniaque", cleCreature(c));
       const sdX = c.sacrificeDemoniaqueX > 0
         ? c.sacrificeDemoniaqueX
         : (parseXValuesFromEffectText(c.card.effect_text)["sacrifice_demoniaque"]
@@ -10933,6 +11233,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Héritage X: chaque allié gagne +X ATK et +X PV
     if (hasKw(c, "heritage") && c.heritageX > 0) {
+      noterDeclenchement("heritage", cleCreature(c));
       // Bonus GRAVÉ dans la carte, comme Renforcement : posé sur currentAttack
       // seul, le recalcul des auras qui suit toute mort le ramenait à la base
       // et l'allié ne gardait que les PV.
@@ -10947,6 +11248,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // cimetière (visuellement et pour les comptages type "X morts ce
     // tour").
     if (hasKw(c, "resurrection") && !c.hasUsedResurrection) {
+      noterDeclenchement("resurrection", cleCreature(c));
       if (placesOccupees(owner) < MAX_BOARD_SIZE) {
         const newKeywords = c.card.keywords.filter(kw => kw !== "resurrection");
         // Réutilise l'instance pour CONSERVER ses bonus ; elle perd Résurrection
@@ -10979,6 +11281,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
 
     // Pacte de sang: invoque deux tokens 1/1 de sa race
     if (hasKw(c, "pacte_de_sang")) {
+      noterDeclenchement("pacte_de_sang", cleCreature(c));
       for (let i = 0; i < 2 && placesOccupees(owner) < MAX_BOARD_SIZE; i++) {
         let tokenCard: Card = {
           id: -1, name: `Token ${c.card.race || ""}`.trim(),
@@ -11009,6 +11312,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     // → elle ressuscitait à chaque mort, indéfiniment. La première règle qui
     // réclame la dépouille l'emporte.
     if (hasKw(c, "cycle_eternel") && owner.graveyard.includes(c)) {
+      noterDeclenchement("cycle_eternel", cleCreature(c));
       // Réutilise l'instance pour CONSERVER ses bonus accumulés (au lieu d'une
       // copie neuve) ; nouvelle identité, marquée pour auto-play à la pioche.
       returnInstanceToPlay(c);
@@ -11068,6 +11372,7 @@ function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: Player
     for (const board of [owner.board, enemy.board]) {
       for (const unit of board) {
         if (hasKw(unit, "necrophagie")) {
+          noterDeclenchement("necrophagie", cleCreature(unit));
           unit.necrophagieATKBonus += 1;
           unit.necrophagiePVBonus += 1;
           unit.currentAttack += 1;
@@ -11441,6 +11746,7 @@ function resolveCuratedKeywordEffect(
   // mort, retour, fin de tour, attaque, pioche). `inst.mode` porte le
   // déclencheur réel.
   noteAbilitySfx(kw, keywordModeToTrigger(inst?.mode));
+  noterDeclenchement(kw, cleCreature(source));
   revelerOmbreAuDeclenchement(source, keywordModeToTrigger(inst?.mode));
   // PORTÉE « TOUTES » : on rejoue la capacité avec, pour cible explicite,
   // chaque créature du camp visé — le chemin « cible explicite » de chaque cas
@@ -11466,7 +11772,8 @@ function resolveCuratedKeywordEffect(
       // (« S »), sinon choix différé au propriétaire — au hasard à l'attaque.
       const tid = targetInstanceId
         ?? (kwInstanceSoi(inst) ? source.instanceId : deferOrRandomTarget(kw, source, owner, opponent, inst, inst?.x ?? x) ?? undefined);
-      if (tid) applyActionCibleeDeCreature(kw, tid, inst?.x ?? x, owner, opponent);
+      if (tid) applyActionCibleeDeCreature(kw, tid, inst?.x ?? x, owner, opponent,
+        kw === "execution" ? coutMaxDeclenche(source, kw, inst) : undefined);
       return;
     }
     case "renforcement": {
@@ -11557,7 +11864,10 @@ function resolveCuratedKeywordEffect(
     case "remontee": {
       // Tap (ou résolution différée) : cible explicite → on résout tout de suite.
       if (targetInstanceId) {
-        resolveRemontee(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours);
+        // Portée « toutes » : chaque cible de la boucle, une à une. Sinon
+        // Remontée X : la cible désignée, puis X − 1 au hasard.
+        if (porteeEnCours) resolveRemontee(targetInstanceId, source.instanceId, owner, opponent, false, false);
+        else resolveRemonteeMultiple([targetInstanceId], inst?.x ?? x, source.instanceId, owner, opponent);
         return;
       }
       // Mort / retour : s'il existe une cible valide, on DIFFÈRE le choix au
@@ -11567,12 +11877,15 @@ function resolveCuratedKeywordEffect(
         pendingTriggerSink.push({
           id: source.instanceId,
           kw: "remontee",
+          // X porté par le choix en attente : en mode mort, la source est déjà
+          // au cimetière quand le joueur répond.
+          x: inst?.x ?? x,
           controllerId: owner.id,
           sourceInstanceId: source.instanceId,
         });
         return;
       }
-      resolveRemontee(undefined, source.instanceId, owner, opponent);
+      resolveRemonteeMultiple([], inst?.x ?? x, source.instanceId, owner, opponent);
       return;
     }
     case "impact": {
@@ -11747,7 +12060,7 @@ function resolveCuratedKeywordEffect(
       break;
     }
     case "retour_differe": {
-      resolveRetourDiffere(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours);
+      resolveRetourDiffere(targetInstanceId, source.instanceId, owner, opponent, false, !porteeEnCours, coutMaxDeclenche(source, kw, inst));
       break;
     }
     case "devoration": {
@@ -12029,9 +12342,14 @@ function resolveCuratedKeywordEffect(
       // l'effet d'invocation — déjà aléatoire, aucun picker à différer).
       if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
       // Cible explicite : celle de la portée « toutes ».
-      const idxD = targetInstanceId
-        ? opponent.board.findIndex(c => c.instanceId === targetInstanceId)
-        : Math.floor(rng() * opponent.board.length);
+      // Domination X : coût ≤ X (X vide ⇒ tout coût).
+      const xDom = coutMaxDeclenche(source, kw, inst);
+      const prenables = opponent.board.filter(c => respecteCoutMax(c.card, xDom));
+      if (prenables.length === 0) return;
+      const prise = targetInstanceId
+        ? prenables.find(c => c.instanceId === targetInstanceId)
+        : prenables[Math.floor(rng() * prenables.length)];
+      const idxD = prise ? opponent.board.indexOf(prise) : -1;
       if (idxD < 0) return;
       const stolen = opponent.board.splice(idxD, 1)[0];
       stolen.hasSummoningSickness = true;
@@ -12043,9 +12361,13 @@ function resolveCuratedKeywordEffect(
       // Vole une unité ennemie AU HASARD (le fallback aléatoire existe déjà à
       // l'invocation) ; elle gagne Traque et l'agressivité immédiate.
       if (opponent.board.length === 0 || placesOccupees(owner) >= MAX_BOARD_SIZE) return;
+      // Corruption X : coût ≤ X (X vide ⇒ tout coût).
+      const xCorr = coutMaxDeclenche(source, kw, inst);
+      const convertibles = opponent.board.filter(c => respecteCoutMax(c.card, xCorr));
+      if (convertibles.length === 0) return;
       const stealTarget = targetInstanceId
-        ? opponent.board.find(c => c.instanceId === targetInstanceId)
-        : opponent.board[Math.floor(rng() * opponent.board.length)];
+        ? convertibles.find(c => c.instanceId === targetInstanceId)
+        : convertibles[Math.floor(rng() * convertibles.length)];
       if (!stealTarget) return;
       opponent.board = opponent.board.filter(c => c !== stealTarget);
       stealTarget.originalOwnerId = opponent.id;
@@ -12287,13 +12609,22 @@ export function deferredKwTargetIds(
       return remonteeTargetIds(controller, other, sourceInstanceId);
     case "impact":
       return impactTargetIds(controller, other);
-    case "execution":
+    case "execution": {
+      // Exécution X : le plafond se lit sur la créature source.
+      const src = sourceInstanceId ? controller.board.find(c => c.instanceId === sourceInstanceId) : undefined;
+      return actionCibleeTargetIds(kw, controller, other, sourceInstanceId, src ? coutMaxCible(src.card, kw, false) : undefined);
+    }
     case "silence":
     case "guerison":
       return actionCibleeTargetIds(kw, controller, other, sourceInstanceId);
+    case "malediction": {
+      // Malédiction X : seules les créatures de coût ≤ X sont désignables.
+      const src = sourceInstanceId ? controller.board.find(c => c.instanceId === sourceInstanceId) : undefined;
+      const xMax = src ? maledictionCoutMax(src.card, false) : undefined;
+      return other.board.filter(targetable).filter(c => respecteCoutMax(c.card, xMax)).map(c => c.instanceId);
+    }
     case "affaiblissement":
     case "permutation":
-    case "malediction":
       return other.board.filter(targetable).map(c => c.instanceId);
     case "benediction":
       return controller.board.map(c => c.instanceId);
@@ -12782,6 +13113,7 @@ export function resolvePendingTrigger(state: GameState, action: ResolvePendingTr
     selectionCardId: action.selectionCardId,
     deckChoiceIndex: action.deckChoiceIndex,
     alternativeCapUid: action.alternativeCapUid,
+    abilityId: action.abilityId,
   });
 
   // BALAYAGE DES MORTS. Un choix tranché peut TUER — un Impact de fin de tour
@@ -12854,10 +13186,22 @@ function pendingChoiceIds(
 function applyOnePendingTrigger(
   newState: GameState,
   trigger: import("./types").PendingTrigger,
-  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number; deckChoiceIndex?: number; alternativeCapUid?: string },
+  choice: { targetInstanceId?: string; targetInstanceIds?: string[]; selectionCardId?: number; deckChoiceIndex?: number; alternativeCapUid?: string; abilityId?: string },
 ): void {
   const controller = newState.players.find(p => p.id === trigger.controllerId);
   const other = newState.players.find(p => p.id !== trigger.controllerId);
+
+  // SYNERGIE : la réponse est la CAPACITÉ choisie, gravée sur la créature.
+  // Réponse absente ou hors liste (délai écoulé, bot, client d'une autre
+  // version) ⇒ tirage semé, pour ne jamais laisser la file bloquée.
+  if (trigger.kw === "synergie") {
+    const porteuse = newState.players.flatMap(p => p.board).find(c => c.instanceId === trigger.sourceInstanceId);
+    if (!porteuse || porteuse.synergieAbilityId) return;
+    porteuse.synergieAbilityId = choice.abilityId && CAPACITES_SYNERGISABLES.has(choice.abilityId)
+      ? choice.abilityId
+      : tirerCapaciteSynergie(newState);
+    return;
+  }
 
   // « OU » : la réponse ne résout rien par elle-même — elle DÉSIGNE la branche
   // qui reste sur la pile. La résolution suit, par le drainStack de fin
@@ -12959,7 +13303,7 @@ function applyOnePendingTrigger(
     }
   } else if (trigger.kw === "remontee") {
     if (controller && other) {
-      resolveRemontee(choice.targetInstanceId, trigger.sourceInstanceId, controller, other);
+      resolveRemonteeMultiple([choice.targetInstanceId], trigger.x ?? 1, trigger.sourceInstanceId, controller, other);
     }
   } else if (trigger.kw === "impact") {
     // X porté par le trigger (la source est au cimetière en mode mort). Source
@@ -13157,7 +13501,8 @@ export function getTapActivateTargets(state: GameState, kw: Keyword, sourceInsta
     case "execution":
     case "silence":
     case "guerison":
-      return actionCibleeTargetIds(kw, player, opponent, sourceInstanceId ?? null);
+      return actionCibleeTargetIds(kw, player, opponent, sourceInstanceId ?? null,
+        kw === "execution" ? (inst?.x ?? undefined) : undefined);
     case "remontee":
       // N'importe quelle unité des deux plateaux (hors source / Ancré / non-ciblable).
       return [...player.board, ...opponent.board]
@@ -13478,6 +13823,14 @@ export function effetPouvoirACible(heroDef: HeroDefinition, i: number): boolean 
 
 /** Cibles possibles de l'effet n°`i` (pour le joueur actif). */
 export function ciblesEffetPouvoir(state: GameState, heroDef: HeroDefinition, i: number): string[] {
+  const ids = ciblesEffetPouvoirBrutes(state, heroDef, i);
+  // PLAFOND DE COÛT : un pouvoir de héros qui porte Domination X, Exécution X…
+  // ne propose que les créatures et objets de coût ≤ X.
+  const effect = effetsDuPouvoir(heroDef)[i];
+  if (effect?.mode !== "spell_trigger" || !CAPACITES_A_COUT_MAX_CIBLE.has(effect.keywordId ?? "")) return ids;
+  return ids.filter((id) => idSousPlafond(id, effect.params?.amount, state.players[0], state.players[1]));
+}
+function ciblesEffetPouvoirBrutes(state: GameState, heroDef: HeroDefinition, i: number): string[] {
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const effect = effetsDuPouvoir(heroDef)[i];
@@ -13735,6 +14088,22 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // handlers ont déjà tranché AVANT ce drain, il faut re-vérifier après.
   if (result !== state && result.phase === "playing") checkWinCondition(result);
 
+  // SYNERGIE — armement à l'arrivée. Toute créature en jeu qui porte Synergie
+  // sans capacité choisie reçoit un choix en attente, quelle que soit la façon
+  // dont elle est arrivée (jouée, invoquée, ressuscitée, jeton) : les créatures
+  // invoquées ne déclenchent aucun effet d'entrée, un balayage est le seul
+  // point de passage commun.
+  if (result !== state && result.phase === "playing") {
+    for (const p of result.players) {
+      for (const c of p.board) {
+        if (c.synergieAbilityId || c.currentHealth <= 0 || !hasKw(c, "synergie" as Keyword)) continue;
+        const id = `${c.instanceId}#synergie`;
+        if ((result.pendingTriggers ?? []).some(t => t.id === id) || pendingTriggerSink.some(t => t.id === id)) continue;
+        pendingTriggerSink.push({ id, kw: "synergie" as Keyword, controllerId: p.id, sourceInstanceId: c.instanceId });
+      }
+    }
+  }
+
   // Rattache les déclencheurs interactifs créés pendant cette action (mort /
   // retour de Remontée au tour du contrôleur) à l'état retourné.
   if (pendingTriggerSink.length > 0 && result !== state) {
@@ -13972,7 +14341,7 @@ export function canPlayCard(state: GameState, cardInstanceId: string): boolean {
         const enMain = !!uid && getCapabilities(card.card).find(c => c.uid === uid)?.composed?.target?.location === "hand";
         return (enMain
           ? getComposedGraveyardTargets(state, card.card, uid, card.instanceId)
-          : getSpellTargets(state, card.card, sl.type)).length === 0;
+          : getSpellSlotTargets(state, card.card, sl)).length === 0;
       })) {
       return false;
     }
@@ -14013,7 +14382,7 @@ export function creatureCanCastLearnedSpell(state: GameState, creatureInstanceId
   // AUCUNE cible se consumerait dans le vide. Ici la conséquence serait pire —
   // le joueur y perdrait le tour d'activation de sa créature.
   const slots = getSpellTargetSlots(spell.card);
-  if (slots.length > 0 && slots.every(sl => getSpellTargets(state, spell.card, sl.type).length === 0)) {
+  if (slots.length > 0 && slots.every(sl => getSpellSlotTargets(state, spell.card, sl).length === 0)) {
     return false;
   }
   return true;
@@ -14118,7 +14487,7 @@ export function eveilArrivalBlocker(state: GameState, cardInstanceId: string): E
     && placesOccupees(player) - sacrificeCost - retreatCost + 1 > MAX_BOARD_SIZE) return "board_plein";
   if (card.card_type === "spell") {
     const slots = getSpellTargetSlots(card);
-    if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
+    if (slots.length > 0 && slots.every(sl => getSpellSlotTargets(state, card, sl).length === 0)) {
       return "sans_cible";
     }
   }
@@ -14150,6 +14519,7 @@ export function canAttack(state: GameState, attackerInstanceId: string): boolean
   const attacker = player.board.find(c => c.instanceId === attackerInstanceId);
   if (!attacker) return false;
   if (attacker.attacksRemaining <= 0) return false;
+  if (estNeutralisee(attacker)) return false;
   // MTG-strict: a tapped creature (tap-mode keyword fired this turn)
   // can't also attack.
   if (attacker.tapped) return false;
@@ -14315,6 +14685,13 @@ export function getCreatureComposedChoice(
   if (card.card_type !== "creature") return null;
   const cap = firstOnPlayComposedChoiceCap(card);
   const t = cap?.composed?.target;
+  // Remontée X (X ≥ 2) à l'entrée en jeu : même saisie « N cibles » que les
+  // effets composés au choix, sous une clé à elle. Un composé au choix sur la
+  // même carte garde la priorité (une seule collecte multiple par carte).
+  if (!cap && cardHasKwOnPlay(card, "remontee") && !porteeOnPlay(card, "remontee")) {
+    const xRem = getCardKwX(card, "remontee", undefined, 1);
+    if (xRem >= 2) return { uid: REMONTEE_CHOIX_UID, count: xRem, type: "any_creature" };
+  }
   if (!cap || !t || typeof t.count !== "number") return null;
   const type = composedSlotType(t, cap.composed?.content);
   if (!type) return null;
@@ -14441,11 +14818,13 @@ const ACTIONS_CIBLEES_DE_CREATURE = ["execution", "silence", "guerison"] as cons
  *  Les objets ne se visent qu'en portée « toutes » (ciblesDePortee). */
 export function actionCibleeTargetIds(
   kw: Keyword, controller: PlayerState, other: PlayerState, sourceInstanceId: string | null,
+  /** Exécution X : coût maximum de la cible (vide ⇒ tout coût). */
+  coutMax?: number,
 ): string[] {
   const targetable = (c: CardInstance) => !hasKw(c, "invisible") && !(hasKw(c, "ombre") && !c.ombreRevealed);
   const autresAllies = controller.board.filter(c => c.instanceId !== sourceInstanceId).map(c => c.instanceId);
   switch (kw) {
-    case "execution": return other.board.filter(targetable).map(c => c.instanceId);
+    case "execution": return other.board.filter(targetable).filter(c => respecteCoutMax(c.card, coutMax)).map(c => c.instanceId);
     case "silence": return [...autresAllies, ...other.board.filter(targetable).map(c => c.instanceId)];
     case "guerison": return [...autresAllies, "friendly_hero"];
     default: return [];
@@ -14456,11 +14835,14 @@ export function actionCibleeTargetIds(
  *  « toutes »), ou héros allié pour Guérison. */
 function applyActionCibleeDeCreature(
   kw: Keyword, targetId: string | undefined, x: number, controller: PlayerState, other: PlayerState,
+  /** Exécution X : coût maximum de la créature ou de l'objet détruit. */
+  coutMax?: number,
 ): void {
   if (!targetId) return;
   if (kw === "guerison") { applyGuerisonTo(targetId, x, controller); return; }
   const target = findCreatureOnBoard(controller, targetId) ?? findCreatureOnBoard(other, targetId);
   if (kw === "execution") {
+    if (!idSousPlafond(targetId, coutMax, controller, other)) return;
     // Mise à 0 des PV : la mort suit son traitement normal, râles compris.
     if (target) target.currentHealth = 0;
     else detruireObjet(controller, other, targetId);
@@ -14505,16 +14887,11 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
       case "guerison":
         // Sur elle-même : aucune cible, on passe au mot-clé suivant.
         if (kwInstanceSoi(instanceOnPlay(card, kw))) continue;
-        return actionCibleeTargetIds(kw, player, opponent, null);
-      case "neutralisation": {
-        // Seules les ennemies qui PORTENT la capacité visée — lue sur la vue
-        // d'affichage, pour compter celle qu'une autre porteuse neutralise déjà.
-        const id = idNeutralise(instanceNeutralisation(card)?.grantAbilityId);
-        if (!id) continue;
-        return filterEnemyTargetable2(opponent.board)
-          .filter(c => displayCardOf(c).keywords.includes(id as Keyword))
-          .map(c => c.instanceId);
-      }
+        return actionCibleeTargetIds(kw, player, opponent, null, kw === "execution" ? coutMaxCible(card, kw, true) : undefined);
+      case "neutralisation":
+        // Toute unité ennemie désignable : la neutralisation paralyse et rend
+        // muettes TOUTES ses capacités, elle n'a plus à en porter une précise.
+        return filterEnemyTargetable2(opponent.board).map(c => c.instanceId);
       case "sacrifice":
       case "benediction":
         return player.board.map(c => c.instanceId);
@@ -14525,8 +14902,16 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         // Sur elle-même : aucune cible, on passe au mot-clé suivant.
         if (!bonusVersAutre(instanceOnPlay(card, kw))) continue;
         return player.board.map(c => c.instanceId);
-      case "corruption":
-      case "malediction":
+      case "malediction": {
+        // Malédiction X : seules les créatures de coût ≤ X sont désignables.
+        const xMax = maledictionCoutMax(card, true);
+        return filterEnemyTargetable2(opponent.board).filter(c => respecteCoutMax(c.card, xMax)).map(c => c.instanceId);
+      }
+      case "corruption": {
+        // Corruption X : seules les créatures de coût ≤ X sont désignables.
+        const xMax = coutMaxCible(card, "corruption", true);
+        return filterEnemyTargetable2(opponent.board).filter(c => respecteCoutMax(c.card, xMax)).map(c => c.instanceId);
+      }
       case "affaiblissement":
       case "permutation":
       case "vampirisme":
@@ -14546,12 +14931,15 @@ export function getCreatureTargets(state: GameState, card: Card): string[] {
         return [...player.board, ...opponent.board]
           .filter(c => canBeRemonteed(c, null))
           .map(c => c.instanceId);
-      case "retour_differe":
+      case "retour_differe": {
         // Mêmes règles de ciblage que Remontée : seule la destination diffère
-        // (dessous du deck plutôt que la main).
+        // (dessous du deck plutôt que la main). Retour différé X : coût ≤ X.
+        const xMax = coutMaxCible(card, "retour_differe", true);
         return [...player.board, ...opponent.board]
           .filter(c => canBeRemonteed(c, null))
+          .filter(c => respecteCoutMax(c.card, xMax))
           .map(c => c.instanceId);
+      }
       case "devoration":
         // Toute unité des deux plateaux. La source n'est pas encore en jeu, elle
         // ne peut donc pas figurer dans la liste : rien à exclure.
@@ -14668,7 +15056,7 @@ export function canPlayFromGraveyard(state: GameState, cardInstanceId: string): 
   // dans le vide, et ici la carte n'aurait même plus de Seconde vie à retenter.
   if (card.card_type === "spell") {
     const slots = getSpellTargetSlots(card);
-    if (slots.length > 0 && slots.every(sl => getSpellTargets(state, card, sl.type).length === 0)) {
+    if (slots.length > 0 && slots.every(sl => getSpellSlotTargets(state, card, sl).length === 0)) {
       return false;
     }
   }
@@ -15884,7 +16272,15 @@ export function getSpellSlotTargets(state: GameState, card: Card, slot: SpellTar
   if (contenu === "rappel" || contenu === "exhumation") {
     return getComposedGraveyardTargets(state, card, uid!);
   }
-  const base =restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
+  let base = restreindreCreneauCompose(state, card, slot, getSpellTargets(state, card, slot.type));
+  // PLAFOND DE COÛT (Malédiction X, Domination X, Corruption X, Exécution X,
+  // Retour différé X) : seules les créatures — et les objets — de coût ≤ X sont
+  // désignables.
+  const iKw = /^kw_(\d+)$/.exec(slot.slot)?.[1];
+  const kwDuCreneau = iKw != null ? immediateSpellView(card).spell_keywords?.[+iKw] : undefined;
+  if (kwDuCreneau && CAPACITES_A_COUT_MAX_CIBLE.has(kwDuCreneau.id)) {
+    base = base.filter((id) => idSousPlafond(id, kwDuCreneau.amount, state.players[0], state.players[1]));
+  }
   if (!isIncinerationSlot(card, slot)) return base;
   const player = state.players[state.currentPlayerIndex];
   const opponent = state.players[state.currentPlayerIndex === 0 ? 1 : 0];

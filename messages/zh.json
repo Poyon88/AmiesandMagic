@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "精准",
-        "desc": "无视抗性、护甲和圣盾。"
+        "desc": "无视抗性、护甲、护盾以及虚灵上限。"
       },
       "drain_de_vie": {
         "label": "生命汲取",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "中和",
-        "desc": "只要该单位在场，便中和{neutralise_cible}的{ability}。"
+        "desc": "在场期间,被指定的敌方单位被麻痹,其能力全部失效。"
       },
       "transformation": {
         "label": "变形",
@@ -176,8 +176,9 @@
         "desc_any": "从你的收藏中召唤一个随机生物（{alignment}，当前赛制）。"
       },
       "malediction": {
-        "label": "诅咒",
-        "desc": "指定一个敌方单位，将其在对手下一回合结束时放逐。"
+        "label": "诅咒 X",
+        "desc": "选择一个费用≤X的敌方单位；它将在对手下个回合结束时被放逐。",
+        "desc_any": "指定一个敌方单位，将其在对手下一回合结束时放逐。"
       },
       "necrophagie": {
         "label": "食腐",
@@ -251,6 +252,14 @@
         "label": "诅咒",
         "desc": "死亡时，对所有单位（友方与敌方）造成 X 点伤害，X 等于其攻击力。"
       },
+      "synergie": {
+        "label": "协同 X",
+        "desc": "登场时选择一项能力：该能力每次触发时获得 +X/+X（每个来源每回合一次）。"
+      },
+      "etheree": {
+        "label": "虚灵",
+        "desc": "战斗中每次最多受到 1 点伤害。受到的行动伤害翻倍。"
+      },
       "indestructible": {
         "label": "坚不可摧",
         "desc": "不受任何战斗伤害。"
@@ -260,8 +269,9 @@
         "desc": "你的回合开始时，恢复 X 点生命值。"
       },
       "corruption": {
-        "label": "腐化",
-        "desc": "将选定的敌方单位转化至己方阵营直到回合结束；该单位在本回合结束前获得追猎。"
+        "label": "腐化 X",
+        "desc": "将一个费用 ≤ X 的敌方单位转为你方所有,持续到回合结束;该单位获得追猎。",
+        "desc_any": "将选定的敌方单位转化至己方阵营直到回合结束；该单位在本回合结束前获得追猎。"
       },
       "carnage": {
         "label": "屠戮 X",
@@ -305,8 +315,9 @@
         "desc": "攻击时对所有敌方单位造成 X 点伤害（例：烈焰吐息 2 = 2 点伤害）。"
       },
       "domination": {
-        "label": "支配",
-        "desc": "召唤时随机夺取一个敌方单位的控制权。"
+        "label": "支配 X",
+        "desc": "被召唤时,随机夺取一个费用 ≤ X 的敌方单位的控制权。",
+        "desc_any": "召唤时随机夺取一个敌方单位的控制权。"
       },
       "resurrection": {
         "label": "复活",
@@ -505,16 +516,17 @@
         "desc": "查看你牌库底部的X张卡牌；将其中一张放到牌库顶。"
       },
       "retour_differe": {
-        "label": "延迟归还",
-        "desc": "将目标单位放到其拥有者牌库底。"
+        "label": "延迟归还 X",
+        "desc": "将被指定的费用 ≤ X 的单位置于其所有者的牌组底部。",
+        "desc_any": "将目标单位放到其拥有者牌库底。"
       },
       "concentration": {
         "label": "专注 X",
         "desc": "手牌中的每张行动都会变为一张随机行动，其费用+X后再减少X（涵盖所有阵营）。"
       },
       "remontee": {
-        "label": "回弹",
-        "desc": "将目标单位返回其原始拥有者的手牌。"
+        "label": "回弹 X",
+        "desc": "将X个被指定的单位送回其原所有者的手牌。"
       },
       "entrainement": {
         "label": "训练 X",
@@ -562,8 +574,9 @@
         "desc": "将创建时指定的牌加入你的手牌（同一张牌可指定多次）。"
       },
       "execution": {
-        "label": "处决",
-        "desc": "消灭一个被选定的敌方单位。"
+        "label": "处决 X",
+        "desc": "摧毁一个被指定的费用 ≤ X 的敌方单位。",
+        "desc_any": "消灭一个被选定的敌方单位。"
       },
       "silence": {
         "label": "沉默",
@@ -639,13 +652,20 @@
         "label": "预言",
         "desc": "展示牌库顶的3张牌；按所选顺序将1张放回牌库顶，2张放到牌库底。"
       },
+      "malediction": {
+        "label": "诅咒 X",
+        "desc": "诅咒目标费用≤X的敌方单位：它将在对手下个回合结束时被放逐",
+        "desc_any": "诅咒目标敌方单位：它将在对手下个回合结束时被放逐"
+      },
       "corruption": {
-        "label": "腐化",
-        "desc": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
+        "label": "腐化 X",
+        "desc": "将被指定的费用 ≤ X 的敌方单位转为你方所有,持续到回合结束;该单位获得追猎。",
+        "desc_any": "将目标敌方单位转化至我方阵营，直到本回合结束；其获得“追猎”。"
       },
       "domination": {
-        "label": "支配",
-        "desc": "夺取目标敌方单位的控制权。"
+        "label": "支配 X",
+        "desc": "夺取被指定的费用 ≤ X 的敌方单位的控制权。",
+        "desc_any": "夺取目标敌方单位的控制权。"
       },
       "appel_du_clan": {
         "label": "族群召唤 X",
@@ -739,8 +759,9 @@
         "desc": "使目标敌方生物麻痹X回合"
       },
       "execution": {
-        "label": "处决",
-        "desc": "摧毁一个目标生物或物品"
+        "label": "处决 X",
+        "desc": "摧毁一个被指定的费用 ≤ X 的生物或物品",
+        "desc_any": "摧毁一个目标生物或物品"
       },
       "silence": {
         "label": "沉默",
@@ -783,8 +804,9 @@
         "desc": "以任意顺序展示牌库顶3张牌；选择其中一张纳入手牌，然后洗牌。"
       },
       "retour_differe": {
-        "label": "延迟归还",
-        "desc": "将目标单位或物品置于其拥有者的牌堆之下"
+        "label": "延迟归还 X",
+        "desc": "将被指定的费用 ≤ X 的单位或物品置于其所有者的牌组底部",
+        "desc_any": "将目标单位或物品置于其拥有者的牌堆之下"
       },
       "epargne": {
         "label": "储蓄 X",
@@ -811,8 +833,8 @@
         "desc": "抽 X 张牌"
       },
       "remontee": {
-        "label": "归还",
-        "desc": "将目标单位或物品送回其原拥有者的手牌。"
+        "label": "归还 X",
+        "desc": "将X个被指定的单位或物品送回其原所有者的手牌。"
       },
       "entrainement": {
         "label": "训练 X",
@@ -887,6 +909,10 @@
         "heal_each": "并为你的英雄每命中一个目标恢复{x}点生命值",
         "heal_scatter": "并为你的英雄总共恢复{x}点生命值"
       },
+      "malediction": {
+        "suite_one": ",在对手下个回合结束时被放逐",
+        "suite_many": ",在对手下个回合结束时被放逐"
+      },
       "domination": {
         "limit": "在空位范围内"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "{n}回合",
         "paralyze_turns_many": "{n}回合",
         "poison": "中毒",
+        "malediction": "诅咒",
         "grant_keyword": "赋予 {ability}",
         "random_range": "1至{max}",
         "random_range_from": "{min} 到 {max}",
@@ -1035,6 +1062,7 @@
         "bounce": "将自身弹回手牌",
         "paralyze": "使自身麻痹",
         "poison": "使自己中毒",
+        "malediction": "诅咒自身",
         "grant_keyword": "为自身赋予{ability}"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "选择一个返回手牌的生物",
         "paralyze": "选择一个麻痹的生物",
         "poison": "选择一个要使其中毒的生物",
+        "malediction": "选择一个要诅咒的生物",
         "grant_keyword": "选择一个赋予能力的生物",
         "exhumation": "选择一个复活的生物",
         "rappel": "选择一张卡牌收回手牌",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "对{cibles}造成X点伤害。",
         "affaiblissement": "使{cibles}获得-X攻击力、-Y生命值。",
-        "retour_differe": "将{cibles}放入其拥有者的牌库底。",
+        "retour_differe": "将{cibles}(费用≤X)放到其所有者的牌组底部。",
+        "retour_differe_any": "将{cibles}放入其拥有者的牌库底。",
         "remontee": "将{cibles}送回其原主人的手牌。",
-        "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
-        "domination": "在场地上限内，获得对{cibles}的控制权。",
+        "malediction": "诅咒费用≤X的{cibles}：它们将在对手下个回合结束时被放逐。",
+        "malediction_any": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
+        "corruption": "在场位允许的范围内,将{cibles}(费用≤X)转为你方直到回合结束;它们获得追猎。",
+        "corruption_any": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
+        "domination": "在场位允许的范围内,控制{cibles}(费用≤X)。",
+        "domination_any": "在场地上限内，获得对{cibles}的控制权。",
         "benediction": "完全治疗{cibles}。",
         "poison": "使{cibles}中毒：它们在每个回合结束时失去1点生命值。",
         "siphon": "对{cibles}造成 X 点伤害,并为你的英雄每个被命中的单位恢复 X 点生命。",
         "entrave": "使{cibles}麻痹X回合。",
-        "execution": "消灭{cibles},包括物品。",
+        "execution": "消灭{cibles}(费用≤X),包括物品。",
+        "execution_any": "消灭{cibles},包括物品。",
         "silence": "移除{cibles}的所有关键词(包括物品),并将其属性恢复为原始值。",
         "renforcement": "使{cibles}获得+X/+Y。",
         "discipline": "如果您场上所有生物的费用奇偶性均与本行动相同，则使{cibles}获得+X/+Y。",
@@ -2221,14 +2256,19 @@
         "guerison": "为{cibles}和你的英雄恢复 X 点生命值。"
       },
       "creature": {
+        "neutralisation": "在其在场期间，{cibles}被麻痹，其能力无效。",
         "impact": "对{cibles}造成X点伤害。",
         "affaiblissement": "使{cibles}获得-X攻击力、-Y生命值。",
-        "retour_differe": "将{cibles}放入其拥有者的牌库底。",
+        "retour_differe": "将{cibles}(费用≤X)放到其所有者的牌组底部。",
+        "retour_differe_any": "将{cibles}放入其拥有者的牌库底。",
         "remontee": "将{cibles}送回其原主人的手牌。",
-        "corruption": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
-        "domination": "在场地上限内，获得对{cibles}的控制权。",
+        "corruption": "将{cibles}中费用≤X的单位转化为你方所有，持续到回合结束，受场位限制；它们获得追猎。",
+        "corruption_any": "在场地上限内，将{cibles}转化为您方阵营直到回合结束；它们获得追猎。",
+        "domination": "控制{cibles}中费用≤X的单位，受场位限制。",
+        "domination_any": "在场地上限内，获得对{cibles}的控制权。",
         "benediction": "完全治愈{cibles}。",
-        "malediction": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
+        "malediction": "诅咒费用≤X的{cibles}：它们将在对手下个回合结束时被放逐。",
+        "malediction_any": "诅咒{cibles}：它们将在下一个对方回合结束时被放逐。",
         "tactique": "使{cibles}随机获得 X 项同费用生物的能力（每个单位分别抽取）。",
         "vampirisme": "从{cibles}处吸取至多X点生命值,并将其加到此单位的生命值上。",
         "devoration": "消灭{cibles};该单位永久获得它们的攻击力和生命值。",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "永久获得 +X 攻击力和 +Y 生命值。",
         "discipline_soi": "若你场上所有生物的费用奇偶性都与其相同,则永久获得 +X 攻击力和 +Y 生命值。",
         "usurpation_soi": "你每打出过一张对手的牌，永久获得 +X 攻击力和 +Y 生命值。",
-        "execution": "消灭{cibles},包括物品。",
+        "execution": "消灭{cibles}中费用≤X的单位，包括物品。",
+        "execution_any": "消灭{cibles},包括物品。",
         "silence": "移除{cibles}的所有关键词(包括物品),并将其属性恢复为原始值。",
         "guerison": "为所有其他友方单位和你的英雄恢复 X 点生命值。",
         "purete": "只要你的墓地为空，所有其他友方单位获得+X攻击力和+Y生命值。",
@@ -2655,6 +2696,7 @@
     "content_bounce": "弹回手牌",
     "content_paralyze": "麻痹",
     "content_poison": "中毒（每回合−1生命值）",
+    "content_malediction": "诅咒(在对手下个回合结束时放逐)",
     "invocation_costs_label": "召唤费用",
     "invocation_costs_hint": "对于列出的每个费用，都会从你的收藏中召唤一个随机生物。",
     "add_invocation": "+ 召唤",
@@ -3301,6 +3343,12 @@
     "eveil_max": "最多{count}",
     "eveil_max_hint": "最后一点就是进场本身：它单独支付，并同时选择目标。",
     "choix_ou_title": "⚖️ 二者择一",
+    "synergie_title": "协同——选择一项能力",
+    "synergie_subtitle": "每当所选能力触发时,无论是在你方还是对手方,该生物都会获得加成。",
+    "synergie_search": "搜索能力…",
+    "synergie_in_play": "场上已有",
+    "synergie_others": "其他能力",
+    "synergie_none": "没有匹配的能力。",
     "choix_ou_subtitle": "这些效果中只有一个会结算。",
     "activation_menu_title": "要激活哪个能力？",
     "activation_learned": "施放{name}",

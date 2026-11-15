@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precisione",
-        "desc": "Ignora Resistenza, Armatura e Scudo."
+        "desc": "Ignora Resistenza, Armatura, Scudo e il limite degli Eterei."
       },
       "drain_de_vie": {
         "label": "Drenaggio vitale",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "Neutralizzazione",
-        "desc": "Finché è in gioco, neutralizza {ability} {neutralise_cible}."
+        "desc": "Finché è in gioco, l'unità nemica bersaglio è paralizzata e le sue capacità non hanno effetto."
       },
       "transformation": {
         "label": "Trasformazione",
@@ -176,8 +176,9 @@
         "desc_any": "Evoca una creatura casuale dalla tua collezione ({alignment}, formato in corso)."
       },
       "malediction": {
-        "label": "Maledizione",
-        "desc": "Scegli come bersaglio un'unità nemica: viene esiliata alla fine del prossimo turno avversario."
+        "label": "Maledizione X",
+        "desc": "Scegli un'unità nemica con costo ≤ X; viene esiliata alla fine del prossimo turno avversario.",
+        "desc_any": "Scegli come bersaglio un'unità nemica: viene esiliata alla fine del prossimo turno avversario."
       },
       "necrophagie": {
         "label": "Necrofagia",
@@ -251,6 +252,14 @@
         "label": "Maleficio",
         "desc": "Alla morte, infligge X danni a tutte le unità (alleate e nemiche), X = il suo ATK."
       },
+      "synergie": {
+        "label": "Sinergia X",
+        "desc": "Quando entra in gioco, scegli un'abilità: ottiene +X/+X a ogni attivazione (1 volta per fonte e per turno)."
+      },
+      "etheree": {
+        "label": "Eterea",
+        "desc": "Subisce al massimo 1 danno per colpo in combattimento. I danni delle azioni che subisce sono raddoppiati."
+      },
       "indestructible": {
         "label": "Indistruttibile",
         "desc": "Non subisce alcun danno da combattimento."
@@ -260,8 +269,9 @@
         "desc": "Recupera X PV all'inizio del tuo turno."
       },
       "corruption": {
-        "label": "Corruzione",
-        "desc": "Converte l'unità nemica selezionata dalla tua parte fino alla fine del turno; guadagna Caccia fino alla fine del turno."
+        "label": "Corruzione X",
+        "desc": "Converte un'unità nemica di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Inseguimento.",
+        "desc_any": "Converte l'unità nemica selezionata dalla tua parte fino alla fine del turno; guadagna Caccia fino alla fine del turno."
       },
       "carnage": {
         "label": "Carneficina X",
@@ -305,8 +315,9 @@
         "desc": "Infligge X danni a tutte le unità nemiche durante l'attacco (es: Soffio di fuoco 2 = 2 danni)."
       },
       "domination": {
-        "label": "Dominazione",
-        "desc": "Prende il controllo di un'unità nemica casuale alla sua evocazione."
+        "label": "Dominazione X",
+        "desc": "Prende il controllo di un'unità nemica casuale di costo ≤ X quando viene evocata.",
+        "desc_any": "Prende il controllo di un'unità nemica casuale alla sua evocazione."
       },
       "resurrection": {
         "label": "Resurrezione",
@@ -505,16 +516,17 @@
         "desc": "Guardate le X carte in fondo al vostro deck; mettetene una in cima."
       },
       "retour_differe": {
-        "label": "Ritorno differito",
-        "desc": "Mette l'unità bersaglio sotto il deck del proprietario."
+        "label": "Ritorno differito X",
+        "desc": "Mette l'unità bersaglio di costo ≤ X sotto il mazzo del suo proprietario.",
+        "desc_any": "Mette l'unità bersaglio sotto il deck del proprietario."
       },
       "concentration": {
         "label": "Concentrazione X",
         "desc": "Ogni azione in mano diventa un'azione casuale di costo +X, ridotta di X (tutte le fazioni)."
       },
       "remontee": {
-        "label": "Rimonta",
-        "desc": "Rimanda un'unità bersagliata nella mano del suo proprietario originale."
+        "label": "Rimonta X",
+        "desc": "Rimanda X unità bersaglio nella mano del loro proprietario originale."
       },
       "entrainement": {
         "label": "Allenamento X",
@@ -562,8 +574,9 @@
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
       },
       "execution": {
-        "label": "Esecuzione",
-        "desc": "Distrugge un'unità nemica bersaglio."
+        "label": "Esecuzione X",
+        "desc": "Distrugge un'unità nemica bersaglio di costo ≤ X.",
+        "desc_any": "Distrugge un'unità nemica bersaglio."
       },
       "silence": {
         "label": "Silenzio",
@@ -639,13 +652,20 @@
         "label": "Divinazione",
         "desc": "Rivela le prime 3 carte del mazzo; rimettine 1 sopra e 2 sotto, nell'ordine scelto."
       },
+      "malediction": {
+        "label": "Maledizione X",
+        "desc": "Maledice l'unità nemica bersaglio con costo ≤ X: viene esiliata alla fine del prossimo turno avversario",
+        "desc_any": "Maledice l'unità nemica bersaglio: viene esiliata alla fine del prossimo turno avversario"
+      },
       "corruption": {
-        "label": "Corruzione",
-        "desc": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
+        "label": "Corruzione X",
+        "desc": "Converte l'unità nemica bersaglio di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Inseguimento.",
+        "desc_any": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
       },
       "domination": {
-        "label": "Dominazione",
-        "desc": "Prende il controllo dell'unità nemica bersaglio."
+        "label": "Dominazione X",
+        "desc": "Prende il controllo dell'unità nemica bersaglio di costo ≤ X.",
+        "desc_any": "Prende il controllo dell'unità nemica bersaglio."
       },
       "appel_du_clan": {
         "label": "Richiamo del Clan X",
@@ -739,8 +759,9 @@
         "desc": "Paralizza una creatura nemica bersaglio per X turno/i"
       },
       "execution": {
-        "label": "Esecuzione",
-        "desc": "Distrugge una creatura o un oggetto bersaglio"
+        "label": "Esecuzione X",
+        "desc": "Distrugge una creatura o un oggetto bersaglio di costo ≤ X",
+        "desc_any": "Distrugge una creatura o un oggetto bersaglio"
       },
       "silence": {
         "label": "Silenzio",
@@ -783,8 +804,9 @@
         "desc": "Rivela le 3 carte in cima al mazzo in disordine; scegliete quella in cima da prendere in mano, poi mescolate il mazzo."
       },
       "retour_differe": {
-        "label": "Ritorno differito",
-        "desc": "Mette l'unità o l'oggetto bersaglio sotto il mazzo del suo proprietario"
+        "label": "Ritorno differito X",
+        "desc": "Mette l'unità o l'oggetto bersaglio di costo ≤ X sotto il mazzo del suo proprietario",
+        "desc_any": "Mette l'unità o l'oggetto bersaglio sotto il mazzo del suo proprietario"
       },
       "epargne": {
         "label": "Risparmio X",
@@ -811,8 +833,8 @@
         "desc": "Pesca X carte"
       },
       "remontee": {
-        "label": "Ritorno",
-        "desc": "Rimanda un'unità o un oggetto bersaglio nella mano del suo proprietario originario."
+        "label": "Ritorno X",
+        "desc": "Rimanda X unità o oggetti bersaglio nella mano del loro proprietario originale."
       },
       "entrainement": {
         "label": "Addestramento X",
@@ -887,6 +909,10 @@
         "heal_each": "e cura il tuo eroe di {x} PV per ogni bersaglio colpito",
         "heal_scatter": "e cura il tuo eroe di {x} PV in totale"
       },
+      "malediction": {
+        "suite_one": ", esiliata alla fine del prossimo turno avversario",
+        "suite_many": ", esiliate alla fine del prossimo turno avversario"
+      },
       "domination": {
         "limit": "nel limite dei posti disponibili"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "per {n} turno",
         "paralyze_turns_many": "per {n} turni",
         "poison": "avvelena",
+        "malediction": "maledice",
         "grant_keyword": "conferisce {ability}",
         "random_range": "Da 1 a {max}",
         "random_range_from": "da {min} a {max}",
@@ -1035,6 +1062,7 @@
         "bounce": "torna in mano",
         "paralyze": "si paralizza",
         "poison": "si avvelena",
+        "malediction": "si maledice",
         "grant_keyword": "si conferisce {ability}"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "scegli una creatura da rimandare in mano",
         "paralyze": "scegli una creatura da paralizzare",
         "poison": "scegli una creatura da avvelenare",
+        "malediction": "scegli una creatura da maledire",
         "grant_keyword": "scegli una creatura a cui conferire l'abilità",
         "exhumation": "scegli una creatura da resuscitare",
         "rappel": "scegliete una carta da riprendere in mano",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "Infligge X danni a {cibles}.",
         "affaiblissement": "Dà -X ATT e -Y PV a {cibles}.",
-        "retour_differe": "Mette {cibles} sotto il mazzo dei loro proprietari.",
+        "retour_differe": "Mette {cibles} di costo ≤ X sotto il mazzo del loro proprietario.",
+        "retour_differe_any": "Mette {cibles} sotto il mazzo dei loro proprietari.",
         "remontee": "Rimanda {cibles} nella mano dei loro proprietari originari.",
-        "corruption": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
-        "domination": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
+        "malediction": "Maledice {cibles} con costo ≤ X: vengono esiliate alla fine del prossimo turno avversario.",
+        "malediction_any": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
+        "corruption": "Converte {cibles} di costo ≤ X dalla tua parte fino alla fine del turno, nei limiti dei posti disponibili; ottengono Braccamento.",
+        "corruption_any": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
+        "domination": "Prende il controllo di {cibles} di costo ≤ X, nei limiti dei posti disponibili.",
+        "domination_any": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
         "benediction": "Cura completamente {cibles}.",
         "poison": "Avvelena {cibles}: perdono 1 PV a ogni fine turno.",
         "siphon": "Infligge X danni a {cibles} e cura il tuo eroe di X per ogni unità colpita.",
         "entrave": "Paralizza {cibles} per X turno/i.",
-        "execution": "Distrugge {cibles}, oggetti inclusi.",
+        "execution": "Distrugge {cibles} di costo ≤ X, oggetti compresi.",
+        "execution_any": "Distrugge {cibles}, oggetti inclusi.",
         "silence": "Rimuove tutte le parole chiave di {cibles}, oggetti inclusi, e riporta le loro statistiche al valore originale.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se tutte le tue creature in gioco hanno un costo della stessa parità di quello di questa azione, +X/+Y a {cibles}.",
@@ -2221,14 +2256,19 @@
         "guerison": "Ripristina X PV a {cibles} e al tuo eroe."
       },
       "creature": {
+        "neutralisation": "Finché è in gioco, {cibles} sono paralizzate e le loro abilità sono senza effetto.",
         "impact": "Infligge X danni a {cibles}.",
         "affaiblissement": "Dà -X ATT e -Y PV a {cibles}.",
-        "retour_differe": "Mette {cibles} sotto il mazzo dei loro proprietari.",
+        "retour_differe": "Mette {cibles} di costo ≤ X sotto il mazzo del loro proprietario.",
+        "retour_differe_any": "Mette {cibles} sotto il mazzo dei loro proprietari.",
         "remontee": "Rimanda {cibles} nella mano dei loro proprietari originari.",
-        "corruption": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
-        "domination": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
+        "corruption": "Converte {cibles} di costo ≤ X al tuo schieramento fino alla fine del turno, entro il limite dei posti disponibili; ottengono Traccia.",
+        "corruption_any": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
+        "domination": "Prende il controllo di {cibles} di costo ≤ X, entro il limite dei posti disponibili.",
+        "domination_any": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
         "benediction": "Cura completamente {cibles}.",
-        "malediction": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
+        "malediction": "Maledice {cibles} con costo ≤ X: vengono esiliate alla fine del prossimo turno avversario.",
+        "malediction_any": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
         "tactique": "Dà a {cibles} X abilità casuali prese da creature dello stesso costo (un'estrazione per unità).",
         "vampirisme": "Ruba fino a X PV a {cibles} e li aggiunge ai PV di questa unità.",
         "devoration": "Distrugge {cibles}; questa unità ottiene definitivamente il loro ATT e i loro PV.",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "Ottiene +X ATK e +Y PV in modo permanente.",
         "discipline_soi": "Se tutte le tue creature in gioco hanno un costo della stessa parità del suo, ottiene +X ATK e +Y PV in modo permanente.",
         "usurpation_soi": "Ottiene +X ATK e +Y PV in modo permanente per ogni carta dell'avversario che hai giocato.",
-        "execution": "Distrugge {cibles}, oggetti inclusi.",
+        "execution": "Distrugge {cibles} di costo ≤ X, oggetti inclusi.",
+        "execution_any": "Distrugge {cibles}, oggetti inclusi.",
         "silence": "Rimuove tutte le parole chiave di {cibles}, oggetti inclusi, e riporta le loro statistiche al valore originale.",
         "guerison": "Ripristina X PV a tutte le altre unità alleate e al tuo eroe.",
         "purete": "Finché il tuo cimitero è vuoto, tutte le altre unità alleate guadagnano +X ATK e +Y PV.",
@@ -2655,6 +2696,7 @@
     "content_bounce": "Rimandare in mano",
     "content_paralyze": "Paralizzare",
     "content_poison": "Avvelenare (−1 PV a turno)",
+    "content_malediction": "Maledire (esilio alla fine del prossimo turno avversario)",
     "invocation_costs_label": "COSTI DELLE EVOCAZIONI",
     "invocation_costs_hint": "Una creatura casuale della tua collezione viene evocata per ogni costo elencato.",
     "add_invocation": "+ Evocazione",
@@ -3301,6 +3343,12 @@
     "eveil_max": "max {count}",
     "eveil_max_hint": "L'ultimo punto è l'entrata in gioco: si paga a parte, insieme alla scelta dei bersagli.",
     "choix_ou_title": "⚖️ A scelta",
+    "synergie_title": "Sinergia — scegli una capacità",
+    "synergie_subtitle": "Questa creatura otterrà il suo bonus a ogni attivazione della capacità scelta, sia dalla tua parte che da quella dell'avversario.",
+    "synergie_search": "Cerca una capacità…",
+    "synergie_in_play": "In gioco",
+    "synergie_others": "Altre capacità",
+    "synergie_none": "Nessuna capacità corrisponde.",
     "choix_ou_subtitle": "Solo uno di questi effetti si risolverà.",
     "activation_menu_title": "Quale potere attivare?",
     "activation_learned": "Lancia {name}",

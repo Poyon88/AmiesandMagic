@@ -52,6 +52,8 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
   "Neutralisation": "neutralisation",
   "Déclenchement": "declenchement",
   "Convocation X": "convocation", "Malédiction": "malediction",
+  // Anciens libellés sans X (brouillons et JSON exportés d'avant le passage au X).
+  "Exécution": "execution", "Retour différé": "retour_differe", "Remontée": "remontee",
   "Nécrophagie": "necrophagie", "Richesse X": "richesse", "Sacrifice démoniaque X": "sacrifice_demoniaque", "Paralysie": "paralysie",
   "Permutation": "permutation", "Persécution X": "persecution",
   "Piétinement": "pietinement",
@@ -93,6 +95,15 @@ export const FORGE_TO_GAME_KEYWORD: Record<string, Keyword> = {
  *  doivent gagner (« Vol » → `ranged`) restent gérés par l'ordre d'insertion. */
 const LIBELLE_RETOUR_FORCE: Record<string, string> = {
   regeneration: "Régénération X",
+  // Passage au « X = coût maximum de la cible » : les anciens libellés sans X
+  // restent des alias d'ENTRÉE (brouillons, JSON exportés) mais ne doivent plus
+  // gagner la réciproque.
+  malediction: "Malédiction X",
+  domination: "Domination X",
+  corruption: "Corruption X",
+  execution: "Exécution X",
+  retour_differe: "Retour différé X",
+  remontee: "Remontée X",
   // Même duel, même issue : l'alias legacy « Commandement » (brouillons et JSON
   // d'avant le passage au X) est inséré APRÈS la base dérivée et l'emporterait,
   // décochant la case à la réédition d'un token — capacité perdue en silence.

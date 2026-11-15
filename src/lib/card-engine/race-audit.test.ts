@@ -34,7 +34,7 @@ describe("auditCoherence", () => {
 
   it("aucune capacité typique sur 3 ou plus : orange ; un mélange reste ok", () => {
     const typiques = new Set(capacitesTypiques(unite({}), 100));
-    const atypiques = ["Corruption", "Nécrophagie", "Mimique", "Pillage X", "Liaison de vie"].filter((l) => !typiques.has(l) && id(l));
+    const atypiques = ["Corruption X", "Nécrophagie", "Mimique", "Pillage X", "Liaison de vie"].filter((l) => !typiques.has(l) && id(l));
     const a = auditCoherence(unite({ keywords: atypiques.slice(0, 3).map(id) }))!;
     expect(a.niveau).toBe("orange");
     expect(a.note).toBeLessThan(100);

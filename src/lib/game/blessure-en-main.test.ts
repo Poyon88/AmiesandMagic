@@ -71,6 +71,13 @@ describe("une unité blessée mais vivante", () => {
     expect(blessureHorsPlateau(c)).toBe(5);
   });
 
+  it("Éthérée en main : les dégâts d'action ne sont PAS doublés (aucune capacité en main)", () => {
+    const s = mkState();
+    s.players[0].hand.push(enMain("Brume", 9, { kws: ["etheree"] }));
+    const c = lancer(s).players[0].hand.find(h => h.card.name === "Brume")!;
+    expect(c.currentHealth).toBe(4);
+  });
+
   it("une carte fraîche ne porte aucune blessure", () => {
     expect(blessureHorsPlateau(enMain("Neuve", 4))).toBe(0);
   });

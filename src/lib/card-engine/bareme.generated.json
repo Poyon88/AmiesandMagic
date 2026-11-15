@@ -555,8 +555,8 @@
       "n": 7
     },
     "malediction": {
-      "base": 17.82,
-      "perX": 0,
+      "base": 8.82,
+      "perX": 1,
       "perY": 0,
       "n": 1
     },
@@ -686,6 +686,18 @@
       "perY": 0,
       "n": 2
     },
+    "synergie": {
+      "base": 6,
+      "perX": 4,
+      "perY": 0,
+      "n": 0
+    },
+    "etheree": {
+      "base": 18,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
     "indestructible": {
       "base": 24.43,
       "perX": 0,
@@ -699,8 +711,8 @@
       "n": 12
     },
     "corruption": {
-      "base": 29.23,
-      "perX": 0,
+      "base": 11.23,
+      "perX": 2,
       "perY": 0,
       "n": 1
     },
@@ -765,8 +777,8 @@
       "n": 8
     },
     "domination": {
-      "base": 30.83,
-      "perX": 0,
+      "base": 12.83,
+      "perX": 2,
       "perY": 0,
       "n": 5
     },
@@ -993,8 +1005,8 @@
       "n": 7
     },
     "retour_differe": {
-      "base": 17.58,
-      "perX": 0,
+      "base": 8.58,
+      "perX": 1,
       "perY": 0,
       "n": 2
     },
@@ -1036,7 +1048,7 @@
     },
     "remontee": {
       "base": 12.78,
-      "perX": 0,
+      "perX": 9,
       "perY": 0,
       "n": 15
     },
@@ -1113,7 +1125,7 @@
       "n": 49
     },
     "neutralisation": {
-      "base": 12,
+      "base": 20,
       "perX": 0,
       "perY": 0,
       "n": 0
@@ -1173,8 +1185,8 @@
       "n": 19
     },
     "execution": {
-      "base": 12.41,
-      "perX": 0,
+      "base": 5.21,
+      "perX": 0.8,
       "perY": 0,
       "n": 9
     },
@@ -1317,6 +1329,12 @@
       "perX": 3.28,
       "perY": 5,
       "n": 5
+    },
+    "malediction": {
+      "base": 17.82,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
     },
     "poison": {
       "base": 8.38,

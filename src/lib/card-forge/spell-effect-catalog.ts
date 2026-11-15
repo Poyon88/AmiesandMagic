@@ -54,6 +54,9 @@ const COMPOSED_PRESETS: Partial<Record<SpellKeywordId, ComposedEffect>> = {
   // rend pas empoisonneuse. Son équivalent composé est donc le contenu
   // `poison`, surtout pas un `grant_keyword` du mot-clé du même nom.
   poison: { content: "poison", target: board({}) },
+  // Malédiction : exil différé de la cible. La forme composée ouvre le nombre
+  // de cibles et le plafond de coût (filtre « coût max »), comme Domination.
+  malediction: { content: "malediction", target: board({}) },
   inspiration: { content: "draw_cards", magnitude: { x: 1 } },
   afflux: { content: "gain_mana", magnitude: { x: 1 } },
   pillage: { content: "discard", magnitude: { x: 1 } },

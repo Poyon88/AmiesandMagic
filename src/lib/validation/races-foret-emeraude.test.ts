@@ -134,7 +134,7 @@ describe("le clan CÈDE ses stats — et les Fées y gagnent leur propre corps",
 describe("tables de pouvoirs", () => {
   it("chacune joue son propre registre", () => {
     expect(Object.keys(prof("Farfadets").likelyKeywords ?? {})).toContain("Richesse X");
-    expect(Object.keys(prof("Korrigans").likelyKeywords ?? {})).toContain("Malédiction");
+    expect(Object.keys(prof("Korrigans").likelyKeywords ?? {})).toContain("Malédiction X");
     expect(Object.keys(prof("Faunes").likelyKeywords ?? {})).toContain("Inspiration X");
     expect(Object.keys(prof("Dryades").likelyKeywords ?? {})).toContain("Régénération X");
   });

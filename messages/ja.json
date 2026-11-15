@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "精密",
-        "desc": "耐性・アーマー・盾を無視する。"
+        "desc": "耐性、アーマー、シールド、エーテル体の上限を無視する。"
       },
       "drain_de_vie": {
         "label": "ライフドレイン",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "無力化",
-        "desc": "場に出ている間、{neutralise_cible}の{ability}を無力化する。"
+        "desc": "場にある間、対象の敵ユニットは麻痺し、その能力は無効になる。"
       },
       "transformation": {
         "label": "変身",
@@ -176,8 +176,9 @@
         "desc_any": "あなたのコレクションからランダムなクリーチャーを1体召喚する({alignment}、現在のフォーマット)。"
       },
       "malediction": {
-        "label": "呪い",
-        "desc": "敵ユニット1体を対象にする。相手の次のターン終了時に追放される。"
+        "label": "呪い X",
+        "desc": "コストX以下の敵ユニット1体を対象とする。次の相手ターン終了時に追放される。",
+        "desc_any": "敵ユニット1体を対象にする。相手の次のターン終了時に追放される。"
       },
       "necrophagie": {
         "label": "死肉食らい",
@@ -251,6 +252,14 @@
         "label": "呪詛",
         "desc": "死亡時：全ユニット（味方・敵問わず）にXダメージを与える。X＝このユニットのATK。"
       },
+      "synergie": {
+        "label": "シナジー X",
+        "desc": "登場時、能力を1つ選ぶ。その能力が発動するたびに+X/+Xを得る(1ターンにつき発動元ごとに1回)。"
+      },
+      "etheree": {
+        "label": "霊体",
+        "desc": "戦闘では1回の攻撃につき最大1ダメージしか受けない。受けるアクションのダメージは2倍になる。"
+      },
       "indestructible": {
         "label": "不壊",
         "desc": "戦闘ダメージを一切受けない。"
@@ -260,8 +269,9 @@
         "desc": "自分のターン開始時にHPをX回復する。"
       },
       "corruption": {
-        "label": "腐敗",
-        "desc": "選択した敵ユニットをターン終了まで自軍に加え、そのユニットはターン終了まで追跡を得る。"
+        "label": "腐敗 X",
+        "desc": "コスト X 以下の敵ユニット1体をターン終了時まであなたの陣営に寝返らせる。そのユニットは追跡を得る。",
+        "desc_any": "選択した敵ユニットをターン終了まで自軍に加え、そのユニットはターン終了まで追跡を得る。"
       },
       "carnage": {
         "label": "大虐殺 X",
@@ -305,8 +315,9 @@
         "desc": "攻撃時、すべての敵ユニットにXダメージを与える（例：ファイアブレス2＝2ダメージ）。"
       },
       "domination": {
-        "label": "支配",
-        "desc": "召喚時、ランダムな敵ユニット1体のコントロールを奪う。"
+        "label": "支配 X",
+        "desc": "召喚時、コスト X 以下のランダムな敵ユニット1体のコントロールを得る。",
+        "desc_any": "召喚時、ランダムな敵ユニット1体のコントロールを奪う。"
       },
       "resurrection": {
         "label": "復活",
@@ -505,16 +516,17 @@
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
       },
       "retour_differe": {
-        "label": "遅延帰還",
-        "desc": "対象のユニットを所有者のデッキの一番下に置く。"
+        "label": "遅延帰還 X",
+        "desc": "対象のコスト X 以下のユニット1体を、その持ち主のデッキの下に置く。",
+        "desc_any": "対象のユニットを所有者のデッキの一番下に置く。"
       },
       "concentration": {
         "label": "集中 X",
         "desc": "手札の各アクションが、コスト+Xのランダムなアクションに変化し、その後コストがX減少する(全陣営対象)。"
       },
       "remontee": {
-        "label": "帰還",
-        "desc": "対象のユニットを元の所有者の手札に戻す。"
+        "label": "帰還 X",
+        "desc": "対象のユニットX体を元の持ち主の手札に戻す。"
       },
       "entrainement": {
         "label": "訓練 X",
@@ -562,8 +574,9 @@
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
       },
       "execution": {
-        "label": "処刑",
-        "desc": "対象の敵ユニット1体を破壊する。"
+        "label": "処刑 X",
+        "desc": "対象のコスト X 以下の敵ユニット1体を破壊する。",
+        "desc_any": "対象の敵ユニット1体を破壊する。"
       },
       "silence": {
         "label": "沈黙",
@@ -639,13 +652,20 @@
         "label": "占術",
         "desc": "デッキの上から3枚を公開し、好きな順番でそのうち1枚を上に、2枚を下に置く。"
       },
+      "malediction": {
+        "label": "呪い X",
+        "desc": "対象のコストX以下の敵ユニットを呪う。次の相手ターン終了時に追放される",
+        "desc_any": "対象の敵ユニットを呪う。次の相手ターン終了時に追放される"
+      },
       "corruption": {
-        "label": "堕落",
-        "desc": "対象の敵ユニットをターン終了時まで自軍に寝返らせる。そのユニットは「追跡」を獲得する。"
+        "label": "堕落 X",
+        "desc": "対象のコスト X 以下の敵ユニット1体をターン終了時まであなたの陣営に寝返らせる。そのユニットは追跡を得る。",
+        "desc_any": "対象の敵ユニットをターン終了時まで自軍に寝返らせる。そのユニットは「追跡」を獲得する。"
       },
       "domination": {
-        "label": "支配",
-        "desc": "対象の敵ユニットを支配下に置く。"
+        "label": "支配 X",
+        "desc": "対象のコスト X 以下の敵ユニット1体のコントロールを得る。",
+        "desc_any": "対象の敵ユニットを支配下に置く。"
       },
       "appel_du_clan": {
         "label": "氏族の呼び声 X",
@@ -739,8 +759,9 @@
         "desc": "対象の敵クリーチャーをXターンの間麻痺させる"
       },
       "execution": {
-        "label": "処刑",
-        "desc": "対象のクリーチャーまたはアイテムを破壊する"
+        "label": "処刑 X",
+        "desc": "対象のコスト X 以下のクリーチャーまたはアイテム1つを破壊する",
+        "desc_any": "対象のクリーチャーまたはアイテムを破壊する"
       },
       "silence": {
         "label": "沈黙",
@@ -783,8 +804,9 @@
         "desc": "デッキの上から3枚を無作為な順序で公開し、一番上に置く1枚を選んで手札に加えたのち、デッキをシャッフルする。"
       },
       "retour_differe": {
-        "label": "遅延帰還",
-        "desc": "対象のユニットまたはアイテムを、その所有者のデッキの一番下に置く"
+        "label": "遅延帰還 X",
+        "desc": "対象のコスト X 以下のユニットまたはアイテム1つを、その持ち主のデッキの下に置く",
+        "desc_any": "対象のユニットまたはアイテムを、その所有者のデッキの一番下に置く"
       },
       "epargne": {
         "label": "貯蓄X",
@@ -811,8 +833,8 @@
         "desc": "カードをX枚引く"
       },
       "remontee": {
-        "label": "帰還",
-        "desc": "対象のユニットまたはアイテムを、元の所有者の手札に戻す。"
+        "label": "帰還 X",
+        "desc": "対象のユニットまたはアイテムX個を元の持ち主の手札に戻す。"
       },
       "entrainement": {
         "label": "鍛錬 X",
@@ -887,6 +909,10 @@
         "heal_each": "さらに命中した対象1体につき、自分のヒーローのHPを{x}回復する",
         "heal_scatter": "さらに自分のヒーローのHPを合計{x}回復する"
       },
+      "malediction": {
+        "suite_one": "、次の相手ターン終了時に追放される",
+        "suite_many": "、次の相手ターン終了時に追放される"
+      },
       "domination": {
         "limit": "空きに応じた数まで"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "{n}ターンの間",
         "paralyze_turns_many": "{n}ターンの間",
         "poison": "毒を与える",
+        "malediction": "呪う",
         "grant_keyword": "{ability}を付与する",
         "random_range": "1から{max}",
         "random_range_from": "{min}から{max}",
@@ -1035,6 +1062,7 @@
         "bounce": "自身を手札に戻す",
         "paralyze": "自身を麻痺させる",
         "poison": "自らを毒に冒す",
+        "malediction": "自らに呪いをかける",
         "grant_keyword": "自身に{ability}を付与する"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "手札に戻すクリーチャーを選んでください",
         "paralyze": "麻痺させるクリーチャーを選んでください",
         "poison": "毒を与えるクリーチャーを選択してください",
+        "malediction": "呪うクリーチャーを選ぶ",
         "grant_keyword": "能力を付与するクリーチャーを選んでください",
         "exhumation": "蘇生するクリーチャーを選んでください",
         "rappel": "手札に戻すカードを1枚選ぶ",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "{cibles}にXダメージを与える。",
         "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
-        "retour_differe": "{cibles}を持ち主のデッキの一番下に置く。",
+        "retour_differe": "コストX以下の{cibles}を持ち主のデッキの下に置く。",
+        "retour_differe_any": "{cibles}を持ち主のデッキの一番下に置く。",
         "remontee": "{cibles}を元の持ち主の手札に戻す。",
-        "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
-        "domination": "場の空きがある限り、{cibles}を支配下に置く。",
+        "malediction": "コストX以下の{cibles}を呪う。次の相手ターン終了時に追放される。",
+        "malediction_any": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
+        "corruption": "コストX以下の{cibles}をターン終了まで自陣に寝返らせる(空きの範囲内)。寝返った対象は追跡を得る。",
+        "corruption_any": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
+        "domination": "コストX以下の{cibles}のコントロールを得る(空きの範囲内)。",
+        "domination_any": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
         "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
-        "execution": "アイテムを含む{cibles}を破壊する。",
+        "execution": "コストX以下の{cibles}を破壊する。アイテムも含む。",
+        "execution_any": "アイテムを含む{cibles}を破壊する。",
         "silence": "アイテムを含む{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
@@ -2221,14 +2256,19 @@
         "guerison": "{cibles}と自分のヒーローのHPをX回復する。"
       },
       "creature": {
+        "neutralisation": "場にいる間、{cibles}は麻痺し、その能力は無効になる。",
         "impact": "{cibles}にXダメージを与える。",
         "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
-        "retour_differe": "{cibles}を持ち主のデッキの一番下に置く。",
+        "retour_differe": "コストX以下の{cibles}を持ち主のデッキの下に置く。",
+        "retour_differe_any": "{cibles}を持ち主のデッキの一番下に置く。",
         "remontee": "{cibles}を元の持ち主の手札に戻す。",
-        "corruption": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
-        "domination": "場の空きがある限り、{cibles}を支配下に置く。",
+        "corruption": "コスト≤Xの{cibles}を、空きの範囲で、ターン終了まであなたの陣営に寝返らせる。それらは追跡を得る。",
+        "corruption_any": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
+        "domination": "コスト≤Xの{cibles}を、空きの範囲でコントロールする。",
+        "domination_any": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
-        "malediction": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
+        "malediction": "コストX以下の{cibles}を呪う。次の相手ターン終了時に追放される。",
+        "malediction_any": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
         "tactique": "{cibles}に、同じコストのクリーチャーの能力からランダムにX個を与える（ユニットごとに抽選）。",
         "vampirisme": "{cibles}から最大X点のHPを奪い、このユニットのHPに加える。",
         "devoration": "{cibles}を破壊する。このユニットはそれらのATKとHPを永続的に得る。",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
         "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。",
         "usurpation_soi": "あなたがプレイした相手のカード1枚につき、永続的に+X ATKと+Y HPを得る。",
-        "execution": "アイテムを含む{cibles}を破壊する。",
+        "execution": "コスト≤Xの{cibles}を、アイテムも含めて破壊する。",
+        "execution_any": "アイテムを含む{cibles}を破壊する。",
         "silence": "アイテムを含む{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
         "guerison": "他のすべての味方ユニットと自分のヒーローのHPをX回復する。",
         "purete": "自分の墓地が空である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
@@ -2655,6 +2696,7 @@
     "content_bounce": "手札に戻す",
     "content_paralyze": "麻痺させる",
     "content_poison": "毒を与える(ターンごとにHP−1)",
+    "content_malediction": "呪う(次の相手ターン終了時に追放)",
     "invocation_costs_label": "召喚コスト",
     "invocation_costs_hint": "コレクションからランダムなクリーチャーが、記載された各コストにつき1体召喚される。",
     "add_invocation": "＋召喚",
@@ -3301,6 +3343,12 @@
     "eveil_max": "最大{count}",
     "eveil_max_hint": "最後の1点は場に出ることそのものです。対象の選択とあわせて、別に支払います。",
     "choix_ou_title": "⚖️ いずれかを選択",
+    "synergie_title": "シナジー — 能力を選択してください",
+    "synergie_subtitle": "このクリーチャーは、選択した能力が発動するたびにボーナスを得ます。自分側でも相手側でも対象です。",
+    "synergie_search": "能力を検索…",
+    "synergie_in_play": "場に出ている能力",
+    "synergie_others": "その他の能力",
+    "synergie_none": "該当する能力がありません。",
     "choix_ou_subtitle": "これらの効果のうち1つだけが解決される。",
     "activation_menu_title": "どの能力を起動しますか？",
     "activation_learned": "{name}を唱える",

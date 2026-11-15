@@ -32,7 +32,6 @@ import { describeComposedCap } from "@/lib/game/composed-display";
 import { OBJET_GLYPHE, OBJET_TEINTE } from "@/lib/game/objet-theme";
 import { AURA_SOI_OU_TOUTES, creatureScopes, porteeValide } from "@/lib/game/target-scope";
 import type { TargetScope } from "@/lib/game/types";
-import NeutralisationPicker from "@/components/card-forge/NeutralisationPicker";
 import { cardHasAbility } from "@/lib/game/ability-filter";
 import { correspondRecherche } from "@/lib/card-forge/recherche-capacites";
 import MachinePartEditor, { type MachinePartValue } from "@/components/card-forge/MachinePartEditor";
@@ -2373,12 +2372,6 @@ export default function CardEditor() {
               );
             })()}
 
-            {/* Neutralisation : la capacité rendue muette chez l'ennemi. */}
-            {porteStats && ((editFields.keywords as string[]) || []).includes("neutralisation") && (
-              <div style={{ marginBottom: 8 }}>
-                <NeutralisationPicker value={neutraliseAbilityId} onChange={setNeutraliseAbilityId} />
-              </div>
-            )}
 
             {/* Trigger mode (déclenchement) for curated creature keywords —
                 ⚡ à l'arrivée (défaut) / 💀 à la mort / ⟲ activable (tap) / ↩ retour en main.

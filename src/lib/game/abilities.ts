@@ -193,7 +193,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   precision: {
     id: "precision", label: "Précision", symbol: "🏹",
-    desc: "Ignore la Résistance, l'Armure et le Bouclier.",
+    desc: "Ignore la Résistance, l'Armure, le Bouclier et le plafond d'Éthérée.",
     applicable_to: ["creature", "spell"],
     creature: { cost: 7, costPerX: 0, se: 1.5, minTier: 1, scalable: false, zone: "Terrain" },
     // Forme sort : modificateur GLOBAL, pas un don. Le sort « a » Précision —
@@ -444,10 +444,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // dispatches via that id on the spell path and via the FR label
   // "Convocations multiples" on the creature path.
   malediction: {
-    id: "malediction", label: "Malédiction", symbol: "💀",
-    desc: "Ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.",
-    applicable_to: ["creature"],
-    creature: { cost: 16, costPerX: 0, se: 3.5, minTier: 2, scalable: false, zone: "Terrain" },
+    id: "malediction", label: "Malédiction X", symbol: "💀",
+    desc: "Ciblez une unité ennemie de coût ≤ X, elle est exilée à la fin du prochain tour adverse.",
+    applicable_to: ["creature", "spell"],
+    // X = coût maximum de la victime ; vide ⇒ tout coût (cf. COUT_OPTIONNEL),
+    // qui vaut X = 10 au barème : 7 + 9 × 1 = 16, l'ancien prix fixe.
+    creature: { cost: 7, costPerX: 1, se: 3.5, minTier: 2, scalable: true, zone: "Terrain" },
+    // Forme ACTION : l'action maudit elle-même la cible ; c'est le joueur qui
+    // porte la malédiction (PlayerState.maledictions), faute de source en jeu.
+    spell: {
+      desc: "Maudit l'unité ennemie ciblée de coût ≤ X : elle est exilée à la fin du prochain tour adverse",
+      params: ["amount"], needsTarget: true, targetType: "enemy_creature",
+    },
   },
   necrophagie: {
     id: "necrophagie", label: "Nécrophagie", symbol: "🦴",
@@ -667,6 +675,21 @@ export const ABILITIES: Record<string, AbilityDef> = {
     applicable_to: ["creature"],
     creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain" },
   },
+  // SYNERGIE X — à son arrivée en jeu, le joueur choisit une capacité ; chaque
+  // déclenchement de cette capacité (tout joueur, toute source) lui donne
+  // +X/+X permanent, une fois par source et par tour. Cf. noterDeclenchement.
+  synergie: {
+    id: "synergie", label: "Synergie X", symbol: "🧬",
+    desc: "À son arrivée, choisissez une capacité : gagne +X/+X à chacun de ses déclenchements (1 fois par source et par tour).",
+    applicable_to: ["creature"],
+    creature: { cost: 6, costPerX: 4, se: 2.5, minTier: 2, scalable: true, zone: "Terrain" },
+  },
+  etheree: {
+    id: "etheree", label: "Éthérée", symbol: "🌫️",
+    desc: "Subit au plus 1 dégât par coup en combat. Les dégâts des actions qu'elle subit sont doublés.",
+    applicable_to: ["creature"],
+    creature: { cost: 18, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain" },
+  },
   indestructible: {
     id: "indestructible", label: "Indestructible", symbol: "♾️",
     desc: "Ne subit aucun dégât de combat.",
@@ -683,16 +706,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 13, costPerX: 7, se: 4.5, minTier: 3, scalable: true, zone: "Terrain" },
   },
   corruption: {
-    id: "corruption", label: "Corruption", symbol: "🖤",
-    desc: "Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour.",
+    id: "corruption", label: "Corruption X", symbol: "🖤",
+    desc: "Convertit une unité ennemie de coût ≤ X à votre camp jusqu'à la fin du tour ; elle gagne Traque.",
     applicable_to: ["creature", "spell"],
-    creature: { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain" },
+    // X = coût maximum de la créature convertie ; vide ⇒ tout coût : 9 + 9 × 2 = 27.
+    creature: { cost: 9, costPerX: 2, se: 6.0, minTier: 4, scalable: true, zone: "Terrain" },
     // Forme SORT : le sort convertit lui-même, il ne confère rien. Contrôle
     // TEMPORAIRE (l'unité repart chez son propriétaire au début de son tour) —
     // c'est ce qui la distingue de Domination, définitive.
     spell: {
-      desc: "Convertit l'unité ennemie ciblée à votre camp jusqu'à la fin du tour ; elle gagne Traque.",
-      params: [], needsTarget: true, targetType: "enemy_creature",
+      desc: "Convertit l'unité ennemie ciblée de coût ≤ X à votre camp jusqu'à la fin du tour ; elle gagne Traque.",
+      params: ["amount"], needsTarget: true, targetType: "enemy_creature",
     },
   },
   carnage: {
@@ -761,17 +785,19 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 19, costPerX: 6, se: 5.5, minTier: 4, scalable: true, zone: "Terrain" },
   },
   domination: {
-    id: "domination", label: "Domination", symbol: "👁️‍🗨️",
-    desc: "Prend le contrôle d'une unité ennemie au hasard à son invocation.",
+    id: "domination", label: "Domination X", symbol: "👁️‍🗨️",
+    desc: "Prend le contrôle d'une unité ennemie au hasard de coût ≤ X à son invocation.",
     applicable_to: ["creature", "spell"],
-    creature: { cost: 27, costPerX: 0, se: 6.0, minTier: 4, scalable: false, zone: "Terrain" },
+    // X = coût maximum de la créature prise ; vide ⇒ tout coût (COUT_OPTIONNEL),
+    // compté X = 10 au barème : 9 + 9 × 2 = 27, l'ancien prix fixe.
+    creature: { cost: 9, costPerX: 2, se: 6.0, minTier: 4, scalable: true, zone: "Terrain" },
     // Forme SORT : le sort PREND lui-même le contrôle, il ne confère rien — et
     // sur une cible CHOISIE, là où la version créature tire au hasard à son
     // invocation (elle n'a personne à qui demander). Pour donner la capacité à
     // une unité, passer par l'effet composé « Conférer une capacité ».
     spell: {
-      desc: "Prend le contrôle de l'unité ennemie ciblée.",
-      params: [], needsTarget: true, targetType: "enemy_creature",
+      desc: "Prend le contrôle de l'unité ennemie ciblée de coût ≤ X.",
+      params: ["amount"], needsTarget: true, targetType: "enemy_creature",
     },
   },
   resurrection: {
@@ -1091,16 +1117,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     spell: { params: ["amount"], needsTarget: true, targetType: "enemy_creature" },
   },
   execution: {
-    id: "execution", label: "Exécution", symbol: "☠️",
-    desc: "Détruit une créature ou un objet ciblé",
+    id: "execution", label: "Exécution X", symbol: "☠️",
+    desc: "Détruit une créature ou un objet ciblé de coût ≤ X",
     applicable_to: ["creature", "spell"],
     // Forme créature : une unité ENNEMIE désignée (« A » : toutes les unités et
     // tous les objets ennemis). Capacité d'unité ⇒ Transcendance ne protège pas.
     creature: {
-      cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain",
-      desc: "Détruit une unité ennemie ciblée.",
+      // X = coût maximum de la cible ; vide ⇒ tout coût : 12,8 + 9 × 0,8 = 20.
+      cost: 12.8, costPerX: 0.8, se: 4.5, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Détruit une unité ennemie ciblée de coût ≤ X.",
     },
-    spell: { params: [], needsTarget: true, targetType: "any_creature_or_item" },
+    spell: { params: ["amount"], needsTarget: true, targetType: "any_creature_or_item" },
   },
   silence: {
     id: "silence", label: "Silence", symbol: "🤫",
@@ -1415,16 +1442,17 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
   },
   retour_differe: {
-    id: "retour_differe", label: "Retour différé", symbol: "🌀",
-    desc: "Place l'unité ciblée sous le deck de son propriétaire.",
+    id: "retour_differe", label: "Retour différé X", symbol: "🌀",
+    desc: "Place l'unité ciblée de coût ≤ X sous le deck de son propriétaire.",
     applicable_to: ["creature", "spell"],
     creature: {
-      cost: 16, costPerX: 0, se: 4.0, minTier: 2, scalable: false, zone: "Terrain",
-      desc: "Place l'unité ciblée sous le deck de son propriétaire.",
+      // X = coût maximum de la cible ; vide ⇒ tout coût : 7 + 9 × 1 = 16.
+      cost: 7, costPerX: 1, se: 4.0, minTier: 2, scalable: true, zone: "Terrain",
+      desc: "Place l'unité ciblée de coût ≤ X sous le deck de son propriétaire.",
     },
     spell: {
-      desc: "Place l'unité ou l'objet ciblé sous le deck de son propriétaire",
-      params: [], needsTarget: true, targetType: "any_creature_or_item",
+      desc: "Place l'unité ou l'objet ciblé de coût ≤ X sous le deck de son propriétaire",
+      params: ["amount"], needsTarget: true, targetType: "any_creature_or_item",
     },
   },
   epargne: {
@@ -1514,16 +1542,18 @@ export const ABILITIES: Record<string, AbilityDef> = {
     },
   },
   remontee: {
-    id: "remontee", label: "Remontée", symbol: "🔼",
-    desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+    id: "remontee", label: "Remontée X", symbol: "🔼",
+    desc: "Renvoie X unité(s) ciblée(s) dans la main de leur propriétaire d'origine.",
     applicable_to: ["creature", "spell"],
     creature: {
-      cost: 14, costPerX: 0, se: 4.0, minTier: 3, scalable: false, zone: "Terrain",
-      desc: "Renvoie une unité ciblée dans la main de son propriétaire d'origine.",
+      // X = nombre d'unités renvoyées (alliées ou adverses). X = 1 : l'ancien
+      // forfait (cf. KEYWORD_DEFAULT_X) ; chaque unité de plus coûte 10.
+      cost: 14, costPerX: 10, se: 4.0, minTier: 3, scalable: true, zone: "Terrain",
+      desc: "Renvoie X unité(s) ciblée(s) dans la main de leur propriétaire d'origine.",
     },
     spell: {
-      desc: "Renvoie une unité ou un objet ciblé dans la main de son propriétaire d'origine.",
-      params: [], needsTarget: true, targetType: "any_creature_or_item",
+      desc: "Renvoie X unité(s) ou objet(s) ciblé(s) dans la main de leur propriétaire d'origine.",
+      params: ["amount"], needsTarget: true, targetType: "any_creature_or_item",
     },
   },
   entrainement: {
@@ -1664,9 +1694,11 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // celle de la capacité visée, barrée.
   neutralisation: {
     id: "neutralisation", label: "Neutralisation", symbol: "🚷",
-    desc: "Tant qu'elle est en jeu, neutralise {ability} {neutralise_cible}.",
+    desc: "Tant qu'elle est en jeu, l'unité ennemie ciblée est paralysée et ses capacités sont sans effet.",
     applicable_to: ["creature"],
-    creature: { cost: 12, costPerX: 0, se: 2.0, minTier: 2, scalable: false, zone: "Terrain" },
+    // Refonte 2026-11-15 : paralysie + TOUTES les capacités muettes (avant :
+    // une capacité choisie, 12 points). Prix relevé en conséquence.
+    creature: { cost: 20, costPerX: 0, se: 4.5, minTier: 3, scalable: false, zone: "Terrain" },
   },
   conferer: {
     id: "conferer", label: "Conférer", symbol: "✋",
@@ -1809,6 +1841,8 @@ export const KEYWORD_DEFAULT_X: Readonly<Record<string, number>> = {
   terreur: 1,
   // PV rendus au début du tour, forfaitaires à 2 jusqu'au 2026-09-19.
   regeneration: 2,
+  // Nombre d'unités renvoyées, forfaitaire à 1 jusqu'au 2026-11-15.
+  remontee: 1,
 };
 
 export const RANDOM_X_ABILITY_IDS: ReadonlySet<string> = new Set(["selection", "selection_magique", "renfort_royal", "faveur", "tresor"]);
@@ -2136,7 +2170,7 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   "lune", "soleil",
   // Passifs de combat / statiques
   "premiere_frappe", "double_attaque", "esquive", "armure",
-  "resistance", "precision", "indestructible", "transcendance", "invisible",
+  "resistance", "precision", "indestructible", "etheree", "synergie", "transcendance", "invisible",
   "ombre", "taunt", "vol", "ranged", "ancre", "divine_shield", "celerite",
   "charge", "raid", "drain_de_vie", "bravoure",
   // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
@@ -2289,9 +2323,49 @@ export const COUT_OPTIONNEL: Readonly<Record<string, "max" | "exact">> = {
   forge: "max",
   // Apprentissage X : plafond du coût imprimé du sort apprenable.
   apprentissage: "max",
+  // Malédiction X : plafond du coût de la créature maudite.
+  malediction: "max",
+  // Domination X, Corruption X, Exécution X, Retour différé X : plafond du coût
+  // de la créature (ou de l'objet) affectée.
+  domination: "max",
+  corruption: "max",
+  execution: "max",
+  retour_differe: "max",
   invocation: "exact",
   dechainement: "exact",
 };
+
+/** SYNERGIE — capacités RÉACTIVES (résolues en ligne dans le moteur, sans passer
+ *  par un résolveur de déclencheur) qui émettent malgré tout le signal
+ *  `noterDeclenchement`. Chaque id listé ici DOIT avoir son appel dans
+ *  engine.ts : `synergie.test.ts` le vérifie. */
+export const REACTIVES_SYNERGISABLES: readonly string[] = [
+  "divine_shield", "paralysie", "poison", "gloire", "riposte", "liaison_de_vie", "drain_de_vie",
+  "esquive", "souffle_de_feu", "augure", "persecution", "pietinement", "fureur", "regeneration",
+  "lycanthropie", "malefice", "carnage", "sacrifice_demoniaque", "heritage", "resurrection",
+  "pacte_de_sang", "cycle_eternel", "necrophagie", "richesse",
+];
+
+/** SYNERGIE — capacités proposées au choix : celles qui ont un DÉCLENCHEMENT.
+ *  Toute capacité de créature non passive (entrée en jeu, mort, fin de tour,
+ *  activation… : elles passent par les résolveurs), toute capacité d'action, et
+ *  les réactives ci-dessus. Les passives et auras pures (Armure, Provocation,
+ *  Vol…) n'y sont pas : elles ne se déclenchent jamais. Synergie non plus. */
+export const CAPACITES_SYNERGISABLES: ReadonlySet<string> = new Set([
+  ...Object.values(ABILITIES)
+    .filter((a) => a.applicable_to.includes("creature"))
+    .map((a) => creatureEngineId(a))
+    .filter((id) => !AUTOMATIC_ABILITY_IDS.has(id)),
+  ...Object.values(ABILITIES).filter((a) => a.applicable_to.includes("spell")).map((a) => a.id),
+  ...REACTIVES_SYNERGISABLES,
+].filter((id) => id !== "synergie" && id !== "conferer"));
+
+/** PLAFOND DE COÛT DE LA CIBLE — capacités dont le X borne le coût de la
+ *  créature (ou de l'objet) affectée. Source unique du moteur pour filtrer les
+ *  cibles proposées et refuser une cible trop chère. */
+export const CAPACITES_A_COUT_MAX_CIBLE: ReadonlySet<string> = new Set([
+  "malediction", "domination", "corruption", "execution", "retour_differe",
+]);
 
 /** X équivalent d'un coût vide, pour le barème de la forge. */
 export function xEquivalentCoutLibre(id: string): number {
@@ -2302,6 +2376,26 @@ export function xEquivalentCoutLibre(id: string): number {
  *  disparaît. Graine de `vocab.keywords.{id}.desc_any` / `vocab.spell_keywords.
  *  {id}.desc_any` (generate-vocab-fr), et repli runtime. */
 export const DESC_COUT_LIBRE: Readonly<Record<string, { creature?: string; spell?: string }>> = {
+  malediction: {
+    creature: "Ciblez une unité ennemie, elle est exilée à la fin du prochain tour adverse.",
+    spell: "Maudit l'unité ennemie ciblée : elle est exilée à la fin du prochain tour adverse",
+  },
+  domination: {
+    creature: "Prend le contrôle d'une unité ennemie au hasard à son invocation.",
+    spell: "Prend le contrôle de l'unité ennemie ciblée.",
+  },
+  corruption: {
+    creature: "Convertit l'unité ennemie sélectionnée à votre camp jusqu'à la fin du tour ; elle gagne Traque jusqu'à la fin du tour.",
+    spell: "Convertit l'unité ennemie ciblée à votre camp jusqu'à la fin du tour ; elle gagne Traque.",
+  },
+  execution: {
+    creature: "Détruit une unité ennemie ciblée.",
+    spell: "Détruit une créature ou un objet ciblé",
+  },
+  retour_differe: {
+    creature: "Place l'unité ciblée sous le deck de son propriétaire.",
+    spell: "Place l'unité ou l'objet ciblé sous le deck de son propriétaire",
+  },
   rappel: {
     creature: "Remettez une carte ciblée de votre cimetière dans votre main.",
     spell: "Renvoie une carte de votre cimetière dans votre main",

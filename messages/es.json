@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precisión",
-        "desc": "Ignora la Resistencia, la Armadura y el Escudo."
+        "desc": "Ignora Resistencia, Armadura, Escudo y el límite de Etérea."
       },
       "drain_de_vie": {
         "label": "Robo de vida",
@@ -156,7 +156,7 @@
       },
       "neutralisation": {
         "label": "Neutralización",
-        "desc": "Mientras esté en juego, neutraliza {ability} {neutralise_cible}."
+        "desc": "Mientras esté en juego, la unidad enemiga objetivo queda paralizada y sus habilidades no tienen efecto."
       },
       "transformation": {
         "label": "Transformación",
@@ -176,8 +176,9 @@
         "desc_any": "Invoca una criatura aleatoria de tu colección ({alignment}, formato actual)."
       },
       "malediction": {
-        "label": "Maldición",
-        "desc": "Elige una unidad enemiga; será exiliada al final del próximo turno rival."
+        "label": "Maldición X",
+        "desc": "Elige una unidad enemiga de coste ≤ X; es exiliada al final del próximo turno del adversario.",
+        "desc_any": "Elige una unidad enemiga; será exiliada al final del próximo turno rival."
       },
       "necrophagie": {
         "label": "Necrofagia",
@@ -251,6 +252,14 @@
         "label": "Maleficio",
         "desc": "Al morir, inflige X de daño a todas las unidades (aliadas y enemigas); X = su ATK."
       },
+      "synergie": {
+        "label": "Sinergia X",
+        "desc": "Al llegar, elige una habilidad: gana +X/+X cada vez que se activa (1 vez por fuente y por turno)."
+      },
+      "etheree": {
+        "label": "Etérea",
+        "desc": "Recibe como máximo 1 de daño por golpe en combate. El daño que recibe de las acciones se duplica."
+      },
       "indestructible": {
         "label": "Indestructible",
         "desc": "No recibe daño de combate."
@@ -260,8 +269,9 @@
         "desc": "Recupera X PV al inicio de tu turno."
       },
       "corruption": {
-        "label": "Corrupción",
-        "desc": "Convierte la unidad enemiga seleccionada a tu bando hasta el final del turno; gana Acecho hasta el final del turno."
+        "label": "Corrupción X",
+        "desc": "Convierte a una unidad enemiga de coste ≤ X a tu bando hasta el final del turno; gana Acoso.",
+        "desc_any": "Convierte la unidad enemiga seleccionada a tu bando hasta el final del turno; gana Acecho hasta el final del turno."
       },
       "carnage": {
         "label": "Carnicería X",
@@ -305,8 +315,9 @@
         "desc": "Inflige X de daño a todas las unidades enemigas al atacar (ej.: Aliento de fuego 2 = 2 de daño)."
       },
       "domination": {
-        "label": "Dominación",
-        "desc": "Toma el control de una unidad enemiga aleatoria al ser invocada."
+        "label": "Dominación X",
+        "desc": "Toma el control de una unidad enemiga al azar de coste ≤ X al ser invocada.",
+        "desc_any": "Toma el control de una unidad enemiga aleatoria al ser invocada."
       },
       "resurrection": {
         "label": "Resurrección",
@@ -505,16 +516,17 @@
         "desc": "Mira las X cartas de la parte inferior de tu mazo; coloca una en la parte superior."
       },
       "retour_differe": {
-        "label": "Regreso diferido",
-        "desc": "Coloca la unidad objetivo bajo el mazo de su propietario."
+        "label": "Regreso diferido X",
+        "desc": "Coloca la unidad objetivo de coste ≤ X bajo el mazo de su propietario.",
+        "desc_any": "Coloca la unidad objetivo bajo el mazo de su propietario."
       },
       "concentration": {
         "label": "Concentración X",
         "desc": "Cada acción en mano se convierte en una acción aleatoria de coste +X, reducida en X (todas las facciones)."
       },
       "remontee": {
-        "label": "Remontada",
-        "desc": "Devuelve una unidad objetivo a la mano de su propietario original."
+        "label": "Remontada X",
+        "desc": "Devuelve X unidad(es) objetivo a la mano de su propietario original."
       },
       "entrainement": {
         "label": "Entrenamiento X",
@@ -562,8 +574,9 @@
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
       },
       "execution": {
-        "label": "Ejecución",
-        "desc": "Destruye una unidad enemiga objetivo."
+        "label": "Ejecución X",
+        "desc": "Destruye una unidad enemiga objetivo de coste ≤ X.",
+        "desc_any": "Destruye una unidad enemiga objetivo."
       },
       "silence": {
         "label": "Silencio",
@@ -639,13 +652,20 @@
         "label": "Adivinación",
         "desc": "Revela las 3 primeras cartas del mazo; coloca 1 arriba y 2 abajo, en el orden que elijas."
       },
+      "malediction": {
+        "label": "Maldición X",
+        "desc": "Maldice a la unidad enemiga objetivo de coste ≤ X: es exiliada al final del próximo turno del adversario",
+        "desc_any": "Maldice a la unidad enemiga objetivo: es exiliada al final del próximo turno del adversario"
+      },
       "corruption": {
-        "label": "Corrupción",
-        "desc": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
+        "label": "Corrupción X",
+        "desc": "Convierte a la unidad enemiga objetivo de coste ≤ X a tu bando hasta el final del turno; gana Acoso.",
+        "desc_any": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
       },
       "domination": {
-        "label": "Dominación",
-        "desc": "Toma el control de la unidad enemiga seleccionada."
+        "label": "Dominación X",
+        "desc": "Toma el control de la unidad enemiga objetivo de coste ≤ X.",
+        "desc_any": "Toma el control de la unidad enemiga seleccionada."
       },
       "appel_du_clan": {
         "label": "Llamada del clan X",
@@ -739,8 +759,9 @@
         "desc": "Paraliza a una criatura enemiga objetivo durante X turno(s)"
       },
       "execution": {
-        "label": "Ejecución",
-        "desc": "Destruye una criatura u objeto seleccionado"
+        "label": "Ejecución X",
+        "desc": "Destruye una criatura o un objeto objetivo de coste ≤ X",
+        "desc_any": "Destruye una criatura u objeto seleccionado"
       },
       "silence": {
         "label": "Silencio",
@@ -783,8 +804,9 @@
         "desc": "Revela las 3 cartas superiores en desorden; elige la de arriba para ponerla en tu mano, luego mezcla el mazo."
       },
       "retour_differe": {
-        "label": "Regreso diferido",
-        "desc": "Coloca la unidad o el objeto objetivo bajo el mazo de su propietario"
+        "label": "Regreso diferido X",
+        "desc": "Coloca la unidad o el objeto objetivo de coste ≤ X bajo el mazo de su propietario",
+        "desc_any": "Coloca la unidad o el objeto objetivo bajo el mazo de su propietario"
       },
       "epargne": {
         "label": "Ahorro X",
@@ -811,8 +833,8 @@
         "desc": "Roba X cartas"
       },
       "remontee": {
-        "label": "Retorno",
-        "desc": "Devuelve una unidad o un objeto objetivo a la mano de su propietario original."
+        "label": "Retorno X",
+        "desc": "Devuelve X unidad(es) u objeto(s) objetivo a la mano de su propietario original."
       },
       "entrainement": {
         "label": "Entrenamiento X",
@@ -887,6 +909,10 @@
         "heal_each": "y cura a tu héroe {x} PV por cada objetivo alcanzado",
         "heal_scatter": "y cura a tu héroe {x} PV en total"
       },
+      "malediction": {
+        "suite_one": ", exiliada al final del próximo turno rival",
+        "suite_many": ", exiliadas al final del próximo turno rival"
+      },
       "domination": {
         "limit": "dentro del límite de espacios disponibles"
       },
@@ -907,6 +933,7 @@
         "paralyze_turns_one": "durante {n} turno",
         "paralyze_turns_many": "durante {n} turnos",
         "poison": "envenena",
+        "malediction": "maldice",
         "grant_keyword": "otorga {ability}",
         "random_range": "1 a {max}",
         "random_range_from": "{min} a {max}",
@@ -1035,6 +1062,7 @@
         "bounce": "vuelve a la mano",
         "paralyze": "se paraliza",
         "poison": "se envenena",
+        "malediction": "se maldice",
         "grant_keyword": "se otorga {ability}"
       },
       "choice": {
@@ -1050,6 +1078,7 @@
         "bounce": "elige una criatura para devolver a la mano",
         "paralyze": "elige una criatura para paralizar",
         "poison": "elige una criatura para envenenar",
+        "malediction": "elige una criatura para maldecir",
         "grant_keyword": "elige una criatura a la que otorgar la habilidad",
         "exhumation": "elige una criatura para resucitar",
         "rappel": "elige una carta para recuperar en la mano",
@@ -2205,15 +2234,21 @@
       "spell": {
         "impact": "Inflige X de daño a {cibles}.",
         "affaiblissement": "Otorga -X ATQ y -Y PV a {cibles}.",
-        "retour_differe": "Coloca a {cibles} bajo el mazo de su propietario.",
+        "retour_differe": "Coloca {cibles} de coste ≤ X debajo del mazo de su propietario.",
+        "retour_differe_any": "Coloca a {cibles} bajo el mazo de su propietario.",
         "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
-        "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
-        "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
+        "malediction": "Maldice a {cibles} de coste ≤ X: son exiliadas al final del próximo turno del adversario.",
+        "malediction_any": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
+        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; obtienen Acoso.",
+        "corruption_any": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
+        "domination": "Toma el control de {cibles} de coste ≤ X, dentro del límite de espacios.",
+        "domination_any": "Toma el control de {cibles}, dentro del límite de espacios.",
         "benediction": "Cura por completo a {cibles}.",
         "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
         "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada unidad alcanzada.",
         "entrave": "Paraliza a {cibles} durante X turno(s).",
-        "execution": "Destruye {cibles}, incluidos los objetos.",
+        "execution": "Destruye {cibles} de coste ≤ X, incluidos los objetos.",
+        "execution_any": "Destruye {cibles}, incluidos los objetos.",
         "silence": "Elimina todas las palabras clave de {cibles}, incluidos los objetos, y devuelve sus estadísticas a su valor original.",
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
@@ -2221,14 +2256,19 @@
         "guerison": "Restaura X PV a {cibles} y a tu héroe."
       },
       "creature": {
+        "neutralisation": "Mientras esté en juego, {cibles} quedan paralizadas y sus habilidades no tienen efecto.",
         "impact": "Inflige X de daño a {cibles}.",
         "affaiblissement": "Otorga -X ATQ y -Y PV a {cibles}.",
-        "retour_differe": "Coloca a {cibles} bajo el mazo de su propietario.",
+        "retour_differe": "Coloca {cibles} de coste ≤ X debajo del mazo de su propietario.",
+        "retour_differe_any": "Coloca a {cibles} bajo el mazo de su propietario.",
         "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
-        "corruption": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
-        "domination": "Toma el control de {cibles}, dentro del límite de espacios.",
+        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acoso.",
+        "corruption_any": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
+        "domination": "Toma el control de {cibles} de coste ≤ X, dentro del límite de espacios.",
+        "domination_any": "Toma el control de {cibles}, dentro del límite de espacios.",
         "benediction": "Cura completamente a {cibles}.",
-        "malediction": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
+        "malediction": "Maldice a {cibles} de coste ≤ X: son exiliadas al final del próximo turno del adversario.",
+        "malediction_any": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
         "tactique": "Da a {cibles} X habilidades al azar de criaturas del mismo coste (un sorteo por unidad).",
         "vampirisme": "Roba hasta X PV a {cibles} y se los suma a los PV de esta unidad.",
         "devoration": "Destruye a {cibles}; esta unidad gana permanentemente su ATQ y su PV.",
@@ -2239,7 +2279,8 @@
         "renforcement_soi": "Gana +X ATQ y +Y PV de forma permanente.",
         "discipline_soi": "Si todas tus criaturas en juego tienen un coste con la misma paridad que el suyo, gana +X ATQ y +Y PV de forma permanente.",
         "usurpation_soi": "Gana +X ATQ y +Y PV de forma permanente por cada carta del adversario que hayas jugado.",
-        "execution": "Destruye {cibles}, incluidos los objetos.",
+        "execution": "Destruye a {cibles} de coste ≤ X, objetos incluidos.",
+        "execution_any": "Destruye {cibles}, incluidos los objetos.",
         "silence": "Elimina todas las palabras clave de {cibles}, incluidos los objetos, y devuelve sus estadísticas a su valor original.",
         "guerison": "Restaura X PV a todas las demás unidades aliadas y a tu héroe.",
         "purete": "Mientras tu cementerio esté vacío, todas las demás unidades aliadas ganan +X ATQ y +Y PV.",
@@ -2655,6 +2696,7 @@
     "content_bounce": "Devolver a la mano",
     "content_paralyze": "Paralizar",
     "content_poison": "Envenenar (−1 PV por turno)",
+    "content_malediction": "Maldecir (exilio al final del próximo turno adversario)",
     "invocation_costs_label": "COSTES DE INVOCACIÓN",
     "invocation_costs_hint": "Se invoca una criatura aleatoria de tu colección por cada coste indicado.",
     "add_invocation": "+ Invocación",
@@ -3301,6 +3343,12 @@
     "eveil_max": "máx {count}",
     "eveil_max_hint": "El último punto es la entrada en juego: se paga aparte, junto con la elección de objetivos.",
     "choix_ou_title": "⚖️ A elegir",
+    "synergie_title": "Sinergia: elige una habilidad",
+    "synergie_subtitle": "Esta criatura obtendrá su bonificación cada vez que se active la habilidad elegida, tanto en tu bando como en el del adversario.",
+    "synergie_search": "Buscar una habilidad…",
+    "synergie_in_play": "En juego",
+    "synergie_others": "Otras habilidades",
+    "synergie_none": "Ninguna habilidad coincide.",
     "choix_ou_subtitle": "Solo uno de estos efectos se resolverá.",
     "activation_menu_title": "¿Qué poder activar?",
     "activation_learned": "Lanzar {name}",

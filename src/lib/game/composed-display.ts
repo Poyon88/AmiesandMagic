@@ -64,6 +64,11 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.paralyze_turns_one": "pendant {n} tour",
   "content.paralyze_turns_many": "pendant {n} tours",
   "content.poison": "empoisonne",
+  "content.malediction": "maudit",
+  // Ce que FAIT la malédiction, à la suite de la cible : « maudit une unité
+  // ennemie au choix : elle est exilée à la fin du prochain tour adverse ».
+  "malediction.suite_one": ", exilée à la fin du prochain tour adverse",
+  "malediction.suite_many": ", exilées à la fin du prochain tour adverse",
   "content.grant_keyword": "confère {ability}",
 
   // ─── EMBLÈME ─────────────────────────────────────────────────────────────
@@ -297,6 +302,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "self.bounce": "se renvoie en main",
   "self.paralyze": "se paralyse",
   "self.poison": "s'empoisonne",
+  "self.malediction": "se maudit",
   "self.grant_keyword": "se confère {ability}",
 
   // Variantes SANS préposition, pour les verbes transitifs directs (détruit,
@@ -390,6 +396,7 @@ export const COMPOSED_FR: Record<string, string> = {
   "choice.bounce": "choisissez une créature à renvoyer en main",
   "choice.paralyze": "choisissez une créature à paralyser",
   "choice.poison": "choisissez une créature à empoisonner",
+  "choice.malediction": "choisissez une créature à maudire",
   "choice.grant_keyword": "choisissez une créature à qui conférer la capacité",
   "choice.exhumation": "choisissez une créature à ressusciter",
   "choice.rappel": "choisissez une carte à reprendre en main",
@@ -468,6 +475,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "bounce": return { symbol: "🔼", keyword: "spell_remontee" };
     case "paralyze": return { symbol: "⛓️", keyword: "spell_entrave" };
     case "poison": return { symbol: KEYWORD_SYMBOLS.poison, keyword: "poison" };
+    case "malediction": return { symbol: KEYWORD_SYMBOLS.malediction, keyword: "malediction" };
     // Une capacité conférée s'affiche avec l'icône de LA capacité conférée
     // (ex. Armure), pas avec l'icône générique « Conférer » : c'est ce que la
     // créature gagne qui compte, pas le fait qu'on le lui donne. L'astérisque
@@ -737,6 +745,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "paralyze": return frag(t, "content.paralyze");
     case "transformation": return frag(t, "content.transformation");
     case "poison": return frag(t, "content.poison");
+    case "malediction": return frag(t, "content.malediction");
     case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
       + describeGrantTrigger(eff, t);
     case "appel": {
@@ -893,6 +902,7 @@ function describeSelfContent(eff: ComposedEffect, t?: SafeT): string | null {
     case "paralyze": return frag(t, "self.paralyze");
     case "transformation": return frag(t, "self.transformation");
     case "poison": return frag(t, "self.poison");
+    case "malediction": return frag(t, "self.malediction");
     case "grant_keyword": return frag(t, "self.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) }) + describeGrantTrigger(eff, t);
     default: return null;
   }
@@ -963,7 +973,7 @@ function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "silence", "transformation"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "malediction", "silence", "transformation"]);
 
 /** Libellé d'une appartenance de cible.
  *
@@ -1196,8 +1206,10 @@ function describeComposedCapBase(cap: Capability, tokens?: TokenTemplate[], t?: 
   const duree = eff.content === "paralyze" ? dureeParalysie(eff, t)
     : eff.content === "transformation" ? carteDArrivee(eff, t)
     : eff.content === "siphon" ? soinSiphonTexte(eff, t)
-    : eff.content === "domination" && eff.target?.count !== 1 ? frag(t, "domination.limit") : "";
-  const phraseCorps = duree ? `${body} ${duree}` : body;
+    : eff.content === "domination" && eff.target?.count !== 1 ? frag(t, "domination.limit")
+    : eff.content === "malediction" ? frag(t, eff.target?.count === 1 ? "malediction.suite_one" : "malediction.suite_many") : "";
+  // La suite d'une Malédiction commence par une virgule : pas d'espace avant.
+  const phraseCorps = duree ? `${body}${duree.startsWith(",") ? "" : " "}${duree}` : body;
   const lead = describeEmblemLead(cap, t);
   // Sous un en-tête d'emblème, le corps est une SUBORDONNÉE (« … entre en jeu :
   // soigne 2 PV ») : la capitale irait au milieu de la phrase.
@@ -1263,7 +1275,7 @@ export function composedChoicePrompt(cap: Capability, t?: SafeT): string {
   if (!eff) return `🎯 ${frag(t, "choice.default")}`;
   const ic = composedIcon(cap).symbol;
   const icon = ic.startsWith("/") || ic.startsWith("http") ? "🎯" : ic;
-  const key = ["deal_damage", "siphon", "heal", "buff", "usurpation", "debuff", "destroy", "domination", "bounce", "paralyze", "poison", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
+  const key = ["deal_damage", "siphon", "heal", "buff", "usurpation", "debuff", "destroy", "domination", "bounce", "paralyze", "poison", "malediction", "grant_keyword", "exhumation", "transformation"].includes(eff.content)
     ? `choice.${eff.content}`
     : "choice.default";
   const body = frag(t, key);

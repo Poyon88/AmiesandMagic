@@ -197,7 +197,7 @@ export function describeKeyword(
     && (kw === "dechainement" ? (ctx.instance != null && ctx.instance.y == null) : ctx.x == null);
   // Portée « toutes » : variante de la phrase qui parle de toutes les créatures
   // du camp au lieu d'une cible (cf. target-scope.ts).
-  const tmpl = scopedDescTemplate("creature", kw, ctx.instance?.targetScope, t)
+  const tmpl = scopedDescTemplate("creature", kw, ctx.instance?.targetScope, t, coutLibre)
     ?? recipientDescTemplate(kw, ctx.instance?.recipient, t)
     ?? template(kw, t, coutLibre);
   if (!tmpl) return null;

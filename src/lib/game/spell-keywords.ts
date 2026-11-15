@@ -1,5 +1,5 @@
 import type { SpellKeywordId, SpellKeywordInstance, SpellTargetType, Card, ConvocationTokenDef, TokenTemplate } from "./types";
-import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, COUT_OPTIONNEL, DESC_COUT_LIBRE, type DerivedSpellKeywordDef } from "./abilities";
+import { SPELL_KEYWORDS as ABILITIES_SPELL_KEYWORDS, ABILITIES, COUT_OPTIONNEL, DESC_COUT_LIBRE, KEYWORD_DEFAULT_X, type DerivedSpellKeywordDef } from "./abilities";
 import type { SafeT } from "@/i18n/config";
 import { plageAleatoire, resolveMarkers, singulierHelp, singulierLabel } from "./desc-markers";
 import { badgeAleatoire } from "./random-range";
@@ -159,7 +159,7 @@ function getSpellKeywordDescBase(
     : (t?.(`vocab.spell_keywords.${kw.id}.desc`) ?? def.desc);
   // Portée « toutes » : la phrase parle de TOUTES les créatures du camp, pas
   // d'une cible (cf. target-scope.ts).
-  desc = scopedDescTemplate("spell", kw.id, kw.targetScope, t) ?? desc;
+  desc = scopedDescTemplate("spell", kw.id, kw.targetScope, t, libre) ?? desc;
 
   // Marqueurs nommés ({race}, {clan_de}, {alignment}…). Une capacité comme
   // Sélection ou Appel Suprême existe côté créature ET côté sort avec la même
@@ -167,6 +167,10 @@ function getSpellKeywordDescBase(
   // brut au joueur.
   desc = resolveMarkers(desc, String(kw.id), {
     card,
+    // X de l'action, pour les capacités à X IMPLICITE (KEYWORD_DEFAULT_X) :
+    // resolveMarkers y remplace « X » par ce défaut dès qu'on ne lui dit rien —
+    // une « Remontée 2 » décrivait « Renvoie 1 unité(s) ».
+    ...(KEYWORD_DEFAULT_X[kw.id] != null && kw.amount != null ? { x: kw.amount } : {}),
     // `costs`/`faction` : Invocations multiples compose sa phrase à partir de la
     // liste saisie — sans eux, la version SORT affichait le repli générique.
     instance: { race: kw.race, clan: kw.clan, costs: kw.costs, faction: kw.faction, minX: kw.minX, grantAbilityId: kw.grantAbilityId, grantX: kw.grantX, grantY: kw.grantY, grantMode: kw.grantMode },

@@ -1,7 +1,13 @@
-// NEUTRALISATION — tant qu'une créature porteuse est en jeu, une capacité
-// choisie par l'auteur est MUETTE chez l'unité ennemie ciblée, ou chez toutes
-// les unités ennemies (portée « toutes », aura continue : une ennemie posée
-// après y passe aussi).
+// NEUTRALISATION — tant qu'une créature porteuse est en jeu, l'unité ennemie
+// ciblée (ou toutes les unités ennemies : portée « toutes », aura continue, une
+// ennemie posée après y passe aussi) est NEUTRALISÉE :
+//   • elle est PARALYSÉE — ni attaque ni pouvoir activable (cf. `estNeutralisee`,
+//     lu par les gardes d'attaque et d'activation du moteur) ;
+//   • TOUTES ses capacités sont sans effet : elles ne se déclenchent plus et ne
+//     s'appliquent plus (mots-clés, capacités déclenchées, effets composés,
+//     auras qu'elle donnait).
+// Refonte du 2026-11-15 : avant, l'auteur choisissait UNE capacité à rendre
+// muette (`grantAbilityId`). Ce champ n'est plus lu.
 //
 // MISE EN ŒUVRE PAR RETRAIT, comme Singulier (cf. singulier.ts) et pour la même
 // raison : le moteur lit les capacités par des dizaines de chemins (`hasKw`,
@@ -27,16 +33,8 @@
 
 import type { Capability, Card, CardInstance, Keyword, KeywordInstance, NeutralisationStash, PlayerState } from "./types";
 import { porteeValide } from "./target-scope";
-import { ABILITIES, creatureEngineId } from "./abilities";
 
 export const NEUTRALISATION_ID = "neutralisation";
-
-/** Id moteur de la capacité visée. `vol` est l'id de registre, `ranged` celui
- *  que portent les cartes (cf. idMoteurDuDon dans le moteur). */
-export function idNeutralise(id: string | undefined | null): string | null {
-  if (!id || id === NEUTRALISATION_ID) return null;
-  return id === "vol" ? "ranged" : id;
-}
 
 /** Instance Neutralisation d'une carte (une seule lue : la première). */
 export function instanceNeutralisation(card: Card): KeywordInstance | undefined {
@@ -48,18 +46,29 @@ export function neutraliseToutes(inst: KeywordInstance | undefined): boolean {
   return porteeValide(inst?.targetScope, ["all_enemies"]) === "all_enemies";
 }
 
-/** Capacités neutralisées chez `victime`, d'après les porteuses EN JEU de
- *  `camp` (le camp adverse). Triées : l'ordre entre dans l'état haché. */
+/** Marqueur « toutes les capacités » rangé dans `neutralisationStash.ids`. */
+export const TOUTES_CAPACITES = "*";
+
+/** `victime` est-elle neutralisée par une porteuse EN JEU de `camp` (le camp
+ *  adverse) ? Rend `["*"]` — toutes ses capacités — ou `[]`. La forme liste est
+ *  celle du stash, qui entre dans l'état haché.
+ *
+ *  La porteuse se lit sur sa vue d'AFFICHAGE : une porteuse elle-même
+ *  neutralisée garde sa Neutralisation (cf. `retirer`), mais on ne veut pas
+ *  dépendre de cet invariant pour savoir qui neutralise qui. */
 export function neutralisationsSubies(victime: CardInstance, camp: PlayerState): string[] {
-  const ids = new Set<string>();
   for (const src of camp.board) {
-    if (!(src.card.keywords ?? []).includes(NEUTRALISATION_ID as Keyword)) continue;
-    const inst = instanceNeutralisation(src.card);
-    const id = idNeutralise(inst?.grantAbilityId);
-    if (!id) continue;
-    if (neutraliseToutes(inst) || src.neutralisationTargetId === victime.instanceId) ids.add(id);
+    const carte = displayNeutralisee(src);
+    if (!(carte.keywords ?? []).includes(NEUTRALISATION_ID as Keyword)) continue;
+    const inst = instanceNeutralisation(carte);
+    if (neutraliseToutes(inst) || src.neutralisationTargetId === victime.instanceId) return [TOUTES_CAPACITES];
   }
-  return [...ids].sort();
+  return [];
+}
+
+/** Créature neutralisée : paralysée (ni attaque ni activation) et muette. */
+export function estNeutralisee(inst: Pick<CardInstance, "neutralisationStash"> | null | undefined): boolean {
+  return !!inst?.neutralisationStash;
 }
 
 function insererAuRang<T>(base: T[], items: { item: T; index: number }[], dejaLa?: (t: T) => boolean): T[] {
@@ -75,17 +84,23 @@ function insererAuRang<T>(base: T[], items: { item: T; index: number }[], dejaLa
  *  son déclencheur. Nouvelle carte (mémo de getCapabilities par identité). */
 function retirer(card: Card, ids: Set<string>): { card: Card; stash: Omit<NeutralisationStash, "ids" | "etats"> } {
   const stash: Omit<NeutralisationStash, "ids" | "etats"> = { keywords: [], keyword_instances: [], capabilities: [] };
+  // « * » : TOUT, effets composés compris — sauf Neutralisation elle-même. Deux
+  // porteuses qui se neutralisent l'une l'autre n'auraient sinon pas d'ordre de
+  // résolution défini : chacune reste donc paralysée et muette, mais continue
+  // de neutraliser.
+  const tout = ids.has(TOUTES_CAPACITES);
+  const vise = (id: string) => (tout ? id !== NEUTRALISATION_ID : ids.has(id));
   const keywords: Keyword[] = [];
   (card.keywords ?? []).forEach((id, i) => {
-    if (ids.has(id)) stash.keywords.push({ id, index: i }); else keywords.push(id);
+    if (vise(id)) stash.keywords.push({ id, index: i }); else keywords.push(id);
   });
   const insts: KeywordInstance[] = [];
   (card.keyword_instances ?? []).forEach((k, i) => {
-    if (ids.has(k.id)) stash.keyword_instances.push({ item: k, index: i }); else insts.push(k);
+    if (vise(k.id)) stash.keyword_instances.push({ item: k, index: i }); else insts.push(k);
   });
   const caps: Capability[] = [];
   (card.capabilities ?? []).forEach((c, i) => {
-    if (!c.composed && ids.has(c.abilityId)) stash.capabilities.push({ item: c, index: i }); else caps.push(c);
+    if (tout ? c.abilityId !== NEUTRALISATION_ID : (!c.composed && ids.has(c.abilityId))) stash.capabilities.push({ item: c, index: i }); else caps.push(c);
   });
   return {
     card: {
@@ -135,8 +150,10 @@ export function leverNeutralisationInstance(inst: CardInstance, tour: number): v
  *  Mutation en place. */
 export function poserNeutralisationInstance(inst: CardInstance, ids: string[], tour: number): void {
   if (ids.length === 0) return;
-  const set = new Set(ids);
-  const { card, stash } = retirer(inst.card, set);
+  const brut = new Set(ids);
+  // « * » vise tout : les états armés ci-dessous sont tous suspendus.
+  const set = { has: (id: string) => brut.has(TOUTES_CAPACITES) || brut.has(id) };
+  const { card, stash } = retirer(inst.card, brut);
   const etats: NonNullable<NeutralisationStash["etats"]> = {};
   if (set.has("divine_shield") && inst.hasDivineShield) {
     etats.hasDivineShield = true;
@@ -204,16 +221,13 @@ export function displayNeutralisee(inst: Pick<CardInstance, "card" | "neutralisa
 
 /** Ids actuellement neutralisés chez une instance (pour barrer leurs icônes). */
 export function neutralisedIds(inst: Pick<CardInstance, "neutralisationStash"> | null | undefined): Set<string> {
-  return new Set(inst?.neutralisationStash?.ids ?? []);
-}
-
-/** Capacités qu'un auteur peut neutraliser : toutes les capacités de créature,
- *  sauf Neutralisation elle-même (deux porteuses se neutralisant l'une l'autre
- *  n'auraient pas d'ordre de résolution défini). Triées par libellé. */
-export function capacitesNeutralisables(): { id: string; label: string }[] {
-  return Object.values(ABILITIES)
-    .filter((a) => a.applicable_to.includes("creature"))
-    .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
-    .filter((a) => a.id !== NEUTRALISATION_ID)
-    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  const st = inst?.neutralisationStash;
+  if (!st) return new Set();
+  // Toutes les capacités réellement retirées (le marqueur « * » n'est pas un id).
+  return new Set([
+    ...st.ids.filter((id) => id !== TOUTES_CAPACITES),
+    ...st.keywords.map((k) => k.id),
+    ...st.keyword_instances.map((k) => k.item.id),
+    ...st.capabilities.map((c) => c.item.abilityId),
+  ]);
 }

@@ -27,7 +27,7 @@ export type Keyword =
   | "catalyse" | "ombre_du_passe" | "profanation" | "prescience" | "suprematie" | "divination" | "savant"
   // Tier 3 — Terrain
   | "liaison_de_vie" | "ombre" | "sacrifice" | "malefice"
-  | "indestructible" | "regeneration" | "corruption"
+  | "indestructible" | "etheree" | "synergie" | "regeneration" | "corruption"
   | "carnage" | "heritage" | "mimique" | "metamorphose" | "dedoublement" | "tactique"
   // Tier 3 — Cimetière
   | "exhumation" | "heritage_du_cimetiere"
@@ -289,6 +289,7 @@ export type SpellKeywordId =
   | "touche_mortel"
   | "domination"
   | "corruption"
+  | "malediction"
   | "remontee"
   | "pillage"
   | "entrainement"
@@ -709,6 +710,12 @@ export type ComposedEffectContent =
   // du DON du mot-clé Poison via grant_keyword (qui, lui, rend la cible
   // empoisonneuse). C'est l'équivalent composé du mot-clé de sort `poison`.
   | "poison"
+  // MALÉDICTION composée : chaque unité visée est maudite — exilée au début du
+  // prochain tour du contrôleur de l'effet (donc à la fin du prochain tour
+  // adverse). Portée par le JOUEUR (PlayerState.maledictions), comme la forme
+  // action : un emblème n'a pas de créature source. Plafond de coût :
+  // `target.maxCost`, comme Domination ; X n'a aucun rôle.
+  | "malediction"
   | "exhumation"
   // RAPPEL composé : renvoie des cartes du cimetière du contrôleur dans sa
   // main. Contrairement au mot-clé (une carte, au choix ou au hasard), il se
@@ -1305,6 +1312,14 @@ export interface CardInstance {
    *  un pouvoir conféré en cours de tour ne doit pas repartir sur une source
    *  déjà encaissée. Vérité de jeu — hashée. */
   woundSourcesThisTurn?: string[];
+  /** SYNERGIE X — capacité choisie par le joueur à l'arrivée en jeu : chaque
+   *  déclenchement de cette capacité (toute source, tout joueur) donne +X/+X à
+   *  cette créature. Absent ⇒ pas encore choisie. Effacée par Silence, retour
+   *  en main et mort. Vérité de jeu — hachée. */
+  synergieAbilityId?: string;
+  /** SYNERGIE X — clés des sources déjà comptées CE TOUR (même schéma que
+   *  `woundSourcesThisTurn`). Vidé à chaque bascule de tour. Hachée. */
+  synergieSourcesThisTurn?: string[];
   // Tap state — true while the creature is "engaged" (MTG-style 45°
   // rotation). Set when the creature attacks OR when it tap-activates a
   // keyword; reset in startTurn for the outgoing player. Untapped state
@@ -1787,6 +1802,12 @@ export interface PlayerState {
   deck: CardInstance[];
   graveyard: CardInstance[];
   spellHistory: { card: Card; targetMap: Record<string, string> }[];
+  /** MALÉDICTION lancée par une ACTION : créatures adverses maudites par ce
+   *  joueur, exilées au début de son prochain tour. La forme créature porte sa
+   *  victime sur la créature source (`maledictionTargetId`) ; une action n'a
+   *  pas de source en jeu, c'est donc le joueur qui la porte. Même canal pour la
+   *  malédiction COMPOSÉE (emblème, effet de créature). Absent ⇒ aucune. */
+  maledictions?: string[];
   fatigueDamage: number;
   /** IDs of the cards this player owns through `card_prints` (limited
    *  series). Drives the Renfort Royal pool: ≥30 owned → pick from these,
@@ -2047,6 +2068,9 @@ export interface GameState {
      *  Symboles plutôt que mots — ces libellés viennent du moteur, qui ne
      *  connaît pas la langue du joueur. */
     label?: string;
+    /** PV réellement retirés par ce point quand ce n'est pas 1 (action sur une
+     *  Éthérée : 2). Absent ⇒ 1. */
+    amount?: number;
   }>;
   // Transient : chaque paquet de dégâts RÉELLEMENT appliqué à une créature
   // pendant l'action (après immunités / Bouclier / Résistance / Armure). Le
@@ -2469,6 +2493,9 @@ export interface ResolvePendingTriggerAction {
   /** Branche choisie pour un déclencheur « OU » (alternativeOptions présent) :
    *  uid de la capacité qui se résout, les autres sont abandonnées. */
   alternativeCapUid?: string;
+  /** Capacité choisie pour un déclencheur SYNERGIE (`kw: "synergie"`) : id
+   *  moteur, pris dans CAPACITES_SYNERGISABLES. */
+  abilityId?: string;
 }
 
 /** Repli automatique à l'expiration de la fenêtre de choix : résout au hasard

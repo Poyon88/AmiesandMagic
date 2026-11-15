@@ -29,6 +29,14 @@ export function cimetieresDuChoix(mien: CardInstance[], adverse: CardInstance[],
 
 const TOUS_CAMPS: TargetScope[] = ["all_enemies", "all_allies", "all"];
 
+/** Portée « toutes » RESTREINTE par décision de l'auteur, en créature comme en
+ *  action. Remontée (2026-11-15) : le « A » ne vaut que pour TOUTES LES
+ *  CRÉATURES ADVERSES ; renvoyer tous ses alliés ou les deux camps passe par
+ *  l'effet composé « Renvoyer en main », qui règle le camp. */
+const PORTEE_RESTREINTE: Record<string, TargetScope[]> = {
+  remontee: ["all_enemies"],
+};
+
 /** Capacités qui ciblent une CARTE du cimetière, pas une créature en jeu :
  *  « toutes » n'y a pas de sens. Incinération vise un camp entier (son
  *  cimetière), pas une unité. */
@@ -52,6 +60,7 @@ function campsDuType(t: SpellTargetType | undefined): TargetScope[] {
  *  peut frapper que tous les ennemis. [] ⇒ pas de portée « toutes ». */
 export function spellScopes(id: SpellKeywordId | string): TargetScope[] {
   if (SORTS_HORS_PORTEE.has(id)) return [];
+  if (PORTEE_RESTREINTE[id]) return PORTEE_RESTREINTE[id];
   const def = SPELL_KEYWORDS[id as SpellKeywordId];
   if (!def?.needsTarget) return [];
   return campsDuType(def.targetType);
@@ -66,7 +75,7 @@ export function spellScopes(id: SpellKeywordId | string): TargetScope[] {
  *  (`grantScope`, « tous les alliés ») depuis bien avant ce module. */
 const CREATURE_SCOPES: Record<string, TargetScope[]> = {
   impact: ["all_enemies"],
-  remontee: TOUS_CAMPS,
+  remontee: PORTEE_RESTREINTE.remontee,
   retour_differe: TOUS_CAMPS,
   devoration: TOUS_CAMPS,
   affaiblissement: ["all_enemies"],
@@ -252,20 +261,26 @@ export const TARGET_SCOPE_CIBLES_FR: Record<TargetScope, string> = {
 const DESC_TOUTES_COMMUNES: Record<string, string> = {
   impact: "Inflige X dégâts à {cibles}.",
   affaiblissement: "Donne -X ATK et -Y PV à {cibles}.",
-  retour_differe: "Place {cibles} sous le deck de leur propriétaire.",
+  retour_differe: "Place {cibles} de coût ≤ X sous le deck de leur propriétaire.",
+  retour_differe_any: "Place {cibles} sous le deck de leur propriétaire.",
   remontee: "Renvoie {cibles} dans la main de leur propriétaire d'origine.",
-  corruption: "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
-  domination: "Prend le contrôle de {cibles}, dans la limite des places.",
+  corruption: "Convertit {cibles} de coût ≤ X à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
+  corruption_any: "Convertit {cibles} à votre camp jusqu'à la fin du tour, dans la limite des places ; elles gagnent Traque.",
+  domination: "Prend le contrôle de {cibles} de coût ≤ X, dans la limite des places.",
+  domination_any: "Prend le contrôle de {cibles}, dans la limite des places.",
   benediction: "Soigne complètement {cibles}.",
 };
 
 /** Variantes « toutes » des mots-clés de SORT (repli FR). */
 export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
+  malediction: "Maudit {cibles} de coût ≤ X : elles sont exilées à la fin du prochain tour adverse.",
+  malediction_any: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
   ...DESC_TOUTES_COMMUNES,
   poison: "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
   siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
   entrave: "Paralyse {cibles} pendant X tour(s).",
-  execution: "Détruit {cibles}, objets compris.",
+  execution: "Détruit {cibles} de coût ≤ X, objets compris.",
+  execution_any: "Détruit {cibles}, objets compris.",
   silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   renforcement: "+X/+Y à {cibles}.",
   discipline: "Si toutes vos créatures en jeu ont un coût de même parité que celui de cette action, +X/+Y à {cibles}.",
@@ -273,17 +288,20 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
   guerison: "Restaure X PV à {cibles} et à votre héros.",
 };
 
-/** Variantes « toutes » des mots-clés de CRÉATURE (repli FR). Neutralisation
- *  n'y figure pas : sa description dit déjà sa portée ({neutralise_cible}). */
+/** Variantes « toutes » des mots-clés de CRÉATURE (repli FR). */
 export const CREATURE_SCOPE_DESC_FR: Record<string, string> = {
   ...DESC_TOUTES_COMMUNES,
-  malediction: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
+  neutralisation: "Tant qu'elle est en jeu, {cibles} sont paralysées et leurs capacités sont sans effet.",
+  malediction: "Maudit {cibles} de coût ≤ X : elles sont exilées à la fin du prochain tour adverse.",
+  // Malédiction SANS X (coût optionnel vide) : aucune limite de coût.
+  malediction_any: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
   tactique: "Donne à {cibles} X capacités tirées au hasard parmi celles des créatures de même coût (un tirage par unité).",
   vampirisme: "Vole jusqu'à X PV à {cibles} et les ajoute aux PV de cette unité.",
   devoration: "Détruit {cibles} ; cette unité gagne définitivement leur ATK et leurs PV.",
   // La source est exclue : « autres » le dit, {cibles} ne le dirait pas.
   sacrifice: "Détruisez toutes les autres unités alliées pour gagner leurs PV et leur ATK de manière permanente.",
-  execution: "Détruit {cibles}, objets compris.",
+  execution: "Détruit {cibles} de coût ≤ X, objets compris.",
+  execution_any: "Détruit {cibles}, objets compris.",
   silence: "Retire tous les mots-clés de {cibles}, objets compris, et ramène leurs stats à leur valeur d'origine.",
   // Source exclue, comme pour Renforcement : « autres ».
   guerison: "Restaure X PV à toutes les autres unités alliées et à votre héros.",
@@ -326,12 +344,17 @@ export function scopedDescTemplate(
   id: string,
   scope: TargetScope | undefined,
   t?: (key: string) => string | undefined,
+  /** Coût optionnel non renseigné : variante `{id}_any` (sans mention du coût)
+   *  quand elle existe. */
+  coutLibre = false,
 ): string | null {
   const valide = porteeValide(scope, kind === "spell" ? spellScopes(id) : creatureScopes(id));
   if (!valide) return null;
-  const fr = (kind === "spell" ? SPELL_SCOPE_DESC_FR : CREATURE_SCOPE_DESC_FR)[id];
+  const table = kind === "spell" ? SPELL_SCOPE_DESC_FR : CREATURE_SCOPE_DESC_FR;
+  const cle = coutLibre && table[`${id}_any`] ? `${id}_any` : id;
+  const fr = table[cle];
   if (!fr) return null;
-  const tmpl = t?.(`vocab.target_scope.${kind}.${id}`) ?? fr;
+  const tmpl = t?.(`vocab.target_scope.${kind}.${cle}`) ?? fr;
   const cibles = t?.(`vocab.target_scope.cibles.${valide}`) ?? TARGET_SCOPE_CIBLES_FR[valide];
   return tmpl.replace(/\{cibles\}/g, cibles);
 }

@@ -30,6 +30,7 @@ import DivinationOverlay from "./DivinationOverlay";
 import SelectionOverlay from "./SelectionOverlay";
 import MutationOverlay from "./MutationOverlay";
 import ChoixOuOverlay from "./ChoixOuOverlay";
+import SynergieOverlay from "./SynergieOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import ActionHistoryStrip from "./ActionHistoryStrip";
@@ -2123,6 +2124,16 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           options={alternativeOptions}
           onChoose={(capUid) => {
             const action = selectTarget(capUid);
+            if (action) broadcast(action);
+          }}
+        />
+      )}
+      {/* Synergie : choix de la capacité surveillée, à l'arrivée en jeu. */}
+      {targetingMode === "pending_trigger" && gameState.pendingTriggers?.[0]?.kw === "synergie" && !overlayPeeked && (
+        <SynergieOverlay
+          gameState={gameState}
+          onChoose={(abilityId) => {
+            const action = selectTarget(abilityId);
             if (action) broadcast(action);
           }}
         />
