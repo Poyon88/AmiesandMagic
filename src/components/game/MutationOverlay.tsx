@@ -15,7 +15,7 @@ import { useVocab } from "@/i18n/useVocab";
 import { composedIcon } from "@/lib/game/composed-display";
 import { applyKeywordValueToLabel, keywordIconFor } from "@/lib/game/keyword-labels";
 import { modeForCreatureTrigger } from "@/lib/game/capability-adapter";
-import { mutationCapacites, mutationOffer, mutationX } from "@/lib/game/mutation";
+import { mutationCapacites, mutationOffer, mutationXInstance } from "@/lib/game/mutation";
 import type { Capability, Card, CardInstance, Keyword, KeywordInstance, MutateCardAction } from "@/lib/game/types";
 
 interface Props {
@@ -87,7 +87,7 @@ export default function MutationOverlay({ carte, pool, onConfirm, onCancel }: Pr
   const [capA, setCapA] = useState<string | null>(null);
   const [survol, setSurvol] = useState<number | null>(null);
 
-  const x = mutationX(carte.card);
+  const x = mutationXInstance(carte);
   const offre1 = useMemo(() => mutationOffer(pool, x, carte.instanceId, 1), [pool, x, carte.instanceId]);
   const offre2 = useMemo(() => (a ? mutationOffer(pool, x, carte.instanceId, 2, a.id) : []), [pool, x, carte.instanceId, a]);
 

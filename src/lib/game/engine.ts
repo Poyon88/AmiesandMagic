@@ -38,7 +38,7 @@ import type {
   StackFrame,
   FormatCode,
 } from "./types";
-import { carteMutante, leguerCapacites, mutationX, resoudreChoixMutation, tactiqueVivier } from "./mutation";
+import { carteMutante, leguerCapacites, mutationXInstance, resoudreChoixMutation, tactiqueVivier } from "./mutation";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
 import { ABILITIES, CAPACITES_A_COUT_MAX_CIBLE, CAPACITES_SYNERGISABLES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
@@ -14455,7 +14455,7 @@ export function canMutate(state: GameState, cardInstanceId: string): boolean {
   const player = state.players[state.currentPlayerIndex];
   const carte = player.hand.find(c => c.instanceId === cardInstanceId);
   if (!carte || carte.card.card_type !== "creature") return false;
-  return mutationX(carte.card) >= 1;
+  return mutationXInstance(carte) >= 1;
 }
 
 /** MUTATION X — réécrit la carte en main (cf. lib/game/mutation.ts). Les offres
@@ -14466,7 +14466,7 @@ export function mutateCard(state: GameState, action: import("./types").MutateCar
   const carte = player.hand.find(c => c.instanceId === action.cardInstanceId)!;
   const choix = resoudreChoixMutation(state.mutationPool, carte.card, carte.instanceId, {
     creatureIds: action.creatureIds, capUids: action.capUids,
-  });
+  }, carte.grantedKeywordX?.mutation);
   if (!choix) return state;
 
   const newState = cloneStateForAction(state);
@@ -14475,6 +14475,12 @@ export function mutateCard(state: GameState, action: import("./types").MutateCar
   if (!inst) return state;
   const card = carteMutante(inst.card, choix.a, choix.capA, choix.b, choix.capB);
   inst.card = card;
+  // Mutation CONFÉRÉE : son X vivait sur l'instance — il part avec elle.
+  if (inst.grantedKeywordX?.mutation != null) {
+    const { mutation: _m, ...reste } = inst.grantedKeywordX;
+    void _m;
+    inst.grantedKeywordX = reste;
+  }
   // Les stats de la mutante REMPLACENT celles de la carte (bonus reçus en main
   // compris) ; elles deviennent aussi sa base, celle que Silence restaure.
   inst.baseAttack = card.attack ?? 0;

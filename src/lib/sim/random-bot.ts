@@ -17,7 +17,7 @@ import {
   getFoiOffer, getSelectionCards, getTapActivateTargets, maxEveilPayment, peutActiverPouvoir, peutPayerRetraite,
 } from "@/lib/game/engine";
 import { MAX_HAND_SIZE } from "@/lib/game/constants";
-import { mutationCapacites, mutationOffer, mutationX } from "@/lib/game/mutation";
+import { mutationCapacites, mutationOffer, mutationXInstance } from "@/lib/game/mutation";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import { getEquipCost, objetsDe, peutRecevoirObjet } from "@/lib/game/items";
 import type { GameAction, GameState, PlayerState, SelectionFamilyId, SpellTargetType } from "@/lib/game/types";
@@ -235,7 +235,7 @@ export function coupsDeRessources(state: GameState, rand: Rand, variantes = 1): 
   const pick = <T,>(xs: readonly T[]): T | undefined => xs[Math.floor(rand() * xs.length)];
   for (const ci of me.hand) {
     if (!canMutate(state, ci.instanceId)) continue;
-    const x = mutationX(ci.card);
+    const x = mutationXInstance(ci);
     for (let v = 0; v < Math.max(1, variantes); v++) {
       const a = pick(mutationOffer(state.mutationPool, x, ci.instanceId, 1));
       const b = a && pick(mutationOffer(state.mutationPool, x, ci.instanceId, 2, a.id));

@@ -25,11 +25,20 @@ export const MUTATION_OFFER_COUNT = 3;
 
 /** X de Mutation porté par la carte (0 = pas de Mutation). L'adaptateur a déjà
  *  replié le `[Mutation X]` du texte d'effet dans `params.x`. */
-export function mutationX(card: Card): number {
+export function mutationX(card: Card, xConfere?: number): number {
   const cap = getCapabilities(card).find((c) => c.abilityId === MUTATION_ID);
-  if (!cap) return 0;
   const inst = card.keyword_instances?.find((k) => k.id === (MUTATION_ID as Keyword));
-  return Math.max(0, cap.params?.x ?? inst?.x ?? 0);
+  // MUTATION CONFÉRÉE (« confère Mutation 6 aux unités de la main ») : le don
+  // pose le mot-clé sur la carte, mais PAS de capacité, et son X vit sur
+  // l'instance (`grantedKeywordX`), que l'appelant passe en `xConfere`. Sans ce
+  // repli, la carte affichait Mutation 6 sans jamais proposer « Muter ».
+  if (!cap && !(card.keywords as string[] | undefined)?.includes(MUTATION_ID)) return 0;
+  return Math.max(0, cap?.params?.x ?? inst?.x ?? 0, xConfere ?? 0);
+}
+
+/** X de Mutation d'une carte EN MAIN, don compris. */
+export function mutationXInstance(carte: { card: Card; grantedKeywordX?: Record<string, number> }): number {
+  return mutationX(carte.card, carte.grantedKeywordX?.[MUTATION_ID]);
 }
 
 /** Capacités qu'une créature peut LÉGUER à une mutante : toutes, sauf Mutation. */
@@ -83,8 +92,9 @@ export function resoudreChoixMutation(
   card: Card,
   instanceId: string,
   choix: MutationChoix,
+  xConfere?: number,
 ): { a: Card; capA: Capability; b: Card; capB: Capability } | null {
-  const x = mutationX(card);
+  const x = mutationX(card, xConfere);
   if (x < 1) return null;
   const a = mutationOffer(pool, x, instanceId, 1).find((c) => c.id === choix.creatureIds[0]);
   if (!a) return null;
