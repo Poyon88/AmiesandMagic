@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Card, CardInstance } from "@/lib/game/types";
 import GameCard from "@/components/cards/GameCard";
+import MaledictionMarker from "./MaledictionMarker";
 import { getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats } from "@/lib/game/engine";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
@@ -213,6 +214,7 @@ export default function GraveyardOverlay({
                     style={{
                       cursor: isSelectable ? "pointer" : "default",
                       opacity: isSelectionMode && !isSelectable ? 0.35 : 1,
+                      position: "relative",
                       borderRadius: 10,
                       // Retenue → ambre plein ; candidate libre → vert ; le
                       // reste, transparent. Sans ce contraste, un choix à 4
@@ -222,6 +224,7 @@ export default function GraveyardOverlay({
                       transition: "all 0.2s",
                     }}
                   >
+                    <MaledictionMarker instanceId={id} radius={8} />
                     <GameCard
                       card={graveyardDisplayCard(cardInstance)}
                       size="sm"

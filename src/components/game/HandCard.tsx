@@ -16,6 +16,7 @@ import { SPELL_KEYWORDS, SPELL_KEYWORD_SYMBOLS, getSpellKeywordBadgeValue } from
 import { isCreatureKwShadowedBySpell, getTokenManaCost } from "@/lib/game/abilities";
 import { persistentStats, blessureHorsPlateau, effectiveManaCost as engineEffectiveManaCost, espritDeCorpsPoints, usurpationCount } from "@/lib/game/engine";
 import KeywordIcon from "@/components/shared/KeywordIcon";
+import MaledictionMarker from "./MaledictionMarker";
 import { useKeywordIconStore } from "@/lib/store/keywordIconStore";
 import { alternativeSuivieDunSlash, composedCapsOf, composedIcon, composedTriggerMode, composedValueText } from "@/lib/game/composed-display";
 import { composedDisplayOrder, grantedKeywordDisplayOrder, keywordDisplayOrder, spellKeywordDisplayOrder } from "@/lib/game/composed-position";
@@ -527,6 +528,7 @@ function HandCard({
       data-zoom={1.41}
       style={{ width: W, height: H, position: "relative", zoom: 1.41 }}
     >
+      <MaledictionMarker instanceId={cardInstance.instanceId} />
       {/* Halo de SEUIL — état permanent, distinct du halo de boost ci-dessous
           qui est un évènement ponctuel. Les deux coexistent : un sort renforcé
           qui reçoit un buff ne doit pas perdre son halo le temps de l'animation.

@@ -9,8 +9,9 @@
 // lecture unique.
 import type { GameState } from "./types";
 
-/** Identifiants des créatures EN JEU promises à l'exil. */
-export function creaturesMaudites(gs: Pick<GameState, "players"> | null | undefined): Set<string> {
+type Zone = "board" | "hand" | "graveyard";
+
+function maudites(gs: Pick<GameState, "players"> | null | undefined, zones: Zone[]): Set<string> {
   const visees = new Set<string>();
   if (!gs) return visees;
   for (const p of gs.players) {
@@ -20,8 +21,20 @@ export function creaturesMaudites(gs: Pick<GameState, "players"> | null | undefi
       for (const id of c.maledictionExtraIds ?? []) visees.add(id);
     }
   }
-  // Seules celles encore sur un plateau comptent : une victime morte ou
-  // renvoyée en main laisse derrière elle un identifiant sans objet.
-  const enJeu = new Set(gs.players.flatMap((p) => p.board.map((c) => c.instanceId)));
-  return new Set([...visees].filter((id) => enJeu.has(id)));
+  if (visees.size === 0) return visees;
+  // Seules celles encore dans une zone d'où l'exil les retirera comptent : une
+  // victime repartie au deck laisse derrière elle un identifiant sans objet.
+  const presentes = new Set(gs.players.flatMap((p) => zones.flatMap((z) => p[z].map((c) => c.instanceId))));
+  return new Set([...visees].filter((id) => presentes.has(id)));
+}
+
+/** Identifiants des créatures EN JEU promises à l'exil. */
+export function creaturesMaudites(gs: Pick<GameState, "players"> | null | undefined): Set<string> {
+  return maudites(gs, ["board"]);
+}
+
+/** Identifiants de TOUTES les cartes promises à l'exil : plateau, main et
+ *  cimetière — les trois zones que l'exil balaie (cf. startTurn). */
+export function cartesMaudites(gs: Pick<GameState, "players"> | null | undefined): Set<string> {
+  return maudites(gs, ["board", "hand", "graveyard"]);
 }

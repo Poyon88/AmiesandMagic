@@ -4715,6 +4715,11 @@ export function startTurn(state: GameState): GameState {
     // Sans cela la malédiction d'une carte gardée en main ne faisait rien.
     opponent.hand = opponent.hand.filter(c => !ids.has(c.instanceId));
     player.hand = player.hand.filter(c => !ids.has(c.instanceId));
+    // … et au CIMETIÈRE : la malédiction suit la carte. Une unité maudite puis
+    // tuée, ou maudite directement au cimetière, en est retirée — plus de
+    // résurrection ni d'exhumation possibles.
+    opponent.graveyard = opponent.graveyard.filter(c => !ids.has(c.instanceId));
+    player.graveyard = player.graveyard.filter(c => !ids.has(c.instanceId));
     delete player.maledictions;
   }
 

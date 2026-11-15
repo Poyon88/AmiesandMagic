@@ -2,6 +2,7 @@
 // unité ennemie en main au hasard). L'exil ne balayait que les plateaux.
 import { describe, expect, it } from "vitest";
 import { applyAction } from "./engine";
+import { cartesMaudites, creaturesMaudites } from "./malediction";
 import { mkCard, mkInstance, mkState } from "./test-harness";
 import type { Capability, GameAction, GameState } from "./types";
 
@@ -43,5 +44,24 @@ describe("Malédiction d'une carte en main", () => {
     st = applyAction(st, { type: "play_card", cardInstanceId: cible } as GameAction);
     expect(st.players[1].board.some((c) => c.instanceId === cible)).toBe(true);
     expect(partout(fin(st), cible)).toBe(false);
+  });
+
+  it("le marqueur suit la carte : en main, sur le plateau, au cimetière", () => {
+    const { s, cible } = lancer();
+    expect(cartesMaudites(s).has(cible)).toBe(true);     // en main
+    expect(creaturesMaudites(s).has(cible)).toBe(false); // pas (encore) en jeu
+    let st = fin(s);
+    st.players[1].mana = 10;
+    st = applyAction(st, { type: "play_card", cardInstanceId: cible } as GameAction);
+    expect(creaturesMaudites(st).has(cible)).toBe(true);
+    // Tuée avant l'exil : elle garde sa malédiction au cimetière…
+    const morte = structuredClone(st);
+    const i = morte.players[1].board.findIndex((c) => c.instanceId === cible);
+    morte.players[1].graveyard.push(...morte.players[1].board.splice(i, 1));
+    expect(cartesMaudites(morte).has(cible)).toBe(true);
+    // … et en est exilée au même moment.
+    const apres = fin(morte);
+    expect(partout(apres, cible)).toBe(false);
+    expect(cartesMaudites(apres).size).toBe(0);
   });
 });
