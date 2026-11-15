@@ -730,7 +730,16 @@ export default function ComposedEffectsEditor({
                       ...(e.target.checked && !isEmblemCadence(cap.trigger)
                         ? { trigger: DEFAULT_EMBLEM_CADENCE }
                         : {}),
-                      ...(e.target.checked ? { delay: undefined } : { side: undefined }),
+                      // DÉCOCHER : la cadence d'emblème (« fin de tour ») n'existe
+                      // pas forcément pour cette carte — sur une action, la liste
+                      // n'offre que la résolution et la pioche. La garder laissait
+                      // un effet qui ne part jamais, alors que la liste AFFICHAIT
+                      // « À la résolution » (première option, faute de valeur
+                      // reconnue). La durée n'appartient qu'aux emblèmes.
+                      ...(!e.target.checked && !triggers.some((t) => t.v === cap.trigger)
+                        ? { trigger: triggers[0]?.v ?? cap.trigger }
+                        : {}),
+                      ...(e.target.checked ? { delay: undefined } : { side: undefined, duration: undefined }),
                     })}
                   />
                   {tr('emblem_permanent')}
