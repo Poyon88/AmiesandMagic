@@ -3224,6 +3224,7 @@
     "discovery_title": "🔭 発見",
     "discovery_subtitle": "今ターンのドロー：カードを1枚選んでください",
     "discovery_other_clan": "別のクラン",
+    "discovery_other_faction": "別の勢力",
     "power_hero_activated": "ヒーロー能力を発動しました",
     "power_used_this_turn": "このターン使用済み",
     "power_hero_label": "ヒーロー能力",

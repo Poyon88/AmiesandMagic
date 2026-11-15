@@ -100,8 +100,10 @@ export interface OptionsPartie {
 /** Bilan des DÉCOUVERTES d'un camp (variante un tour sur deux). */
 export interface UsageDecouverte {
   offres: number;
-  /** Carte retenue d'un autre clan que celui du joueur. */
+  /** Carte retenue d'un autre clan de la faction du joueur. */
   autreClan: number;
+  /** Carte retenue d'une AUTRE faction (variante 2). */
+  autreFaction: number;
   /** Offre « morte » : aucune des cartes jouable dans les 3 tours qui suivent. */
   mortes: number;
 }
@@ -197,7 +199,7 @@ export function simulerPartie(
   const etincelle: ResultatPartie["etincelle"] = [
     { recue: false, joueeAuTour: null, manaPerdu: null }, { recue: false, joueeAuTour: null, manaPerdu: null },
   ];
-  const decouvertes: ResultatPartie["decouvertes"] = [{ offres: 0, autreClan: 0, mortes: 0 }, { offres: 0, autreClan: 0, mortes: 0 }];
+  const decouvertes: ResultatPartie["decouvertes"] = [{ offres: 0, autreClan: 0, autreFaction: 0, mortes: 0 }, { offres: 0, autreClan: 0, autreFaction: 0, mortes: 0 }];
   const suivre = (avant: GameState, apres: GameState, act: GameAction) => {
     const actif = avant.currentPlayerIndex;
     const tete = avant.pendingTriggers?.[0];
@@ -210,7 +212,8 @@ export function simulerPartie(
         ? act.selectionCardId : apres.players[i].hand.at(-1)?.card.id ?? -1);
       const d = decouvertes[i];
       d.offres++;
-      if (choisie?.clan && p.identite?.clan && choisie.clan !== p.identite.clan) d.autreClan++;
+      if (choisie?.faction && p.identite && choisie.faction !== p.identite.faction) d.autreFaction++;
+      else if (choisie?.clan && p.identite?.clan && choisie.clan !== p.identite.clan) d.autreClan++;
       if (offre.length && Math.min(...offre.map((c) => c.mana_cost)) > Math.min(10, p.maxMana + 3)) d.mortes++;
     }
     if (act.type === "play_card") {

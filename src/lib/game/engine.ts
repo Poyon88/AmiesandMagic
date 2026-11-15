@@ -45,7 +45,7 @@ import { ABILITIES, CAPACITES_A_COUT_MAX_CIBLE, CAPACITES_SYNERGISABLES, creatur
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
-import { coutAutreClan, coutValideLePlusProche, estTourDeDecouverte, identiteDuDeck, rangDeDecouverte, tirerCoutDecouverte } from "./decouverte";
+import { coutAutreClan, coutAutreFaction, coutValideLePlusProche, estTourDeDecouverte, identiteDuDeck, rangDeDecouverte, tirerCoutDecouverte } from "./decouverte";
 import { getCapabilities, isEmblemCadence, modeForCreatureTrigger } from "./capability-adapter";
 import { armRetards, clampRetard, delayedSpellParts, hasDelayedParts, immediateSpellView, resolveRetardKey, tickRetards } from "./retard";
 import { designatedCardIds, tuteurCardIds } from "./tuteur";
@@ -15814,7 +15814,15 @@ function offreSelection(
 /** Sous-viviers de découverte d'un joueur : Communes de sa faction de
  *  référence (objets exclus), celles de son clan et celles des AUTRES clans.
  *  Clan trop maigre : il se complète par les cartes sans clan de la faction. */
-function viviersDecouverte(state: GameState, player: PlayerState): { duClan: Card[]; autreClan: Card[] } | null {
+type ViviersDecouverte = {
+  duClan: Card[];
+  autreClan: Card[];
+  /** Variante 2 seulement : Communes des AUTRES factions, en deux paniers. Deck
+   *  neutre : tout est dans `neutre`, `memeAlignement` reste vide. */
+  autreFaction?: { memeAlignement: Card[]; neutre: Card[] };
+};
+
+function viviersDecouverte(state: GameState, player: PlayerState): ViviersDecouverte | null {
   const id = player.identite;
   const pool = state.factionCardPool;
   if (!id || !pool?.length) return null;
@@ -15822,14 +15830,43 @@ function viviersDecouverte(state: GameState, player: PlayerState): { duClan: Car
   let duClan = id.clan ? communes.filter(c => c.clan === id.clan) : communes;
   if (duClan.length < 2) duClan = communes.filter(c => !id.clan || c.clan === id.clan || !c.clan);
   const autreClan = id.clan ? communes.filter(c => c.clan && c.clan !== id.clan) : [];
-  return { duClan, autreClan };
+  if (state.regles?.decouverteVariante !== 2) return { duClan, autreClan };
+
+  // VARIANTE 2 — autres factions : même alignement que le deck, ou neutres
+  // (deck neutre : autres neutres seulement). Jamais de Mercenaires (faction
+  // « spéciale »), jamais la faction du deck. Le pool du match contient déjà
+  // ces factions (cf. selectionFactions, page de match).
+  const alignementDeck = FACTIONS[id.faction]?.alignment;
+  const memeAlignement: Card[] = [];
+  const neutre: Card[] = [];
+  for (const c of pool) {
+    if (c.rarity !== "Commune" || c.card_type === "item" || !c.faction || c.faction === id.faction) continue;
+    const al = FACTIONS[c.faction]?.alignment;
+    if (al === "neutre") neutre.push(c);
+    else if (al && al !== "spéciale" && al === alignementDeck) memeAlignement.push(c);
+  }
+  return { duClan, autreClan, autreFaction: { memeAlignement, neutre } };
 }
 
-/** Le coût C tient-il pour ces viviers ? 2 cartes du clan à C, et 1 d'un autre
- *  clan à C+1 — sauf faction sans autre clan, où le clan fournit tout. */
-function coutDecouverteValide(v: { duClan: Card[]; autreClan: Card[] }, c: number): boolean {
-  if (v.duClan.filter(x => x.mana_cost === c).length < 2) return false;
-  return v.autreClan.length === 0 || v.autreClan.some(x => x.mana_cost === coutAutreClan(c));
+/** Le coût C tient-il pour ces viviers ?
+ *  Variante 1 : 2 cartes du clan à C, et 1 d'un autre clan à C+1 — sauf
+ *  faction sans autre clan, où le clan fournit tout.
+ *  Variante 2 : 1 du clan à C et 1 d'un autre clan à C (sans autre clan : 2 du
+ *  clan à C), plus 1 d'une autre faction à C+1 dans l'un des deux paniers —
+ *  sauf si aucune autre faction n'est disponible du tout. */
+function coutDecouverteValide(v: ViviersDecouverte, c: number): boolean {
+  const duClanAC = v.duClan.filter(x => x.mana_cost === c).length;
+  if (!v.autreFaction) {
+    if (duClanAC < 2) return false;
+    return v.autreClan.length === 0 || v.autreClan.some(x => x.mana_cost === coutAutreClan(c));
+  }
+  if (v.autreClan.length > 0) {
+    if (duClanAC < 1 || !v.autreClan.some(x => x.mana_cost === c)) return false;
+  } else if (duClanAC < 2) return false;
+  const { memeAlignement, neutre } = v.autreFaction;
+  if (memeAlignement.length === 0 && neutre.length === 0) return true;
+  const cf = coutAutreFaction(c);
+  return memeAlignement.some(x => x.mana_cost === cf) || neutre.some(x => x.mana_cost === cf);
 }
 
 /** Coût C de la découverte qui s'ouvre, et REPLI des clans incomplets.
@@ -15881,6 +15918,7 @@ export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
   };
 
   const c = coutDeDecouverte(state, player);
+  if (v.autreFaction) return offreDecouverteVariante2(v, c, pseudoRng, melanger);
   if (c != null) {
     const autre = melanger(autreClan.filter(x => x.mana_cost === coutAutreClan(c))).slice(0, 1);
     const clan = melanger(duClan.filter(x => x.mana_cost === c)).slice(0, SELECTION_OFFER_COUNT - autre.length);
@@ -15890,6 +15928,45 @@ export function offreDecouverte(state: GameState, player: PlayerState): Card[] {
   const clan = offreSelection(duClan, 0, true, sansPaniers, melanger);
   const autre = offreSelection(autreClan, 0, true, sansPaniers, melanger).slice(0, 1);
   return [...clan.slice(0, SELECTION_OFFER_COUNT - autre.length), ...autre];
+}
+
+/** OFFRE DE DÉCOUVERTE — VARIANTE 2 (cf. decouverte.ts), dans l'ordre
+ *  [clan, autre clan de la faction, autre faction] :
+ *    • 1 Commune du clan au coût C ;
+ *    • 1 Commune d'un AUTRE clan de la faction au coût C (faction sans autre
+ *      clan : une 2e carte du clan) ;
+ *    • 1 Commune d'une AUTRE faction au coût C+1 : panier « même alignement »
+ *      ou « neutre » tiré à pile ou face (l'autre si celui-ci est vide).
+ *  Aucun coût ne tient (`c` null) : tirage libre dans chaque sous-vivier.
+ *  Même germe semé que la variante 1 : la RNG partagée n'est pas consommée. */
+function offreDecouverteVariante2(
+  v: ViviersDecouverte,
+  c: number | null,
+  pseudoRng: () => number,
+  melanger: (arr: Card[]) => Card[],
+): Card[] {
+  const paniers = v.autreFaction!;
+  const auCout = (arr: Card[], cout: number | null) => cout == null ? arr : arr.filter(x => x.mana_cost === cout);
+  const tirer = (arr: Card[], cout: number | null, n: number): Card[] => {
+    if (n <= 0) return [];
+    if (cout != null) return melanger(auCout(arr, cout)).slice(0, n);
+    const sansPaniers = { propre: new Set<string>(), neutre: new Set<string>() };
+    return offreSelection(arr, 0, true, sansPaniers, melanger).slice(0, n);
+  };
+
+  // Case 3 : le panier d'abord, puis la carte. Pile ou face seulement si les
+  // deux paniers ont une carte au coût visé — sinon l'autre, sans tirage.
+  const coutAutre = c == null ? null : coutAutreFaction(c);
+  const meme = auCout(paniers.memeAlignement, coutAutre);
+  const neutre = auCout(paniers.neutre, coutAutre);
+  const panier = meme.length > 0 && neutre.length > 0
+    ? (pseudoRng() < 0.5 ? paniers.memeAlignement : paniers.neutre)
+    : (meme.length > 0 ? paniers.memeAlignement : paniers.neutre);
+  const autreFaction = tirer(panier, coutAutre, 1);
+
+  const faction = v.autreClan.length > 0 ? tirer(v.autreClan, c, 1) : [];
+  const clan = tirer(v.duClan, c, SELECTION_OFFER_COUNT - faction.length - autreFaction.length);
+  return [...clan, ...faction, ...autreFaction];
 }
 
 /** Dépose la découverte du joueur actif dans le puits. Faux si l'offre est vide

@@ -1774,6 +1774,10 @@ export interface ReglesPartie {
    *  coût de chaque rang, identique pour les deux joueurs. Absente (partie
    *  commencée avant la refonte) ⇒ 0. */
   graineDecouverte?: number;
+  /** Variante de l'OFFRE de découverte (cf. decouverte.ts). Absente ⇒ variante 1
+   *  (2 du clan à C + 1 d'un autre clan à C+1). 2 ⇒ 1 du clan à C, 1 d'un autre
+   *  clan de la faction à C, 1 d'une autre faction à C+1. */
+  decouverteVariante?: 2;
 }
 
 export interface PlayerState {
