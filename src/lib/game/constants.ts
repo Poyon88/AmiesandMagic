@@ -3,18 +3,16 @@ export const HERO_MAX_HP = 30;
 export const DECK_SIZE = 50;
 // Une même capacité nommée ne peut apparaître plus de 12 fois dans un deck.
 export const MAX_SAME_CAPABILITY = 12;
-// Capacités exemptées de cette limite (Vol — `ranged` en est le doublon legacy
-// effectivement stocké sur les cartes).
-export const CAPABILITY_LIMIT_EXEMPT: ReadonlySet<string> = new Set(["vol", "ranged"]);
+// Capacités exemptées de cette limite : aucun plafond.
+//  - Vol (`ranged` en est le doublon legacy effectivement stocké sur les cartes).
+//  - Chant : mécanique identitaire des Fils du Volcan, qui exige une chanteuse
+//    EN JEU pour renforcer les actions du deck. Elle a d'abord dérogé à 24, puis
+//    le plafond a été levé (2026-11-15, décision de l'auteur) : comme Vol.
+export const CAPABILITY_LIMIT_EXEMPT: ReadonlySet<string> = new Set(["vol", "ranged", "chant"]);
 /** Plafonds PROPRES à certaines capacités, en dérogation à MAX_SAME_CAPABILITY.
- *
- *  Chant : c'est la mécanique identitaire des Fils du Volcan, et elle a besoin
- *  d'une créature chanteuse EN JEU pour que les sorts du deck se renforcent.
- *  Le plafond commun étouffait donc le clan qu'il était censé équilibrer : il
- *  faut assez d'exemplaires pour en tirer une de façon fiable. */
-export const CAPABILITY_LIMIT_OVERRIDES: ReadonlyMap<string, number> = new Map([
-  ["chant", 24],
-]);
+ *  Vide aujourd'hui (Chant, seule dérogation, est devenue une exemption) ; le
+ *  mécanisme reste, et le tutoriel l'annonce de lui-même s'il se remplit. */
+export const CAPABILITY_LIMIT_OVERRIDES: ReadonlyMap<string, number> = new Map<string, number>([]);
 /** Plafond applicable à une capacité nommée : sa dérogation si elle en a une,
  *  le plafond commun sinon. Point de passage UNIQUE — la validation live, la
  *  validation de sauvegarde et le badge de décompte doivent lire la même

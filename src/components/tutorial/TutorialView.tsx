@@ -556,7 +556,7 @@ function BeginnerGuide() {
           <>Répartition par rareté : <Hi>2 Légendaires, 4 Épiques, 6 Rares, 8 Peu Communes, 30 Communes</Hi>.</>,
           <>Copies : <Hi>1 exemplaire</Hi> par carte non-commune, <Hi>3 exemplaires</Hi> par commune.</>,
           <>Une même capacité nommée ne peut pas figurer plus de <Hi>{MAX_SAME_CAPABILITY} fois</Hi> dans le deck
-            (Vol excepté{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}) : impossible d'empiler
+            (Vol et Chant exceptés{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}) : impossible d'empiler
             cinquante fois le même effet.</>,
           <>On ne mélange pas une faction <Hi>Bonne</Hi> et une faction <Hi>Maléfique</Hi> dans le même deck.</>,
           <>Un deck <Hi>sans aucun doublon</Hi> est dit <Hi>singulier</Hi> : il active les capacités Singulier. Facultatif, mais récompensé.</>,
@@ -605,7 +605,7 @@ function TcgGuide() {
           <><Hi>Mono-faction</Hi>, <Hi>mono-clan</Hi>, <Hi>≤ 4 Mercenaires</Hi>.</>,
           <>Slots de rareté : <Hi>2 / 4 / 6 / 8 / 30</Hi> (Lég / Épique / Rare / Peu Commune / Commune).</>,
           <>Copies : non-communes <Hi>×1</Hi>, communes <Hi>×3</Hi>.</>,
-          <>Une même capacité nommée : <Hi>{MAX_SAME_CAPABILITY} occurrences</Hi> maximum (Vol exempté{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}).</>,
+          <>Une même capacité nommée : <Hi>{MAX_SAME_CAPABILITY} occurrences</Hi> maximum (Vol et Chant exemptés{DEROGATIONS_PLAFOND && <> ; <Hi>{DEROGATIONS_PLAFOND}</Hi></>}).</>,
           <>Interdit de mélanger <Hi>Bon</Hi> et <Hi>Maléfique</Hi>.</>,
           <>Formats : mode <Hi>Classique</Hi> (communes seules) ou <Hi>Expert</Hi> (slots de rareté) × étendue
             <Hi> Standard</Hi> (rotation ~2 ans) ou <Hi>Étendu</Hi>.</>,

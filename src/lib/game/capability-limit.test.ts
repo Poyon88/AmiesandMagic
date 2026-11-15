@@ -21,8 +21,9 @@ import { ABILITIES } from "./abilities";
 import { mkCard } from "./test-harness";
 
 describe("capabilityLimitFor — point de passage unique", () => {
-  it("Chant plafonne à 24", () => {
-    expect(capabilityLimitFor("chant")).toBe(24);
+  it("Chant n'a plus de plafond : exemptée, comme Vol", () => {
+    expect(CAPABILITY_LIMIT_EXEMPT.has("chant")).toBe(true);
+    expect(CAPABILITY_LIMIT_OVERRIDES.has("chant")).toBe(false);
   });
 
   it("les autres capacités gardent le plafond commun", () => {
@@ -44,15 +45,6 @@ describe("capabilityLimitFor — point de passage unique", () => {
 });
 
 describe("les violations citent le plafond RÉELLEMENT appliqué", () => {
-  it("Chant n'est en faute qu'au-delà de 24", () => {
-    expect(capabilityLimitViolations(new Map([["chant", 24]]))).toEqual([]);
-    const [v] = capabilityLimitViolations(new Map([["chant", 25]]));
-    expect(v.count).toBe(25);
-    // Le message d'erreur affiche `max` : annoncer 12 là où 24 s'applique
-    // serait un mensonge d'interface.
-    expect(v.max).toBe(24);
-  });
-
   it("une capacité ordinaire reste en faute au-delà de 12", () => {
     expect(capabilityLimitViolations(new Map([["taunt", 12]]))).toEqual([]);
     const [v] = capabilityLimitViolations(new Map([["taunt", 13]]));
@@ -61,18 +53,24 @@ describe("les violations citent le plafond RÉELLEMENT appliqué", () => {
 });
 
 describe("périmètre du décompte — unités, objets ET actions", () => {
-  it("une action Chant entame le quota comme une créature Chant", () => {
-    const creature = mkCard({
-      name: "Chanteuse", card_type: "creature", attack: 1, health: 1,
-      keywords: ["chant"] as never,
-    });
-    const sort = mkCard({
-      name: "Hymne", card_type: "spell", attack: null, health: null,
-      spell_keywords: [{ id: "chant", amount: 2 }] as never,
-    });
+  const creature = mkCard({ name: "Chanteuse", card_type: "creature", attack: 1, health: 1, keywords: ["chant"] as never });
+  const sort = mkCard({ name: "Hymne", card_type: "spell", attack: null, health: null, spell_keywords: [{ id: "chant", amount: 2 }] as never });
+  const garde = mkCard({ name: "Garde", card_type: "creature", attack: 1, health: 1, keywords: ["taunt"] as never });
 
+  it("Chant est reconnue sur les unités comme sur les actions", () => {
     expect(namedCreatureCapabilityIds(creature)).toContain("chant");
     expect(namedCreatureCapabilityIds(sort)).toEqual(["chant"]);
-    expect(creatureCapabilityCounts([{ card: creature, quantity: 12 }, { card: sort, quantity: 13 }]).get("chant")).toBe(25);
+  });
+
+  it("un deck ENTIER de cartes Chant n'est jamais en faute", () => {
+    const counts = creatureCapabilityCounts([{ card: creature, quantity: 25 }, { card: sort, quantity: 25 }]);
+    expect(counts.has("chant")).toBe(false);
+    expect(capabilityLimitViolations(counts)).toEqual([]);
+  });
+
+  it("une capacité ordinaire reste comptée et plafonnée", () => {
+    const counts = creatureCapabilityCounts([{ card: garde, quantity: 13 }]);
+    expect(counts.get("taunt")).toBe(13);
+    expect(capabilityLimitViolations(counts)).toHaveLength(1);
   });
 });
