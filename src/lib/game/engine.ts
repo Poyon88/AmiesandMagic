@@ -1962,6 +1962,24 @@ function applyComposedToUnit(
       return;
     }
     case "retour_differe": {
+      // CARTE HORS PLATEAU (cimetière ou main) : « place les unités du cimetière
+      // sous le deck de leur propriétaire ». resolveRetourDiffere ne connaît que
+      // le plateau et les objets en jeu : sans ce chemin, l'effet ne trouvait
+      // rien et ne faisait RIEN (vu sur « La Grande Traversée »). La carte
+      // rejoint le dessous du deck du joueur dont elle occupait la zone — au
+      // cimetière ou en main, elle est déjà chez son propriétaire.
+      if (![owner, opponent].some((p) => p.board.includes(u))) {
+        for (const p of [owner, opponent]) {
+          for (const zone of [p.graveyard, p.hand]) {
+            const i = zone.indexOf(u);
+            if (i === -1) continue;
+            zone.splice(i, 1);
+            u.instanceId = generateInstanceId();
+            p.deck.push(u);
+            return;
+          }
+        }
+      }
       resolveRetourDiffere(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell, designationCiblee(composed));
       return;
     }
