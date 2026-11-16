@@ -308,8 +308,16 @@
 .vt-cartes {
   --s: 0.9;
   display: flex; gap: clamp(12px, 1.4vw, 22px);
-  margin: clamp(28px, 5vh, 56px) calc(var(--vt-gutter) * -1) 0; padding: 6px var(--vt-gutter) 18px;
+  /* Au survol, la carte grossit de moitié depuis son centre : elle déborde
+     d'un quart de sa hauteur en haut et en bas. Un rail qui défile de côté
+     rogne forcément ce qui dépasse en hauteur, donc on lui donne cette marge
+     EN DEDANS (padding) et on la reprend en dehors (marge négative) : la mise
+     en page ne bouge pas, la carte agrandie a la place de s'afficher. */
+  --debord: calc(364px * var(--s) * 0.29);
+  margin: calc(clamp(28px, 5vh, 56px) - var(--debord)) calc(var(--vt-gutter) * -1) calc(18px - var(--debord));
+  padding: var(--debord) var(--vt-gutter);
   overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin;
+  position: relative; z-index: 1;
 }
 .vt-carte { flex: none; width: calc(260px * var(--s)); margin: 0; scroll-snap-align: start; scroll-margin-left: var(--vt-gutter); }
 .vt-carte-cadre { width: calc(260px * var(--s)); height: calc(364px * var(--s)); }
