@@ -461,3 +461,8 @@
 .vt-faction-action { max-width: 40rem; }
 .vt-faction-sommaire { display: flex; flex-wrap: wrap; gap: 8px; margin-top: clamp(24px, 4vh, 40px); }
 .vt-faction-sommaire a { text-decoration: none; }
+.vt-clan { padding: clamp(40px, 7vh, 80px) var(--vt-gutter); scroll-margin-top: 24px; }
+.vt-clan[data-alterne] { background: color-mix(in srgb, var(--vt-ink) 2.5%, transparent); }
+.vt-clan-corps { max-width: 78rem; }
+.vt-clan-titre { font-weight: 800; font-size: clamp(1.6rem, 2.8vw, 2.6rem); line-height: 1.05; letter-spacing: -0.025em; color: var(--vt-ink); }
+.vt-clan-compte { font-size: 0.95rem; color: var(--vt-ink-3); }
