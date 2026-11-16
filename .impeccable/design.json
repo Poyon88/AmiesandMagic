@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T12:00:00Z",
+  "title": "Design System: Armies of Legends — vitrine publique",
+  "extensions": {
+    "colorMeta": {
+      "fond": { "role": "neutral", "displayName": "Fond profond", "canonical": "#101114", "cssVar": "--vt-bg", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "fond-2": { "role": "neutral", "displayName": "Fond relevé", "canonical": "#17181c", "cssVar": "--vt-bg-2", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "fond-3": { "role": "neutral", "displayName": "Fond d'attente", "canonical": "#1f2126", "cssVar": "--vt-bg-3", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "fond-coulisse": { "role": "neutral", "displayName": "Fond de coulisse", "canonical": "#0b0c0e", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "encre": { "role": "neutral", "displayName": "Encre", "canonical": "#f3f2ee", "cssVar": "--vt-ink", "tonalRamp": ["#1f2126", "#3a3d44", "#6b6e76", "#8b8d95", "#a3a5ad", "#cfcdc6", "#e4e2dc", "#f3f2ee"] },
+      "encre-2": { "role": "neutral", "displayName": "Encre atténuée", "canonical": "#cfcdc6", "cssVar": "--vt-ink-2", "tonalRamp": ["#1f2126", "#3a3d44", "#6b6e76", "#8b8d95", "#a3a5ad", "#cfcdc6", "#e4e2dc", "#f3f2ee"] },
+      "encre-3": { "role": "neutral", "displayName": "Encre discrète", "canonical": "#a3a5ad", "cssVar": "--vt-ink-3", "tonalRamp": ["#1f2126", "#3a3d44", "#6b6e76", "#8b8d95", "#a3a5ad", "#cfcdc6", "#e4e2dc", "#f3f2ee"] },
+      "trait": { "role": "neutral", "displayName": "Trait", "canonical": "#2a2c31", "cssVar": "--vt-line", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "trait-fort": { "role": "neutral", "displayName": "Trait fort", "canonical": "#3a3d44", "cssVar": "--am-line-strong (pont)", "tonalRamp": ["#0b0c0e", "#101114", "#17181c", "#1f2126", "#2a2c31", "#3a3d44", "#6b6e76", "#a3a5ad"] },
+      "vermillon": { "role": "primary", "displayName": "Vermillon", "canonical": "#d4351a", "cssVar": "--vt-accent", "tonalRamp": ["#3a0d05", "#6b1a0b", "#a02712", "#d4351a", "#b92d15", "#f07a62", "#f6ab9b", "#fbe0d9"] },
+      "vermillon-vif": { "role": "primary", "displayName": "Vermillon vif", "canonical": "#b92d15", "cssVar": "--vt-accent-hi", "tonalRamp": ["#3a0d05", "#6b1a0b", "#a02712", "#d4351a", "#b92d15", "#f07a62", "#f6ab9b", "#fbe0d9"] },
+      "sur-vermillon": { "role": "neutral", "displayName": "Blanc sur vermillon", "canonical": "#ffffff", "tonalRamp": ["#1f2126", "#3a3d44", "#6b6e76", "#a3a5ad", "#cfcdc6", "#e4e2dc", "#f3f2ee", "#ffffff"] },
+      "alerte": { "role": "tertiary", "displayName": "Alerte", "canonical": "#ff8a70", "cssVar": "--am-ember (pont)", "tonalRamp": ["#4a1408", "#8a2a17", "#c9472d", "#ef6a4e", "#ff8a70", "#ffb09d", "#ffd3c8", "#ffece7"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Le h1 du mur, deux lignes ; tête des pages de faction." },
+      "headline": { "displayName": "Headline", "purpose": "Titres de section ; grossi pour la clôture, réduit pour les pages de lecture et la connexion." },
+      "title": { "displayName": "Title", "purpose": "Sous-titres, noms de faction et de carte, marque." },
+      "lede": { "displayName": "Lede", "purpose": "Phrase d'appui sous le h1, chapô d'article." },
+      "body": { "displayName": "Body", "purpose": "Texte de section, 38em au plus, encre atténuée." },
+      "prose": { "displayName": "Prose", "purpose": "Lecture longue (actualités, pages légales), colonne de 46rem." },
+      "button": { "displayName": "Button", "purpose": "Libellé des boutons, jamais en capitales." },
+      "nav": { "displayName": "Nav", "purpose": "Liens de navigation et sélecteur de langue." },
+      "caption": { "displayName": "Caption", "purpose": "Dates, légendes, pied de page, ligne race · clan." },
+      "label": { "displayName": "Label", "purpose": "Nom d'alignement au-dessus d'une rangée du mur, en capitales ; aucun autre usage." }
+    },
+    "shadows": [
+      { "name": "filet-de-visee", "value": "0 0 0 2px #f3f2ee", "purpose": "Contour de l'affiche visée dans le mur." },
+      { "name": "detachement", "value": "0 0 0 2px #f3f2ee, 0 28px 70px rgba(0, 0, 0, 0.7)", "purpose": "Grande affiche visée et affiche centrale de la connexion ; seule ombre portée du système." },
+      { "name": "contour-fantome", "value": "inset 0 0 0 1.5px #f3f2ee", "purpose": "Contour du bouton fantôme." },
+      { "name": "contour-pause", "value": "inset 0 0 0 1px #2a2c31", "purpose": "Contour du bouton de pause ; passe à #a3a5ad au survol." },
+      { "name": "filet-de-barre", "value": "0 1px 0 #2a2c31", "purpose": "Filet sous la barre de navigation après défilement." }
+    ],
+    "motion": [
+      { "name": "vt-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Courbe de sortie exponentielle pour toute réponse à un geste et pour les entrées." },
+      { "name": "derive", "value": "linear infinite, durée = nombre d'affiches × 7s + rang × 9s (frise : × 8s) ; rangées paires à rebours", "purpose": "Dérive des rangées du mur." },
+      { "name": "tenue-visee", "value": "4600ms", "purpose": "Durée d'exposition de l'affiche visée quand le mur tourne seul." },
+      { "name": "devoilement", "value": "clip-path inset(0 0 100% 0) → inset(0), scale 1.08 → 1, 0.7s vt-out", "purpose": "Arrivée de l'image de l'affiche visée." },
+      { "name": "travelling", "value": "scale 1 → 1.07, 5.6s linear", "purpose": "Lente avancée de l'image visée tant qu'elle est à l'écran." },
+      { "name": "entree-rangee", "value": "opacity 0 + translateY(26px), 0.9s vt-out, décalage 0.08s", "purpose": "Entrée du mur, une seule fois." },
+      { "name": "etat-rapide", "value": "0.18s", "purpose": "Changements de couleur et de soulignement (boutons, liens, navigation)." },
+      { "name": "etat-affiche", "value": "0.35s (filter), 0.35s vt-out (transform)", "purpose": "Éclairage et grossissement d'une affiche." },
+      { "name": "ouverture-faction", "value": "flex-grow 0.55s vt-out ; image 0.4s filter, 0.7s transform", "purpose": "Élargissement de l'affiche de faction visée." },
+      { "name": "mouvement-reduit", "value": "prefers-reduced-motion: animations et transitions coupées, bouton pause masqué", "purpose": "Tout repose, rien ne reste caché." }
+    ],
+    "breakpoints": [
+      { "name": "telephone", "value": "599px (max)" },
+      { "name": "mobile", "value": "899px (max)" },
+      { "name": "bureau", "value": "900px (min)" },
+      { "name": "colonne-unique", "value": "1099px (max)" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "L'action de la page, seule à porter le vermillon.",
+      "html": "<a class=\"ds-vt-btn\" href=\"#\">Choisir ma faction offerte</a>",
+      "css": ".ds-vt-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0.85em 1.5em; background: #d4351a; color: #fff; border: 0; border-radius: 100px; font: 800 1rem/1 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color 0.18s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1); } .ds-vt-btn:hover { background: #b92d15; transform: translateY(-1px); } .ds-vt-btn:active { transform: translateY(1px) scale(0.985); } .ds-vt-btn:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; }"
+    },
+    {
+      "name": "Bouton fantôme",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Action secondaire ; s'inverse au survol.",
+      "html": "<a class=\"ds-vt-btn-ghost\" href=\"#\">Jouer</a>",
+      "css": ".ds-vt-btn-ghost { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0.85em 1.5em; background: transparent; color: #f3f2ee; border: 0; border-radius: 100px; box-shadow: inset 0 0 0 1.5px #f3f2ee; font: 800 1rem/1 'Bricolage Grotesque', system-ui, sans-serif; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background-color 0.18s, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1); } .ds-vt-btn-ghost:hover { background: #f3f2ee; color: #101114; transform: translateY(-1px); } .ds-vt-btn-ghost:active { transform: translateY(1px) scale(0.985); } .ds-vt-btn-ghost:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; }"
+    },
+    {
+      "name": "Lien d'action",
+      "kind": "custom",
+      "refersTo": "link",
+      "description": "Lien secondaire souligné, à côté d'un bouton ou en retour de page.",
+      "html": "<a class=\"ds-vt-link\" href=\"#\">Voir les neuf factions</a>",
+      "css": ".ds-vt-link { display: inline-flex; align-items: center; min-height: 44px; font: 600 1rem/1.2 'Bricolage Grotesque', system-ui, sans-serif; color: #f3f2ee; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 0.35em; text-decoration-color: rgba(243, 242, 238, 0.45); transition: text-decoration-color 0.18s; } .ds-vt-link:hover { text-decoration-color: #f3f2ee; } .ds-vt-link:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; border-radius: 4px; }"
+    },
+    {
+      "name": "Barre de navigation",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Barre de 68 px : marque en texte, liens d'ancre, bouton fantôme. État défilé montré ici.",
+      "html": "<header class=\"ds-vt-nav\"><a class=\"ds-vt-nav-brand\" href=\"#\">Armies of Legends</a><nav class=\"ds-vt-nav-links\"><a class=\"ds-vt-nav-a\" href=\"#\">Factions</a><a class=\"ds-vt-nav-a\" href=\"#\">Tirages limités</a><a class=\"ds-vt-nav-a\" href=\"#\">Tournois</a><a class=\"ds-vt-nav-btn\" href=\"#\">Jouer</a></nav></header>",
+      "css": ".ds-vt-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; padding: 0 24px; background: rgba(16, 17, 20, 0.94); box-shadow: 0 1px 0 #2a2c31; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-vt-nav-brand { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.015em; color: #f3f2ee; text-decoration: none; white-space: nowrap; } .ds-vt-nav-links { display: flex; align-items: center; gap: 24px; } .ds-vt-nav-a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; font-size: 0.95rem; color: #cfcdc6; text-decoration: none; transition: color 0.18s; } .ds-vt-nav-a:hover { color: #f3f2ee; } .ds-vt-nav-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0.7em 1.25em; border-radius: 100px; box-shadow: inset 0 0 0 1.5px #f3f2ee; color: #f3f2ee; font-weight: 800; font-size: 0.95rem; line-height: 1; text-decoration: none; transition: background-color 0.18s; } .ds-vt-nav-btn:hover { background: #f3f2ee; color: #101114; } .ds-vt-nav a:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; border-radius: 4px; }"
+    },
+    {
+      "name": "Rangée du mur",
+      "kind": "custom",
+      "refersTo": "affiche",
+      "description": "Affiches 2:3 assombries au repos ; celle qu'on vise s'éclaire, grossit et prend le filet. Les aplats remplacent ici les illustrations.",
+      "html": "<div class=\"ds-vt-rangee\"><span class=\"ds-vt-rangee-nom\">Lumière</span><div class=\"ds-vt-rail\"><button class=\"ds-vt-affiche\" style=\"--a:#7a5a3a;--b:#2b3a4a\" aria-label=\"Affiche\"></button><button class=\"ds-vt-affiche ds-vt-affiche-visee\" style=\"--a:#b9824a;--b:#3a2a4a\" aria-label=\"Affiche visée\"></button><button class=\"ds-vt-affiche\" style=\"--a:#4a6a5a;--b:#2a2030\" aria-label=\"Affiche\"></button><button class=\"ds-vt-affiche\" style=\"--a:#6a3a3a;--b:#20303a\" aria-label=\"Affiche\"></button></div></div>",
+      "css": ".ds-vt-rangee { position: relative; padding-top: 22px; background: #101114; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-vt-rangee-nom { position: absolute; right: 0; top: 0; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a3a5ad; } .ds-vt-rail { display: flex; gap: 12px; } .ds-vt-affiche { flex: none; width: 110px; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: 6px; background: linear-gradient(160deg, var(--a), var(--b)); cursor: pointer; filter: brightness(0.52) saturate(0.9); transition: filter 0.35s, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); } .ds-vt-affiche:hover, .ds-vt-affiche:focus-visible, .ds-vt-affiche-visee { filter: none; transform: scale(1.04); } .ds-vt-affiche-visee { box-shadow: 0 0 0 2px #f3f2ee; } .ds-vt-affiche:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; }"
+    },
+    {
+      "name": "Affiche visée",
+      "kind": "card",
+      "refersTo": "affiche-visee",
+      "description": "L'affiche détachée du mur : illustration, nom, pastille de rareté, race · clan, ambiance.",
+      "html": "<aside class=\"ds-vt-visee\"><div class=\"ds-vt-visee-art\"></div><div class=\"ds-vt-visee-fiche\"><div class=\"ds-vt-visee-nom\">Nom de la carte</div><div class=\"ds-vt-visee-ligne\"><span class=\"ds-vt-puce\">Unique</span><span>Race · Clan</span></div><p class=\"ds-vt-visee-ambiance\">Deux lignes d'ambiance au plus, tirées de la carte.</p></div></aside>",
+      "css": ".ds-vt-visee { width: 260px; border-radius: 12px; overflow: hidden; background: #17181c; box-shadow: 0 0 0 2px #f3f2ee, 0 28px 70px rgba(0, 0, 0, 0.7); font-family: 'Bricolage Grotesque', system-ui, sans-serif; color: #f3f2ee; } .ds-vt-visee-art { aspect-ratio: 2 / 2.55; background: linear-gradient(160deg, #b9824a, #3a2a4a); } .ds-vt-visee-fiche { padding: 14px 16px 16px; } .ds-vt-visee-nom { font-weight: 800; font-size: 1.3rem; line-height: 1.12; letter-spacing: -0.015em; } .ds-vt-visee-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 9px; font-size: 0.82rem; font-weight: 600; color: #cfcdc6; } .ds-vt-puce { padding: 0.32em 0.72em; border-radius: 100px; background: #f3f2ee; color: #101114; font-weight: 800; font-size: 0.78rem; } .ds-vt-visee-ambiance { margin: 10px 0 0; font-size: 0.85rem; line-height: 1.4; color: #a3a5ad; }"
+    },
+    {
+      "name": "Pastille",
+      "kind": "chip",
+      "refersTo": "puce",
+      "description": "Pastille inversée : rareté d'une carte, faction possédée ou offerte.",
+      "html": "<span class=\"ds-vt-puce-seule\">Unique</span>",
+      "css": ".ds-vt-puce-seule { display: inline-block; padding: 0.32em 0.72em; border-radius: 100px; background: #f3f2ee; color: #101114; font: 800 0.78rem/1.2 'Bricolage Grotesque', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Affiche de faction",
+      "kind": "card",
+      "refersTo": "affiche-faction",
+      "description": "Panneau d'une rangée de neuf ; celui qu'on vise s'élargit et déplie nom, accroche et lien.",
+      "html": "<div class=\"ds-vt-factions\"><a class=\"ds-vt-faction ds-vt-faction-ouverte\" href=\"#\" style=\"--a:#8a6a3a;--b:#2a3040\"><span class=\"ds-vt-faction-texte\"><strong>Nom de faction</strong><span class=\"ds-vt-faction-accroche\">Une phrase d'accroche.</span><span class=\"ds-vt-faction-voir\">Voir la faction <svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 8h10M9 4l4 4-4 4\"/></svg></span></span></a><a class=\"ds-vt-faction\" href=\"#\" style=\"--a:#3a6a5a;--b:#2a2030\"></a><a class=\"ds-vt-faction\" href=\"#\" style=\"--a:#6a3a4a;--b:#20303a\"></a></div>",
+      "css": ".ds-vt-factions { display: flex; gap: 10px; height: 300px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-vt-faction { position: relative; flex: 1 1 0; min-width: 0; overflow: hidden; border-radius: 12px; background: linear-gradient(180deg, rgba(16,17,20,0) 40%, rgba(16,17,20,0.94) 100%), linear-gradient(160deg, var(--a), var(--b)); color: #f3f2ee; text-decoration: none; filter: brightness(0.6) saturate(0.9); transition: flex-grow 0.55s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s; } .ds-vt-faction:hover, .ds-vt-faction:focus-visible, .ds-vt-faction-ouverte { flex-grow: 3.6; filter: none; } .ds-vt-faction:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; } .ds-vt-faction-texte { position: absolute; inset: auto 0 0 0; padding: 16px; display: flex; flex-direction: column; } .ds-vt-faction-texte strong { font-weight: 800; font-size: 1.5rem; line-height: 1.08; letter-spacing: -0.02em; } .ds-vt-faction-accroche { padding-top: 8px; font-size: 1rem; line-height: 1.4; color: #cfcdc6; } .ds-vt-faction-voir { display: inline-flex; align-items: center; gap: 0.5em; margin-top: 12px; font-weight: 800; font-size: 0.95rem; } .ds-vt-faction-voir svg { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-vt-faction:hover .ds-vt-faction-voir svg { transform: translateX(4px); }"
+    },
+    {
+      "name": "Champ de formulaire",
+      "kind": "input",
+      "refersTo": "champ",
+      "description": "Champ des écrans d'authentification, tel que le pont l'habille sous .vt.",
+      "html": "<label class=\"ds-vt-champ\"><span>Adresse e-mail</span><input type=\"email\" placeholder=\"toi@exemple.com\"></label>",
+      "css": ".ds-vt-champ { display: block; max-width: 27rem; font-family: 'Bricolage Grotesque', system-ui, sans-serif; } .ds-vt-champ span { display: block; margin-bottom: 6px; font-size: 0.875rem; font-weight: 600; color: #cfcdc6; } .ds-vt-champ input { width: 100%; padding: 12px 16px; font: 400 1rem/1.5 inherit; font-family: inherit; background: #17181c; color: #f3f2ee; border: 1px solid #3a3d44; border-radius: 10px; transition: border-color 0.15s; } .ds-vt-champ input::placeholder { color: #a3a5ad; } .ds-vt-champ input:focus { outline: none; border-color: #f3f2ee; }"
+    },
+    {
+      "name": "Bouton de pause",
+      "kind": "button",
+      "refersTo": "bouton-pause",
+      "description": "Commande discrète qui arrête la dérive du mur.",
+      "html": "<button class=\"ds-vt-pause\" type=\"button\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M2 1h3v10H2zM7 1h3v10H7z\"/></svg>Pause</button>",
+      "css": ".ds-vt-pause { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; background: rgba(16, 17, 20, 0.8); color: #cfcdc6; border: 0; border-radius: 100px; box-shadow: inset 0 0 0 1px #2a2c31; font: 600 0.82rem/1 'Bricolage Grotesque', system-ui, sans-serif; cursor: pointer; transition: color 0.18s, box-shadow 0.18s; } .ds-vt-pause:hover { color: #f3f2ee; box-shadow: inset 0 0 0 1px #a3a5ad; } .ds-vt-pause:focus-visible { outline: 2px solid #f3f2ee; outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le Mur des cartes",
+    "overview": "La vitrine ne présente pas le catalogue, elle **est** le catalogue : un mur d'illustrations de cartes au format affiche (2:3), rangées par alignement, qui dérivent lentement comme la page d'accueil d'une plateforme de streaming. Une carte s'en détache, s'agrandit, se nomme. Le visiteur visé est un joueur de TCG aguerri qui juge en quelques secondes : la preuve passe par les illustrations elles-mêmes et par de vraies cartes rendues par le composant du jeu, pas par un discours.\n\nLe système est volontairement pauvre en moyens. Le fond est un neutre profond presque noir, le texte une encre claire légèrement chaude, et **la seule couleur vient des illustrations**. Un unique accent, le vermillon, n'apparaît que sur ce qui se clique. Une seule famille typographique, Bricolage Grotesque, en deux registres : graisse 800 très serrée pour les titres, graisse normale pour le texte. Pas de dorure, pas de verre dépoli, pas de texte en dégradé, pas d'ornement : les pages secondaires écrites avec les utilitaires dorés du jeu sont « déshabillées » par un pont de jetons dès qu'elles sont rendues sous `.vt`.\n\nLe mouvement suit une grammaire à deux temps : une dérive linéaire lente pour les rangées, et une réponse nette à courbe exponentielle (`cubic-bezier(0.16, 1, 0.3, 1)`) pour tout ce qui réagit au visiteur. Rien d'autre ne bouge. Avec `prefers-reduced-motion`, tout repose et rien ne reste caché.",
+    "keyCharacteristics": [
+      "Fond neutre profond, encre claire, traits discrets ; la couleur appartient aux illustrations.",
+      "Un seul accent, vermillon, réservé aux actions.",
+      "Affiches 2:3 à coins de 6 px, assombries au repos, à pleine lumière quand on les vise.",
+      "Bricolage Grotesque partout ; titres en 800, interlettrage négatif, interlignage proche de 1.",
+      "Profondeur par la luminosité et le voile dégradé, pas par les ombres.",
+      "Tout ce qui se clique est une pilule ; tout ce qui contient est un rectangle à 12 px.",
+      "Cibles tactiles de 44 px minimum, 48 px pour les boutons."
+    ],
+    "rules": [
+      { "name": "La règle du Vermillon cliquable", "body": "Le vermillon n'apparaît QUE sur ce qui se clique, et en pratique que sur le bouton d'action principal. Jamais sur un titre, un filet, une icône décorative ou un fond de section. S'il y a deux boutons côte à côte, un seul est vermillon ; l'autre est fantôme ou un lien souligné.", "section": "colors" },
+      { "name": "La règle de la Couleur prêtée", "body": "Le décor n'a pas de couleur à lui. Toute teinte visible à l'écran, hors vermillon et alerte, vient d'une illustration de carte. Aucun dégradé coloré, aucune lueur teintée, aucun fond de section coloré.", "section": "colors" },
+      { "name": "La règle de l'Inversion", "body": "Pour distinguer un petit élément sans couleur (pastille de rareté, badge « possédée », bouton fantôme survolé), on inverse : fond encre, texte fond.", "section": "colors" },
+      { "name": "La règle des Deux graisses", "body": "800 pour ce qui titre ou agit, 400 pour ce qui se lit, 600 pour la navigation et les petites lignes d'information. Pas d'italique, pas de seconde famille : sous `.vt`, `--font-cinzel` et `--font-crimson` pointent vers Bricolage.", "section": "typography" },
+      { "name": "La règle du Titre serré", "body": "Tout titre en 800 porte un interlettrage négatif (de −0.015em pour les petits à −0.04em pour le plus grand) et un interlignage entre 0.98 et 1.12. `text-wrap: balance` sur les titres, `pretty` sur les paragraphes.", "section": "typography" },
+      { "name": "La règle de l'Étiquette unique", "body": "Le petit libellé en capitales espacées n'existe que comme titre de rangée du mur, à la manière d'une rangée de catalogue. Il ne sert jamais de surtitre au-dessus d'un titre de section.", "section": "typography" },
+      { "name": "La règle de l'Ombre unique", "body": "Une seule ombre portée existe, et elle appartient à l'affiche qui s'est détachée du mur. Aucun bouton, panneau, carte de contenu ou menu n'en reçoit.", "section": "elevation" },
+      { "name": "La règle de la Lumière", "body": "Pour mettre en avant, on éclaire ; pour mettre en retrait, on assombrit. On ne floute pas, on ne teinte pas.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do envelopper toute page publique dans `.vt` avec la variable de police (`bricolage.variable`) et importer `vitrine.css` ; les jetons `--vt-*` n'existent pas en dehors.",
+      "Do laisser les illustrations porter la couleur : fond `#101114`, texte encre, et rien d'autre de coloré que le bouton d'action.",
+      "Do donner aux titres la graisse 800, un interlettrage négatif et un interlignage proche de 1.",
+      "Do montrer les cartes au format 2:3, recadrées vers le haut, assombries au repos et éclairées quand on les vise.",
+      "Do utiliser la courbe `cubic-bezier(0.16, 1, 0.3, 1)` pour toute réponse à un geste, et le linéaire seulement pour la dérive.",
+      "Do garder 44 px de cible au moins, 48 px pour les boutons, et l'anneau de focus encre de 2 px.",
+      "Do prévoir l'état « mouvement réduit » : animations coupées, contenu entièrement visible, bouton de pause retiré.",
+      "Do faire passer tout texte visible par `messages/*.json`."
+    ],
+    "donts": [
+      "Don't toucher aux jetons `--am-*`, `--background`, `--primary` de `globals.css` ni appliquer ce système au jeu : le plateau en dépend.",
+      "Don't employer le vermillon sur autre chose qu'un élément cliquable, ni en poser deux côte à côte.",
+      "Don't réintroduire l'or, le verre dépoli, le texte en dégradé, les lueurs colorées ou les cadres ornementaux sur une page publique.",
+      "Don't ajouter une seconde famille de caractères, de l'italique, ou des capitales espacées ailleurs que sur le nom d'une rangée du mur.",
+      "Don't donner une ombre portée à autre chose qu'une affiche détachée.",
+      "Don't arrondir un conteneur en pilule ni donner des coins vifs à un bouton.",
+      "Don't faire bouger autre chose que les rangées et ce que le visiteur vient de viser.",
+      "Don't glisser vers l'esthétique de jeu mobile racoleur (effets criards, gacha) ni vers le site d'entreprise trop sage ; rien de lourd ni de lent."
+    ]
+  }
+}

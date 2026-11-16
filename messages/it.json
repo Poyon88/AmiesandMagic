@@ -2395,9 +2395,9 @@
     "nav_play": "Gioca",
     "hero_eyebrow": "Fantasy TCG — Nuova generazione",
     "hero_title": "Armies of Legends",
-    "hero_sub": "Forgia la tua leggenda. Guida la tua fazione. Scrivi la tua storia.",
-    "hero_cta": "Entra nell'arena",
-    "hero_cta_secondary": "Scopri",
+    "hero_sub": "Più di 300 carte fin dall'iscrizione, nell'esercito che scegli. Le tirature limitate fanno il resto: nessun mazzo Esperto somiglia al tuo.",
+    "hero_cta": "Scegli la mia fazione gratuita",
+    "hero_cta_secondary": "Vedi le nove fazioni",
     "hero_proof": "Più di 500 carte offerte già dalla prima partita",
     "features_title": "Perché Armies of Legends",
     "f1_title": "La profondità delle leggende.",
@@ -2411,8 +2411,8 @@
     "f4_title": "L'arena mobile, finalmente all'altezza.",
     "f4_desc": "Tornei premiati con carte rare e montepremi in denaro — un livello di sfida finora riservato ai più grandi TCG desktop.",
     "f4_standings": "Classifica finale",
-    "factions_title": "Nove fazioni. Una leggenda.",
-    "factions_sub": "Ogni razza percorre la propria via. Quale sarà la tua?",
+    "factions_title": "Nove eserciti. Il primo è tuo.",
+    "factions_sub": "Scegli la tua fazione all'iscrizione: tutte le sue carte classiche, più di 300, sono tue senza pagare. Le altre fazioni si aggiungono poi per una frazione del costo di un TCG classico.",
     "showcase_title": "Un bestiario. Migliaia di combinazioni.",
     "showcase_sub": "Dalla creatura più umile all'eroe mitico, ogni carta conta.",
     "cta_title": "L'arena ti aspetta.",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "Il deserto ricorda i suoi re"
       }
-    }
+    },
+    "nav_factions": "Fazioni",
+    "nav_limited": "Tirature limitate",
+    "nav_tournaments": "Tornei",
+    "hero_claim": "Un'intera fazione, in regalo.",
+    "wall_pause": "Metti in pausa il muro",
+    "wall_play": "Riavvia il muro",
+    "factions_see": "Vedi la fazione",
+    "limited_title": "Nessun mazzo Esperto somiglia al tuo.",
+    "limited_desc": "Le carte a tiratura limitata rendono unico ogni mazzo Esperto. La quota comune garantisce che a decidere sia solo la tua strategia.",
+    "trailer_title": "Le leggende entrano in scena.",
+    "nav_language": "Lingua",
+    "f4_example": "Classifica di esempio: i giocatori sono fittizi, il montepremi è quello del gioco.",
+    "limited_run": "{count} esemplari",
+    "limited_unique": "Esemplare unico"
   },
   "auction": {
     "ended": "Terminata",

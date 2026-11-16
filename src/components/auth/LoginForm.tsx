@@ -317,6 +317,7 @@ export default function LoginForm() {
 
   return (
     <AuthShell
+      heading={isRegister ? t("register") : t("login")}
       sub={t("tagline")}
       footer={
         <Link
@@ -351,9 +352,9 @@ export default function LoginForm() {
               style={
                 active
                   ? {
-                      background: "linear-gradient(135deg, #f4e09a, #d8b25a 45%, #a87f30)",
-                      color: "var(--am-gold-ink)",
-                      boxShadow: "0 4px 14px rgba(216,178,90,0.3)",
+                      // L'onglet actif : encre pleine sur fond clair.
+                      background: "var(--am-ink)",
+                      color: "var(--am-bg-0)",
                     }
                   : undefined
               }

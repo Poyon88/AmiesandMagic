@@ -1,0 +1,44 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "buried-raster",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-16T14:13:59.973Z",
+        "reason": "agent: images à opacité 0 = état de départ d'un fondu enchaîné animé, elles s'affichent à tour de rôle"
+      },
+      {
+        "rule": "buried-raster",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-16T14:14:00.007Z",
+        "reason": "agent: images à opacité 0 = état de départ d'un fondu enchaîné animé, elles s'affichent à tour de rôle"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-11-16T15:14:50.474Z",
+        "reason": "agent: maquette d'une piste NON retenue lors de la comparaison ; elle porte volontairement une autre typographie et n'est pas livrée avec le site"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-11-16T15:14:50.489Z",
+        "reason": "agent: maquette d'une piste NON retenue lors de la comparaison ; elle porte volontairement une autre typographie et n'est pas livrée avec le site"
+      }
+    ]
+  }
+}

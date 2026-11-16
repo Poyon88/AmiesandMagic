@@ -21,6 +21,8 @@ import { useHeroText } from "@/i18n/useHeroText";
 import { pvDeDepart } from "@/lib/game/hero-hp";
 import { useTranslations } from "next-intl";
 import FactionActionBar from "./FactionActionBar";
+import { bricolage } from "@/components/vitrine/font";
+import "@/components/vitrine/vitrine.css";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
@@ -37,7 +39,9 @@ import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
 import { useEncartSurvol } from "./useEncartSurvol";
 
-const OR = "#c8a84e";
+// Teinte des filets et des libellés. En hexadécimal plein : le code lui
+// accole des suffixes d'opacité (`${OR}55`).
+const OR = "#f3f2ee";
 
 /** Au-delà, la liste de races déborde : Le Pacte des Griffes en accueille onze. */
 const RACES_AFFICHEES = 4;
@@ -181,51 +185,22 @@ export default function FactionClansPage({
   const total = sections.reduce((n, s) => n + s.cartes.length, 0) + sansClan.length;
 
   return (
-    <main style={{ background: "#0a0a18", minHeight: "100vh", color: "#e0e0e0" }}>
+    <main className={`vt ${bricolage.variable}`}>
+      <div className="vt-entete">
+        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing#factions" className="vt-link">{t("other_factions")}</Link>
+      </div>
+
       {/* ── Bandeau de faction ─────────────────────────────────────── */}
-      <header
-        className="relative px-6 md:px-10 pt-10 pb-16 md:pb-20"
-        style={{
-          background: `radial-gradient(ellipse at 50% 0%, ${faction.color}44 0%, #0a0a18 70%)`,
-        }}
-      >
-        <Link
-          href="/landing"
-          className="inline-flex items-center gap-2 transition-opacity hover:opacity-100"
-          style={{ color: `${OR}bb`, opacity: 0.75, fontSize: 13, letterSpacing: "0.06em" }}
-        >
-          ← {t("back")}
-        </Link>
+      <header className="vt-faction-tete">
+        <h1 className="vt-lecture-titre">{nomFaction}</h1>
+        <p className="vt-lecture-chapo">{descFaction}</p>
+        <p className="vt-lecture-date">{t("commons_count", { count: total, clans: sections.length })}</p>
 
-        <div className="max-w-4xl mx-auto text-center mt-8 md:mt-12">
-          <div style={{ fontSize: 48, lineHeight: 1 }} aria-hidden="true">{faction.emoji}</div>
-          <h1
-            className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold mt-4"
-            style={{
-              fontSize: "clamp(30px, 5vw, 54px)",
-              letterSpacing: "0.07em",
-              textShadow: `0 0 34px ${faction.accent}44`,
-            }}
-          >
-            {nomFaction}
-          </h1>
-          <div
-            className="mx-auto my-5 h-px w-24"
-            style={{ background: `linear-gradient(90deg, transparent, ${OR}, transparent)` }}
-          />
-          <p
-            className="font-[family-name:var(--font-crimson),serif] italic mx-auto"
-            style={{ fontSize: "clamp(15px, 1.9vw, 20px)", color: "#e0e0e0aa", maxWidth: "42rem" }}
-          >
-            {descFaction}
-          </p>
-          <p style={{ marginTop: 22, fontSize: 13, color: `${OR}cc`, letterSpacing: "0.05em" }}>
-            {t("commons_count", { count: total, clans: sections.length })}
-          </p>
-
-          {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
-              sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
-              rien — et reste muette tant qu'elle l'ignore. */}
+        {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
+            sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
+            rien — et reste muette tant qu'elle l'ignore. */}
+        <div className="vt-faction-action">
           <FactionActionBar
             factionId={factionId}
             nomFaction={nomFaction}
@@ -235,21 +210,20 @@ export default function FactionClansPage({
 
         {/* Sommaire des clans — la page est longue, on doit pouvoir sauter. */}
         {sections.length > 1 && (
-          <nav className="max-w-4xl mx-auto mt-10 flex flex-wrap justify-center gap-2">
+          <nav className="vt-faction-sommaire">
             {sections.map((s) => (
               <a
                 key={s.profil.nom}
                 href={`#${ancre(s.profil.nom)}`}
                 className="transition-colors"
                 style={{
-                  padding: "5px 13px",
+                  padding: "11px 16px",
                   borderRadius: 999,
                   border: `1px solid ${OR}33`,
                   background: "#ffffff08",
-                  fontSize: 12.5,
-                  color: "#e0e0e0cc",
-                  fontFamily: "var(--font-cinzel), serif",
-                  letterSpacing: "0.04em",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#e0e0e0",
                 }}
               >
                 {nomClan(s.profil.nom)}
@@ -259,14 +233,13 @@ export default function FactionClansPage({
               <a
                 href={`#${ANCRE_SANS_CLAN}`}
                 style={{
-                  padding: "5px 13px",
+                  padding: "11px 16px",
                   borderRadius: 999,
                   border: `1px solid ${OR}55`,
                   background: `${OR}14`,
-                  fontSize: 12.5,
+                  fontSize: 14,
+                  fontWeight: 600,
                   color: `${OR}ee`,
-                  fontFamily: "var(--font-cinzel), serif",
-                  letterSpacing: "0.04em",
                 }}
               >
                 {t("no_clan_title")}
@@ -355,11 +328,11 @@ function ClanSection({
             {section.hero && <PortraitHero hero={section.hero} couleur={accent} />}
             <h2
               className="font-[family-name:var(--font-cinzel),serif] font-bold"
-              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: accent, letterSpacing: "0.05em" }}
+              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: "#f3f2ee", letterSpacing: "-0.02em", fontWeight: 800 }}
             >
               {nomClan(profil.nom)}
             </h2>
-            <span style={{ fontSize: 13, color: "#e0e0e055", letterSpacing: "0.05em" }}>
+            <span style={{ fontSize: 13, color: "#a3a5ad" }}>
               {t("commons", { count: cartes.length })}
             </span>
           </div>
@@ -441,7 +414,7 @@ function ClanSection({
  *  Pas de races, pas de signature, pas de jauges : ces repères décrivent un
  *  clan, et il n'y en a pas ici. Une phrase suffit, et elle dit la règle. */
 function SansClanSection({
-  cartes, index, couleur, accent, t,
+  cartes, index, couleur, accent: _accent, t,
 }: {
   cartes: Card[];
   index: number;
@@ -471,11 +444,11 @@ function SansClanSection({
           <div className="flex items-baseline gap-4 flex-wrap">
             <h2
               className="font-[family-name:var(--font-cinzel),serif] font-bold"
-              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: accent, letterSpacing: "0.05em" }}
+              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: "#f3f2ee", letterSpacing: "-0.02em", fontWeight: 800 }}
             >
               {t("no_clan_title")}
             </h2>
-            <span style={{ fontSize: 13, color: "#e0e0e055", letterSpacing: "0.05em" }}>
+            <span style={{ fontSize: 13, color: "#a3a5ad" }}>
               {t("commons", { count: cartes.length })}
             </span>
           </div>
