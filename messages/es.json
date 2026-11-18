@@ -2395,9 +2395,9 @@
     "nav_play": "Jugar",
     "hero_eyebrow": "Fantasy TCG — Nueva generación",
     "hero_title": "Armies of Legends",
-    "hero_sub": "Forja tu leyenda. Lidera tu facción. Escribe tu historia.",
-    "hero_cta": "Entrar en la arena",
-    "hero_cta_secondary": "Descubrir",
+    "hero_sub": "Más de 300 cartas desde el registro, en el ejército que elijas. Las tiradas limitadas hacen el resto: ningún mazo Experto se parece al tuyo.",
+    "hero_cta": "Elegir mi facción gratis",
+    "hero_cta_secondary": "Ver las nueve facciones",
     "hero_proof": "Más de 500 cartas ofrecidas desde la primera partida",
     "features_title": "Por qué Armies of Legends",
     "f1_title": "La profundidad de las leyendas.",
@@ -2411,8 +2411,8 @@
     "f4_title": "La arena móvil, por fin a la altura.",
     "f4_desc": "Torneos con premios en cartas raras y dotaciones económicas — un nivel de competición hasta ahora reservado a los grandes TCG de escritorio.",
     "f4_standings": "Clasificación final",
-    "factions_title": "Nueve facciones. Una leyenda.",
-    "factions_sub": "Cada raza tiene su propio camino. ¿Cuál será el tuyo?",
+    "factions_title": "Nueve ejércitos. El primero es tuyo.",
+    "factions_sub": "Elige tu facción al registrarte: todas sus cartas clásicas, más de 300, son tuyas sin pagar. Las demás facciones se añaden después por una fracción del coste de un TCG clásico.",
     "showcase_title": "Un bestiario. Miles de combinaciones.",
     "showcase_sub": "Desde la criatura más humilde hasta el héroe mítico, cada carta importa.",
     "cta_title": "La arena te espera.",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "El desierto recuerda a sus reyes"
       }
-    }
+    },
+    "nav_factions": "Facciones",
+    "nav_limited": "Tiradas limitadas",
+    "nav_tournaments": "Torneos",
+    "hero_claim": "Una facción entera, gratis.",
+    "wall_pause": "Pausar el muro",
+    "wall_play": "Reanudar el muro",
+    "factions_see": "Ver la facción",
+    "limited_title": "Ningún mazo Experto se parece al tuyo.",
+    "limited_desc": "Las cartas de tirada limitada hacen único cada mazo Experto. La cuota común garantiza que solo tu estrategia decide.",
+    "trailer_title": "Las leyendas entran en escena.",
+    "nav_language": "Idioma",
+    "f4_example": "Clasificación de ejemplo: los jugadores son ficticios, el baremo es el del juego.",
+    "limited_run": "{count} ejemplares",
+    "limited_unique": "Ejemplar único"
   },
   "auction": {
     "ended": "Terminada",

@@ -2395,9 +2395,9 @@
     "nav_play": "プレイ",
     "hero_eyebrow": "ファンタジーTCG — 新世代",
     "hero_title": "Armies of Legends",
-    "hero_sub": "伝説を鍛えろ。勢力を率いろ。歴史を刻め。",
-    "hero_cta": "アリーナへ",
-    "hero_cta_secondary": "詳しく見る",
+    "hero_sub": "登録したその日から、選んだ軍の300枚以上のカードが手に入る。あとは限定版カードが仕上げる。あなたと同じエキスパートデッキは存在しない。",
+    "hero_cta": "無料の勢力を選ぶ",
+    "hero_cta_secondary": "9つの勢力を見る",
     "hero_proof": "初回プレイから500枚以上のカードを進呈",
     "features_title": "Armies of Legendsを選ぶ理由",
     "f1_title": "伝説の深み。",
@@ -2411,8 +2411,8 @@
     "f4_title": "モバイルアリーナが、ついに本気になった。",
     "f4_desc": "レアカードや賞金が懸かったトーナメント——これまで大手デスクトップTCGだけに許されていた真剣勝負の舞台。",
     "f4_standings": "最終順位",
-    "factions_title": "九つの勢力。一つの伝説。",
-    "factions_sub": "それぞれの種族が独自の道を持つ。あなたが選ぶのは？",
+    "factions_title": "9つの軍。最初のひとつはあなたのもの。",
+    "factions_sub": "登録時に勢力を選ぶと、そのクラシックカード300枚以上がすべて無料で手に入る。ほかの勢力も、一般的なTCGのごく一部の費用で追加できる。",
     "showcase_title": "モンスター図鑑。無数の組み合わせ。",
     "showcase_sub": "最も弱い生き物から神話の英雄まで、すべてのカードが意味を持つ。",
     "cta_title": "アリーナがあなたを待っている。",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "砂漠は王たちを忘れない"
       }
-    }
+    },
+    "nav_factions": "勢力",
+    "nav_limited": "限定版",
+    "nav_tournaments": "トーナメント",
+    "hero_claim": "勢力まるごと、無料。",
+    "wall_pause": "壁を一時停止",
+    "wall_play": "壁を再開",
+    "factions_see": "勢力を見る",
+    "limited_title": "あなたと同じエキスパートデッキは存在しない。",
+    "limited_desc": "限定版カードが、エキスパートデッキを一つひとつ唯一のものにする。共通の枠があるから、勝負を決めるのは戦略だけ。",
+    "trailer_title": "伝説が舞台に上がる。",
+    "nav_language": "言語",
+    "f4_example": "順位表は一例です。プレイヤーは架空ですが、賞の配分は実際のものです。",
+    "limited_run": "限定{count}枚",
+    "limited_unique": "世界に1枚"
   },
   "auction": {
     "ended": "終了",

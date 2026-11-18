@@ -18,7 +18,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import GoldCoin from "@/components/shared/GoldCoin";
 
-const OR = "#d4af37";
+// Teinte des libellés forts, en hexadécimal plein (le code y accole des
+// suffixes d'opacité).
+const OR = "#f3f2ee";
 
 interface Etat {
   factionPrice: number | null;
@@ -88,7 +90,7 @@ export function situationPour(etat: Etat | null, factionId: string, anonyme: boo
 export default function FactionActionBar({
   factionId,
   nomFaction,
-  accent,
+  accent: _accent,
 }: {
   factionId: string;
   nomFaction: string;
@@ -188,24 +190,29 @@ export default function FactionActionBar({
 
   const cadre: React.CSSProperties = {
     maxWidth: "42rem",
-    margin: "26px auto 0",
-    padding: "18px 22px",
+    margin: "26px 0 0",
+    padding: "20px 22px",
     borderRadius: 12,
-    border: `1px solid ${accent}55`,
-    background: "#ffffff08",
-    textAlign: "center",
+    border: "1px solid #2a2c31",
+    background: "#17181c",
+    textAlign: "left",
   };
 
-  const bouton = (couleur: string): React.CSSProperties => ({
-    marginTop: 12,
-    padding: "9px 22px",
-    borderRadius: 8,
-    border: `1px solid ${couleur}`,
-    background: `${couleur}22`,
-    color: couleur,
-    fontFamily: "var(--font-cinzel), serif",
-    fontSize: 13,
-    letterSpacing: "0.06em",
+  // Un seul habit de bouton : le vermillon de la vitrine, réservé à ce qui se
+  // clique. Le paramètre reste pour les appels existants ; il ne teinte plus.
+  const bouton = (_couleur: string): React.CSSProperties => ({
+    marginTop: 14,
+    display: "inline-flex",
+    alignItems: "center",
+    minHeight: 48,
+    padding: "0 24px",
+    borderRadius: 999,
+    border: 0,
+    background: "#d4351a",
+    color: "#fff",
+    fontWeight: 800,
+    fontSize: 14,
+    letterSpacing: "0.02em",
     cursor: "pointer",
   });
 

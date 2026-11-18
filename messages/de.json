@@ -2395,9 +2395,9 @@
     "nav_play": "Spielen",
     "hero_eyebrow": "Fantasy TCG — Neue Generation",
     "hero_title": "Armies of Legends",
-    "hero_sub": "Schmiede deine Legende. Führe deine Fraktion. Schreib deine Geschichte.",
-    "hero_cta": "Die Arena betreten",
-    "hero_cta_secondary": "Entdecken",
+    "hero_sub": "Über 300 Karten ab der Anmeldung, in der Armee deiner Wahl. Limitierte Auflagen erledigen den Rest: Kein Experten-Deck gleicht deinem.",
+    "hero_cta": "Meine Gratis-Fraktion wählen",
+    "hero_cta_secondary": "Die neun Fraktionen ansehen",
     "hero_proof": "Über 500 Karten gratis ab dem ersten Spiel",
     "features_title": "Warum Armies of Legends",
     "f1_title": "Die Tiefe der Legenden.",
@@ -2411,8 +2411,8 @@
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
     "f4_desc": "Turniere mit seltenen Karten und Geldpreisen — ein Niveau, das bisher den größten Desktop-TCGs vorbehalten war.",
     "f4_standings": "Endstand",
-    "factions_title": "Neun Fraktionen. Eine Legende.",
-    "factions_sub": "Jede Rasse geht ihren eigenen Weg. Welchen wählst du?",
+    "factions_title": "Neun Armeen. Die erste gehört dir.",
+    "factions_sub": "Wähle deine Fraktion bei der Anmeldung: Alle ihre klassischen Karten, über 300, gehören dir kostenlos. Die anderen Fraktionen kommen später für einen Bruchteil der Kosten eines klassischen TCG hinzu.",
     "showcase_title": "Ein Bestiarium. Tausende Kombinationen.",
     "showcase_sub": "Von der bescheidensten Kreatur bis zum mythischen Helden — jede Karte zählt.",
     "cta_title": "Die Arena wartet auf dich.",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "Die Wüste erinnert sich an ihre Könige"
       }
-    }
+    },
+    "nav_factions": "Fraktionen",
+    "nav_limited": "Limitierte Auflagen",
+    "nav_tournaments": "Turniere",
+    "hero_claim": "Eine ganze Fraktion, geschenkt.",
+    "wall_pause": "Wand anhalten",
+    "wall_play": "Wand fortsetzen",
+    "factions_see": "Fraktion ansehen",
+    "limited_title": "Kein Experten-Deck gleicht deinem.",
+    "limited_desc": "Karten in limitierter Auflage machen jedes Experten-Deck einzigartig. Die gemeinsame Quote garantiert, dass allein deine Strategie entscheidet.",
+    "trailer_title": "Die Legenden betreten die Bühne.",
+    "nav_language": "Sprache",
+    "f4_example": "Beispiel-Rangliste: Die Spieler sind erfunden, die Preisstaffel ist die des Spiels.",
+    "limited_run": "{count} Exemplare",
+    "limited_unique": "Einzelstück"
   },
   "auction": {
     "ended": "Beendet",

@@ -1,0 +1,22 @@
+{
+  "name": "aol-bande-annonce",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Bande-annonce d'Armies of Legends, générée avec Remotion.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts BandeAnnonce ../public/videos/bande-annonce.mp4 --codec=h264 --crf=23",
+    "poster": "remotion still src/index.ts BandeAnnonce ../public/videos/bande-annonce.jpg --frame=150 --image-format=jpeg"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.290",
+    "@remotion/google-fonts": "4.0.290",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.290"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

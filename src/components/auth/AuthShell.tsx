@@ -1,121 +1,67 @@
 import Image from "next/image";
 import Link from "next/link";
+import { bricolage } from "@/components/vitrine/font";
+import "@/components/vitrine/vitrine.css";
 
-// Shared visual chrome for the out-of-game auth pages (/login,
-// /auth/reset-password). Provides the battlefield backdrop, the frosted
-// gilded panel and the brand lockup so both pages read as the same product
-// as the landing. Pages supply only their form via `children`.
+// Habillage commun des pages d'authentification hors jeu (/login,
+// /auth/reset-password, choix du pseudo et de la faction). Même monde que la
+// page d'accueil : le formulaire à droite, trois affiches du mur à gauche.
+// Les pages ne fournissent que leur formulaire via `children`.
 //
-// The panel entrance uses `.am-animate-rise`, which globals.css already
-// disables under `prefers-reduced-motion` — no JS motion needed here.
+// Les formulaires sont écrits avec les utilitaires `am-*` du jeu ; rendus sous
+// `.vt`, ils prennent les couleurs de la vitrine (voir le « pont » en bas de
+// vitrine.css) sans qu'on ait à les réécrire.
 
-// Reusable field styling so /login and /auth/reset-password share one look.
+// Champs partagés, pour que /login et /auth/reset-password aient un seul look.
 export const authFieldClass =
   "w-full px-4 py-3 text-base rounded-[var(--am-r-md)] bg-am-bg-1 text-am-ink " +
   "placeholder:text-am-ink-faint border border-[color:var(--am-line-strong)] " +
   "focus:border-[color:var(--am-gold)] focus:outline-none transition-colors " +
   "disabled:opacity-50";
 
-export const authLabelClass =
-  "block text-sm font-medium text-am-ink-soft mb-1.5 " +
-  "font-[family-name:var(--font-crimson),serif]";
+export const authLabelClass = "block text-sm font-semibold text-am-ink-soft mb-1.5";
 
-function ShieldMark() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1a1408"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" />
-    </svg>
-  );
-}
+/** Illustrations de cartes du jeu, copiées dans `public/` : la page de
+ *  connexion doit s'afficher sans attendre la base. */
+const AFFICHES = ["volva", "eleonara", "hippolyte"];
 
 interface AuthShellProps {
-  /** Page-specific gilded heading (brand lockup shows above it regardless). */
+  /** Titre propre à la page. */
   heading?: string;
-  /** Supporting line under the heading. */
+  /** Ligne d'appui sous le titre. */
   sub?: string;
   children: React.ReactNode;
-  /** Optional content pinned below the form (e.g. a back link). */
+  /** Contenu épinglé sous le formulaire (un lien de retour, par exemple). */
   footer?: React.ReactNode;
 }
 
 export default function AuthShell({ heading, sub, children, footer }: AuthShellProps) {
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-10 bg-am-bg-0">
-      {/* Battlefield backdrop — static (no ambient motion) to keep auth fast */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/battlefield.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(8,7,15,0.72) 0%, rgba(8,7,15,0.86) 55%, #08070f 100%)",
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(216,178,90,0.10) 0%, transparent 62%)",
-          }}
-        />
+    <div className={`vt vt-auth ${bricolage.variable}`}>
+      <div className="vt-auth-mur" aria-hidden="true">
+        {AFFICHES.map((nom, i) => (
+          <div key={nom} className="vt-auth-affiche">
+            <Image
+              src={`/images/vitrine/${nom}.webp`}
+              alt=""
+              fill
+              priority={i === 1}
+              sizes="(max-width: 899px) 1px, 22vw"
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Frosted gilded panel */}
-      <div className="relative z-[2] w-full max-w-md am-glass am-gild-border am-animate-rise p-8 md:p-9 rounded-[var(--am-r-lg)]">
-        {/* Brand lockup → back to the public landing */}
-        <Link
-          href="/landing"
-          className="flex items-center justify-center gap-2.5 mb-6 transition-opacity hover:opacity-90"
-        >
-          <span
-            className="grid place-items-center w-9 h-9 rounded-lg shrink-0"
-            style={{
-              background: "linear-gradient(135deg, #f4e09a, #d8b25a 50%, #9a7730)",
-              boxShadow:
-                "0 4px 14px rgba(216,178,90,0.35), inset 0 1px 0 rgba(255,255,255,0.4)",
-            }}
-            aria-hidden="true"
-          >
-            <ShieldMark />
-          </span>
-          <span className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-xl font-bold tracking-wider">
-            Armies of Legends
-          </span>
-        </Link>
-
-        {heading && (
-          <h1 className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-2xl md:text-[26px] font-bold text-center tracking-wide leading-tight">
-            {heading}
-          </h1>
-        )}
-        {sub && (
-          <p className="text-center text-am-ink-soft text-sm mt-2 font-[family-name:var(--font-crimson),serif]">
-            {sub}
-          </p>
-        )}
-
-        <div className="am-rule-diamond my-6" />
-
-        {children}
-
-        {footer && <div className="mt-6">{footer}</div>}
-      </div>
+      <main className="vt-auth-panneau">
+        <div>
+          {/* Retour à la page d'accueil publique. */}
+          <Link href="/landing" className="vt-auth-marque">Armies of Legends</Link>
+          {heading && <h1 className="vt-auth-titre">{heading}</h1>}
+          {sub && <p className="vt-auth-sous">{sub}</p>}
+          <div className="vt-auth-corps">{children}</div>
+          {footer && <div className="mt-6">{footer}</div>}
+        </div>
+      </main>
     </div>
   );
 }

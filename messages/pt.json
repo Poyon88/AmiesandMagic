@@ -2395,9 +2395,9 @@
     "nav_play": "Jogar",
     "hero_eyebrow": "Fantasy TCG — Nova Geração",
     "hero_title": "Armies of Legends",
-    "hero_sub": "Forja sua lenda. Lidera sua facção. Escreva sua história.",
-    "hero_cta": "Entrar na arena",
-    "hero_cta_secondary": "Descobrir",
+    "hero_sub": "Mais de 300 cartas desde o registo, no exército que escolheres. As tiragens limitadas fazem o resto: nenhum baralho Especialista se parece com o teu.",
+    "hero_cta": "Escolher a minha facção grátis",
+    "hero_cta_secondary": "Ver as nove facções",
     "hero_proof": "Mais de 500 cartas oferecidas já na primeira partida",
     "features_title": "Por que Armies of Legends",
     "f1_title": "A profundidade das lendas.",
@@ -2411,8 +2411,8 @@
     "f4_title": "A arena mobile, finalmente à altura.",
     "f4_desc": "Torneios recompensados com cartas raras e premiações em dinheiro — um nível de disputa até então reservado aos maiores TCGs desktop.",
     "f4_standings": "Classificação final",
-    "factions_title": "Nove facções. Uma lenda.",
-    "factions_sub": "Cada raça tem seu próprio caminho. Qual será o seu?",
+    "factions_title": "Nove exércitos. O primeiro é teu.",
+    "factions_sub": "Escolhe a tua facção no registo: todas as suas cartas clássicas, mais de 300, são tuas sem pagar. As outras facções juntam-se depois por uma fração do custo de um TCG clássico.",
     "showcase_title": "Um bestiário. Milhares de combinações.",
     "showcase_sub": "Da criatura mais humilde ao herói mítico, cada carta importa.",
     "cta_title": "A arena te espera.",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "O deserto se lembra de seus reis"
       }
-    }
+    },
+    "nav_factions": "Facções",
+    "nav_limited": "Tiragens limitadas",
+    "nav_tournaments": "Torneios",
+    "hero_claim": "Uma facção inteira, de graça.",
+    "wall_pause": "Pausar o mural",
+    "wall_play": "Retomar o mural",
+    "factions_see": "Ver a facção",
+    "limited_title": "Nenhum baralho Especialista se parece com o teu.",
+    "limited_desc": "As cartas de tiragem limitada tornam único cada baralho Especialista. A quota comum garante que só a tua estratégia decide.",
+    "trailer_title": "As lendas entram em cena.",
+    "nav_language": "Idioma",
+    "f4_example": "Classificação de exemplo: os jogadores são fictícios, a tabela de prémios é a do jogo.",
+    "limited_run": "{count} exemplares",
+    "limited_unique": "Exemplar único"
   },
   "auction": {
     "ended": "Encerrada",

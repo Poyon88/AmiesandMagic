@@ -14,13 +14,14 @@
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { motion, useInView } from "framer-motion";
 import { useMessages } from "next-intl";
 import { useVocab } from "@/i18n/useVocab";
 import { useHeroText } from "@/i18n/useHeroText";
 import { pvDeDepart } from "@/lib/game/hero-hp";
 import { useTranslations } from "next-intl";
 import FactionActionBar from "./FactionActionBar";
+import { bricolage } from "@/components/vitrine/font";
+import "@/components/vitrine/vitrine.css";
 import GameCard from "@/components/cards/GameCard";
 import KeywordIcon from "@/components/shared/KeywordIcon";
 import { FACTIONS } from "@/lib/card-engine/constants";
@@ -37,7 +38,9 @@ import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
 import { useEncartSurvol } from "./useEncartSurvol";
 
-const OR = "#c8a84e";
+// Teinte des filets et des libellés. En hexadécimal plein : le code lui
+// accole des suffixes d'opacité (`${OR}55`).
+const OR = "#f3f2ee";
 
 /** Au-delà, la liste de races déborde : Le Pacte des Griffes en accueille onze. */
 const RACES_AFFICHEES = 4;
@@ -181,51 +184,22 @@ export default function FactionClansPage({
   const total = sections.reduce((n, s) => n + s.cartes.length, 0) + sansClan.length;
 
   return (
-    <main style={{ background: "#0a0a18", minHeight: "100vh", color: "#e0e0e0" }}>
+    <main className={`vt ${bricolage.variable}`}>
+      <div className="vt-entete">
+        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing#factions" className="vt-link">{t("other_factions")}</Link>
+      </div>
+
       {/* ── Bandeau de faction ─────────────────────────────────────── */}
-      <header
-        className="relative px-6 md:px-10 pt-10 pb-16 md:pb-20"
-        style={{
-          background: `radial-gradient(ellipse at 50% 0%, ${faction.color}44 0%, #0a0a18 70%)`,
-        }}
-      >
-        <Link
-          href="/landing"
-          className="inline-flex items-center gap-2 transition-opacity hover:opacity-100"
-          style={{ color: `${OR}bb`, opacity: 0.75, fontSize: 13, letterSpacing: "0.06em" }}
-        >
-          ← {t("back")}
-        </Link>
+      <header className="vt-faction-tete">
+        <h1 className="vt-lecture-titre">{nomFaction}</h1>
+        <p className="vt-lecture-chapo">{descFaction}</p>
+        <p className="vt-lecture-date">{t("commons_count", { count: total, clans: sections.length })}</p>
 
-        <div className="max-w-4xl mx-auto text-center mt-8 md:mt-12">
-          <div style={{ fontSize: 48, lineHeight: 1 }} aria-hidden="true">{faction.emoji}</div>
-          <h1
-            className="am-foil-text font-[family-name:var(--font-cinzel),serif] font-bold mt-4"
-            style={{
-              fontSize: "clamp(30px, 5vw, 54px)",
-              letterSpacing: "0.07em",
-              textShadow: `0 0 34px ${faction.accent}44`,
-            }}
-          >
-            {nomFaction}
-          </h1>
-          <div
-            className="mx-auto my-5 h-px w-24"
-            style={{ background: `linear-gradient(90deg, transparent, ${OR}, transparent)` }}
-          />
-          <p
-            className="font-[family-name:var(--font-crimson),serif] italic mx-auto"
-            style={{ fontSize: "clamp(15px, 1.9vw, 20px)", color: "#e0e0e0aa", maxWidth: "42rem" }}
-          >
-            {descFaction}
-          </p>
-          <p style={{ marginTop: 22, fontSize: 13, color: `${OR}cc`, letterSpacing: "0.05em" }}>
-            {t("commons_count", { count: total, clans: sections.length })}
-          </p>
-
-          {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
-              sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
-              rien — et reste muette tant qu'elle l'ignore. */}
+        {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
+            sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
+            rien — et reste muette tant qu'elle l'ignore. */}
+        <div className="vt-faction-action">
           <FactionActionBar
             factionId={factionId}
             nomFaction={nomFaction}
@@ -235,21 +209,20 @@ export default function FactionClansPage({
 
         {/* Sommaire des clans — la page est longue, on doit pouvoir sauter. */}
         {sections.length > 1 && (
-          <nav className="max-w-4xl mx-auto mt-10 flex flex-wrap justify-center gap-2">
+          <nav className="vt-faction-sommaire">
             {sections.map((s) => (
               <a
                 key={s.profil.nom}
                 href={`#${ancre(s.profil.nom)}`}
                 className="transition-colors"
                 style={{
-                  padding: "5px 13px",
+                  padding: "11px 16px",
                   borderRadius: 999,
                   border: `1px solid ${OR}33`,
                   background: "#ffffff08",
-                  fontSize: 12.5,
-                  color: "#e0e0e0cc",
-                  fontFamily: "var(--font-cinzel), serif",
-                  letterSpacing: "0.04em",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: "#e0e0e0",
                 }}
               >
                 {nomClan(s.profil.nom)}
@@ -259,14 +232,13 @@ export default function FactionClansPage({
               <a
                 href={`#${ANCRE_SANS_CLAN}`}
                 style={{
-                  padding: "5px 13px",
+                  padding: "11px 16px",
                   borderRadius: 999,
                   border: `1px solid ${OR}55`,
                   background: `${OR}14`,
-                  fontSize: 12.5,
+                  fontSize: 14,
+                  fontWeight: 600,
                   color: `${OR}ee`,
-                  fontFamily: "var(--font-cinzel), serif",
-                  letterSpacing: "0.04em",
                 }}
               >
                 {t("no_clan_title")}
@@ -303,11 +275,11 @@ export default function FactionClansPage({
         />
       )}
 
-      <footer className="px-6 py-20 flex flex-wrap justify-center items-center gap-4 md:gap-6">
-        <BoutonPied href="/landing">← {t("back")}</BoutonPied>
+      <footer className="vt-clan flex flex-wrap items-center gap-3 md:gap-4">
+        <BoutonPied href="/landing">{t("back")}</BoutonPied>
         {/* On sort d'une faction : la suite naturelle est d'en voir une autre,
             pas de remonter à l'accueil. */}
-        <BoutonPied href="/landing#factions">{t("other_factions")} →</BoutonPied>
+        <BoutonPied href="/landing#factions">{t("other_factions")}</BoutonPied>
       </footer>
     </main>
   );
@@ -326,8 +298,6 @@ function ClanSection({
   descCap: (e: SignatureEntry) => string;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const vu = useInView(ref, { once: true, margin: "-80px" });
   const { profil, cartes } = section;
 
   const racesVisibles = profil.races.slice(0, RACES_AFFICHEES);
@@ -335,37 +305,28 @@ function ClanSection({
 
   return (
     <section
-      ref={ref}
       id={ancre(profil.nom)}
-      className="px-6 md:px-10 py-14 md:py-20"
-      style={{
-        // Alternance discrète : les blocs se distinguent sans bordure lourde.
-        background: index % 2 === 0 ? "transparent" : "#ffffff05",
-        scrollMarginTop: 24,
-      }}
+      className="vt-clan"
+      // Alternance discrète : les blocs se distinguent sans bordure lourde.
+      data-alterne={index % 2 === 1 || undefined}
     >
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={vu ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+      <div className="vt-clan-corps">
+        <div>
           {/* Titre du clan + décompte, précédés du visage du clan */}
           <div className="flex items-center gap-4 flex-wrap">
             {section.hero && <PortraitHero hero={section.hero} couleur={accent} />}
             <h2
-              className="font-[family-name:var(--font-cinzel),serif] font-bold"
-              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: accent, letterSpacing: "0.05em" }}
+              className="vt-clan-titre"
             >
               {nomClan(profil.nom)}
             </h2>
-            <span style={{ fontSize: 13, color: "#e0e0e055", letterSpacing: "0.05em" }}>
+            <span className="vt-clan-compte">
               {t("commons", { count: cartes.length })}
             </span>
           </div>
           <div
             className="mt-3 mb-7 h-px"
-            style={{ background: `linear-gradient(90deg, ${couleur}, ${couleur}22, transparent)` }}
+            style={{ background: "#2a2c31" }}
           />
 
           {/* Le portrait du clan : races, signature, penchant */}
@@ -425,7 +386,7 @@ function ClanSection({
               <GameCard key={c.id} card={c} size="sm" />
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -441,7 +402,7 @@ function ClanSection({
  *  Pas de races, pas de signature, pas de jauges : ces repères décrivent un
  *  clan, et il n'y en a pas ici. Une phrase suffit, et elle dit la règle. */
 function SansClanSection({
-  cartes, index, couleur, accent, t,
+  cartes, index, couleur: _couleur, accent: _accent, t,
 }: {
   cartes: Card[];
   index: number;
@@ -449,44 +410,33 @@ function SansClanSection({
   accent: string;
   t: ReturnType<typeof useTranslations>;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const vu = useInView(ref, { once: true, margin: "-80px" });
 
   return (
     <section
-      ref={ref}
       id={ANCRE_SANS_CLAN}
-      className="px-6 md:px-10 py-14 md:py-20"
-      style={{
-        background: index % 2 === 0 ? "transparent" : "#ffffff05",
-        scrollMarginTop: 24,
-      }}
+      className="vt-clan"
+      data-alterne={index % 2 === 1 || undefined}
     >
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={vu ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+      <div className="vt-clan-corps">
+        <div>
           <div className="flex items-baseline gap-4 flex-wrap">
             <h2
-              className="font-[family-name:var(--font-cinzel),serif] font-bold"
-              style={{ fontSize: "clamp(21px, 3vw, 32px)", color: accent, letterSpacing: "0.05em" }}
+              className="vt-clan-titre"
             >
               {t("no_clan_title")}
             </h2>
-            <span style={{ fontSize: 13, color: "#e0e0e055", letterSpacing: "0.05em" }}>
+            <span className="vt-clan-compte">
               {t("commons", { count: cartes.length })}
             </span>
           </div>
           <div
             className="mt-3 mb-6 h-px"
-            style={{ background: `linear-gradient(90deg, ${couleur}, ${couleur}22, transparent)` }}
+            style={{ background: "#2a2c31" }}
           />
 
           <p
-            className="font-[family-name:var(--font-crimson),serif] italic mb-9"
-            style={{ fontSize: 15, color: "#e0e0e0aa", maxWidth: "44rem", lineHeight: 1.55 }}
+            className="mb-9"
+            style={{ fontSize: 17, color: "#cfcdc6", maxWidth: "44rem", lineHeight: 1.55 }}
           >
             {t("no_clan_desc")}
           </p>
@@ -496,7 +446,7 @@ function SansClanSection({
               <GameCard key={c.id} card={c} size="sm" />
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -507,21 +457,7 @@ function SansClanSection({
  *  lisait comme une hiérarchie qui n'existe pas. */
 function BoutonPied({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link
-      href={href}
-      className="transition-colors"
-      style={{
-        display: "inline-block",
-        padding: "10px 22px",
-        borderRadius: 999,
-        border: `1px solid ${OR}44`,
-        background: "transparent",
-        color: `${OR}dd`,
-        fontSize: 14,
-        letterSpacing: "0.08em",
-        fontFamily: "var(--font-cinzel), serif",
-      }}
-    >
+    <Link href={href} className="vt-btn vt-btn--ghost">
       {children}
     </Link>
   );
@@ -532,12 +468,10 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
     <div>
       <div
         style={{
-          fontSize: 10,
-          letterSpacing: "0.16em",
-          color: `${OR}99`,
-          textTransform: "uppercase",
-          marginBottom: 9,
-          fontFamily: "var(--font-cinzel), serif",
+          fontSize: 15,
+          fontWeight: 800,
+          color: OR,
+          marginBottom: 10,
         }}
       >
         {titre}
@@ -547,16 +481,16 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
   );
 }
 
-function Pastille({ children, couleur }: { children: React.ReactNode; couleur: string }) {
+function Pastille({ children }: { children: React.ReactNode; couleur?: string }) {
   return (
     <span
       style={{
-        padding: "2.5px 9px",
+        padding: "4px 11px",
         borderRadius: 999,
-        border: `1px solid ${couleur}66`,
-        background: `${couleur}1f`,
-        fontSize: 11.5,
-        color: "#e0e0e0dd",
+        border: "1px solid #2a2c31",
+        background: "#17181c",
+        fontSize: 13.5,
+        color: "#cfcdc6",
         whiteSpace: "nowrap",
       }}
     >
@@ -573,7 +507,7 @@ function Pastille({ children, couleur }: { children: React.ReactNode; couleur: s
  *
  *  Portail, comme le reste de la page : la section est peinte dans un flux qui
  *  rognerait un encart débordant vers le haut. */
-function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) {
+function PortraitHero({ hero }: { hero: HeroDeClan; couleur?: string }) {
   const { heroName, powerName, powerDesc } = useHeroText();
   const tJeu = useTranslations("game");
   // Marge haute plus large que pour les pastilles : cet encart porte une
@@ -601,8 +535,8 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
         className="transition-transform"
         style={{
           width: 54, height: 54, borderRadius: "50%", flexShrink: 0,
-          border: `1px solid ${couleur}77`,
-          background: "#ffffff08",
+          border: "1px solid #3a3d44",
+          background: "#17181c",
           padding: 0, cursor: "help", overflow: "hidden",
           transform: ouvert ? "scale(1.06)" : undefined,
         }}
@@ -614,7 +548,7 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={hero.thumbnail_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
-          <span style={{ fontSize: 20 }} aria-hidden="true">👤</span>
+          <span style={{ fontSize: 20, fontWeight: 800, color: OR }} aria-hidden="true">{nom.charAt(0)}</span>
         )}
       </button>
 
@@ -623,10 +557,10 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
           role="tooltip"
           style={{
             ...encart.stylePosition(320),
-            borderRadius: 10,
-            background: "#12122a",
-            border: `1px solid ${couleur}77`,
-            boxShadow: "0 12px 34px rgba(0,0,0,0.75)",
+            borderRadius: 12,
+            background: "#17181c",
+            border: "1px solid #3a3d44",
+            boxShadow: "0 28px 70px rgba(0,0,0,0.7)",
             overflow: "hidden",
           }}
         >
@@ -638,33 +572,32 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
             <img src={hero.power_image_url} alt="" style={{ width: "100%", height: "auto", display: "block" }} />
           )}
           <div style={{ padding: "11px 13px" }}>
-            <div style={{ fontSize: 13, color: couleur, fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
+            <div style={{ fontSize: 16, color: OR, fontWeight: 800 }}>
               {nom}
             </div>
             {pouvoir && (
-              <div style={{ fontSize: 12, color: OR, marginTop: 5, fontFamily: "var(--font-cinzel), serif" }}>
-                ⚡ {pouvoir}
+              <div style={{ fontSize: 13.5, color: OR, fontWeight: 600, marginTop: 6 }}>
+                {pouvoir}
                 {typeof hero.power_cost === "number" && (
-                  <span style={{ color: "#e0e0e077" }}> · {hero.power_cost} mana</span>
+                  <span style={{ color: "#a3a5ad" }}> · {hero.power_cost} mana</span>
                 )}
                 {/* Une limite d'activations change tout à la lecture d'un
                     pouvoir : « une fois par partie » n'est pas « à volonté ».
                     Libellé repris du jeu, pour que le joueur lise la même
                     phrase ici et en partie. */}
                 {typeof hero.power_usage_limit === "number" && (
-                  <span style={{ color: "#e0e0e077" }}>
+                  <span style={{ color: "#a3a5ad" }}>
                     {" · "}{tJeu("power_usage_limit", { limit: hero.power_usage_limit })}
                   </span>
                 )}
-                <span style={{ color: "#e0e0e077" }}>
-                  {" · ❤ "}{tJeu("hero_starting_hp", { hp: pvDeDepart({ startingHp: hero.starting_hp }) })}
+                <span style={{ color: "#a3a5ad" }}>
+                  {" · "}{tJeu("hero_starting_hp", { hp: pvDeDepart({ startingHp: hero.starting_hp }) })}
                 </span>
               </div>
             )}
             {desc && (
               <div
-                className="font-[family-name:var(--font-crimson),serif]"
-                style={{ fontSize: 12.5, lineHeight: 1.5, color: "#e0e0e0cc", marginTop: 5 }}
+                style={{ fontSize: 14, lineHeight: 1.5, color: "#cfcdc6", marginTop: 6 }}
               >
                 {desc}
               </div>
@@ -683,22 +616,21 @@ function PortraitHero({ hero, couleur }: { hero: HeroDeClan; couleur: string }) 
  *  39,6 % et 55,8 %, et des barres proportionnelles se ressembleraient toutes.
  *  Le POURCENTAGE EXACT est écrit à côté — c'est lui qui empêche la barre
  *  d'exagérer l'écart qu'elle rend lisible. */
-function Jauge({ libelle, part, couleur }: { libelle: string; part: number; couleur: string }) {
+function Jauge({ libelle, part }: { libelle: string; part: number; couleur?: string }) {
   return (
     <div className="flex items-center gap-3" style={{ marginBottom: 7 }}>
-      <span style={{ fontSize: 11.5, color: "#e0e0e099", width: 62, flexShrink: 0 }}>{libelle}</span>
+      <span style={{ fontSize: 13.5, color: "#cfcdc6", width: 74, flexShrink: 0 }}>{libelle}</span>
       <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#ffffff12", overflow: "hidden", maxWidth: 150 }}>
         <div
           style={{
             height: "100%",
             width: `${Math.round(jaugeDilatee(part) * 100)}%`,
-            background: couleur,
+            background: OR,
             borderRadius: 3,
-            boxShadow: `0 0 8px ${couleur}88`,
           }}
         />
       </div>
-      <span style={{ fontSize: 11, color: "#e0e0e077", width: 38, flexShrink: 0, textAlign: "right" }}>
+      <span style={{ fontSize: 13, color: "#a3a5ad", width: 42, flexShrink: 0, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
         {Math.round(part * 100)}&nbsp;%
       </span>
     </div>
@@ -738,10 +670,11 @@ interface ElementSurvolable {
  *  L'encart est monté en PORTAIL : les blocs vivent dans une grille, et un
  *  survol en bord de colonne se ferait rogner par le débordement. */
 function ListeSurvolable({
-  elements, couleur,
+  elements,
 }: {
   elements: ElementSurvolable[];
-  couleur: string;
+  /** Conservé pour les appels existants ; la liste n'est plus teintée. */
+  couleur?: string;
 }) {
   const encart = useEncartSurvol<ElementSurvolable>();
   const refs = useRef(new Map<string, HTMLElement>());
@@ -763,13 +696,13 @@ function ListeSurvolable({
             : encart.montrer(e, refs.current.get(e.cle) ?? null))}
           className="inline-flex items-center gap-1.5 transition-colors"
           style={{
-            fontSize: 12.5,
-            color: e.couleur ?? "#e0e0e0cc",
+            fontSize: 14,
+            color: e.couleur ?? "#cfcdc6",
             background: "none",
             border: "none",
-            padding: 0,
+            padding: "3px 0",
             cursor: "help",
-            borderBottom: `1px dotted ${couleur}88`,
+            borderBottom: "1px dotted #5a5d66",
           }}
         >
           {e.icone}
@@ -780,7 +713,7 @@ function ListeSurvolable({
           {/* Le décompte rend le classement vérifiable : le visiteur voit
               combien de cartes sont concernées, plutôt qu'un palmarès qu'il
               devrait croire sur parole. */}
-          <span style={{ fontSize: 10.5, color: `${couleur}dd`, letterSpacing: "0.03em" }}>×{e.compte}</span>
+          <span style={{ fontSize: 12.5, color: "#a3a5ad" }}>×{e.compte}</span>
         </button>
       ))}
 
@@ -789,22 +722,21 @@ function ListeSurvolable({
           role="tooltip"
           style={{
             ...encart.stylePosition(280),
-            padding: "11px 13px",
-            borderRadius: 9,
-            background: "#12122a",
-            border: `1px solid ${couleur}77`,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.7)",
+            padding: "13px 15px",
+            borderRadius: 12,
+            background: "#17181c",
+            border: "1px solid #3a3d44",
+            boxShadow: "0 28px 70px rgba(0,0,0,0.7)",
           }}
         >
           <div className="flex items-center gap-2" style={{ marginBottom: 6 }}>
             {encart.ouverte.icone}
-            <span style={{ fontSize: 13, color: encart.ouverte.couleur ?? "#fff", fontWeight: 700, fontFamily: "var(--font-cinzel), serif" }}>
+            <span style={{ fontSize: 15, color: encart.ouverte.couleur ?? "#fff", fontWeight: 800 }}>
               {encart.ouverte.titre}
             </span>
           </div>
           <div
-            className="font-[family-name:var(--font-crimson),serif]"
-            style={{ fontSize: 12.5, lineHeight: 1.5, color: "#e0e0e0cc" }}
+            style={{ fontSize: 14, lineHeight: 1.5, color: "#cfcdc6" }}
           >
             {encart.ouverte.desc}
           </div>

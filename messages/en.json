@@ -2395,9 +2395,9 @@
     "nav_play": "Play",
     "hero_eyebrow": "Next-gen Fantasy TCG",
     "hero_title": "Armies of Legends",
-    "hero_sub": "Forge your legend. Lead your faction. Write your own saga.",
-    "hero_cta": "Enter the arena",
-    "hero_cta_secondary": "Discover",
+    "hero_sub": "More than 300 cards the moment you sign up, in the army you choose. Limited prints do the rest: no Expert deck looks like yours.",
+    "hero_cta": "Choose my free faction",
+    "hero_cta_secondary": "See the nine factions",
     "hero_proof": "Over 500 cards, free from your very first game",
     "features_title": "Why Armies of Legends",
     "f1_title": "The depth of legends.",
@@ -2411,8 +2411,8 @@
     "f4_title": "Mobile, at last worthy of the stakes.",
     "f4_desc": "Tournaments rewarded with rare cards and cash prizes — a level of stakes once reserved for desktop TCGs.",
     "f4_standings": "Final standings",
-    "factions_title": "Nine factions. One legend.",
-    "factions_sub": "Each race walks its own path. Which will be yours?",
+    "factions_title": "Nine armies. The first one is yours.",
+    "factions_sub": "Pick your faction when you sign up: all of its classic cards, more than 300, are yours at no cost. The other factions can be added later for a fraction of what a classic TCG costs.",
     "showcase_title": "A bestiary. Thousands of combinations.",
     "showcase_sub": "From the humblest creature to mythic heroes, every card matters.",
     "cta_title": "The arena awaits.",
@@ -2447,7 +2447,21 @@
       "RoyaumesDuSoleil": {
         "tagline": "The desert remembers its kings"
       }
-    }
+    },
+    "nav_factions": "Factions",
+    "nav_limited": "Limited prints",
+    "nav_tournaments": "Tournaments",
+    "hero_claim": "A whole faction, free.",
+    "wall_pause": "Pause the wall",
+    "wall_play": "Resume the wall",
+    "factions_see": "See the faction",
+    "limited_title": "No Expert deck looks like yours.",
+    "limited_desc": "Limited-print cards make every Expert deck one of a kind. The shared quota guarantees that only your strategy decides.",
+    "trailer_title": "The legends take the stage.",
+    "nav_language": "Language",
+    "f4_example": "Sample standings: the players are fictional, the prize scale is the game's own.",
+    "limited_run": "{count} copies",
+    "limited_unique": "One of a kind"
   },
   "auction": {
     "ended": "Ended",

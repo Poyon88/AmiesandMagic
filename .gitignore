@@ -61,3 +61,7 @@ skills-lock.json
 
 # Generated docs (regenerate from generate-keywords-pdf.py if needed)
 Armies-and-Magic-Capacites.pdf
+
+# bande-annonce (projet Remotion)
+/video/node_modules
+/video/out

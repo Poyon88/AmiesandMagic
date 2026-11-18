@@ -27,6 +27,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Projet Remotion de la bande-annonce : ses propres dépendances.
+    "video/**",
   ]),
 ]);
 

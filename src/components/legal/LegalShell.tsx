@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { bricolage } from "@/components/vitrine/font";
+import "@/components/vitrine/vitrine.css";
 
 // Chrome commune aux pages légales (/legal/cgu, /legal/confidentialite).
 // Volontairement sobre et sans illustration : ces pages doivent rester lisibles,
@@ -21,28 +23,20 @@ export default function LegalShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-am-bg-0 px-5 py-10 md:py-16">
-      <div className="mx-auto w-full max-w-3xl">
-        <h1 className="am-foil-text font-[family-name:var(--font-cinzel),serif] text-2xl md:text-3xl font-bold mb-2">
-          {title}
-        </h1>
-        <p className="text-xs text-am-ink-faint mb-10 font-[family-name:var(--font-crimson),serif]">
-          {updatedLabel}
-        </p>
+    <div className={`vt ${bricolage.variable}`}>
+      <header className="vt-entete">
+        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+      </header>
+      <main className="vt-lecture">
+        <h1 className="vt-lecture-titre">{title}</h1>
+        <p className="vt-lecture-date">{updatedLabel}</p>
 
-        <div className="legal-prose text-am-ink-soft font-[family-name:var(--font-crimson),serif] leading-relaxed">
-          {children}
-        </div>
+        <div className="legal-prose vt-prose">{children}</div>
 
-        <div className="mt-14 pt-6 border-t" style={{ borderColor: "var(--am-line-strong)" }}>
-          <Link
-            href="/landing"
-            className="text-sm text-am-ink-faint hover:text-am-gold transition-colors"
-          >
-            {backLabel}
-          </Link>
+        <div className="vt-lecture-pied">
+          <Link href="/landing" className="vt-link">{backLabel}</Link>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -63,7 +57,7 @@ export function LegalSection({
 }) {
   return (
     <section className="mb-8">
-      <h2 className="font-[family-name:var(--font-cinzel),serif] text-base md:text-lg font-bold text-am-ink mb-2">
+      <h2 className="text-lg md:text-xl font-extrabold text-am-ink mb-2">
         {n}. {title}
       </h2>
       {children}
