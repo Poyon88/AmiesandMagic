@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLocale, useMessages, useTranslations } from "next-intl";
@@ -14,6 +14,7 @@ import Mur, { Frise } from "@/components/vitrine/Mur";
 import VtLangue from "@/components/vitrine/VtLangue";
 import { bricolage } from "@/components/vitrine/font";
 import type { Affiche, RangeeDuMur } from "@/components/vitrine/types";
+import { appliquerTextes } from "@/lib/vitrine/config";
 import "@/components/vitrine/vitrine.css";
 
 // ─── Textes ────────────────────────────────────────────────────────────────
@@ -94,17 +95,20 @@ interface LandingPageProps {
   frise: Affiche[];
   /** Cartes en tirage limité, rendues par le vrai composant du jeu. */
   cartesLimitees: Card[];
+  /** Textes réécrits depuis l'admin, déjà résolus dans la langue du visiteur.
+   *  Clés pointées de `messages.landing` ; absents ⇒ texte par défaut. */
+  textes?: Record<string, string>;
 }
 
 export default function LandingPage({
-  showcaseCards, factionHeroUrls, iconCard, rangees, vedettes, factionArt, frise, cartesLimitees,
+  showcaseCards, factionHeroUrls, iconCard, rangees, vedettes, factionArt, frise, cartesLimitees, textes,
 }: LandingPageProps) {
   const messages = useMessages() as unknown as {
     landing: Dict;
     legal: Record<string, string>;
     vocab?: Vocab;
   };
-  const txt = messages.landing;
+  const txt = useMemo(() => appliquerTextes(messages.landing, textes ?? {}), [messages.landing, textes]);
   // La locale du SITE, pas celle du navigateur : serveur et client doivent
   // écrire « 1 000 » de la même façon.
   const locale = useLocale();

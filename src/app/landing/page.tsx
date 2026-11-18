@@ -6,6 +6,7 @@ import { normalizeLocale } from "@/i18n/config";
 import type { Card } from "@/lib/game/types";
 import { FACTIONS, getFactionForRace } from "@/lib/card-engine/constants";
 import type { Affiche, RangeeDuMur } from "@/components/vitrine/types";
+import { MIN_AFFICHES_PAR_RANGEE, textesPourLocale, type LigneTexte } from "@/lib/vitrine/config";
 
 export const metadata = {
   title: "Armies of Legends — Jeu de cartes à collectionner fantasy",
@@ -66,6 +67,18 @@ type LigneAffiche = {
   image_url: string | null;
 };
 
+/** Plafond d'une rangée choisie à la main : au-delà, le rail charge des images
+ *  qu'un visiteur ne verra pas passer. */
+const AFFICHES_CHOISIES_MAX = 24;
+
+/** Une ligne `cards` devient une affiche si elle est présentable : illustrée,
+ *  nommée, d'une faction que la page montre. */
+function versAffiche(c: LigneAffiche): Affiche | null {
+  if (!c.faction || !c.image_url || !c.name || !c.rarity) return null;
+  if (!FACTIONS[c.faction] || FACTIONS[c.faction].alignment === "spéciale") return null;
+  return { id: c.id, name: c.name, faction: c.faction, race: c.race, clan: c.clan, rarity: c.rarity, image: c.image_url, flavor: c.flavor_text };
+}
+
 /** Tour de table : une carte de chaque faction à la fois, pour qu'une rangée
  *  ne soit pas un bloc de Humains suivi d'un bloc de Nains. */
 function entrelacer<T>(groupes: T[][], max: number): T[] {
@@ -83,7 +96,10 @@ function entrelacer<T>(groupes: T[][], max: number): T[] {
 export default async function Landing() {
   const supabase = await createClient();
 
-  const [{ data: showcaseData }, { data: heroesData }, { data: carteLisibilite }, { data: murData }, { data: limiteesData }] = await Promise.all([
+  const [
+    { data: showcaseData }, { data: heroesData }, { data: carteLisibilite }, { data: murData }, { data: limiteesData },
+    { data: choixData }, { data: choixTiragesData }, { data: textesData },
+  ] = await Promise.all([
     supabase
       .from("showcase_cards")
       .select("card_id, sort_order, card:cards(*)")
@@ -128,6 +144,22 @@ export default async function Landing() {
       // encore des noms de travail en anglais.
       .order("id", { ascending: false })
       .limit(120),
+    // Ce que l'admin a choisi à la main (/admin/vitrine). Tables absentes ou
+    // vides ⇒ `data` nul ou vide, et chaque visuel garde sa sélection
+    // automatique : la page ne dépend pas de la migration.
+    supabase
+      .from("vitrine_cards")
+      .select("section, card:cards(id, name, flavor_text, faction, race, clan, rarity, card_type, image_url, status)")
+      .in("section", ["mur", "faction", "frise"])
+      .order("sort_order")
+      .order("id"),
+    supabase
+      .from("vitrine_cards")
+      .select("card:cards(*)")
+      .eq("section", "tirages")
+      .order("sort_order")
+      .order("id"),
+    supabase.from("vitrine_textes").select("key, fr, translations"),
   ]);
 
   const showcaseCardsFr: Card[] = (showcaseData ?? [])
@@ -169,27 +201,51 @@ export default async function Landing() {
   const lignesMur = await localizeCardsInPlace(supabase, (murData ?? []) as LigneAffiche[], locale);
   const parFaction = new Map<string, Affiche[]>();
   for (const c of lignesMur) {
-    if (!c.faction || !c.image_url || !c.name || !c.rarity) continue;
-    if (!FACTIONS[c.faction] || FACTIONS[c.faction].alignment === "spéciale") continue;
-    const liste = parFaction.get(c.faction) ?? [];
-    liste.push({ id: c.id, name: c.name, faction: c.faction, race: c.race, clan: c.clan, rarity: c.rarity, image: c.image_url, flavor: c.flavor_text });
-    parFaction.set(c.faction, liste);
+    const a = versAffiche(c);
+    if (!a) continue;
+    const liste = parFaction.get(a.faction) ?? [];
+    liste.push(a);
+    parFaction.set(a.faction, liste);
   }
   for (const liste of parFaction.values()) {
     liste.sort((a, b) => (RANG_RARETE[a.rarity] ?? 9) - (RANG_RARETE[b.rarity] ?? 9) || a.id - b.id);
   }
-  const rangees: RangeeDuMur[] = RANGEES_DU_MUR.map((alignement) => ({
-    id: alignement,
-    affiches: entrelacer(
-      [...parFaction.entries()].filter(([f]) => FACTIONS[f].alignment === alignement).map(([, l]) => l),
-      AFFICHES_PAR_RANGEE,
-    ),
-  })).filter((r) => r.affiches.length >= 6);
+
+  // ── Les choix de l'admin, par section, dans l'ordre qu'il a fixé ──────
+  type LigneChoix = { section: string; card: (LigneAffiche & { status: string | null }) | null };
+  const lignesChoix = ((choixData ?? []) as unknown as LigneChoix[]).filter((l) => l.card && l.card.status === "playable");
+  const cartesChoisies = await localizeCardsInPlace(supabase, lignesChoix.map((l) => l.card!), locale);
+  const choisies: Record<"mur" | "faction" | "frise", Affiche[]> = { mur: [], faction: [], frise: [] };
+  lignesChoix.forEach((l, i) => {
+    const a = versAffiche(cartesChoisies[i]);
+    if (a && (l.section === "mur" || l.section === "faction" || l.section === "frise")) choisies[l.section].push(a);
+  });
+
+  // Une rangée choisie à la main remplace l'automatique dès qu'elle a de quoi
+  // boucler ; sinon cette rangée-là reste automatique, sans toucher les autres.
+  const rangees: RangeeDuMur[] = RANGEES_DU_MUR.map((alignement) => {
+    const main = choisies.mur.filter((a) => FACTIONS[a.faction].alignment === alignement);
+    return {
+      id: alignement,
+      affiches: main.length >= MIN_AFFICHES_PAR_RANGEE
+        ? main.slice(0, AFFICHES_CHOISIES_MAX)
+        : entrelacer(
+            [...parFaction.entries()].filter(([f]) => FACTIONS[f].alignment === alignement).map(([, l]) => l),
+            AFFICHES_PAR_RANGEE,
+          ),
+    };
+  }).filter((r) => r.affiches.length >= MIN_AFFICHES_PAR_RANGEE);
 
   // Les vedettes : la plus rare de chaque faction PRÉSENTE sur le mur, pour
   // que l'affiche visée soit toujours une de celles qu'on voit dériver.
-  const surLeMur = new Set(rangees.flatMap((r) => r.affiches.map((a) => a.id)));
-  const vedettes: Affiche[] = [];
+  const affichesDuMur = rangees.flatMap((r) => r.affiches);
+  const surLeMur = new Set(affichesDuMur.map((a) => a.id));
+  const vedetteParFaction = new Map<string, Affiche>();
+  for (const a of affichesDuMur) {
+    const tenue = vedetteParFaction.get(a.faction);
+    if (!tenue || (RANG_RARETE[a.rarity] ?? 9) < (RANG_RARETE[tenue.rarity] ?? 9)) vedetteParFaction.set(a.faction, a);
+  }
+  const vedettes: Affiche[] = [...vedetteParFaction.values()];
   const factionArt: Record<string, string> = {};
   // Ce que le mur ne montre pas sert ailleurs : la page promet un catalogue,
   // elle ne doit pas resservir les mêmes quarante images à chaque section.
@@ -198,18 +254,34 @@ export default async function Landing() {
     const reste = liste.filter((a) => !surLeMur.has(a.id));
     factionArt[faction] = (reste[0] ?? liste[0]).image;
     horsMur.push(reste.slice(1));
-    const v = liste.find((a) => surLeMur.has(a.id));
-    if (v) vedettes.push(v);
+  }
+  // L'affiche de faction choisie par l'admin prime : la première de sa liste
+  // pour chaque faction.
+  const factionsChoisies = new Set<string>();
+  for (const a of choisies.faction) {
+    if (factionsChoisies.has(a.faction)) continue;
+    factionsChoisies.add(a.faction);
+    factionArt[a.faction] = a.image;
   }
   // Les Uniques ouvrent la ronde : c'est la première carte que voit le visiteur.
   vedettes.sort((a, b) => (RANG_RARETE[a.rarity] ?? 9) - (RANG_RARETE[b.rarity] ?? 9));
-  const frise = entrelacer(horsMur, AFFICHES_PAR_RANGEE);
+  const frise = choisies.frise.length >= MIN_AFFICHES_PAR_RANGEE
+    ? choisies.frise.slice(0, AFFICHES_CHOISIES_MAX)
+    : entrelacer(horsMur, AFFICHES_PAR_RANGEE);
 
   // Les tirages limités montrés en vrai : deux par rareté, à tour de rôle,
   // pour que les numéros de tirage (« /N ») soient variés.
   const limitees = await localizeCardsInPlace(supabase, (limiteesData ?? []) as unknown as Card[], locale);
   const parRarete = ["Rare", "Épique", "Peu Commune", "Légendaire"].map((r) => limitees.filter((c) => c.rarity === r));
-  const cartesLimitees = entrelacer(parRarete, 8);
+  // Les cartes « decks Expert » choisies par l'admin remplacent ce tirage.
+  const tiragesChoisis = await localizeCardsInPlace(
+    supabase,
+    ((choixTiragesData ?? []) as unknown as { card: Card | null }[])
+      .map((l) => l.card)
+      .filter((c): c is Card => !!c && !!c.image_url && (c as { status?: string }).status === "playable"),
+    locale,
+  );
+  const cartesLimitees = tiragesChoisis.length > 0 ? tiragesChoisis.slice(0, 8) : entrelacer(parRarete, 8);
 
   return (
     <LandingPage
@@ -221,6 +293,7 @@ export default async function Landing() {
       factionArt={factionArt}
       frise={frise}
       cartesLimitees={cartesLimitees}
+      textes={textesPourLocale((textesData ?? []) as LigneTexte[], locale)}
     />
   );
 }
