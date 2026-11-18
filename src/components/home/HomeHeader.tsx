@@ -75,10 +75,11 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
           WebkitBackdropFilter: "blur(12px)",
         }}
         role="banner"
+        data-scrolled={scrolled}
       >
         {/* Gilded hairline that glows in once scrolled */}
         <div
-          className="absolute inset-x-0 bottom-0 h-px pointer-events-none transition-opacity duration-500"
+          className="am-header-rule absolute inset-x-0 bottom-0 h-px pointer-events-none transition-opacity duration-500"
           style={{
             opacity: scrolled ? 1 : 0,
             background: "linear-gradient(90deg, transparent, var(--am-gild-strong), transparent)",
@@ -104,7 +105,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
             >
               {/* Sigil mark */}
               <span
-                className="grid place-items-center w-8 h-8 md:w-9 md:h-9 rounded-lg shrink-0 transition-transform group-hover:rotate-[8deg]"
+                className="am-sigil grid place-items-center w-8 h-8 md:w-9 md:h-9 rounded-lg shrink-0 transition-transform group-hover:rotate-[8deg]"
                 style={{
                   background: "linear-gradient(135deg, #f4e09a, #d8b25a 50%, #9a7730)",
                   boxShadow: "0 4px 14px rgba(216,178,90,0.35), inset 0 1px 0 rgba(255,255,255,0.4)",
@@ -116,7 +117,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
                 </svg>
               </span>
               <span
-                className="am-foil-text font-display text-base md:text-xl font-bold tracking-wider truncate"
+                className="am-brand-nom am-foil-text font-display text-base md:text-xl font-bold tracking-wider truncate"
               >
                 Armies of Legends
               </span>

@@ -5,6 +5,8 @@ import MainMenu from "@/components/MainMenu";
 import { normalizeLocale } from "@/i18n/config";
 import { resolveNewsLocale, type NewsItem } from "@/lib/news/types";
 import type { BannerNews } from "@/components/NewsBanner";
+import { FACTIONS } from "@/lib/card-engine/constants";
+import { choisirAffiches, jourCourant } from "@/lib/home/affichesDuHub";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -15,7 +17,7 @@ export default async function HomePage() {
   // Visiteur non connecté : la vitrine, comme dans le proxy.
   if (!user) redirect("/landing");
 
-  const [profileResult, { data: wallet }, { data: activeNews }, locale] = await Promise.all([
+  const [profileResult, { data: wallet }, { data: activeNews }, locale, { data: illustrations }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("wallets").select("balance, gold_debt").eq("user_id", user.id).single(),
     // News actives du bandeau (RLS : lecture publique). Résolues dans la
@@ -27,6 +29,17 @@ export default async function HomePage() {
       .order("sort_order")
       .order("id"),
     getLocale(),
+    // Illustrations des tuiles : les cartes jouables des deux raretés hautes.
+    // Trois colonnes seulement — la carte entière ne sert à rien ici.
+    supabase
+      .from("cards")
+      .select("id, faction, image_url")
+      .eq("status", "playable")
+      .eq("card_type", "creature")
+      .in("rarity", ["Légendaire", "Épique"])
+      .not("image_url", "is", null)
+      .order("id")
+      .limit(400),
   ]);
   let profile = profileResult.data;
 
@@ -83,6 +96,12 @@ export default async function HomePage() {
       goldBalance={wallet?.balance ?? 0}
       goldDebt={wallet?.gold_debt ?? 0}
       news={news}
+      affiches={choisirAffiches(
+        illustrations ?? [],
+        (f) => !!FACTIONS[f] && FACTIONS[f].alignment !== "spéciale",
+        jourCourant(),
+        5,
+      )}
     />
   );
 }

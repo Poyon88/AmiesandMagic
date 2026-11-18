@@ -369,6 +369,7 @@
   .vt-rail, .vt-rangee, .vt-propos, .vt-visee-texte, .vt-visee-plan { animation: none !important; }
   .vt-pause { display: none; }
   .vt-faction, .vt-faction img, .vt-faction-plus, .vt-affiche, .vt-btn { transition: none !important; }
+  .vt-tuile, .vt-tuile img, .vt-tuile-fleche { transition: none !important; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -402,6 +403,7 @@
   --am-r-lg: var(--vt-r-lg);
   --font-cinzel: var(--font-bricolage);
   --font-crimson: var(--font-bricolage);
+  --font-display: var(--font-bricolage);
 }
 .vt .am-foil-text {
   background: none; -webkit-text-fill-color: currentColor; color: var(--vt-ink);
@@ -474,3 +476,93 @@
 .vt-clan-corps { max-width: 78rem; }
 .vt-clan-titre { font-weight: 800; font-size: clamp(1.6rem, 2.8vw, 2.6rem); line-height: 1.05; letter-spacing: -0.025em; color: var(--vt-ink); }
 .vt-clan-compte { font-size: 0.95rem; color: var(--vt-ink-3); }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Hub du joueur (accueil connecté)
+
+   Une grande tuile pour jouer, cinq affiches pour le reste. Les images sont
+   de vraies cartes du catalogue : la couleur reste celle des illustrations.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* L'en-tête partagé `HomeHeader` garde son habit doré hors de `.vt` ; ici il
+   prend celui de la barre de la vitrine. Ses fonds sont posés en style
+   inline, d'où les `!important`. */
+.vt header[role="banner"] {
+  height: 68px; padding: 0 var(--vt-gutter);
+  background: transparent !important; border-bottom: 0 !important; box-shadow: none !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.vt header[role="banner"][data-scrolled="true"] {
+  background: color-mix(in srgb, var(--vt-bg) 94%, transparent) !important;
+  box-shadow: 0 1px 0 var(--vt-line) !important;
+}
+.vt .am-sigil, .vt .am-header-rule { display: none; }
+
+.vt-hub {
+  max-width: 1720px; margin: 0 auto;
+  padding: calc(68px + clamp(18px, 3.4vh, 40px)) var(--vt-gutter) clamp(40px, 7vh, 80px);
+}
+.vt-hub-tete {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 28px;
+  margin-bottom: clamp(16px, 2.6vh, 28px);
+}
+.vt-hub-titre { font-weight: 800; font-size: clamp(1.7rem, 3vw, 2.8rem); line-height: 1.02; letter-spacing: -0.03em; }
+.vt-hub-sous { color: var(--vt-ink-2); font-size: clamp(1rem, 1.2vw, 1.15rem); }
+.vt-hub-news > * { max-width: none; margin: 0 0 clamp(8px, 0.9vw, 14px); }
+
+.vt-hub-grille {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(8px, 0.9vw, 14px);
+  list-style: none; margin: 0; padding: 0;
+}
+.vt-hub-grille > li { display: flex; min-width: 0; grid-column: span 3; }
+.vt-hub-grille > li:first-child, .vt-hub-grille > li:last-child { grid-column: 1 / -1; }
+
+.vt-tuile {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  width: 100%; min-height: clamp(170px, 44vw, 250px); padding: clamp(14px, 1.4vw, 22px);
+  border-radius: var(--vt-r-lg); background: var(--vt-bg-3);
+  text-decoration: none; transition: box-shadow 0.2s;
+}
+.vt-tuile img { z-index: -2; object-fit: cover; object-position: 50% 22%; transition: transform 0.6s var(--vt-out); }
+.vt-tuile::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(16, 17, 20, 0) 30%, rgba(16, 17, 20, 0.6) 62%, rgba(16, 17, 20, 0.95));
+}
+.vt-tuile:hover { box-shadow: 0 0 0 2px var(--vt-ink); }
+.vt-tuile:hover img { transform: scale(1.04); }
+.vt-tuile-nom { font-weight: 800; font-size: clamp(1.15rem, 1.6vw, 1.6rem); line-height: 1.08; letter-spacing: -0.02em; }
+.vt-tuile-desc { margin-top: 4px !important; color: var(--vt-ink-2); font-size: 0.92rem; line-height: 1.35; }
+
+.vt-tuile--une { min-height: clamp(280px, 62vw, 440px); padding: clamp(18px, 2.4vw, 36px); }
+.vt-tuile--une img { object-position: 50% 45%; }
+.vt-tuile--une .vt-tuile-nom { font-size: clamp(2.4rem, 5vw, 4.6rem); line-height: 0.98; letter-spacing: -0.035em; }
+.vt-tuile--une .vt-tuile-desc { margin-top: 10px !important; max-width: 22em; padding-right: 72px; font-size: clamp(1rem, 1.3vw, 1.25rem); }
+.vt-tuile-fleche {
+  position: absolute; right: clamp(18px, 2.4vw, 36px); bottom: clamp(18px, 2.4vw, 36px);
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  background: var(--vt-accent); color: #fff;
+  transition: background-color 0.18s, transform 0.18s var(--vt-out);
+}
+.vt-tuile:hover .vt-tuile-fleche { background: var(--vt-accent-hi); transform: translateX(3px); }
+
+/* Téléphone : la barre n'a pas la place du nom à côté des soldes, et les
+   descriptions tiennent sur deux lignes pour laisser voir l'illustration. */
+@media (max-width: 699px) {
+  .vt .am-brand-nom { display: none; }
+  .vt-tuile:not(.vt-tuile--une) .vt-tuile-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+}
+@media (min-width: 700px) {
+  .vt-hub-grille > li { grid-column: span 2; }
+  .vt-hub-grille > li:nth-child(n + 5) { grid-column: span 3; }
+  .vt-tuile { min-height: clamp(200px, 26vw, 260px); }
+}
+@media (min-width: 1100px) {
+  .vt-hub-grille {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(2, clamp(210px, 29vh, 330px));
+  }
+  .vt-hub-grille > li:first-child { grid-column: 1 / span 6; grid-row: 1 / span 2; }
+  .vt-tuile, .vt-tuile--une { min-height: 0; }
+}
