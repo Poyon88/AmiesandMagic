@@ -210,7 +210,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
           </div>
         )}
 
-        <div className="max-w-[1720px] mx-auto" aria-live="polite">
+        <div className="mx-auto" aria-live="polite">
           {error && (
             <p className="text-center text-am-ember mb-6" role="alert">
               {error}

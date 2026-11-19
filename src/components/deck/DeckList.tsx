@@ -97,7 +97,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
     <div className="relative min-h-screen bg-am-bg-0 px-5 py-8 sm:px-8 sm:py-10">
       <AmAtmosphere />
 
-      <div className="mx-auto max-w-[1720px]">
+      <div className="mx-auto">
         {/* Header */}
         <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -455,6 +455,43 @@
 .vt .am-surtitre { font-weight: 600; letter-spacing: 0.14em; color: var(--vt-ink-3); font-size: 0.72rem; }
 .vt .am-titre + .am-rule-diamond { display: none; }
 
+/* Menus de sélection : la liste déroulante native (grise, aux couleurs du
+   système) est remplacée par un panneau au style du site. Chrome seulement
+   pour l'instant ; ailleurs le menu natif reste, parfaitement utilisable. */
+@supports (appearance: base-select) {
+  .vt select, .vt select::picker(select) { appearance: base-select; }
+  .vt select { display: inline-flex; align-items: center; gap: 10px; min-width: 0; cursor: pointer; }
+  .vt select::picker-icon {
+    content: ""; width: 7px; height: 7px; flex: none; margin: -3px 2px 0 auto;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); opacity: 0.7; transition: transform 0.18s var(--vt-out), margin 0.18s var(--vt-out);
+  }
+  .vt select:open::picker-icon { transform: rotate(-135deg); margin-top: 3px; }
+  .vt select::picker(select) {
+    margin-top: 6px; padding: 6px; min-width: anchor-size(width); max-height: min(60vh, 520px);
+    background: var(--vt-bg-2); color: var(--vt-ink-2);
+    border: 1px solid #3a3d44; border-radius: var(--vt-r-lg);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    font: 500 0.92rem/1.25 var(--font-bricolage), system-ui, sans-serif;
+    scrollbar-width: thin; scrollbar-color: #3a3d44 transparent;
+    opacity: 0; translate: 0 -4px; transition: opacity 0.14s, translate 0.14s var(--vt-out), display 0.14s allow-discrete, overlay 0.14s allow-discrete;
+  }
+  .vt select:open::picker(select) { opacity: 1; translate: 0 0; }
+  @starting-style { .vt select:open::picker(select) { opacity: 0; translate: 0 -4px; } }
+  .vt select option {
+    display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 7px 12px;
+    border-radius: 6px; background: transparent; color: inherit; cursor: pointer; white-space: nowrap;
+  }
+  .vt select option:hover, .vt select option:focus-visible { background: var(--vt-bg-3); color: var(--vt-ink); outline: none; }
+  .vt select option:checked { color: var(--vt-ink); font-weight: 700; }
+  /* La coche passe à droite : les libellés restent alignés à gauche. */
+  .vt select option::checkmark { order: 1; margin-left: auto; padding-left: 16px; content: "✓"; color: var(--vt-accent); font-weight: 800; }
+  .vt select optgroup { color: var(--vt-ink-3); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+  /* Le sélecteur de langue dessine déjà sa propre flèche. */
+  .vt-langue select::picker-icon { display: none; }
+  @media (prefers-reduced-motion: reduce) { .vt select::picker(select), .vt select::picker-icon { transition: none; } }
+}
+
 /* Ma collection : quatre affiches, deux par rangée puis quatre de front. */
 .vt-coll-grille {
   display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(8px, 0.9vw, 14px);
@@ -570,7 +607,6 @@
 .vt .am-sigil, .vt .am-header-rule { display: none; }
 
 .vt-hub {
-  max-width: 1720px; margin: 0 auto;
   padding: calc(68px + clamp(18px, 3.4vh, 40px)) var(--vt-gutter) clamp(40px, 7vh, 80px);
 }
 .vt-hub-tete {

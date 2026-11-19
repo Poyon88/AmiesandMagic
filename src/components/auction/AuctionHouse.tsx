@@ -108,7 +108,7 @@ export default function AuctionHouse({ userId }: AuctionHouseProps) {
   const totalPages = Math.ceil(total / (filters.limit ?? 20));
 
   return (
-    <div className="relative mx-auto max-w-[1720px] px-4 md:px-10 py-8">
+    <div className="relative mx-auto px-4 md:px-10 py-8">
       <AmAtmosphere />
 
       {!geo.features.auctions && <GeoNotice className="mb-6" />}

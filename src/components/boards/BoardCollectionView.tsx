@@ -90,7 +90,7 @@ export default function BoardCollectionView({ boards, ownedPrints }: Props) {
       <AmAtmosphere />
 
       <main className="relative px-4 md:px-10 pt-12 md:pt-16 pb-20 md:pb-24">
-        <div className="max-w-[1720px] mx-auto">
+        <div className="mx-auto">
           {/* Header */}
           <div className="am-animate-rise flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between mb-10 md:mb-12">
             <AmHeading
