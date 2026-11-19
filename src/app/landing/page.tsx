@@ -10,7 +10,7 @@ import { MIN_AFFICHES_PAR_RANGEE, textesPourLocale, type LigneTexte } from "@/li
 
 export const metadata = {
   title: "Armies of Legends — Jeu de cartes à collectionner fantasy",
-  description: "Neuf factions, la première offerte en entier : plus de 300 cartes dès l'inscription. Les tirages limités rendent chaque deck Expert unique.",
+  description: "Neuf factions, la première offerte en entier : plus de 300 cartes dès l'inscription. Les éditions limitées rendent chaque deck Expert unique.",
 };
 
 /** Factions HISTORIQUES encore inscrites sur des lignes `heroes` : la table

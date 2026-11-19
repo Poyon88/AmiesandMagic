@@ -45,7 +45,7 @@ const ONGLETS: { id: SectionVitrine | "textes"; nom: string; aide: string }[] = 
   {
     id: "tirages",
     nom: "3. Decks Expert",
-    aide: "Les cartes montrées en vrai, telles qu'en jeu ; un tirage limité affiche son nombre d'exemplaires. Huit au plus sont affichées ; la carte du bloc « lisibilité » (Morcant, Cavalier du Dernier Nom) prend toujours la première place. Toutes les cartes jouables et illustrées sont proposées.",
+    aide: "Les cartes montrées en vrai, telles qu'en jeu ; une édition limitée affiche son nombre d'exemplaires. Huit au plus sont affichées ; la carte du bloc « lisibilité » (Morcant, Cavalier du Dernier Nom) prend toujours la première place. Toutes les cartes jouables et illustrées sont proposées.",
   },
   {
     id: "frise",
