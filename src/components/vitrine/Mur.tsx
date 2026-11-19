@@ -84,22 +84,25 @@ export default function Mur({ rangees, vedettes, vocab, labels }: MurProps) {
     return () => window.clearInterval(t);
   }, [choisie, enPause, reduit, ronde.length]);
 
-  // Les calques de l'affiche visée : la ronde, plus la carte que le visiteur a
-  // choisie si elle n'en fait pas partie.
-  const calques = useMemo(
-    () => (choisie && !ronde.some((a) => a.id === choisie.id) ? [...ronde, choisie] : ronde),
-    [ronde, choisie],
-  );
   // La carte qu'on quitte reste dessous le temps que la nouvelle se dévoile.
-  const [precedente, setPrecedente] = useState<number | null>(null);
-  const derniere = useRef<number | null>(null);
-  useEffect(() => {
-    const id = visee?.id ?? null;
-    if (derniere.current !== id) {
-      setPrecedente(derniere.current);
-      derniere.current = id;
+  // Suivie PENDANT le rendu (et non dans un effet) : son calque ne doit pas
+  // être démonté un instant puis reposé, l'image clignoterait.
+  const [trace, setTrace] = useState<{ courante: Affiche | null; quittee: Affiche | null }>({ courante: visee, quittee: null });
+  if (trace.courante?.id !== visee?.id) setTrace({ courante: visee, quittee: trace.courante });
+  const precedente = trace.quittee?.id ?? null;
+
+  // Les calques de l'affiche visée. La ronde parcourt tout le mur (des
+  // dizaines de cartes) : on ne pose que la carte visée, celle qu'on quitte et
+  // la SUIVANTE de la ronde, chargée d'avance pour se dévoiler sans attendre
+  // le réseau.
+  const calques = useMemo(() => {
+    const n = Math.max(1, ronde.length);
+    const parId = new Map<number, Affiche>();
+    for (const a of [trace.quittee, ronde[index % n], ronde[(index + 1) % n], choisie]) {
+      if (a) parId.set(a.id, a);
     }
-  }, [visee?.id]);
+    return [...parId.values()];
+  }, [ronde, index, choisie, trace.quittee]);
 
   const viser = useCallback((a: Affiche) => setChoisie(a), []);
   const lacher = useCallback(() => setChoisie(null), []);
@@ -183,7 +186,7 @@ export default function Mur({ rangees, vedettes, vocab, labels }: MurProps) {
                     alt=""
                     fill
                     sizes="(max-width: 899px) 34vw, 22vw"
-                    priority={a.id === calques[0].id}
+                    priority={a.id === ronde[0]?.id}
                   />
                 </div>
               </div>

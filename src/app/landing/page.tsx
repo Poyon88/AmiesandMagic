@@ -236,16 +236,13 @@ export default async function Landing() {
     };
   }).filter((r) => r.affiches.length >= MIN_AFFICHES_PAR_RANGEE);
 
-  // Les vedettes : la plus rare de chaque faction PRÉSENTE sur le mur, pour
-  // que l'affiche visée soit toujours une de celles qu'on voit dériver.
+  // Les vedettes : TOUTES les affiches du mur passent en avant à tour de rôle,
+  // un alignement après l'autre (bon, neutre, maléfique, bon…), chacune dans
+  // l'ordre de sa rangée. Une rangée plus courte s'épuise la première ; les
+  // autres continuent d'alterner.
   const affichesDuMur = rangees.flatMap((r) => r.affiches);
   const surLeMur = new Set(affichesDuMur.map((a) => a.id));
-  const vedetteParFaction = new Map<string, Affiche>();
-  for (const a of affichesDuMur) {
-    const tenue = vedetteParFaction.get(a.faction);
-    if (!tenue || (RANG_RARETE[a.rarity] ?? 9) < (RANG_RARETE[tenue.rarity] ?? 9)) vedetteParFaction.set(a.faction, a);
-  }
-  const vedettes: Affiche[] = [...vedetteParFaction.values()];
+  const vedettes: Affiche[] = entrelacer(rangees.map((r) => r.affiches), affichesDuMur.length);
   const factionArt: Record<string, string> = {};
   // Ce que le mur ne montre pas sert ailleurs : la page promet un catalogue,
   // elle ne doit pas resservir les mêmes quarante images à chaque section.
@@ -263,8 +260,6 @@ export default async function Landing() {
     factionsChoisies.add(a.faction);
     factionArt[a.faction] = a.image;
   }
-  // Les Uniques ouvrent la ronde : c'est la première carte que voit le visiteur.
-  vedettes.sort((a, b) => (RANG_RARETE[a.rarity] ?? 9) - (RANG_RARETE[b.rarity] ?? 9));
   const frise = choisies.frise.length >= MIN_AFFICHES_PAR_RANGEE
     ? choisies.frise.slice(0, AFFICHES_CHOISIES_MAX)
     : entrelacer(horsMur, AFFICHES_PAR_RANGEE);

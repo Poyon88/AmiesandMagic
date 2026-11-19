@@ -105,16 +105,20 @@ export default function TournamentStandings({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => {
-      const { width, height } = e.contentRect;
-      setEchelle(Math.min(1.25, (width * 0.92) / LARGEUR, (height * 0.92) / HAUTEUR));
-    });
+    // Le cadre porte les proportions du dessin (aspect-ratio) : la largeur
+    // seule fixe l'échelle, sans plafond, pour que le tableau suive la colonne
+    // sur grand écran.
+    const ro = new ResizeObserver(([e]) => setEchelle(e.contentRect.width / LARGEUR));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   return (
-    <div ref={ref} className="relative flex h-full w-full items-center justify-center">
+    <div
+      ref={ref}
+      className="relative flex w-full items-center justify-center"
+      style={{ aspectRatio: `${LARGEUR} / ${HAUTEUR}` }}
+    >
       <div
         aria-label={`${t("grand_title")} — ${tl("f4_standings")}`}
         role="img"
