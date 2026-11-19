@@ -18,6 +18,7 @@ const menuItems = [
   { label: "Tournois", href: "/admin/tournaments", icon: "🏆" },
   { label: "Pays", href: "/admin/pays", icon: "🌍" },
   { label: "Showcase", href: "/admin/showcase", icon: "🎭" },
+  { label: "Vitrine", href: "/admin/vitrine", icon: "🖼️" },
   { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
   { label: "Joueurs", href: "/admin/players", icon: "👥" },
   { label: "Équilibrage", href: "/admin/analytics", icon: "⚖️" },
