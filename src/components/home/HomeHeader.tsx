@@ -117,6 +117,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
               </span>
               <span
                 className="am-foil-text font-display text-base md:text-xl font-bold tracking-wider truncate"
+                translate="no"
               >
                 Armies of Legends
               </span>

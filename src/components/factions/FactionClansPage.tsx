@@ -186,7 +186,7 @@ export default function FactionClansPage({
   return (
     <main className={`vt ${bricolage.variable}`}>
       <div className="vt-entete">
-        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
         <Link href="/landing#factions" className="vt-link">{t("other_factions")}</Link>
       </div>
 

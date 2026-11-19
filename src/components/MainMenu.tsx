@@ -44,6 +44,7 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
               letterSpacing: "0.06em",
               animationDelay: "0.1s",
             }}
+            translate="no"
           >
             Armies of Legends
           </h1>

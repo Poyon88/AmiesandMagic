@@ -25,7 +25,7 @@ export default function LegalShell({
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-entete">
-        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
       </header>
       <main className="vt-lecture">
         <h1 className="vt-lecture-titre">{title}</h1>

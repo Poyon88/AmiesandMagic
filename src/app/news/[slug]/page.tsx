@@ -61,7 +61,7 @@ export default async function NewsPage({ params }: { params: Promise<{ slug: str
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-entete">
-        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
       </header>
       <main>
         <article className="vt-lecture">

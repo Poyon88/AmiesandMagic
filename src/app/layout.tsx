@@ -44,6 +44,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  // Le site est déjà traduit en huit langues : on demande au navigateur de ne
+  // PAS proposer sa traduction automatique, qui retraduisait le français en
+  // français approximatif et jusqu'au nom du jeu.
+  other: { google: "notranslate" },
   title: "Armies of Legends",
   description: "A fantasy collectible card game",
 };
@@ -70,6 +74,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      translate="no"
       className={`${cinzel.variable} ${crimsonText.variable}`}
       // Certaines extensions / outils de navigateur (ex. sur iPad Safari)
       // injectent un attribut sur <html> avant l'hydratation (ex.

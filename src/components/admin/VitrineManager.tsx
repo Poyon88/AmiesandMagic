@@ -45,7 +45,7 @@ const ONGLETS: { id: SectionVitrine | "textes"; nom: string; aide: string }[] = 
   {
     id: "tirages",
     nom: "3. Decks Expert",
-    aide: "Les cartes en tirage limité montrées en vrai, avec leur nombre d'exemplaires. Huit au plus sont affichées ; la carte du bloc « lisibilité » prend la première place. Seules les cartes en tirage limité sont proposées.",
+    aide: "Les cartes montrées en vrai, telles qu'en jeu ; un tirage limité affiche son nombre d'exemplaires. Huit au plus sont affichées ; la carte du bloc « lisibilité » (Morcant, Cavalier du Dernier Nom) prend toujours la première place. Toutes les cartes jouables et illustrées sont proposées.",
   },
   {
     id: "frise",
@@ -65,7 +65,6 @@ const RARITY_COLORS: Record<string, string> = {
 
 const alignementDe = (c: CarteCatalogue) => (c.faction ? FACTIONS[c.faction]?.alignment : undefined);
 const estPresentable = (c: CarteCatalogue) => !!c.faction && FACTIONS_VITRINE.includes(c.faction);
-const estTirageLimite = (c: CarteCatalogue) => c.set_id === null && c.card_year !== null;
 
 export default function VitrineManager({ cartes, defauts }: { cartes: CarteCatalogue[]; defauts: Record<string, string> }) {
   const [onglet, setOnglet] = useState<SectionVitrine | "textes">("mur");
@@ -212,7 +211,10 @@ function SectionCartes({
 
   const candidates = cartes.filter((c) =>
     !idsChoisis.has(c.id)
-    && (section === "tirages" ? estTirageLimite(c) : estPresentable(c))
+    && // « Decks Expert » : tout le catalogue reçu (jouable, illustré). Un filtre
+    // sur le tirage limité cachait les communes et jusqu'à la carte du bloc
+    // « lisibilité », qui n'a ni set ni millésime.
+    (section === "tirages" || estPresentable(c))
     && (!faction || c.faction === faction)
     && (!recherche || c.name.toLowerCase().includes(recherche.toLowerCase())),
   );

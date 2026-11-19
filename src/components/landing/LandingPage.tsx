@@ -136,7 +136,7 @@ export default function LandingPage({
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-nav" data-scrolled={scrolled}>
-        <Link href="/landing" className="vt-brand">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
         <nav className="vt-nav-links" aria-label="Armies of Legends">
           <a className="vt-nav-a" href="#factions">{txt.nav_factions}</a>
           <a className="vt-nav-a" href="#tirages">{txt.nav_limited}</a>
@@ -153,7 +153,8 @@ export default function LandingPage({
               bouton principal sans traverser quarante affiches. */}
           <div className="vt-propos">
             <h1 className="vt-h1">
-              <span>{txt.hero_title}.</span>
+              {/* Le nom du jeu ne se traduit pas, même par le traducteur du navigateur. */}
+              <span translate="no">{txt.hero_title}.</span>
               <span>{txt.hero_claim}</span>
             </h1>
             <p className="vt-lede">{txt.hero_sub}</p>

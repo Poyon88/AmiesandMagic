@@ -55,7 +55,7 @@ export default function AuthShell({ heading, sub, children, footer }: AuthShellP
       <main className="vt-auth-panneau">
         <div>
           {/* Retour à la page d'accueil publique. */}
-          <Link href="/landing" className="vt-auth-marque">Armies of Legends</Link>
+          <Link href="/landing" className="vt-auth-marque" translate="no">Armies of Legends</Link>
           {heading && <h1 className="vt-auth-titre">{heading}</h1>}
           {sub && <p className="vt-auth-sous">{sub}</p>}
           <div className="vt-auth-corps">{children}</div>
