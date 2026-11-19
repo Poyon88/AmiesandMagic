@@ -149,7 +149,7 @@ components:
 
 # Design System: Armies of Legends — vitrine publique
 
-> **Périmètre.** Ce document décrit le monde visuel des **pages publiques** seulement (`/landing`, `/login` et pages d'authentification, `/news/[slug]`, `/factions/[slug]`, `/legal/*`). Tout y vit sous la classe `.vt` (`src/components/vitrine/vitrine.css`, jetons `--vt-*`). **Le jeu lui-même** (plateau, collection, decks, boutique, admin) garde son ancien système doré `--am-*` défini dans `src/app/globals.css` : il est **hors périmètre**, ce document ne le décrit pas et ne l'autorise pas à être modifié. Les clés du frontmatter sont des noms descriptifs ; la correspondance avec les propriétés CSS est donnée dans chaque section.
+> **Périmètre.** Ce document décrit le monde visuel de **tout le site hors plateau de jeu** : pages publiques (`/landing`, `/login`, `/news/[slug]`, `/factions/[slug]`, `/legal/*`) et écrans du joueur (hub, collection, decks, héros, plateaux, dos, boutique, enchères, tournois, compte, tutoriel). La classe `.vt` est posée sur `<body>` par `src/components/vitrine/CorpsDuSite.tsx` (jetons `--vt-*`, `src/components/vitrine/vitrine.css`). Les écrans du joueur restent écrits avec les utilitaires `am-*` : sous `.vt`, un pont dans `vitrine.css` redéfinit les jetons `--am-*` qu'ils lisent. **Le plateau (`/game`), l'admin (`/admin`) et les bancs d'essai** gardent l'ancien système doré `--am-*` de `src/app/globals.css` : ils sont **hors périmètre**, ce document ne les décrit pas et n'autorise pas à les modifier. Les clés du frontmatter sont des noms descriptifs ; la correspondance avec les propriétés CSS est donnée dans chaque section.
 
 ## Overview
 

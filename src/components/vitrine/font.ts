@@ -1,8 +1,7 @@
 import { Bricolage_Grotesque } from "next/font/google";
 
-// Police de la vitrine publique. Déclarée ici, et non dans le layout racine,
-// pour que le jeu ne la télécharge pas : seules les pages qui importent ce
-// module la chargent.
+// Police du site hors plateau. Chargée par le layout racine depuis que tout
+// le site, sauf le jeu et l'admin, est rendu sous `.vt`.
 export const bricolage = Bricolage_Grotesque({
   subsets: ["latin", "latin-ext"],
   variable: "--font-bricolage",

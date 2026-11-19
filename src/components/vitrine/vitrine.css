@@ -34,8 +34,13 @@
 }
 .vt ::selection { background: var(--vt-ink); color: var(--vt-bg); }
 .vt :focus-visible { outline: 2px solid var(--vt-ink); outline-offset: 3px; border-radius: 4px; }
-.vt a { color: inherit; }
-.vt h1, .vt h2, .vt h3, .vt p { margin: 0; }
+/* Dans la couche `base` : ces remises à zéro doivent céder devant les
+   utilitaires Tailwind (`mt-4`, `text-am-gold`) des écrans du jeu rendus
+   sous `.vt`. Hors couche, elles les écraseraient tous. */
+@layer base {
+  .vt a { color: inherit; }
+  .vt h1, .vt h2, .vt h3, .vt p { margin: 0; }
+}
 .vt h1, .vt h2, .vt h3 { text-wrap: balance; }
 .vt p { text-wrap: pretty; }
 
@@ -407,6 +412,61 @@
   --font-crimson: var(--font-bricolage);
   --font-display: var(--font-bricolage);
 }
+/* ── Restes de l'ancien habit, gommés sur tout le site hors plateau ─────── */
+.vt {
+  /* Le violet « arcane » n'existe pas dans la vitrine : ses usages (surtitres,
+     pastilles, anneaux) passent en encre neutre. */
+  --am-arcane: var(--vt-ink-3);
+  --am-arcane-bright: var(--vt-ink-2);
+  --am-arcane-deep: var(--vt-line);
+  --am-r-sm: 6px;
+  --am-r-xl: var(--vt-r-lg);
+  --am-shadow-sm: none;
+  --am-shadow-md: none;
+  --am-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --am-glow-gold: none;
+  --am-glow-arcane: none;
+  /* Tout premier jeu de jetons du site, encore lu par les enchères, les
+     réglages et la cloche de notifications. */
+  --background: var(--vt-bg-2);
+  --foreground: var(--vt-ink);
+  --primary: var(--vt-ink);
+  --primary-dark: var(--vt-ink-2);
+  --secondary: var(--vt-bg-3);
+  --card-bg: var(--vt-bg-3);
+  --card-border: var(--vt-line);
+}
+/* Fond d'ambiance violet et or : la vitrine a un fond neutre. */
+.vt .am-mesh { background-image: none; background-color: var(--vt-bg); }
+.vt .am-grain::before, .vt .am-vignette::after { display: none; }
+/* Bricolage n'a pas d'italique : le navigateur en fabriquerait un faux. */
+.vt .italic { font-style: normal; }
+/* Coins dorés des panneaux et halo violet. */
+.vt .am-coin { display: none; }
+.vt .am-glass { border-color: var(--vt-line); border-radius: var(--vt-r-lg); }
+.vt .am-btn-arcane, .vt .am-btn-arcane:hover {
+  background: var(--vt-accent); color: #fff; border: 0; box-shadow: none; text-shadow: none;
+}
+.vt .am-btn-arcane:hover { background: var(--vt-accent-hi); }
+.vt .am-btn:focus-visible { box-shadow: none; outline: 2px solid var(--vt-ink); outline-offset: 3px; }
+.vt .am-rule { background: var(--vt-line); }
+/* Titres de section partagés (`AmHeading`) : graisse et serrage du mur. */
+.vt .am-titre { font-weight: 800; letter-spacing: -0.03em !important; line-height: 1.02; }
+.vt .am-surtitre { font-weight: 600; letter-spacing: 0.14em; color: var(--vt-ink-3); font-size: 0.72rem; }
+.vt .am-titre + .am-rule-diamond { display: none; }
+
+/* Ma collection : quatre affiches, deux par rangée puis quatre de front. */
+.vt-coll-grille {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(8px, 0.9vw, 14px);
+  list-style: none; margin: 0; padding: 0;
+}
+.vt-coll-grille > li { display: flex; min-width: 0; }
+@media (min-width: 700px) { .vt-coll-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) {
+  .vt-coll-grille { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .vt-coll-grille .vt-tuile { min-height: clamp(360px, 58vh, 620px); }
+}
+
 .vt .am-foil-text {
   background: none; -webkit-text-fill-color: currentColor; color: var(--vt-ink);
   letter-spacing: -0.02em; text-shadow: none;
@@ -467,7 +527,14 @@
 }
 
 /* ── Page de faction ───────────────────────────────────────────────────── */
-.vt-faction-tete { padding: clamp(36px, 7vh, 84px) var(--vt-gutter) clamp(28px, 5vh, 56px); max-width: 78rem; }
+.vt-faction-tete { padding: clamp(36px, 7vh, 84px) var(--vt-gutter) clamp(28px, 5vh, 56px); }
+.vt-faction-tete-texte { max-width: 78rem; }
+/* Grand écran : titre à gauche, décision + sommaire à droite, sur toute la largeur. */
+@media (min-width: 1280px) {
+  .vt-faction-tete { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: clamp(40px, 5vw, 120px); align-items: end; }
+  .vt-faction-tete-cote { justify-self: end; width: 100%; max-width: 46rem; }
+  .vt-faction-tete-cote .vt-faction-action { max-width: none; }
+}
 .vt-faction-tete .vt-lecture-titre { font-size: clamp(2.4rem, 6vw, 5.4rem); }
 .vt-faction-tete .vt-lecture-chapo { max-width: 40em; color: var(--vt-ink-2); }
 .vt-faction-action { max-width: 40rem; }
@@ -475,7 +542,8 @@
 .vt-faction-sommaire a { text-decoration: none; }
 .vt-clan { padding: clamp(40px, 7vh, 80px) var(--vt-gutter); scroll-margin-top: 24px; }
 .vt-clan[data-alterne] { background: color-mix(in srgb, var(--vt-ink) 2.5%, transparent); }
-.vt-clan-corps { max-width: 78rem; }
+.vt-clan-corps { max-width: none; }
+.vt-clan-portrait { max-width: 96rem; }
 .vt-clan-titre { font-weight: 800; font-size: clamp(1.6rem, 2.8vw, 2.6rem); line-height: 1.05; letter-spacing: -0.025em; color: var(--vt-ink); }
 .vt-clan-compte { font-size: 0.95rem; color: var(--vt-ink-3); }
 

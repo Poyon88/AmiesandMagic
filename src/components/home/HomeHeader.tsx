@@ -12,6 +12,7 @@ import TicketBadge from "@/components/shared/TicketBadge";
 import SettingsModal from "@/components/shared/SettingsModal";
 import LanguageSelector from "@/components/shared/LanguageSelector";
 import { useTranslations } from "next-intl";
+import Marque from "@/components/shared/Marque";
 
 interface HomeHeaderProps {
   username: string;
@@ -120,7 +121,7 @@ export default function HomeHeader({ username, goldBalance, goldDebt = 0, backHr
                 className="am-brand-nom am-foil-text font-display text-base md:text-xl font-bold tracking-wider truncate"
                 translate="no"
               >
-                Armies of Legends
+                <Marque />
               </span>
             </Link>
           )}

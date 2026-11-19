@@ -202,7 +202,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
         style={{
           padding: "6px 12px",
           background: "transparent",
-          border: "1px solid #3d3d5c",
+          border: "1px solid var(--card-border)",
           borderRadius: 6,
           color: "#999",
           fontSize: 13,
@@ -216,7 +216,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         {/* Left: items */}
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#c8a84e", margin: "0 0 16px", fontFamily: "var(--font-cinzel), serif" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "var(--primary)", margin: "0 0 16px", fontFamily: "var(--font-cinzel), serif" }}>
             {auction.items.length > 1
               ? t("lot")
               : auction.items[0]?.card?.name
@@ -242,7 +242,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                     width: 260, height: 146, borderRadius: 10, overflow: "hidden",
                     backgroundImage: `url('${item.board.image_url}')`,
                     backgroundSize: "cover", backgroundPosition: "center",
-                    border: "2px solid #3d3d5c", position: "relative",
+                    border: "2px solid var(--card-border)", position: "relative",
                   }}>
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 55%)" }} />
                     <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
@@ -283,9 +283,9 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
 
           {/* Seller info */}
           <div style={{ marginTop: 16, fontSize: 13, color: "#999" }}>
-            {t("seller")} <span style={{ color: "#e0e0e0" }}>{auction.seller_username ?? t("system")}</span>
+            {t("seller")} <span style={{ color: "var(--foreground)" }}>{auction.seller_username ?? t("system")}</span>
             {auction.seller_type === "admin" && (
-              <span style={{ marginLeft: 6, fontSize: 11, color: "#c8a84e" }}>{t("admin_badge")}</span>
+              <span style={{ marginLeft: 6, fontSize: 11, color: "var(--primary)" }}>{t("admin_badge")}</span>
             )}
           </div>
         </div>
@@ -295,8 +295,8 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
           {/* Status */}
           <div
             style={{
-              background: "#2a2a45",
-              border: "1px solid #3d3d5c",
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
               borderRadius: 10,
               padding: 20,
               marginBottom: 16,
@@ -317,7 +317,7 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   style={{
                     fontSize: 20,
                     fontWeight: 600,
-                    color: isExpired ? "#e74c3c" : "#c8a84e",
+                    color: isExpired ? "#e74c3c" : "var(--primary)",
                   }}
                 >
                   {timeLeft}
@@ -346,8 +346,8 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
           {auction.status === "active" && !isExpired && !isSeller && (
             <div
               style={{
-                background: "#2a2a45",
-                border: "1px solid #3d3d5c",
+                background: "var(--card-bg)",
+                border: "1px solid var(--card-border)",
                 borderRadius: 10,
                 padding: 20,
                 marginBottom: 16,
@@ -362,10 +362,10 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   style={{
                     flex: 1,
                     padding: "12px 12px",
-                    background: "#1a1a2e",
-                    border: "1px solid #3d3d5c",
+                    background: "var(--background)",
+                    border: "1px solid var(--card-border)",
                     borderRadius: 6,
-                    color: "#e0e0e0",
+                    color: "var(--foreground)",
                     fontSize: 16,
                     minHeight: 44,
                   }}
@@ -375,10 +375,10 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                   disabled={bidding}
                   style={{
                     padding: "12px 20px",
-                    background: bidding ? "#666" : "#c8a84e",
+                    background: bidding ? "#666" : "var(--primary)",
                     border: "none",
                     borderRadius: 6,
-                    color: "#1a1a2e",
+                    color: "var(--background)",
                     fontWeight: 600,
                     cursor: bidding ? "default" : "pointer",
                     minHeight: 44,
@@ -462,13 +462,13 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
           {/* Bid history */}
           <div
             style={{
-              background: "#2a2a45",
-              border: "1px solid #3d3d5c",
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
               borderRadius: 10,
               padding: 16,
             }}
           >
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0", margin: "0 0 12px" }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--foreground)", margin: "0 0 12px" }}>
               {t("bid_history")}
             </h3>
             {!auction.bids?.length ? (
@@ -482,12 +482,12 @@ export default function AuctionDetail({ auctionId, userId }: AuctionDetailProps)
                       display: "flex",
                       justifyContent: "space-between",
                       padding: "8px 10px",
-                      background: "#1a1a2e",
+                      background: "var(--background)",
                       borderRadius: 6,
                       fontSize: 13,
                     }}
                   >
-                    <span style={{ color: bid.bidder_id === userId ? "#c8a84e" : "#e0e0e0" }}>
+                    <span style={{ color: bid.bidder_id === userId ? "var(--primary)" : "var(--foreground)" }}>
                       {bid.bidder_username ?? t("anonymous")}
                       {bid.is_buyout && <span style={{ color: "#2ecc71", marginLeft: 4 }}>{t("buyout_tag")}</span>}
                     </span>

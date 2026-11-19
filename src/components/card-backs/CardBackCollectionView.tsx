@@ -88,7 +88,7 @@ export default function CardBackCollectionView({ cardBacks, ownedPrints }: Props
       <AmAtmosphere />
 
       <main className="relative px-4 md:px-10 pt-12 md:pt-16 pb-20 md:pb-24">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1720px] mx-auto">
           {/* Header */}
           <div className="am-animate-rise flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between mb-10 md:mb-12">
             <AmHeading
@@ -157,7 +157,7 @@ export default function CardBackCollectionView({ cardBacks, ownedPrints }: Props
               {t("empty")}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 md:gap-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-5 md:gap-6">
               {displayItems.map(({ back, print, key }, i) => {
                 const rarity = back.rarity ?? "Commune";
                 const color = RARITY_COLORS[rarity];

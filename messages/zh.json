@@ -2394,20 +2394,20 @@
   "landing": {
     "nav_play": "开始游戏",
     "hero_eyebrow": "幻想卡牌对战——新世代",
-    "hero_title": "Armies of Legends",
+    "hero_title": "传奇军团",
     "hero_sub": "注册即得你所选军队的300多张卡牌。限量版卡牌完成其余部分：没有任何一副专家套牌与你的相同。",
     "hero_cta": "选择我的免费阵营",
     "hero_cta_secondary": "查看九大阵营",
     "hero_proof": "首局即赠超过500张卡牌",
-    "features_title": "为何选择 Armies of Legends",
+    "features_title": "为何选择传奇军团",
     "f1_title": "传奇的深度。",
-    "f1_desc": "Armies of Legends 将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
+    "f1_desc": "传奇军团将经典 TCG 的策略精髓与专为当代玩家打造的机制融为一体。",
     "f2_title": "从一开始就拥有海量卡牌。",
     "f2_desc": "免费获得您所选阵营的全部经典卡牌（超过300张）。以传统集换式卡牌游戏一小部分的价格，拥有全部阵营（约2500张卡牌）。",
     "f3_title": "每套专家牌组，皆为孤品。",
     "f3_desc": "限量发行的卡牌让每套专家牌组独一无二。统一配额确保胜负只取决于您的策略。",
     "f_icons_title": "一眼读懂。",
-    "f_icons_desc": "Armies of Legends 的卡牌插画精心绘制，既美观又易读：每种触发条件都有专属的彩色图标，无需阅读文字，一眼就能看懂卡牌效果。",
+    "f_icons_desc": "传奇军团的卡牌插画精心绘制，既美观又易读：每种触发条件都有专属的彩色图标，无需阅读文字，一眼就能看懂卡牌效果。",
     "f4_title": "移动竞技场，终于名副其实。",
     "f4_desc": "锦标赛设有稀有卡牌与现金奖励——这一级别的对决此前只属于最顶级的桌面 TCG。",
     "f4_standings": "最终排名",
@@ -2418,7 +2418,7 @@
     "cta_title": "竞技场在等待你。",
     "cta_sub": "加入召唤师，共赴战场。",
     "cta_btn": "开启冒险",
-    "footer": "Armies of Legends — 保留所有权利",
+    "footer": "传奇军团 — 保留所有权利",
     "factions": {
       "Humains": {
         "tagline": "旗帜下的团结"
@@ -2553,8 +2553,8 @@
     "unknown_card": "未知卡牌",
     "ends_at": "截止：{date}",
     "status_active": "进行中",
-    "page_title": "拍卖行 — Armies of Legends",
-    "detail_page_title": "拍卖详情 — Armies of Legends"
+    "page_title": "拍卖行 — 传奇军团",
+    "detail_page_title": "拍卖详情 — 传奇军团"
   },
   "auth": {
     "forgot_email_required": "请先输入邮箱地址，再申请重置密码。",
@@ -2638,6 +2638,7 @@
     "faction_browse": "犹豫不决？了解每个阵营及其卡牌 →"
   },
   "common": {
+    "brand": "传奇军团",
     "settings_title": "设置",
     "music": "音乐",
     "sound_effects": "音效",
@@ -2651,7 +2652,7 @@
     "no_notifications": "暂无通知",
     "see_auction": "查看拍卖",
     "rotate_device": "请旋转设备",
-    "rotate_device_hint": "Armies of Legends 需横屏游玩，请将设备横置后继续。"
+    "rotate_device_hint": "传奇军团需横屏游玩，请将设备横置后继续。"
   },
   "forge": {
     "forge_first_card": "锻造您的第一张卡牌",
@@ -3390,7 +3391,7 @@
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",
-    "page_subtitle": "Armies of Legends — 中世纪奇幻卡牌对决",
+    "page_subtitle": "传奇军团 — 中世纪奇幻卡牌对决",
     "page_title": "如何游玩",
     "track_beginner": "新手 — 完整指南",
     "track_tcg": "TCG玩家 — 核心要点",
@@ -3703,7 +3704,7 @@
     "col_reward": "奖励",
     "col_credits": "积分",
     "col_essence": "精华",
-    "meta_title": "锦标赛 — Armies of Legends",
+    "meta_title": "锦标赛 — 传奇军团",
     "page_eyebrow": "竞技赛事",
     "page_subtitle": "一张门票可参加一场资格赛;资格赛冠军将获得月度大型锦标赛的黄金门票。每场胜利都能赢得市场积分和精华。",
     "page_title": "锦标赛",

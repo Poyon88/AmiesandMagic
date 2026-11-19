@@ -16,6 +16,7 @@ import { bricolage } from "@/components/vitrine/font";
 import type { Affiche, RangeeDuMur } from "@/components/vitrine/types";
 import { appliquerTextes } from "@/lib/vitrine/config";
 import "@/components/vitrine/vitrine.css";
+import Marque from "@/components/shared/Marque";
 
 // ─── Textes ────────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ export default function LandingPage({
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-nav" data-scrolled={scrolled}>
-        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no"><Marque /></Link>
         <nav className="vt-nav-links" aria-label="Armies of Legends">
           <a className="vt-nav-a" href="#factions">{txt.nav_factions}</a>
           <a className="vt-nav-a" href="#tirages">{txt.nav_limited}</a>

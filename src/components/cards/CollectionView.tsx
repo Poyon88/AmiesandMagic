@@ -269,7 +269,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
     <div className="relative min-h-screen bg-am-bg-0 px-5 py-8 sm:px-8 sm:py-10">
       <AmAtmosphere />
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1720px]">
         {/* Header */}
         <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -581,7 +581,7 @@ export default function CollectionView({ cards, sets, formats, collectedCardIds,
             {t("no_cards_match")}
           </div>
         ) : (
-          <div className="grid grid-cols-1 justify-items-center gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] justify-items-center gap-5">
             {displayItems.map((item, i) => {
               const rarity = item.card.rarity ?? "Commune";
               const isExpert = rarity !== "Commune";

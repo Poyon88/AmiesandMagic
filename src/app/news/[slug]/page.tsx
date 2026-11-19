@@ -14,6 +14,7 @@ import { findGameSection } from "@/lib/game-sections";
 import { renderMarkdown } from "@/lib/markdown/renderMarkdown";
 import { bricolage } from "@/components/vitrine/font";
 import "@/components/vitrine/vitrine.css";
+import Marque from "@/components/shared/Marque";
 
 async function fetchNews(slug: string): Promise<NewsItem | null> {
   const supabase = await createClient();
@@ -61,7 +62,7 @@ export default async function NewsPage({ params }: { params: Promise<{ slug: str
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-entete">
-        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no"><Marque /></Link>
       </header>
       <main>
         <article className="vt-lecture">

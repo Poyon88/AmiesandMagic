@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { bricolage } from "@/components/vitrine/font";
 import "@/components/vitrine/vitrine.css";
+import Marque from "@/components/shared/Marque";
 
 // Habillage commun des pages d'authentification hors jeu (/login,
 // /auth/reset-password, choix du pseudo et de la faction). Même monde que la
@@ -55,7 +56,7 @@ export default function AuthShell({ heading, sub, children, footer }: AuthShellP
       <main className="vt-auth-panneau">
         <div>
           {/* Retour à la page d'accueil publique. */}
-          <Link href="/landing" className="vt-auth-marque" translate="no">Armies of Legends</Link>
+          <Link href="/landing" className="vt-auth-marque" translate="no"><Marque /></Link>
           {heading && <h1 className="vt-auth-titre">{heading}</h1>}
           {sub && <p className="vt-auth-sous">{sub}</p>}
           <div className="vt-auth-corps">{children}</div>

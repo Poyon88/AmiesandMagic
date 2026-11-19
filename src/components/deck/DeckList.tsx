@@ -97,7 +97,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
     <div className="relative min-h-screen bg-am-bg-0 px-5 py-8 sm:px-8 sm:py-10">
       <AmAtmosphere />
 
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1720px]">
         {/* Header */}
         <div className="am-animate-rise flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -184,7 +184,7 @@ export default function DeckList({ decks }: { decks: DeckWithCount[] }) {
             </AmButton>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-5">
             {filteredDecks.map((deck, i) => {
               const objets = deck.itemCount ?? 0;
               const indisponibles = deck.unavailableCount ?? 0;

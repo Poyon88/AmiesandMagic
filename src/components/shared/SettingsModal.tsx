@@ -56,14 +56,14 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
     >
       <div
         style={{
-          background: "#1a1a2e",
+          background: "var(--background)",
           border: "1px solid #333",
           borderRadius: 12,
           padding: "24px 28px",
           minWidth: 320,
           maxWidth: 400,
-          color: "#e0e0e0",
-          fontFamily: "'Cinzel', serif",
+          color: "var(--foreground)",
+          fontFamily: "var(--font-cinzel), serif",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -101,7 +101,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 borderRadius: 4,
                 padding: "2px 10px",
                 fontSize: 9,
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "var(--font-cinzel), serif",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
@@ -142,7 +142,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 borderRadius: 4,
                 padding: "2px 10px",
                 fontSize: 9,
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "var(--font-cinzel), serif",
                 fontWeight: 700,
                 cursor: "pointer",
               }}
@@ -184,7 +184,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                   : "1px solid #e74c3c55",
                 background: concedeArmed ? "#e74c3c" : "#e74c3c22",
                 color: concedeArmed ? "#fff" : "#e74c3c",
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "var(--font-cinzel), serif",
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: 1,
@@ -200,7 +200,7 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
                 fontSize: 9,
                 color: "#888",
                 textAlign: "center",
-                fontFamily: "'Cinzel', serif",
+                fontFamily: "var(--font-cinzel), serif",
                 letterSpacing: 0.5,
               }}>
                 {t('concede_hint')}

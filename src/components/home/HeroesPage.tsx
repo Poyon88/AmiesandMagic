@@ -210,7 +210,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto" aria-live="polite">
+        <div className="max-w-[1720px] mx-auto" aria-live="polite">
           {error && (
             <p className="text-center text-am-ember mb-6" role="alert">
               {error}
@@ -223,7 +223,7 @@ export default function HeroesPage({ username, goldBalance }: HeroesPageProps) {
             <p className="text-center font-serif italic text-am-ink-soft">{t('heroes_empty')}</p>
           )}
           {heroes && visibleHeroes.length > 0 && (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6 md:gap-8">
               {visibleHeroes.map((h, i) => (
                 <li
                   key={h.id}
@@ -333,10 +333,10 @@ function HeroCard({
       style={LONG_PRESS_RESET_STYLE}
       className="am-glass group relative overflow-hidden rounded-2xl border border-am-gold/20 transition-all duration-300 hover:border-am-gold/55 hover:-translate-y-1 hover:shadow-[0_24px_60px_-18px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(154,107,255,0.45)]">
       {/* Gilded L-corner ornaments */}
-      <div className="absolute top-3 left-3 w-7 h-7 border-t border-l border-am-gold/50 rounded-tl-sm pointer-events-none" aria-hidden="true" />
-      <div className="absolute top-3 right-3 w-7 h-7 border-t border-r border-am-gold/50 rounded-tr-sm pointer-events-none" aria-hidden="true" />
-      <div className="absolute bottom-3 left-3 w-7 h-7 border-b border-l border-am-gold/50 rounded-bl-sm pointer-events-none" aria-hidden="true" />
-      <div className="absolute bottom-3 right-3 w-7 h-7 border-b border-r border-am-gold/50 rounded-br-sm pointer-events-none" aria-hidden="true" />
+      <div className="am-coin absolute top-3 left-3 w-7 h-7 border-t border-l border-am-gold/50 rounded-tl-sm pointer-events-none" aria-hidden="true" />
+      <div className="am-coin absolute top-3 right-3 w-7 h-7 border-t border-r border-am-gold/50 rounded-tr-sm pointer-events-none" aria-hidden="true" />
+      <div className="am-coin absolute bottom-3 left-3 w-7 h-7 border-b border-l border-am-gold/50 rounded-bl-sm pointer-events-none" aria-hidden="true" />
+      <div className="am-coin absolute bottom-3 right-3 w-7 h-7 border-b border-r border-am-gold/50 rounded-br-sm pointer-events-none" aria-hidden="true" />
 
       <div className="relative z-[2] flex flex-col items-center text-center p-6 md:p-8 gap-3">
         {/* Portrait in an arcane-glow gilded frame */}

@@ -3,6 +3,9 @@ import { Geist, Geist_Mono, Cinzel, Crimson_Text } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
+import "@/components/vitrine/vitrine.css";
+import { bricolage } from "@/components/vitrine/font";
+import CorpsDuSite from "@/components/vitrine/CorpsDuSite";
 import AudioProvider from "@/components/AudioProvider";
 import KeywordIconPreloader from "@/components/KeywordIconPreloader";
 import LocaleMigration from "@/components/LocaleMigration";
@@ -82,23 +85,14 @@ export default async function RootLayout({
       // supprime ici comme sur <body> ; n'affecte que cet élément.
       suppressHydrationWarning
     >
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        // Browser extensions (Grammarly, ColorZilla…) inject attributes
-        // on <body> before React hydrates, which produces a noisy SSR
-        // hydration mismatch on every page load. Suppressing here only
-        // affects this single element (children still get full
-        // hydration checks) and is the canonical fix recommended by the
-        // React team for this scenario.
-        suppressHydrationWarning
-      >
+      <CorpsDuSite className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} antialiased`}>
         <NextIntlClientProvider>
           <LocaleMigration />
           <AudioProvider />
           <KeywordIconPreloader />
           <GeoProvider value={geo}>{children}</GeoProvider>
         </NextIntlClientProvider>
-      </body>
+      </CorpsDuSite>
     </html>
   );
 }

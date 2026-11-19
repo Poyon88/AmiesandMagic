@@ -2394,20 +2394,20 @@
   "landing": {
     "nav_play": "プレイ",
     "hero_eyebrow": "ファンタジーTCG — 新世代",
-    "hero_title": "Armies of Legends",
+    "hero_title": "伝説の軍団",
     "hero_sub": "登録したその日から、選んだ軍の300枚以上のカードが手に入る。あとは限定版カードが仕上げる。あなたと同じエキスパートデッキは存在しない。",
     "hero_cta": "無料の勢力を選ぶ",
     "hero_cta_secondary": "9つの勢力を見る",
     "hero_proof": "初回プレイから500枚以上のカードを進呈",
-    "features_title": "Armies of Legendsを選ぶ理由",
+    "features_title": "伝説の軍団を選ぶ理由",
     "f1_title": "伝説の深み。",
-    "f1_desc": "Armies of Legendsは、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
+    "f1_desc": "伝説の軍団は、名作TCGの戦略性と、現代のチャンピオンのために設計されたメカニクスを融合させます。",
     "f2_title": "最初から圧倒的な枚数のカードを。",
     "f2_desc": "お好きな陣営のクラシックカードを全て無料で入手できます(300枚以上)。通常のTCGの数分の一のコストで、全陣営(約2,500枚)を揃えられます。",
     "f3_title": "エキスパートデッキは、それぞれが唯一の作品。",
     "f3_desc": "限定カードがエキスパートデッキに個性をもたらします。共通枠の仕組みにより、勝敗を決めるのはあなたの戦略のみ。",
     "f_icons_title": "ひと目でわかる。",
-    "f_icons_desc": "丁寧に描かれた Armies of Legends のカードは、美しさと読みやすさを兼ね備えています。発動条件ごとに色分けされたアイコンのおかげで、テキストを読まなくても、ひと目で効果がわかります。",
+    "f_icons_desc": "丁寧に描かれた伝説の軍団のカードは、美しさと読みやすさを兼ね備えています。発動条件ごとに色分けされたアイコンのおかげで、テキストを読まなくても、ひと目で効果がわかります。",
     "f4_title": "モバイルアリーナが、ついに本気になった。",
     "f4_desc": "レアカードや賞金が懸かったトーナメント——これまで大手デスクトップTCGだけに許されていた真剣勝負の舞台。",
     "f4_standings": "最終順位",
@@ -2418,7 +2418,7 @@
     "cta_title": "アリーナがあなたを待っている。",
     "cta_sub": "召喚師たちの戦いに加われ。",
     "cta_btn": "冒険を始める",
-    "footer": "Armies of Legends — 無断転載禁止",
+    "footer": "伝説の軍団 — 無断転載禁止",
     "factions": {
       "Humains": {
         "tagline": "旗の下に結束せし者"
@@ -2553,8 +2553,8 @@
     "unknown_card": "不明なカード",
     "ends_at": "終了: {date}",
     "status_active": "開催中",
-    "page_title": "オークションハウス — Armies of Legends",
-    "detail_page_title": "オークション詳細 — Armies of Legends"
+    "page_title": "オークションハウス — 伝説の軍団",
+    "detail_page_title": "オークション詳細 — 伝説の軍団"
   },
   "auth": {
     "forgot_email_required": "リセットをリクエストする前にメールアドレスを入力してください。",
@@ -2638,6 +2638,7 @@
     "faction_browse": "迷っていますか?各陣営とそのカードを見てみましょう →"
   },
   "common": {
+    "brand": "伝説の軍団",
     "settings_title": "設定",
     "music": "ミュージック",
     "sound_effects": "効果音",
@@ -2651,7 +2652,7 @@
     "no_notifications": "通知はありません",
     "see_auction": "オークションを見る",
     "rotate_device": "端末を回転させてください",
-    "rotate_device_hint": "Armies of Legendsは横画面でプレイします。端末を横向きにしてください。"
+    "rotate_device_hint": "伝説の軍団は横画面でプレイします。端末を横向きにしてください。"
   },
   "forge": {
     "forge_first_card": "最初のカードを鍛造する",
@@ -3390,7 +3391,7 @@
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",
-    "page_subtitle": "Armies of Legends — 中世ファンタジー・カード決闘",
+    "page_subtitle": "伝説の軍団 — 中世ファンタジー・カード決闘",
     "page_title": "遊び方",
     "track_beginner": "初心者 — 完全ガイド",
     "track_tcg": "TCGプレイヤー — 要点のみ",
@@ -3703,7 +3704,7 @@
     "col_reward": "報酬",
     "col_credits": "クレジット",
     "col_essence": "エッセンス",
-    "meta_title": "トーナメント — Armies of Legends",
+    "meta_title": "トーナメント — 伝説の軍団",
     "page_eyebrow": "competitive circuit",
     "page_subtitle": "チケット1枚で予選トーナメントに参加でき、優勝者は月例グランドトーナメントへのゴールデンチケットを獲得します。勝利するたびにマーケットクレジットとエッセンスを獲得できます。",
     "page_title": "トーナメント",

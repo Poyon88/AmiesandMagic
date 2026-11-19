@@ -93,7 +93,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               width: "100%", height: "100%", borderRadius: 10,
               backgroundImage: `url('${mainBoard.image_url}')`,
               backgroundSize: "cover", backgroundPosition: "center",
-              border: "2px solid #3d3d5c", position: "relative", overflow: "hidden",
+              border: "2px solid var(--card-border)", position: "relative", overflow: "hidden",
             }}
           >
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg, rgba(0,0,0,0.85), transparent 50%)" }} />
@@ -124,8 +124,8 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               position: "absolute",
               top: 4,
               right: -8,
-              background: "#c8a84e",
-              color: "#1a1a2e",
+              background: "var(--primary)",
+              color: "var(--background)",
               fontSize: 11,
               fontWeight: 700,
               padding: "2px 6px",
@@ -156,7 +156,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
           <div style={{
             // La réserve de deux lignes est en `em` : elle suit donc la
             // réduction, et la rangée reste alignée quelle que soit l'échelle.
-            fontSize: 13 * titleFontScale(itemName), color: "#e0e0e0", fontWeight: 600,
+            fontSize: 13 * titleFontScale(itemName), color: "var(--foreground)", fontWeight: 600,
             minHeight: "2.6em", lineHeight: 1.3,
             display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
             overflow: "hidden",
@@ -169,7 +169,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               padding: "3px 8px",
               borderRadius: 6,
               background: isExpired ? "#e74c3c22" : "#c8a84e22",
-              color: isExpired ? "#e74c3c" : "#c8a84e",
+              color: isExpired ? "#e74c3c" : "var(--primary)",
               fontWeight: 500,
               whiteSpace: "nowrap",
             }}

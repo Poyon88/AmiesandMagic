@@ -82,9 +82,9 @@ export default function NotificationBell() {
           position: "relative",
           padding: "6px 10px",
           background: "transparent",
-          border: "1px solid #3d3d5c",
+          border: "1px solid var(--card-border)",
           borderRadius: 8,
-          color: "#e0e0e0",
+          color: "var(--foreground)",
           fontSize: 16,
           cursor: "pointer",
         }}
@@ -124,8 +124,8 @@ export default function NotificationBell() {
             width: 340,
             maxHeight: 400,
             overflow: "auto",
-            background: "#1a1a2e",
-            border: "1px solid #3d3d5c",
+            background: "var(--background)",
+            border: "1px solid var(--card-border)",
             borderRadius: 12,
             boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
             zIndex: 1000,
@@ -137,17 +137,17 @@ export default function NotificationBell() {
               justifyContent: "space-between",
               alignItems: "center",
               padding: "12px 14px",
-              borderBottom: "1px solid #3d3d5c",
+              borderBottom: "1px solid var(--card-border)",
             }}
           >
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#e0e0e0" }}>{t('notifications')}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--foreground)" }}>{t('notifications')}</span>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead()}
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#c8a84e",
+                  color: "var(--primary)",
                   fontSize: 12,
                   cursor: "pointer",
                 }}
@@ -189,7 +189,7 @@ export default function NotificationBell() {
                         style={{
                           fontSize: 13,
                           fontWeight: notif.is_read ? 400 : 600,
-                          color: notif.is_read ? "#999" : "#e0e0e0",
+                          color: notif.is_read ? "#999" : "var(--foreground)",
                         }}
                       >
                         {notif.title}
@@ -205,7 +205,7 @@ export default function NotificationBell() {
                           pour se marquer comme lues, et promettre une
                           destination qui n'existe pas serait pire que rien. */}
                       {auctionIdOf(notif) && (
-                        <div style={{ fontSize: 11, color: "#c8a84e", marginTop: 4, fontWeight: 600 }}>
+                        <div style={{ fontSize: 11, color: "var(--primary)", marginTop: 4, fontWeight: 600 }}>
                           {t('see_auction')} →
                         </div>
                       )}
@@ -216,7 +216,7 @@ export default function NotificationBell() {
                           width: 8,
                           height: 8,
                           borderRadius: "50%",
-                          background: "#c8a84e",
+                          background: "var(--primary)",
                           flexShrink: 0,
                           marginTop: 4,
                         }}

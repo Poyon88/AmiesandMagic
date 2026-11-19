@@ -37,6 +37,7 @@ import { REPLI_TEINTE, REPLI_GLYPHE, RETRAITE_TEINTE, RETRAITE_GLYPHE } from "@/
 import ExileGlyph from "@/components/cards/ExileGlyph";
 import type { Card } from "@/lib/game/types";
 import { useEncartSurvol } from "./useEncartSurvol";
+import Marque from "@/components/shared/Marque";
 
 // Teinte des filets et des libellés. En hexadécimal plein : le code lui
 // accole des suffixes d'opacité (`${OR}55`).
@@ -186,15 +187,21 @@ export default function FactionClansPage({
   return (
     <main className={`vt ${bricolage.variable}`}>
       <div className="vt-entete">
-        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no"><Marque /></Link>
         <Link href="/landing#factions" className="vt-link">{t("other_factions")}</Link>
       </div>
 
       {/* ── Bandeau de faction ─────────────────────────────────────── */}
       <header className="vt-faction-tete">
+        <div className="vt-faction-tete-texte">
         <h1 className="vt-lecture-titre">{nomFaction}</h1>
         <p className="vt-lecture-chapo">{descFaction}</p>
         <p className="vt-lecture-date">{t("commons_count", { count: total, clans: sections.length })}</p>
+        </div>
+
+        {/* Sur grand écran, la décision et le sommaire passent à droite du
+            titre : la page occupe toute la largeur au lieu d'une colonne. */}
+        <div className="vt-faction-tete-cote">
 
         {/* La décision se prend ICI, sous les cartes qu'elle engage. La bande
             sait seule ce qu'elle doit proposer — choix gratuit, achat, ou
@@ -246,6 +253,7 @@ export default function FactionClansPage({
             )}
           </nav>
         )}
+        </div>
       </header>
 
       {/* ── Un bloc par clan ───────────────────────────────────────── */}
@@ -330,7 +338,7 @@ function ClanSection({
           />
 
           {/* Le portrait du clan : races, signature, penchant */}
-          <div className="grid gap-6 md:gap-10 md:grid-cols-3 mb-9">
+          <div className="vt-clan-portrait grid gap-6 md:gap-10 md:grid-cols-3 mb-9">
             <Bloc titre={t("races")}>
               <div className="flex flex-wrap gap-1.5">
                 {racesVisibles.map((r) => (

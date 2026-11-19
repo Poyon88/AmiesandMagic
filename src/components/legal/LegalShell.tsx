@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { bricolage } from "@/components/vitrine/font";
 import "@/components/vitrine/vitrine.css";
+import Marque from "@/components/shared/Marque";
 
 // Chrome commune aux pages légales (/legal/cgu, /legal/confidentialite).
 // Volontairement sobre et sans illustration : ces pages doivent rester lisibles,
@@ -25,7 +26,7 @@ export default function LegalShell({
   return (
     <div className={`vt ${bricolage.variable}`}>
       <header className="vt-entete">
-        <Link href="/landing" className="vt-brand" translate="no">Armies of Legends</Link>
+        <Link href="/landing" className="vt-brand" translate="no"><Marque /></Link>
       </header>
       <main className="vt-lecture">
         <h1 className="vt-lecture-titre">{title}</h1>

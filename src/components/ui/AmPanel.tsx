@@ -29,7 +29,7 @@ export default function AmPanel({
 }
 
 function Corners() {
-  const base = "absolute w-5 h-5 border-am-gold/60 pointer-events-none";
+  const base = "am-coin absolute w-5 h-5 border-am-gold/60 pointer-events-none";
   return (
     <>
       <span className={`${base} top-2 left-2 border-t border-l rounded-tl-sm`} aria-hidden />

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import HomeHeader from "@/components/home/HomeHeader";
-import MenuTile from "@/components/home/MenuTile";
-import AmAtmosphere from "@/components/ui/AmAtmosphere";
-import AmHeading from "@/components/ui/AmHeading";
+import Image from "next/image";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 type BgCategory = "cards" | "heroes" | "cardBacks" | "boards";
@@ -55,9 +54,7 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
   }, [bgCandidates]);
 
   return (
-    <div className="relative min-h-screen bg-am-bg-0 text-am-ink">
-      <AmAtmosphere />
-
+    <div className="relative min-h-screen">
       <HomeHeader
         username={username}
         goldBalance={goldBalance}
@@ -65,83 +62,32 @@ export default function CollectionHub({ username, goldBalance, bgCandidates }: C
         backLabel={t('collection_back')}
       />
 
-      <main
-        id="main-content"
-        className="relative px-4 md:px-10 pt-28 md:pt-32 pb-20 md:pb-24 min-h-screen"
-      >
-        {/* Title */}
-        <div className="am-animate-rise mb-12 md:mb-16">
-          <AmHeading as="h1" align="center">
-            {t('collection_title')}
-          </AmHeading>
+      <main id="main-content" className="vt-hub">
+        <div className="vt-hub-tete">
+          <h1 className="vt-hub-titre">{t('collection_title')}</h1>
         </div>
 
-        <nav aria-label="Sous-sections de la collection" className="max-w-6xl mx-auto">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 items-start">
-            <li className="am-animate-rise" style={{ animationDelay: "0.05s" }}>
-              <MenuTile
-                href="/collection"
-                accent="cards"
-                label={t('my_cards')}
-                description={t('my_cards_desc')}
-                bgImage={bg.cards}
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="14" y="10" width="22" height="32" rx="2" transform="rotate(-10 25 26)" />
-                    <rect x="28" y="18" width="22" height="32" rx="2" transform="rotate(8 39 34)" />
-                  </svg>
-                }
-              />
-            </li>
-            <li className="am-animate-rise" style={{ animationDelay: "0.12s" }}>
-              <MenuTile
-                href="/heroes"
-                accent="heroes"
-                label={t('my_heroes')}
-                description={t('my_heroes_desc')}
-                bgImage={bg.heroes}
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="32" cy="22" r="8" />
-                    <path d="M16 52 Q16 38 32 38 Q48 38 48 52" />
-                    <path d="M22 14 L26 8 L32 12 L38 8 L42 14" />
-                  </svg>
-                }
-              />
-            </li>
-            <li className="am-animate-rise" style={{ animationDelay: "0.19s" }}>
-              <MenuTile
-                href="/card-backs"
-                accent="card_backs"
-                label={t('my_card_backs')}
-                description={t('my_card_backs_desc')}
-                bgImage={bg.cardBacks}
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="18" y="10" width="28" height="44" rx="3" />
-                    <path d="M26 22 L38 22 M22 32 L42 32 M26 42 L38 42" />
-                  </svg>
-                }
-              />
-            </li>
-            <li className="am-animate-rise" style={{ animationDelay: "0.26s" }}>
-              <MenuTile
-                href="/boards"
-                accent="boards"
-                label={t('my_boards')}
-                description={t('my_boards_desc')}
-                bgImage={bg.boards}
-                glyph={
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="8" y="20" width="48" height="24" rx="2" />
-                    <path d="M8 32 H56 M20 20 V44 M32 20 V44 M44 20 V44" />
-                  </svg>
-                }
-              />
-            </li>
+        <nav aria-label={t('collection_title')}>
+          <ul className="vt-coll-grille">
+            <li><Tuile href="/collection" nom={t('my_cards')} desc={t('my_cards_desc')} image={bg.cards} /></li>
+            <li><Tuile href="/heroes" nom={t('my_heroes')} desc={t('my_heroes_desc')} image={bg.heroes} /></li>
+            <li><Tuile href="/card-backs" nom={t('my_card_backs')} desc={t('my_card_backs_desc')} image={bg.cardBacks} /></li>
+            <li><Tuile href="/boards" nom={t('my_boards')} desc={t('my_boards_desc')} image={bg.boards} /></li>
           </ul>
         </nav>
       </main>
     </div>
+  );
+}
+
+/** Même affiche que sur le hub du joueur : l'illustration porte la couleur,
+ *  le texte se lit sur le voile du bas. */
+function Tuile({ href, nom, desc, image }: { href: string; nom: string; desc: string; image?: string }) {
+  return (
+    <Link href={href} className="vt-tuile">
+      {image && <Image src={image} alt="" fill sizes="(max-width: 699px) 100vw, 50vw" />}
+      <h2 className="vt-tuile-nom">{nom}</h2>
+      <p className="vt-tuile-desc">{desc}</p>
+    </Link>
   );
 }

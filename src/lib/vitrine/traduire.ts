@@ -25,7 +25,8 @@ Where the text appears: ${role}
 
 Rules:
 - Idiomatic and concise, same tone and same length as the source. Address the reader informally where the language allows it.
-- Keep "Armies of Legends", faction names and card names unchanged unless an official translation is obvious.
+- The game is called "Armies of Legends" in every Latin-script language: never translate that name there. In Japanese write 伝説の軍団 and in Simplified Chinese write 传奇军团.
+- Keep faction names and card names unchanged unless an official translation is obvious.
 - Do not add or remove content. No quotes around the text, no code fences.
 - Output ONLY a JSON object, nothing else, with exactly these keys: ${LOCALES_CIBLES.map((l) => `"${l}"`).join(", ")}.
 

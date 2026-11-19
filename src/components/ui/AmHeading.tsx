@@ -27,13 +27,13 @@ export default function AmHeading({
     <div className={`flex flex-col ${alignCls} ${className ?? ""}`}>
       {eyebrow && (
         <span
-          className="font-display text-[10px] md:text-xs tracking-[0.32em] uppercase text-am-arcane-bright/80 mb-3"
+          className="am-surtitre font-display text-[10px] md:text-xs tracking-[0.32em] uppercase text-am-arcane-bright/80 mb-3"
         >
           {eyebrow}
         </span>
       )}
       <Tag
-        className="am-foil-text font-display font-bold leading-tight"
+        className="am-titre am-foil-text font-display font-bold leading-tight"
         style={{
           fontSize:
             Tag === "h1"
