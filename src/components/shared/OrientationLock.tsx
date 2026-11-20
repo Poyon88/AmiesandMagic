@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 /**
  * Full-screen overlay shown when a phone is held in portrait. The game board
- * is locked to a 16:9 landscape ratio, so portrait mode would compress it to
+ * is a landscape canvas (16:9 to ultrawide), so portrait mode would compress it to
  * a sliver — instead we ask the user to rotate. Tablets in portrait
  * (>= 900 px wide) are allowed through since they fit the layout fine.
  *

@@ -34,7 +34,7 @@ import SynergieOverlay from "./SynergieOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import ActionHistoryStrip from "./ActionHistoryStrip";
-import { aDesBandes, DESIGN_H, DESIGN_W, echellePlateau } from "./board-fit";
+import { DESIGN_H, DESIGN_W, gabaritPlateau } from "./board-fit";
 import TurnTimer from "./TurnTimer";
 import ChoiceTimerBadge from "./ChoiceTimerBadge";
 import TargetingArrow from "./TargetingArrow";
@@ -67,8 +67,9 @@ import useLongPress from "@/hooks/useLongPress";
 import { useScreenShake } from "@/hooks/useScreenShake";
 import { lent } from "@/lib/fx/overlayMotion";
 
-// The board is authored against a fixed 16:9 design size (DESIGN_W × DESIGN_H,
-// in ./board-fit) and scaled uniformly to fit the viewport (see boardScale).
+// The board is a canvas of fixed design HEIGHT (DESIGN_H) whose width follows
+// the window between 16:9 (DESIGN_W) and ultrawide (DESIGN_W_MAX), scaled uniformly to fit the
+// viewport — see ./board-fit and boardScale / boardWidth below.
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -249,7 +250,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // to before. scale = min(availW / 1920, availH / 1080).
   const boardWrapRef = useRef<HTMLDivElement>(null);
   const [boardScale, setBoardScale] = useState(1);
-  // Vrai quand la fenêtre n'est pas en 16:9 : des bandes entourent le canevas.
+  // Largeur du canevas en pixels de dessin : 1920 en 16:9, davantage sur une
+  // fenêtre plus large (jusqu'aux écrans ultra-larges) — le terrain occupe alors la largeur.
+  const [boardWidth, setBoardWidth] = useState(DESIGN_W);
+  // Vrai quand des bandes entourent encore le canevas (fenêtre plus large
+  // qu'un écran ultra-large, ou plus haute que 16:9).
   const [boardBands, setBoardBands] = useState(false);
 
   // Pulse des emblèmes qui viennent d'agir : l'orbite rejoue l'animation à
@@ -270,8 +275,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         el?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : DESIGN_W);
       const availH =
         el?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : DESIGN_H);
-      setBoardScale(echellePlateau(availW, availH));
-      setBoardBands(aDesBandes(availW, availH));
+      const gabarit = gabaritPlateau(availW, availH);
+      setBoardScale(gabarit.echelle);
+      setBoardWidth(gabarit.largeur);
+      setBoardBands(gabarit.bandes);
     };
     update();
     const ro =
@@ -546,14 +553,14 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
     return myPlayer.board.some(c => peutRecevoirObjet(myPlayer, c, o));
   }, [myTurn, myPlayer]);
 
-  // Hand spacing keyed off card COUNT against the fixed DESIGN_W canvas (not the
-  // window width — under scale-to-fit the window no longer reflects on-canvas
-  // crowding). A card renders ≈169px (120 × zoom 1.41); usable width is the
+  // Hand spacing keyed off card COUNT against the canvas width in design px
+  // (boardWidth — not the window width: under scale-to-fit the window no longer
+  // reflects on-canvas crowding). A card renders ≈169px (120 × zoom 1.41); usable width is the
   // canvas minus the hand row's px-6 padding. Gap stays at 4 until cards would
   // overflow (~11 cards), then fans negative, floored at -56 (the previous max
   // overlap) so even a very large hand stays on-canvas.
   const HAND_CARD_FOOTPRINT = 169;
-  const HAND_USABLE_W = DESIGN_W - 48;
+  const HAND_USABLE_W = boardWidth - 48;
   const handCount = myPlayer?.hand.length ?? 0;
   const handGap =
     handCount > 1
@@ -1253,16 +1260,14 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         }
       }}
     >
-      {/* FOND DES BANDES. Le plateau est un canevas 16:9 mis à l'échelle : sur
-          une fenêtre plus large (écran ultra-large) ou plus haute (tablette), il
-          laissait des bandes unies de part et d'autre, et le champ de bataille
-          semblait ne pas remplir l'écran (retour joueur du 2026-11-20). On y
-          prolonge l'illustration du plateau, floutée et assombrie : le décor
-          couvre toute la fenêtre sans déplacer ni déformer le canevas — cartes,
-          zones et effets restent alignés sur l'illustration nette.
-          Rendu seulement quand il y a des bandes ; débordement de 6 % pour que
-          le flou ne laisse pas voir ses bords. */}
-      {boardBands && (
+      {/* FOND FLOUTÉ. L'illustration d'un plateau est dessinée en 16:9. Elle
+          est prolongée, floutée et assombrie, partout où l'image nette ne va
+          pas : sur les côtés d'un terrain plus large que 16:9 (elle transparaît
+          sous le canevas, cf. le fondu de l'illustration plus bas), et dans les
+          bandes qui subsistent autour du canevas (fenêtre plus large qu'un écran
+          ultra-large, ou plus haute que 16:9). Le décor couvre ainsi toute la fenêtre.
+          Débordement de 6 % pour que le flou ne laisse pas voir ses bords. */}
+      {(boardBands || boardWidth > DESIGN_W) && (
         <div
           aria-hidden="true"
           style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}
@@ -1279,8 +1284,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           />
         </div>
       )}
-      {/* Scale-to-fit canvas wrapper. The board is a fixed DESIGN_W×DESIGN_H
-          canvas centred in the viewport and scaled uniformly by boardScale, so
+      {/* Scale-to-fit canvas wrapper. The board is a boardWidth×DESIGN_H canvas
+          centred in the viewport and scaled uniformly by boardScale, so
           every fixed-px child (cards, portraits, buttons, text) shrinks together
           on small screens. data-board-scale lets the FX layer (overlayMotion)
           keep particle placement aligned under the transform. NOTE: this
@@ -1293,19 +1298,19 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           position: "absolute",
           left: "50%",
           top: "50%",
-          width: DESIGN_W,
+          width: boardWidth,
           height: DESIGN_H,
           transform: `translate(-50%, -50%) scale(${boardScale})`,
           transformOrigin: "center center",
           overflow: "visible",
         }}
       >
-      {/* 16:9 board canvas */}
+      {/* Board canvas (16:9 to ultrawide) */}
       <motion.div
         animate={shakeControls}
         className="overflow-visible"
         style={{
-          width: DESIGN_W,
+          width: boardWidth,
           height: DESIGN_H,
           position: "relative",
           filter: isFrozen
@@ -1322,23 +1327,47 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       >
         {/* Board artwork — next/image pipeline respects DPR and serves the
             sharpest variant the source allows. Gemini outputs ~1024px native
-            so we request a generous sizes hint and max quality. */}
-        <Image
-          src={boardImageUrl || "/images/battlefield.jpg"}
-          alt=""
-          fill
-          priority
-          className="object-cover select-none pointer-events-none"
-          sizes="(min-resolution: 2dppx) 100vw, 100vw"
-          quality={100}
-          unoptimized
-          draggable={false}
-          // Base brightness lift: the raw board art renders too dark on both
-          // Chrome and Firefox, so give the artwork a small always-on brightness
-          // bump. Applied to the IMAGE only (not the motion.div) so cards/UI text
-          // are untouched; the hit-stop freeze filter still stacks on top.
-          style={{ zIndex: -1, imageRendering: "auto", filter: "brightness(1.12)" }}
-        />
+            so we request a generous sizes hint and max quality.
+            L'illustration est en 16:9 : elle garde sa taille de dessin
+            (DESIGN_W) au centre du canevas, pour que le décor reste en face des
+            zones de jeu quelle que soit la largeur du terrain. Sur un terrain
+            plus large, ses deux bords se fondent dans le fond flouté rendu sous
+            le canevas — sans ce fondu, une arête nette coupait le décor. */}
+        <div
+          className="pointer-events-none"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: "50%",
+            width: DESIGN_W,
+            transform: "translateX(-50%)",
+            zIndex: -1,
+            ...(boardWidth > DESIGN_W
+              ? {
+                  maskImage: "linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%)",
+                }
+              : {}),
+          }}
+        >
+          <Image
+            src={boardImageUrl || "/images/battlefield.jpg"}
+            alt=""
+            fill
+            priority
+            className="object-cover select-none pointer-events-none"
+            sizes="(min-resolution: 2dppx) 100vw, 100vw"
+            quality={100}
+            unoptimized
+            draggable={false}
+            // Base brightness lift: the raw board art renders too dark on both
+            // Chrome and Firefox, so give the artwork a small always-on brightness
+            // bump. Applied to the IMAGE only (not the motion.div) so cards/UI text
+            // are untouched; the hit-stop freeze filter still stacks on top.
+            style={{ imageRendering: "auto", filter: "brightness(1.12)" }}
+          />
+        </div>
 
         {/* Subtle overlay for readability — kept light (/5) so it doesn't fight
             the brightness lift above. */}
