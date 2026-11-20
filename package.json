@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "livret": "vite-node --config vitest.config.ts scripts/generate-livret.ts"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.3",

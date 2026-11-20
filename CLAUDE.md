@@ -24,3 +24,12 @@ This project targets Chrome as the primary browser, but must also fonctionner su
 ## Quality Checks
 
 After implementing features, verify the happy path works before committing. For card game features: test that new players see correct cards, that keywords/effects resolve properly, and that UI state syncs with game engine state.
+
+## Livret de règles
+
+`src/lib/regles/` est la référence des règles du jeu : l'agent qui répond aux joueurs s'appuie dessus, et sur rien d'autre. Sa version lisible est `docs/livret-de-regles.md` (générée).
+
+1. Avant de modifier une règle ou une capacité, lis le chapitre concerné du livret : il dit ce que le joueur est censé observer.
+2. Tout changement qu'un joueur peut constater en partie (nouvelle capacité, cas particulier, arbitrage, exception, valeur d'équilibrage non tirée d'une constante) se reporte dans le livret DANS LE MÊME COMMIT : règle générale → `chapitres/`, cas particulier d'une capacité → une entrée dans `precisions.ts`.
+3. N'y écris que ce que le code fait réellement, vérifié dans le moteur ou par un test — pas l'intention. Vocabulaire de l'écran : « unité », « action », noms affichés des capacités ; aucun détail d'implémentation.
+4. Puis `npm run livret` : le test `src/lib/regles/livret.test.ts` échoue tant que le document n'est pas régénéré.

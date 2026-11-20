@@ -35,6 +35,7 @@ import {
   MAX_EVEIL,
 } from "@/lib/game/constants";
 import { HERO_HP_MIN, HERO_HP_MAX } from "@/lib/game/hero-hp";
+import { MAX_OBJETS_PAR_UNITE } from "@/lib/game/items";
 import { regleDecouverteActivee, varianteDecouverte } from "@/lib/game/decouverte";
 import { keywordModeColor } from "@/lib/game/keyword-labels";
 import type { Emblem, KeywordMode } from "@/lib/game/types";
@@ -302,8 +303,9 @@ function BeginnerGuide() {
         <P>
           Les <Hi>objets</Hi> sont le troisième type de carte. Ils occupent une place du terrain mais restent
           inertes : ni attaquables, ni comptés comme des unités. On paie leur coût pour les poser, puis leur
-          <Hi> coût d'équipement</Hi> (le cartouche sous le mana) pour les fixer sur une créature alliée — une seule
-          par créature — qui reçoit alors leurs bonus « +X/+Y » et leurs capacités. On peut les rééquiper à
+          <Hi> coût d'équipement</Hi> (le cartouche sous le mana) pour les fixer sur une créature alliée,
+          qui reçoit alors leurs bonus « +X/+Y » et leurs capacités. Une créature porte au plus
+          <Hi> {MAX_OBJETS_PAR_UNITE} objets</Hi>, dont les bonus s'additionnent. On peut les rééquiper à
           volonté, en repayant ce coût ; si le porteur meurt, l'objet reste en jeu, déséquipé.
         </P>
       </Section>
@@ -534,6 +536,27 @@ function BeginnerGuide() {
         </P>
       </Section>
 
+      <Section title="Changer de zone : ce qu'une créature garde">
+        <P>
+          Une créature qui quitte le terrain — renvoyée en main, envoyée au cimetière ou replacée dans le deck —
+          reste <Hi>la même carte</Hi> : elle n'est pas remise à neuf. Si elle revient en jeu, elle revient avec son
+          histoire.
+        </P>
+        <Bullets items={[
+          <><Hi>Elle garde</Hi> ses bonus et malus d'ATK et de PV permanents (Renforcement, Gloire, Entrainement, Affaiblissement, gains de Loyauté, Nécrophagie, Richesse, Instinct de meute, Dévoration…) et les <Hi>capacités qu'on lui a conférées</Hi>. Une créature morte les conserve au cimetière.</>,
+          <><Hi>Elle perd</Hi> ce qui dépendait du terrain : les bonus d'aura (Commandement, Sang mêlé, Force des ancêtres, Pureté, Seuil Sacrificiel), recalculés à son retour ; le bonus de son objet, qui se détache et reste en jeu ; ses blessures et ses états (Poison, Paralysie, neutralisation subie) ; l'action mémorisée par Apprentissage.</>,
+          <><Hi>Elle revient soignée</Hi>, à ses PV maximum bonus compris — sauf par Résurrection, qui la ramène à 1 PV.</>,
+          <>Bouclier, Esquive, Ombre et Résurrection sont <Hi>de nouveau disponibles</Hi>, et elle subit de nouveau le mal d'invocation (sauf Traque).</>,
+          <>Rejouée, ses effets <Hi>« à l'entrée en jeu »</Hi> se déclenchent de nouveau : leurs gains s'ajoutent aux bonus conservés.</>,
+          <>Une créature <Hi>volée</Hi> qui quitte le terrain retourne chez son propriétaire d'origine.</>,
+          <><Hi>En main, aucune capacité n'est active</Hi>, pas même une protection. Une créature blessée en main garde sa blessure ; tombée à 0 PV, elle part au cimetière sans déclencher d'effet de mort.</>,
+        ]} />
+        <P>
+          Seul le <Hi>Silence</Hi> efface les gains d'une créature et la ramène à ses valeurs imprimées — sans toucher
+          aux auras ni à l'objet qu'elle porte.
+        </P>
+      </Section>
+
       <Section title={tt('singulier_title')}>
         <P>
           Certaines capacités portent la condition <Hi>Singulier</Hi>, reconnaissable à son icône bicolore
@@ -631,7 +654,7 @@ function TcgGuide() {
           <><Hi>Singulier</Hi> : condition sur une capacité — active seulement si le deck de départ n'a aucun doublon (figé au lancement). <Hi>Emblème</Hi> : effet permanent posé sur un joueur, survit à sa source.</>,
           <>Réductions de coût : <Hi>Canalisation</Hi> (actions, selon le terrain), <Hi>Entraide</Hi> (selon alliés de même race).</>,
           <>Une action peut <Hi>conférer une capacité de créature</Hi> : à la cible, ou à toutes vos unités (marqueur « A »).</>,
-          <><Hi>Objets</Hi> : 3ᵉ type de carte, hors deck. Occupent une place du terrain, inertes ; coût de pose + <Hi>coût d'équipement</Hi> rejouable, un seul par créature alliée, restent en jeu à la mort du porteur.</>,
+          <><Hi>Objets</Hi> : 3ᵉ type de carte, hors deck. Occupent une place du terrain, inertes ; coût de pose + <Hi>coût d'équipement</Hi> rejouable, {MAX_OBJETS_PAR_UNITE} au plus par créature alliée, restent en jeu à la mort du porteur.</>,
           <>Couleur d'icône = déclencheur : blanc permanent, <span style={{ color: keywordModeColor("entry")! }}>jaune</span> entrée/action, <span style={{ color: keywordModeColor("tap")! }}>orange</span> activation, <span style={{ color: keywordModeColor("attack")! }}>magenta</span> attaque, <span style={{ color: keywordModeColor("death")! }}>rouge</span> mort, <span style={{ color: keywordModeColor("wound")! }}>citron</span> blessure, <span style={{ color: keywordModeColor("low_hp")! }}>violet</span> sous 15 PV, <span style={{ color: keywordModeColor("start_of_turn")! }}>argent</span> début de tour, <span style={{ color: keywordModeColor("end_of_turn")! }}>vert</span> fin de tour, <span style={{ color: keywordModeColor("return")! }}>bleu</span> retour en main, <span style={{ color: keywordModeColor("draw")! }}>cyan</span> pioche, <span style={{ color: keywordModeColor("delay")! }}>ambre</span> Retard X. Marqueurs : <Hi>✦</Hi> effet composé, <Hi>A</Hi> toutes les unités, <Hi>S</Hi> sur elle-même, <Hi>/</Hi> choix OU, bicolore Singulier, barré neutralisé.</>,
         ]} />
       </Section>
