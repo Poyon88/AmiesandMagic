@@ -856,6 +856,9 @@ interface GameStore {
   // layouts that surface one (mtgo). Falls back to a generic 💀 icon when
   // null.
   boardGraveyardImageUrl: string | null;
+  /** Version 21:9 de l'illustration du plateau (centre identique à
+   *  `boardImageUrl`), ou null si le plateau n'en a pas. */
+  boardImageWideUrl: string | null;
   myCardBackUrl: string | null;
   opponentCardBackUrl: string | null;
   boardMusicUrls: string[];
@@ -889,6 +892,7 @@ interface GameStore {
   setMachineTemplates: (templates: Card[]) => void;
   setMutationPool: (pool: Card[]) => void;
   setBoardImageUrl: (url: string | null) => void;
+  setBoardImageWideUrl: (url: string | null) => void;
   setBoardLayout: (layout: string) => void;
   setBoardGraveyardImageUrl: (url: string | null) => void;
   setMyCardBackUrl: (url: string | null) => void;
@@ -2048,6 +2052,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   boardImageUrl: null,
   boardLayout: "classic",
   boardGraveyardImageUrl: null,
+  boardImageWideUrl: null,
   myCardBackUrl: null,
   opponentCardBackUrl: null,
   boardMusicUrls: [],
@@ -2103,6 +2108,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   setMachineTemplates: (templates) => set({ machineTemplates: templates }),
   setMutationPool: (pool) => set({ mutationPool: pool }),
   setBoardImageUrl: (url) => set({ boardImageUrl: url }),
+  setBoardImageWideUrl: (url) => set({ boardImageWideUrl: url }),
   setBoardLayout: (layout) => set({ boardLayout: layout }),
   setBoardGraveyardImageUrl: (url) => set({ boardGraveyardImageUrl: url }),
   setMyCardBackUrl: (url) => set({ myCardBackUrl: url }),

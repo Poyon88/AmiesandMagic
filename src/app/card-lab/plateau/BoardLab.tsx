@@ -12,6 +12,7 @@
 //   ?main=7                     cartes en main (défaut : 7)
 //   ?terrain=5                  unités par rangée (défaut : 5, 8 au plus)
 //   ?image=<url>                illustration du plateau à essayer
+//   ?large=<url>                sa version 21:9 (centre identique à ?image)
 import { useEffect } from "react";
 import GameBoard from "@/components/game/GameBoard";
 import { useGameStore } from "@/lib/store/gameStore";
@@ -55,6 +56,7 @@ export default function BoardLab() {
       isAnimating: false,
       boardLayout: q.get("disposition") === "classic" ? "classic" : "mtgo",
       boardImageUrl: q.get("image"),
+      boardImageWideUrl: q.get("large"),
     });
     return () => useGameStore.setState({ gameState: null });
   }, []);

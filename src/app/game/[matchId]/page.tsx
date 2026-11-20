@@ -387,13 +387,16 @@ export default function GamePage() {
           // top-level alias has produced inconsistent shapes in some cases.
           const { data: boardRow, error: boardErr } = await supabase
             .from("game_boards")
-            .select("id, name, image_url, layout, graveyard_image_url, single_music_track:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(track_id, music_tracks(file_url))")
+            .select("id, name, image_url, image_url_wide, layout, graveyard_image_url, single_music_track:music_track_id(file_url), tense_track:tense_track_id(file_url), victory_track:victory_track_id(file_url), defeat_track:defeat_track_id(file_url), game_board_music_tracks(track_id, music_tracks(file_url))")
             .eq("id", targetBoardId)
             .maybeSingle();
           if (boardErr) console.warn("[game] board load error:", boardErr);
           if (boardRow) {
             useGameStore.getState().setBoardImageUrl(boardRow.image_url);
             const board = boardRow as Record<string, unknown>;
+            // Version 21:9 de l'illustration, si le plateau en a une : elle
+            // couvre le terrain élargi des écrans ultra-larges.
+            useGameStore.getState().setBoardImageWideUrl((board.image_url_wide as string | null) ?? null);
             useGameStore.getState().setBoardLayout((board.layout as string) ?? "classic");
             useGameStore.getState().setBoardGraveyardImageUrl((board.graveyard_image_url as string | null) ?? null);
             const musicData = board.single_music_track as { file_url: string } | null;

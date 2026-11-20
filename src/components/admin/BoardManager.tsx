@@ -17,6 +17,8 @@ interface GameBoard {
   id: number;
   name: string;
   image_url: string;
+  /** Version 21:9 validée (centre identique à `image_url`), ou null. */
+  image_url_wide?: string | null;
   is_active: boolean;
   music_track_id: number | null;
   tense_track_id: number | null;
@@ -62,6 +64,11 @@ export default function BoardManager() {
   const [error, setError] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [genMessage, setGenMessage] = useState<string | null>(null);
+  // Version large (21:9) : brouillons en attente de validation, par plateau.
+  const [wideDrafts, setWideDrafts] = useState<Record<number, string>>({});
+  const [wideBusy, setWideBusy] = useState<number | null>(null);
+  const [wideMessage, setWideMessage] = useState<{ id: number; text: string } | null>(null);
+  const [onlyWithoutWide, setOnlyWithoutWide] = useState(false);
 
   const loadBoards = useCallback(async () => {
     setLoading(true);
@@ -195,6 +202,47 @@ export default function BoardManager() {
       setGenMessage(err instanceof Error ? err.message : "Erreur réseau");
     }
     setGeneratingId(null);
+  };
+
+  // ─── Version large (21:9) ────────────────────────────────────────────────
+  // Étendre : le serveur invente les côtés et recolle l'original au centre,
+  // puis rend un BROUILLON. Rien n'est utilisé en partie avant « Valider ».
+  const wideCall = async (board: GameBoard, method: "POST" | "PUT" | "DELETE", body?: unknown) => {
+    setWideBusy(board.id);
+    setWideMessage(null);
+    try {
+      const res = await fetch(`/api/boards/${board.id}/wide`, {
+        method,
+        ...(body ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? `Erreur ${res.status}`);
+      return data as { url?: string };
+    } catch (err) {
+      setWideMessage({ id: board.id, text: err instanceof Error ? err.message : "Erreur" });
+      return null;
+    } finally {
+      setWideBusy(null);
+    }
+  };
+
+  const handleExtendWide = async (board: GameBoard) => {
+    const data = await wideCall(board, "POST");
+    if (data?.url) setWideDrafts((d) => ({ ...d, [board.id]: data.url! }));
+  };
+
+  const handleValidateWide = async (board: GameBoard) => {
+    const url = wideDrafts[board.id];
+    if (!url) return;
+    const data = await wideCall(board, "PUT", { url });
+    if (!data) return;
+    setWideDrafts((d) => { const { [board.id]: _valide, ...reste } = d; void _valide; return reste; });
+    setBoards((list) => list.map((b) => (b.id === board.id ? { ...b, image_url_wide: url } : b)));
+  };
+
+  const handleRemoveWide = async (board: GameBoard) => {
+    const data = await wideCall(board, "DELETE");
+    if (data) setBoards((list) => list.map((b) => (b.id === board.id ? { ...b, image_url_wide: null } : b)));
   };
 
   const handleToggleActive = async (board: GameBoard) => {
@@ -359,7 +407,11 @@ export default function BoardManager() {
       )}
 
       {/* Board list */}
-      {boards.map((board) => (
+      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#333", margin: "0 0 12px" }}>
+        <input type="checkbox" checked={onlyWithoutWide} onChange={(e) => setOnlyWithoutWide(e.target.checked)} />
+        Seulement les plateaux sans version large ({boards.filter((b) => !b.image_url_wide).length} sur {boards.length})
+      </label>
+      {boards.filter((b) => !onlyWithoutWide || !b.image_url_wide).map((board) => (
         <div key={board.id} style={STYLE.card}>
           <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
             <img
@@ -551,6 +603,80 @@ export default function BoardManager() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Version large (21:9) : couvre le terrain élargi des écrans
+              ultra-larges. Le centre est l'illustration d'origine, intacte ;
+              seuls les côtés sont générés. À valider à l'œil avant usage. */}
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #eee" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
+              <span style={STYLE.title as React.CSSProperties}>Version large (21:9)</span>
+              <span style={{
+                ...STYLE.badge,
+                background: board.image_url_wide ? "#e8f5e9" : "#f3f3f3",
+                color: board.image_url_wide ? "#2e7d32" : "#777",
+                border: `1px solid ${board.image_url_wide ? "#a5d6a7" : "#ddd"}`,
+              }}>
+                {board.image_url_wide ? "Validée" : "Aucune"}
+              </span>
+              <button
+                onClick={() => handleExtendWide(board)}
+                disabled={wideBusy !== null}
+                style={{ ...STYLE.button, opacity: wideBusy !== null ? 0.5 : 1 }}
+              >
+                {wideBusy === board.id ? "Génération… (jusqu'à une minute)" : wideDrafts[board.id] ? "Refaire" : board.image_url_wide ? "Régénérer" : "Étendre"}
+              </button>
+              {wideDrafts[board.id] && (
+                <button onClick={() => handleValidateWide(board)} disabled={wideBusy !== null} style={{ ...STYLE.button, background: "#2e7d32" }}>
+                  Valider ce brouillon
+                </button>
+              )}
+              {wideDrafts[board.id] && (
+                <button
+                  onClick={() => setWideDrafts((d) => { const { [board.id]: _jete, ...reste } = d; void _jete; return reste; })}
+                  disabled={wideBusy !== null}
+                  style={{ ...STYLE.button, background: "#888" }}
+                >
+                  Jeter le brouillon
+                </button>
+              )}
+              {board.image_url_wide && (
+                <button onClick={() => handleRemoveWide(board)} disabled={wideBusy !== null} style={{ ...STYLE.button, background: "#e74c3c" }}>
+                  Retirer
+                </button>
+              )}
+            </div>
+            {wideMessage?.id === board.id && (
+              <p role="alert" style={{ fontSize: 12, color: "#c0392b", margin: "0 0 8px" }}>{wideMessage.text}</p>
+            )}
+            {(wideDrafts[board.id] || board.image_url_wide) && (
+              <div style={{ display: "grid", gap: 8 }}>
+                {wideDrafts[board.id] && (
+                  <figure style={{ margin: 0 }}>
+                    <figcaption style={{ fontSize: 11, color: "#b7950b", marginBottom: 4 }}>
+                      Brouillon — non utilisé en partie. Regardez les deux raccords, à gauche et à droite du centre.
+                    </figcaption>
+                    <a href={wideDrafts[board.id]} target="_blank" rel="noreferrer" title="Ouvrir en grand">
+                      <img src={wideDrafts[board.id]} alt={`Brouillon large de ${board.name}`} style={{ width: "100%", maxWidth: 900, aspectRatio: "21 / 9", objectFit: "cover", borderRadius: 6, border: "2px dashed #d4ac0d" }} />
+                    </a>
+                    <a
+                      href={`/card-lab/plateau?image=${encodeURIComponent(board.image_url)}&large=${encodeURIComponent(wideDrafts[board.id])}`}
+                      target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#2471a3" }}
+                    >
+                      Voir sur le plateau (banc d&apos;essai, en local)
+                    </a>
+                  </figure>
+                )}
+                {board.image_url_wide && (
+                  <figure style={{ margin: 0 }}>
+                    <figcaption style={{ fontSize: 11, color: "#2e7d32", marginBottom: 4 }}>Version validée, utilisée en partie.</figcaption>
+                    <a href={board.image_url_wide} target="_blank" rel="noreferrer" title="Ouvrir en grand">
+                      <img src={board.image_url_wide} alt={`Version large de ${board.name}`} style={{ width: "100%", maxWidth: 900, aspectRatio: "21 / 9", objectFit: "cover", borderRadius: 6, border: "1px solid #a5d6a7" }} />
+                    </a>
+                  </figure>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ))}

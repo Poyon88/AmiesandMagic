@@ -511,6 +511,11 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   }
 
   const boardImageUrl = useGameStore((s) => s.boardImageUrl);
+  const boardImageWideUrl = useGameStore((s) => s.boardImageWideUrl);
+  // Illustration affichée : la version 21:9 quand le plateau en a une (elle
+  // couvre le terrain élargi), sinon l'illustration 16:9.
+  const boardArtUrl = boardImageWideUrl || boardImageUrl || "/images/battlefield.jpg";
+  const boardArtLarge = !!boardImageWideUrl;
   const boardLayout = useGameStore((s) => s.boardLayout);
   const boardGraveyardImageUrl = useGameStore((s) => s.boardGraveyardImageUrl);
   const isMtgo = boardLayout === "mtgo";
@@ -1267,7 +1272,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           bandes qui subsistent autour du canevas (fenêtre plus large qu'un écran
           ultra-large, ou plus haute que 16:9). Le décor couvre ainsi toute la fenêtre.
           Débordement de 6 % pour que le flou ne laisse pas voir ses bords. */}
-      {(boardBands || boardWidth > DESIGN_W) && (
+      {(boardBands || (!boardArtLarge && boardWidth > DESIGN_W)) && (
         <div
           aria-hidden="true"
           style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}
@@ -1276,7 +1281,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             style={{
               position: "absolute",
               inset: "-6%",
-              backgroundImage: `url("${boardImageUrl || "/images/battlefield.jpg"}")`,
+              backgroundImage: `url("${boardArtUrl}")`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "blur(28px) brightness(0.6) saturate(1.1)",
@@ -1328,11 +1333,15 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         {/* Board artwork — next/image pipeline respects DPR and serves the
             sharpest variant the source allows. Gemini outputs ~1024px native
             so we request a generous sizes hint and max quality.
-            L'illustration est en 16:9 : elle garde sa taille de dessin
-            (DESIGN_W) au centre du canevas, pour que le décor reste en face des
-            zones de jeu quelle que soit la largeur du terrain. Sur un terrain
-            plus large, ses deux bords se fondent dans le fond flouté rendu sous
-            le canevas — sans ce fondu, une arête nette coupait le décor. */}
+            DEUX CAS :
+            - illustration 16:9 seule : elle garde sa taille de dessin (DESIGN_W)
+              au centre du canevas, pour que le décor reste en face des zones de
+              jeu quelle que soit la largeur du terrain. Sur un terrain plus
+              large, ses deux bords se fondent dans le fond flouté rendu sous le
+              canevas — sans ce fondu, une arête nette coupait le décor ;
+            - version 21:9 : elle couvre tout le canevas. Son centre étant
+              identique à l'illustration 16:9, un terrain en 16:9 la rogne sur
+              les côtés et retombe exactement sur l'image d'origine. */}
         <div
           className="pointer-events-none"
           style={{
@@ -1340,10 +1349,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             top: 0,
             bottom: 0,
             left: "50%",
-            width: DESIGN_W,
+            width: boardArtLarge ? boardWidth : DESIGN_W,
             transform: "translateX(-50%)",
             zIndex: -1,
-            ...(boardWidth > DESIGN_W
+            ...(!boardArtLarge && boardWidth > DESIGN_W
               ? {
                   maskImage: "linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%)",
                   WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%)",
@@ -1352,7 +1361,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           }}
         >
           <Image
-            src={boardImageUrl || "/images/battlefield.jpg"}
+            src={boardArtUrl}
             alt=""
             fill
             priority
