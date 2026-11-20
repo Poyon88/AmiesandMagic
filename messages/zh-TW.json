@@ -1,0 +1,3777 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "追獵",
+        "desc": "召喚後即可攻擊並使用其可啟動能力。"
+      },
+      "taunt": {
+        "label": "嘲諷",
+        "desc": "敵人必須優先攻擊此單位。"
+      },
+      "divine_shield": {
+        "label": "護盾",
+        "desc": "抵擋第一次攻擊,不受傷害。"
+      },
+      "ranged": {
+        "label": "飛行",
+        "desc": "無視敵方的嘲諷。"
+      },
+      "raid": {
+        "label": "突襲",
+        "desc": "召喚後即可攻擊敵方生物(但不能攻擊英雄)。"
+      },
+      "convocations_multiples": {
+        "label": "多重召喚",
+        "desc": "創造{tokens}。"
+      },
+      "loyaute": {
+        "label": "忠誠",
+        "desc": "場上每有一名{race_bare}盟友,便獲得 +1/+1。"
+      },
+      "ancre": {
+        "label": "錨定",
+        "desc": "無法被移動或放逐。"
+      },
+      "resistance": {
+        "label": "抗性 X",
+        "desc": "受到的傷害減少 X(至少受到 1 點傷害)。"
+      },
+      "premiere_frappe": {
+        "label": "先制攻擊",
+        "desc": "此單位攻擊時先造成傷害;對方單位僅在存活時才會反擊。"
+      },
+      "gloire": {
+        "label": "榮耀 +X/+Y",
+        "desc": "每當此單位在戰鬥傷害中存活,便永久獲得 +X/+Y。"
+      },
+      "vol": {
+        "label": "飛行",
+        "desc": "無視敵方的嘲諷。"
+      },
+      "precision": {
+        "label": "精準",
+        "desc": "無視抗性、護甲、護盾與虛體上限。"
+      },
+      "drain_de_vie": {
+        "label": "生命汲取",
+        "desc": "依造成的傷害治療你的英雄。"
+      },
+      "esquive": {
+        "label": "閃避",
+        "desc": "每回合自動閃避受到的第一次攻擊。"
+      },
+      "poison": {
+        "label": "劇毒",
+        "desc": "受傷的單位每回合失去 1 點生命。"
+      },
+      "celerite": {
+        "label": "迅捷",
+        "desc": "每回合可攻擊兩次。"
+      },
+      "augure": {
+        "label": "預兆",
+        "desc": "此單位對敵方英雄造成傷害時,你抽一張牌。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "完全治療目標單位。"
+      },
+      "bravoure": {
+        "label": "英勇",
+        "desc": "對攻擊力高於自身的單位,傷害加倍(無條件進位)。"
+      },
+      "pillage": {
+        "label": "掠奪 X",
+        "desc": "對手隨機棄掉 X 張手牌。"
+      },
+      "riposte": {
+        "label": "反擊 X",
+        "desc": "當此單位受到傷害時,對攻擊來源(單位或英雄)造成 X 點傷害。"
+      },
+      "chant": {
+        "label": "詠唱",
+        "desc": "只要此單位在場,你的詠唱行動會獲得強化。"
+      },
+      "lune": {
+        "label": "月 X",
+        "desc": "本回合打出的第二張牌起,其所有數值永久提升 X。"
+      },
+      "soleil": {
+        "label": "日 X",
+        "desc": "若這是本回合打出的第一張牌,其所有數值永久提升 X。"
+      },
+      "rappel": {
+        "label": "召回 X",
+        "desc": "將墓地中一張費用 ≤ X 的目標牌放回你的手牌。",
+        "desc_any": "將墓地中一張目標牌放回你的手牌。"
+      },
+      "combustion": {
+        "label": "燃燒",
+        "desc": "棄掉一張手牌,然後抽兩張牌。"
+      },
+      "terreur": {
+        "label": "恐懼 X",
+        "desc": "此牌在場時,敵方單位失去 X 點攻擊力。"
+      },
+      "pauvrete": {
+        "label": "貧困 X",
+        "desc": "失去等同於對手手牌數量的攻擊力(動態)。"
+      },
+      "armure": {
+        "label": "護甲",
+        "desc": "受到的戰鬥傷害減半(無條件進位);行動造成的傷害不會被減免。"
+      },
+      "commandement": {
+        "label": "統率 X",
+        "desc": "你的{faction_de}盟友獲得 +X/+X。"
+      },
+      "fureur": {
+        "label": "狂怒",
+        "desc": "受到傷害後,隨機攻擊一個敵方單位(若無則攻擊英雄)。每回合 1 次。"
+      },
+      "double_attaque": {
+        "label": "雙重攻擊",
+        "desc": "僅限攻擊階段:攻擊時造成兩倍攻擊力的傷害。被攻擊的單位正常反擊。"
+      },
+      "invisible": {
+        "label": "隱形",
+        "desc": "不能被敵方的行動或單位能力指定為目標。"
+      },
+      "canalisation": {
+        "label": "導引",
+        "desc": "只要此單位在場,你的行動費用減少 1 點法力(最低為 1)。"
+      },
+      "contresort": {
+        "label": "反制 X",
+        "desc": "使對手接下來的 X 個行動無效。"
+      },
+      "exclusion": {
+        "label": "排除 X",
+        "desc": "使對手接下來的 X 次單位召喚無效。"
+      },
+      "maitre_darme": {
+        "label": "武器大師",
+        "desc": "免費裝備你場上 2 件物品,優先選擇費用最高者,即使它們已由你的其他生物裝備。"
+      },
+      "neutralisation": {
+        "label": "中和",
+        "desc": "只要此單位在場,被指定的敵方單位會被麻痺,其能力無效。"
+      },
+      "transformation": {
+        "label": "變身",
+        "desc": "變身為指定的卡牌。若離開戰場,則恢復原本的形態。"
+      },
+      "convocation": {
+        "label": "召集 X",
+        "desc": "創造{token}。"
+      },
+      "convocation_simple": {
+        "label": "召集",
+        "desc": "創造{token}。"
+      },
+      "invocation": {
+        "label": "召喚 X",
+        "desc": "從你的收藏中隨機召喚一隻費用為 X 的生物({alignment},目前賽制)。",
+        "desc_any": "從你的收藏中隨機召喚一隻生物({alignment},目前賽制)。"
+      },
+      "malediction": {
+        "label": "詛咒 X",
+        "desc": "指定一個費用 ≤ X 的敵方單位,該單位將在對手下個回合結束時被放逐。",
+        "desc_any": "指定一個敵方單位,該單位將在對手下個回合結束時被放逐。"
+      },
+      "necrophagie": {
+        "label": "食屍",
+        "desc": "每當一個單位(友方或敵方)死亡,獲得 +1 ATK 和 +1 PV。"
+      },
+      "richesse": {
+        "label": "財富 X",
+        "desc": "每當有玩家從手牌棄掉一張牌,此單位獲得 +X/+X(永久)。"
+      },
+      "sacrifice_demoniaque": {
+        "label": "惡魔獻祭 X",
+        "desc": "死亡時,將 X 次 -1 法力費用的減免分配給你手牌中的惡魔(至少 1)。"
+      },
+      "paralysie": {
+        "label": "麻痺",
+        "desc": "被其傷害的單位在其下個回合結束前,無法攻擊,也無法啟動能力。"
+      },
+      "permutation": {
+        "label": "換位",
+        "desc": "交換兩個指定單位(一個友方、一個敵方)目前的 PV。"
+      },
+      "persecution": {
+        "label": "迫害 X",
+        "desc": "每當此單位攻擊時,對敵方英雄造成 X 點傷害。"
+      },
+      "pietinement": {
+        "label": "踐踏",
+        "desc": "進行攻擊時,超出目標生物 PV 的傷害會轉而打向敵方英雄。"
+      },
+      "catalyse": {
+        "label": "催化",
+        "desc": "你手牌中的{race_pl}費用減少 1 點法力。"
+      },
+      "ombre_du_passe": {
+        "label": "往昔之影",
+        "desc": "你的墓地中每有一個{race_bare}單位,便獲得 +1/+1。"
+      },
+      "profanation": {
+        "label": "褻瀆 X",
+        "desc": "從你的墓地放逐最多 X 張牌,由最近的開始:每放逐一張牌獲得 +1/+1。"
+      },
+      "prescience": {
+        "label": "預知 X",
+        "desc": "抽牌直到手牌達到 X 張。"
+      },
+      "suprematie": {
+        "label": "至尊",
+        "desc": "召喚時,你手牌中每有一張牌,便獲得 +1 ATK 和 +1 PV。"
+      },
+      "divination": {
+        "label": "占卜",
+        "desc": "揭示牌組頂端的 3 張牌;依你選擇的順序,將 1 張放回頂端,2 張放到底端。"
+      },
+      "savant": {
+        "label": "博學者",
+        "desc": "你的墓地中每有一張行動牌,便獲得 +1 ATK 和 +1 PV。"
+      },
+      "liaison_de_vie": {
+        "label": "生命連結",
+        "desc": "與敵方英雄分擔所受的傷害。"
+      },
+      "ombre": {
+        "label": "暗影",
+        "desc": "在執行行動(攻擊或能力)之前,無法被指定為目標或遭到攻擊。"
+      },
+      "sacrifice": {
+        "label": "獻祭",
+        "desc": "摧毀一名友方單位,永久獲得其生命值與攻擊力。"
+      },
+      "malefice": {
+        "label": "邪咒",
+        "desc": "死亡時,對所有單位(友方與敵方)造成 X 點傷害,X 等於其攻擊力。"
+      },
+      "synergie": {
+        "label": "協同 X",
+        "desc": "登場時選擇一項能力:該能力每次觸發時獲得 +X/+X(每個來源每回合限一次)。"
+      },
+      "etheree": {
+        "label": "虛體",
+        "desc": "戰鬥中每次受到的傷害最多為 1 點。所受行動的傷害加倍。"
+      },
+      "indestructible": {
+        "label": "不滅",
+        "desc": "不會受到任何戰鬥傷害。"
+      },
+      "regeneration": {
+        "label": "再生 X",
+        "desc": "你的回合開始時恢復 X 點生命值。"
+      },
+      "corruption": {
+        "label": "腐化 X",
+        "desc": "將一名費用 ≤ X 的敵方單位轉為你的陣營,持續到回合結束;該單位獲得追獵。",
+        "desc_any": "將所選的敵方單位轉為你的陣營,持續到回合結束;該單位獲得追獵,持續到回合結束。"
+      },
+      "carnage": {
+        "label": "殺戮 X",
+        "desc": "對場上所有單位(友方與敵方)造成 X 點傷害。"
+      },
+      "heritage": {
+        "label": "傳承 X",
+        "desc": "場上每個友方單位永久獲得 +X 攻擊力與 +X 生命值。"
+      },
+      "mimique": {
+        "label": "擬態",
+        "desc": "複製所選單位的全部能力,並永久賦予此單位。"
+      },
+      "metamorphose": {
+        "label": "變形",
+        "desc": "此單位變為所選單位的完全複製(攻擊力/生命值/能力)。"
+      },
+      "dedoublement": {
+        "label": "分身",
+        "desc": "在場上創造此生物的完全複製。"
+      },
+      "tactique": {
+        "label": "戰術 X",
+        "desc": "從相同費用的生物能力中隨機選出 X 項,賦予所選的友方單位。"
+      },
+      "exhumation": {
+        "label": "掘墓 X",
+        "desc": "復活你墓地中一名法力費用不高於 X 的單位。",
+        "desc_any": "復活你墓地中的一名單位,不限費用。"
+      },
+      "heritage_du_cimetiere": {
+        "label": "墓地傳承",
+        "desc": "使此單位獲得你墓地中所選單位的能力。"
+      },
+      "pacte_de_sang": {
+        "label": "血之契約",
+        "desc": "死亡時,召喚兩個同種族的 1/1 衍生物。"
+      },
+      "souffle_de_feu": {
+        "label": "火焰吐息 X",
+        "desc": "攻擊時對所有敵方單位造成 X 點傷害(例:火焰吐息 2 = 2 點傷害)。"
+      },
+      "domination": {
+        "label": "支配 X",
+        "desc": "在召喚時,隨機控制一個費用 ≤ X 的敵方單位。",
+        "desc_any": "在召喚時,隨機控制一個敵方單位。"
+      },
+      "resurrection": {
+        "label": "復活",
+        "desc": "死亡後以 1 點生命值重返戰場;回歸時失去復活能力。"
+      },
+      "transcendance": {
+        "label": "超越",
+        "desc": "完全免疫敵方行動:不會受到任何行動的傷害或效果,包括範圍行動。"
+      },
+      "vampirisme": {
+        "label": "吸血 X",
+        "desc": "從一個被選定的敵方單位身上吸取最多 X 點生命值,並加到此單位的生命值上。"
+      },
+      "traque_du_destin": {
+        "label": "命運追獵 X",
+        "desc": "揭示牌組頂端的 X 張牌;選一張留在手中,其餘隨機放回牌組底部。"
+      },
+      "sang_mele": {
+        "label": "混血",
+        "desc": "你場上的盟友每有一種不同的種族,便獲得 +1 攻擊力與 +1 生命值。"
+      },
+      "fierte_du_clan": {
+        "label": "氏族榮耀",
+        "desc": "此單位在場時,你召喚的{clan_de}單位進場時獲得 +1/+1。"
+      },
+      "solidarite": {
+        "label": "團結 X",
+        "desc": "若你控制另外 2 個{race_bare}單位,抽 X 張牌。"
+      },
+      "entraide": {
+        "label": "互助",
+        "desc": "你場上每有一個{race_bare}盟友,費用減少 1 點法力(可疊加,最低為 0)。"
+      },
+      "cycle_eternel": {
+        "label": "永恆輪迴",
+        "desc": "將一張此牌的複製加入你的牌組;若抽到該牌,直接將其投入戰場。"
+      },
+      "instinct_de_meute": {
+        "label": "群體本能 X",
+        "desc": "若本回合有{faction_de}盟友死亡,+X/+X。"
+      },
+      "totem": {
+        "label": "圖騰",
+        "desc": "獲得你場上{race_pl}的能力。"
+      },
+      "appel_du_clan": {
+        "label": "氏族召喚 X",
+        "desc": "免費將你牌組頂端第一個費用 ≤ X 的{clan_de}單位投入戰場。",
+        "desc_any": "免費將你牌組頂端第一個{clan_de}單位投入戰場。"
+      },
+      "appel_supreme": {
+        "label": "至高召喚",
+        "desc": "將你牌組中費用最高的牌加入手牌(若有並列則隨機)。"
+      },
+      "rassemblement": {
+        "label": "集結 X",
+        "desc": "揭示牌組頂端的 X 張牌;{race_pl}留在手中,其餘棄置。"
+      },
+      "invocations_multiples": {
+        "label": "多重召喚",
+        "desc": "召喚{invocations}。"
+      },
+      "touche_mortel": {
+        "label": "致命一擊",
+        "desc": "受此單位傷害的任何生物都會死亡,無論其生命值多少。"
+      },
+      "selection": {
+        "label": "精選 X",
+        "desc": "揭示 3 張費用為 X 的{alignment}普通牌;選一張加入手牌。",
+        "desc_any": "揭示 3 張{alignment}普通牌;選一張加入手牌。"
+      },
+      "faveur": {
+        "label": "恩寵 X",
+        "desc": "隨機將一張費用為 X 的{alignment}普通牌加入手牌。",
+        "desc_any": "隨機將一張{alignment}的普通牌加入你的手牌。"
+      },
+      "forge": {
+        "label": "鍛造 X",
+        "desc": "隨機將一件中立物品{forge_align}{forge_cout}洗入你的牌組。",
+        "desc_any": "隨機將一件中立物品{forge_align}{forge_cout_libre}洗入你的牌組。"
+      },
+      "selection_magique": {
+        "label": "魔法精選 X",
+        "desc": "揭示 3 張費用為 X 的{alignment}普通行動;選擇其中一張加入手牌。",
+        "desc_any": "揭示 3 張{alignment}普通行動;選擇其中一張加入手牌。"
+      },
+      "renfort_royal": {
+        "label": "王家精選 X",
+        "desc": "揭示 3 張你的費用為 X 的限定版卡牌(需至少 30 張;否則改為 3 張{alignment}普通牌);保留其中一張。",
+        "desc_any": "揭示 3 張你的限定版卡牌(需至少 30 張;否則改為 3 張{alignment}普通牌);保留其中一張。"
+      },
+      "tresor": {
+        "label": "寶藏 X",
+        "desc": "揭示 3 件費用為 X 的{alignment}或中立普通物品;選擇其中一件加入手牌。",
+        "desc_any": "揭示 3 件{alignment}或中立普通物品;選擇其中一件加入手牌。"
+      },
+      "lycanthropie": {
+        "label": "獸化 X",
+        "desc": "變身為具有追獵的{lycanthrope}。"
+      },
+      "relancer": {
+        "label": "重演 X",
+        "desc": "以隨機目標重新施放最近打出的 X 張行動。"
+      },
+      "tempete": {
+        "label": "風暴 X",
+        "desc": "造成 X 點傷害,隨機分配給敵方單位。"
+      },
+      "canon": {
+        "label": "加農砲 X",
+        "desc": "對一個隨機敵方單位造成 X 點傷害。"
+      },
+      "cataclysme": {
+        "label": "浩劫 X",
+        "desc": "對所有生物(包含友方與敵方)造成 X 點傷害。"
+      },
+      "affaiblissement": {
+        "label": "弱化 -X/-Y",
+        "desc": "使一個被選為目標的敵方生物獲得 -X 攻擊與 -Y 生命。"
+      },
+      "renforcement": {
+        "label": "強化 +X/+Y",
+        "desc": "使另一個被選為目標的友方單位永久獲得 +X 攻擊與 +Y 生命。"
+      },
+      "discipline": {
+        "label": "紀律 +X/+Y",
+        "desc": "若你場上所有費用與其奇偶性相同,則使另一個被選為目標的友方單位永久獲得 +X/+Y。"
+      },
+      "lien_du_sang": {
+        "label": "血契 X",
+        "desc": "獲得 +X/+X,且你失去 X 點生命(須有足夠生命)。"
+      },
+      "usurpation": {
+        "label": "篡奪 +X/+Y",
+        "desc": "使另一個被你打出的敵方卡牌指定為目標的友方單位永久獲得 +X/+Y。"
+      },
+      "esprit_de_corps": {
+        "label": "團結精神",
+        "desc": "你每已觸發一次團結精神,隨機獲得 +1 攻擊或 +1 生命。"
+      },
+      "presage": {
+        "label": "預兆",
+        "desc": "亂序揭示牌組頂端 3 張牌;指定最上方的那張加入手牌,然後洗混牌組。"
+      },
+      "apprentissage": {
+        "label": "修習 X",
+        "desc": "從你的手牌中移除一張費用 ≤ X 的行動並記住它:該生物可不需支付法力打出它。",
+        "desc_any": "從你的手牌中移除一張行動並記住它:該生物可不需支付法力打出它。"
+      },
+      "impact": {
+        "label": "衝擊 X",
+        "desc": "對一個敵方目標(單位或英雄)造成 X 點傷害。"
+      },
+      "inspiration": {
+        "label": "靈感 X",
+        "desc": "抽 X 張牌。"
+      },
+      "afflux": {
+        "label": "湧流 X",
+        "desc": "本回合獲得 X 點法力。"
+      },
+      "epargne": {
+        "label": "儲蓄 X",
+        "desc": "為你的儲蓄計數器增加 X(上限 8)。"
+      },
+      "foi": {
+        "label": "信仰 X",
+        "desc": "為你的信仰增加 X(上限 10)。消耗:從牌組中費用 ≤ 信仰的牌中發掘 3 選 1,僅扣除該費用。"
+      },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "為你的征服增加 X(階段 3)。達到階段時:從對手牌組中 3 選 1 加入手牌,計數器歸 0。"
+      },
+      "exploration": {
+        "label": "探索 X",
+        "desc": "為你的探索增加 X。每當達到 3 時:抽一張牌並扣除 3(剩餘部分保留)。"
+      },
+      "invention": {
+        "label": "發明 +X/+Y",
+        "desc": "為你的機器增加 +X/+Y{machine_part}(初始為 0/1,每次發明消耗 1 點法力,最多 6 次)。"
+      },
+      "seconde_vie": {
+        "label": "第二生命 X",
+        "desc": "可花費 X 點法力從你的墓地打出。之後失去第二生命。"
+      },
+      "incineration": {
+        "label": "焚化 X",
+        "desc": "將目標墓地中隨機 X 張牌放回其擁有者的牌組底部。"
+      },
+      "devoration": {
+        "label": "吞噬",
+        "desc": "摧毀一個目標單位;此生物永久獲得其攻擊力與生命值。"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌組底部的 X 張牌;將其中一張置於牌組頂端。"
+      },
+      "retour_differe": {
+        "label": "延遲返還 X",
+        "desc": "將目標費用 ≤ X 的單位放到其擁有者的牌組底部。",
+        "desc_any": "將目標單位放到其擁有者的牌組底部。"
+      },
+      "concentration": {
+        "label": "專注 X",
+        "desc": "手牌中的每張行動牌變為隨機一張費用 +X 的行動牌,並減少 X 費用(所有陣營)。"
+      },
+      "remontee": {
+        "label": "回升 X",
+        "desc": "將 X 個目標單位送回其原始擁有者的手牌。"
+      },
+      "entrainement": {
+        "label": "訓練 X",
+        "desc": "你手牌中{faction_de}的生物獲得 +X/+X。"
+      },
+      "fortifier": {
+        "label": "強化 +X/+Y",
+        "desc": "你牌組中從頂端數來第一張生物永久獲得 +X 攻擊力與 +Y 生命值。"
+      },
+      "preincanter": {
+        "label": "預詠 X",
+        "desc": "你牌組中從頂端數來第一張行動牌永久減少 X 點法力費用(最低為 1)。"
+      },
+      "conferer": {
+        "label": "賦予",
+        "desc": "賦予{scope}{ability}。"
+      },
+      "declenchement": {
+        "label": "觸發",
+        "desc": "重複觸發一次你其他盟友的複合效果（進場／死亡／回合結束／回手）。"
+      },
+      "dechainement": {
+        "label": "狂放 X/Y",
+        "desc": "從你的收藏（{alignment}）中打出 X 張費用為 Y 的隨機行動，目標隨機。",
+        "desc_any": "從你的收藏（{alignment}）中打出 X 張隨機行動，目標隨機。"
+      },
+      "force_des_ancetres": {
+        "label": "先祖之力 +X/+Y",
+        "desc": "只要你的墓地有 7 隻或以上的生物，便獲得 +X 攻擊與 +Y 生命。"
+      },
+      "purete": {
+        "label": "純淨 +X/+Y",
+        "desc": "只要你的墓地是空的，便獲得 +X 攻擊與 +Y 生命。"
+      },
+      "seuil_sacrificiel": {
+        "label": "獻祭門檻 +X/+Y",
+        "desc": "只要你的牌組有 25 張或更少的牌，便獲得 +X 攻擊與 +Y 生命。"
+      },
+      "compagnons": {
+        "label": "夥伴",
+        "desc": "將其夥伴（創建時選定的連結卡牌）洗入你的牌組，然後重新洗牌。僅限一次。"
+      },
+      "tuteur": {
+        "label": "導師",
+        "desc": "將創建時指定的卡牌加入你的手牌（同一張卡牌可被指定多次）。"
+      },
+      "execution": {
+        "label": "處決 X",
+        "desc": "摧毀一個費用 ≤ X 的目標敵方單位。",
+        "desc_any": "摧毀一個目標敵方單位。"
+      },
+      "silence": {
+        "label": "沉默",
+        "desc": "移除一個目標其他單位的所有關鍵字，並將其數值還原為原始值。"
+      },
+      "guerison": {
+        "label": "治癒 X",
+        "desc": "為一個目標其他友方單位或你的英雄恢復 X 點生命。"
+      },
+      "mutation": {
+        "label": "突變 X",
+        "desc": "在手牌中：發現 2 隻費用為 X 的普通生物。獲得它們各自最高的攻擊與生命，以及各 1 項能力。"
+      },
+      "infestation": {
+        "label": "侵蝕 X",
+        "desc": "將 X 張此單位的複製洗入你的牌組。抽到時，一張複製會被召喚，且你再抽一張牌。"
+      },
+      "enterrement": {
+        "label": "掩埋 X",
+        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地（每缺少一張牌就受到疲勞傷害）。"
+      }
+    },
+    "spell_keywords": {
+      "touche_mortel": {
+        "label": "致命一擊",
+        "desc": "任何被此行動傷害的生物都會死亡，無論其生命值多少。"
+      },
+      "precision": {
+        "label": "精準",
+        "desc": "此行動的傷害無視抗性、護甲與護盾。"
+      },
+      "poison": {
+        "label": "毒素",
+        "desc": "受傷的單位每回合失去 1 點生命。"
+      },
+      "benediction": {
+        "label": "祝福",
+        "desc": "完全治癒一個目標友方單位。"
+      },
+      "pillage": {
+        "label": "掠奪 X",
+        "desc": "對手隨機棄掉手牌中的 X 張牌。"
+      },
+      "contresort": {
+        "label": "反制 X",
+        "desc": "取消對手接下來的 X 個行動。"
+      },
+      "exclusion": {
+        "label": "放逐 X",
+        "desc": "取消對手接下來的 X 次單位召喚。"
+      },
+      "convocation_simple": {
+        "label": "召喚",
+        "desc": "創造 {token}。"
+      },
+      "seuil_colere": {
+        "label": "憤怒閾值 X",
+        "desc": "若你的牌組剩餘 25 張牌或更少,此行動額外造成 X 點傷害。"
+      },
+      "chant": {
+        "label": "詠唱 X",
+        "desc": "若你控制一個具有詠唱的生物,此行動的所有數值提高 X。"
+      },
+      "lune": {
+        "label": "月 X",
+        "desc": "從本回合打出的第二張牌開始,此牌的所有數值提高 X。"
+      },
+      "soleil": {
+        "label": "日 X",
+        "desc": "若這是本回合打出的第一張牌,此牌的所有數值提高 X。"
+      },
+      "divination": {
+        "label": "占卜",
+        "desc": "揭示牌組頂端的 3 張牌;將 1 張放回頂端、2 張放到底部,順序自選。"
+      },
+      "malediction": {
+        "label": "詛咒 X",
+        "desc": "詛咒目標費用 ≤ X 的敵方單位:該單位將在對手下個回合結束時被放逐",
+        "desc_any": "詛咒目標敵方單位:該單位將在對手下個回合結束時被放逐"
+      },
+      "corruption": {
+        "label": "腐化 X",
+        "desc": "使目標費用 ≤ X 的敵方單位在本回合結束前轉為你方陣營;該單位獲得追獵。",
+        "desc_any": "使目標敵方單位在本回合結束前轉為你方陣營;該單位獲得追獵。"
+      },
+      "domination": {
+        "label": "支配 X",
+        "desc": "控制目標費用 ≤ X 的敵方單位。",
+        "desc_any": "控制目標敵方單位。"
+      },
+      "appel_du_clan": {
+        "label": "氏族召喚 X",
+        "desc": "免費將你牌組中第一個費用 ≤ X 的{clan_de}單位放入戰場。",
+        "desc_any": "免費將你牌組中第一個{clan_de}單位放入戰場。"
+      },
+      "appel_supreme": {
+        "label": "至高召喚",
+        "desc": "將你牌組中費用最高的牌加入手牌(若有並列則隨機)。"
+      },
+      "rassemblement": {
+        "label": "集結 X",
+        "desc": "揭示牌組頂端的 X 張牌;{race_pl}留在手牌,其餘棄置。"
+      },
+      "rappel": {
+        "label": "回溯 X",
+        "desc": "將你墓地中一張費用 ≤ X 的牌送回手牌",
+        "desc_any": "將你墓地中的一張牌送回手牌"
+      },
+      "exhumation": {
+        "label": "掘墓 X",
+        "desc": "使你墓地中一個費用 ≤ X 的生物復活並進入戰場",
+        "desc_any": "使你墓地中一個生物復活並進入戰場,不論其費用"
+      },
+      "selection": {
+        "label": "精選 X",
+        "desc": "揭示 3 張費用為 X 的{alignment}普通牌;選擇其中一張加入手牌",
+        "desc_any": "揭示 3 張{alignment}普通牌;選擇其中一張加入手牌"
+      },
+      "forge": {
+        "label": "鍛造 X",
+        "desc": "隨機將一個中立物品{forge_align}{forge_cout}洗入你的牌組",
+        "desc_any": "從你的牌組中隨機洗入一張中立物品{forge_align}{forge_cout_libre}"
+      },
+      "faveur": {
+        "label": "恩惠 X",
+        "desc": "隨機將一張費用為 X 的{alignment}普通卡加入你的手牌",
+        "desc_any": "隨機將一張{alignment}普通卡加入你的手牌"
+      },
+      "selection_magique": {
+        "label": "魔法精選 X",
+        "desc": "揭示 3 張費用為 X 的{alignment}普通行動;選擇其中一張加入手牌",
+        "desc_any": "揭示 3 張{alignment}普通行動;選擇其中一張加入手牌"
+      },
+      "tresor": {
+        "label": "寶藏 X",
+        "desc": "揭示 3 張費用為 X 的{alignment}或中立普通物品;選擇其中一張加入手牌",
+        "desc_any": "揭示 3 張{alignment}或中立普通物品;選擇其中一張加入手牌"
+      },
+      "renfort_royal": {
+        "label": "皇家精選 X",
+        "desc": "揭示 3 張你的費用為 X 的限量版卡牌(需至少 30 張;否則改為 3 張{alignment}普通卡);保留其中一張",
+        "desc_any": "揭示 3 張你的限量版卡牌(需至少 30 張;否則改為 3 張{alignment}普通卡);保留其中一張"
+      },
+      "relancer": {
+        "label": "重演 X",
+        "desc": "以隨機目標重新打出最近打出的 X 張行動"
+      },
+      "dechainement": {
+        "label": "狂放 X/Y",
+        "desc": "從你的收藏({alignment})中隨機打出 X 張費用為 Y 的行動,目標隨機。",
+        "desc_any": "從你的收藏({alignment})中隨機打出 X 張行動,目標隨機"
+      },
+      "invocation": {
+        "label": "召喚 X",
+        "desc": "從你的收藏({alignment},當前賽制)中隨機召喚一個費用為 X 的生物。",
+        "desc_any": "從你的收藏({alignment},當前賽制)中隨機召喚一個生物"
+      },
+      "impact": {
+        "label": "衝擊 X",
+        "desc": "對一個敵方目標(單位或英雄)造成 X 點傷害。"
+      },
+      "canon": {
+        "label": "加農砲 X",
+        "desc": "對一個隨機敵方單位造成 X 點傷害。"
+      },
+      "deferlement": {
+        "label": "洶湧 X",
+        "desc": "對所有敵方生物造成 X 點傷害"
+      },
+      "boomerang": {
+        "label": "迴旋鏢",
+        "desc": "結算後,此行動會洗入你的牌組,而不是進入墓地。"
+      },
+      "siphon": {
+        "label": "汲取 X",
+        "desc": "對一個目標造成 X 點傷害,並為你的英雄恢復等量生命"
+      },
+      "entrave": {
+        "label": "束縛 X",
+        "desc": "使一個被選中的敵方生物麻痺 X 回合"
+      },
+      "execution": {
+        "label": "處決 X",
+        "desc": "摧毀一個費用 ≤ X 的目標生物或物品",
+        "desc_any": "摧毀一個目標生物或物品"
+      },
+      "silence": {
+        "label": "沉默",
+        "desc": "移除目標生物的所有關鍵字,並將其數值還原為初始值;對物品則移除其關鍵字,保留其屬性"
+      },
+      "renforcement": {
+        "label": "強化 +X/+Y",
+        "desc": "使一個被選中的友方生物獲得 +X/+Y。"
+      },
+      "discipline": {
+        "label": "紀律 +X/+Y",
+        "desc": "若你場上所有生物的費用與此行動的費用奇偶性相同,則使一個被指定的友方生物獲得 +X/+Y。"
+      },
+      "usurpation": {
+        "label": "篡奪 +X/+Y",
+        "desc": "你打出的卡牌每以敵方卡牌為目標一次,使一個被指定的友方生物獲得 +X/+Y。"
+      },
+      "affaiblissement": {
+        "label": "削弱 -X/-Y",
+        "desc": "使一個被指定的敵方生物獲得 -X 攻擊力與 -Y 生命值。"
+      },
+      "guerison": {
+        "label": "治癒 X",
+        "desc": "為一個友方單位或你的英雄恢復 X 點生命值。"
+      },
+      "seconde_vie": {
+        "label": "第二生命 X",
+        "desc": "可花費 X 點魔力從你的墓地打出。打出後失去第二生命。"
+      },
+      "incineration": {
+        "label": "焚化 X",
+        "desc": "將被指定墓地中隨機 X 張卡牌放到其擁有者的牌庫底部"
+      },
+      "creuser": {
+        "label": "挖掘 X",
+        "desc": "查看你牌庫底部的 X 張卡牌;將其中一張放到牌庫頂部"
+      },
+      "presage": {
+        "label": "預兆",
+        "desc": "亂序揭示牌庫頂部的 3 張卡牌;指定位於最上方的那張加入手牌,然後洗混牌庫。"
+      },
+      "retour_differe": {
+        "label": "延遲回歸 X",
+        "desc": "將被指定的費用 ≤ X 的單位或物品放到其擁有者的牌庫底部",
+        "desc_any": "將被指定的單位或物品放到其擁有者的牌庫底部"
+      },
+      "epargne": {
+        "label": "儲蓄 X",
+        "desc": "為你的儲蓄計數器增加 X(上限 8)"
+      },
+      "foi": {
+        "label": "信仰 X",
+        "desc": "為你的信仰增加 X(上限 10)。消耗:從牌庫中發掘 3 張費用 ≤ 信仰的卡牌並選擇 1 張,僅扣除該費用"
+      },
+      "conquete": {
+        "label": "征服 X",
+        "desc": "為你的征服增加 X(階段 3)。達到階段時:從敵方牌庫的 3 張卡牌中選 1 張加入手牌,計數器歸零"
+      },
+      "exploration": {
+        "label": "探索 X",
+        "desc": "為你的探索增加 X。每次達到 3 時:抽一張牌並扣除 3(多出的部分保留)"
+      },
+      "invention": {
+        "label": "發明 +X/+Y",
+        "desc": "為你的機器增加 +X/+Y{machine_part}(初始為 0/1,每次發明消耗 1 點魔力,最多 6)"
+      },
+      "inspiration": {
+        "label": "靈感 X",
+        "desc": "抽 X 張牌"
+      },
+      "remontee": {
+        "label": "回升 X",
+        "desc": "將 X 個被指定的單位或物品送回其原擁有者的手牌。"
+      },
+      "entrainement": {
+        "label": "訓練 X",
+        "desc": "使你手牌中{faction_de}生物獲得 +X/+X。"
+      },
+      "fortifier": {
+        "label": "強化 +X/+Y",
+        "desc": "你牌庫中從頂部數起的第一個生物永久獲得 +X 攻擊力與 +Y 生命值。"
+      },
+      "preincanter": {
+        "label": "預詠 X",
+        "desc": "你牌庫中從頂部數起的第一張行動永久減少 X 點魔力費用(最低為 1)。"
+      },
+      "concentration": {
+        "label": "專注 X",
+        "desc": "手牌中的每張行動都會變成一張費用 +X 的隨機行動,並減少 X 費用(所有陣營)。"
+      },
+      "invocations_multiples": {
+        "label": "多重召喚",
+        "desc": "召喚 {invocations}。"
+      },
+      "invocation_multiple": {
+        "label": "多重召集",
+        "desc": "創造 {tokens}。"
+      },
+      "tempete": {
+        "label": "風暴 X",
+        "desc": "造成 X 點傷害,隨機分配給敵方單位。"
+      },
+      "cataclysme": {
+        "label": "浩劫 X",
+        "desc": "對所有生物(友方與敵方)造成 X 點傷害。"
+      },
+      "afflux": {
+        "label": "湧入 X",
+        "desc": "本回合獲得 X 點魔力"
+      },
+      "compagnons": {
+        "label": "夥伴",
+        "desc": "將其夥伴(建立時選定的連結卡牌)洗入你的牌組,然後重新洗牌。僅限一次。"
+      },
+      "tuteur": {
+        "label": "導師",
+        "desc": "將建立時指定的卡牌加入你的手牌(同一張卡牌可被指定多次)。"
+      },
+      "enterrement": {
+        "label": "埋葬 X",
+        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "進場時",
+        "on_death": "死亡時",
+        "on_return": "回到手牌時",
+        "on_activation": "啟動時",
+        "on_attack": "攻擊時",
+        "on_end_of_turn": "回合結束時",
+        "on_end_of_turn_in_hand": "回合結束時,若在手牌中",
+        "on_start_of_turn": "回合開始時",
+        "on_start_of_turn_in_hand": "回合開始時,若在手牌中",
+        "in_hand_suffix": "在手牌中",
+        "on_draw": "當此牌被抽到時",
+        "on_low_hp": "生命低於 15 時",
+        "on_wound": "受傷",
+        "on_delay": "延遲 {d}",
+        "on_end_of_turn_in_graveyard": "回合結束時,若在墓地中",
+        "in_graveyard_suffix": "在墓地中"
+      },
+      "siphon": {
+        "heal": "並為你的英雄恢復 {x} 點生命",
+        "heal_each": "並為你的英雄每命中一個目標恢復 {x} 點生命",
+        "heal_scatter": "並為你的英雄總共恢復 {x} 點生命"
+      },
+      "neutralise": {
+        "suite_one": ":麻痺,能力失效",
+        "suite_many": ":麻痺,能力失效",
+        "tant_que": "在場期間"
+      },
+      "malediction": {
+        "suite_one": ",於對手下個回合結束時被放逐",
+        "suite_many": ",於對手下個回合結束時被放逐"
+      },
+      "domination": {
+        "limit": "以空位數量為上限"
+      },
+      "content": {
+        "deal_damage_one": "造成 {x} 點傷害",
+        "deal_damage_many": "造成 {x} 點傷害",
+        "heal": "恢復 {x} 點生命",
+        "buff": "賦予 +{x}/+{y}",
+        "usurpation": "每當對手打出一張牌,賦予 +{x}/+{y}",
+        "debuff": "造成 -{x}/-{y}",
+        "destroy": "摧毀",
+        "domination": "控制",
+        "bounce": "返回手牌",
+        "paralyze": "麻痺",
+        "transformation": "變形",
+        "transformation_en_one": "為指定的卡牌",
+        "transformation_en_many": "為 {n} 張指定卡牌中隨機一張",
+        "paralyze_turns_one": "持續 {n} 個回合",
+        "paralyze_turns_many": "持續 {n} 個回合",
+        "poison": "使中毒",
+        "malediction": "詛咒",
+        "neutralise": "中和",
+        "grant_keyword": "賦予{ability}",
+        "random_range": "1 至 {max}",
+        "random_range_from": "{min} 至 {max}",
+        "appel": "將你牌組中第一個費用 ≤ {x} 的單位投入戰場",
+        "appel_item": "將你牌組中第一個費用 ≤ {x} 的物品投入戰場",
+        "ability_generic": "一項能力",
+        "draw_cards_one": "抽 {x} 張牌",
+        "draw_cards_many": "抽 {x} 張牌",
+        "discard_filtered_one": "對手隨機棄置 {x} 張{filter}牌",
+        "discard_filtered_many": "對手隨機棄置 {x} 張{filter}牌",
+        "discard_one": "對手隨機棄置 {x} 張牌",
+        "discard_many": "對手隨機棄置 {x} 張牌",
+        "summon_one": "召喚一個{token}",
+        "summon_many": "召喚 {x} 個{token}",
+        "token_one": "衍生物",
+        "token_many": "衍生物",
+        "gain_mana": "本回合獲得 {x} 點法力",
+        "exhumation": "從你的墓地復活{who}(費用 ≤ {x})",
+        "exhum_one": "一隻生物",
+        "exhum_all": "所有生物",
+        "exhum_upto": "最多 {n} 隻生物",
+        "exhumation_item": "從你的墓地讓{who}重返戰場(費用 ≤ {x})",
+        "exhum_item_one": "一件物品",
+        "exhum_item_all": "所有物品",
+        "exhum_item_upto": "最多 {n} 件物品",
+        "exhum_uoi_one": "一隻生物或一件物品",
+        "exhum_uoi_all": "所有生物與所有物品",
+        "exhum_uoi_upto": "最多 {n} 隻生物或物品",
+        "rappel_one_item": "一件物品",
+        "rappel_all_item": "所有物品",
+        "rappel_upto_item": "最多 {n} 件物品",
+        "rappel_one_creature_item": "一個單位或一件物品",
+        "rappel_all_creature_item": "所有單位與所有物品",
+        "rappel_upto_creature_item": "最多 {n} 個單位或物品",
+        "rappel_one_spell_item": "一張行動或一件物品",
+        "rappel_all_spell_item": "所有行動與所有物品",
+        "rappel_upto_spell_item": "最多 {n} 張行動或物品",
+        "draw_items_one": "從你的牌組抽 {x} 件物品",
+        "draw_items_many": "從你的牌組抽 {x} 件物品",
+        "draw_filtered_one": "從你的牌組抽 {x} 張{filter}牌",
+        "draw_filtered_many": "從你的牌組抽 {x} 張{filter}牌",
+        "invocation_item": "放置一件費用為 {x}{filter} 的隨機物品",
+        "rappel": "從你的墓地將{who}送回你的手牌{cost}",
+        "rappel_cost": "(費用 ≤ {max})",
+        "rappel_one_any": "一張牌",
+        "rappel_one_creature": "一個單位",
+        "rappel_one_spell": "一張行動",
+        "rappel_all_any": "所有牌",
+        "rappel_all_creature": "所有單位",
+        "rappel_all_spell": "所有行動",
+        "rappel_upto_any": "最多 {n} 張牌",
+        "rappel_upto_creature": "最多 {n} 個單位",
+        "rappel_upto_spell": "最多 {n} 張行動",
+        "invocation": "召喚一隻費用為 {x}{filter} 的隨機生物",
+        "invocation_card": "召喚指定的牌",
+        "invocation_card_item": "放置指定的物品",
+        "invocation_cards_item": "放置指定的 {n} 件物品",
+        "invocation_copies_item": "放置 {n} 份指定物品的複製",
+        "invocation_cards": "召喚指定的 {n} 張牌",
+        "invocation_copies": "召喚 {n} 份指定牌的複製",
+        "tuteur": "將指定的牌加入你的手牌",
+        "tuteur_copies": "將 {n} 張指定的牌加入你的手牌",
+        "appel_supreme": "將你牌組中費用最高的牌加入你的手牌{filter}{cost}",
+        "appel_supreme_cost": "(費用 ≤ {max})",
+        "tuteur_many": "將指定的 {n} 張牌加入你的手牌",
+        "epargne": "為你的儲蓄計數器增加 {x}",
+        "foi": "為你的信仰計數器增加 {x}",
+        "conquete": "為你的征服計數器增加 {x}",
+        "exploration": "為你的探索計數器增加 {x}",
+        "incineration": "將目標墓地中的 {x} 張牌放回其牌組底部",
+        "incineration_cible": "將{cartes}從{zone}放回{deck}底部",
+        "occurrences": "{n} 次:",
+        "alternative": "二選一:",
+        "devoration": "吞噬",
+        "silence": "使其沉默",
+        "dechainement": "隨機打出 {x} 張費用為 {y} 的行動",
+        "dechainement_one": "隨機打出一張費用為 {y} 的行動",
+        "tactique_one": "隨機賦予一個相同費用生物的能力",
+        "tactique_many": "隨機賦予 {x} 個相同費用生物的能力",
+        "retour_differe": "放到其擁有者的牌組底部",
+        "retour_differe_cible": "將{target}放到{proprio}的牌組底部",
+        "proprio_one": "其擁有者",
+        "proprio_many": "各自的擁有者",
+        "selection": "揭示 3 張牌{filter}(費用 {x}),並選擇一張留在手牌",
+        "faveur": "隨機將一張牌{filter}(費用 {x})加入手牌",
+        "selection_magique": "揭示 3 張行動{filter}(費用 {x}),並選擇一張留在手牌",
+        "renfort_royal": "揭示 3 張收藏牌{filter}(費用 {x}),並選擇一張留在手牌",
+        "tresor": "揭示 3 張物品{filter}(費用 {x}),並選擇一張留在手牌",
+        "selection_any": "揭示 3 張牌{filter},並選擇一張留在手牌",
+        "faveur_any": "隨機將一張牌{filter}加入手牌",
+        "selection_magique_any": "揭示 3 張行動{filter},並選擇一張留在手牌",
+        "renfort_royal_any": "揭示 3 張收藏牌{filter},並選擇一張留在手牌",
+        "tresor_any": "揭示 3 張物品{filter},並選擇一張留在手牌",
+        "forge": "隨機將一張費用至多為 {x} 的中立或你陣營的物品{filter}洗入你的牌組",
+        "forge_range": "隨機將一張費用為 {min} 至 {x} 的中立或你陣營的物品{filter}洗入你的牌組",
+        "forge_any": "隨機將一張中立或你陣營的物品{filter}洗入你的牌組",
+        "forge_any_min": "隨機將一張費用至少為 {min} 的中立或你陣營的物品{filter}洗入你的牌組",
+        "invocation_any": "召喚一隻隨機生物{filter}",
+        "invocation_item_any": "裝備一個隨機物品{filter}",
+        "exhumation_any": "從你的墓地復活{who}",
+        "exhumation_item_any": "將 {who} 從你的墓地放回場上",
+        "exhumation_enemy": "復活對手墓地中的 {who} 並由你操控(費用 ≤ {x})",
+        "exhumation_item_enemy": "將對手墓地中的 {who} 放回場上並由你操控(費用 ≤ {x})",
+        "exhumation_enemy_any": "復活對手墓地中的 {who} 並由你操控",
+        "exhumation_item_enemy_any": "將對手墓地中的 {who} 放回場上並由你操控",
+        "exhumation_both": "復活任一墓地中的 {who} 並由你操控(費用 ≤ {x})",
+        "exhumation_item_both": "將任一墓地中的 {who} 放回場上並由你操控(費用 ≤ {x})",
+        "exhumation_both_any": "復活任一墓地中的 {who} 並由你操控",
+        "exhumation_item_both_any": "將任一墓地中的 {who} 放回場上並由你操控",
+        "appel_any": "將你牌組的第 1 個單位放入場上",
+        "appel_item_any": "將你牌組的第 1 個物品放入場上",
+        "dechainement_any": "隨機使用 {x} 個行動",
+        "dechainement_one_any": "隨機使用一個行動",
+        "enterrement_one": "將第 1 張{filter}牌放置於{deck}",
+        "enterrement_many": "將前 {x} 張{filter}牌放置於{deck}"
+      },
+      "self": {
+        "transformation": "自身變形",
+        "deal_damage_one": "對自身造成 {x} 點傷害",
+        "deal_damage_many": "對自身造成 {x} 點傷害",
+        "heal": "自身恢復 {x} 點生命",
+        "buff": "自身獲得 +{x}/+{y}",
+        "usurpation": "對手每使用一張牌,自身獲得 +{x}/+{y}",
+        "debuff": "自身獲得 -{x}/-{y}",
+        "destroy": "自我摧毀",
+        "bounce": "返回自己手牌",
+        "paralyze": "自身麻痺",
+        "poison": "自身中毒",
+        "malediction": "自身受到詛咒",
+        "neutralise": "自身被中和",
+        "grant_keyword": "自身獲得{ability}"
+      },
+      "choice": {
+        "transformation": "選擇一個要變形的生物",
+        "deal_damage": "選擇一個要傷害的目標",
+        "siphon": "選擇一個要汲取的目標",
+        "domination": "選擇一個要支配的生物",
+        "heal": "選擇一個要治療的目標",
+        "buff": "選擇一個要強化的生物",
+        "usurpation": "選擇一個要強化的生物",
+        "debuff": "選擇一個要削弱的生物",
+        "destroy": "選擇一個要摧毀的生物",
+        "bounce": "選擇一個要送回手牌的生物",
+        "paralyze": "選擇一個要麻痺的生物",
+        "poison": "選擇一個要下毒的生物",
+        "malediction": "選擇一個要詛咒的生物",
+        "neutralise": "選擇一個要中和的生物",
+        "grant_keyword": "選擇一個要賦予該能力的生物",
+        "exhumation": "選擇一個要復活的生物",
+        "rappel": "選擇一張要收回手牌的卡牌",
+        "default": "選擇一個目標"
+      },
+      "emblem": {
+        "badge": "徽記",
+        "self": "徽記",
+        "opponent": "放置於對手方的徽記",
+        "permanent": "（永久）",
+        "turns_one": "（{n} 回合）",
+        "turns_many": "（{n} 回合）",
+        "owner_self": "你的",
+        "owner_opponent": "其",
+        "hero_self": "你的英雄",
+        "hero_opponent": "其英雄",
+        "turn_self": "你的",
+        "turn_opponent": "其",
+        "when": {
+          "on_play": "每當{owner}一個生物進入戰場時",
+          "on_death": "每當{owner}一個生物死亡時",
+          "on_attack": "每當{owner}一個生物攻擊時",
+          "on_return": "每當{owner}一個生物回到手牌時",
+          "on_activation": "每當{owner}一個生物啟動時",
+          "on_low_hp": "每當{hero}的生命值降到 {n} 以下時",
+          "on_end_of_turn": "在{turn}回合結束時",
+          "on_start_of_turn": "在{turn}回合開始時"
+        }
+      },
+      "grant_when": {
+        "on_play": "，將於其進入戰場時觸發",
+        "on_death": "，將於其死亡時觸發",
+        "on_activation": "，將於其啟動時觸發",
+        "on_return": "，將於其回到手牌時觸發",
+        "on_end_of_turn": "，將於回合結束時觸發",
+        "on_start_of_turn": "，將於回合開始時觸發",
+        "on_attack": "，將於其攻擊時觸發",
+        "on_draw": "，將於其被抽到時觸發",
+        "on_low_hp": "，將於生命值低於 15 時觸發",
+        "on_wound": "，將於其受傷但未死亡時觸發",
+        "on_end_of_turn_in_hand": "，將於回合結束時觸發，前提是其在手牌中",
+        "on_start_of_turn_in_hand": "，將於回合開始時觸發，前提是其在手牌中",
+        "on_end_of_turn_in_graveyard": "，將於回合結束時觸發，前提是其在墓地中",
+        "on_delay": "，將在 {n} 回合後觸發"
+      },
+      "incin": {
+        "zone_ally": "自己的墓地",
+        "zone_enemy": "對手的墓地",
+        "zone_any": "任一墓地",
+        "zone_both": "雙方墓地",
+        "deck_ally": "你的牌組",
+        "deck_enemy": "對手的牌組",
+        "deck_any": "其擁有者的牌組",
+        "deck_both": "雙方擁有者的牌組",
+        "card_all": "所有卡牌",
+        "card_one": "一張卡牌",
+        "card_n": "{n} 張卡牌",
+        "unit_all": "所有單位",
+        "unit_one": "一個單位",
+        "unit_n": "{n} 個單位",
+        "spell_all": "所有行動",
+        "spell_one": "一張行動",
+        "spell_n": "{n} 張行動",
+        "item_all": "所有物品",
+        "item_one": "一件物品",
+        "item_n": "{n} 件物品"
+      },
+      "pool": {
+        "race": "種族為{v}的",
+        "faction": "陣營為{v}的",
+        "clan": "氏族為{v}的",
+        "keyword": "具有{v}能力的",
+        "type_creature": "單位類型的",
+        "type_spell": "行動類型的",
+        "min_cost": "費用為 {n} 或以上的",
+        "type_item": "物品類型的"
+      },
+      "targetd": {
+        "count_all": "所有單位",
+        "count_one": "一個單位",
+        "count_n": "{n} 個單位",
+        "count_scatter": "至多 {n} 個單位",
+        "item_count_all": "所有物品",
+        "item_count_one": "一件物品",
+        "item_count_n": "{n} 件物品",
+        "item_count_scatter": "至多 {n} 件物品",
+        "uoi_count_all": "所有單位和所有物品",
+        "uoi_count_one": "一個單位或一件物品",
+        "uoi_count_n": "{n} 個單位或物品",
+        "uoi_count_scatter": "最多 {n} 個單位或物品",
+        "hero_ally": "你的英雄",
+        "hero_enemy": "敵方英雄",
+        "both_all": "{side}所有單位與英雄",
+        "both_one": "一個{side}目標(單位或英雄)",
+        "damage_source": "傷害它的來源"
+      },
+      "target": {
+        "self": "對自身",
+        "damage_source": "對傷害它的來源",
+        "hero_ally": "對你的英雄",
+        "hero_enemy": "對敵方英雄",
+        "both_all": "對{side}所有單位與英雄",
+        "both_one": "對一個{side}目標(單位或英雄)",
+        "both_side_ally": "友方",
+        "both_side_enemy": "敵方",
+        "both_side_ally_one": "友方",
+        "both_side_enemy_one": "敵方",
+        "count_all": "對所有單位",
+        "count_one": "對一個單位",
+        "count_n": "對 {n} 個單位",
+        "count_all_autres": "對所有其他單位",
+        "count_one_autre": "對另一個單位",
+        "count_n_autres": "對另外 {n} 個單位",
+        "count_scatter": "對最多 {n} 個單位",
+        "item_count_all": "對所有物品",
+        "item_count_one": "對一個物品",
+        "item_count_n": "對 {n} 個物品",
+        "item_count_scatter": "對最多 {n} 個物品",
+        "uoi_count_all": "對所有單位與物品",
+        "uoi_count_one": "對一個單位或物品",
+        "uoi_count_n": "對 {n} 個單位或物品",
+        "uoi_count_scatter": "對最多 {n} 個單位或物品",
+        "side_ally_one_m": "友方",
+        "side_ally_many_m": "友方",
+        "side_enemy_one_m": "敵方",
+        "side_enemy_many_m": "敵方",
+        "side_ally_one": "友方",
+        "side_ally_many": "友方",
+        "side_enemy_one": "敵方",
+        "side_enemy_many": "敵方",
+        "locs_board": "場上的",
+        "locs_hand": "手牌中",
+        "locs_deck": "牌組中",
+        "locs_graveyard": "墓地中",
+        "locs_sep": "、",
+        "locs_and": "和",
+        "locs_wrap": "{zones}",
+        "loc_hand": "手牌中",
+        "loc_deck": "牌組中",
+        "loc_graveyard": "墓地中",
+        "des_random": "隨機",
+        "des_automatic": "自動",
+        "des_choice": "自選",
+        "max_cost": "費用{n}或以下",
+        "with_keyword": "具有{v}能力"
+      },
+      "scatter": {
+        "action_damage": "造成",
+        "action_heal": "恢復",
+        "unit_damage": "點傷害",
+        "unit_heal": "點生命值",
+        "times": "{x}次，每次1{unit}",
+        "target_both": "對隨機一個{side}目標（單位或英雄）",
+        "target_unit": "對隨機一個{side}單位"
+      },
+      "enterrement": {
+        "deck_enemy": "對手牌組中的牌送入其墓地",
+        "deck_ally": "你的牌組中的牌送入你的墓地",
+        "deck_any": "目標牌組中的牌送入其墓地"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "天界聯盟",
+        "description": "善良森林民族的聯盟：潛行精靈、法師妖精、狡黠的哈比人，以及他們的樹人巨像。"
+      },
+      "Nains": {
+        "displayName": "山嶽軍團",
+        "description": "堅固而頑強：防禦、堅韌、鍛造、地精工程與山巔巨像。"
+      },
+      "EmpireDuMilieu": {
+        "displayName": "中央帝國",
+        "description": "謀略與控制：紀律、陣型、神祕主義、潛行、神殿的那伽守護者、山中的妖怪——天狗與鬼——以及象徵明君盛世的麒麟。"
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "太陽王國",
+        "description": "太陽、沙漠與靈體：儀式烈焰、劫掠的遊牧民與召喚師。"
+      },
+      "Humains": {
+        "displayName": "自由王國",
+        "description": "古老的大陸：榮譽、鋼鐵、英勇的勇士，以及他們驕傲的飛行盟友——獅鷲、獵鷹，還有風之女戰士的天馬與獅身人面獸。"
+      },
+      "Hommes-Bêtes": {
+        "displayName": "獸群",
+        "description": "野蠻而兇猛：迅速攻擊、再生、陷入狂怒。"
+      },
+      "Élémentaires": {
+        "displayName": "原初元素",
+        "description": "自然的原初力量。每種元素都有獨特的戰鬥風格。"
+      },
+      "Mercenaires": {
+        "displayName": "傭兵",
+        "description": "不效忠任何陣營的僱傭兵。用途廣泛，適用於所有牌組。"
+      },
+      "Morts-Vivants": {
+        "displayName": "亡靈死域",
+        "description": "貪得無厭,墮落腐化:復活、汲取生命與墓地魔法。"
+      },
+      "Elfes Noirs": {
+        "displayName": "混沌軍團",
+        "description": "混沌勢力齊聚一堂:組織嚴密的獸群、惡魔宮廷、被毒液腐化者與墮落菁英。"
+      }
+    },
+    "rarities": {
+      "Commune": "普通",
+      "Peu Commune": "少見",
+      "Rare": "稀有",
+      "Épique": "史詩",
+      "Légendaire": "唯一"
+    },
+    "clans": {
+      "Les Sylvains": "林地族",
+      "Les Hauts-Elfes": "高等精靈",
+      "La Forêt d'Émeraude": "翡翠森林",
+      "La Combe Verte": "翠綠谷地",
+      "La Forge Ardente": "熾焰熔爐",
+      "La Guilde des Ingénieurs": "工程師公會",
+      "Clan des Mille Tunnels": "千隧氏族",
+      "Clan des Premiers Géants": "始祖巨人氏族",
+      "Les Hordes des Steppes": "草原部落",
+      "L'Empire de Jade": "翡玉帝國",
+      "Les Lames de l'Ombre": "暗影之刃",
+      "Les Défenseurs d'Ivoire": "象牙守護者",
+      "Les Enfants du Soleil": "太陽之子",
+      "Les Seigneurs des Dunes": "沙丘領主",
+      "Le Royaume des Masques": "面具王國",
+      "Les Fils du Volcan": "火山之子",
+      "Le Royaume du Nord": "北方王國",
+      "L'Ordre de l'Aube": "黎明騎士團",
+      "Les Guerrières du Vent": "御風女戰士",
+      "La Sublime Porte": "輝煌之門",
+      "Les Seigneurs Fauves": "猛獸領主",
+      "Les Enfants de la Lune": "月之子",
+      "Le Pacte des Griffes": "利爪盟約",
+      "La Harde Sauvage": "野性獸群",
+      "La Forêt Enchantée": "魔法森林",
+      "La Colère des Flammes": "烈焰之怒",
+      "Le Socle du Monde": "世界基石",
+      "La Vague Sans Fin": "無盡之浪",
+      "Le Souffle des Cimes": "山巔之息",
+      "Les Rangs Silencieux": "靜默行伍",
+      "Le Voile Hurlant": "嚎叫之幕",
+      "La Cour Écarlate": "猩紅宮廷",
+      "Le Cénacle Nécromant": "死靈法師會社",
+      "Les Cohortes Sanglantes": "血腥軍團",
+      "Les Princes des Abîmes": "深淵親王",
+      "La Forêt Maudite": "詛咒之森",
+      "La Garde Noire": "黑衛軍"
+    },
+    "races": {
+      "Elfes": "精靈",
+      "Fées": "妖精",
+      "Aigles Géants": "巨鷹",
+      "Hobbits": "哈比人",
+      "Hommes-Arbres": "樹人",
+      "Farfadets": "小精怪",
+      "Korrigans": "科里甘",
+      "Faunes": "法翁",
+      "Dryades": "樹精",
+      "Nains": "矮人",
+      "Golems": "魔像",
+      "Gnomes": "地精",
+      "Machines": "機械",
+      "Kobolds": "狗頭人",
+      "Géants": "巨人",
+      "Mammouths": "猛獁象",
+      "Humains": "人類",
+      "Nagas": "那伽",
+      "Tengu": "天狗",
+      "Oni": "鬼",
+      "Qilins": "麒麟",
+      "Esprits": "靈體",
+      "Griffons": "獅鷲",
+      "Faucons": "獵鷹",
+      "Pégases": "飛馬",
+      "Sphinx": "人面獅身獸",
+      "Yétis": "雪怪",
+      "Hommes-Loups": "狼人",
+      "Hommes-Ours": "熊人",
+      "Hommes-Félins": "貓人",
+      "Centaures": "半人馬",
+      "Mimis": "米米",
+      "Hommes-Chiens": "犬人",
+      "Hommes-Renards": "狐人",
+      "Hommes-Cerfs": "鹿人",
+      "Hommes-Singes": "猿人",
+      "Hommes-Poissons": "魚人",
+      "Hommes-Oiseaux": "鳥人",
+      "Insectes": "昆蟲",
+      "Élémentaire": "元素生物",
+      "Ondins": "溫蒂妮",
+      "Sirènes": "海妖",
+      "Léviathans": "利維坦",
+      "Cristallins": "晶體族",
+      "Troglodytes": "穴居人",
+      "Bêtes Chtoniennes": "地冥獸",
+      "Salamandres": "火蜥蜴",
+      "Sylphes": "西爾芙",
+      "Néphélides": "涅斐利德",
+      "Ogres": "食人魔",
+      "Dragons": "龍",
+      "Chiens": "犬",
+      "Phoenix": "鳳凰",
+      "Anges": "天使",
+      "Ours": "熊",
+      "Loups": "狼",
+      "Fauves": "猛獸",
+      "Éléphants": "象",
+      "Squelettes": "骷髏",
+      "Zombies": "殭屍",
+      "Ghoules": "食屍鬼",
+      "Spectres": "幽魂",
+      "Vampires": "吸血鬼",
+      "Lich": "巫妖",
+      "Banshees": "報喪女妖",
+      "Homuncules de Sang": "血之人造人",
+      "Gargouilles": "石像鬼",
+      "Dhampirs": "達姆皮爾",
+      "Chiroptères": "蝠族",
+      "Momies": "木乃伊",
+      "Chimères nécrotiques": "死靈奇美拉",
+      "Vermines mortuaires": "亡骸蟲群",
+      "Poltergeists": "搗蛋鬼",
+      "Dullahans": "無頭騎士",
+      "Sluaghs": "斯魯阿",
+      "Elfes Corrompus": "墮落精靈",
+      "Araignées Géantes": "巨型蜘蛛",
+      "Démons": "惡魔",
+      "Orcs": "獸人",
+      "Gobelins": "哥布林",
+      "Trolls": "巨魔",
+      "Wargs": "座狼",
+      "Guerriers du Chaos": "混沌戰士",
+      "Bâtiments": "建築"
+    },
+    "alignments": {
+      "bon": "善良",
+      "neutre": "中立",
+      "maléfique": "邪惡",
+      "spéciale": "特殊"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "精靈",
+        "bare": "精靈",
+        "de": "精靈的",
+        "one": "一名精靈",
+        "all": "所有精靈",
+        "upto": "最多 {n} 名精靈"
+      },
+      "Fées": {
+        "def": "妖精",
+        "bare": "妖精",
+        "de": "妖精的",
+        "one": "一名妖精",
+        "all": "所有妖精",
+        "upto": "最多 {n} 名妖精"
+      },
+      "Farfadets": {
+        "def": "小精靈",
+        "bare": "小精靈",
+        "de": "小精靈的",
+        "one": "一名小精靈",
+        "all": "所有小精靈",
+        "upto": "最多 {n} 名小精靈"
+      },
+      "Korrigans": {
+        "def": "科里甘",
+        "bare": "科里甘",
+        "de": "科里甘的",
+        "one": "一名科里甘",
+        "all": "所有科里甘",
+        "upto": "最多 {n} 名科里甘"
+      },
+      "Faunes": {
+        "def": "法恩",
+        "bare": "法恩",
+        "de": "法鈕的",
+        "one": "一名法鈕",
+        "all": "所有法鈕",
+        "upto": "最多 {n} 名法鈕"
+      },
+      "Dryades": {
+        "def": "樹精",
+        "bare": "樹精",
+        "de": "樹精的",
+        "one": "一名樹精",
+        "all": "所有樹精",
+        "upto": "最多 {n} 名樹精"
+      },
+      "Aigles Géants": {
+        "def": "巨鷹",
+        "bare": "巨鷹",
+        "de": "巨鷹的",
+        "one": "一隻巨鷹",
+        "all": "所有巨鷹",
+        "upto": "最多 {n} 隻巨鷹"
+      },
+      "Hobbits": {
+        "def": "哈比人",
+        "bare": "哈比人",
+        "de": "哈比人的",
+        "one": "一名哈比人",
+        "all": "所有哈比人",
+        "upto": "最多 {n} 名哈比人"
+      },
+      "Hommes-Arbres": {
+        "def": "樹人",
+        "bare": "樹人",
+        "de": "樹人的",
+        "one": "一名樹人",
+        "all": "所有樹人",
+        "upto": "最多 {n} 名樹人"
+      },
+      "Nains": {
+        "def": "矮人",
+        "bare": "矮人",
+        "de": "矮人的",
+        "one": "一名矮人",
+        "all": "所有矮人",
+        "upto": "最多 {n} 名矮人"
+      },
+      "Golems": {
+        "def": "魔像",
+        "bare": "魔像",
+        "de": "魔像的",
+        "one": "一個魔像",
+        "all": "所有魔像",
+        "upto": "最多 {n} 個魔像"
+      },
+      "Bâtiments": {
+        "def": "建築",
+        "bare": "建築",
+        "de": "建築的",
+        "one": "一個建築",
+        "all": "所有建築",
+        "upto": "最多 {n} 個建築"
+      },
+      "Gnomes": {
+        "def": "地精",
+        "bare": "地精",
+        "de": "地精的",
+        "one": "一個地精",
+        "all": "所有地精",
+        "upto": "最多 {n} 個地精"
+      },
+      "Machines": {
+        "def": "機械",
+        "bare": "機械",
+        "de": "機械的",
+        "one": "一個機械",
+        "all": "所有機械",
+        "upto": "最多 {n} 個機械"
+      },
+      "Kobolds": {
+        "def": "狗頭人",
+        "bare": "狗頭人",
+        "de": "狗頭人的",
+        "one": "一個狗頭人",
+        "all": "所有狗頭人",
+        "upto": "最多 {n} 個狗頭人"
+      },
+      "Humains": {
+        "def": "人類",
+        "bare": "人類",
+        "de": "人類的",
+        "one": "一個人類",
+        "all": "所有人類",
+        "upto": "最多 {n} 個人類"
+      },
+      "Esprits": {
+        "def": "靈體",
+        "bare": "靈體",
+        "de": "靈體的",
+        "one": "一個靈體",
+        "all": "所有靈體",
+        "upto": "最多 {n} 個靈體"
+      },
+      "Nagas": {
+        "def": "納迦",
+        "bare": "納迦",
+        "de": "納迦的",
+        "one": "一個納迦",
+        "all": "所有納迦",
+        "upto": "最多 {n} 名納迦"
+      },
+      "Tengu": {
+        "def": "天狗",
+        "bare": "天狗",
+        "de": "天狗的",
+        "one": "一名天狗",
+        "all": "所有天狗",
+        "upto": "最多 {n} 名天狗"
+      },
+      "Oni": {
+        "def": "鬼",
+        "bare": "鬼",
+        "de": "鬼的",
+        "one": "一名鬼",
+        "all": "所有鬼",
+        "upto": "最多 {n} 名鬼"
+      },
+      "Qilins": {
+        "def": "麒麟",
+        "bare": "麒麟",
+        "de": "麒麟的",
+        "one": "一隻麒麟",
+        "all": "所有麒麟",
+        "upto": "最多 {n} 隻麒麟"
+      },
+      "Griffons": {
+        "def": "獅鷲",
+        "bare": "獅鷲",
+        "de": "獅鷲的",
+        "one": "一隻獅鷲",
+        "all": "所有獅鷲",
+        "upto": "最多 {n} 隻獅鷲"
+      },
+      "Faucons": {
+        "def": "獵鷹",
+        "bare": "獵鷹",
+        "de": "獵鷹的",
+        "one": "一隻獵鷹",
+        "all": "所有獵鷹",
+        "upto": "最多 {n} 隻獵鷹"
+      },
+      "Pégases": {
+        "def": "天馬",
+        "bare": "天馬",
+        "de": "天馬的",
+        "one": "一匹天馬",
+        "all": "所有天馬",
+        "upto": "最多 {n} 匹天馬"
+      },
+      "Sphinx": {
+        "def": "斯芬克斯",
+        "bare": "斯芬克斯",
+        "de": "人面獅身獸的",
+        "one": "一隻人面獅身獸",
+        "all": "所有人面獅身獸",
+        "upto": "最多 {n} 隻人面獅身獸"
+      },
+      "Yétis": {
+        "def": "雪怪",
+        "bare": "雪怪",
+        "de": "雪怪的",
+        "one": "一隻雪怪",
+        "all": "所有雪怪",
+        "upto": "最多 {n} 隻雪怪"
+      },
+      "Hommes-Loups": {
+        "def": "狼人",
+        "bare": "狼人",
+        "de": "狼人的",
+        "one": "一名狼人",
+        "all": "所有狼人",
+        "upto": "最多 {n} 名狼人"
+      },
+      "Hommes-Ours": {
+        "def": "熊人",
+        "bare": "熊人",
+        "de": "熊人的",
+        "one": "一名熊人",
+        "all": "所有熊人",
+        "upto": "最多 {n} 名熊人"
+      },
+      "Hommes-Félins": {
+        "def": "貓人",
+        "bare": "貓人",
+        "de": "貓人的",
+        "one": "一名貓人",
+        "all": "所有貓人",
+        "upto": "最多 {n} 名貓人"
+      },
+      "Centaures": {
+        "def": "半人馬",
+        "bare": "半人馬",
+        "de": "半人馬的",
+        "one": "一名半人馬",
+        "all": "所有半人馬",
+        "upto": "最多 {n} 名半人馬"
+      },
+      "Mimis": {
+        "def": "米米",
+        "bare": "米米",
+        "de": "米米的",
+        "one": "一隻米米",
+        "all": "所有米米",
+        "upto": "最多 {n} 隻米米"
+      },
+      "Hommes-Chiens": {
+        "def": "犬人",
+        "bare": "犬人",
+        "de": "犬人的",
+        "one": "一名犬人",
+        "all": "所有犬人",
+        "upto": "最多 {n} 名犬人"
+      },
+      "Hommes-Renards": {
+        "def": "狐人",
+        "bare": "狐人",
+        "de": "狐人的",
+        "one": "一名狐人",
+        "all": "所有狐人",
+        "upto": "最多 {n} 名狐人"
+      },
+      "Hommes-Cerfs": {
+        "def": "鹿人",
+        "bare": "鹿人",
+        "de": "鹿人的",
+        "one": "一名鹿人",
+        "all": "所有鹿人",
+        "upto": "最多 {n} 名鹿人"
+      },
+      "Insectes": {
+        "def": "昆蟲",
+        "bare": "昆蟲",
+        "de": "昆蟲的",
+        "one": "一隻昆蟲",
+        "all": "所有昆蟲",
+        "upto": "最多 {n} 隻昆蟲"
+      },
+      "Hommes-Singes": {
+        "def": "猿人",
+        "bare": "猿人",
+        "de": "猿人的",
+        "one": "一名猿人",
+        "all": "所有猿人",
+        "upto": "最多 {n} 名猿人"
+      },
+      "Hommes-Poissons": {
+        "def": "魚人",
+        "bare": "魚人",
+        "de": "魚人的",
+        "one": "一名魚人",
+        "all": "所有魚人",
+        "upto": "最多 {n} 名魚人"
+      },
+      "Hommes-Oiseaux": {
+        "def": "鳥人",
+        "bare": "鳥人",
+        "de": "鳥人的",
+        "one": "一名鳥人",
+        "all": "所有鳥人",
+        "upto": "最多 {n} 個鳥人"
+      },
+      "Élémentaire": {
+        "def": "元素生物",
+        "bare": "元素生物",
+        "de": "元素生物的",
+        "pl": "元素生物",
+        "one": "一個元素生物",
+        "all": "所有元素生物",
+        "upto": "最多 {n} 個元素生物"
+      },
+      "Géants": {
+        "def": "巨人",
+        "bare": "巨人",
+        "de": "巨人的",
+        "one": "一個巨人",
+        "all": "所有巨人",
+        "upto": "最多 {n} 個巨人"
+      },
+      "Mammouths": {
+        "def": "猛瑪象",
+        "bare": "猛瑪象",
+        "de": "猛瑪象的",
+        "one": "一隻猛瑪象",
+        "all": "所有猛瑪象",
+        "upto": "最多 {n} 隻猛瑪象"
+      },
+      "Ogres": {
+        "def": "食人魔",
+        "bare": "食人魔",
+        "de": "食人魔的",
+        "one": "一個食人魔",
+        "all": "所有食人魔",
+        "upto": "最多 {n} 個食人魔"
+      },
+      "Dragons": {
+        "def": "龍",
+        "bare": "龍",
+        "de": "龍的",
+        "one": "一條龍",
+        "all": "所有龍",
+        "upto": "最多 {n} 條龍"
+      },
+      "Éléphants": {
+        "def": "大象",
+        "bare": "大象",
+        "de": "大象的",
+        "one": "一頭大象",
+        "all": "所有大象",
+        "upto": "最多 {n} 頭大象"
+      },
+      "Chiens": {
+        "def": "犬",
+        "bare": "犬",
+        "de": "犬的",
+        "one": "一隻犬",
+        "all": "所有犬",
+        "upto": "最多 {n} 隻犬"
+      },
+      "Phoenix": {
+        "def": "鳳凰",
+        "bare": "鳳凰",
+        "de": "鳳凰的",
+        "one": "一隻鳳凰",
+        "all": "所有鳳凰",
+        "upto": "最多 {n} 隻鳳凰"
+      },
+      "Anges": {
+        "def": "天使",
+        "bare": "天使",
+        "de": "天使的",
+        "one": "一名天使",
+        "all": "所有天使",
+        "upto": "最多 {n} 名天使"
+      },
+      "Ours": {
+        "def": "熊",
+        "bare": "熊",
+        "de": "熊的",
+        "one": "一隻熊",
+        "all": "所有熊",
+        "upto": "最多 {n} 隻熊"
+      },
+      "Loups": {
+        "def": "狼",
+        "bare": "狼",
+        "de": "狼的",
+        "one": "一隻狼",
+        "all": "所有狼",
+        "upto": "最多 {n} 隻狼"
+      },
+      "Fauves": {
+        "def": "猛獸",
+        "bare": "猛獸",
+        "de": "猛獸的",
+        "one": "一隻猛獸",
+        "all": "所有猛獸",
+        "upto": "最多 {n} 隻猛獸"
+      },
+      "Squelettes": {
+        "def": "骷髏",
+        "bare": "骷髏",
+        "de": "骷髏的",
+        "one": "一具骷髏",
+        "all": "所有骷髏",
+        "upto": "最多 {n} 隻骷髏"
+      },
+      "Zombies": {
+        "def": "殭屍",
+        "bare": "殭屍",
+        "de": "殭屍的",
+        "one": "一隻殭屍",
+        "all": "所有殭屍",
+        "upto": "最多 {n} 隻殭屍"
+      },
+      "Ghoules": {
+        "def": "食屍鬼",
+        "bare": "食屍鬼",
+        "de": "食屍鬼的",
+        "one": "一隻食屍鬼",
+        "all": "所有食屍鬼",
+        "upto": "最多 {n} 隻食屍鬼"
+      },
+      "Spectres": {
+        "def": "幽魂",
+        "bare": "幽魂",
+        "de": "幽魂的",
+        "one": "一隻幽魂",
+        "all": "所有幽魂",
+        "upto": "最多 {n} 隻幽魂"
+      },
+      "Vampires": {
+        "def": "吸血鬼",
+        "bare": "吸血鬼",
+        "de": "吸血鬼的",
+        "one": "一隻吸血鬼",
+        "all": "所有吸血鬼",
+        "upto": "最多 {n} 隻吸血鬼"
+      },
+      "Lich": {
+        "def": "巫妖",
+        "bare": "巫妖",
+        "de": "巫妖的",
+        "one": "一隻巫妖",
+        "all": "所有巫妖",
+        "upto": "最多 {n} 隻巫妖"
+      },
+      "Momies": {
+        "def": "木乃伊",
+        "bare": "木乃伊",
+        "de": "木乃伊的",
+        "one": "一隻木乃伊",
+        "all": "所有木乃伊",
+        "upto": "最多 {n} 隻木乃伊"
+      },
+      "Chimères nécrotiques": {
+        "def": "死靈奇美拉",
+        "bare": "死靈奇美拉",
+        "de": "死靈奇美拉的",
+        "one": "一隻死靈奇美拉",
+        "all": "所有死靈奇美拉",
+        "upto": "最多 {n} 隻死靈奇美拉"
+      },
+      "Vermines mortuaires": {
+        "def": "亡骸蟲群",
+        "bare": "亡骸蟲群",
+        "de": "亡骸蟲群的",
+        "one": "一隻亡骸蟲群",
+        "all": "所有亡骸蟲群",
+        "upto": "最多 {n} 隻亡骸蟲群"
+      },
+      "Poltergeists": {
+        "def": "騷靈",
+        "bare": "騷靈",
+        "de": "騷靈的",
+        "one": "一隻騷靈",
+        "all": "所有騷靈",
+        "upto": "最多 {n} 隻騷靈"
+      },
+      "Dullahans": {
+        "def": "無頭騎士",
+        "bare": "無頭騎士",
+        "de": "無頭騎士的",
+        "one": "一名無頭騎士",
+        "all": "所有無頭騎士",
+        "upto": "最多 {n} 名無頭騎士"
+      },
+      "Sluaghs": {
+        "def": "斯魯阿",
+        "bare": "斯魯阿",
+        "de": "斯魯阿的",
+        "one": "一隻斯魯阿",
+        "all": "所有斯魯阿",
+        "upto": "最多 {n} 隻斯魯阿"
+      },
+      "Ondins": {
+        "def": "水精靈",
+        "bare": "水精靈",
+        "de": "水精靈的",
+        "one": "一名水精靈",
+        "all": "所有水精靈",
+        "upto": "最多 {n} 名水精靈"
+      },
+      "Sirènes": {
+        "def": "海妖",
+        "bare": "海妖",
+        "de": "海妖的",
+        "one": "一名海妖",
+        "all": "所有海妖",
+        "upto": "最多 {n} 名海妖"
+      },
+      "Léviathans": {
+        "def": "利維坦",
+        "bare": "利維坦",
+        "de": "利維坦的",
+        "one": "一隻利維坦",
+        "all": "所有利維坦",
+        "upto": "最多 {n} 隻利維坦"
+      },
+      "Cristallins": {
+        "def": "晶族",
+        "bare": "晶族",
+        "de": "晶族的",
+        "one": "一個晶族",
+        "all": "所有晶族",
+        "upto": "最多 {n} 個晶族"
+      },
+      "Troglodytes": {
+        "def": "穴居人",
+        "bare": "穴居人",
+        "de": "穴居人的",
+        "one": "一個穴居人",
+        "all": "所有穴居人",
+        "upto": "最多 {n} 個穴居人"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "地獄魔獸",
+        "bare": "地獄魔獸",
+        "de": "地獄魔獸的",
+        "one": "一隻地獄魔獸",
+        "all": "所有地獄魔獸",
+        "upto": "最多 {n} 隻地獄魔獸"
+      },
+      "Salamandres": {
+        "def": "火蜥蜴",
+        "bare": "火蜥蜴",
+        "de": "火蜥蜴的",
+        "one": "一隻火蜥蜴",
+        "all": "所有火蜥蜴",
+        "upto": "最多 {n} 隻火蜥蜴"
+      },
+      "Sylphes": {
+        "def": "風靈",
+        "bare": "風靈",
+        "de": "風靈的",
+        "one": "一個風靈",
+        "all": "所有風靈",
+        "upto": "最多 {n} 個風靈"
+      },
+      "Néphélides": {
+        "def": "雲裔",
+        "bare": "雲裔",
+        "de": "雲裔的",
+        "one": "一個雲裔",
+        "all": "所有雲裔",
+        "upto": "最多{n}名涅斐里德"
+      },
+      "Banshees": {
+        "def": "女妖",
+        "bare": "女妖",
+        "de": "女妖的",
+        "one": "一名女妖",
+        "all": "所有女妖",
+        "upto": "最多{n}名女妖"
+      },
+      "Homuncules de Sang": {
+        "def": "血之人造人",
+        "bare": "血之人造人",
+        "de": "血之人造人的",
+        "one": "一名血之人造人",
+        "all": "所有血之人造人",
+        "upto": "最多{n}名血之人造人"
+      },
+      "Gargouilles": {
+        "def": "石像鬼",
+        "bare": "石像鬼",
+        "de": "石像鬼的",
+        "one": "一隻石像鬼",
+        "all": "所有石像鬼",
+        "upto": "最多{n}隻石像鬼"
+      },
+      "Dhampirs": {
+        "def": "混血吸血鬼",
+        "bare": "混血吸血鬼",
+        "de": "混血吸血鬼的",
+        "one": "一名混血吸血鬼",
+        "all": "所有混血吸血鬼",
+        "upto": "最多{n}名混血吸血鬼"
+      },
+      "Chiroptères": {
+        "def": "翼手目",
+        "bare": "翼手目",
+        "de": "翼手目的",
+        "one": "一隻翼手目",
+        "all": "所有翼手目",
+        "upto": "最多{n}隻翼手目"
+      },
+      "Elfes Corrompus": {
+        "def": "墮落精靈",
+        "bare": "墮落精靈",
+        "de": "墮落精靈的",
+        "one": "一名墮落精靈",
+        "all": "所有墮落精靈",
+        "upto": "最多{n}名墮落精靈"
+      },
+      "Araignées Géantes": {
+        "def": "巨型蜘蛛",
+        "bare": "巨型蜘蛛",
+        "de": "巨型蜘蛛的",
+        "one": "一隻巨型蜘蛛",
+        "all": "所有巨型蜘蛛",
+        "upto": "最多 {n} 隻巨型蜘蛛"
+      },
+      "Démons": {
+        "def": "惡魔",
+        "bare": "惡魔",
+        "de": "惡魔的",
+        "one": "一隻惡魔",
+        "all": "所有惡魔",
+        "upto": "最多 {n} 隻惡魔"
+      },
+      "Orcs": {
+        "def": "獸人",
+        "bare": "獸人",
+        "de": "獸人的",
+        "one": "一名獸人",
+        "all": "所有獸人",
+        "upto": "最多 {n} 名獸人"
+      },
+      "Gobelins": {
+        "def": "哥布林",
+        "bare": "哥布林",
+        "de": "哥布林的",
+        "one": "一隻哥布林",
+        "all": "所有哥布林",
+        "upto": "最多 {n} 隻哥布林"
+      },
+      "Trolls": {
+        "def": "食人妖",
+        "bare": "食人妖",
+        "de": "食人妖的",
+        "one": "一隻食人妖",
+        "all": "所有食人妖",
+        "upto": "最多 {n} 隻食人妖"
+      },
+      "Wargs": {
+        "def": "座狼",
+        "bare": "座狼",
+        "de": "座狼的",
+        "one": "一隻座狼",
+        "all": "所有座狼",
+        "upto": "最多 {n} 隻座狼"
+      },
+      "Guerriers du Chaos": {
+        "def": "混沌戰士",
+        "bare": "混沌戰士",
+        "de": "混沌戰士的",
+        "one": "一名混沌戰士",
+        "all": "所有混沌戰士",
+        "upto": "最多 {n} 名混沌戰士"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "森林族",
+      "Les Hauts-Elfes": "高等精靈",
+      "La Forêt d'Émeraude": "翡翠森林",
+      "La Combe Verte": "翠綠谷地",
+      "Les Gardiens de la Montagne": "山岳守護者",
+      "La Forge Ardente": "烈焰熔爐",
+      "Les Sentinelles d'Airain": "青銅哨兵",
+      "La Guilde des Ingénieurs": "工程師公會",
+      "Les Hordes des Steppes": "草原部落",
+      "L'Empire de Jade": "翡玉帝國",
+      "Les Lames de l'Ombre": "暗影之刃",
+      "Les Défenseurs d'Ivoire": "象牙防衛者",
+      "Les Enfants du Soleil": "太陽之子",
+      "Les Seigneurs des Dunes": "沙丘領主",
+      "Le Royaume des Masques": "面具王國",
+      "Les Fils du Volcan": "火山之子",
+      "Le Royaume du Nord": "北方王國",
+      "L'Ordre de l'Aube": "黎明騎士團",
+      "Les Guerrières du Vent": "風之女戰士",
+      "La Sublime Porte": "崇高之門",
+      "Les Seigneurs Fauves": "猛獸領主",
+      "Les Enfants de la Lune": "月之子",
+      "Le Pacte des Griffes": "利爪盟約",
+      "La Harde Sauvage": "狂野獸群",
+      "La Forêt Enchantée": "魔法森林",
+      "La Colère des Flammes": "烈焰之怒",
+      "Le Socle du Monde": "世界基石",
+      "La Vague Sans Fin": "無盡之浪",
+      "Le Souffle des Cimes": "群峰之息",
+      "Les Rangs Silencieux": "靜默行伍",
+      "Le Voile Hurlant": "嚎哭之幕",
+      "La Cour Écarlate": "緋紅宮廷",
+      "Le Cénacle Nécromant": "死靈法師會社",
+      "Les Cohortes Sanglantes": "血腥軍團",
+      "Les Princes des Abîmes": "深淵親王",
+      "La Forêt Maudite": "詛咒森林",
+      "La Garde Noire": "黑衛軍"
+    },
+    "factions_forms": {
+      "Elfes": "天域聯盟",
+      "Nains": "山嶽軍團",
+      "EmpireDuMilieu": "中土帝國",
+      "RoyaumesDuSoleil": "太陽王國",
+      "Humains": "自由王國",
+      "Hommes-Bêtes": "獸群",
+      "Élémentaires": "原初者",
+      "Mercenaires": "傭兵",
+      "Morts-Vivants": "亡靈墓城",
+      "Elfes Noirs": "混沌軍團"
+    },
+    "markers": {
+      "race": "所選種族的生物",
+      "race_bare": "同種族",
+      "race_de": "同種族",
+      "race_pl": "同種族單位",
+      "clan": "你的氏族",
+      "clan_de": "同氏族",
+      "faction": "你的陣營",
+      "faction_de": "同陣營",
+      "alignment": "相同屬性",
+      "alignment_of": "屬性為{a}",
+      "token": "設定的衍生物",
+      "tokens": "多個衍生物",
+      "invocations": "多個來自你收藏的隨機生物",
+      "invocations_first_one": "一個費用為{cost}的隨機生物",
+      "invocations_first_many": "{count}個費用為{cost}的隨機生物",
+      "invocations_more_one": "一個費用為{cost}的",
+      "invocations_more_many": "{count}個費用為{cost}的",
+      "invocations_join": "與",
+      "race_or": "或",
+      "invocations_of_race": "（來自{v}）",
+      "invocations_of_faction": "（來自{v}陣營）",
+      "lycanthrope": "一個X/X的衍生物",
+      "ability": "一項能力",
+      "scope": "給一個友方單位（或全部）",
+      "scope_target": "給一個友方單位",
+      "edc_compte": "隨機獲得{n}次+1 ATK或+1 PV（你每已觸發一次團結精神即獲得1次）。",
+      "usurpation_actuel": "已打出的敵方卡牌：{n}，目前+{x}/+{y}。",
+      "scope_all": "給你所有的單位",
+      "machine_part": "與{ability}",
+      "machine_part_timed": "與{ability}（{timing}）",
+      "machine_name": "機械",
+      "neutralise_cible": "被指定的敵方單位（或全部）身上",
+      "neutralise_cible_target": "指定的敵方單位身上",
+      "neutralise_cible_all": "所有敵方單位身上",
+      "forge_align": " 或{alignment}",
+      "forge_cout": " 費用至多為 X",
+      "forge_cout_libre": "",
+      "forge_cout_max": " 費用至多為 X",
+      "forge_cout_range": " 費用為 {n} 至 X",
+      "forge_cout_min": " 費用至少為 {n}"
+    },
+    "sets": {
+      "1": "基礎系列"
+    },
+    "formats": {
+      "expert-standard": "專家 · 標準",
+      "expert-etendu": "專家 · 擴充",
+      "classique-etendu": "經典 · 擴充",
+      "classique-standard": "經典 · 標準"
+    },
+    "singulier": {
+      "label": "獨一無二",
+      "help": "若你的起始牌組中沒有任何重複的卡牌,則於{timing}觸發。",
+      "help_permanent": "若你的起始牌組中沒有任何重複的卡牌,則生效。",
+      "timing": {
+        "entry": "進場時",
+        "death": "死亡時",
+        "tap": "啟動時",
+        "return": "回到手牌時",
+        "attack": "攻擊時",
+        "end_of_turn": "回合結束時",
+        "start_of_turn": "回合開始時",
+        "draw": "抽牌時",
+        "low_hp": "生命值低於 {n} 時",
+        "spell": "行動結算時",
+        "wound": "受傷但未死亡時",
+        "delay": "延遲結束時"
+      }
+    },
+    "triggers": {
+      "permanent": "永久",
+      "entry": "進場",
+      "attack": "攻擊",
+      "death": "死亡",
+      "return": "回牌",
+      "tap": "可啟動",
+      "end_of_turn": "回合結束",
+      "start_of_turn": "回合開始",
+      "draw": "抽牌",
+      "low_hp": "生命低於 {n}",
+      "wound": "受傷",
+      "delay": "延遲 {d}"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "對{cibles}造成 X 點傷害。",
+        "affaiblissement": "使{cibles}獲得 -X 攻擊力與 -Y 生命值。",
+        "retour_differe": "將{cibles}中費用 ≤ X 的單位置於其擁有者的牌組底部。",
+        "retour_differe_any": "將{cibles}置於其擁有者的牌組底部。",
+        "remontee": "將{cibles}送回其原始擁有者的手牌。",
+        "malediction": "詛咒{cibles}中費用 ≤ X 的單位:它們將在對手下個回合結束時被放逐。",
+        "malediction_any": "詛咒{cibles}:它們將在對手下個回合結束時被放逐。",
+        "corruption": "在空位限度內,將{cibles}中費用 ≤ X 的單位轉為你方所有,直到回合結束;它們獲得追獵。",
+        "corruption_any": "在空位限度內,將{cibles}轉為你方所有,直到回合結束;它們獲得追獵。",
+        "domination": "在空位限度內,控制{cibles}中費用 ≤ X 的單位。",
+        "domination_any": "在空位限度內,控制{cibles}。",
+        "benediction": "完全治癒{cibles}。",
+        "poison": "使{cibles}中毒:它們在每個回合結束時失去 1 點生命值。",
+        "siphon": "對{cibles}造成 X 點傷害,每有一個單位受創,你的英雄便恢復 X 點生命值。",
+        "entrave": "使{cibles}麻痺 X 個回合。",
+        "execution": "消滅{cibles}中費用 ≤ X 的單位,包括物品。",
+        "execution_any": "消滅{cibles},包括物品。",
+        "silence": "移除{cibles}的所有關鍵字(包括物品),並將其數值還原為初始值。",
+        "renforcement": "{cibles}獲得 +X/+Y。",
+        "discipline": "若你場上所有生物的費用與此行動的費用奇偶性相同,{cibles}獲得 +X/+Y。",
+        "usurpation": "你每打出一張對手的牌,{cibles}便獲得 +X/+Y。",
+        "guerison": "為{cibles}和你的英雄恢復 X 點生命值。"
+      },
+      "creature": {
+        "neutralisation": "此單位在場時,{cibles}會被麻痺,且其能力無效。",
+        "impact": "對{cibles}造成 X 點傷害。",
+        "affaiblissement": "使{cibles}獲得 -X 攻擊力與 -Y 生命值。",
+        "retour_differe": "將{cibles}中費用 ≤ X 的單位置於其擁有者的牌組底部。",
+        "retour_differe_any": "將{cibles}置於其擁有者的牌組底部。",
+        "remontee": "將{cibles}送回其原始擁有者的手牌。",
+        "corruption": "在空位限度內,將{cibles}中費用 ≤ X 的單位轉為你方所有,直到回合結束;它們獲得追獵。",
+        "corruption_any": "在空位限度內,將{cibles}轉為你方所有,直到回合結束;它們獲得追獵。",
+        "domination": "在空位限度內,控制{cibles}中費用 ≤ X 的單位。",
+        "domination_any": "在空位限度內,控制{cibles}。",
+        "benediction": "完全治癒{cibles}。",
+        "malediction": "詛咒{cibles}中費用 ≤ X 的單位:它們將在對手下個回合結束時被放逐。",
+        "malediction_any": "詛咒{cibles}:它們將在對手下個回合結束時被放逐。",
+        "tactique": "使{cibles}從相同費用生物的能力中隨機獲得 X 個能力(每個單位各抽取一次)。",
+        "vampirisme": "從{cibles}身上奪取最多 X 點生命值,並加到此單位的生命值上。",
+        "devoration": "消滅{cibles};此單位永久獲得其攻擊力與生命值。",
+        "sacrifice": "消滅所有其他友方單位,永久獲得它們的生命值與攻擊力。",
+        "renforcement": "使所有其他友方單位永久獲得 +X 攻擊力與 +Y 生命值。",
+        "discipline": "若你場上所有費用的奇偶性與此單位相同,所有其他友方單位永久獲得 +X/+Y。",
+        "usurpation": "你每打出一張對手的牌,所有其他友方單位便永久獲得 +X/+Y。",
+        "renforcement_soi": "永久獲得 +X 攻擊與 +Y 生命。",
+        "discipline_soi": "若你所有場上的生物費用奇偶性皆與其相同,則永久獲得 +X 攻擊與 +Y 生命。",
+        "usurpation_soi": "你每打出一張對手的牌,便永久獲得 +X 攻擊與 +Y 生命。",
+        "execution": "摧毀費用 ≤ X 的{cibles},包含物品。",
+        "execution_any": "摧毀{cibles},包含物品。",
+        "silence": "移除{cibles}的所有關鍵字(包含物品),並將其數值恢復為原始值。",
+        "guerison": "為所有其他友方單位與你的英雄恢復 X 點生命。",
+        "purete": "只要你的墓地為空,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
+        "force_des_ancetres": "只要你的墓地有 7 張或以上生物牌,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
+        "seuil_sacrificiel": "只要你的牌組剩 25 張牌或更少,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
+        "silence_soi": "失去所有關鍵字,數值恢復為原始值。",
+        "guerison_soi": "恢復 X 點生命。",
+        "tactique_soi": "從費用相同的生物能力中隨機獲得 X 個能力。"
+      },
+      "cibles": {
+        "all_enemies": "所有敵方單位",
+        "all_allies": "所有友方單位",
+        "all": "雙方所有單位"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "生命代價 {n}",
+        "desc": "除了法力之外,打出此牌時你的英雄會失去 {n} 點生命。若會使其生命降至 0,則無法打出。"
+      },
+      "defausse": {
+        "title": "棄牌 {n}",
+        "desc_one": "除了法力之外,還須從手牌中任選一張牌棄置。",
+        "desc_many": "除了法力之外,還須從手牌中任選 {n} 張牌棄置。"
+      },
+      "sacrifice": {
+        "title": "獻祭 {n}",
+        "desc_one": "除了法力之外,還須從你場上的生物中任選一個獻祭。",
+        "desc_many": "除了法力之外,還須從你場上的生物中任選 {n} 個獻祭。"
+      },
+      "exil": {
+        "title": "放逐 {n}",
+        "desc_one": "除了法力之外,你牌組頂端的一張牌會被放逐,離開遊戲。若你的牌組為空則無法打出。",
+        "desc_many": "除了法力之外,你牌組頂端的 {n} 張牌會被放逐,離開遊戲。你的牌組至少需有 {n} 張牌。"
+      },
+      "repli": {
+        "title": "回置 {n}",
+        "desc_one": "除了法力之外,還須從手牌中任選一張牌,放回牌組頂端。",
+        "desc_many": "除了法力之外,還須從手牌中任選 {n} 張牌,放回牌組頂端。最先選擇的牌會在最上方。"
+      },
+      "retraite": {
+        "title": "撤退 {n}",
+        "desc_one": "除了法力之外,還須從你場上的生物中任選一個收回手牌。若你的手牌放不下則無法打出。",
+        "desc_many": "除了法力之外,還須從你場上的生物中任選 {n} 個收回手牌。若你的手牌放不下則無法打出。"
+      },
+      "eveil": {
+        "title": "覺醒 {n}",
+        "desc": "你可以不直接打出此牌,而是讓它進入覺醒狀態。之後在你的回合中,以法力支付其 {n} 點,每 1 點法力支付 1 點。支付最後一點時,它會如同你打出般進入戰場。",
+        "remaining": "{n} 點中還需支付 {left} 點。"
+      },
+      "equipement": {
+        "title": "裝備 {n}",
+        "desc": "物品進入戰場後,將其裝備到你的一個生物上需花費 {n} 點法力。每次裝備都需支付,包含移動。",
+        "desc_free": "物品進入戰場後,將其裝備到你的一個生物上免費,包含移動。"
+      }
+    }
+  },
+  "home": {
+    "home_subtitle": "一張牌,一則傳奇,輪到你出手了。",
+    "play_label": "開始遊戲",
+    "play_desc": "尋找對手並開始一場對戰",
+    "market_label": "市場",
+    "market_desc": "拍賣買賣",
+    "market_desc_buy": "拍賣購買",
+    "collection_label": "我的收藏",
+    "collection_desc": "卡牌、英雄、卡背、戰場",
+    "decks_label": "我的牌組",
+    "decks_desc": "組建並調整你的牌組",
+    "tutorial_label": "遊戲教學",
+    "tutorial_desc": "學習規則與能力",
+    "tutorial_back": "返回首頁",
+    "news_banner_label": "最新消息",
+    "news_banner_open": "顯示最新消息",
+    "news_banner_collapse": "收合最新消息",
+    "news_read_more": "閱讀更多",
+    "news_back_home": "返回首頁",
+    "welcome": "歡迎,",
+    "logout": "登出",
+    "settings": "設定",
+    "skip_to_content": "跳至內容",
+    "collection_title": "我的收藏",
+    "collection_back": "返回首頁",
+    "my_cards": "我的卡牌",
+    "my_cards_desc": "你擁有的卡牌目錄",
+    "my_heroes": "我的英雄",
+    "my_heroes_desc": "已解鎖的勇士",
+    "my_card_backs": "我的卡背",
+    "my_card_backs_desc": "已擁有的卡背",
+    "my_boards": "我的戰場",
+    "my_boards_desc": "已擁有的遊戲戰場",
+    "heroes_title": "我的英雄",
+    "heroes_empty": "目前尚未解鎖任何英雄。",
+    "heroes_filter_all": "全部",
+    "heroes_label_faction": "陣營",
+    "heroes_label_clan": "氏族",
+    "heroes_label_rarity": "稀有度",
+    "heroes_loading": "載入中…",
+    "heroes_load_error": "無法載入你的英雄。",
+    "hero_power": "英雄技能",
+    "tournaments_label": "錦標賽",
+    "tournaments_desc": "與最強者一較高下,贏取非凡獎勵。"
+  },
+  "landing": {
+    "nav_play": "開始遊戲",
+    "hero_eyebrow": "奇幻集換式卡牌遊戲 — 新世代",
+    "hero_title": "傳奇軍團",
+    "hero_sub": "註冊即獲得 300 多張卡牌,陣營任你選擇。限量版卡牌更讓你的牌組獨一無二:沒有任何一副專家牌組會與你的相同。",
+    "hero_cta": "選擇我的贈送陣營",
+    "hero_cta_secondary": "查看九大陣營",
+    "hero_proof": "首場對戰即贈送 500 多張卡牌",
+    "features_title": "為何選擇 傳奇軍團",
+    "f1_title": "傳奇般的深度。",
+    "f1_desc": "傳奇軍團 將經典集換式卡牌遊戲的策略性,結合為當代冠軍打造的全新機制。",
+    "f2_title": "一開始就擁有最多卡牌。",
+    "f2_desc": "免費獲得你所選陣營的全部經典卡牌(300 多張)。以遠低於一般集換式卡牌遊戲的花費,坐擁所有陣營(約 2,500 張卡牌)。",
+    "f3_title": "每副專家牌組,都是獨一無二的作品。",
+    "f3_desc": "限量版卡牌讓每副專家牌組獨具特色。普通版則確保只有你的策略決定勝負。",
+    "f_icons_title": "一目了然。",
+    "f_icons_desc": "傳奇軍團 的卡牌經過精心繪製,既美觀又易讀:每種觸發條件都有專屬的彩色圖示,不必閱讀文字,一眼就能理解其效果。",
+    "f4_title": "行動競技場,終於名副其實。",
+    "f4_desc": "錦標賽提供稀有卡牌與現金獎勵——這樣的賽事規模,過去僅屬於最大型的桌面集換式卡牌遊戲。",
+    "f4_standings": "最終排名",
+    "factions_title": "九支軍團,第一支屬於你。",
+    "factions_sub": "註冊時選擇你的陣營:其全部經典卡牌(300 多張)免費歸你所有。其他陣營之後可另行加入,花費遠低於一般集換式卡牌遊戲。",
+    "showcase_title": "一部魔物圖鑑,數以千計的組合。",
+    "showcase_sub": "從最卑微的生物到神話英雄,每張卡牌都舉足輕重。",
+    "cta_title": "競技場正等著你。",
+    "cta_sub": "加入召喚師,投身戰場。",
+    "cta_btn": "展開冒險",
+    "footer": "傳奇軍團 — 版權所有",
+    "factions": {
+      "Humains": {
+        "tagline": "團結於旗幟之下"
+      },
+      "Elfes": {
+        "tagline": "永恆森林的守護者"
+      },
+      "Nains": {
+        "tagline": "鑄於岩石之中"
+      },
+      "Hommes-Bêtes": {
+        "tagline": "荒野的狂怒"
+      },
+      "Élémentaires": {
+        "tagline": "元素甦醒"
+      },
+      "Elfes Noirs": {
+        "tagline": "暗影自有其名"
+      },
+      "Morts-Vivants": {
+        "tagline": "墓穴的寂靜已被打破"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "紀律先於狂怒"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "沙漠記得它的君王"
+      }
+    },
+    "nav_factions": "陣營",
+    "nav_limited": "限量版",
+    "nav_tournaments": "錦標賽",
+    "hero_claim": "整個陣營,免費贈送。",
+    "wall_pause": "暫停卡牆",
+    "wall_play": "重新播放卡牆",
+    "factions_see": "查看陣營",
+    "limited_title": "沒有任何專家牌組與你的相同。",
+    "limited_desc": "限量版卡牌讓每個專家牌組都獨一無二。通用版則確保唯有你的策略決定勝負。",
+    "trailer_title": "傳奇登場。",
+    "nav_language": "語言",
+    "f4_example": "排名範例:玩家皆為虛構,計分規則則與遊戲相同。",
+    "limited_run": "{count} 張",
+    "limited_unique": "唯一一張",
+    "f4_note": "* 金錢獎勵僅限於法律允許的國家/地區提供。"
+  },
+  "auction": {
+    "ended": "已結束",
+    "unknown_item": "未知物品",
+    "board": "棋盤",
+    "card_back": "卡背",
+    "extra_items": "+{count, plural, other {# 件物品}}",
+    "current_bid": "目前出價",
+    "starting_bid": "起標價",
+    "buyout_short": "直購:",
+    "bid_count": "{count, plural, other {# 筆出價}}",
+    "seller": "賣家:",
+    "system": "系統",
+    "invalid_amount": "金額無效",
+    "buyout_success": "直購成功!",
+    "bid_placed": "出價成功!",
+    "loading": "載入中...",
+    "not_found": "找不到拍賣",
+    "back_to_auctions": "返回拍賣",
+    "lot": "拍賣組",
+    "item": "物品",
+    "copies": "{count} 張",
+    "source_print": "限量版",
+    "source_board_print": "限量棋盤",
+    "source_card_back_print": "限量卡背",
+    "source_admin": "系統",
+    "source_collection": "收藏",
+    "admin_badge": "管理員",
+    "time_left": "剩餘時間",
+    "commission": "手續費:{rate}%",
+    "highest_bidder": "您是最高出價者",
+    "status_sold": "已售出",
+    "status_unsold": "流標",
+    "status_cancelled": "已取消",
+    "bid_button": "出價",
+    "buyout_immediate": "直接購買",
+    "cancel_auction": "取消拍賣",
+    "bid_history": "出價紀錄",
+    "no_bids_yet": "目前尚無出價",
+    "anonymous": "匿名",
+    "buyout_tag": "(直接購買)",
+    "sort_ending_soon": "即將結束",
+    "sort_price_asc": "價格由低到高",
+    "sort_price_desc": "價格由高到低",
+    "sort_newest": "最新上架",
+    "header_kicker": "招募你的部隊",
+    "title": "拍賣行",
+    "subtitle_sell": "買賣卡牌",
+    "subtitle_buy": "購買卡牌",
+    "menu": "選單",
+    "sell_card": "出售卡牌",
+    "tab_browse": "瀏覽",
+    "tab_my": "我的拍賣",
+    "search_placeholder": "搜尋...",
+    "all_factions": "所有陣營",
+    "all_rarities": "所有稀有度",
+    "all_types": "所有類型",
+    "type_creature": "生物",
+    "type_spell": "行動",
+    "no_auctions": "找不到拍賣",
+    "previous": "上一頁",
+    "next": "下一頁",
+    "page_of": "第 {page} 頁 / 共 {total} 頁",
+    "duration_1min": "1 分鐘",
+    "duration_1h": "1 小時",
+    "duration_6h": "6 小時",
+    "duration_12h": "12 小時",
+    "duration_24h": "24 小時",
+    "duration_generic": "{n} 分鐘",
+    "create_title": "建立拍賣",
+    "select_cards": "選擇要出售的卡牌（{selected}/{max} 上限）",
+    "search_card_placeholder": "搜尋卡牌...",
+    "no_cards_available": "沒有可用的卡牌",
+    "starting_bid_label": "起標價（金幣）",
+    "buyout_optional": "直購價（選填）",
+    "none": "無",
+    "duration": "期限",
+    "commission_info": "手續費：將從成交金額中抽取 {rate}%",
+    "error_select_card": "請至少選擇一張卡牌",
+    "error_invalid_bid": "起標價無效",
+    "error_buyout_too_low": "直購價必須高於起標價",
+    "cancel": "取消",
+    "creating": "建立中...",
+    "submit_sell": "上架出售（{count, plural, =1 {# 張卡牌} other {# 張卡牌}}）",
+    "my_sales": "我的拍賣（{count}）",
+    "my_bids": "我的出價（{count}）",
+    "no_sales": "你沒有任何拍賣",
+    "no_bids_placed": "你尚未對任何項目出價",
+    "unknown_card": "未知卡牌",
+    "ends_at": "結束時間：{date}",
+    "status_active": "進行中",
+    "page_title": "拍賣行 — 傳奇軍團",
+    "detail_page_title": "拍賣詳情 — 傳奇軍團"
+  },
+  "auth": {
+    "forgot_email_required": "請先輸入你的電子郵件，再申請重設密碼。",
+    "forgot_email_sent": "重設密碼郵件已寄至 {email}。請檢查你的收件匣（以及垃圾郵件資料夾）。",
+    "forgot_send_error": "無法寄送重設密碼郵件。",
+    "password_min_length": "密碼至少需要 8 個字元。",
+    "generic_error": "發生錯誤。",
+    "tagline": "奇幻集換式卡牌遊戲",
+    "back_to_site": "← 返回網站",
+    "login": "登入",
+    "register": "註冊",
+    "username_label": "使用者名稱",
+    "username_placeholder": "請選擇使用者名稱",
+    "email_label": "電子郵件",
+    "email_placeholder": "your@email.com",
+    "password_label": "密碼",
+    "sending": "傳送中...",
+    "forgot_password": "忘記密碼？",
+    "password_min_placeholder": "至少 8 個字元",
+    "password_placeholder_login": "輸入你的密碼",
+    "loading": "載入中...",
+    "create_account": "建立帳號",
+    "sign_in": "登入",
+    "or": "或",
+    "continue_google": "使用 Google 繼續",
+    "continue_discord": "使用 Discord 繼續",
+    "passwords_mismatch": "兩次輸入的密碼不一致。",
+    "password_updated_redirect": "密碼已更新。正在重新導向...",
+    "unknown_error": "未知錯誤。",
+    "reset_heading": "重設密碼",
+    "reset_sub": "請為你的帳號設定新密碼。",
+    "back_to_login": "← 返回登入",
+    "reset_link_invalid": "重設連結已過期或無效。請從登入頁面重新開始,並再次申請電子郵件。",
+    "new_password_label": "新密碼",
+    "confirm_label": "確認",
+    "confirm_placeholder": "再次輸入密碼",
+    "updating": "更新中...",
+    "update": "更新",
+    "signup_check_email_title": "請查看你的信箱",
+    "signup_check_email": "我們已將確認連結寄送至 {email}。點擊連結即可啟用你的帳號。",
+    "signup_check_spam": "沒收到嗎?請檢查垃圾郵件匣——郵件可能需要一分鐘才會送達。",
+    "signup_resend": "重新寄送電子郵件",
+    "signup_resend_wait": "{seconds} 秒後可重新寄送",
+    "signup_resent": "已重新寄送電子郵件至 {email}。",
+    "signup_resend_error": "無法重新寄送確認電子郵件。",
+    "signup_back_to_login": "← 返回登入",
+    "error_oauth_cancelled": "登入已取消。你可以重試或改用電子郵件。",
+    "error_oauth_failed": "透過此服務登入失敗。請重試或改用電子郵件。",
+    "error_link_expired": "此連結已過期或已被使用。請重新申請一個。",
+    "error_auth_failed": "登入未成功。請重試。",
+    "cgu_accept": "我同意服務條款與隱私權政策。",
+    "cgu_link": "閱讀服務條款",
+    "privacy_link": "閱讀隱私權政策",
+    "cgu_required": "你必須同意條款才能建立帳號。",
+    "onboarding_title": "選擇你的玩家名稱",
+    "onboarding_sub": "其他玩家將能在拍賣和你的個人檔案中看到此名稱。你之後可以更改。",
+    "onboarding_submit": "確認",
+    "username_rules": "3 至 20 個字元:字母、數字、連字號或底線。",
+    "username_too_short": "名稱至少需要 3 個字元。",
+    "username_too_long": "名稱不能超過 20 個字元。",
+    "username_invalid_chars": "僅限字母、數字、連字號和底線,不可使用空格或重音符號。",
+    "username_reserved": "此名稱已被保留,請另選一個。",
+    "username_taken": "此名稱已被使用,請試試其他變化。",
+    "username_required": "請選擇一個玩家名稱。",
+    "faction_title": "選擇你的陣營",
+    "faction_sub": "你將免費獲得所選陣營的所有普通卡牌。其他陣營之後仍可解鎖。",
+    "faction_warning": "⚠ 此選擇無法更改,請慎重考慮。",
+    "faction_submit": "加入此陣營",
+    "faction_required": "請選擇一個陣營。",
+    "faction_invalid_faction": "此陣營不存在。",
+    "faction_already_chosen": "你已經選擇過陣營了。",
+    "error_email_rate_limit": "短時間內寄出的電子郵件過多,請等候幾分鐘後再試。",
+    "error_invalid_credentials": "電子郵件或密碼不正確。",
+    "error_email_not_confirmed": "你的帳號尚未驗證,請點擊電子郵件中收到的連結。",
+    "error_weak_password": "此密碼強度太弱,請選擇更長的密碼。",
+    "error_user_already_exists": "此電子郵件地址已註冊帳號。",
+    "error_signups_disabled": "註冊功能暫時關閉。",
+    "error_database_error": "帳號建立時我們這邊發生錯誤。請稍後再試;若問題持續,請聯絡我們。",
+    "error_captcha_failed": "機器人驗證失敗或已過期,請重新載入頁面後再試。",
+    "faction_see_cards": "決定前先查看{faction}的卡牌 →",
+    "faction_browse": "猶豫不決嗎?來看看每個陣營及其卡牌 →"
+  },
+  "common": {
+    "brand": "傳奇軍團",
+    "settings_title": "設定",
+    "music": "音樂",
+    "sound_effects": "音效",
+    "muted": "靜音",
+    "active": "開啟",
+    "concede_match": "認輸",
+    "concede_confirm": "⚠ 確認認輸",
+    "concede_hint": "再次點擊以確認 · 5 秒後自動取消",
+    "notifications": "通知",
+    "mark_all_read": "全部標示為已讀",
+    "no_notifications": "沒有通知",
+    "see_auction": "查看拍賣",
+    "rotate_device": "請旋轉你的手機",
+    "rotate_device_hint": "傳奇軍團 需以橫向模式進行遊戲。請將裝置橫放以繼續。"
+  },
+  "forge": {
+    "forge_first_card": "鍛造你的第一張卡牌",
+    "forging": "鍛造中…",
+    "mana_cost_title": "法力費用:{mana}",
+    "life_cost_title": "生命代價：{life}",
+    "discard_cost_title": "棄置 {count, plural, one {# 張牌} other {# 張牌}}",
+    "sacrifice_cost_title": "獻祭 {count, plural, one {# 個生物} other {# 個生物}}",
+    "exile_cost_title": "放逐牌組頂端的 {count, plural, one {# 張牌} other {# 張牌}}",
+    "topdeck_cost_title": "將手牌中的 {count, plural, one {# 張牌} other {# 張牌}}回置到牌組頂端",
+    "detail_note_all_allies": "（對所有友軍）",
+    "detail_note_target": "（對被指定的生物）",
+    "trigger_on_play": "進場時",
+    "trigger_on_death": "死亡時",
+    "trigger_on_return": "返回手牌時",
+    "trigger_on_activation": "可啟動能力（橫置）",
+    "trigger_on_attack": "攻擊時",
+    "trigger_on_end_of_turn": "回合結束時",
+    "trigger_on_end_of_turn_in_hand": "回合結束時，若在手牌中",
+    "trigger_on_start_of_turn": "回合開始時",
+    "trigger_on_start_of_turn_in_hand": "回合開始時，若在手牌中",
+    "trigger_on_draw": "此牌被抽到時",
+    "trigger_on_low_hp": "生命值低於 15 時",
+    "trigger_on_wound": "受傷（承受傷害但未死亡）",
+    "trigger_spell_resolution": "結算時",
+    "composed_effects_heading": "複合效果（進階）",
+    "composed_effects_subtitle": "內容 + 幅度 + 目標",
+    "composed_effect_n": "複合效果 {n}",
+    "token_composed_hint": "衍生物不是透過打出而進場：「進場時」永遠不會觸發，因此不提供此選項。",
+    "remove": "移除",
+    "label_trigger": "觸發條件",
+    "singulier_toggle": "獨一無二",
+    "singulier_toggle_title": "「獨一無二」條件：僅當玩家的起始牌組中沒有任何重複的牌時，此能力才會觸發。",
+    "label_emblem": "徽記",
+    "emblem_permanent": "對玩家施加的永久效果",
+    "emblem_trigger_note": "於此牌進場時施加；觸發條件決定其後對何者產生反應",
+    "label_emblem_side": "施加於",
+    "emblem_side_self": "我方",
+    "emblem_side_opponent": "對手",
+    "label_emblem_duration": "持續時間",
+    "emblem_duration_turns": "回合",
+    "emblem_duration_permanent": "永久",
+    "emblem_repeat_warning": "此觸發條件會重複觸發：徽記每次都會疊加，疊加 N 層的複合徽記會結算 N 次。",
+    "label_content": "內容",
+    "label_target_scope": "範圍",
+    "label_neutralised_ability": "被中和的能力",
+    "neutralisation_hint": "只要持有者在場,目標敵方單位(若範圍為「所有敵方」,則為全部敵方單位)的此能力將被封印。",
+    "target_scope_target": "目標",
+    "target_scope_self": "自身",
+    "target_scope_all_enemies": "所有敵方",
+    "target_scope_all_allies": "所有友方",
+    "target_scope_all": "全部(雙方)",
+    "target_scope_hint_all_enemies": "攻擊所有敵方單位,而非所選目標(不含英雄與物品)。",
+    "target_scope_hint_all_allies": "攻擊所有友方單位,而非所選目標(不含英雄與物品)。",
+    "target_scope_hint_all": "攻擊雙方所有單位,而非所選目標(不含英雄與物品)。",
+    "content_deal_damage": "造成傷害",
+    "content_siphon": "虹吸 X(傷害+治療英雄)",
+    "content_domination": "支配(奪取控制權)",
+    "content_heal": "治療",
+    "content_buff": "增益 +X/+Y",
+    "content_usurpation": "篡奪 +X/+Y(每當對手打出一張牌)",
+    "content_debuff": "減益 -X/-Y",
+    "content_destroy": "摧毀",
+    "content_bounce": "返回手牌",
+    "content_paralyze": "麻痺",
+    "content_poison": "中毒(每回合 −1 生命)",
+    "content_malediction": "詛咒(於對手下個回合結束時放逐)",
+    "content_neutralise": "中和(麻痺,能力無效)",
+    "invocation_costs_label": "召喚費用",
+    "invocation_costs_hint": "每列出一項費用,便會從你的收藏中隨機召喚一個生物。",
+    "add_invocation": "+ 召喚",
+    "invocation_pool_label": "召喚池",
+    "invocation_pool_any_race": "— 任意種族 —",
+    "invocation_pool_any_faction": "— 任意陣營 —",
+    "invocation_pool_hint": "每列出一項費用,便會隨機召喚一個生物。若未指定種族或陣營,召喚池將依卡牌的屬性傾向而定。",
+    "content_grant_keyword": "賦予能力",
+    "content_draw_cards": "抽牌",
+    "content_discard": "棄牌(對手)",
+    "content_summon_token": "召喚衍生物",
+    "content_gain_mana": "獲得法力",
+    "content_exhumation": "復活(墓地)",
+    "content_rappel": "召回(墓地→手牌)",
+    "label_card_kind": "目標卡牌",
+    "card_kind_all": "全部",
+    "card_kind_creature": "僅限單位",
+    "card_kind_spell": "僅限行動",
+    "legacy_grants_heading": "繼承的賦予效果(舊格式)——請先轉換,才能以對手為目標",
+    "convert_to_composed": "轉換",
+    "effects_heading": "卡牌效果",
+    "effects_subtitle": "該行動的所有效果,集中於同一份清單",
+    "effect_kind_curated": "機制",
+    "group_composed": "可調參數效果",
+    "group_curated": "特殊機制",
+    "content_invocation": "召喚(隨機生物)",
+    "pool_hint_invocation": "篩選條件會疊加。若無篩選,卡池將依卡牌的陣營傾向決定;召喚的費用恰好為 X。",
+    "label_designated_card": "指定卡牌",
+    "designated_card_hint": "指定一隻或多隻生物:它們會依此順序原樣被召喚(同一張卡可重複指定)。若未指定,則依篩選條件隨機抽取費用為 X 的生物。",
+    "tuteur_card_hint": "指定一張或多張卡牌(生物或行動):它們會依此順序加入你的手牌。同一張卡可重複指定(加入相應數量的複本)。若未指定,此效果不會產生任何作用。",
+    "content_selection": "選擇(三選一)",
+    "content_faveur": "恩惠(隨機 1 張卡牌 → 手牌)",
+    "content_renfort_royal": "王家選擇(三選一)",
+    "content_tresor": "寶藏(三選一物品)",
+    "label_pool_membership": "卡池——所屬",
+    "label_pool_faction": "卡池——派系",
+    "label_pool_min_cost": "卡池——最低費用",
+    "label_pool_keyword": "卡池——擁有關鍵字",
+    "label_pool_card_type": "卡池——卡牌類型",
+    "pool_type_creature": "單位",
+    "pool_type_spell": "行動",
+    "pool_type_item": "物品",
+    "draw_items_only": "僅限牌組中的物品",
+    "pool_any": "不限",
+    "pool_hint": "篩選條件會疊加,並適用於基本規則之外(普通、費用 ≤ X、卡牌的陣營傾向)。",
+    "pool_hint_discard": "篩選條件會疊加。對手會從手牌中符合條件的卡牌隨機棄置(0 = 不限費用);若符合的卡牌少於 X 張,則只棄置這些卡牌。",
+    "pool_hint_draw": "篩選條件會疊加。依牌組順序抽取符合條件的前 X 張卡牌;其餘卡牌留在原位。",
+    "label_magnitude": "幅度",
+    "random_hint": "在 1 到 {max} 之間隨機抽取,結算時僅抽取一次。",
+    "move_earlier": "提前結算",
+    "move_later": "延後結算",
+    "random_needs_ceiling": "上限至少需為 2 才能隨機抽取。",
+    "label_granted_ability": "賦予的能力",
+    "label_grant_trigger": "賦予效果的觸發條件",
+    "label_token": "衍生物",
+    "label_targets": "目標",
+    "label_type": "類型",
+    "entity_unit": "單位",
+    "entity_item": "物品",
+    "entity_spell": "行動",
+    "entity_unit_or_item": "單位或物品",
+    "entity_hero": "英雄",
+    "entity_both": "兩者皆是(英雄 + 單位)",
+    "entity_self": "自身(該生物)",
+    "entity_damage_source": "傷害來源",
+    "label_side": "陣營",
+    "side_ally": "友方",
+    "side_enemy": "敵方",
+    "side_any": "不限",
+    "label_count": "數量",
+    "scatter_points_hint": "X({x})點隨機分配至目標池",
+    "scatter_passes_hint": "{n} 次可重複抽取 → 最多 {n} 個不同目標",
+    "count_all": "全部",
+    "label_location": "位置",
+    "location_board": "戰場",
+    "location_hand": "手牌",
+    "location_deck": "牌組",
+    "location_graveyard": "墓地",
+    "label_membership": "所屬",
+    "label_target_keyword": "所持關鍵字",
+    "label_max_cost": "最大費用",
+    "max_cost_any": "— 不限 —",
+    "label_designation": "指定方式",
+    "designation_choice": "自行選擇",
+    "designation_random": "隨機",
+    "designation_scatter": "隨機分配(可重複)",
+    "designation_automatic": "自動",
+    "add_composed_effect": "+ 新增複合效果",
+    "tab_forge": "鍛造",
+    "tab_capacities": "能力",
+    "tab_edition": "編輯",
+    "tab_tokens": "衍生物",
+    "tab_card_backs": "牌背",
+    "tab_boards": "戰場版面",
+    "tab_icons": "圖示",
+    "tab_sets": "系列",
+    "tab_formats": "賽制",
+    "tab_bulk": "輔助創作",
+    "tab_budget": "預算",
+    "tab_schema": "架構",
+    "tab_prints": "系列",
+    "tab_news": "最新消息",
+    "menu": "選單",
+    "collections": "收藏",
+    "section_faction": "陣營",
+    "section_race": "種族",
+    "section_race2": "種族 2(雙種族單位)",
+    "main_races": "主要種族",
+    "all_races": "所有種族",
+    "section_clan": "氏族",
+    "section_alignment": "屬性傾向",
+    "section_type": "類型",
+    "section_rarity": "稀有度",
+    "section_set_year": "系列 / 年份",
+    "no_set": "— 無系列 —",
+    "or_month_year": "或 月/年:",
+    "month": "月",
+    "year_placeholder": "例如:2026",
+    "section_mode": "模式",
+    "mode_auto": "自動",
+    "mode_manual": "手動",
+    "forging_caps": "鍛造中…",
+    "forge_button": "鍛造",
+    "create_button": "創建",
+    "reset_button": "重置",
+    "summon_sound": "召喚音效",
+    "death_sound": "死亡音效",
+    "exile_sound": "放逐費用音效",
+    "reroll": "重新隨機",
+    "new_card": "新卡牌",
+    "illustration_prompt_label": "插圖提示詞",
+    "reference": "參考",
+    "no_reference": "無參考",
+    "reference_image_optional": "參考圖片(選填)",
+    "reference_image_hint": "用於啟發姿勢/構圖/氛圍。提示詞的風格仍然優先。",
+    "replace": "替換",
+    "choose_image": "選擇圖片",
+    "remove_image": "移除",
+    "copy": "複製",
+    "reset_short": "重置",
+    "generating": "生成中…",
+    "illustrate": "繪製插圖",
+    "image_model_auto": "模型:自動",
+    "image_model_hint": "指定圖像模型以比較兩種成果。「自動」會由既有的串接流程自行選擇。指定的模型不會退回使用其他模型:失敗時將如實回報。",
+    "history": "歷史紀錄",
+    "no_card": "無卡牌",
+    "edition_label": "版本",
+    "name_label": "名稱",
+    "card_name_placeholder": "卡牌名稱",
+    "name_taken": "此名稱已被「{name}」(id {id})使用。儲存時將要求確認。",
+    "mana_label": "法力",
+    "power_label": "力量",
+    "life_cost_hint": "英雄在召喚時支付的生命值。若總和將使生命值降至 0,則此卡牌無法打出。",
+    "life_label": "生命",
+    "discard_cost_hint": "玩家為打出此卡牌必須從手牌中棄掉的卡牌數量。",
+    "discard_label": "棄牌",
+    "sacrifice_cost_hint": "玩家為打出此卡牌必須犧牲的友方生物數量。",
+    "exile_cost_hint": "從玩家牌庫頂移除的卡牌數量。這些卡牌會被放逐:不會進入墓地,且無法回收。",
+    "topdeck_cost_hint": "玩家從手牌放回牌庫頂的卡牌數量。這些卡牌不會進入墓地:之後會再次抽到。屬於節奏成本,無法減免。",
+    "equip_label": "裝備",
+    "equip_cost_hint": "物品 — 將物品裝備到友方生物上所需的法力費用。每次裝備都需支付,包括轉移裝備。0 = 免費。",
+    "item_trigger_bearer": "(持有者)",
+    "sacrifice_label": "犧牲",
+    "exile_label": "放逐",
+    "topdeck_label": "回置",
+    "retreat_cost_hint": "玩家從戰場收回手牌的友方生物數量。它們會保留永久加成,並觸發返回時的效果。屬於節奏成本,無法減免。",
+    "retreat_label": "撤退",
+    "spell_effects_label": "行動效果",
+    "spell_keywords_label": "行動關鍵字",
+    "token_to_summon": "要召喚的衍生物",
+    "config_below_tokens": "請於下方「要召喚的衍生物」中設定",
+    "targeted_race": "目標種族",
+    "required": "必填",
+    "choose_race": "-- 選擇種族 --",
+    "tokens_to_summon": "要召喚的衍生物",
+    "override_label": "覆寫:",
+    "atk_override": "攻擊力(覆寫)",
+    "def_override": "DEF（覆寫）",
+    "add_token": "+ 新增代幣",
+    "composable_effects_advanced": "舊版 JSON 格式（已淘汰）",
+    "json_hint": "已淘汰：引擎僅會在舊卡牌的「重新擲骰」中讀取此項。若要組合效果，請使用下方的「複合效果」。",
+    "abilities_count": "能力（{count}）",
+    "conferred_abilities_toggle": "賦予生物的能力（{count}）",
+    "conferred_abilities_hint": "於打出行動時賦予生物（綠色 = 所有友軍，灰色 = 指定生物）",
+    "mode_title_play": "召喚時（預設）",
+    "mode_title_death": "死亡時（亡語）",
+    "mode_title_tap": "橫置啟動（啟動）",
+    "mode_title_return": "返回手牌時",
+    "mode_title_attack": "攻擊時",
+    "mode_title_end_of_turn": "回合結束時",
+    "mode_title_start_of_turn": "回合開始時（抽牌後）",
+    "mode_title_draw": "當此牌被抽到時",
+    "mode_title_low_hp": "當你的英雄生命值降到 15 以下時（僅限一次）",
+    "mode_title_wound": "受傷：受到傷害但未死亡時（每個來源每回合一次）",
+    "grant_scope_target": "賦予指定的生物",
+    "grant_scope_all_allies": "賦予所有友方單位",
+    "required_caps": "必需",
+    "transformation_token": "轉化代幣",
+    "target_race_label": "目標種族",
+    "required_caps_f": "必需",
+    "neg_atk_is_x": "（-ATK = X 值）",
+    "spell_cost_y": "行動費用 (Y)",
+    "spell_count_is_x": "（行動數量 = X 值）",
+    "fda_condition": "（墓地中有 ≥7 隻生物）",
+    "choose_ability": "-- 選擇能力 --",
+    "scope_one_ally": "1 個指定友軍",
+    "scope_all_allies": "所有友軍",
+    "replayed_triggers": "重複觸發",
+    "required_m": "必需",
+    "trigger_short_on_play": "進場",
+    "trigger_short_on_death": "死亡",
+    "trigger_short_end_of_turn": "回合結束",
+    "trigger_short_on_return": "返回手牌",
+    "tier_label": "階級：",
+    "cost_label": "費用：",
+    "points_value": "{pts} 點",
+    "specific_power_label": "專屬能力",
+    "specific_power_placeholder": "特殊能力的文字…",
+    "flavor_text_label": "氛圍文字",
+    "flavor_text_placeholder": "敘事引文…",
+    "extra_context_label": "補充背景（選填）",
+    "extra_context_placeholder": "例：手持燃燒之劍、眼神威嚇、背影、赤紅迷霧、金色盔甲…",
+    "illustration_prompt_label2": "插畫提示詞",
+    "api_error": "API 錯誤（{status}）：{detail}",
+    "see_console": "請見主控台",
+    "ai_no_prompt": "AI 未回傳提示詞——請檢查 ANTHROPIC_API_KEY 與伺服器日誌",
+    "illustration_prompt_generated": "插畫提示詞已生成",
+    "network_error": "網路錯誤",
+    "generate_by_ai": "以 AI 生成",
+    "english_prompt_placeholder": "輸入英文提示詞以生成圖像…",
+    "trigger_tap_activation": "啟動時（橫置）",
+    "trigger_automatic": "自動（被動／條件）",
+    "trigger_spell_resolution_full": "行動結算時",
+    "container_label": "容器：",
+    "derived_from_type": "（由卡牌類型推得）",
+    "no_ability_add_below": "沒有能力。請於下方新增。",
+    "effect_type_label": "效果類型",
+    "immediate_effect": "立即效果",
+    "effect_label": "效果",
+    "x_value_title": "X 值",
+    "targets_label2": "目標",
+    "one_target": "1 個目標",
+    "neg_atk_equals_x": "（-ATK = X）",
+    "on_self": "（對自身）",
+    "add_ability": "＋ 新增能力：",
+    "choose_dash": "-- 請選擇 --",
+    "no_ability_add_effect": "沒有能力。請於下方新增效果或要賦予的能力。",
+    "race_label": "種族",
+    "race_dash": "-- 種族 --",
+    "confer_prefix": "賦予：",
+    "confer_ability_to_unit": "賦予單位一項能力",
+    "scope_label": "範圍",
+    "all_allied_units": "所有友方單位",
+    "one_allied_unit": "1 個友方單位",
+    "add_effect": "＋ 效果：",
+    "spell_effect_dash": "-- 行動效果 --",
+    "add_confer": "＋ 賦予：",
+    "ability_to_confer_dash": "-- 要賦予的能力 --",
+    "save": "儲存",
+    "generate_to_save": "請先在 ⚒ 鍛造 中生成/輸入一張卡牌,才能儲存。",
+    "token_templates_title": "衍生物範本",
+    "edit_template": "編輯範本",
+    "new_template": "新增範本",
+    "faction_optional": "陣營(選填)",
+    "deduced_from_race": "-- 由種族推定 --",
+    "choose_dash_cap": "-- 請選擇 --",
+    "clan_optional": "氏族(選填)",
+    "no_clan_available": "無可用氏族",
+    "none_dash": "-- 無 --",
+    "token_name_label": "衍生物名稱",
+    "token_name_placeholder": "例如:精靈新兵",
+    "default_attack": "預設攻擊力",
+    "default_defense": "預設防禦力",
+    "token_abilities": "衍生物能力",
+    "image_prompt_label": "圖像提示詞",
+    "auto_prompt_placeholder": "點擊「自動提示詞」生成,或自行輸入...",
+    "auto_prompt": "自動提示詞",
+    "generate_image": "生成圖像",
+    "or_upload_image": "或上傳圖片",
+    "preview": "預覽",
+    "saving": "儲存中...",
+    "update": "更新",
+    "create2": "建立",
+    "cancel": "取消",
+    "existing_templates": "現有範本({count})",
+    "load_refresh": "載入/重新整理",
+    "no_template": "尚無範本 — 請點擊載入",
+    "edit": "編輯",
+    "generate_card_back_title": "生成卡背",
+    "metadata": "中繼資料",
+    "card_back_name_placeholder": "例如:古林守護者",
+    "faction_label": "陣營",
+    "none_dash_f": "-- 無 --",
+    "clan_label": "氏族",
+    "rarity_label": "稀有度",
+    "copies_label": "張數",
+    "default_checkbox": "預設",
+    "frame_label": "邊框",
+    "frame_hint": "邊框會在生成後套用。AI 可專注於插畫本身，無需繪製任何邊框。",
+    "generation_mode": "生成模式",
+    "one_variant": "1 個變體",
+    "three_variants": "3 個變體",
+    "extra_instructions": "補充指示",
+    "card_back_instructions_placeholder": "例如：金色符文、羽毛、拋光鏡面、盤繞的巨龍…",
+    "reference_image_hint2": "作為視覺靈感參考（主題／色調／氛圍）。提示詞中的規則仍具優先權。",
+    "manual_upload": "手動上傳",
+    "variants_count": "變體（已選 {selected} / {total}）",
+    "variant_n": "變體 {n}",
+    "card_back_preview": "卡背預覽",
+    "saving2": "儲存中…",
+    "save_n_backs": "儲存 {n} 個卡背",
+    "save_back": "儲存卡背",
+    "generate_board_title": "生成遊戲戰場",
+    "board_name_placeholder": "例如：沉睡之龍酒館",
+    "composition_style": "構圖風格",
+    "board_style_surface": "僅呈現鋪滿整個畫面的地形（草地、積雪、沙地、石地…）。無裝飾、無邊框，最適合純氛圍呈現。",
+    "board_style_minimal": "戰場中央留空（平坦表面），裝飾置於邊緣。專為 3D 人偶設計。",
+    "board_style_mtgo": "MTG Arena 構圖：中央簡潔，裝飾僅限於兩側面板。遊戲中：左側為可點擊的大型墳場圖塊，右側為英雄＋牌組＋法力＋生命值（對手為對稱反轉）。自動啟用 MTGO 版面。",
+    "board_style_hearthstone": "Hearthstone 構圖：處處皆有主題道具，中央配有華麗分隔線。",
+    "graveyard_image_optional": "墳場圖片（選填）",
+    "graveyard": "墳場",
+    "graveyard_image_hint": "此圖片將作為可點擊的墳場圖塊顯示。若未提供圖片，將顯示預設的棺材。",
+    "environment_label": "環境",
+    "race_optional": "種族（選填）",
+    "default_board_hint": "預設戰場（牌組未指定時使用）",
+    "extra_instructions_optional": "補充指示（選填）",
+    "board_instructions_placeholder": "例如：賽博龐克氛圍，紫色霓虹燈、傾盆大雨、金屬地面的倒影…",
+    "board_instructions_hint": "填寫後將取代提示詞中的主題／環境區塊。構圖規則（Hearthstone、16:9、對稱、邊框）仍一律套用。",
+    "reference_image_hint3": "作為視覺靈感參考（主題／色調／氛圍）。構圖規則仍具優先權。",
+    "rerun_variants": "重新生成 {n} 個變體",
+    "generate_variants": "生成 {n} 個變體",
+    "or": "或",
+    "import_image": "匯入圖片",
+    "preview_caps": "預覽",
+    "variants_check_hint": "變體（點擊以勾選，可複選）",
+    "save_board": "儲存戰場",
+    "save_n_boards": "儲存所選的 {n} 個戰場",
+    "generate_ability_icon_title": "生成能力圖示",
+    "parameters": "參數",
+    "ability_label": "能力",
+    "ability_polymorph": "🔀 多態能力——圖示將同時儲存給生物與行動。",
+    "ability_creature": "👤 生物能力。",
+    "ability_spell": "🪄 行動能力。",
+    "ability_legend": "👤 生物 · 🪄 行動 · 🔀 共用",
+    "icon_name_label": "圖示名稱",
+    "icon_name_placeholder": "例如:盾牌 v2",
+    "style_label": "風格",
+    "style_white": "純白",
+    "style_grey": "純灰",
+    "style_colored": "彩色",
+    "style_sculpture": "雕塑",
+    "icon_instructions_placeholder": "例如:優先採用閃電、風格化骷髏……",
+    "reference_image_hint4": "僅作為主題的視覺靈感;所有風格限制(背景、輪廓、色盤等)均予保留。",
+    "rerun_3_variants": "重新生成 3 個變體",
+    "generate_3_variants": "生成 3 個變體",
+    "variants_check_save_hint": "變體(點擊勾選要儲存的項目——可複選)",
+    "save_variant": "儲存所選變體",
+    "save_n_variants": "儲存所選的 {n} 個變體",
+    "gallery": "圖庫",
+    "all_abilities": "所有能力",
+    "refresh": "重新整理",
+    "no_icon": "沒有圖示。請先在上方生成一個。",
+    "active": "已啟用",
+    "activate": "啟用",
+    "create_set": "建立系列",
+    "set_name_placeholder": "名稱(例如:基礎系列)",
+    "set_code_placeholder": "代碼(例如:BASE)",
+    "icon_placeholder": "圖示",
+    "release_date": "發行日期",
+    "set_icon_import": "匯入圖示",
+    "set_icon_change": "更換",
+    "set_icon_clear": "移除已匯入的圖示",
+    "set_type_base": "基礎系列",
+    "set_type_special": "特殊",
+    "set_type_hint": "特殊系列仍可遊玩與收藏,但其卡牌不會出現在隨機或半隨機抽取中(選擇、召喚、釋放、專注、儲蓄)。",
+    "existing_sets": "現有系列({count})",
+    "no_set_created": "尚未建立系列",
+    "error": "錯誤",
+    "no_format_found": "找不到任何賽制。請確認「formats」資料表已建立並已填入資料。",
+    "active_m": "啟用中",
+    "inactive": "未啟用",
+    "all_random": "所有參數隨機",
+    "launch": "啟動",
+    "budget_system_reference": "預算系統 — 參考",
+    "cost_credit": "額外費用返還 {points} 點",
+    "cost_credit_title": "除法力值外額外支付的費用會減輕卡牌的負擔:它會為其餘部分提供資金。覺醒不計入——它是替代費用,會取代法力值。",
+    "panel_mana_rarity": "依法力費用的稀有度分佈(大量模式)",
+    "mana_th": "法力",
+    "panel_rarity_multipliers": "稀有度倍率",
+    "panel_stat_costs": "屬性費用",
+    "atk_cost_desc": "每點 2.5 點數",
+    "def_cost_desc": "每點 2.0 點數",
+    "budget_algo_desc": "演算法會先分配攻擊力(剩餘預算的 45%),再分配防禦力(55%),然後嘗試新增能力,直到預算用盡。陣營倍率(ATK weight、DEF weight)會改變抽取範圍。",
+    "panel_ability_costs": "能力費用",
+    "panel_faction_profiles": "陣營設定檔",
+    "guaranteed_label": "保證:",
+    "forbidden_label": "禁止:",
+    "card_schema_label": "卡牌結構 — JSON",
+    "limited_series_assignment": "限定系列 — 分配",
+    "no_dated_card": "資料庫中沒有帶日期的鍛造卡牌。",
+    "search_placeholder": "搜尋...",
+    "select_card_for_copies": "選擇一張卡牌以查看其副本",
+    "loading": "載入中...",
+    "prints_summary": "{rarity} — 共 {total} 張 — 已分配 {assigned} 張,可用 {available} 張",
+    "owner_th": "擁有者",
+    "tradeable_th": "可交易",
+    "actions_th": "操作",
+    "available_dash": "— 可用 —",
+    "yes": "是",
+    "no": "否",
+    "unassign": "移除",
+    "assign_to": "分配給...",
+    "cannot_read_ref_image": "無法讀取參考圖片。",
+    "cannot_load_image": "無法載入圖片。",
+    "variants_failed": "{n} 個變體失敗。",
+    "confirm_delete_icon": "要刪除圖示「{name}」嗎?",
+    "icon_saved": "圖示「{name}」已儲存。",
+    "icons_saved_partial": "已儲存 {ok} 個圖示,但其餘發生錯誤:{error}",
+    "backs_saved": "已儲存 {n} 個牌背。",
+    "back_saved": "牌背「{name}」已儲存。",
+    "backs_saved_partial": "已儲存 {ok} 個牌背,但其餘發生錯誤:{error}",
+    "image_imported": "圖片已匯入,可供儲存。",
+    "cannot_read_imported_image": "無法讀取匯入的圖片。",
+    "boards_saved": "已儲存 {n} 個戰場。",
+    "board_saved_named": "戰場「{name}」已儲存。",
+    "boards_saved_partial": "已儲存 {ok} 個戰場,但其餘發生錯誤:{error}",
+    "image_generated": "圖片已生成({model})",
+    "generation_error": "生成錯誤",
+    "server_error": "伺服器錯誤",
+    "image_generation_error": "圖片生成錯誤",
+    "template_updated": "範本已更新",
+    "template_created": "範本已建立",
+    "validation_convocation_x": "召喚 X:儲存前請在選擇器中選取一個衍生物。",
+    "validation_convocation": "召喚:儲存前請在選擇器中選取一個衍生物。",
+    "validation_multi_convocation": "多重召喚:儲存前請在清單中至少新增一個衍生物。",
+    "validation_lycanthropie": "獸化症 X:儲存前請選取一個變身衍生物。",
+    "validation_entraide": "互助(種族):儲存前請選取目標種族。",
+    "validation_appel_supreme": "至高召喚:儲存前請選取目標種族。",
+    "validation_multi_convocation_spell": "多重召喚(行動):儲存前請在清單中至少新增一個衍生物。",
+    "validation_convocation_spell": "召喚(行動):儲存前請在選擇器中選取一個衍生物。",
+    "card_added": "「{name}」已新增!",
+    "unknown_error": "未知錯誤",
+    "illustration_generated": "插圖已生成({model})",
+    "import_error": "匯入錯誤",
+    "eveil_label": "覺醒",
+    "eveil_cost_hint": "覺醒:此牌可以進入覺醒狀態,以取代打出。它會帶著此點數離開手牌;玩家每回合支付 1 點法力,在最後一點支付後,此牌如同從手牌打出般進入戰場。此費用取代法力費用,而非額外附加。不可減免。",
+    "eveil_cost_title": "可覺醒,需 {count, plural, one {# 點} other {# 點}},每回合支付 1 點法力——取代法力費用",
+    "label_occurrences": "次數",
+    "occurrences_hint": "1 = 僅一次。超過 1 時,內容會連續重複執行(最多 10 次)。",
+    "alternative_toggle": "或",
+    "alternative_toggle_title": "此效果成為此牌選項的其中一個分支:玩家只會從所有勾選的分支中結算其中「一個」。",
+    "alternative_warn_alone": "僅勾選一個分支:效果將正常結算",
+    "alternative_warn_triggers": "分支位於不同的觸發條件:它們並不互斥",
+    "random_hint_selection": "每張揭示的牌各自抽取「自己的」費用,範圍為 1 到 {max}。未勾選此選項時,三者皆恰為 {max}。",
+    "random_min_hint": "最小費用(A):每個費用在 {min} 與 {max} 之間抽取。",
+    "cost_optional_hint": "留空表示任何費用。",
+    "cost_any_label": "任何費用",
+    "cost_any_toggle": "任意費用（再次點擊可恢復為 X = 1）",
+    "random_hint_faveur": "贈送的卡牌費用在 1 到 {max} 之間隨機決定。未勾選時,費用恰好為 {max}。",
+    "content_appel": "從牌組召喚",
+    "content_appel_supreme": "至高召喚（牌組 → 手牌,費用最高者）",
+    "content_tuteur": "搜尋（指定卡牌 → 手牌）",
+    "content_transformation": "變身為指定卡牌",
+    "content_forge": "鍛造（將 1 張物品洗入牌組）",
+    "forge_min_hint": "鍛造物品的最低費用（下限 A）。最高費用為 X；X 留空 = 不限費用。",
+    "transformation_card_hint": "每個目標單位都會變成這張卡牌；若有多張卡牌，各單位會隨機抽取其一。離開戰場時會恢復原本的樣貌。",
+    "content_epargne": "儲蓄（計數器）",
+    "content_foi": "信仰（計數器）",
+    "content_conquete": "征服（計數器）",
+    "content_exploration": "探索（計數器,抽 3 張）",
+    "content_incineration": "焚化（回收墓地）",
+    "content_devoration": "吞噬（摧毀並吸收）",
+    "content_tactique": "戰術（隨機能力,相同費用）",
+    "content_retour_differe": "延遲回歸（置於牌組底）",
+    "content_silence": "沉默（清除目標的一切）",
+    "content_dechainement": "狂暴 X/Y（隨機行動）",
+    "content_selection_magique": "魔法精選（3 選 1 行動）",
+    "tab_style_guides": "規範",
+    "mode_title_delay": "延遲 X：僅一次,於後續第 X 個回合開始時,若該單位仍在場上",
+    "trigger_on_delay": "延遲 X（後續第 X 個回合開始時）",
+    "retard_turns_title": "延遲：觸發前的回合數",
+    "retard_spell_title": "延遲：效果於施放者後續第 X 個回合開始時觸發,屆時才選擇目標",
+    "label_retard": "延遲",
+    "trigger_on_end_of_turn_in_graveyard": "回合結束時,若其在墓地中",
+    "content_enterrement": "埋葬（牌組 → 墓地,可篩選）"
+  },
+  "game": {
+    "hero_power_grant": "賦予一隻生物{kw}",
+    "hero_power_emblem": "徽記：{kw}",
+    "hero_power_counter": "為{compteur}計數器增加 {x}",
+    "hero_power_machine": "為你的機械增加 +{x}/+{y}",
+    "error_not_authenticated": "未通過驗證",
+    "error_match_not_found": "找不到對戰",
+    "error_load_failed": "對戰載入失敗",
+    "loading": "正在載入對戰…",
+    "waiting_opponent": "等待對手中…",
+    "return_to_menu": "返回選單",
+    "persist_warning": "有一項行動未能儲存，可能會造成不同步。請重新載入頁面以重新同步。",
+    "reload": "重新載入",
+    "close": "關閉",
+    "settings": "設定",
+    "choose_card": "選擇一張卡牌",
+    "attack_choice_target": "⚔️ {label} — 選擇目標",
+    "attack_power_label": "攻擊力",
+    "opponent_choosing": "⏳ 對手正在做出選擇…",
+    "no_creatures": "沒有生物",
+    "drag_hint": "將卡牌拖曳至此處即可打出",
+    "drop_hint": "放開即可打出生物",
+    "cancel_targeting": "取消指定目標",
+    "action_cancel": "取消",
+    "action_confirm": "確認",
+    "action_close": "關閉",
+    "card_count": "{count, plural, one {# 張卡牌} other {# 張卡牌}}",
+    "selection_title": "🎴 選擇",
+    "selection_subtitle": "選擇一張卡牌加入你的手牌",
+    "discovery_title": "🔭 發現",
+    "discovery_subtitle": "本回合的抽牌:請選擇一張卡牌",
+    "discovery_other_clan": "其他氏族",
+    "discovery_other_faction": "其他陣營",
+    "power_hero_activated": "英雄能力已發動",
+    "power_used_this_turn": "本回合已使用",
+    "power_hero_label": "英雄能力",
+    "power_cost_label": "費用:",
+    "power_mana_unit": "法力",
+    "power_mode_grant_keyword": "賦予能力",
+    "power_mode_spell_trigger": "一次性效果",
+    "power_mode_aura": "持續光環",
+    "power_mode_active": "啟用中",
+    "power_no_description": "無說明。",
+    "power_activations_unlimited": "發動次數:無限制",
+    "power_activations_used": "發動次數:{used} / {limit}",
+    "power_usage_limit": "上限:最多 {limit} 次",
+    "hero_starting_hp": "初始生命值 {hp}",
+    "power_close_hint": "按 Esc 或點擊區域外即可關閉",
+    "divination_traque_title": "🔮 命運追尋",
+    "divination_title": "🔍 占卜",
+    "divination_traque_subtitle": "選擇一張加入手牌,其餘的將放到牌組底部。",
+    "divination_subtitle": "選擇一張卡牌放到你的牌組頂端",
+    "graveyard_select_prompt": "選擇墓地中的一張卡牌",
+    "graveyard_hint_touch": "點擊卡牌可放大 · 再點一次可查看說明",
+    "graveyard_hint_hover": "將游標移到卡牌上可放大 · 按右鍵可切換圖片／說明",
+    "seconde_vie_hint": "第二生命:雙擊符合條件的卡牌。",
+    "seconde_vie_blocked_turn": "現在不是你的回合。",
+    "graveyard_empty": "墓地中沒有卡牌",
+    "cost_default_card_name": "卡牌",
+    "cost_pay_title": "支付{name}的費用",
+    "cost_discard_label": "🃏 {count, plural, other {棄置 # 張卡牌}}",
+    "cost_topdeck_label": "{count, plural, other {回置 # 張卡牌至牌庫頂}}",
+    "cost_retreat_label": "{count, plural, other {將 # 個生物收回手牌}}",
+    "cost_topdeck_order_hint": "第一張指定的卡牌最後會位於牌庫頂。",
+    "cost_hand_order_hint": "你的點擊會先填滿棄牌,再填滿回置。",
+    "topdeck_cost_caption": "{count, plural, one {回置} other {回置 ×#}}",
+    "cost_sacrifice_label": "☠ {count, plural, other {犧牲 # 個生物}}",
+    "convocation_title": "📣 召集",
+    "convocation_subtitle": "選擇要召喚的衍生物種族",
+    "cycle_eternel_caption": "♻ 永恆循環",
+    "compagnons_caption": "🐾 夥伴",
+    "discard_label": "🔥 {count, plural, other {棄牌 — # 張卡牌}}",
+    "graveyard_affect_label": "🪦 {count, plural, other {墓地 — # 張卡牌}}",
+    "zone_deck": "牌庫",
+    "zone_graveyard": "墓地",
+    "zone_deck_yours": "你的牌庫",
+    "zone_deck_opponent": "對手牌庫",
+    "zone_graveyard_yours": "你的墓地",
+    "zone_graveyard_opponent": "對手墓地",
+    "history_title": "最近行動",
+    "history_hero_friendly": "你的英雄",
+    "history_hero_enemy": "對手英雄",
+    "history_spell": "打出行動:{source}",
+    "history_spell_on": "打出行動:{source}(目標:{target})",
+    "history_spell_countered": "{source}被反制",
+    "history_attack": "{source}攻擊{target}",
+    "history_attack_alone": "{source}發動攻擊",
+    "history_death": "{source}被摧毀",
+    "history_bounce": "{source}被送回手牌",
+    "history_power": "{source}對{target}的能力",
+    "history_power_alone": "{source}的能力",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, other {# 點傷害}}",
+    "history_extra_targets": "{count, plural, other {另外 +# 個目標}}",
+    "history_expand": "{count, plural, other {查看前 # 個行動}}",
+    "history_collapse": "收合歷程",
+    "convocation_prefix": "創造 {content}",
+    "convocation_create_list": "創造 {content}",
+    "convocation_token_one_named": "一個{token}衍生物",
+    "convocation_token_many_named": "{count} 個{token}衍生物",
+    "convocation_invoke_one": "召喚一個 {atk}/{hp} 的{token}",
+    "convocation_invoke_race": "召喚一個 {atk}/{hp} 的{race}",
+    "convocation_create_one_named": "創造一個{token}衍生物",
+    "convocation_none": "無衍生物",
+    "convocation_and": "{a}與{b}",
+    "spell_countered": "🛡️ 行動被反制!",
+    "draw_trigger_self": "🃏 因你抽牌而觸發的效果",
+    "draw_trigger_opponent": "🃏 因對手抽牌而觸發的效果",
+    "faveur_self": "🎁 恩惠 — 已將卡牌加入你的手牌",
+    "faveur_opponent": "🎁 恩惠 — 已將卡牌加入對手的手牌",
+    "spell_grant_all_allies": " · 給予所有友軍",
+    "spell_grant_target": " · 給予目標生物",
+    "fire_breath_label": "火焰吐息",
+    "queue_eyebrow": "證明你的實力",
+    "queue_subtitle": "尋找對手並展開對戰",
+    "queue_heading": "開始遊戲",
+    "queue_select_deck_error": "請選擇一組牌組",
+    "queue_connection_error": "配對連線錯誤",
+    "queue_no_valid_deck": "你至少需要一組有效牌組(50 張卡牌)才能開始遊戲。",
+    "queue_create_deck": "建立牌組",
+    "queue_format_label": "賽制:",
+    "queue_select_deck_label": "選擇你的牌組:",
+    "queue_no_deck_for_format": "此賽制沒有可用牌組。請前往牌組編輯器建立一組。",
+    "queue_find_match": "尋找對戰",
+    "queue_back_to_menu": "返回選單",
+    "queue_searching": "正在尋找對手…",
+    "mode_suffix_death": " · 死亡時",
+    "mode_suffix_tap": " · 橫置",
+    "mode_suffix_return": " · 返回手牌",
+    "mode_suffix_end_of_turn": " · 回合結束",
+    "presage_title": "🌙 預兆",
+    "presage_subtitle": "你牌組的第一張牌是哪一張?",
+    "presage_hit": "猜對了 — 該牌加入你的手牌。",
+    "presage_miss": "沒猜中。正確的牌以綠色標示。",
+    "apprentissage_title": "📖 修習",
+    "apprentissage_subtitle": "這個生物該記住哪個行動?",
+    "foi_title": "✨ 信仰",
+    "foi_subtitle": "選擇一張牌加入手牌。其費用將從你的信仰中扣除,剩餘部分會保留。",
+    "conquete_title": "🚩 征服",
+    "conquete_subtitle": "對手牌組中的三張牌。選擇一張加入手牌:本局遊戲剩餘時間內它都屬於你。",
+    "zone_eveil": "覺醒",
+    "zone_eveil_yours": "你的覺醒",
+    "zone_eveil_opponent": "對手的覺醒",
+    "hand_show": "顯示手牌",
+    "eveil_hint": "每次點擊投入 1 點法力。投入最後一點時,這張牌會如同從你手中打出般進入戰場。",
+    "eveil_remaining": "{count, plural, one {還差 # 點} other {還差 # 點}}",
+    "eveil_next_point": "下一點需要 1 點法力。",
+    "eveil_next_arrives": "最後一點:這張牌進入戰場。",
+    "eveil_play_now": "使其進入戰場",
+    "eveil_blocked_mana": "法力不足。",
+    "eveil_blocked_board_plein": "你的戰場已滿。",
+    "eveil_blocked_vie": "你的生命值不足以支付其費用。",
+    "eveil_blocked_main": "手牌不足以支付其額外費用。",
+    "eveil_blocked_plateau": "可犧牲的生物不足。",
+    "eveil_blocked_deck": "你的牌組中可放逐的牌不足。",
+    "eveil_blocked_sans_cible": "此行動沒有有效目標。",
+    "eveil_suspend": "進入覺醒({count, plural, one {# 點} other {# 點}})",
+    "eveil_pay_n": "{count, plural, one {支付 #} other {支付 #}}",
+    "eveil_max": "最多 {count}",
+    "eveil_max_hint": "最後一點即為進入戰場:需另行支付,並選擇目標。",
+    "choix_ou_title": "⚖️ 二選一",
+    "synergie_title": "協同 — 選擇一項能力",
+    "synergie_subtitle": "每當所選能力觸發時,這個生物就會獲得加成,無論是在你這邊還是對手那邊。",
+    "synergie_search": "搜尋能力…",
+    "synergie_in_play": "場上已有",
+    "synergie_others": "其他能力",
+    "synergie_none": "沒有符合的能力。",
+    "choix_ou_subtitle": "這些效果中只會結算其中一個。",
+    "activation_menu_title": "要啟動哪個能力?",
+    "activation_learned": "施放 {name}",
+    "mutation_button": "突變",
+    "mutation_button_title": "突變:轉化這張牌(免費,僅限一次)",
+    "mutation_discover": "突變 — 發現 {n}/2",
+    "mutation_discover_subtitle": "選擇一張費用為 {x} 的普通生物",
+    "mutation_pick_ability": "突變 — 能力 {n}/2",
+    "mutation_pick_subtitle": "選擇這隻生物所傳承的能力",
+    "mutation_empty": "此費用下沒有可用的生物。",
+    "mutation_cancel": "取消",
+    "infestation_caption": "🪳 蟲害",
+    "infestation_eclosion_caption": "🪳 蟲害 — 孵化",
+    "enterrement_caption": "⚰ 掩埋"
+  },
+  "tutorial": {
+    "page_eyebrow": "學習決鬥的藝術",
+    "page_subtitle": "傳奇軍團 — 中世紀奇幻卡牌對決",
+    "page_title": "遊玩方式",
+    "track_beginner": "新手 — 完整指南",
+    "track_tcg": "TCG 玩家 — 重點速覽",
+    "track_factions": "陣營與氏族",
+    "goal_title": "遊戲目標",
+    "stat_hero_start": "初始英雄",
+    "stat_starting_hand": "起始手牌",
+    "stat_mana_growth": "法力(每回合增加)",
+    "stat_max_board": "場上生物上限",
+    "turn_title": "回合流程",
+    "turn_intro": "每個回合開始時,依序進行:",
+    "hand_title": "手牌與抽牌",
+    "creatures_title": "生物",
+    "spells_title": "行動",
+    "combat_title": "戰鬥",
+    "combat_see_full_list": "完整能力列表請見頁面底部。",
+    "hero_title": "英雄與其能力",
+    "alt_costs_title": "額外費用與覺醒",
+    "counters_title": "計數器:儲蓄、信仰與征服",
+    "singulier_title": "獨一無二:無重複牌組的獎勵",
+    "deck_title": "構築牌組",
+    "tcg_numbers_title": "關鍵數據",
+    "stat_hero_hp": "英雄生命值",
+    "stat_deck_exact": "卡牌數/牌組(精確)",
+    "stat_hand_range": "手牌(起始 → 上限)",
+    "stat_mana_per_turn": "法力(每回合 +1)",
+    "tcg_gameloop_title": "遊戲循環(AoL 特色)",
+    "tcg_deckbuilding_title": "牌組構築",
+    "tcg_combat_title": "戰鬥 — 結算",
+    "tcg_hero_spells_title": "英雄與行動",
+    "lexicon_eyebrow": "戰鬥詞典",
+    "lexicon_subtitle": "完整參考資料，隨遊戲即時更新。「X」與「Y」為每張卡牌上設定的數值。",
+    "lexicon_title": "所有能力",
+    "search_placeholder": "搜尋能力…",
+    "creature_abilities_group": "生物能力（{count}）",
+    "spell_abilities_group": "行動能力（{count}）",
+    "no_ability_match": "沒有符合「{query}」的能力。",
+    "goal_text": "每位玩家扮演一位<hi>英雄</hi>，依英雄不同，初始擁有<hi>{min} 至 {max} 點生命值</hi>（通常為 {usual}）：強大的能力會以少量生命值作為代價，較弱的能力則以多一些生命值作為補償。將敵方英雄的生命值降至<hi>{zero}</hi>即可贏得對局。為此，你需要召喚生物並打出行動。",
+    "stat_hero_start_value": "{min}–{max} 生命值",
+    "stat_starting_hand_value": "{first} 或 {second} 張牌"
+  },
+  "deck": {
+    "alignment_incompatible": "善良與邪惡陣營不相容",
+    "max_mercenaires_current": "傭兵上限 {max}（目前 {current}）",
+    "max_capability_current": "「{label}」能力上限 {max}（目前 {count}）",
+    "card_not_owned": "尚未擁有此卡牌",
+    "no_items_in_deck": "物品無法加入牌組：需在遊戲中取得。",
+    "no_items_in_deck_current": "此牌組包含 {count, plural, one {# 張物品} other {# 張物品}}：請移除，物品已不能加入牌組。",
+    "deck_full": "牌組已滿",
+    "singleton_yes": "單卡牌組 ✓",
+    "singleton_no": "單卡牌組 ✗",
+    "singleton_hint": "單卡牌組不含任何重複的卡牌：標有「單一」的能力僅在此條件下才會觸發。這不是構築規則。",
+    "unique_copy": "唯一副本",
+    "max_three_copies": "最多 3 張",
+    "alignment_conflict": "陣營衝突",
+    "one_faction_only": "僅限 1 個陣營",
+    "one_clan_only": "僅限 1 個氏族",
+    "max_mercenaires": "傭兵上限 {max}",
+    "no_slot_available": "已無可用欄位",
+    "max_capability": "「{label}」能力上限 {max} 張",
+    "enter_deck_name": "請輸入牌組名稱",
+    "choose_faction_prep": "請選擇陣營（準備分頁）",
+    "select_format": "請選擇賽制",
+    "select_hero": "請選擇英雄",
+    "deck_exact_size": "牌組必須剛好包含 {size} 張卡牌（目前 {current}）",
+    "illegal_cards": "此賽制不允許的卡牌：{cards}",
+    "deck_contains_unowned": "牌組中包含尚未擁有的卡牌",
+    "save_failed": "牌組儲存失敗",
+    "forge_your_deck": "打造你的牌組",
+    "step_preparation": "1 · 準備",
+    "step_appearance": "2 · 外觀",
+    "step_cards": "3 · 卡牌",
+    "cancel": "取消",
+    "choose_faction_first_tab": "請先在分頁 1 · 準備中選擇一個陣營。",
+    "search_placeholder": "搜尋...",
+    "creatures": "生物",
+    "spells": "行動",
+    "items": "物品",
+    "all_capabilities": "能力",
+    "all_races": "種族",
+    "all_clans": "氏族",
+    "all_sets": "系列",
+    "year": "年份",
+    "rarity_abbr_uncommon": "非凡",
+    "rarity_abbr_legendary": "傳說",
+    "expert_only_title": "僅顯示專家卡牌(非普通)",
+    "expert": "專家",
+    "preparation": "準備",
+    "forge_a_deck": "打造牌組",
+    "deck_name": "牌組名稱",
+    "deck_name_placeholder": "牌組名稱...",
+    "faction": "陣營",
+    "choose_faction": "選擇陣營...",
+    "faction_hint": "單一陣營 + 傭兵。更換陣營會移除不相容的卡牌/英雄。",
+    "format": "賽制",
+    "mode_placeholder": "模式...",
+    "mode_classic": "經典",
+    "mode_expert": "專家",
+    "extent_placeholder": "範圍...",
+    "extent_standard": "標準",
+    "extent_extended": "擴充",
+    "choose_faction_first_tab_short": "請先選擇陣營(分頁 1 · 準備)。",
+    "choose_hero": "選擇英雄",
+    "right_click_power": "按右鍵:查看能力",
+    "no_hero_for_faction": "此陣營沒有英雄。",
+    "board": "戰場",
+    "change": "更換",
+    "choose_board": "選擇戰場",
+    "card_back": "卡背",
+    "choose_card_back": "選擇卡背",
+    "mono_faction": "單一陣營",
+    "mono_clan": "單一氏族",
+    "clan_label": "氏族:",
+    "no_clan": "無氏族",
+    "alignment_label": "陣營:",
+    "deck": "牌組",
+    "mana_curve_tooltip": "{label} 法力:{count, plural, one {# 張卡牌} other {# 張卡牌}}",
+    "click_cards_to_add": "點擊卡牌即可加入",
+    "free_slot": "空位",
+    "more_slots": "+{count} 個空位",
+    "keywords": "關鍵字",
+    "max_suffix": "(上限 {max})",
+    "saving": "儲存中...",
+    "save_deck": "儲存",
+    "create_deck": "建立牌組",
+    "passive": "被動",
+    "mana": "法力",
+    "no_board_available": "沒有可用的戰場。",
+    "no_card_back_available": "沒有可用的牌背。",
+    "format_number": "賽制 {id}",
+    "no_format": "無賽制",
+    "compose_your_army": "組建你的軍隊",
+    "my_decks": "我的牌組",
+    "decks_in_armory": "你的軍械庫中有 {count, plural, one {# 個牌組} other {# 個牌組}}",
+    "decks_in_format": "此賽制中有 {count, plural, one {# 個牌組} other {# 個牌組}}",
+    "new_deck": "新牌組",
+    "back_to_menu": "返回選單",
+    "all": "全部",
+    "no_decks_yet": "你還沒有任何牌組",
+    "create_first_deck": "建立你的第一個牌組",
+    "no_decks_in_format": "此賽制中沒有牌組",
+    "show_all_decks": "顯示所有牌組",
+    "cards_count_label": "{count}/{size} 張卡牌",
+    "valid_suffix": " (有效)",
+    "edit": "編輯",
+    "confirm": "確認",
+    "delete": "刪除",
+    "admire_your_armies": "欣賞你的軍隊",
+    "card_collection": "卡牌收藏",
+    "cards_count": "{count, plural, one {# 張卡牌} other {# 張卡牌}}",
+    "cards_of_total": " / {total}",
+    "search_by_name": "依名稱搜尋...",
+    "mana_label": "法力:",
+    "reset_filters": "重設篩選條件",
+    "faction_label": "陣營:",
+    "all_fem": "全部",
+    "rarity_label": "稀有度:",
+    "expert_only": "僅限專家",
+    "capability_label": "能力:",
+    "race_label": "種族:",
+    "all_masc": "全部",
+    "format_label": "賽制:",
+    "set_label": "系列:",
+    "year_label": "年份:",
+    "no_cards_match": "沒有符合篩選條件的卡牌",
+    "show_locked": "顯示已鎖定的卡牌",
+    "locked_badge": "已鎖定",
+    "locked_summary": "{count, plural, one {# 張已鎖定卡牌} other {# 張已鎖定卡牌}}",
+    "locked_hint": "其他陣營的普通卡將可透過完整解鎖方案取得。",
+    "unplayable_badge": "缺少 {count} 張卡牌",
+    "items_badge": "包含 {count, plural, one {# 張物品} other {# 張物品}} — 需移除",
+    "unplayable_reason": "此牌組包含您已不再擁有的陣營卡牌:{factions}。牌組仍完整保留,取回該陣營即可再次使用。",
+    "unplayable_rebuy": "前往商店取回"
+  },
+  "cardBacks": {
+    "eyebrow": "展現你的風格",
+    "title": "我的卡背",
+    "subtitle": "{visible, plural, one {# 個可見} other {# 個可見}} · {prints, plural, one {# 個已擁有版本} other {# 個已擁有版本}}",
+    "back_to_menu": "返回選單",
+    "rarity_label": "稀有度:",
+    "owned_only": "僅顯示已擁有",
+    "empty": "沒有可顯示的卡背。",
+    "equipped": "已裝備",
+    "default_badge": "預設",
+    "not_owned": "未擁有"
+  },
+  "boards": {
+    "eyebrow": "打造你的競技場",
+    "title": "我的牌桌",
+    "subtitle": "{visible, plural, one {# 個可見} other {# 個可見}} · {prints, plural, one {# 個已擁有版本} other {# 個已擁有版本}}",
+    "back_to_menu": "返回選單",
+    "rarity_label": "稀有度:",
+    "owned_only": "僅顯示已擁有",
+    "empty": "沒有可顯示的牌桌。",
+    "equipped": "已裝備",
+    "default_badge": "預設",
+    "not_owned": "未擁有"
+  },
+  "legal": {
+    "back_to_site": "← 返回網站",
+    "draft_warning": "⚠ 文件撰寫中——目前不具任何契約效力。",
+    "todo": "待補充——公開上線前須撰寫之章節。",
+    "updated": "最後更新:{date}",
+    "cgu_title": "服務條款",
+    "cgu_s1": "目的與接受",
+    "cgu_s2": "服務存取與帳號建立",
+    "cgu_s3": "最低年齡要求",
+    "cgu_s4": "遊戲貨幣、卡牌與購買",
+    "cgu_s5": "行為規範與處罰",
+    "cgu_s6": "智慧財產權",
+    "cgu_s7": "服務的可用性、更新與終止",
+    "cgu_s8": "責任",
+    "cgu_s9": "刪除帳號",
+    "cgu_s10": "適用法律與聯絡方式",
+    "privacy_title": "隱私權政策",
+    "privacy_s1": "資料處理負責人",
+    "privacy_s2": "蒐集的資料",
+    "privacy_s3": "目的與法律依據",
+    "privacy_s4": "受託處理者與代管",
+    "privacy_s5": "保存期限",
+    "privacy_s6": "Cookie 與追蹤技術",
+    "privacy_s7": "您的權利(GDPR)",
+    "privacy_s8": "安全性",
+    "privacy_s9": "聯絡與申訴"
+  },
+  "factions_page": {
+    "back": "返回首頁",
+    "races": "種族",
+    "signature": "代表性能力",
+    "profile": "遊戲風格",
+    "offense": "攻擊型",
+    "defense": "防禦型",
+    "commons": "{count, plural, one {# 張普通卡} other {# 張普通卡}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# 張普通卡} other {# 張普通卡}} · {clans, plural, one {# 個氏族} other {# 個氏族}}——第一天即免費贈送。",
+    "no_clan_title": "所有氏族皆可使用",
+    "no_clan_desc": "這些卡牌不屬於任何氏族:無論您以哪個氏族為核心構築牌組,都能加入該陣營的任何牌組。",
+    "other_factions": "查看其他陣營",
+    "costs": "額外費用",
+    "cost_life": "生命值",
+    "cost_discard": "棄牌",
+    "cost_sacrifice": "犧牲",
+    "cost_exile": "放逐",
+    "cost_topdeck": "回置",
+    "cost_retreat": "撤退",
+    "cost_retreat_desc": "這些卡牌除了法力費用外，還需要將場上的生物收回手牌。",
+    "cost_life_desc": "這些卡牌除了法力費用外，還需要支付英雄的生命值。",
+    "cost_discard_desc": "這些卡牌除了法力費用外，還需要棄掉手牌中的卡牌。",
+    "cost_sacrifice_desc": "這些卡牌除了法力費用外，還需要犧牲你控制的生物。",
+    "cost_exile_desc": "這些卡牌除了法力費用外，還會放逐你牌組頂端的卡牌。",
+    "cost_topdeck_desc": "這些卡牌除了法力費用外，還需要將手牌中的卡牌放回牌組頂端。",
+    "commons_count": "{count, plural, one {# 張普通卡牌} other {# 張普通卡牌}} · {clans, plural, one {# 個氏族} other {# 個氏族}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "建立帳號即可從{faction}開始：所有普通卡牌都將免費送給你。",
+    "visitor_cta": "建立帳號",
+    "owned_just_chosen": "{faction}是你的陣營",
+    "owned_bundle": "已包含在你的組合包中",
+    "owned_starter": "你的起始陣營",
+    "owned_bought": "已購得的陣營",
+    "owned_note": "下方所有普通卡牌都已在你的收藏中。",
+    "enter_game": "進入遊戲",
+    "see_collection": "查看我的收藏",
+    "free_pitch": "你尚未選擇起始陣營。從<strong>{faction}</strong>開始，即可免費獲得其所有普通卡牌。",
+    "free_cta": "從此陣營開始",
+    "free_warning": "此選擇無法更改，之後只能另外購買其他陣營。",
+    "free_confirm": "確認 — {faction}",
+    "cancel": "取消",
+    "buy_pitch": "將{faction}加入你的收藏：永久獲得其所有普通卡牌。",
+    "your_balance": "（你有 {balance}）",
+    "debt_blocks": "你的 {debt} 金幣債務必須先還清，才能進行新的購買。",
+    "not_enough_gold": "金幣不足",
+    "buy_cta": "解鎖此陣營",
+    "err_already_chosen": "你已經選擇過起始陣營了。",
+    "err_choice": "無法儲存你的選擇。",
+    "err_purchase": "購買未能完成。",
+    "badge_starter": "起始",
+    "badge_owned": "已擁有",
+    "bundle_hint": "或以 {price} 金幣一次取得你缺少的 {count} 個陣營 →"
+  },
+  "cardStatus": {
+    "draft": "草稿",
+    "playable": "可使用",
+    "retired": "已退役",
+    "excluded": "已排除",
+    "deck_unavailable": "{count, plural, one {# 張卡牌無法使用} other {# 張卡牌無法使用}}",
+    "cannot_add": "卡牌無法使用:此卡牌不能加入牌組",
+    "reason": "原因:{reason}"
+  },
+  "tournaments": {
+    "qualification_title": "資格賽",
+    "grand_title": "每月大型錦標賽",
+    "players": "玩家",
+    "access_ticket": "可使用錦標賽門票參加",
+    "access_golden": "僅限持有 Golden Ticket 參加",
+    "winner_golden_title": "優勝者可獲得 Golden Ticket",
+    "winner_golden_desc": "每月大型錦標賽的唯一入場鑰匙",
+    "bracket_size": "賽程表規模",
+    "bracket_size_aria": "大型錦標賽規模",
+    "participation_rewards": "戰場 + 限量版英雄",
+    "participation_desc": "每位參賽者皆可獲得,無論成績如何",
+    "prize_pool": "獎金池",
+    "real_money": "現金",
+    "market_credits": "市集點數",
+    "essences": "精華",
+    "wins_count": "{count, plural, one {# 勝} other {# 勝}}",
+    "credits_count": "{count} 點數",
+    "col_wins": "勝場",
+    "col_money": "現金",
+    "col_reward": "獎勵",
+    "col_credits": "點數",
+    "col_essence": "精華",
+    "meta_title": "錦標賽 — 傳奇軍團",
+    "page_eyebrow": "競技賽事",
+    "page_subtitle": "一張門票可參加一場資格賽;優勝者將獲得 Golden Ticket,晉級每月大型錦標賽。每場勝利皆可獲得市集點數與精華。",
+    "page_title": "錦標賽",
+    "tickets_held": "您持有 <b>{count}</b> 張門票",
+    "get_tickets": "獲取",
+    "open_title": "開放中的錦標賽",
+    "none_open": "目前沒有開放中的錦標賽。",
+    "kind_weekly": "每週",
+    "kind_free": "免費",
+    "kind_special": "特別",
+    "capacity": "{count} 名玩家",
+    "running": "進行中",
+    "registration_closed": "報名已截止",
+    "circuit_eyebrow": "賽事巡迴",
+    "circuit_title": "從入場券到月度冠軍",
+    "rewards_eyebrow": "獎勵",
+    "rewards_title": "每場勝利的收穫",
+    "footnote_rounds": "在第 <i>r</i> 輪被淘汰的玩家已贏得 <i>r</i>−1 場比賽。",
+    "footnote_credits": "市集點數於獲得後 {days} 天到期。",
+    "footnote_cash": "獎金須達 {wins} 勝才會發放；",
+    "footnote_all": "點數、精華與外觀將發放給所有獲得獎勵的參賽者。",
+    "step_label": "步驟 {n}",
+    "step_ticket_title": "錦標賽門票",
+    "step_ticket_text": "於商店購買——活躍玩家每月可獲得一張免費門票。",
+    "step_qualification_title": "資格賽",
+    "step_qualification_text": "{size} 名玩家，共 {rounds} 輪單淘汰制，{size} 人到齊後立即開賽。",
+    "step_golden_text": "優勝者將取得月度大賽的參賽資格。",
+    "step_grand_text": "黃金門票持有者彼此對決，每個截止日前需進行一輪比賽。",
+    "how_it_works": "運作方式",
+    "rule_wins": "獎勵取決於<b>勝場數</b>，而非最終排名：在任何賽程表中，兩勝的獎勵都相同。只有冠軍能獲得更多。",
+    "rule_bracket": "月度大賽採用完整賽程表（16、32、64……名玩家）。多出的晉級者將<b>優先順延</b>至下個月；若晉級者不足 {min} 人，整個賽事都將順延。",
+    "rule_golden": "有多張黃金門票？每屆只能報名一次，多餘的門票可用於後續賽事。",
+    "rule_forfeit": "玩家若在截止日未到場，將判定棄權落敗；若雙方都缺席，則雙雙棄權，其下一位對手不戰而勝。",
+    "rule_credits": "<b>市集點數</b>可用於競標限量版卡牌，並於獲得後 {days} 天到期。",
+    "rule_essence": "<b>精華</b>永久有效：{cost} 點精華＝鍛造一張隨機限量卡牌。",
+    "signup_error": "無法報名。",
+    "signup_done": "您已報名。",
+    "signup_full": "已額滿。",
+    "signup_blocked": "報名已封鎖",
+    "signup_debt": "{count, plural, other {# 張門票待補正}}",
+    "signup_get_ticket": "取得門票",
+    "signup_no_ticket": "沒有可用的門票",
+    "signup_pending": "報名中…",
+    "signup_with_ticket": "報名（1 🎟️）",
+    "signup_free": "報名（免費）",
+    "signup_seats": "{count, plural, other {剩餘 # 個名額}}",
+    "signup_tickets_in_hand": "{count, plural, other {持有 # 張門票}}"
+  },
+  "errors": {
+    "title": "發生錯誤",
+    "body": "我們這邊出了點問題。您可以重試；若問題持續，請返回首頁。",
+    "retry": "重試",
+    "home": "返回首頁",
+    "not_found_title": "找不到頁面",
+    "not_found_body": "此頁面不存在或已被移動。",
+    "game_title": "對局發生錯誤",
+    "game_body": "對局畫面已中斷。請重新載入對局,將會從中斷處繼續。",
+    "game_reload": "重新載入對局"
+  },
+  "geo": {
+    "unavailable": "此功能目前尚未在您所在的國家/地區開放。遊戲仍可正常完整使用。",
+    "age_title": "年齡確認",
+    "age_intro": "購買僅限年滿 {age} 歲以上人士。此確認僅需進行一次。",
+    "age_checkbox": "我保證已年滿 {age} 歲。",
+    "age_confirm": "確認並繼續",
+    "age_cancel": "取消",
+    "age_error": "儲存失敗,請再試一次。"
+  }
+}

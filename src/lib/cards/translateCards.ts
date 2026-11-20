@@ -6,7 +6,7 @@
 // des descriptions de mots-clés déjà traduites). Corpus source en langue mixte
 // (FR ou EN) → on laisse Claude auto-détecter la langue source (option A).
 
-export const CARD_TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh"] as const;
+export const CARD_TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh", "ru", "ar", "ko", "zh-TW", "tr", "pl"] as const;
 export type CardTargetLocale = (typeof CARD_TARGET_LOCALES)[number];
 
 const LANG_NAMES: Record<CardTargetLocale, string> = {
@@ -17,6 +17,12 @@ const LANG_NAMES: Record<CardTargetLocale, string> = {
   pt: "Portuguese",
   ja: "Japanese",
   zh: "Simplified Chinese",
+  ru: "Russian",
+  ar: "Modern Standard Arabic",
+  ko: "Korean",
+  "zh-TW": "Traditional Chinese (Taiwan)",
+  tr: "Turkish",
+  pl: "Polish",
 };
 
 export interface CardText {

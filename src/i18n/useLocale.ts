@@ -5,7 +5,6 @@ import { useLocale as useNextIntlLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { setLocaleAction } from "./setLocale";
 import {
-  DEFAULT_LOCALE,
   LOCALE_COOKIE,
   normalizeLocale,
   type Locale,
@@ -62,9 +61,9 @@ export function useLegacyLocaleMigration(): void {
       if (!legacy) return;
       const migrated = normalizeLocale(legacy);
       localStorage.removeItem(LEGACY_LOCALE_KEY);
-      if (migrated !== DEFAULT_LOCALE) {
-        setLocale(migrated);
-      }
+      // Le français aussi : sans cookie, la langue suit désormais le pays de
+      // connexion, et un choix « fr » non reporté serait perdu à l'étranger.
+      setLocale(migrated);
     } catch {
       /* localStorage inaccessible — on ignore */
     }

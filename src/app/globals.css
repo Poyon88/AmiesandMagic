@@ -585,3 +585,13 @@ img {
 .am-admin input[type="radio"] {
   background-color: initial;
 }
+
+/* Arabe : le TEXTE se lit de droite à gauche, la mise en page reste celle des
+   autres langues (pas de `dir="rtl"` : il retournerait aussi le plateau et les
+   rangées, chantier séparé). `plaintext` laisse chaque bloc prendre le sens de
+   son premier caractère fort : une phrase arabe part de la droite avec sa
+   ponctuation au bon bout, un pseudo, un nombre ou « +2/+1 » restent de gauche
+   à droite. */
+html:lang(ar) body :not(svg, svg *) {
+  unicode-bidi: plaintext;
+}

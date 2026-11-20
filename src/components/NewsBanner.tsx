@@ -223,7 +223,7 @@ export default function NewsBanner({ news }: { news: BannerNews[] }) {
 
         {/* Points de navigation. */}
         {news.length > 1 && (
-          <div className="absolute bottom-2 right-3 z-10 flex gap-1.5">
+          <div className="absolute bottom-3 right-4 z-10 flex gap-2.5">
             {news.map((n, i) => (
               <button
                 key={n.id}
@@ -231,7 +231,7 @@ export default function NewsBanner({ news }: { news: BannerNews[] }) {
                 onClick={() => setIndex(i)}
                 aria-label={n.title}
                 aria-current={i === index}
-                className="w-2 h-2 rounded-full transition-colors cursor-pointer"
+                className="w-4 h-4 rounded-full transition-colors cursor-pointer"
                 style={{
                   background: i === index ? "var(--am-gold)" : "var(--am-line-strong)",
                 }}

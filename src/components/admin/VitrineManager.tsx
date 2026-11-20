@@ -3,10 +3,12 @@
 // Réglages de la page d'accueil : les cartes de chaque visuel et les textes.
 // Une section laissée vide garde sa sélection automatique ; un texte non
 // réécrit garde celui de messages/*.json.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FACTIONS, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
+import { SUPPORTED_LOCALES } from "@/i18n/config";
 import {
-  FACTIONS_VITRINE, LONGUEUR_MAX_TEXTE, MIN_AFFICHES_PAR_RANGEE, TEXTES_EDITABLES,
+  CLE_IMAGE_JOUER, FACTIONS_VITRINE, IMAGE_JOUER_DEFAUT, LONGUEUR_MAX_TEXTE, MIN_AFFICHES_PAR_RANGEE,
+  POIDS_MAX_IMAGE_JOUER, TEXTES_EDITABLES,
   type SectionVitrine,
 } from "@/lib/vitrine/config";
 
@@ -24,6 +26,9 @@ export interface CarteCatalogue {
 interface Choix { section: SectionVitrine; card_id: number; sort_order: number }
 interface TexteEnregistre { key: string; fr: string; translations: Record<string, string> | null }
 type Message = { text: string; type: "success" | "error" | "warning" };
+/** Langues à produire pour un texte réécrit : toutes sauf le français. */
+const NB_LANGUES_CIBLES = SUPPORTED_LOCALES.length - 1;
+type Onglet = SectionVitrine | "textes" | "jouer";
 
 const ALIGNEMENTS = [
   { id: "bon", nom: "Bon" },
@@ -31,7 +36,7 @@ const ALIGNEMENTS = [
   { id: "maléfique", nom: "Maléfique" },
 ] as const;
 
-const ONGLETS: { id: SectionVitrine | "textes"; nom: string; aide: string }[] = [
+const ONGLETS: { id: Onglet; nom: string; aide: string }[] = [
   {
     id: "mur",
     nom: "1. Mur d'affiches",
@@ -55,7 +60,12 @@ const ONGLETS: { id: SectionVitrine | "textes"; nom: string; aide: string }[] = 
   {
     id: "textes",
     nom: "Textes",
-    aide: "Écris en français : à l'enregistrement, le texte est traduit automatiquement dans les sept autres langues. « Rétablir » revient au texte d'origine.",
+    aide: "Écris en français : à l'enregistrement, le texte est traduit automatiquement dans toutes les autres langues. « Rétablir » revient au texte d'origine.",
+  },
+  {
+    id: "jouer",
+    nom: "Hub — tuile « Jouer »",
+    aide: "Le grand visuel de la tuile « Jouer », sur l'accueil du joueur connecté (pas sur la page publique). Choisis une image en paysage, d'au moins 1 600 px de large : elle est recadrée pour remplir la tuile, et le bas est assombri sous le titre.",
   },
 ];
 
@@ -67,9 +77,10 @@ const alignementDe = (c: CarteCatalogue) => (c.faction ? FACTIONS[c.faction]?.al
 const estPresentable = (c: CarteCatalogue) => !!c.faction && FACTIONS_VITRINE.includes(c.faction);
 
 export default function VitrineManager({ cartes, defauts }: { cartes: CarteCatalogue[]; defauts: Record<string, string> }) {
-  const [onglet, setOnglet] = useState<SectionVitrine | "textes">("mur");
+  const [onglet, setOnglet] = useState<Onglet>("mur");
   const [choix, setChoix] = useState<Choix[]>([]);
   const [textes, setTextes] = useState<Record<string, TexteEnregistre>>({});
+  const [imageJouer, setImageJouer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<Message | null>(null);
 
@@ -83,7 +94,9 @@ export default function VitrineManager({ cartes, defauts }: { cartes: CarteCatal
         setMessage({ text: data.error, type: "error" });
       } else {
         setChoix(data.cartes ?? []);
-        setTextes(Object.fromEntries(((data.textes ?? []) as TexteEnregistre[]).map((t) => [t.key, t])));
+        const lignes = (data.textes ?? []) as TexteEnregistre[];
+        setTextes(Object.fromEntries(lignes.map((t) => [t.key, t])));
+        setImageJouer(lignes.find((t) => t.key === CLE_IMAGE_JOUER)?.fr || null);
       }
     } catch {
       setMessage({ text: "Lecture impossible : vérifie ta connexion.", type: "error" });
@@ -145,6 +158,8 @@ export default function VitrineManager({ cartes, defauts }: { cartes: CarteCatal
         <div style={{ textAlign: "center", padding: 20, color: "#666" }}>Chargement…</div>
       ) : onglet === "textes" ? (
         <Textes defauts={defauts} textes={textes} setTextes={setTextes} setMessage={setMessage} />
+      ) : onglet === "jouer" ? (
+        <ImageJouer image={imageJouer} setImage={setImageJouer} setMessage={setMessage} />
       ) : (
         <SectionCartes
           key={onglet}
@@ -406,7 +421,7 @@ function Textes({
         setBrouillons((b) => { const { [key]: _retire, ...reste } = b; void _retire; return reste; });
         setMessage(data.avertissement
           ? { text: data.avertissement, type: "warning" }
-          : { text: "Texte enregistré et traduit dans les sept autres langues.", type: "success" });
+          : { text: "Texte enregistré et traduit dans toutes les autres langues.", type: "success" });
       }
     } catch {
       setMessage({ text: "Enregistrement impossible : vérifie ta connexion.", type: "error" });
@@ -464,18 +479,18 @@ function Textes({
                 <div key={champTexte.key}>
                   <label htmlFor={id} style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 4 }}>
                     {champTexte.label}
-                    <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 12, color: enregistre ? (nbTraductions >= 7 ? "#155724" : "#a15c00") : "#666" }}>
-                      {!enregistre ? "texte d'origine" : nbTraductions >= 7 ? "réécrit, traduit" : `réécrit, ${nbTraductions}/7 langues traduites`}
+                    <span style={{ marginLeft: 8, fontWeight: 400, fontSize: 12, color: enregistre ? (nbTraductions >= NB_LANGUES_CIBLES ? "#155724" : "#a15c00") : "#666" }}>
+                      {!enregistre ? "texte d'origine" : nbTraductions >= NB_LANGUES_CIBLES ? "réécrit, traduit" : `réécrit, ${nbTraductions}/${NB_LANGUES_CIBLES} langues traduites`}
                     </span>
                   </label>
                   {champTexte.long ? <textarea rows={3} {...proprietes} /> : <input type="text" {...proprietes} />}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6, alignItems: "center" }}>
                     <button
                       onClick={() => enregistrer(champTexte.key, valeur)}
-                      disabled={occupe || !valeur.trim() || (!modifie && nbTraductions >= 7) || (!modifie && !enregistre)}
+                      disabled={occupe || !valeur.trim() || (!modifie && nbTraductions >= NB_LANGUES_CIBLES) || (!modifie && !enregistre)}
                       style={boutonAjouter}
                     >
-                      {occupe ? "Traduction en cours…" : !modifie && enregistre && nbTraductions < 7 ? "Relancer la traduction" : "Enregistrer et traduire"}
+                      {occupe ? "Traduction en cours…" : !modifie && enregistre && nbTraductions < NB_LANGUES_CIBLES ? "Relancer la traduction" : "Enregistrer et traduire"}
                     </button>
                     {modifie && !occupe && (
                       <button onClick={() => setBrouillons((b) => { const { [champTexte.key]: _retire, ...reste } = b; void _retire; return reste; })} style={boutonNeutre}>
@@ -496,6 +511,119 @@ function Textes({
         </div>
       ))}
     </>
+  );
+}
+
+// ── Le visuel de la tuile « Jouer » ──────────────────────────────────────
+
+const TYPES_IMAGE: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+
+function ImageJouer({
+  image, setImage, setMessage,
+}: {
+  image: string | null;
+  setImage: (url: string | null) => void;
+  setMessage: (m: Message | null) => void;
+}) {
+  const [occupe, setOccupe] = useState<string | null>(null);
+  const saisie = useRef<HTMLInputElement>(null);
+
+  async function envoyer(fichier: File) {
+    const ext = TYPES_IMAGE[fichier.type];
+    if (!ext) { setMessage({ text: "Format refusé : choisis un PNG, un JPEG ou un WebP.", type: "error" }); return; }
+    if (fichier.size > POIDS_MAX_IMAGE_JOUER) {
+      setMessage({ text: `Image trop lourde (${Math.round(fichier.size / 1048576)} Mo) : ${POIDS_MAX_IMAGE_JOUER / 1048576} Mo au plus.`, type: "error" });
+      return;
+    }
+    setOccupe("Envoi de l'image…");
+    setMessage(null);
+    try {
+      // 1. URL signée, 2. envoi direct au stockage, 3. enregistrement.
+      const resUrl = await fetch("/api/admin/vitrine/image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ext }),
+      });
+      const cible = await resUrl.json();
+      if (!resUrl.ok || !cible.signedUrl) throw new Error(cible.error ?? "URL d'envoi indisponible");
+
+      const envoi = await fetch(cible.signedUrl, { method: "PUT", headers: { "Content-Type": fichier.type }, body: fichier });
+      if (!envoi.ok) throw new Error(`envoi au stockage refusé (${envoi.status})`);
+
+      const res = await fetch("/api/admin/vitrine/image", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: cible.path }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "enregistrement refusé");
+
+      setImage(data.url);
+      setMessage({ text: "Visuel remplacé : il est en place sur l'accueil du joueur.", type: "success" });
+    } catch (err) {
+      setMessage({ text: `Remplacement impossible : ${err instanceof Error ? err.message : "vérifie ta connexion"}.`, type: "error" });
+    }
+    setOccupe(null);
+  }
+
+  async function retablir() {
+    setOccupe("Rétablissement…");
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/vitrine/image", { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error ?? "refusé");
+      setImage(null);
+      setMessage({ text: "Image d'origine rétablie.", type: "success" });
+    } catch (err) {
+      setMessage({ text: `Rétablissement impossible : ${err instanceof Error ? err.message : "vérifie ta connexion"}.`, type: "error" });
+    }
+    setOccupe(null);
+  }
+
+  return (
+    <div style={panneau}>
+      <h2 style={titrePanneau}>
+        Visuel actuel
+        <span style={{ ...pastille, marginLeft: 10, background: image ? "#d4edda" : "#eee", color: image ? "#155724" : "#555" }}>
+          {image ? "ton image" : "image d'origine"}
+        </span>
+      </h2>
+      {/* Aperçu au cadrage de la tuile (grand écran) : même recadrage, même voile. */}
+      <div style={{ position: "relative", maxWidth: 720, aspectRatio: "10 / 7", borderRadius: 14, overflow: "hidden", background: "#17171c" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={image ?? IMAGE_JOUER_DEFAUT} alt="Visuel de la tuile Jouer" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 45%", display: "block" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(14,14,17,0.92) 0%, rgba(14,14,17,0.35) 38%, transparent 62%)" }} />
+        <div style={{ position: "absolute", left: 24, bottom: 20, color: "#f4f3ee" }}>
+          <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1 }}>Jouer</div>
+          <div style={{ fontSize: 15, marginTop: 8, opacity: 0.85 }}>Trouvez un adversaire et affrontez-le</div>
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: "#666", marginTop: 8 }}>
+        Aperçu indicatif : le cadrage exact dépend de la taille de l&apos;écran du joueur.
+      </p>
+
+      <input
+        ref={saisie}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = "";
+          if (f) envoyer(f);
+        }}
+      />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14, alignItems: "center" }}>
+        <button onClick={() => saisie.current?.click()} disabled={!!occupe} style={boutonAjouter}>
+          {occupe ?? "Choisir une nouvelle image…"}
+        </button>
+        {image && !occupe && (
+          <button onClick={retablir} style={boutonNeutre}>Rétablir l&apos;image d&apos;origine</button>
+        )}
+        <span style={{ fontSize: 12, color: "#666" }}>PNG, JPEG ou WebP, {POIDS_MAX_IMAGE_JOUER / 1048576} Mo au plus.</span>
+      </div>
+    </div>
   );
 }
 

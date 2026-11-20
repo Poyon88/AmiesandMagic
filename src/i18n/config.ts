@@ -1,10 +1,15 @@
 // Configuration i18n centrale. Source de vérité pour la liste des langues.
 // La langue source (et le fallback garanti partout) est le français.
-// 8 langues (l'ancien système maison fr/en localStorage a été retiré) :
-// FR source + EN/ES/DE/IT/PT/JA/ZH. L'arabe (RTL) est différé (miroir des
-// layouts = chantier séparé). ja/zh = LTR, aucun réglage `dir` nécessaire.
+// 14 langues (l'ancien système maison fr/en localStorage a été retiré) :
+// FR source + EN/ES/DE/IT/PT/JA/ZH/RU/AR/KO/ZH-TW/TR/PL (`zh` = chinois
+// simplifié, `zh-TW` = traditionnel). L'arabe s'écrit de droite à gauche :
+// seul le TEXTE est retourné (cf. `:lang(ar)` dans globals.css), la mise en
+// page reste celle des autres langues — la mettre en miroir (plateau, effets)
+// est un chantier séparé.
 
-export const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it", "pt", "ja", "zh"] as const;
+// L'ORDRE est celui des sélecteurs de langue : l'anglais en tête (langue par
+// défaut des visiteurs dont on ne connaît pas le pays), puis le français.
+export const SUPPORTED_LOCALES = ["en", "fr", "es", "de", "it", "pt", "ja", "zh", "ru", "ar", "ko", "zh-TW", "tr", "pl"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -23,7 +28,13 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   it: "Italiano",
   pt: "Português",
   ja: "日本語",
-  zh: "中文",
+  zh: "简体中文",
+  ru: "Русский",
+  ar: "العربية",
+  ko: "한국어",
+  "zh-TW": "繁體中文",
+  tr: "Türkçe",
+  pl: "Polski",
 };
 
 // Traducteur « sûr » : renvoie la chaîne traduite si la clé existe, sinon

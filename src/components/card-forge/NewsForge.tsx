@@ -196,10 +196,17 @@ export default function NewsForge() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? `Erreur ${res.status}`);
+      // Traduction enchaînée dès que le texte français est neuf ou a changé :
+      // laissée à un clic séparé, elle était oubliée et le bandeau restait en
+      // français dans toutes les autres langues.
+      const avant = editingId == null ? undefined : list.find((n) => n.id === editingId);
+      const enregistree = data.news as NewsItem | undefined;
+      const texteChange = !avant || avant.title !== title.trim() || avant.teaser !== teaser || avant.body_md !== bodyMd;
       setMessage({ ok: true, msg: editingId == null ? "News créée." : "News enregistrée." });
       setFormOpen(false);
       resetForm();
       await loadList();
+      if (enregistree && texteChange) await translate(enregistree);
     } catch (err) {
       setMessage({ ok: false, msg: err instanceof Error ? err.message : "Erreur réseau" });
     }
@@ -424,7 +431,7 @@ export default function NewsForge() {
             </select>
             <div style={{ fontSize: 10, color: "#888", marginTop: 4 }}>
               Bouton doré sous l&apos;article. Son libellé est celui du menu, donc
-              déjà traduit dans les 8 langues — rien à retraduire.
+              déjà traduit dans toutes les langues — rien à retraduire.
             </div>
           </div>
 
@@ -519,7 +526,7 @@ export default function NewsForge() {
             </button>
             <button style={S.btnGhost} onClick={() => { setFormOpen(false); resetForm(); }}>Annuler</button>
             <span style={{ fontSize: 10, color: "#999", alignSelf: "center" }}>
-              La traduction se lance depuis la liste, après enregistrement.
+              Le texte est traduit dans toutes les autres langues à l&apos;enregistrement.
             </span>
           </div>
         </div>

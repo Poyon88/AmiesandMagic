@@ -1,0 +1,3777 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "Pościg",
+        "desc": "Może atakować i używać aktywowanej zdolności od momentu przyzwania."
+      },
+      "taunt": {
+        "label": "Prowokacja",
+        "desc": "Wrogowie muszą w pierwszej kolejności atakować tę jednostkę."
+      },
+      "divine_shield": {
+        "label": "Tarcza",
+        "desc": "Pochłania pierwszy atak bez otrzymywania obrażeń."
+      },
+      "ranged": {
+        "label": "Lot",
+        "desc": "Ignoruje prowokacje przeciwnika."
+      },
+      "raid": {
+        "label": "Rajd",
+        "desc": "Może atakować wrogie stworzenie od momentu przyzwania (ale nie bohatera)."
+      },
+      "convocations_multiples": {
+        "label": "Wielokrotne przyzwanie",
+        "desc": "Tworzy {tokens}."
+      },
+      "loyaute": {
+        "label": "Lojalność",
+        "desc": "+1/+1 za każdego sojusznika: {race_bare} w grze."
+      },
+      "ancre": {
+        "label": "Zakotwiczony",
+        "desc": "Nie może zostać przemieszczony ani wygnany."
+      },
+      "resistance": {
+        "label": "Odporność X",
+        "desc": "Zmniejsza otrzymywane obrażenia o X (minimum 1 obrażenie)."
+      },
+      "premiere_frappe": {
+        "label": "Pierwsze uderzenie",
+        "desc": "Gdy ta jednostka atakuje, zadaje obrażenia jako pierwsza; jednostka przeciwnika kontratakuje tylko, jeśli przeżyje."
+      },
+      "gloire": {
+        "label": "Chwała +X/+Y",
+        "desc": "Za każdym razem, gdy ta jednostka przeżyje obrażenia od walki, zyskuje trwale +X/+Y."
+      },
+      "vol": {
+        "label": "Lot",
+        "desc": "Ignoruje prowokacje przeciwnika."
+      },
+      "precision": {
+        "label": "Precyzja",
+        "desc": "Ignoruje Odporność, Pancerz, Tarczę i limit Eteryczności."
+      },
+      "drain_de_vie": {
+        "label": "Wyssanie życia",
+        "desc": "Leczy twojego bohatera o wartość zadanych obrażeń."
+      },
+      "esquive": {
+        "label": "Unik",
+        "desc": "Automatycznie unika pierwszego ataku otrzymanego w każdej turze."
+      },
+      "poison": {
+        "label": "Trucizna",
+        "desc": "Ranne jednostki tracą 1 PZ na turę."
+      },
+      "celerite": {
+        "label": "Szybkość",
+        "desc": "Może atakować dwa razy na turę."
+      },
+      "augure": {
+        "label": "Wróżba",
+        "desc": "Gdy ta jednostka zada obrażenia bohaterowi przeciwnika, dobierasz kartę."
+      },
+      "benediction": {
+        "label": "Błogosławieństwo",
+        "desc": "Całkowicie leczy wybraną jednostkę."
+      },
+      "bravoure": {
+        "label": "Odwaga",
+        "desc": "Podwaja zadawane obrażenia (zaokrąglone w górę) wobec jednostek o wyższym ATK niż jej własny."
+      },
+      "pillage": {
+        "label": "Grabież X",
+        "desc": "Przeciwnik odrzuca X losowych kart z ręki."
+      },
+      "riposte": {
+        "label": "Riposta X",
+        "desc": "Gdy ta jednostka otrzymuje obrażenia, zadaje X obrażeń źródłu ataku (jednostce lub bohaterowi)."
+      },
+      "chant": {
+        "label": "Pieśń",
+        "desc": "Twoje akcje z Pieśnią są wzmocnione, dopóki ta jednostka jest w grze."
+      },
+      "lune": {
+        "label": "Księżyc X",
+        "desc": "Od drugiej karty zagranej w tej turze wszystkie jej wartości zwiększają się o X — na stałe."
+      },
+      "soleil": {
+        "label": "Słońce X",
+        "desc": "Jeśli to pierwsza karta zagrana w tej turze, wszystkie jej wartości zwiększają się o X — na stałe."
+      },
+      "rappel": {
+        "label": "Przywołanie X",
+        "desc": "Zwróć wybraną kartę o koszcie ≤ X z cmentarza na rękę.",
+        "desc_any": "Zwróć wybraną kartę z cmentarza na rękę."
+      },
+      "combustion": {
+        "label": "Spalenie",
+        "desc": "Odrzuć kartę z ręki, a następnie dobierz dwie karty."
+      },
+      "terreur": {
+        "label": "Groza X",
+        "desc": "Jednostki przeciwnika tracą X ATK, dopóki ta karta jest w grze."
+      },
+      "pauvrete": {
+        "label": "Ubóstwo X",
+        "desc": "Traci tyle ATK, ile kart ma przeciwnik na ręce (dynamicznie)."
+      },
+      "armure": {
+        "label": "Pancerz",
+        "desc": "Zmniejsza o połowę otrzymywane obrażenia w walce (zaokrąglane w górę); obrażenia z akcji nie są zmniejszane."
+      },
+      "commandement": {
+        "label": "Dowodzenie X",
+        "desc": "+X/+X dla twoich sojuszników {faction_de}."
+      },
+      "fureur": {
+        "label": "Furia",
+        "desc": "Po otrzymaniu obrażeń atakuje losową jednostkę przeciwnika (w razie braku — bohatera). Raz na turę."
+      },
+      "double_attaque": {
+        "label": "Podwójny atak",
+        "desc": "Tylko w fazie ataku: zadaje podwójne ATK podczas ataku. Atakowana jednostka normalnie ripostuje."
+      },
+      "invisible": {
+        "label": "Niewidzialność",
+        "desc": "Nie może być celem akcji ani zdolności jednostek przeciwnika."
+      },
+      "canalisation": {
+        "label": "Kanalizacja",
+        "desc": "Dopóki ta jednostka jest w grze, twoje akcje kosztują o 1 many mniej (minimum 1)."
+      },
+      "contresort": {
+        "label": "Kontrakcja X",
+        "desc": "Anuluje X kolejnych akcji przeciwnika."
+      },
+      "exclusion": {
+        "label": "Wykluczenie X",
+        "desc": "Anuluje X kolejnych przywołań jednostek przeciwnika."
+      },
+      "maitre_darme": {
+        "label": "Mistrz broni",
+        "desc": "Za darmo wyposaża się w 2 twoje przedmioty w grze, zaczynając od najdroższych, nawet jeśli noszą je twoje inne stworzenia."
+      },
+      "neutralisation": {
+        "label": "Neutralizacja",
+        "desc": "Dopóki jest w grze, wybrana jednostka wroga jest sparaliżowana, a jej zdolności nie mają żadnego efektu."
+      },
+      "transformation": {
+        "label": "Przemiana",
+        "desc": "Przemienia się w wskazaną kartę. Wraca do pierwotnej postaci, jeśli opuści planszę."
+      },
+      "convocation": {
+        "label": "Zwołanie X",
+        "desc": "Tworzy {token}."
+      },
+      "convocation_simple": {
+        "label": "Zwołanie",
+        "desc": "Tworzy {token}."
+      },
+      "invocation": {
+        "label": "Przywołanie X",
+        "desc": "Przywołuje losową istotę o koszcie X z twojej kolekcji ({alignment}, bieżący format).",
+        "desc_any": "Przywołuje losową istotę z twojej kolekcji ({alignment}, bieżący format)."
+      },
+      "malediction": {
+        "label": "Klątwa X",
+        "desc": "Wskaż wrogą jednostkę o koszcie ≤ X; zostaje ona wygnana na koniec następnej tury przeciwnika.",
+        "desc_any": "Wskaż wrogą jednostkę; zostaje ona wygnana na koniec następnej tury przeciwnika."
+      },
+      "necrophagie": {
+        "label": "Nekrofagia",
+        "desc": "Zyskuje +1 ATK i +1 PZ za każdym razem, gdy zginie jednostka (sojusznicza lub wroga)."
+      },
+      "richesse": {
+        "label": "Bogactwo X",
+        "desc": "Za każdym razem, gdy gracz odrzuci kartę z ręki, ta jednostka zyskuje +X/+X (na stałe)."
+      },
+      "sacrifice_demoniaque": {
+        "label": "Demoniczna ofiara X",
+        "desc": "Po śmierci rozdziela X obniżek kosztu o -1 many między Demony na twojej ręce (min. 1)."
+      },
+      "paralysie": {
+        "label": "Paraliż",
+        "desc": "Jednostki, które rani, nie mogą atakować ani aktywować zdolności do końca swojej następnej tury."
+      },
+      "permutation": {
+        "label": "Permutacja",
+        "desc": "Zamienia miejscami aktualne PZ dwóch wskazanych jednostek (sojuszniczej i wrogiej)."
+      },
+      "persecution": {
+        "label": "Prześladowanie X",
+        "desc": "Za każdym razem, gdy ta jednostka atakuje, zadaje X obrażeń bohaterowi przeciwnika."
+      },
+      "pietinement": {
+        "label": "Podeptanie",
+        "desc": "Podczas ataku obrażenia przekraczające PZ wskazanej istoty trafiają bohatera przeciwnika."
+      },
+      "catalyse": {
+        "label": "Kataliza",
+        "desc": "Twoje {race_pl} na ręce kosztują o 1 many mniej."
+      },
+      "ombre_du_passe": {
+        "label": "Cień przeszłości",
+        "desc": "+1/+1 za każdą jednostkę: {race_bare} na twoim cmentarzu."
+      },
+      "profanation": {
+        "label": "Profanacja X",
+        "desc": "Wygnaj do X kart z twojego cmentarza, zaczynając od najnowszych: +1/+1 za każdą wygnaną kartę."
+      },
+      "prescience": {
+        "label": "Przeczucie X",
+        "desc": "Dobieraj karty, aż będziesz mieć X kart na ręce."
+      },
+      "suprematie": {
+        "label": "Supremacja",
+        "desc": "Zyskuje +1 ATK i +1 PZ za każdą kartę na twojej ręce w chwili przywołania."
+      },
+      "divination": {
+        "label": "Wróżba",
+        "desc": "Odkrywa 3 pierwsze karty talii; połóż 1 na wierzchu i 2 pod spodem, w wybranej kolejności."
+      },
+      "savant": {
+        "label": "Uczony",
+        "desc": "Zyskuje +1 ATK i +1 PZ za każdą akcję na twoim cmentarzu."
+      },
+      "liaison_de_vie": {
+        "label": "Więź życia",
+        "desc": "Przekazuje otrzymane obrażenia wrogiemu bohaterowi."
+      },
+      "ombre": {
+        "label": "Cień",
+        "desc": "Nie można jej wybrać na cel ani zaatakować, dopóki nie wykona akcji (ataku lub zdolności)."
+      },
+      "sacrifice": {
+        "label": "Poświęcenie",
+        "desc": "Zniszcz sojusznika, aby na stałe zyskać jego PZ i ATK."
+      },
+      "malefice": {
+        "label": "Zły urok",
+        "desc": "Po śmierci zadaje X obrażeń wszystkim jednostkom (sojuszniczym i wrogim), gdzie X = jej ATK."
+      },
+      "synergie": {
+        "label": "Synergia X",
+        "desc": "Po wejściu do gry wybierz zdolność: zyskuje +X/+X przy każdym jej uruchomieniu (1 raz na źródło na turę)."
+      },
+      "etheree": {
+        "label": "Eteryczna",
+        "desc": "Otrzymuje maksymalnie 1 obrażenie od uderzenia w walce. Obrażenia od akcji, które otrzymuje, są podwojone."
+      },
+      "indestructible": {
+        "label": "Niezniszczalna",
+        "desc": "Nie otrzymuje żadnych obrażeń w walce."
+      },
+      "regeneration": {
+        "label": "Regeneracja X",
+        "desc": "Odzyskuje X PZ na początku twojej tury."
+      },
+      "corruption": {
+        "label": "Zepsucie X",
+        "desc": "Przejmuje wrogą jednostkę o koszcie ≤ X na twoją stronę do końca tury; zyskuje Tropienie.",
+        "desc_any": "Przejmuje wybraną wrogą jednostkę na twoją stronę do końca tury; zyskuje Tropienie do końca tury."
+      },
+      "carnage": {
+        "label": "Rzeź X",
+        "desc": "Zadaje X obrażeń wszystkim jednostkom w grze (sojuszniczym i wrogim)."
+      },
+      "heritage": {
+        "label": "Dziedzictwo X",
+        "desc": "Każda sojusznicza jednostka w grze na stałe zyskuje +X ATK i +X PZ."
+      },
+      "mimique": {
+        "label": "Mimikra",
+        "desc": "Kopiuje wszystkie zdolności wybranej jednostki i na stałe przyznaje je tej jednostce."
+      },
+      "metamorphose": {
+        "label": "Metamorfoza",
+        "desc": "Ta jednostka staje się dokładną kopią (ATK / PZ / zdolności) wybranej jednostki."
+      },
+      "dedoublement": {
+        "label": "Rozdwojenie",
+        "desc": "Tworzy w grze dokładną kopię tej istoty."
+      },
+      "tactique": {
+        "label": "Taktyka X",
+        "desc": "Daje wybranej sojuszniczej jednostce X losowych zdolności spośród zdolności istot o tym samym koszcie."
+      },
+      "exhumation": {
+        "label": "Ekshumacja X",
+        "desc": "Wskrzesza jednostkę z twojego cmentarza o koszcie many równym X lub mniejszym.",
+        "desc_any": "Wskrzesza jednostkę z twojego cmentarza, niezależnie od jej kosztu."
+      },
+      "heritage_du_cimetiere": {
+        "label": "Dziedzictwo cmentarza",
+        "desc": "Przyznaje tej jednostce zdolności wybranej jednostki z twojego cmentarza."
+      },
+      "pacte_de_sang": {
+        "label": "Pakt krwi",
+        "desc": "Po śmierci przyzywa dwa tokeny 1/1 jej rasy."
+      },
+      "souffle_de_feu": {
+        "label": "Ognisty oddech X",
+        "desc": "Podczas ataku zadaje X obrażeń wszystkim wrogim jednostkom (np. Ognisty oddech 2 = 2 obrażenia)."
+      },
+      "domination": {
+        "label": "Dominacja X",
+        "desc": "Przejmuje kontrolę nad losową jednostką wroga o koszcie ≤ X po przywołaniu.",
+        "desc_any": "Przejmuje kontrolę nad losową jednostką wroga po przywołaniu."
+      },
+      "resurrection": {
+        "label": "Wskrzeszenie",
+        "desc": "Wraca do gry po śmierci z 1 PV; po powrocie traci zdolność Wskrzeszenie."
+      },
+      "transcendance": {
+        "label": "Transcendencja",
+        "desc": "Pełna odporność na akcje przeciwnika: nie może otrzymać żadnych obrażeń ani efektów akcji, także akcji obszarowych."
+      },
+      "vampirisme": {
+        "label": "Wampiryzm X",
+        "desc": "Kradnie do X PV wybranej jednostce wroga i dodaje je do PV tej jednostki."
+      },
+      "traque_du_destin": {
+        "label": "Pościg przeznaczenia X",
+        "desc": "Odkrywa X pierwszych kart talii; jedną zatrzymaj na ręce, resztę losowo umieść na spodzie talii."
+      },
+      "sang_mele": {
+        "label": "Mieszana krew",
+        "desc": "Zyskuje +1 ATK i +1 PV za każdy różny typ rasy wśród twoich sojuszników w grze."
+      },
+      "fierte_du_clan": {
+        "label": "Duma klanu",
+        "desc": "Dopóki jest w grze, twoje przywołane jednostki {clan_de} pojawiają się z +1/+1."
+      },
+      "solidarite": {
+        "label": "Solidarność X",
+        "desc": "Dobierz X kart, jeśli kontrolujesz 2 inne jednostki: {race_bare}."
+      },
+      "entraide": {
+        "label": "Pomoc wzajemna",
+        "desc": "Kosztuje o 1 many mniej za każdego sojusznika w grze: {race_bare} (kumuluje się, min. 0)."
+      },
+      "cycle_eternel": {
+        "label": "Wieczny cykl",
+        "desc": "Dodaj kopię tej karty do swojej talii; jeśli zostanie dobrana, od razu wprowadź ją do gry."
+      },
+      "instinct_de_meute": {
+        "label": "Instynkt stada X",
+        "desc": "+X/+X, jeśli w tej turze zginął sojusznik: {faction_de}."
+      },
+      "totem": {
+        "label": "Totem",
+        "desc": "Zyskuje zdolności twoich jednostek w grze: {race_pl}."
+      },
+      "appel_du_clan": {
+        "label": "Zew klanu X",
+        "desc": "Wprowadza do gry za darmo pierwszą jednostkę {clan_de} o koszcie ≤ X z wierzchu twojej talii.",
+        "desc_any": "Wprowadza do gry za darmo pierwszą jednostkę {clan_de} z wierzchu twojej talii."
+      },
+      "appel_supreme": {
+        "label": "Najwyższe wezwanie",
+        "desc": "Dodaje na rękę kartę o najwyższym koszcie z twojej talii (losową w razie remisu)."
+      },
+      "rassemblement": {
+        "label": "Zgromadzenie X",
+        "desc": "Odkrywa X pierwszych kart talii; zatrzymaj na ręce karty: {race_pl}, resztę odrzuć."
+      },
+      "invocations_multiples": {
+        "label": "Wielokrotne przywołanie",
+        "desc": "Przywołuje {invocations}."
+      },
+      "touche_mortel": {
+        "label": "Śmiertelne trafienie",
+        "desc": "Każde stworzenie zranione przez tę jednostkę umiera, niezależnie od swoich PV."
+      },
+      "selection": {
+        "label": "Selekcja X",
+        "desc": "Odkrywa 3 zwykłe karty {alignment} o koszcie X; dodaj jedną na rękę.",
+        "desc_any": "Odkrywa 3 zwykłe karty {alignment}; dodaj jedną na rękę."
+      },
+      "faveur": {
+        "label": "Przysługa X",
+        "desc": "Dodaje na rękę losową zwykłą kartę {alignment} o koszcie X.",
+        "desc_any": "Dodaje do ręki losową zwykłą kartę {alignment}."
+      },
+      "forge": {
+        "label": "Kuźnia X",
+        "desc": "Tasuje do twojej talii losowy neutralny przedmiot{forge_align}{forge_cout}.",
+        "desc_any": "Tasuje do twojej talii losowy neutralny przedmiot{forge_align}{forge_cout_libre}."
+      },
+      "selection_magique": {
+        "label": "Magiczny wybór X",
+        "desc": "Odsłania 3 zwykłe akcje {alignment} o koszcie X; dodaj jedną do ręki.",
+        "desc_any": "Odsłania 3 zwykłe akcje {alignment}; dodaj jedną do ręki."
+      },
+      "renfort_royal": {
+        "label": "Królewski wybór X",
+        "desc": "Odsłania 3 twoje edycje limitowane o koszcie X (wymagane ≥30; w przeciwnym razie 3 zwykłe karty {alignment}); zachowaj jedną.",
+        "desc_any": "Odsłania 3 twoje edycje limitowane (wymagane ≥30; w przeciwnym razie 3 zwykłe karty {alignment}); zachowaj jedną."
+      },
+      "tresor": {
+        "label": "Skarb X",
+        "desc": "Odsłania 3 zwykłe przedmioty {alignment} lub neutralne o koszcie X; dodaj jeden do ręki.",
+        "desc_any": "Odsłania 3 zwykłe przedmioty {alignment} lub neutralne; dodaj jeden do ręki."
+      },
+      "lycanthropie": {
+        "label": "Likantropia X",
+        "desc": "Przemienia się w {lycanthrope} z Tropieniem."
+      },
+      "relancer": {
+        "label": "Powtórka X",
+        "desc": "Ponownie zagrywa X ostatnio zagranych akcji z losowymi celami."
+      },
+      "tempete": {
+        "label": "Burza X",
+        "desc": "Zadaje X obrażeń rozdzielonych losowo między jednostki wroga."
+      },
+      "canon": {
+        "label": "Armata X",
+        "desc": "Zadaje X obrażeń losowej jednostce wroga."
+      },
+      "cataclysme": {
+        "label": "Kataklizm X",
+        "desc": "Zadaje X obrażeń wszystkim stworzeniom (sojuszniczym ORAZ wrogim)."
+      },
+      "affaiblissement": {
+        "label": "Osłabienie -X/-Y",
+        "desc": "Daje -X ATK i -Y PZ wybranemu wrogiemu stworzeniu."
+      },
+      "renforcement": {
+        "label": "Wzmocnienie +X/+Y",
+        "desc": "Daje na stałe +X ATK i +Y PZ wybranej innej sojuszniczej jednostce."
+      },
+      "discipline": {
+        "label": "Dyscyplina +X/+Y",
+        "desc": "Jeśli wszystkie koszty na twojej planszy mają taką samą parzystość jak jego, daje na stałe +X/+Y wybranej innej sojuszniczej jednostce."
+      },
+      "lien_du_sang": {
+        "label": "Więź krwi X",
+        "desc": "Zyskuje +X/+X, a ty tracisz X PZ, o ile pozwalają na to twoje PZ."
+      },
+      "usurpation": {
+        "label": "Uzurpacja +X/+Y",
+        "desc": "Daje na stałe +X/+Y innej sojuszniczej jednostce wybranej przez zagraną przez ciebie kartę przeciwnika."
+      },
+      "esprit_de_corps": {
+        "label": "Duch drużyny",
+        "desc": "Zyskuje losowo +1 ATK lub +1 PZ za każde już uruchomione przez ciebie Ducha drużyny."
+      },
+      "presage": {
+        "label": "Omen",
+        "desc": "Odsłania 3 wierzchnie karty w losowej kolejności; wskaż tę z wierzchu, by wziąć ją do ręki, a następnie przetasuj talię."
+      },
+      "apprentissage": {
+        "label": "Nauka X",
+        "desc": "Usuwa z twojej ręki akcję o koszcie ≤ X i zapamiętuje ją: stworzenie może ją zagrać bez płacenia many.",
+        "desc_any": "Usuwa z twojej ręki akcję i zapamiętuje ją: stworzenie może ją zagrać bez płacenia many."
+      },
+      "impact": {
+        "label": "Uderzenie X",
+        "desc": "Zadaje X obrażeń wybranemu celowi wroga (jednostce lub bohaterowi)."
+      },
+      "inspiration": {
+        "label": "Inspiracja X",
+        "desc": "Dobierz X kart."
+      },
+      "afflux": {
+        "label": "Napływ X",
+        "desc": "Zyskaj X many w tej turze."
+      },
+      "epargne": {
+        "label": "Oszczędność X",
+        "desc": "Dodaje X do twojego licznika Oszczędności (maksymalnie 8)."
+      },
+      "foi": {
+        "label": "Wiara X",
+        "desc": "Dodaje X do twojej Wiary (maks. 10). Wydatek: odkryj 1 z 3 kart z talii o koszcie ≤ Wiara; odejmowany jest tylko ten koszt."
+      },
+      "conquete": {
+        "label": "Podbój X",
+        "desc": "Dodaje X do twojego Podboju (próg 3). Po osiągnięciu progu: weź na rękę 1 z 3 kart z talii przeciwnika, licznik wraca do 0."
+      },
+      "exploration": {
+        "label": "Eksploracja X",
+        "desc": "Dodaje X do twojej Eksploracji. Za każdym razem, gdy osiągnie 3: dobierz kartę i odejmij 3 (reszta zostaje zachowana)."
+      },
+      "invention": {
+        "label": "Wynalazek +X/+Y",
+        "desc": "Dodaje +X/+Y{machine_part} do twojej maszyny (na początku 0/1, 1 mana za Wynalazek, maksymalnie 6)."
+      },
+      "seconde_vie": {
+        "label": "Drugie życie X",
+        "desc": "Można ją zagrać z twojego cmentarza za X many. Traci wtedy Drugie życie."
+      },
+      "incineration": {
+        "label": "Spopielenie X",
+        "desc": "Odkłada X losowych kart z wybranego cmentarza pod talię ich właściciela."
+      },
+      "devoration": {
+        "label": "Pożarcie",
+        "desc": "Niszczy wybraną jednostkę; to stworzenie na stałe zyskuje jej ATK i PZ."
+      },
+      "creuser": {
+        "label": "Przekopanie X",
+        "desc": "Spójrz na X kart ze spodu swojej talii; połóż jedną z nich na wierzchu."
+      },
+      "retour_differe": {
+        "label": "Odroczony powrót X",
+        "desc": "Umieszcza wybraną jednostkę o koszcie ≤ X pod talią jej właściciela.",
+        "desc_any": "Umieszcza wybraną jednostkę pod talią jej właściciela."
+      },
+      "concentration": {
+        "label": "Koncentracja X",
+        "desc": "Każda akcja na ręce zmienia się w losową akcję o koszcie +X, obniżonym o X (wszystkie frakcje)."
+      },
+      "remontee": {
+        "label": "Powrót na rękę X",
+        "desc": "Zwraca X wybranych jednostek na rękę ich pierwotnego właściciela."
+      },
+      "entrainement": {
+        "label": "Trening X",
+        "desc": "+X/+X dla twoich stworzeń {faction_de} na ręce."
+      },
+      "fortifier": {
+        "label": "Umocnienie +X/+Y",
+        "desc": "Pierwsze stworzenie w twojej talii, licząc od wierzchu, na stałe zyskuje +X ATK i +Y PZ."
+      },
+      "preincanter": {
+        "label": "Przedwstępne rzucenie X",
+        "desc": "Pierwsza akcja w twojej talii, licząc od wierzchu, na stałe kosztuje o X many mniej (minimum 1)."
+      },
+      "conferer": {
+        "label": "Nadanie",
+        "desc": "Nadaje {ability} {scope}."
+      },
+      "declenchement": {
+        "label": "Wyzwolenie",
+        "desc": "Powtarza raz efekty złożone u waszych pozostałych sojuszników (wejście / śmierć / koniec tury / powrót)."
+      },
+      "dechainement": {
+        "label": "Rozpętanie X/Y",
+        "desc": "Zagrywa X losowych akcji o koszcie Y z twojej kolekcji ({alignment}), na losowe cele.",
+        "desc_any": "Zagrywa X losowych akcji z twojej kolekcji ({alignment}), na losowe cele."
+      },
+      "force_des_ancetres": {
+        "label": "Siła przodków +X/+Y",
+        "desc": "Dopóki na twoim cmentarzu jest co najmniej 7 stworzeń, zyskuje +X ATK i +Y PZ."
+      },
+      "purete": {
+        "label": "Czystość +X/+Y",
+        "desc": "Dopóki twój cmentarz jest pusty, zyskuje +X ATK i +Y PZ."
+      },
+      "seuil_sacrificiel": {
+        "label": "Próg ofiarny +X/+Y",
+        "desc": "Dopóki w twojej talii jest 25 kart lub mniej, zyskuje +X ATK i +Y PZ."
+      },
+      "compagnons": {
+        "label": "Towarzysze",
+        "desc": "Tasuje swoich towarzyszy (powiązane karty wybrane przy tworzeniu) z twoją talią, a następnie tasuje talię. Tylko raz."
+      },
+      "tuteur": {
+        "label": "Opiekun",
+        "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
+      },
+      "execution": {
+        "label": "Egzekucja X",
+        "desc": "Niszczy wskazaną wrogą jednostkę o koszcie ≤ X.",
+        "desc_any": "Niszczy wskazaną wrogą jednostkę."
+      },
+      "silence": {
+        "label": "Cisza",
+        "desc": "Usuwa wszystkie słowa kluczowe wskazanej innej jednostki i przywraca jej statystyki do wartości pierwotnych."
+      },
+      "guerison": {
+        "label": "Uzdrowienie X",
+        "desc": "Przywraca X PZ wskazanej innej sojuszniczej jednostce lub twojemu bohaterowi."
+      },
+      "mutation": {
+        "label": "Mutacja X",
+        "desc": "Na ręce: odkryj 2 pospolite stworzenia o koszcie X. Przejmuje ich najlepsze ATK i PZ oraz 1 zdolność od każdego."
+      },
+      "infestation": {
+        "label": "Plaga X",
+        "desc": "Tasuje X kopii tej jednostki z twoją talią. Dobrana kopia zostaje przywołana, a ty dobierasz kolejną kartę."
+      },
+      "enterrement": {
+        "label": "Pogrzebanie X",
+        "desc": "Umieszcza X górnych kart talii wskazanego gracza na jego cmentarzu (zmęczenie za każdą brakującą kartę)."
+      }
+    },
+    "spell_keywords": {
+      "touche_mortel": {
+        "label": "Śmiertelne dotknięcie",
+        "desc": "Każde stworzenie zranione przez tę akcję umiera, niezależnie od swoich PZ."
+      },
+      "precision": {
+        "label": "Precyzja",
+        "desc": "Obrażenia z tej akcji ignorują Odporność, Pancerz i Tarczę."
+      },
+      "poison": {
+        "label": "Trucizna",
+        "desc": "Zranione jednostki tracą 1 PZ na turę."
+      },
+      "benediction": {
+        "label": "Błogosławieństwo",
+        "desc": "Całkowicie leczy wskazaną sojuszniczą jednostkę."
+      },
+      "pillage": {
+        "label": "Grabież X",
+        "desc": "Przeciwnik odrzuca X losowych kart z ręki."
+      },
+      "contresort": {
+        "label": "Kontrakcja X",
+        "desc": "Anuluje X następnych akcji przeciwnika."
+      },
+      "exclusion": {
+        "label": "Wykluczenie X",
+        "desc": "Anuluje następne X wezwań jednostek przeciwnika."
+      },
+      "convocation_simple": {
+        "label": "Przywołanie",
+        "desc": "Tworzy {token}."
+      },
+      "seuil_colere": {
+        "label": "Próg gniewu X",
+        "desc": "Jeśli w twojej talii jest 25 kart lub mniej, ta akcja zadaje o X obrażeń więcej."
+      },
+      "chant": {
+        "label": "Pieśń X",
+        "desc": "Jeśli kontrolujesz stworzenie z Pieśnią, wszystkie wartości tej akcji są zwiększone o X."
+      },
+      "lune": {
+        "label": "Księżyc X",
+        "desc": "Od drugiej karty zagranej w danej turze wszystkie wartości tej karty są zwiększone o X."
+      },
+      "soleil": {
+        "label": "Słońce X",
+        "desc": "Jeśli to pierwsza karta zagrana w danej turze, wszystkie wartości tej karty są zwiększone o X."
+      },
+      "divination": {
+        "label": "Wróżba",
+        "desc": "Odkrywa 3 wierzchnie karty talii; połóż 1 na wierzchu i 2 na spodzie, w wybranej kolejności."
+      },
+      "malediction": {
+        "label": "Klątwa X",
+        "desc": "Przeklina wskazaną jednostkę przeciwnika o koszcie ≤ X: zostaje wygnana na koniec następnej tury przeciwnika",
+        "desc_any": "Przeklina wskazaną jednostkę przeciwnika: zostaje wygnana na koniec następnej tury przeciwnika"
+      },
+      "corruption": {
+        "label": "Zepsucie X",
+        "desc": "Przeciąga wskazaną jednostkę przeciwnika o koszcie ≤ X na twoją stronę do końca tury; zyskuje Tropienie.",
+        "desc_any": "Przeciąga wskazaną jednostkę przeciwnika na twoją stronę do końca tury; zyskuje Tropienie."
+      },
+      "domination": {
+        "label": "Dominacja X",
+        "desc": "Przejmuje kontrolę nad wskazaną jednostką przeciwnika o koszcie ≤ X.",
+        "desc_any": "Przejmuje kontrolę nad wskazaną jednostką przeciwnika."
+      },
+      "appel_du_clan": {
+        "label": "Zew klanu X",
+        "desc": "Wprowadza za darmo do gry pierwszą jednostkę {clan_de} o koszcie ≤ X z twojej talii.",
+        "desc_any": "Wprowadza za darmo do gry pierwszą jednostkę {clan_de} z twojej talii."
+      },
+      "appel_supreme": {
+        "label": "Zew Najwyższy",
+        "desc": "Dodaje do ręki kartę o najwyższym koszcie w twojej talii (losową w razie remisu)."
+      },
+      "rassemblement": {
+        "label": "Zbiórka X",
+        "desc": "Odkrywa X wierzchnich kart talii; zachowaj na ręce {race_pl}, resztę odrzuć."
+      },
+      "rappel": {
+        "label": "Przywołanie z cmentarza X",
+        "desc": "Zwraca na rękę kartę o koszcie ≤ X z twojego cmentarza",
+        "desc_any": "Zwraca na rękę kartę z twojego cmentarza"
+      },
+      "exhumation": {
+        "label": "Ekshumacja X",
+        "desc": "Wskrzesza z twojego cmentarza na pole bitwy stworzenie (koszt ≤ X)",
+        "desc_any": "Wskrzesza z twojego cmentarza na pole bitwy stworzenie, niezależnie od jego kosztu"
+      },
+      "selection": {
+        "label": "Wybór X",
+        "desc": "Odkrywa 3 zwykłe karty {alignment} o koszcie X; dodaj jedną na rękę",
+        "desc_any": "Odkrywa 3 zwykłe karty {alignment}; dodaj jedną na rękę"
+      },
+      "forge": {
+        "label": "Kuźnia X",
+        "desc": "Tasuje do twojej talii losowy neutralny przedmiot{forge_align}{forge_cout}",
+        "desc_any": "Tasuje do twojej talii losowy neutralny przedmiot{forge_align}{forge_cout_libre}"
+      },
+      "faveur": {
+        "label": "Przysługa X",
+        "desc": "Dodaje do ręki losową pospolitą kartę {alignment} o koszcie X",
+        "desc_any": "Dodaje do ręki losową pospolitą kartę {alignment}"
+      },
+      "selection_magique": {
+        "label": "Magiczny wybór X",
+        "desc": "Ujawnia 3 pospolite akcje {alignment} o koszcie X; dodaj jedną do ręki",
+        "desc_any": "Ujawnia 3 pospolite akcje {alignment}; dodaj jedną do ręki"
+      },
+      "tresor": {
+        "label": "Skarb X",
+        "desc": "Ujawnia 3 pospolite przedmioty {alignment} lub neutralne o koszcie X; dodaj jeden do ręki",
+        "desc_any": "Ujawnia 3 pospolite przedmioty {alignment} lub neutralne; dodaj jeden do ręki"
+      },
+      "renfort_royal": {
+        "label": "Królewski wybór X",
+        "desc": "Ujawnia 3 twoje limitowane edycje o koszcie X (wymaga ≥30; w przeciwnym razie 3 pospolite {alignment}); zachowaj jedną",
+        "desc_any": "Ujawnia 3 twoje limitowane edycje (wymaga ≥30; w przeciwnym razie 3 pospolite {alignment}); zachowaj jedną"
+      },
+      "relancer": {
+        "label": "Powtórka X",
+        "desc": "Ponownie zagrywa X ostatnio zagranych akcji z losowymi celami"
+      },
+      "dechainement": {
+        "label": "Rozpętanie X/Y",
+        "desc": "Zagrywa X losowych akcji o koszcie Y z twojej kolekcji ({alignment}) z losowymi celami.",
+        "desc_any": "Zagrywa X losowych akcji z twojej kolekcji ({alignment}) z losowymi celami"
+      },
+      "invocation": {
+        "label": "Przywołanie X",
+        "desc": "Przywołuje losową istotę o koszcie X z twojej kolekcji ({alignment}, obecny format).",
+        "desc_any": "Przywołuje losową istotę z twojej kolekcji ({alignment}, obecny format)"
+      },
+      "impact": {
+        "label": "Uderzenie X",
+        "desc": "Zadaje X obrażeń wrogiemu celowi (jednostce lub bohaterowi)."
+      },
+      "canon": {
+        "label": "Działo X",
+        "desc": "Zadaje X obrażeń losowej wrogiej jednostce."
+      },
+      "deferlement": {
+        "label": "Nawałnica X",
+        "desc": "Zadaje X obrażeń wszystkim wrogim istotom"
+      },
+      "boomerang": {
+        "label": "Bumerang",
+        "desc": "Po rozpatrzeniu ta akcja jest tasowana do twojej talii zamiast trafić na cmentarz."
+      },
+      "siphon": {
+        "label": "Syfon X",
+        "desc": "Zadaje X obrażeń celowi i leczy twojego bohatera o tę samą wartość"
+      },
+      "entrave": {
+        "label": "Pęta X",
+        "desc": "Paraliżuje wskazaną wrogą istotę na X tur(y)"
+      },
+      "execution": {
+        "label": "Egzekucja X",
+        "desc": "Niszczy wskazaną istotę lub przedmiot o koszcie ≤ X",
+        "desc_any": "Niszczy wskazaną istotę lub przedmiot"
+      },
+      "silence": {
+        "label": "Cisza",
+        "desc": "Usuwa wszystkie słowa kluczowe wskazanej istoty i przywraca jej statystyki do wartości początkowych; w przypadku przedmiotu usuwa jego słowa kluczowe, pozostawiając jego statystyki"
+      },
+      "renforcement": {
+        "label": "Wzmocnienie +X/+Y",
+        "desc": "+X/+Y dla wskazanej sojuszniczej istoty."
+      },
+      "discipline": {
+        "label": "Dyscyplina +X/+Y",
+        "desc": "Jeśli wszystkie twoje stworzenia w grze mają koszt o takiej samej parzystości co ta akcja, wybrane sojusznicze stworzenie zyskuje +X/+Y."
+      },
+      "usurpation": {
+        "label": "Uzurpacja +X/+Y",
+        "desc": "Wybrane sojusznicze stworzenie, które zostało wskazane zagraną przez ciebie kartą przeciwnika, zyskuje +X/+Y."
+      },
+      "affaiblissement": {
+        "label": "Osłabienie -X/-Y",
+        "desc": "Wybrane wrogie stworzenie otrzymuje -X ATK i -Y PZ."
+      },
+      "guerison": {
+        "label": "Uzdrowienie X",
+        "desc": "Przywraca X PZ sojuszniczej jednostce lub twojemu bohaterowi."
+      },
+      "seconde_vie": {
+        "label": "Drugie życie X",
+        "desc": "Można ją zagrać z twojego cmentarza za X many. Traci wtedy Drugie życie."
+      },
+      "incineration": {
+        "label": "Spopielenie X",
+        "desc": "Odkłada X losowych kart z wybranego cmentarza pod talię ich właściciela"
+      },
+      "creuser": {
+        "label": "Przekopanie X",
+        "desc": "Spójrz na X dolnych kart swojej talii; umieść jedną z nich na wierzchu"
+      },
+      "presage": {
+        "label": "Wróżba",
+        "desc": "Odkrywa 3 wierzchnie karty w losowej kolejności; wskaż tę, która leżała na samej górze, aby wziąć ją na rękę, a następnie przetasuj talię."
+      },
+      "retour_differe": {
+        "label": "Odroczony powrót X",
+        "desc": "Umieszcza wybraną jednostkę lub przedmiot o koszcie ≤ X pod talią jej właściciela",
+        "desc_any": "Umieszcza wybraną jednostkę lub przedmiot pod talią jej właściciela"
+      },
+      "epargne": {
+        "label": "Oszczędności X",
+        "desc": "Dodaje X do twojego licznika Oszczędności (maksimum 8)"
+      },
+      "foi": {
+        "label": "Wiara X",
+        "desc": "Dodaje X do twojej Wiary (maks. 10). Wydatek: odkryj 1 kartę spośród 3 z talii o koszcie ≤ Wiara, odejmowany jest tylko ten koszt"
+      },
+      "conquete": {
+        "label": "Podbój X",
+        "desc": "Dodaje X do twojego Podboju (próg 3). Po osiągnięciu progu: weź na rękę 1 kartę spośród 3 z talii przeciwnika, licznik wraca do 0"
+      },
+      "exploration": {
+        "label": "Eksploracja X",
+        "desc": "Dodaje X do twojej Eksploracji. Za każdym razem, gdy osiągnie 3: dobierz kartę i odejmij 3 (nadwyżka zostaje zachowana)"
+      },
+      "invention": {
+        "label": "Wynalazek +X/+Y",
+        "desc": "Dodaje +X/+Y{machine_part} do twojej maszyny (na start 0/1, 1 mana za Wynalazek, maksymalnie 6)"
+      },
+      "inspiration": {
+        "label": "Inspiracja X",
+        "desc": "Dobierz X kart"
+      },
+      "remontee": {
+        "label": "Powrót na rękę X",
+        "desc": "Zwraca X wybranych jednostek lub przedmiotów na rękę ich pierwotnego właściciela."
+      },
+      "entrainement": {
+        "label": "Trening X",
+        "desc": "+X/+X dla twoich stworzeń {faction_de} na ręce."
+      },
+      "fortifier": {
+        "label": "Umocnienie +X/+Y",
+        "desc": "Pierwsze stworzenie w twojej talii, licząc od wierzchu, zyskuje na stałe +X ATK i +Y PZ."
+      },
+      "preincanter": {
+        "label": "Przedzaklęcie X",
+        "desc": "Pierwsza akcja w twojej talii, licząc od wierzchu, kosztuje na stałe o X many mniej (minimum 1)."
+      },
+      "concentration": {
+        "label": "Koncentracja X",
+        "desc": "Każda akcja na ręce zmienia się w losową akcję o koszcie +X, obniżonym o X (wszystkie frakcje)."
+      },
+      "invocations_multiples": {
+        "label": "Wielokrotne przyzwania",
+        "desc": "Przyzywa {invocations}."
+      },
+      "invocation_multiple": {
+        "label": "Wielokrotne wezwania",
+        "desc": "Tworzy {tokens}."
+      },
+      "tempete": {
+        "label": "Burza X",
+        "desc": "Zadaje X obrażeń rozdzielonych losowo między jednostki wroga."
+      },
+      "cataclysme": {
+        "label": "Kataklizm X",
+        "desc": "Zadaje X obrażeń wszystkim stworom (sojuszniczym ORAZ wrogim)."
+      },
+      "afflux": {
+        "label": "Napływ X",
+        "desc": "Zdobądź X many w tej turze"
+      },
+      "compagnons": {
+        "label": "Towarzysze",
+        "desc": "Tasuje swoich towarzyszy (powiązane karty, wybrane przy tworzeniu) z twoją talią, a następnie tasuje talię ponownie. Tylko raz."
+      },
+      "tuteur": {
+        "label": "Mentor",
+        "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
+      },
+      "enterrement": {
+        "label": "Pochówek X",
+        "desc": "Umieszcza X górnych kart talii wybranego gracza na jego cmentarzu"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "Po wejściu",
+        "on_death": "Po śmierci",
+        "on_return": "Po powrocie na rękę",
+        "on_activation": "Po aktywacji",
+        "on_attack": "Przy ataku",
+        "on_end_of_turn": "Na koniec tury",
+        "on_end_of_turn_in_hand": "Na koniec tury, dopóki jest na ręce",
+        "on_start_of_turn": "Na początku tury",
+        "on_start_of_turn_in_hand": "Na początku tury, dopóki jest na ręce",
+        "in_hand_suffix": "na ręce",
+        "on_draw": "Gdy ta karta zostanie dobrana",
+        "on_low_hp": "Poniżej 15 PZ",
+        "on_wound": "Rana",
+        "on_delay": "Opóźnienie {d}",
+        "on_end_of_turn_in_graveyard": "Na koniec tury, dopóki jest na cmentarzu",
+        "in_graveyard_suffix": "na cmentarzu"
+      },
+      "siphon": {
+        "heal": "i leczy twojego bohatera o {x} PZ",
+        "heal_each": "i leczy twojego bohatera o {x} PZ za każdy trafiony cel",
+        "heal_scatter": "i leczy twojego bohatera łącznie o {x} PZ"
+      },
+      "neutralise": {
+        "suite_one": ": sparaliżowana, zdolności bez efektu",
+        "suite_many": ": sparaliżowane, zdolności bez efektu",
+        "tant_que": "dopóki jest w grze"
+      },
+      "malediction": {
+        "suite_one": ", wygnana na koniec następnej tury przeciwnika",
+        "suite_many": ", wygnane na koniec następnej tury przeciwnika"
+      },
+      "domination": {
+        "limit": "w granicach dostępnych miejsc"
+      },
+      "content": {
+        "deal_damage_one": "zadaje {x} obrażenie",
+        "deal_damage_many": "zadaje {x} obrażeń",
+        "heal": "leczy {x} PŻ",
+        "buff": "przyznaje +{x}/+{y}",
+        "usurpation": "przyznaje za każdą zagraną kartę przeciwnika +{x}/+{y}",
+        "debuff": "zadaje -{x}/-{y}",
+        "destroy": "niszczy",
+        "domination": "przejmuje kontrolę nad",
+        "bounce": "zwraca na rękę",
+        "paralyze": "paraliżuje",
+        "transformation": "przemienia",
+        "transformation_en_one": "w wybraną kartę",
+        "transformation_en_many": "w losową jedną z {n} wybranych kart",
+        "paralyze_turns_one": "na {n} turę",
+        "paralyze_turns_many": "na {n} tur",
+        "poison": "zatruwa",
+        "malediction": "przeklina",
+        "neutralise": "neutralizuje",
+        "grant_keyword": "nadaje {ability}",
+        "random_range": "od 1 do {max}",
+        "random_range_from": "od {min} do {max}",
+        "appel": "wystawia pierwszą jednostkę z twojej talii o koszcie ≤ {x}",
+        "appel_item": "wystawia pierwszy przedmiot z twojej talii o koszcie ≤ {x}",
+        "ability_generic": "zdolność",
+        "draw_cards_one": "dobierz {x} kartę",
+        "draw_cards_many": "dobierz {x} kart",
+        "discard_filtered_one": "przeciwnik odrzuca losowo {x} kartę{filter}",
+        "discard_filtered_many": "przeciwnik odrzuca losowo {x} kart{filter}",
+        "discard_one": "przeciwnik odrzuca losowo {x} kartę",
+        "discard_many": "przeciwnik odrzuca losowo {x} kart",
+        "summon_one": "przyzywa: {token}",
+        "summon_many": "przyzywa {x} × {token}",
+        "token_one": "token",
+        "token_many": "tokeny",
+        "gain_mana": "zyskaj {x} many w tej turze",
+        "exhumation": "wskrzesza {who} z twojego cmentarza (koszt ≤ {x})",
+        "exhum_one": "stworzenie",
+        "exhum_all": "wszystkie stworzenia",
+        "exhum_upto": "maksymalnie {n} stworzeń",
+        "exhumation_item": "przywraca do gry {who} z waszego cmentarza (koszt ≤ {x})",
+        "exhum_item_one": "jeden przedmiot",
+        "exhum_item_all": "wszystkie przedmioty",
+        "exhum_item_upto": "maksymalnie {n} przedmiotów",
+        "exhum_uoi_one": "jedno stworzenie lub jeden przedmiot",
+        "exhum_uoi_all": "wszystkie stworzenia i wszystkie przedmioty",
+        "exhum_uoi_upto": "maksymalnie {n} stworzeń lub przedmiotów",
+        "rappel_one_item": "jeden przedmiot",
+        "rappel_all_item": "wszystkie przedmioty",
+        "rappel_upto_item": "maksymalnie {n} przedmiotów",
+        "rappel_one_creature_item": "jedną jednostkę lub jeden przedmiot",
+        "rappel_all_creature_item": "wszystkie jednostki i wszystkie przedmioty",
+        "rappel_upto_creature_item": "maksymalnie {n} jednostek lub przedmiotów",
+        "rappel_one_spell_item": "jedną akcję lub jeden przedmiot",
+        "rappel_all_spell_item": "wszystkie akcje i wszystkie przedmioty",
+        "rappel_upto_spell_item": "maksymalnie {n} akcji lub przedmiotów",
+        "draw_items_one": "dobierzcie {x} przedmiot ze swojej talii",
+        "draw_items_many": "dobierzcie przedmioty ze swojej talii: {x}",
+        "draw_filtered_one": "dobierzcie {x} kartę{filter} ze swojej talii",
+        "draw_filtered_many": "dobierzcie karty{filter} ze swojej talii: {x}",
+        "invocation_item": "wykłada losowy przedmiot o koszcie {x}{filter}",
+        "rappel": "zawraca {who} z waszego cmentarza na rękę{cost}",
+        "rappel_cost": " (koszt ≤ {max})",
+        "rappel_one_any": "jedną kartę",
+        "rappel_one_creature": "jedną jednostkę",
+        "rappel_one_spell": "jedną akcję",
+        "rappel_all_any": "wszystkie karty",
+        "rappel_all_creature": "wszystkie jednostki",
+        "rappel_all_spell": "wszystkie akcje",
+        "rappel_upto_any": "maksymalnie {n} kart",
+        "rappel_upto_creature": "maksymalnie {n} jednostek",
+        "rappel_upto_spell": "maksymalnie {n} akcji",
+        "invocation": "przyzywa losowe stworzenie o koszcie {x}{filter}",
+        "invocation_card": "przyzywa wskazaną kartę",
+        "invocation_card_item": "wykłada wskazany przedmiot",
+        "invocation_cards_item": "wykłada wskazane przedmioty ({n})",
+        "invocation_copies_item": "wykłada egzemplarze wskazanego przedmiotu: {n}",
+        "invocation_cards": "przyzywa wskazane karty ({n})",
+        "invocation_copies": "przyzywa egzemplarze wskazanej karty: {n}",
+        "tuteur": "dodaj wskazaną kartę do swojej ręki",
+        "tuteur_copies": "dodaj {n} kopii wskazanej karty do swojej ręki",
+        "appel_supreme": "dodaj do swojej ręki kartę o najwyższym koszcie z twojej talii{filter}{cost}",
+        "appel_supreme_cost": " (koszt ≤ {max})",
+        "tuteur_many": "dodaj {n} wskazanych kart do swojej ręki",
+        "epargne": "dodaje {x} do twojego licznika Oszczędności",
+        "foi": "dodaje {x} do twojego licznika Wiary",
+        "conquete": "dodaje {x} do twojego licznika Podboju",
+        "exploration": "dodaje {x} do twojego licznika Eksploracji",
+        "incineration": "odkłada {x} kart ze wskazanego cmentarza pod jego talię",
+        "incineration_cible": "odkłada {cartes} {zone} pod {deck}",
+        "occurrences": "{n} razy: ",
+        "alternative": "Do wyboru: ",
+        "devoration": "pożera",
+        "silence": "uciszają",
+        "dechainement": "zagrywa {x} losowych akcji o koszcie {y}",
+        "dechainement_one": "zagrywa jedną losową akcję o koszcie {y}",
+        "tactique_one": "daje losową zdolność stworzenia o tym samym koszcie",
+        "tactique_many": "daje losowo {x} zdolności stworzeń o tym samym koszcie",
+        "retour_differe": "umieszcza pod talią jego właściciela",
+        "retour_differe_cible": "umieszcza {target} pod talią: {proprio}",
+        "proprio_one": "jego właściciel",
+        "proprio_many": "ich właściciele",
+        "selection": "ujawnia 3 karty{filter} (koszt {x}) i jedną z nich zachowuje na ręce",
+        "faveur": "dodaje do ręki losową kartę{filter} (koszt {x})",
+        "selection_magique": "ujawnia 3 akcje{filter} (koszt {x}) i jedną z nich zachowuje na ręce",
+        "renfort_royal": "ujawnia 3 karty kolekcjonerskie{filter} (koszt {x}) i jedną z nich zachowuje na ręce",
+        "tresor": "ujawnia 3 przedmioty{filter} (koszt {x}) i jeden z nich zachowuje na ręce",
+        "selection_any": "ujawnia 3 karty{filter} i jedną z nich zachowuje na ręce",
+        "faveur_any": "dodaje do ręki losową kartę{filter}",
+        "selection_magique_any": "ujawnia 3 akcje{filter} i jedną z nich zachowuje na ręce",
+        "renfort_royal_any": "ujawnia 3 karty kolekcjonerskie{filter} i jedną z nich zachowuje na ręce",
+        "tresor_any": "ujawnia 3 przedmioty{filter} i jeden z nich zachowuje na ręce",
+        "forge": "tasuje z twoją talią losowy przedmiot neutralny lub zgodny z twoim charakterem{filter} o koszcie co najwyżej {x}",
+        "forge_range": "tasuje z twoją talią losowy przedmiot neutralny lub zgodny z twoim charakterem{filter} o koszcie od {min} do {x}",
+        "forge_any": "tasuje z twoją talią losowy przedmiot neutralny lub zgodny z twoim charakterem{filter}",
+        "forge_any_min": "tasuje z twoją talią losowy przedmiot neutralny lub zgodny z twoim charakterem{filter} o koszcie co najmniej {min}",
+        "invocation_any": "przyzywa losowe stworzenie{filter}",
+        "invocation_item_any": "wykłada losowy przedmiot{filter}",
+        "exhumation_any": "wskrzesza {who} z twojego cmentarza",
+        "exhumation_item_any": "przywraca do gry {who} z waszego cmentarza",
+        "exhumation_enemy": "wskrzesza pod waszą kontrolą {who} z cmentarza przeciwnika (koszt ≤ {x})",
+        "exhumation_item_enemy": "przywraca do gry pod waszą kontrolą {who} z cmentarza przeciwnika (koszt ≤ {x})",
+        "exhumation_enemy_any": "wskrzesza pod waszą kontrolą {who} z cmentarza przeciwnika",
+        "exhumation_item_enemy_any": "przywraca do gry pod waszą kontrolą {who} z cmentarza przeciwnika",
+        "exhumation_both": "wskrzesza pod waszą kontrolą {who} z dowolnego cmentarza (koszt ≤ {x})",
+        "exhumation_item_both": "przywraca do gry pod waszą kontrolą {who} z dowolnego cmentarza (koszt ≤ {x})",
+        "exhumation_both_any": "wskrzesza pod waszą kontrolą {who} z dowolnego cmentarza",
+        "exhumation_item_both_any": "przywraca do gry pod waszą kontrolą {who} z dowolnego cmentarza",
+        "appel_any": "wprowadza do gry pierwszą jednostkę z waszej talii",
+        "appel_item_any": "wprowadza do gry pierwszy przedmiot z waszej talii",
+        "dechainement_any": "zagrywa {x} losowych akcji",
+        "dechainement_one_any": "zagrywa jedną losową akcję",
+        "enterrement_one": "umieszcza pierwszą kartę{filter} {deck}",
+        "enterrement_many": "umieszcza {x} pierwszych kart{filter} {deck}"
+      },
+      "self": {
+        "transformation": "przemienia się",
+        "deal_damage_one": "zadaje sobie {x} obrażenie",
+        "deal_damage_many": "zadaje sobie {x} obrażeń",
+        "heal": "leczy się o {x} PŻ",
+        "buff": "zyskuje +{x}/+{y}",
+        "usurpation": "zyskuje +{x}/+{y} za każdą zagraną kartę przeciwnika",
+        "debuff": "zadaje sobie -{x}/-{y}",
+        "destroy": "niszczy się",
+        "bounce": "wraca na rękę",
+        "paralyze": "paraliżuje się",
+        "poison": "truje się",
+        "malediction": "przeklina się",
+        "neutralise": "neutralizuje się",
+        "grant_keyword": "nadaje sobie {ability}"
+      },
+      "choice": {
+        "transformation": "wybierz stworzenie do przemiany",
+        "deal_damage": "wybierz cel do zranienia",
+        "siphon": "wybierz cel do wyssania życia",
+        "domination": "wybierz stworzenie do zdominowania",
+        "heal": "wybierz cel do uleczenia",
+        "buff": "wybierz stworzenie do wzmocnienia",
+        "usurpation": "wybierz stworzenie do wzmocnienia",
+        "debuff": "wybierz stworzenie do osłabienia",
+        "destroy": "wybierz stworzenie do zniszczenia",
+        "bounce": "wybierz stworzenie do zwrócenia na rękę",
+        "paralyze": "wybierz stworzenie do sparaliżowania",
+        "poison": "wybierz stworzenie do otrucia",
+        "malediction": "wybierz stworzenie do przeklęcia",
+        "neutralise": "wybierz stworzenie do zneutralizowania",
+        "grant_keyword": "wybierz stworzenie, któremu nadasz zdolność",
+        "exhumation": "wybierz stworzenie do wskrzeszenia",
+        "rappel": "wybierz kartę do wzięcia z powrotem na rękę",
+        "default": "wybierz cel"
+      },
+      "emblem": {
+        "badge": "Godło",
+        "self": "Godło",
+        "opponent": "Godło umieszczone u przeciwnika",
+        "permanent": " (stałe)",
+        "turns_one": " ({n} tura)",
+        "turns_many": " (tury: {n})",
+        "owner_self": "twoich",
+        "owner_opponent": "jego",
+        "hero_self": "twój bohater",
+        "hero_opponent": "jego bohater",
+        "turn_self": "twojej",
+        "turn_opponent": "jego",
+        "when": {
+          "on_play": "za każdym razem, gdy jedno z {owner} stworzeń wchodzi do gry",
+          "on_death": "za każdym razem, gdy jedno z {owner} stworzeń umiera",
+          "on_attack": "za każdym razem, gdy jedno z {owner} stworzeń atakuje",
+          "on_return": "za każdym razem, gdy jedno z {owner} stworzeń wraca na rękę",
+          "on_activation": "za każdym razem, gdy jedno z {owner} stworzeń się aktywuje",
+          "on_low_hp": "za każdym razem, gdy {hero} spadnie poniżej {n} PZ",
+          "on_end_of_turn": "na koniec {turn} tury",
+          "on_start_of_turn": "na początku {turn} tury"
+        }
+      },
+      "grant_when": {
+        "on_play": ", która uruchomi się po wejściu do gry",
+        "on_death": ", która uruchomi się po jej śmierci",
+        "on_activation": ", która uruchomi się po aktywacji",
+        "on_return": ", która uruchomi się po powrocie na rękę",
+        "on_end_of_turn": ", która uruchomi się na koniec tury",
+        "on_start_of_turn": ", która uruchomi się na początku tury",
+        "on_attack": ", która uruchomi się, gdy zaatakuje",
+        "on_draw": ", która uruchomi się po dobraniu",
+        "on_low_hp": ", która uruchomi się poniżej 15 PZ",
+        "on_wound": ", która uruchomi się, gdy zostanie zraniona, ale nie zginie",
+        "on_end_of_turn_in_hand": ", która uruchomi się na koniec tury, dopóki jest na ręce",
+        "on_start_of_turn_in_hand": ", która uruchomi się na początku tury, dopóki jest na ręce",
+        "on_end_of_turn_in_graveyard": ", która uruchomi się na koniec tury, dopóki jest na cmentarzu",
+        "on_delay": ", który aktywuje się za {n} tur(y)"
+      },
+      "incin": {
+        "zone_ally": "z twojego cmentarza",
+        "zone_enemy": "z cmentarza przeciwnika",
+        "zone_any": "z jednego z cmentarzy",
+        "zone_both": "z obu cmentarzy",
+        "deck_ally": "twoją talię",
+        "deck_enemy": "talię przeciwnika",
+        "deck_any": "talię jej właściciela",
+        "deck_both": "talie ich właścicieli",
+        "card_all": "wszystkie karty",
+        "card_one": "jedną kartę",
+        "card_n": "karty: {n}",
+        "unit_all": "wszystkie jednostki",
+        "unit_one": "jedną jednostkę",
+        "unit_n": "jednostki: {n}",
+        "spell_all": "wszystkie akcje",
+        "spell_one": "jedną akcję",
+        "spell_n": "akcje: {n}",
+        "item_all": "wszystkie przedmioty",
+        "item_one": "jeden przedmiot",
+        "item_n": "przedmioty: {n}"
+      },
+      "pool": {
+        "race": " rasy {v}",
+        "faction": " frakcji {v}",
+        "clan": " klanu {v}",
+        "keyword": " ze zdolnością {v}",
+        "type_creature": " typu jednostka",
+        "type_spell": " typu akcja",
+        "min_cost": " o koszcie co najmniej {n}",
+        "type_item": " typu przedmiot"
+      },
+      "targetd": {
+        "count_all": "wszystkie jednostki",
+        "count_one": "jedną jednostkę",
+        "count_n": "jednostki: {n}",
+        "count_scatter": "maksymalnie {n} jednostek",
+        "item_count_all": "wszystkie przedmioty",
+        "item_count_one": "jeden przedmiot",
+        "item_count_n": "przedmioty: {n}",
+        "item_count_scatter": "maksymalnie {n} przedmiotów",
+        "uoi_count_all": "wszystkie jednostki i wszystkie przedmioty",
+        "uoi_count_one": "jedną jednostkę lub jeden przedmiot",
+        "uoi_count_n": "jednostki lub przedmioty: {n}",
+        "uoi_count_scatter": "do {n} jednostek lub przedmiotów",
+        "hero_ally": "twój bohater",
+        "hero_enemy": "bohater przeciwnika",
+        "both_all": "wszystkie jednostki i bohater {side}",
+        "both_one": "jeden cel (jednostka lub bohater){side}",
+        "damage_source": "to, co ją zraniło"
+      },
+      "target": {
+        "self": "do niej samej",
+        "damage_source": "do tego, co ją zraniło",
+        "hero_ally": "do twojego bohatera",
+        "hero_enemy": "do bohatera przeciwnika",
+        "both_all": "do wszystkich jednostek i bohatera {side}",
+        "both_one": "do jednego celu (jednostki lub bohatera){side}",
+        "both_side_ally": "sojuszniczych",
+        "both_side_enemy": "wrogich",
+        "both_side_ally_one": "sojuszniczego",
+        "both_side_enemy_one": "wrogiego",
+        "count_all": "do wszystkich jednostek",
+        "count_one": "do jednej jednostki",
+        "count_n": "do {n} jednostek",
+        "count_all_autres": "do wszystkich pozostałych jednostek",
+        "count_one_autre": "do jednej innej jednostki",
+        "count_n_autres": "do {n} innych jednostek",
+        "count_scatter": "do maksymalnie {n} jednostek",
+        "item_count_all": "do wszystkich przedmiotów",
+        "item_count_one": "do jednego przedmiotu",
+        "item_count_n": "do {n} przedmiotów",
+        "item_count_scatter": "do maksymalnie {n} przedmiotów",
+        "uoi_count_all": "do wszystkich jednostek i przedmiotów",
+        "uoi_count_one": "do jednej jednostki lub przedmiotu",
+        "uoi_count_n": "do {n} jednostek lub przedmiotów",
+        "uoi_count_scatter": "do maksymalnie {n} jednostek lub przedmiotów",
+        "side_ally_one_m": "sojuszniczy",
+        "side_ally_many_m": "sojuszniczy",
+        "side_enemy_one_m": "wrogi",
+        "side_enemy_many_m": "wrodzy",
+        "side_ally_one": "sojusznicza",
+        "side_ally_many": "sojusznicze",
+        "side_enemy_one": "wroga",
+        "side_enemy_many": "wrogie",
+        "locs_board": "z planszy",
+        "locs_hand": "z ręki",
+        "locs_deck": "z talii",
+        "locs_graveyard": "z cmentarza",
+        "locs_sep": ", ",
+        "locs_and": " i ",
+        "locs_wrap": "{zones}",
+        "loc_hand": "na ręce",
+        "loc_deck": "w talii",
+        "loc_graveyard": "na cmentarzu",
+        "des_random": "losowo",
+        "des_automatic": "automatycznie",
+        "des_choice": "do wyboru",
+        "max_cost": "o koszcie {n} lub mniejszym",
+        "with_keyword": "ze zdolnością {v}"
+      },
+      "scatter": {
+        "action_damage": "zadaje",
+        "action_heal": "przywraca",
+        "unit_damage": "obrażenie",
+        "unit_heal": "PZ",
+        "times": "{x} razy 1 {unit}, za każdym razem",
+        "target_both": "losowemu celowi {side} (jednostce lub bohaterowi)",
+        "target_unit": "losowej jednostce {side}"
+      },
+      "enterrement": {
+        "deck_enemy": "z talii przeciwnika na jego cmentarz",
+        "deck_ally": "z twojej talii na twój cmentarz",
+        "deck_any": "z wybranej talii na jej cmentarz"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "Przymierze Niebiańskie",
+        "description": "Przymierze dobrego ludu lasów: skryte elfy, czarodziejskie wróżki, sprytne hobbity i ich kolosy, Drzewcy."
+      },
+      "Nains": {
+        "displayName": "Armie Gór",
+        "description": "Wytrzymali i niezłomni: obrona, upór, kuźnia, gnomia inżynieria i kolosy szczytów."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "Państwo Środka",
+        "description": "Strategia i kontrola: dyscyplina, szyki bojowe, mistycyzm, skrytość, strażnicy świątyń nagowie, górskie yōkai — tengu i oni — oraz qilin, zwiastun sprawiedliwych rządów."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Królestwa Słońca",
+        "description": "Słońce, pustynia i duchy: rytualny żar, koczowniczy łupieżcy i przywoływacze."
+      },
+      "Humains": {
+        "displayName": "Wolne Królestwa",
+        "description": "Stary kontynent: honor, stal, bohaterscy czempioni i ich dumni skrzydlaci sojusznicy — gryfy, sokoły oraz pegazy i sfinksy Wojowniczek Wiatru."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "Wataha",
+        "description": "Dzicy i wściekli: atakują szybko, regenerują się, wpadają w szał."
+      },
+      "Élémentaires": {
+        "displayName": "Pierwotni",
+        "description": "Pierwotne siły natury. Każdy żywioł ma własny styl walki."
+      },
+      "Mercenaires": {
+        "displayName": "Najemnicy",
+        "description": "Żołnierze fortuny bez lojalności. Wszechstronni i dostępni dla każdej talii."
+      },
+      "Morts-Vivants": {
+        "displayName": "Nekropolia",
+        "description": "Nienasyceni i skażeni: wskrzeszanie, wysysanie życia i magia cmentarza."
+      },
+      "Elfes Noirs": {
+        "displayName": "Legiony Chaosu",
+        "description": "Wszystkie siły Chaosu w jedności: zorganizowana horda, demoniczny dwór, skażeni trucizną i upadła elita."
+      }
+    },
+    "rarities": {
+      "Commune": "Pospolita",
+      "Peu Commune": "Niepospolita",
+      "Rare": "Rzadka",
+      "Épique": "Epicka",
+      "Légendaire": "Unikatowa"
+    },
+    "clans": {
+      "Les Sylvains": "Sylwanie",
+      "Les Hauts-Elfes": "Wysocy Elfowie",
+      "La Forêt d'Émeraude": "Szmaragdowy Las",
+      "La Combe Verte": "Zielona Kotlina",
+      "La Forge Ardente": "Płonąca Kuźnia",
+      "La Guilde des Ingénieurs": "Gildia Inżynierów",
+      "Clan des Mille Tunnels": "Klan Tysiąca Tuneli",
+      "Clan des Premiers Géants": "Klan Pierwszych Gigantów",
+      "Les Hordes des Steppes": "Hordy Stepów",
+      "L'Empire de Jade": "Nefrytowe Cesarstwo",
+      "Les Lames de l'Ombre": "Ostrza Cienia",
+      "Les Défenseurs d'Ivoire": "Obrońcy z Kości Słoniowej",
+      "Les Enfants du Soleil": "Dzieci Słońca",
+      "Les Seigneurs des Dunes": "Władcy Wydm",
+      "Le Royaume des Masques": "Królestwo Masek",
+      "Les Fils du Volcan": "Synowie Wulkanu",
+      "Le Royaume du Nord": "Królestwo Północy",
+      "L'Ordre de l'Aube": "Zakon Świtu",
+      "Les Guerrières du Vent": "Wojowniczki Wichru",
+      "La Sublime Porte": "Wzniosła Brama",
+      "Les Seigneurs Fauves": "Władcy Bestii",
+      "Les Enfants de la Lune": "Dzieci Księżyca",
+      "Le Pacte des Griffes": "Pakt Szponów",
+      "La Harde Sauvage": "Dzikie Stado",
+      "La Forêt Enchantée": "Zaczarowany Las",
+      "La Colère des Flammes": "Gniew Płomieni",
+      "Le Socle du Monde": "Fundament Świata",
+      "La Vague Sans Fin": "Niekończąca się Fala",
+      "Le Souffle des Cimes": "Tchnienie Szczytów",
+      "Les Rangs Silencieux": "Milczące Szeregi",
+      "Le Voile Hurlant": "Wyjący Całun",
+      "La Cour Écarlate": "Szkarłatny Dwór",
+      "Le Cénacle Nécromant": "Konwent Nekromantów",
+      "Les Cohortes Sanglantes": "Krwawe Kohorty",
+      "Les Princes des Abîmes": "Książęta Otchłani",
+      "La Forêt Maudite": "Przeklęty Las",
+      "La Garde Noire": "Czarna Straż"
+    },
+    "races": {
+      "Elfes": "Elfy",
+      "Fées": "Wróżki",
+      "Aigles Géants": "Olbrzymie Orły",
+      "Hobbits": "Hobbici",
+      "Hommes-Arbres": "Drzewoludzie",
+      "Farfadets": "Skrzaty",
+      "Korrigans": "Korrigany",
+      "Faunes": "Fauny",
+      "Dryades": "Driady",
+      "Nains": "Krasnoludy",
+      "Golems": "Golemy",
+      "Gnomes": "Gnomy",
+      "Machines": "Maszyny",
+      "Kobolds": "Koboldy",
+      "Géants": "Olbrzymy",
+      "Mammouths": "Mamuty",
+      "Humains": "Ludzie",
+      "Nagas": "Nagi",
+      "Tengu": "Tengu",
+      "Oni": "Oni",
+      "Qilins": "Qiliny",
+      "Esprits": "Duchy",
+      "Griffons": "Gryfy",
+      "Faucons": "Sokoły",
+      "Pégases": "Pegazy",
+      "Sphinx": "Sfinksy",
+      "Yétis": "Yeti",
+      "Hommes-Loups": "Wilkołaki",
+      "Hommes-Ours": "Niedźwiedzioludzie",
+      "Hommes-Félins": "Kociludzie",
+      "Centaures": "Centaury",
+      "Mimis": "Mimi",
+      "Hommes-Chiens": "Psioludzie",
+      "Hommes-Renards": "Lisioludzie",
+      "Hommes-Cerfs": "Jeleniołudzie",
+      "Hommes-Singes": "Małpoludy",
+      "Hommes-Poissons": "Rybołudzie",
+      "Hommes-Oiseaux": "Ptakoludzie",
+      "Insectes": "Owady",
+      "Élémentaire": "Żywiołak",
+      "Ondins": "Undyny",
+      "Sirènes": "Syreny",
+      "Léviathans": "Lewiatany",
+      "Cristallins": "Krystaliczni",
+      "Troglodytes": "Troglodyci",
+      "Bêtes Chtoniennes": "Bestie Chtoniczne",
+      "Salamandres": "Salamandry",
+      "Sylphes": "Sylfy",
+      "Néphélides": "Nefelidy",
+      "Ogres": "Ogry",
+      "Dragons": "Smoki",
+      "Chiens": "Psy",
+      "Phoenix": "Feniksy",
+      "Anges": "Anioły",
+      "Ours": "Niedźwiedzie",
+      "Loups": "Wilki",
+      "Fauves": "Drapieżniki",
+      "Éléphants": "Słonie",
+      "Squelettes": "Szkielety",
+      "Zombies": "Zombie",
+      "Ghoules": "Ghule",
+      "Spectres": "Upiory",
+      "Vampires": "Wampiry",
+      "Lich": "Licze",
+      "Banshees": "Banshee",
+      "Homuncules de Sang": "Homunkulusy Krwi",
+      "Gargouilles": "Gargulce",
+      "Dhampirs": "Dhampiry",
+      "Chiroptères": "Nietoperze",
+      "Momies": "Mumie",
+      "Chimères nécrotiques": "Chimery nekrotyczne",
+      "Vermines mortuaires": "Szkodniki grobowe",
+      "Poltergeists": "Poltergeisty",
+      "Dullahans": "Dullahany",
+      "Sluaghs": "Sluaghowie",
+      "Elfes Corrompus": "Skażone Elfy",
+      "Araignées Géantes": "Olbrzymie Pająki",
+      "Démons": "Demony",
+      "Orcs": "Orkowie",
+      "Gobelins": "Gobliny",
+      "Trolls": "Trolle",
+      "Wargs": "Wargi",
+      "Guerriers du Chaos": "Wojownicy Chaosu",
+      "Bâtiments": "Budynki"
+    },
+    "alignments": {
+      "bon": "Dobry",
+      "neutre": "Neutralny",
+      "maléfique": "Zły",
+      "spéciale": "Specjalny"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "Elf",
+        "bare": "Elf",
+        "de": "Elfa",
+        "one": "Elf",
+        "all": "wszystkie Elfy",
+        "upto": "do {n} Elfów"
+      },
+      "Fées": {
+        "def": "Wróżka",
+        "bare": "Wróżka",
+        "de": "Wróżki",
+        "one": "Wróżka",
+        "all": "wszystkie Wróżki",
+        "upto": "do {n} Wróżek"
+      },
+      "Farfadets": {
+        "def": "Chochlik",
+        "bare": "Chochlik",
+        "de": "Chochlika",
+        "one": "Chochlik",
+        "all": "wszystkie Chochliki",
+        "upto": "do {n} Chochlików"
+      },
+      "Korrigans": {
+        "def": "Korrigan",
+        "bare": "Korrigan",
+        "de": "Korrigana",
+        "one": "Korrigan",
+        "all": "wszystkie Korrigany",
+        "upto": "do {n} Korriganów"
+      },
+      "Faunes": {
+        "def": "Faun",
+        "bare": "Faun",
+        "de": "Fauna",
+        "one": "Faun",
+        "all": "wszystkie Fauny",
+        "upto": "do {n} Faunów"
+      },
+      "Dryades": {
+        "def": "Driada",
+        "bare": "Driada",
+        "de": "Driady",
+        "one": "Driada",
+        "all": "wszystkie Driady",
+        "upto": "do {n} Driad"
+      },
+      "Aigles Géants": {
+        "def": "Gigantyczny Orzeł",
+        "bare": "Gigantyczny Orzeł",
+        "de": "Gigantycznego Orła",
+        "one": "Gigantyczny Orzeł",
+        "all": "wszystkie Gigantyczne Orły",
+        "upto": "do {n} Gigantycznych Orłów"
+      },
+      "Hobbits": {
+        "def": "Hobbit",
+        "bare": "Hobbit",
+        "de": "Hobbita",
+        "one": "Hobbit",
+        "all": "wszystkie Hobbity",
+        "upto": "do {n} Hobbitów"
+      },
+      "Hommes-Arbres": {
+        "def": "Drzewiec",
+        "bare": "Drzewiec",
+        "de": "Drzewca",
+        "one": "Drzewiec",
+        "all": "wszystkie Drzewce",
+        "upto": "do {n} Drzewców"
+      },
+      "Nains": {
+        "def": "Krasnolud",
+        "bare": "Krasnolud",
+        "de": "Krasnoluda",
+        "one": "Krasnolud",
+        "all": "wszystkie Krasnoludy",
+        "upto": "do {n} Krasnoludów"
+      },
+      "Golems": {
+        "def": "Golem",
+        "bare": "Golem",
+        "de": "Golema",
+        "one": "Golem",
+        "all": "wszystkie Golemy",
+        "upto": "do {n} Golemów"
+      },
+      "Bâtiments": {
+        "def": "Budynek",
+        "bare": "Budynek",
+        "de": "Budynku",
+        "one": "jeden Budynek",
+        "all": "wszystkie Budynki",
+        "upto": "do {n} Budynków"
+      },
+      "Gnomes": {
+        "def": "Gnom",
+        "bare": "Gnom",
+        "de": "Gnoma",
+        "one": "jeden Gnom",
+        "all": "wszystkie Gnomy",
+        "upto": "do {n} Gnomów"
+      },
+      "Machines": {
+        "def": "Maszyna",
+        "bare": "Maszyna",
+        "de": "Maszyny",
+        "one": "jedna Maszyna",
+        "all": "wszystkie Maszyny",
+        "upto": "do {n} Maszyn"
+      },
+      "Kobolds": {
+        "def": "Kobold",
+        "bare": "Kobold",
+        "de": "Kobolda",
+        "one": "jeden Kobold",
+        "all": "wszystkie Koboldy",
+        "upto": "do {n} Koboldów"
+      },
+      "Humains": {
+        "def": "Człowiek",
+        "bare": "Człowiek",
+        "de": "Człowieka",
+        "one": "jeden Człowiek",
+        "all": "wszyscy Ludzie",
+        "upto": "do {n} Ludzi"
+      },
+      "Esprits": {
+        "def": "Duch",
+        "bare": "Duch",
+        "de": "Ducha",
+        "one": "jeden Duch",
+        "all": "wszystkie Duchy",
+        "upto": "do {n} Duchów"
+      },
+      "Nagas": {
+        "def": "Naga",
+        "bare": "Naga",
+        "de": "Nagi",
+        "one": "jedna Naga",
+        "all": "wszystkie Nagi",
+        "upto": "do {n} Nag"
+      },
+      "Tengu": {
+        "def": "Tengu",
+        "bare": "Tengu",
+        "de": "Tengu",
+        "one": "Tengu",
+        "all": "wszystkie Tengu",
+        "upto": "do {n} Tengu"
+      },
+      "Oni": {
+        "def": "Oni",
+        "bare": "Oni",
+        "de": "Oni",
+        "one": "Oni",
+        "all": "wszystkie Oni",
+        "upto": "do {n} Oni"
+      },
+      "Qilins": {
+        "def": "Qilin",
+        "bare": "Qilin",
+        "de": "Qilina",
+        "one": "Qilin",
+        "all": "wszystkie Qiliny",
+        "upto": "do {n} Qilinów"
+      },
+      "Griffons": {
+        "def": "Gryf",
+        "bare": "Gryf",
+        "de": "Gryfa",
+        "one": "Gryf",
+        "all": "wszystkie Gryfy",
+        "upto": "do {n} Gryfów"
+      },
+      "Faucons": {
+        "def": "Sokół",
+        "bare": "Sokół",
+        "de": "Sokoła",
+        "one": "Sokół",
+        "all": "wszystkie Sokoły",
+        "upto": "do {n} Sokołów"
+      },
+      "Pégases": {
+        "def": "Pegaz",
+        "bare": "Pegaz",
+        "de": "Pegaza",
+        "one": "Pegaz",
+        "all": "wszystkie Pegazy",
+        "upto": "do {n} Pegazów"
+      },
+      "Sphinx": {
+        "def": "Sfinks",
+        "bare": "Sfinks",
+        "de": "Sfinksa",
+        "one": "Sfinks",
+        "all": "wszystkie Sfinksy",
+        "upto": "do {n} Sfinksów"
+      },
+      "Yétis": {
+        "def": "Yeti",
+        "bare": "Yeti",
+        "de": "Yeti",
+        "one": "Yeti",
+        "all": "wszystkie Yeti",
+        "upto": "do {n} Yeti"
+      },
+      "Hommes-Loups": {
+        "def": "Wilkołak",
+        "bare": "Wilkołak",
+        "de": "Wilkołaka",
+        "one": "Wilkołak",
+        "all": "wszystkie Wilkołaki",
+        "upto": "do {n} Wilkołaków"
+      },
+      "Hommes-Ours": {
+        "def": "Człowiek-Niedźwiedź",
+        "bare": "Człowiek-Niedźwiedź",
+        "de": "Człowieka-Niedźwiedzia",
+        "one": "Człowiek-Niedźwiedź",
+        "all": "wszystkie Ludzie-Niedźwiedzie",
+        "upto": "do {n} Ludzi-Niedźwiedzi"
+      },
+      "Hommes-Félins": {
+        "def": "Człowiek-Kot",
+        "bare": "Człowiek-Kot",
+        "de": "Człowieka-Kota",
+        "one": "Człowiek-Kot",
+        "all": "wszystkie Ludzie-Koty",
+        "upto": "do {n} Ludzi-Kotów"
+      },
+      "Centaures": {
+        "def": "Centaur",
+        "bare": "Centaur",
+        "de": "Centaura",
+        "one": "Centaur",
+        "all": "wszystkie Centaury",
+        "upto": "do {n} Centaurów"
+      },
+      "Mimis": {
+        "def": "Mimik",
+        "bare": "Mimik",
+        "de": "Mimika",
+        "one": "Mimik",
+        "all": "wszystkie Mimiki",
+        "upto": "do {n} Mimików"
+      },
+      "Hommes-Chiens": {
+        "def": "Psołak",
+        "bare": "Psołak",
+        "de": "Psołaka",
+        "one": "Psołak",
+        "all": "wszystkie Psołaki",
+        "upto": "do {n} Psołaków"
+      },
+      "Hommes-Renards": {
+        "def": "Lisołak",
+        "bare": "Lisołak",
+        "de": "Lisołaka",
+        "one": "Lisołak",
+        "all": "wszystkie Lisołaki",
+        "upto": "do {n} Lisołaków"
+      },
+      "Hommes-Cerfs": {
+        "def": "Jeleniołak",
+        "bare": "Jeleniołak",
+        "de": "Jeleniołaka",
+        "one": "Jeleniołak",
+        "all": "wszystkie Jeleniołaki",
+        "upto": "do {n} Jeleniołaków"
+      },
+      "Insectes": {
+        "def": "Owad",
+        "bare": "Owad",
+        "de": "Owada",
+        "one": "Owad",
+        "all": "wszystkie Owady",
+        "upto": "do {n} Owadów"
+      },
+      "Hommes-Singes": {
+        "def": "Małpolud",
+        "bare": "Małpolud",
+        "de": "Małpoluda",
+        "one": "Małpolud",
+        "all": "wszystkie Małpoludy",
+        "upto": "do {n} Małpoludów"
+      },
+      "Hommes-Poissons": {
+        "def": "Rybolud",
+        "bare": "Rybolud",
+        "de": "Ryboluda",
+        "one": "Rybolud",
+        "all": "wszystkie Ryboludy",
+        "upto": "do {n} Ryboludów"
+      },
+      "Hommes-Oiseaux": {
+        "def": "Ptakolud",
+        "bare": "Ptakolud",
+        "de": "Ptakoluda",
+        "one": "Ptakolud",
+        "all": "wszyscy Ptakoludzie",
+        "upto": "do {n} Ptakoludzi"
+      },
+      "Élémentaire": {
+        "def": "Żywiołak",
+        "bare": "Żywiołak",
+        "de": "Żywiołaka",
+        "pl": "Żywiołaki",
+        "one": "Żywiołak",
+        "all": "wszystkie Żywiołaki",
+        "upto": "do {n} Żywiołaków"
+      },
+      "Géants": {
+        "def": "Olbrzym",
+        "bare": "Olbrzym",
+        "de": "Olbrzyma",
+        "one": "Olbrzym",
+        "all": "wszyscy Olbrzymi",
+        "upto": "do {n} Olbrzymów"
+      },
+      "Mammouths": {
+        "def": "Mamut",
+        "bare": "Mamut",
+        "de": "Mamuta",
+        "one": "Mamut",
+        "all": "wszystkie Mamuty",
+        "upto": "do {n} Mamutów"
+      },
+      "Ogres": {
+        "def": "Ogr",
+        "bare": "Ogr",
+        "de": "Ogra",
+        "one": "Ogr",
+        "all": "wszystkie Ogry",
+        "upto": "do {n} Ogrów"
+      },
+      "Dragons": {
+        "def": "Smok",
+        "bare": "Smok",
+        "de": "Smoka",
+        "one": "Smok",
+        "all": "wszystkie Smoki",
+        "upto": "do {n} Smoków"
+      },
+      "Éléphants": {
+        "def": "Słoń",
+        "bare": "Słoń",
+        "de": "Słonia",
+        "one": "Słoń",
+        "all": "wszystkie Słonie",
+        "upto": "do {n} Słoni"
+      },
+      "Chiens": {
+        "def": "Pies",
+        "bare": "Pies",
+        "de": "Psa",
+        "one": "Pies",
+        "all": "wszystkie Psy",
+        "upto": "do {n} Psów"
+      },
+      "Phoenix": {
+        "def": "Feniks",
+        "bare": "Feniks",
+        "de": "Feniksa",
+        "one": "Feniks",
+        "all": "wszystkie Feniksy",
+        "upto": "do {n} Feniksów"
+      },
+      "Anges": {
+        "def": "Anioł",
+        "bare": "Anioł",
+        "de": "Anioła",
+        "one": "Anioł",
+        "all": "wszystkie Anioły",
+        "upto": "do {n} Aniołów"
+      },
+      "Ours": {
+        "def": "Niedźwiedź",
+        "bare": "Niedźwiedź",
+        "de": "Niedźwiedzia",
+        "one": "Niedźwiedź",
+        "all": "wszystkie Niedźwiedzie",
+        "upto": "do {n} Niedźwiedzi"
+      },
+      "Loups": {
+        "def": "Wilk",
+        "bare": "Wilk",
+        "de": "Wilka",
+        "one": "Wilk",
+        "all": "wszystkie Wilki",
+        "upto": "do {n} Wilków"
+      },
+      "Fauves": {
+        "def": "Drapieżnik",
+        "bare": "Drapieżnik",
+        "de": "Drapieżnika",
+        "one": "Drapieżnik",
+        "all": "wszystkie Drapieżniki",
+        "upto": "do {n} Drapieżników"
+      },
+      "Squelettes": {
+        "def": "Szkielet",
+        "bare": "Szkielet",
+        "de": "Szkieletu",
+        "one": "Szkielet",
+        "all": "wszystkie Szkielety",
+        "upto": "do {n} Szkieletów"
+      },
+      "Zombies": {
+        "def": "Zombie",
+        "bare": "Zombie",
+        "de": "Zombie",
+        "one": "jedno Zombie",
+        "all": "wszystkie Zombie",
+        "upto": "do {n} Zombie"
+      },
+      "Ghoules": {
+        "def": "Ghulica",
+        "bare": "Ghulica",
+        "de": "Ghulicy",
+        "one": "jedna Ghulica",
+        "all": "wszystkie Ghulice",
+        "upto": "do {n} Ghulic"
+      },
+      "Spectres": {
+        "def": "Widmo",
+        "bare": "Widmo",
+        "de": "Widma",
+        "one": "jedno Widmo",
+        "all": "wszystkie Widma",
+        "upto": "do {n} Widm"
+      },
+      "Vampires": {
+        "def": "Wampir",
+        "bare": "Wampir",
+        "de": "Wampira",
+        "one": "jeden Wampir",
+        "all": "wszystkie Wampiry",
+        "upto": "do {n} Wampirów"
+      },
+      "Lich": {
+        "def": "Licz",
+        "bare": "Licz",
+        "de": "Licza",
+        "one": "jeden Licz",
+        "all": "wszystkie Locze",
+        "upto": "do {n} Liczy"
+      },
+      "Momies": {
+        "def": "Mumia",
+        "bare": "Mumia",
+        "de": "Mumii",
+        "one": "jedna Mumia",
+        "all": "wszystkie Mumie",
+        "upto": "do {n} Mumii"
+      },
+      "Chimères nécrotiques": {
+        "def": "Chimera nekrotyczna",
+        "bare": "Chimera nekrotyczna",
+        "de": "Chimery nekrotycznej",
+        "one": "jedna Chimera nekrotyczna",
+        "all": "wszystkie Chimery nekrotyczne",
+        "upto": "do {n} Chimer nekrotycznych"
+      },
+      "Vermines mortuaires": {
+        "def": "Plugastwo grobowe",
+        "bare": "Plugastwo grobowe",
+        "de": "Plugastwa grobowego",
+        "one": "jedno Plugastwo grobowe",
+        "all": "wszystkie Plugastwa grobowe",
+        "upto": "do {n} Plugastw grobowych"
+      },
+      "Poltergeists": {
+        "def": "Poltergeist",
+        "bare": "Poltergeist",
+        "de": "Poltergeista",
+        "one": "jeden Poltergeist",
+        "all": "wszystkie Poltergeisty",
+        "upto": "do {n} Poltergeistów"
+      },
+      "Dullahans": {
+        "def": "Dullahan",
+        "bare": "Dullahan",
+        "de": "Dullahana",
+        "one": "jeden Dullahan",
+        "all": "wszystkie Dullahany",
+        "upto": "do {n} Dullahanów"
+      },
+      "Sluaghs": {
+        "def": "Sluagh",
+        "bare": "Sluagh",
+        "de": "Sluagha",
+        "one": "jeden Sluagh",
+        "all": "wszystkie Sluaghy",
+        "upto": "do {n} Sluaghów"
+      },
+      "Ondins": {
+        "def": "Ondyna",
+        "bare": "Ondyna",
+        "de": "Ondyny",
+        "one": "jedna Ondyna",
+        "all": "wszystkie Ondyny",
+        "upto": "do {n} Ondyn"
+      },
+      "Sirènes": {
+        "def": "Syrena",
+        "bare": "Syrena",
+        "de": "Syreny",
+        "one": "jedna Syrena",
+        "all": "wszystkie Syreny",
+        "upto": "do {n} Syren"
+      },
+      "Léviathans": {
+        "def": "Lewiatan",
+        "bare": "Lewiatan",
+        "de": "Lewiatana",
+        "one": "Lewiatan",
+        "all": "wszystkie Lewiatany",
+        "upto": "do {n} Lewiatanów"
+      },
+      "Cristallins": {
+        "def": "Krystalin",
+        "bare": "Krystalin",
+        "de": "Krystalina",
+        "one": "Krystalin",
+        "all": "wszystkie Krystaliny",
+        "upto": "do {n} Krystalinów"
+      },
+      "Troglodytes": {
+        "def": "Troglodyta",
+        "bare": "Troglodyta",
+        "de": "Troglodyty",
+        "one": "Troglodyta",
+        "all": "wszyscy Troglodyci",
+        "upto": "do {n} Troglodytów"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "Bestia Chtoniczna",
+        "bare": "Bestia Chtoniczna",
+        "de": "Bestii Chtonicznej",
+        "one": "Bestia Chtoniczna",
+        "all": "wszystkie Bestie Chtoniczne",
+        "upto": "do {n} Bestii Chtonicznych"
+      },
+      "Salamandres": {
+        "def": "Salamandra",
+        "bare": "Salamandra",
+        "de": "Salamandry",
+        "one": "Salamandra",
+        "all": "wszystkie Salamandry",
+        "upto": "do {n} Salamander"
+      },
+      "Sylphes": {
+        "def": "Sylf",
+        "bare": "Sylf",
+        "de": "Sylfa",
+        "one": "Sylf",
+        "all": "wszystkie Sylfy",
+        "upto": "do {n} Sylfów"
+      },
+      "Néphélides": {
+        "def": "Nefelida",
+        "bare": "Nefelida",
+        "de": "Nefelidy",
+        "one": "Nefelida",
+        "all": "wszystkie Nefelidy",
+        "upto": "maksymalnie {n} Néphélides"
+      },
+      "Banshees": {
+        "def": "Banshee",
+        "bare": "Banshee",
+        "de": "Banshee",
+        "one": "Banshee",
+        "all": "wszystkie Banshee",
+        "upto": "maksymalnie {n} Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "Krwisty Homunkulus",
+        "bare": "Krwisty Homunkulus",
+        "de": "Krwistego Homunkulusa",
+        "one": "Krwisty Homunkulus",
+        "all": "wszystkie Krwiste Homunkulusy",
+        "upto": "maksymalnie {n} Krwistych Homunkulusów"
+      },
+      "Gargouilles": {
+        "def": "Gargulec",
+        "bare": "Gargulec",
+        "de": "Gargulca",
+        "one": "Gargulec",
+        "all": "wszystkie Gargulce",
+        "upto": "maksymalnie {n} Gargulców"
+      },
+      "Dhampirs": {
+        "def": "Dhampir",
+        "bare": "Dhampir",
+        "de": "Dhampira",
+        "one": "Dhampir",
+        "all": "wszystkie Dhampiry",
+        "upto": "maksymalnie {n} Dhampirów"
+      },
+      "Chiroptères": {
+        "def": "Nietoperz",
+        "bare": "Nietoperz",
+        "de": "Nietoperza",
+        "one": "Nietoperz",
+        "all": "wszystkie Nietoperze",
+        "upto": "maksymalnie {n} Nietoperzy"
+      },
+      "Elfes Corrompus": {
+        "def": "Skażony Elf",
+        "bare": "Skażony Elf",
+        "de": "Skażonego Elfa",
+        "one": "Skażony Elf",
+        "all": "wszystkie Skażone Elfy",
+        "upto": "maksymalnie {n} Skażonych Elfów"
+      },
+      "Araignées Géantes": {
+        "def": "Wielki Pająk",
+        "bare": "Wielki Pająk",
+        "de": "Wielkiego Pająka",
+        "one": "jedna Gigantyczna Pajęczyca",
+        "all": "wszystkie Gigantyczne Pająki",
+        "upto": "do {n} Gigantycznych Pająków"
+      },
+      "Démons": {
+        "def": "Demon",
+        "bare": "Demon",
+        "de": "Demona",
+        "one": "jeden Demon",
+        "all": "wszystkie Demony",
+        "upto": "do {n} Demonów"
+      },
+      "Orcs": {
+        "def": "Ork",
+        "bare": "Ork",
+        "de": "Orka",
+        "one": "jeden Ork",
+        "all": "wszystkie Orki",
+        "upto": "do {n} Orków"
+      },
+      "Gobelins": {
+        "def": "Goblin",
+        "bare": "Goblin",
+        "de": "Goblina",
+        "one": "jeden Goblin",
+        "all": "wszystkie Gobliny",
+        "upto": "do {n} Goblinów"
+      },
+      "Trolls": {
+        "def": "Troll",
+        "bare": "Troll",
+        "de": "Trolla",
+        "one": "jeden Troll",
+        "all": "wszystkie Trolle",
+        "upto": "do {n} Trolli"
+      },
+      "Wargs": {
+        "def": "Warg",
+        "bare": "Warg",
+        "de": "Warga",
+        "one": "jeden Warg",
+        "all": "wszystkie Wargi",
+        "upto": "do {n} Wargów"
+      },
+      "Guerriers du Chaos": {
+        "def": "Wojownik Chaosu",
+        "bare": "Wojownik Chaosu",
+        "de": "Wojownika Chaosu",
+        "one": "jeden Wojownik Chaosu",
+        "all": "wszyscy Wojownicy Chaosu",
+        "upto": "do {n} Wojowników Chaosu"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "Leśnych",
+      "Les Hauts-Elfes": "Wysokich Elfów",
+      "La Forêt d'Émeraude": "Szmaragdowej Puszczy",
+      "La Combe Verte": "Zielonej Kotliny",
+      "Les Gardiens de la Montagne": "Strażników Góry",
+      "La Forge Ardente": "Płonącej Kuźni",
+      "Les Sentinelles d'Airain": "Spiżowych Wartowników",
+      "La Guilde des Ingénieurs": "Gildii Inżynierów",
+      "Les Hordes des Steppes": "Hord Stepowych",
+      "L'Empire de Jade": "Nefrytowego Cesarstwa",
+      "Les Lames de l'Ombre": "Ostrzy Cienia",
+      "Les Défenseurs d'Ivoire": "Obrońców z Kości Słoniowej",
+      "Les Enfants du Soleil": "Dzieci Słońca",
+      "Les Seigneurs des Dunes": "Władców Wydm",
+      "Le Royaume des Masques": "Królestwa Masek",
+      "Les Fils du Volcan": "Synów Wulkanu",
+      "Le Royaume du Nord": "Królestwa Północy",
+      "L'Ordre de l'Aube": "Zakonu Świtu",
+      "Les Guerrières du Vent": "Wojowniczek Wiatru",
+      "La Sublime Porte": "Wzniosłej Porty",
+      "Les Seigneurs Fauves": "Dzikich Władców",
+      "Les Enfants de la Lune": "Dzieci Księżyca",
+      "Le Pacte des Griffes": "Paktu Szponów",
+      "La Harde Sauvage": "Dzikiego Stada",
+      "La Forêt Enchantée": "Zaczarowanego Lasu",
+      "La Colère des Flammes": "Gniewu Płomieni",
+      "Le Socle du Monde": "Fundamentu Świata",
+      "La Vague Sans Fin": "Niekończącej się Fali",
+      "Le Souffle des Cimes": "Tchnienia Szczytów",
+      "Les Rangs Silencieux": "Cichych Szeregów",
+      "Le Voile Hurlant": "Wyjącej Zasłony",
+      "La Cour Écarlate": "Szkarłatnego Dworu",
+      "Le Cénacle Nécromant": "Nekromanckiego Konwentu",
+      "Les Cohortes Sanglantes": "Krwawych Kohort",
+      "Les Princes des Abîmes": "Książąt Otchłani",
+      "La Forêt Maudite": "Przeklętego Lasu",
+      "La Garde Noire": "Czarnej Straży"
+    },
+    "factions_forms": {
+      "Elfes": "Niebiańskiego Przymierza",
+      "Nains": "Armii Gór",
+      "EmpireDuMilieu": "Państwa Środka",
+      "RoyaumesDuSoleil": "Królestw Słońca",
+      "Humains": "Wolnych Królestw",
+      "Hommes-Bêtes": "Sfory",
+      "Élémentaires": "Pierwotnych",
+      "Mercenaires": "Najemników",
+      "Morts-Vivants": "Nekropolii",
+      "Elfes Noirs": "Legionów Chaosu"
+    },
+    "markers": {
+      "race": "stworzenie wybranej rasy",
+      "race_bare": "tej samej rasy",
+      "race_de": "tej samej rasy",
+      "race_pl": "jednostki tej samej rasy",
+      "clan": "twój klan",
+      "clan_de": "tego samego klanu",
+      "faction": "twoja frakcja",
+      "faction_de": "tej samej frakcji",
+      "alignment": "o tym samym charakterze",
+      "alignment_of": "o charakterze {a}",
+      "token": "skonfigurowany token",
+      "tokens": "kilka tokenów",
+      "invocations": "kilka losowych stworzeń z twojej kolekcji",
+      "invocations_first_one": "losowe stworzenie o koszcie {cost}",
+      "invocations_first_many": "{count} losowych stworzeń o koszcie {cost}",
+      "invocations_more_one": "jedno o koszcie {cost}",
+      "invocations_more_many": "{count} o koszcie {cost}",
+      "invocations_join": " i ",
+      "race_or": " lub ",
+      "invocations_of_race": " (spośród: {v})",
+      "invocations_of_faction": " (z frakcji {v})",
+      "lycanthrope": "token X/X",
+      "ability": "zdolność",
+      "scope": "jednej sojuszniczej jednostce (lub wszystkim)",
+      "scope_target": "jednej sojuszniczej jednostce",
+      "edc_compte": "Zyskuje {n} razy +1 ATK lub +1 PV losowo (1 za każdego Ducha korpusu, którego już aktywowałeś).",
+      "usurpation_actuel": "Zagrane karty przeciwnika: {n} — obecnie +{x}/+{y}.",
+      "scope_all": "wszystkim twoim jednostkom",
+      "machine_part": " i {ability}",
+      "machine_part_timed": " i {ability} ({timing})",
+      "machine_name": "Maszyna",
+      "neutralise_cible": "wybranej jednostki wroga (lub wszystkich)",
+      "neutralise_cible_target": "u wybranej jednostki wroga",
+      "neutralise_cible_all": "u wszystkich jednostek wroga",
+      "forge_align": " lub {alignment}",
+      "forge_cout": " o koszcie najwyżej X",
+      "forge_cout_libre": "",
+      "forge_cout_max": " o koszcie najwyżej X",
+      "forge_cout_range": " o koszcie od {n} do X",
+      "forge_cout_min": " o koszcie co najmniej {n}"
+    },
+    "sets": {
+      "1": "Zestaw podstawowy"
+    },
+    "formats": {
+      "expert-standard": "Ekspert · Standardowy",
+      "expert-etendu": "Ekspert · Rozszerzony",
+      "classique-etendu": "Klasyczny · Rozszerzony",
+      "classique-standard": "Klasyczny · Standardowy"
+    },
+    "singulier": {
+      "label": "Wyjątkowość",
+      "help": "Uruchamia się {timing}, jeśli twoja początkowa talia nie zawierała żadnych powtarzających się kart.",
+      "help_permanent": "Aktywne, jeśli twoja początkowa talia nie zawierała żadnych powtarzających się kart.",
+      "timing": {
+        "entry": "po wejściu do gry",
+        "death": "po śmierci",
+        "tap": "po aktywacji",
+        "return": "po powrocie na rękę",
+        "attack": "podczas ataku",
+        "end_of_turn": "na końcu tury",
+        "start_of_turn": "na początku tury",
+        "draw": "po dobraniu",
+        "low_hp": "poniżej {n} PZ",
+        "spell": "po rozpatrzeniu akcji",
+        "wound": "gdy zostanie ranna i nie umrze",
+        "delay": "po upływie jej Opóźnienia"
+      }
+    },
+    "triggers": {
+      "permanent": "Stały",
+      "entry": "Wejście",
+      "attack": "Atak",
+      "death": "Śmierć",
+      "return": "Powrót",
+      "tap": "Aktywowany",
+      "end_of_turn": "Koniec tury",
+      "start_of_turn": "Początek tury",
+      "draw": "Dobranie",
+      "low_hp": "Poniżej {n} PZ",
+      "wound": "Rana",
+      "delay": "Opóźnienie {d}"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "Zadaje X obrażeń: {cibles}.",
+        "affaiblissement": "Daje -X ATK i -Y PZ: {cibles}.",
+        "retour_differe": "Umieszcza {cibles} o koszcie ≤ X pod talią ich właściciela.",
+        "retour_differe_any": "Umieszcza {cibles} pod talią ich właściciela.",
+        "remontee": "Zwraca {cibles} na rękę ich pierwotnego właściciela.",
+        "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
+        "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
+        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
+        "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
+        "benediction": "Całkowicie leczy {cibles}.",
+        "poison": "Zatruwa {cibles}: tracą 1 PV na końcu każdej tury.",
+        "siphon": "Zadaje X obrażeń {cibles} i leczy twojego bohatera o X za każdą trafioną jednostkę.",
+        "entrave": "Paraliżuje {cibles} na X tur.",
+        "execution": "Niszczy {cibles} o koszcie ≤ X, w tym przedmioty.",
+        "execution_any": "Niszczy {cibles}, w tym przedmioty.",
+        "silence": "Usuwa wszystkie słowa kluczowe {cibles}, w tym przedmioty, i przywraca ich statystyki do wartości początkowych.",
+        "renforcement": "+X/+Y dla {cibles}.",
+        "discipline": "Jeśli wszystkie twoje stworzenia w grze mają koszt o takiej samej parzystości jak koszt tej akcji, +X/+Y dla {cibles}.",
+        "usurpation": "+X/+Y dla {cibles} za każdą kartę przeciwnika, którą zagrałeś.",
+        "guerison": "Przywraca X PV {cibles} i twojemu bohaterowi."
+      },
+      "creature": {
+        "neutralisation": "Dopóki jest w grze, {cibles} są sparaliżowane, a ich zdolności nie działają.",
+        "impact": "Zadaje X obrażeń {cibles}.",
+        "affaiblissement": "Daje -X ATK i -Y PV {cibles}.",
+        "retour_differe": "Umieszcza {cibles} o koszcie ≤ X pod talią ich właściciela.",
+        "retour_differe_any": "Umieszcza {cibles} pod talią ich właściciela.",
+        "remontee": "Zwraca {cibles} na rękę ich pierwotnego właściciela.",
+        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
+        "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
+        "benediction": "Całkowicie leczy {cibles}.",
+        "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
+        "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
+        "tactique": "Daje {cibles} X losowych zdolności spośród zdolności stworzeń o tym samym koszcie (jedno losowanie na jednostkę).",
+        "vampirisme": "Kradnie do X PV {cibles} i dodaje je do PV tej jednostki.",
+        "devoration": "Niszczy {cibles}; ta jednostka trwale zyskuje ich ATK i PV.",
+        "sacrifice": "Zniszcz wszystkie inne sojusznicze jednostki, aby trwale zyskać ich PV i ATK.",
+        "renforcement": "Daje trwale +X ATK i +Y PV wszystkim innym sojuszniczym jednostkom.",
+        "discipline": "Jeśli wszystkie koszty na twojej planszy mają taką samą parzystość jak jej koszt, daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom.",
+        "usurpation": "Daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom za każdą kartę przeciwnika, którą zagrałeś.",
+        "renforcement_soi": "Zyskuje na stałe +X ATK i +Y PV.",
+        "discipline_soi": "Jeśli wszystkie twoje stwory w grze mają koszt o tej samej parzystości co ten stwór, zyskuje na stałe +X ATK i +Y PV.",
+        "usurpation_soi": "Zyskuje na stałe +X ATK i +Y PV za każdą zagraną przez ciebie kartę przeciwnika.",
+        "execution": "Niszczy {cibles} o koszcie ≤ X, wraz z przedmiotami.",
+        "execution_any": "Niszczy {cibles}, wraz z przedmiotami.",
+        "silence": "Usuwa wszystkie słowa kluczowe {cibles}, wraz z przedmiotami, i przywraca ich statystyki do wartości początkowych.",
+        "guerison": "Przywraca X PV wszystkim pozostałym sojuszniczym jednostkom i twojemu bohaterowi.",
+        "purete": "Dopóki twój cmentarz jest pusty, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
+        "force_des_ancetres": "Dopóki na twoim cmentarzu są co najmniej 7 stwory lub więcej, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
+        "seuil_sacrificiel": "Dopóki w twojej talii jest 25 kart lub mniej, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
+        "silence_soi": "Traci wszystkie swoje słowa kluczowe, a jego statystyki wracają do wartości początkowych.",
+        "guerison_soi": "Odzyskuje X PV.",
+        "tactique_soi": "Zyskuje X losowych zdolności spośród zdolności stworów o tym samym koszcie."
+      },
+      "cibles": {
+        "all_enemies": "wszystkie jednostki wroga",
+        "all_allies": "wszystkie sojusznicze jednostki",
+        "all": "wszystkie jednostki obu stron"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Koszt życia {n}",
+        "desc": "Oprócz many twój bohater traci {n} PV, gdy zagrywasz tę kartę. Nie można jej zagrać, jeśli bohater spadłby przez to do 0 PV."
+      },
+      "defausse": {
+        "title": "Odrzucenie {n}",
+        "desc_one": "Oprócz many odrzuć jedną wybraną kartę z ręki.",
+        "desc_many": "Oprócz many odrzuć {n} wybranych kart z ręki."
+      },
+      "sacrifice": {
+        "title": "Poświęcenie {n}",
+        "desc_one": "Oprócz many poświęć jednego wybranego ze swoich stworów w grze.",
+        "desc_many": "Oprócz many poświęć {n} wybranych ze swoich stworów w grze."
+      },
+      "exil": {
+        "title": "Wygnanie {n}",
+        "desc_one": "Oprócz many wierzchnia karta twojej talii zostaje wygnana: opuszcza grę. Nie można, jeśli talia jest pusta.",
+        "desc_many": "Oprócz many {n} wierzchnich kart twojej talii zostaje wygnanych: opuszczają grę. W talii musi być co najmniej {n} kart."
+      },
+      "repli": {
+        "title": "Odwrót {n}",
+        "desc_one": "Oprócz many połóż jedną wybraną kartę z ręki na wierzchu talii.",
+        "desc_many": "Oprócz many połóż {n} wybranych kart z ręki na wierzchu talii. Pierwsza wybrana karta znajdzie się na samej górze."
+      },
+      "retraite": {
+        "title": "Wycofanie {n}",
+        "desc_one": "Oprócz many zabierz na rękę jednego wybranego ze swoich stworów w grze. Nie można, jeśli nie ma on miejsca na twojej ręce.",
+        "desc_many": "Oprócz many zabierz na rękę {n} wybranych ze swoich stworów w grze. Nie można, jeśli nie ma dla nich miejsca na twojej ręce."
+      },
+      "eveil": {
+        "title": "Przebudzenie {n}",
+        "desc": "Zamiast ją zagrać, możesz wprowadzić tę kartę w stan przebudzenia. Następnie wpłacasz jej {n} punktów swoją maną, 1 punkt za 1 manę, podczas swoich tur. Po ostatnim punkcie karta wchodzi do gry, jakbyś ją zagrał.",
+        "remaining": "Pozostało jeszcze {left} z {n} punktów do wpłacenia."
+      },
+      "equipement": {
+        "title": "Wyposażenie {n}",
+        "desc": "Gdy przedmiot jest w grze, wyposażenie nim jednego z twoich stworów kosztuje {n} many. Koszt płacisz przy każdym wyposażeniu, także przy przeniesieniu.",
+        "desc_free": "Gdy przedmiot jest w grze, wyposażenie nim jednego z twoich stworów jest darmowe, także przy przeniesieniu."
+      }
+    }
+  },
+  "home": {
+    "home_subtitle": "Jedna karta. Jedna legenda. Twoja kolej.",
+    "play_label": "Graj",
+    "play_desc": "Znajdź przeciwnika i rozpocznij partię",
+    "market_label": "Rynek",
+    "market_desc": "Kupuj i sprzedawaj na aukcjach",
+    "market_desc_buy": "Kupuj na aukcjach",
+    "collection_label": "Moja kolekcja",
+    "collection_desc": "Karty, bohaterowie, rewersy, plansze",
+    "decks_label": "Moje talie",
+    "decks_desc": "Twórz i dopracowuj swoje talie",
+    "tutorial_label": "Jak grać",
+    "tutorial_desc": "Poznaj zasady i zdolności",
+    "tutorial_back": "Powrót do ekranu głównego",
+    "news_banner_label": "Nowości",
+    "news_banner_open": "Pokaż nowości",
+    "news_banner_collapse": "Zwiń nowości",
+    "news_read_more": "Czytaj dalej",
+    "news_back_home": "Powrót do ekranu głównego",
+    "welcome": "Witaj,",
+    "logout": "Wyloguj się",
+    "settings": "Ustawienia",
+    "skip_to_content": "Przejdź do treści",
+    "collection_title": "Moja kolekcja",
+    "collection_back": "Powrót do ekranu głównego",
+    "my_cards": "Moje karty",
+    "my_cards_desc": "Twój katalog posiadanych kart",
+    "my_heroes": "Moi bohaterowie",
+    "my_heroes_desc": "Odblokowani czempioni",
+    "my_card_backs": "Moje rewersy",
+    "my_card_backs_desc": "Posiadane rewersy kart",
+    "my_boards": "Moje plansze",
+    "my_boards_desc": "Posiadane plansze do gry",
+    "heroes_title": "Moi bohaterowie",
+    "heroes_empty": "Nie odblokowano jeszcze żadnego bohatera.",
+    "heroes_filter_all": "Wszyscy",
+    "heroes_label_faction": "Frakcja",
+    "heroes_label_clan": "Klan",
+    "heroes_label_rarity": "Rzadkość",
+    "heroes_loading": "Wczytywanie…",
+    "heroes_load_error": "Nie udało się wczytać Twoich bohaterów.",
+    "hero_power": "Moc",
+    "tournaments_label": "Turnieje",
+    "tournaments_desc": "Zmierz się z najlepszymi i zdobądź wyjątkowe nagrody."
+  },
+  "landing": {
+    "nav_play": "Graj",
+    "hero_eyebrow": "Fantasy TCG — Nowa generacja",
+    "hero_title": "Armies of Legends",
+    "hero_sub": "Ponad 300 kart już od rejestracji, w armii, którą wybierzesz. Edycje limitowane robią resztę: żadna talia Eksperta nie jest podobna do twojej.",
+    "hero_cta": "Wybierz swoją darmową frakcję",
+    "hero_cta_secondary": "Zobacz dziewięć frakcji",
+    "hero_proof": "Ponad 500 kart w prezencie już od pierwszej partii",
+    "features_title": "Dlaczego Armies of Legends",
+    "f1_title": "Głębia legend.",
+    "f1_desc": "Armies of Legends łączy strategię kultowych TCG z mechanikami stworzonymi dla dzisiejszych mistrzów.",
+    "f2_title": "Maksimum kart od samego początku.",
+    "f2_desc": "Zdobądź za darmo wszystkie klasyczne karty wybranej frakcji (ponad 300 kart). Odblokuj wszystkie frakcje (około 2 500 kart) za ułamek ceny klasycznego TCG.",
+    "f3_title": "Każda talia Eksperta to unikalne dzieło.",
+    "f3_desc": "Karty z edycji limitowanych sprawiają, że każda talia Eksperta jest wyjątkowa. Edycja zwykła gwarantuje, że o wszystkim decyduje wyłącznie twoja strategia.",
+    "f_icons_title": "Czytelne na pierwszy rzut oka.",
+    "f_icons_desc": "Starannie zilustrowane karty Armies of Legends są równie piękne, co czytelne: dzięki kolorowym ikonom przypisanym do każdego wyzwalacza zrozumiesz ich działanie jednym spojrzeniem, nawet bez czytania tekstu.",
+    "f4_title": "Mobilna arena wreszcie na wysokim poziomie.",
+    "f4_desc": "Turnieje z nagrodami w postaci rzadkich kart i gotówki — stawki dotąd zarezerwowane dla największych TCG na komputery.",
+    "f4_standings": "Klasyfikacja końcowa",
+    "factions_title": "Dziewięć armii. Pierwsza jest twoja.",
+    "factions_sub": "Wybierz frakcję przy rejestracji: wszystkie jej klasyczne karty, ponad 300, są twoje za darmo. Pozostałe frakcje dodasz później za ułamek ceny klasycznego TCG.",
+    "showcase_title": "Bestiariusz. Tysiące kombinacji.",
+    "showcase_sub": "Od najskromniejszej istoty po mitycznego bohatera — liczy się każda karta.",
+    "cta_title": "Arena na ciebie czeka.",
+    "cta_sub": "Dołącz do przywoływaczy w bitwie.",
+    "cta_btn": "Rozpocznij przygodę",
+    "footer": "Armies of Legends — Wszelkie prawa zastrzeżone",
+    "factions": {
+      "Humains": {
+        "tagline": "Zjednoczeni pod sztandarem"
+      },
+      "Elfes": {
+        "tagline": "Strażnicy wiecznego lasu"
+      },
+      "Nains": {
+        "tagline": "Wykuci w kamieniu"
+      },
+      "Hommes-Bêtes": {
+        "tagline": "Furia dzikich ziem"
+      },
+      "Élémentaires": {
+        "tagline": "Żywioły się budzą"
+      },
+      "Elfes Noirs": {
+        "tagline": "Cienie mają imię"
+      },
+      "Morts-Vivants": {
+        "tagline": "Cisza grobowców została przerwana"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "Dyscyplina przed furią"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "Pustynia pamięta swoich królów"
+      }
+    },
+    "nav_factions": "Frakcje",
+    "nav_limited": "Edycje limitowane",
+    "nav_tournaments": "Turnieje",
+    "hero_claim": "Cała frakcja w prezencie.",
+    "wall_pause": "Wstrzymaj mur",
+    "wall_play": "Wznów mur",
+    "factions_see": "Zobacz frakcję",
+    "limited_title": "Żadna talia Eksperta nie jest podobna do twojej.",
+    "limited_desc": "Karty z edycji limitowanej sprawiają, że każda talia Eksperta jest wyjątkowa. Edycja zwykła gwarantuje, że o wszystkim decyduje wyłącznie twoja strategia.",
+    "trailer_title": "Legendy wkraczają na scenę.",
+    "nav_language": "Język",
+    "f4_example": "Przykład rankingu: gracze są fikcyjni, punktacja jest taka jak w grze.",
+    "limited_run": "{count} egzemplarzy",
+    "limited_unique": "Jedyny egzemplarz",
+    "f4_note": "* Nagrody finansowe są oferowane wyłącznie w krajach, w których zezwala na nie prawo."
+  },
+  "auction": {
+    "ended": "Zakończona",
+    "unknown_item": "Nieznany przedmiot",
+    "board": "Plansza",
+    "card_back": "Rewers",
+    "extra_items": "+{count, plural, =1 {# przedmiot} few {# przedmioty} many {# przedmiotów} other {# przedmiotu}}",
+    "current_bid": "Aktualna oferta",
+    "starting_bid": "Cena wywoławcza",
+    "buyout_short": "Kup teraz:",
+    "bid_count": "{count, plural, =1 {# oferta} few {# oferty} many {# ofert} other {# oferty}}",
+    "seller": "Sprzedawca:",
+    "system": "System",
+    "invalid_amount": "Nieprawidłowa kwota",
+    "buyout_success": "Natychmiastowy zakup udany!",
+    "bid_placed": "Oferta złożona!",
+    "loading": "Ładowanie...",
+    "not_found": "Nie znaleziono aukcji",
+    "back_to_auctions": "Powrót do aukcji",
+    "lot": "Lot",
+    "item": "Przedmiot",
+    "copies": "{count} egz.",
+    "source_print": "Edycja limitowana",
+    "source_board_print": "Limitowana plansza",
+    "source_card_back_print": "Limitowany rewers",
+    "source_admin": "System",
+    "source_collection": "Kolekcja",
+    "admin_badge": "ADMIN",
+    "time_left": "Pozostały czas",
+    "commission": "Prowizja: {rate}%",
+    "highest_bidder": "Twoja oferta jest najwyższa",
+    "status_sold": "Sprzedana",
+    "status_unsold": "Niesprzedana",
+    "status_cancelled": "Anulowana",
+    "bid_button": "Licytuj",
+    "buyout_immediate": "Kup teraz",
+    "cancel_auction": "Anuluj aukcję",
+    "bid_history": "Historia ofert",
+    "no_bids_yet": "Brak ofert",
+    "anonymous": "Anonim",
+    "buyout_tag": "(Kup teraz)",
+    "sort_ending_soon": "Wkrótce kończące się",
+    "sort_price_asc": "Cena rosnąco",
+    "sort_price_desc": "Cena malejąco",
+    "sort_newest": "Najnowsze",
+    "header_kicker": "Zwerbuj swoje oddziały",
+    "title": "Dom aukcyjny",
+    "subtitle_sell": "Kupuj i sprzedawaj karty",
+    "subtitle_buy": "Kupuj karty",
+    "menu": "Menu",
+    "sell_card": "Sprzedaj kartę",
+    "tab_browse": "Przeglądaj",
+    "tab_my": "Moje aukcje",
+    "search_placeholder": "Szukaj...",
+    "all_factions": "Wszystkie frakcje",
+    "all_rarities": "Wszystkie rzadkości",
+    "all_types": "Wszystkie typy",
+    "type_creature": "Stworzenie",
+    "type_spell": "Akcja",
+    "no_auctions": "Nie znaleziono aukcji",
+    "previous": "Poprzednia",
+    "next": "Następna",
+    "page_of": "Strona {page} / {total}",
+    "duration_1min": "1 minuta",
+    "duration_1h": "1 godzina",
+    "duration_6h": "6 godzin",
+    "duration_12h": "12 godzin",
+    "duration_24h": "24 godziny",
+    "duration_generic": "{n} min",
+    "create_title": "Utwórz aukcję",
+    "select_cards": "Wybierz karty do sprzedaży ({selected}/{max} maks.)",
+    "search_card_placeholder": "Szukaj karty...",
+    "no_cards_available": "Brak dostępnych kart",
+    "starting_bid_label": "Cena wywoławcza (złoto)",
+    "buyout_optional": "Kup teraz (opcjonalnie)",
+    "none": "Brak",
+    "duration": "Czas trwania",
+    "commission_info": "Prowizja: {rate}% zostanie pobrane od kwoty sprzedaży",
+    "error_select_card": "Wybierz co najmniej jedną kartę",
+    "error_invalid_bid": "Nieprawidłowa cena wywoławcza",
+    "error_buyout_too_low": "Cena „Kup teraz” musi być wyższa niż cena wywoławcza",
+    "cancel": "Anuluj",
+    "creating": "Tworzenie...",
+    "submit_sell": "Wystaw na sprzedaż ({count, plural, one {# karta} few {# karty} many {# kart} other {# karty}})",
+    "my_sales": "Moje sprzedaże ({count})",
+    "my_bids": "Moje oferty ({count})",
+    "no_sales": "Nie masz żadnych sprzedaży",
+    "no_bids_placed": "Nie złożyłeś ofert w żadnej aukcji",
+    "unknown_card": "Nieznana karta",
+    "ends_at": "Koniec: {date}",
+    "status_active": "Aktywna",
+    "page_title": "Dom Aukcyjny — Armies of Legends",
+    "detail_page_title": "Szczegóły aukcji — Armies of Legends"
+  },
+  "auth": {
+    "forgot_email_required": "Podaj swój adres e-mail, zanim poprosisz o zresetowanie hasła.",
+    "forgot_email_sent": "E-mail z linkiem do zresetowania hasła został wysłany na adres {email}. Sprawdź skrzynkę (oraz folder ze spamem).",
+    "forgot_send_error": "Nie udało się wysłać e-maila do zresetowania hasła.",
+    "password_min_length": "Hasło musi mieć co najmniej 8 znaków.",
+    "generic_error": "Wystąpił błąd.",
+    "tagline": "Kolekcjonerska gra karciana fantasy",
+    "back_to_site": "← Powrót do strony",
+    "login": "Logowanie",
+    "register": "Rejestracja",
+    "username_label": "Nazwa użytkownika",
+    "username_placeholder": "Wybierz nazwę użytkownika",
+    "email_label": "E-mail",
+    "email_placeholder": "twoj@email.com",
+    "password_label": "Hasło",
+    "sending": "Wysyłanie...",
+    "forgot_password": "Nie pamiętasz hasła?",
+    "password_min_placeholder": "Min. 8 znaków",
+    "password_placeholder_login": "Wpisz swoje hasło",
+    "loading": "Ładowanie...",
+    "create_account": "Utwórz konto",
+    "sign_in": "Zaloguj się",
+    "or": "lub",
+    "continue_google": "Kontynuuj przez Google",
+    "continue_discord": "Kontynuuj przez Discord",
+    "passwords_mismatch": "Oba hasła nie są takie same.",
+    "password_updated_redirect": "Hasło zostało zaktualizowane. Przekierowywanie...",
+    "unknown_error": "Nieznany błąd.",
+    "reset_heading": "Zresetuj hasło",
+    "reset_sub": "Wybierz nowe hasło do swojego konta.",
+    "back_to_login": "← Powrót do logowania",
+    "reset_link_invalid": "Link do resetowania wygasł lub jest nieprawidłowy. Wróć na stronę logowania i poproś o nowy e-mail.",
+    "new_password_label": "Nowe hasło",
+    "confirm_label": "Potwierdź",
+    "confirm_placeholder": "Wpisz hasło ponownie",
+    "updating": "Aktualizowanie...",
+    "update": "Zaktualizuj",
+    "signup_check_email_title": "Sprawdź swoją skrzynkę e-mail",
+    "signup_check_email": "Wysłaliśmy link potwierdzający na adres {email}. Kliknij go, aby aktywować konto.",
+    "signup_check_spam": "Nic nie dotarło? Zajrzyj do folderu ze spamem — wiadomość może dotrzeć z minutową zwłoką.",
+    "signup_resend": "Wyślij e-mail ponownie",
+    "signup_resend_wait": "Wyślij ponownie za {seconds} s",
+    "signup_resent": "E-mail wysłano ponownie na adres {email}.",
+    "signup_resend_error": "Nie udało się ponownie wysłać e-maila potwierdzającego.",
+    "signup_back_to_login": "← Wróć do logowania",
+    "error_oauth_cancelled": "Logowanie anulowane. Możesz spróbować ponownie lub użyć e-maila.",
+    "error_oauth_failed": "Logowanie przez tę usługę nie powiodło się. Spróbuj ponownie lub użyj e-maila.",
+    "error_link_expired": "Ten link wygasł lub został już użyty. Poproś o nowy.",
+    "error_auth_failed": "Logowanie nie powiodło się. Spróbuj ponownie.",
+    "cgu_accept": "Akceptuję regulamin oraz politykę prywatności.",
+    "cgu_link": "Przeczytaj regulamin",
+    "privacy_link": "Przeczytaj politykę prywatności",
+    "cgu_required": "Musisz zaakceptować warunki, aby utworzyć konto.",
+    "onboarding_title": "Wybierz swoją nazwę gracza",
+    "onboarding_sub": "Będą ją widzieć inni gracze — na aukcjach i w twoim profilu. Możesz ją później zmienić.",
+    "onboarding_submit": "Zatwierdź",
+    "username_rules": "3–20 znaków: litery, cyfry, myślnik lub podkreślnik.",
+    "username_too_short": "Nazwa musi mieć co najmniej 3 znaki.",
+    "username_too_long": "Nazwa nie może mieć więcej niż 20 znaków.",
+    "username_invalid_chars": "Tylko litery, cyfry, myślnik i podkreślnik — bez spacji i znaków diakrytycznych.",
+    "username_reserved": "Ta nazwa jest zarezerwowana, wybierz inną.",
+    "username_taken": "Ta nazwa jest już zajęta. Spróbuj wariantu.",
+    "username_required": "Wybierz nazwę gracza.",
+    "faction_title": "Wybierz swoją frakcję",
+    "faction_sub": "Otrzymujesz za darmo wszystkie zwykłe karty wybranej frakcji. Pozostałe frakcje możesz odblokować później.",
+    "faction_warning": "⚠ Ten wybór jest ostateczny: nie będzie można go zmienić.",
+    "faction_submit": "Dołącz do tej frakcji",
+    "faction_required": "Wybierz frakcję.",
+    "faction_invalid_faction": "Ta frakcja nie istnieje.",
+    "faction_already_chosen": "Twoja frakcja jest już wybrana.",
+    "error_email_rate_limit": "Wysłano zbyt wiele e-maili w krótkim czasie. Poczekaj kilka minut, zanim spróbujesz ponownie.",
+    "error_invalid_credentials": "Nieprawidłowy e-mail lub hasło.",
+    "error_email_not_confirmed": "Twoje konto nie zostało jeszcze potwierdzone. Kliknij link otrzymany e-mailem.",
+    "error_weak_password": "To hasło jest zbyt słabe. Wybierz dłuższe.",
+    "error_user_already_exists": "Konto z tym adresem już istnieje.",
+    "error_signups_disabled": "Rejestracja jest chwilowo zamknięta.",
+    "error_database_error": "Nie udało się utworzyć konta po naszej stronie. Spróbuj ponownie za chwilę; jeśli problem się powtórzy, skontaktuj się z nami.",
+    "error_captcha_failed": "Weryfikacja antybotowa nie powiodła się lub wygasła. Odśwież stronę i spróbuj ponownie.",
+    "faction_see_cards": "Zobacz karty: {faction}, zanim zdecydujesz →",
+    "faction_browse": "Wahasz się? Poznaj każdą frakcję i jej karty →"
+  },
+  "common": {
+    "brand": "Armies of Legends",
+    "settings_title": "Ustawienia",
+    "music": "Muzyka",
+    "sound_effects": "Efekty dźwiękowe",
+    "muted": "Wyciszone",
+    "active": "Włączone",
+    "concede_match": "Poddaj mecz",
+    "concede_confirm": "⚠ Potwierdź poddanie",
+    "concede_hint": "Kliknij ponownie, aby potwierdzić · automatyczne anulowanie za 5 s",
+    "notifications": "Powiadomienia",
+    "mark_all_read": "Oznacz wszystkie jako przeczytane",
+    "no_notifications": "Brak powiadomień",
+    "see_auction": "Zobacz aukcję",
+    "rotate_device": "Obróć telefon",
+    "rotate_device_hint": "Armies of Legends działa w trybie poziomym. Ustaw urządzenie poziomo, aby kontynuować."
+  },
+  "forge": {
+    "forge_first_card": "Wykuj swoją pierwszą kartę",
+    "forging": "Kucie w toku…",
+    "mana_cost_title": "Koszt many: {mana}",
+    "life_cost_title": "Koszt w życiu: {life}",
+    "discard_cost_title": "Odrzuć {count, plural, one {# kartę} few {# karty} many {# kart} other {# karty}}",
+    "sacrifice_cost_title": "Poświęć {count, plural, one {# stworzenie} few {# stworzenia} many {# stworzeń} other {# stworzenia}}",
+    "exile_cost_title": "Wygnaj {count, plural, one {# kartę} few {# karty} many {# kart} other {# karty}} z wierzchu swojej talii",
+    "topdeck_cost_title": "Odłóż {count, plural, one {# kartę} few {# karty} many {# kart} other {# karty}} z ręki na wierzch swojej talii",
+    "detail_note_all_allies": " (wszyscy sojusznicy)",
+    "detail_note_target": " (wskazane stworzenie)",
+    "trigger_on_play": "Po wejściu do gry",
+    "trigger_on_death": "Po śmierci",
+    "trigger_on_return": "Po powrocie na rękę",
+    "trigger_on_activation": "Zdolność aktywowana (tap)",
+    "trigger_on_attack": "Przy ataku",
+    "trigger_on_end_of_turn": "Na koniec tury",
+    "trigger_on_end_of_turn_in_hand": "Na koniec tury, dopóki jest na ręce",
+    "trigger_on_start_of_turn": "Na początku tury",
+    "trigger_on_start_of_turn_in_hand": "Na początku tury, dopóki jest na ręce",
+    "trigger_on_draw": "Gdy ta karta zostanie dobrana",
+    "trigger_on_low_hp": "Poniżej 15 PŻ",
+    "trigger_on_wound": "Rana (otrzymane obrażenia bez śmierci)",
+    "trigger_spell_resolution": "Przy rozpatrzeniu",
+    "composed_effects_heading": "Efekty złożone (zaawansowane)",
+    "composed_effects_subtitle": "treść + zasięg + cele",
+    "composed_effect_n": "Efekt złożony {n}",
+    "token_composed_hint": "Żeton nie wchodzi do gry przez zagranie: „po wejściu do gry” nigdy by się tu nie uruchomiło, więc ta opcja nie jest dostępna.",
+    "remove": "Usuń",
+    "label_trigger": "WYZWALACZ",
+    "singulier_toggle": "Singulier",
+    "singulier_toggle_title": "Warunek Singulier: ta zdolność uruchamia się tylko wtedy, gdy startowa talia gracza nie zawiera żadnych duplikatów kart.",
+    "label_emblem": "EMBLEMAT",
+    "emblem_permanent": "Efekt stały nałożony na gracza",
+    "emblem_trigger_note": "nakładany po pojawieniu się karty; wyzwalacz określa, na co emblemat reaguje później",
+    "label_emblem_side": "u",
+    "emblem_side_self": "mojej strony",
+    "emblem_side_opponent": "przeciwnika",
+    "label_emblem_duration": "czas trwania",
+    "emblem_duration_turns": "tur",
+    "emblem_duration_permanent": "stały",
+    "emblem_repeat_warning": "Ten wyzwalacz się powtarza: emblemat będzie się kumulować za każdym razem, a emblemat złożony z N stosów rozpatruje się N razy.",
+    "label_content": "TREŚĆ",
+    "label_target_scope": "ZASIĘG",
+    "label_neutralised_ability": "NEUTRALIZOWANA ZDOLNOŚĆ",
+    "neutralisation_hint": "Wyciszona u wybranej wrogiej jednostki (lub u wszystkich, z zasięgiem „Wszystkie wrogie”), dopóki nosiciel jest w grze.",
+    "target_scope_target": "Cel",
+    "target_scope_self": "Ona sama",
+    "target_scope_all_enemies": "Wszystkie wrogie",
+    "target_scope_all_allies": "Wszystkie sojusznicze",
+    "target_scope_all": "Wszystkie (obie strony)",
+    "target_scope_hint_all_enemies": "Uderza we wszystkie wrogie jednostki zamiast w wybrany cel (z wyjątkiem bohaterów i przedmiotów).",
+    "target_scope_hint_all_allies": "Uderza we wszystkie sojusznicze jednostki zamiast w wybrany cel (z wyjątkiem bohaterów i przedmiotów).",
+    "target_scope_hint_all": "Uderza we wszystkie jednostki obu stron zamiast w wybrany cel (z wyjątkiem bohaterów i przedmiotów).",
+    "content_deal_damage": "Zadaj obrażenia",
+    "content_siphon": "Syfon X (obrażenia + leczenie bohatera)",
+    "content_domination": "Dominacja (przejęcie kontroli)",
+    "content_heal": "Ulecz",
+    "content_buff": "Wzmocnienie +X/+Y",
+    "content_usurpation": "Uzurpacja +X/+Y (za każdą zagraną kartę przeciwnika)",
+    "content_debuff": "Osłabienie -X/-Y",
+    "content_destroy": "Zniszcz",
+    "content_bounce": "Zwróć na rękę",
+    "content_paralyze": "Sparaliżuj",
+    "content_poison": "Zatruj (−1 PŻ na turę)",
+    "content_malediction": "Przeklnij (wygnanie na końcu następnej tury przeciwnika)",
+    "content_neutralise": "Neutralizuj (sparaliżowana, zdolności bez efektu)",
+    "invocation_costs_label": "KOSZTY PRZYWOŁAŃ",
+    "invocation_costs_hint": "Za każdy wymieniony koszt przywoływana jest losowa istota z twojej kolekcji.",
+    "add_invocation": "+ Przywołanie",
+    "invocation_pool_label": "PULA PRZYWOŁAŃ",
+    "invocation_pool_any_race": "— Dowolna rasa —",
+    "invocation_pool_any_faction": "— Dowolna frakcja —",
+    "invocation_pool_hint": "Za każdy wymieniony koszt przywoływana jest losowa istota. Bez rasy i frakcji pula zależy od charakteru karty.",
+    "content_grant_keyword": "Nadaj zdolność",
+    "content_draw_cards": "Dobierz",
+    "content_discard": "Odrzuć (przeciwnik)",
+    "content_summon_token": "Przywołaj token",
+    "content_gain_mana": "Zdobądź manę",
+    "content_exhumation": "Wskrześ (cmentarz)",
+    "content_rappel": "Przywołanie (cmentarz → ręka)",
+    "label_card_kind": "DOCELOWE KARTY",
+    "card_kind_all": "Wszystkie",
+    "card_kind_creature": "Tylko jednostki",
+    "card_kind_spell": "Tylko akcje",
+    "legacy_grants_heading": "Odziedziczone dary (stary format) — przekonwertuj je, aby móc wybierać przeciwnika jako cel",
+    "convert_to_composed": "Konwertuj",
+    "effects_heading": "Efekty karty",
+    "effects_subtitle": "wszystkie efekty akcji na jednej liście",
+    "effect_kind_curated": "MECHANIKA",
+    "group_composed": "Efekty z parametrami",
+    "group_curated": "Mechaniki szczególne",
+    "content_invocation": "Przywołanie (losowa istota)",
+    "pool_hint_invocation": "Filtry się kumulują. Bez nich pula zależy od charakteru karty; koszt przywołanej istoty wynosi DOKŁADNIE X.",
+    "label_designated_card": "WSKAZANA KARTA",
+    "designated_card_hint": "Wskaż jedną lub kilka istot: zostaną przywołane w niezmienionej postaci, w tej kolejności (ta sama karta może być wskazana wielokrotnie). Bez wskazania następuje losowanie o koszcie X zgodnie z filtrami.",
+    "tuteur_card_hint": "Wskaż jedną lub kilka kart, istot lub akcji: trafią na twoją rękę w tej kolejności. Ta sama karta może być wskazana wielokrotnie (tyle egzemplarzy). Bez wskazania efekt nic nie robi.",
+    "content_selection": "Wybór (1 z 3)",
+    "content_faveur": "Przysługa (1 losowa karta → ręka)",
+    "content_renfort_royal": "Królewski wybór (1 z 3)",
+    "content_tresor": "Skarb (1 przedmiot z 3)",
+    "label_pool_membership": "PULA — PRZYNALEŻNOŚĆ",
+    "label_pool_faction": "PULA — FRAKCJA",
+    "label_pool_min_cost": "PULA — KOSZT MINIMALNY",
+    "label_pool_keyword": "PULA — POSIADANE SŁOWO KLUCZOWE",
+    "label_pool_card_type": "PULA — TYP KARTY",
+    "pool_type_creature": "Jednostki",
+    "pool_type_spell": "Akcje",
+    "pool_type_item": "Przedmioty",
+    "draw_items_only": "Tylko przedmioty z talii",
+    "pool_any": "Bez znaczenia",
+    "pool_hint": "Filtry się kumulują, oprócz podstawowych zasad (Pospolita, koszt ≤ X, charakter karty).",
+    "pool_hint_discard": "Filtry się kumulują. Przeciwnik odrzuca losowo spośród kart z ręki, które je spełniają (0 = koszt obojętny); jeśli jest ich mniej niż X, odrzuca tylko te.",
+    "pool_hint_draw": "Filtry się kumulują. Dobiera X pierwszych kart z talii, które je spełniają, w kolejności talii; pozostałe zostają na miejscu.",
+    "label_magnitude": "SKALA",
+    "random_hint": "Losowana wartość od 1 do {max}, tylko raz przy rozstrzyganiu.",
+    "move_earlier": "Rozstrzygnij wcześniej",
+    "move_later": "Rozstrzygnij później",
+    "random_needs_ceiling": "Do losowania potrzebny jest limit wynoszący co najmniej 2.",
+    "label_granted_ability": "PRZYZNANA ZDOLNOŚĆ",
+    "label_grant_trigger": "WYZWALACZ DARU",
+    "label_token": "ŻETON",
+    "label_targets": "CELE",
+    "label_type": "TYP",
+    "entity_unit": "Jednostka",
+    "entity_item": "Przedmiot",
+    "entity_spell": "Akcja",
+    "entity_unit_or_item": "Jednostka lub przedmiot",
+    "entity_hero": "Bohater",
+    "entity_both": "Oba (bohater + jednostki)",
+    "entity_self": "Samo siebie (stworzenie)",
+    "entity_damage_source": "Źródło obrażeń",
+    "label_side": "STRONA",
+    "side_ally": "Sojusznik",
+    "side_enemy": "Wróg",
+    "side_any": "Obojętne",
+    "label_count": "LICZBA",
+    "scatter_points_hint": "X ({x}) punktów rozdzielonych losowo w puli",
+    "scatter_passes_hint": "{n} losowań ze zwracaniem → najwyżej {n} różnych celów",
+    "count_all": "Wszystkie",
+    "label_location": "LOKALIZACJA",
+    "location_board": "Plansza",
+    "location_hand": "Ręka",
+    "location_deck": "Talia",
+    "location_graveyard": "Cmentarz",
+    "label_membership": "PRZYNALEŻNOŚĆ",
+    "label_target_keyword": "POSIADANE SŁOWO KLUCZOWE",
+    "label_max_cost": "MAKS. KOSZT",
+    "max_cost_any": "— Obojętne —",
+    "label_designation": "WYBÓR CELU",
+    "designation_choice": "Do wyboru",
+    "designation_random": "Losowo",
+    "designation_scatter": "Rozdzielone losowo (ze zwracaniem)",
+    "designation_automatic": "Automatycznie",
+    "add_composed_effect": "+ Dodaj efekt złożony",
+    "tab_forge": "Kuźnia",
+    "tab_capacities": "Zdolności",
+    "tab_edition": "Edycja",
+    "tab_tokens": "Tokeny",
+    "tab_card_backs": "Rewersy",
+    "tab_boards": "Plansze",
+    "tab_icons": "Ikony",
+    "tab_sets": "Zestawy",
+    "tab_formats": "Formaty",
+    "tab_bulk": "Tworzenie wspomagane",
+    "tab_budget": "Budżet",
+    "tab_schema": "Schemat",
+    "tab_prints": "Serie",
+    "tab_news": "Nowości",
+    "menu": "Menu",
+    "collections": "Kolekcje",
+    "section_faction": "Frakcja",
+    "section_race": "Rasa",
+    "section_race2": "Rasa 2 (jednostka dwurasowa)",
+    "main_races": "Główne rasy",
+    "all_races": "Wszystkie rasy",
+    "section_clan": "Klan",
+    "section_alignment": "Charakter",
+    "section_type": "Typ",
+    "section_rarity": "Rzadkość",
+    "section_set_year": "Zestaw / Rok",
+    "no_set": "— Brak zestawu —",
+    "or_month_year": "LUB miesiąc/rok:",
+    "month": "Miesiąc",
+    "year_placeholder": "np. 2026",
+    "section_mode": "Tryb",
+    "mode_auto": "Auto",
+    "mode_manual": "Ręczny",
+    "forging_caps": "KUCIE W TOKU…",
+    "forge_button": "KUJ",
+    "create_button": "STWÓRZ",
+    "reset_button": "ZRESETUJ",
+    "summon_sound": "Dźwięk przyzwania",
+    "death_sound": "Dźwięk śmierci",
+    "exile_sound": "Dźwięk kosztu wygnania",
+    "reroll": "Losuj ponownie",
+    "new_card": "Nowa karta",
+    "illustration_prompt_label": "PROMPT ILUSTRACJI",
+    "reference": "Odniesienie",
+    "no_reference": "Brak odniesienia",
+    "reference_image_optional": "OBRAZ REFERENCYJNY (opcjonalnie)",
+    "reference_image_hint": "Inspiruje pozę / kompozycję / nastrój. Styl z promptu pozostaje nadrzędny.",
+    "replace": "Zastąp",
+    "choose_image": "Wybierz obraz",
+    "remove_image": "Usuń",
+    "copy": "kopiuj",
+    "reset_short": "reset",
+    "generating": "Generowanie…",
+    "illustrate": "Zilustruj",
+    "image_model_auto": "Model: auto",
+    "image_model_hint": "Model obrazu narzucony w celu porównania dwóch wyników. „Auto” pozostawia wybór zwykłej kaskadzie. Narzucony model nie przechodzi na żaden inny: jego błąd jest zgłaszany bez zmian.",
+    "history": "HISTORIA",
+    "no_card": "Brak karty",
+    "edition_label": "WYDANIE",
+    "name_label": "NAZWA",
+    "card_name_placeholder": "Nazwa karty",
+    "name_taken": "Ta nazwa jest już używana przez „{name}” (id {id}). Zapis poprosi o potwierdzenie.",
+    "mana_label": "MANA",
+    "power_label": "SIŁA",
+    "life_cost_hint": "Punkty życia płacone przez bohatera przy przyzwaniu. Karty nie można zagrać, jeśli suma spadłaby do 0 PŻ.",
+    "life_label": "ŻYCIE",
+    "discard_cost_hint": "Liczba kart, które gracz musi odrzucić z ręki, aby zagrać tę kartę.",
+    "discard_label": "ODRZUCENIE",
+    "sacrifice_cost_hint": "Liczba sojuszniczych stworzeń, które gracz musi poświęcić, aby zagrać tę kartę.",
+    "exile_cost_hint": "Liczba kart usuwanych z wierzchu talii gracza. Wygnane: nie trafiają na cmentarz i nie można ich odzyskać.",
+    "topdeck_cost_hint": "Liczba kart, które gracz odkłada z ręki na wierzch talii. Nie trafiają na cmentarz: dobierze je ponownie. Koszt tempa, nie podlega redukcji.",
+    "equip_label": "Wyposaż.",
+    "equip_cost_hint": "PRZEDMIOTY — koszt many za wyposażenie przedmiotu na sojuszniczym stworzeniu. Płatny przy KAŻDYM wyposażeniu, także przy przeniesieniu. 0 = za darmo.",
+    "item_trigger_bearer": "(nosiciela)",
+    "sacrifice_label": "POŚWIĘCENIE",
+    "exile_label": "WYGNANIE",
+    "topdeck_label": "ODWRÓT",
+    "retreat_cost_hint": "Liczba sojuszniczych stworzeń, które gracz zabiera z pola bitwy z powrotem na rękę. Zachowują stałe premie i wywołują efekty powrotu. Koszt tempa, nie podlega redukcji.",
+    "retreat_label": "WYCOFANIE",
+    "spell_effects_label": "EFEKTY AKCJI",
+    "spell_keywords_label": "SŁOWA KLUCZOWE AKCJI",
+    "token_to_summon": "TOKEN DO PRZYZWANIA",
+    "config_below_tokens": "Konfiguracja w „Tokeny do przyzwania” poniżej",
+    "targeted_race": "WYBRANA RASA",
+    "required": "wymagana",
+    "choose_race": "-- Wybierz rasę --",
+    "tokens_to_summon": "TOKENY DO PRZYZWANIA",
+    "override_label": "NADPISANIE:",
+    "atk_override": "ATK (nadpisanie)",
+    "def_override": "OBR (nadpisanie)",
+    "add_token": "+ Dodaj token",
+    "composable_effects_advanced": "STARY FORMAT JSON (przestarzały)",
+    "json_hint": "Przestarzałe: silnik odczytuje to już tylko dla Powtórki na starych kartach. Aby stworzyć efekt, użyj poniżej opcji „Efekt złożony”.",
+    "abilities_count": "ZDOLNOŚCI ({count})",
+    "conferred_abilities_toggle": "ZDOLNOŚCI NADAWANE STWORZENIOM ({count})",
+    "conferred_abilities_hint": "nadawane stworzeniom po zagraniu akcji (zielony = wszyscy sojusznicy, szary = wybrane stworzenie)",
+    "mode_title_play": "Przy przyzwaniu (domyślnie)",
+    "mode_title_death": "Przy śmierci (deathrattle)",
+    "mode_title_tap": "Aktywowana przez tap (zaangażowanie)",
+    "mode_title_return": "Przy powrocie na rękę",
+    "mode_title_attack": "Przy ataku",
+    "mode_title_end_of_turn": "Na koniec tury",
+    "mode_title_start_of_turn": "Na początku tury (po dobraniu)",
+    "mode_title_draw": "Gdy ta karta zostanie dobrana",
+    "mode_title_low_hp": "Gdy twój bohater spadnie poniżej 15 PZ (tylko raz)",
+    "mode_title_wound": "Rana: gdy otrzyma obrażenia i nie zginie (raz na źródło i na turę)",
+    "grant_scope_target": "Nadawana wybranemu stworzeniu",
+    "grant_scope_all_allies": "Nadawana wszystkim sojuszniczym jednostkom",
+    "required_caps": "Wymagany",
+    "transformation_token": "TOKEN TRANSFORMACJI",
+    "target_race_label": "RASA DOCELOWA",
+    "required_caps_f": "Wymagana",
+    "neg_atk_is_x": "(-ATK = wartość X)",
+    "spell_cost_y": "KOSZT AKCJI (Y)",
+    "spell_count_is_x": "(liczba akcji = wartość X)",
+    "fda_condition": "(≥7 stworzeń na cmentarzu)",
+    "choose_ability": "-- Wybierz zdolność --",
+    "scope_one_ally": "1 wybrany sojusznik",
+    "scope_all_allies": "Wszyscy sojusznicy",
+    "replayed_triggers": "POWTARZANE WYZWALACZE",
+    "required_m": "wymagany",
+    "trigger_short_on_play": "Wejście do gry",
+    "trigger_short_on_death": "Śmierć",
+    "trigger_short_end_of_turn": "Koniec tury",
+    "trigger_short_on_return": "Powrót na rękę",
+    "tier_label": "Tier:",
+    "cost_label": "Koszt:",
+    "points_value": "{pts} pkt",
+    "specific_power_label": "MOC SPECJALNA",
+    "specific_power_placeholder": "Tekst mocy specyficznej…",
+    "flavor_text_label": "TEKST FABULARNY",
+    "flavor_text_placeholder": "Cytat narracyjny…",
+    "extra_context_label": "DODATKOWY KONTEKST (opcjonalnie)",
+    "extra_context_placeholder": "Np.: trzyma płonący miecz, groźne spojrzenie, widok od tyłu, czerwonawa mgła, złota zbroja…",
+    "illustration_prompt_label2": "PROMPT ILUSTRACJI",
+    "api_error": "Błąd API ({status}): {detail}",
+    "see_console": "zobacz konsolę",
+    "ai_no_prompt": "SI nie zwróciła promptu — sprawdź ANTHROPIC_API_KEY i logi serwera",
+    "illustration_prompt_generated": "Prompt ilustracji wygenerowany",
+    "network_error": "Błąd sieci",
+    "generate_by_ai": "Generuj przez SI",
+    "english_prompt_placeholder": "Prompt po angielsku do generowania obrazu…",
+    "trigger_tap_activation": "Przy aktywacji (tap)",
+    "trigger_automatic": "Automatyczny (pasywny/warunkowy)",
+    "trigger_spell_resolution_full": "Przy rozpatrzeniu akcji",
+    "container_label": "Kontener:",
+    "derived_from_type": "(wynika z typu karty)",
+    "no_ability_add_below": "Brak zdolności. Dodaj ją poniżej.",
+    "effect_type_label": "TYP EFEKTU",
+    "immediate_effect": "Efekt natychmiastowy",
+    "effect_label": "EFEKT",
+    "x_value_title": "Wartość X",
+    "targets_label2": "CEL/CELE",
+    "one_target": "1 cel",
+    "neg_atk_equals_x": "(-ATK = X)",
+    "on_self": "(na siebie)",
+    "add_ability": "+ Dodaj zdolność:",
+    "choose_dash": "-- wybierz --",
+    "no_ability_add_effect": "Brak zdolności. Dodaj poniżej efekt lub zdolność do nadania.",
+    "race_label": "RASA",
+    "race_dash": "-- Rasa --",
+    "confer_prefix": "Nadaj:",
+    "confer_ability_to_unit": "Nadaj zdolność jednostce",
+    "scope_label": "ZASIĘG",
+    "all_allied_units": "Wszystkie jednostki sojusznicze",
+    "one_allied_unit": "1 jednostka sojusznicza",
+    "add_effect": "+ Efekt:",
+    "spell_effect_dash": "-- efekt akcji --",
+    "add_confer": "+ Nadaj:",
+    "ability_to_confer_dash": "-- zdolność do nadania --",
+    "save": "Zapisz",
+    "generate_to_save": "Wygeneruj/wprowadź kartę w ⚒ Kuźni, aby móc zapisać.",
+    "token_templates_title": "SZABLONY ŻETONÓW",
+    "edit_template": "EDYTUJ SZABLON",
+    "new_template": "NOWY SZABLON",
+    "faction_optional": "FRAKCJA (opcjonalnie)",
+    "deduced_from_race": "-- Określana na podstawie rasy --",
+    "choose_dash_cap": "-- Wybierz --",
+    "clan_optional": "KLAN (opcjonalnie)",
+    "no_clan_available": "Brak dostępnych klanów",
+    "none_dash": "-- Brak --",
+    "token_name_label": "NAZWA ŻETONU",
+    "token_name_placeholder": "Np. Elfi rekrut",
+    "default_attack": "DOMYŚLNY ATAK",
+    "default_defense": "DOMYŚLNA OBRONA",
+    "token_abilities": "ZDOLNOŚCI ŻETONU",
+    "image_prompt_label": "PROMPT OBRAZU",
+    "auto_prompt_placeholder": "Kliknij „Auto-prompt”, aby wygenerować, lub napisz własny...",
+    "auto_prompt": "Auto-prompt",
+    "generate_image": "Generuj obraz",
+    "or_upload_image": "LUB PRZEŚLIJ OBRAZ",
+    "preview": "podgląd",
+    "saving": "Zapisywanie...",
+    "update": "Zaktualizuj",
+    "create2": "Utwórz",
+    "cancel": "Anuluj",
+    "existing_templates": "ISTNIEJĄCE SZABLONY ({count})",
+    "load_refresh": "Wczytaj / Odśwież",
+    "no_template": "Brak szablonów — kliknij Wczytaj",
+    "edit": "Edytuj",
+    "generate_card_back_title": "WYGENERUJ RewERS KARTY",
+    "metadata": "METADANE",
+    "card_back_name_placeholder": "Np. Strażnik Prastarych Borów",
+    "faction_label": "FRAKCJA",
+    "none_dash_f": "-- Brak --",
+    "clan_label": "KLAN",
+    "rarity_label": "RZADKOŚĆ",
+    "copies_label": "EGZEMPLARZE",
+    "default_checkbox": "Domyślne",
+    "frame_label": "RAMKA",
+    "frame_hint": "Ramka jest nakładana po wygenerowaniu. SI może skupić się wyłącznie na ilustracji — nie trzeba rysować ramki.",
+    "generation_mode": "TRYB GENEROWANIA",
+    "one_variant": "1 wariant",
+    "three_variants": "3 warianty",
+    "extra_instructions": "DODATKOWE INSTRUKCJE",
+    "card_back_instructions_placeholder": "Np.: złote runy, pióra, wypolerowane lustro, zwinięty smok...",
+    "reference_image_hint2": "Służy jako inspiracja wizualna (temat / paleta / nastrój). Zasady promptu mają pierwszeństwo.",
+    "manual_upload": "Wgraj ręcznie",
+    "variants_count": "WARIANTY ({selected} / {total} {selected, plural, one {wybrany} few {wybrane} many {wybranych} other {wybranych}})",
+    "variant_n": "Wariant {n}",
+    "card_back_preview": "Podgląd rewersu",
+    "saving2": "Zapisywanie…",
+    "save_n_backs": "Zapisz rewersy: {n}",
+    "save_back": "Zapisz rewers",
+    "generate_board_title": "WYGENERUJ PLANSZĘ DO GRY",
+    "board_name_placeholder": "Np.: Karczma Śpiącego Smoka",
+    "composition_style": "STYL KOMPOZYCJI",
+    "board_style_surface": "Wyłącznie teren (trawa, śnieg, piasek, kamień…) wypełniający całą ramkę. Bez dekoracji i obramowań — idealne do czysto nastrojowego efektu.",
+    "board_style_minimal": "Środek planszy pozostaje pusty (płaska powierzchnia), a dekoracje znajdują się na brzegach. Z myślą o figurkach 3D.",
+    "board_style_mtgo": "Kompozycja MTG Arena: czysty środek, dekoracje ograniczone do paneli bocznych. W grze: duży klikalny kafel cmentarza po lewej, bohater + talia + mana + PZ po prawej (odwrócona symetria dla przeciwnika). Automatycznie włącza układ MTGO.",
+    "board_style_hearthstone": "Kompozycja Hearthstone: tematyczne rekwizyty wszędzie, ozdobny podział na środku.",
+    "graveyard_image_optional": "OBRAZ CMENTARZA (opcjonalnie)",
+    "graveyard": "Cmentarz",
+    "graveyard_image_hint": "Obraz wyświetlany jako klikalny kafel cmentarza. Bez obrazu zostanie wyświetlona domyślna trumna.",
+    "environment_label": "OTOCZENIE",
+    "race_optional": "RASA (opcjonalnie)",
+    "default_board_hint": "Plansza domyślna (używana, gdy talia żadnej nie określa)",
+    "extra_instructions_optional": "DODATKOWE INSTRUKCJE (opcjonalnie)",
+    "board_instructions_placeholder": "Np.: klimat cyberpunku z fioletowymi neonami, ulewny deszcz, odbicia na metalowej podłodze…",
+    "board_instructions_hint": "Po wypełnieniu zastępuje blok tematu/otoczenia w prompcie. Zasady kompozycji (Hearthstone, 16:9, symetria, ramka) są zawsze stosowane.",
+    "reference_image_hint3": "Służy jako inspiracja wizualna (temat / paleta / nastrój). Zasady kompozycji mają pierwszeństwo.",
+    "rerun_variants": "Uruchom ponownie wariaty: {n}",
+    "generate_variants": "Wygeneruj warianty: {n}",
+    "or": "lub",
+    "import_image": "Importuj obraz",
+    "preview_caps": "PODGLĄD",
+    "variants_check_hint": "WARIANTY (kliknij, aby zaznaczyć — można wiele)",
+    "save_board": "Zapisz planszę",
+    "save_n_boards": "Zapisz wybrane plansze: {n}",
+    "generate_ability_icon_title": "WYGENERUJ IKONĘ ZDOLNOŚCI",
+    "parameters": "PARAMETRY",
+    "ability_label": "ZDOLNOŚĆ",
+    "ability_polymorph": "🔀 Zdolność polimorficzna — ikona zostanie zapisana dla stworzenia ORAZ akcji.",
+    "ability_creature": "👤 Zdolność stworzenia.",
+    "ability_spell": "🪄 Zdolność akcji.",
+    "ability_legend": "👤 stworzenie · 🪄 akcja · 🔀 wspólna",
+    "icon_name_label": "NAZWA IKONY",
+    "icon_name_placeholder": "Np.: Tarcza v2",
+    "style_label": "STYL",
+    "style_white": "Czysta biel",
+    "style_grey": "Czysta szarość",
+    "style_colored": "Kolorowy",
+    "style_sculpture": "Rzeźba",
+    "icon_instructions_placeholder": "Np.: postaw na błyskawicę, stylizowaną czaszkę...",
+    "reference_image_hint4": "Służy wyłącznie jako inspiracja wizualna dla tematu; wszystkie ograniczenia stylu (tło, sylwetka, paleta…) pozostają zachowane.",
+    "rerun_3_variants": "Ponów 3 warianty",
+    "generate_3_variants": "Wygeneruj 3 warianty",
+    "variants_check_save_hint": "WARIANTY (kliknij, aby zaznaczyć te do zapisania — możliwe kilka)",
+    "save_variant": "Zapisz wybrany wariant",
+    "save_n_variants": "Zapisz wybrane warianty ({n})",
+    "gallery": "GALERIA",
+    "all_abilities": "Wszystkie zdolności",
+    "refresh": "Odśwież",
+    "no_icon": "Brak ikon. Zacznij od wygenerowania jednej powyżej.",
+    "active": "Aktywny",
+    "activate": "Aktywuj",
+    "create_set": "UTWÓRZ ZESTAW",
+    "set_name_placeholder": "Nazwa (np.: Zestaw podstawowy)",
+    "set_code_placeholder": "Kod (np.: BASE)",
+    "icon_placeholder": "Ikona",
+    "release_date": "Data wydania",
+    "set_icon_import": "Importuj ikonę",
+    "set_icon_change": "Zmień",
+    "set_icon_clear": "Usuń zaimportowaną ikonę",
+    "set_type_base": "Zestaw podstawowy",
+    "set_type_special": "Specjalny",
+    "set_type_hint": "Zestaw specjalny nadal nadaje się do gry i kolekcjonowania, ale jego karty nigdy nie pojawiają się w losowaniach losowych ani półlosowych (Wybór, Przyzwanie, Rozpętanie, Koncentracja, Oszczędność).",
+    "existing_sets": "ISTNIEJĄCE ZESTAWY ({count})",
+    "no_set_created": "Nie utworzono żadnego zestawu",
+    "error": "Błąd",
+    "no_format_found": "Nie znaleziono żadnego formatu. Sprawdź, czy tabela „formats” została utworzona i wypełniona.",
+    "active_m": "Aktywny",
+    "inactive": "Nieaktywny",
+    "all_random": "Wszystkie parametry losowe",
+    "launch": "Uruchom",
+    "budget_system_reference": "SYSTEM BUDŻETU — INFORMACJE",
+    "cost_credit": "{points} pkt zwróconych przez dodatkowe koszty",
+    "cost_credit_title": "Koszt opłacony dodatkowo poza maną osłabia kartę: finansuje resztę. Przebudzenie jest wyłączone — to koszt alternatywny, który zastępuje manę.",
+    "panel_mana_rarity": "ROZKŁAD RZADKOŚCI WG KOSZTU MANY (TRYB BULK)",
+    "mana_th": "Mana",
+    "panel_rarity_multipliers": "MNOŻNIKI WG RZADKOŚCI",
+    "panel_stat_costs": "KOSZT STATYSTYK",
+    "atk_cost_desc": "2.5 pkt za punkt",
+    "def_cost_desc": "2.0 pkt za punkt",
+    "budget_algo_desc": "Algorytm najpierw przydziela ATK (45% pozostałego budżetu), potem DEF (55%), a następnie próbuje dodawać zdolności aż do wyczerpania budżetu. Mnożniki frakcji (ATK weight, DEF weight) zmieniają zakresy losowania.",
+    "panel_ability_costs": "KOSZT ZDOLNOŚCI",
+    "panel_faction_profiles": "PROFILE FRAKCJI",
+    "guaranteed_label": "Gwarantowane:",
+    "forbidden_label": "Zakazane:",
+    "card_schema_label": "SCHEMAT KARTY — JSON",
+    "limited_series_assignment": "SERIE LIMITOWANE — PRZYDZIAŁ",
+    "no_dated_card": "Brak w bazie kart wykutych z datą.",
+    "search_placeholder": "Szukaj...",
+    "select_card_for_copies": "Wybierz kartę, aby zobaczyć jej egzemplarze",
+    "loading": "Wczytywanie...",
+    "prints_summary": "{rarity} — {total} egzemplarzy — {assigned} przypisanych, {available} dostępnych",
+    "owner_th": "WŁAŚCICIEL",
+    "tradeable_th": "WYMIENIALNA",
+    "actions_th": "AKCJE",
+    "available_dash": "— dostępny —",
+    "yes": "Tak",
+    "no": "Nie",
+    "unassign": "Odbierz",
+    "assign_to": "Przypisz do...",
+    "cannot_read_ref_image": "Nie można odczytać obrazu referencyjnego.",
+    "cannot_load_image": "Nie można wczytać obrazu.",
+    "variants_failed": "Liczba nieudanych wariantów: {n}.",
+    "confirm_delete_icon": "Usunąć ikonę „{name}”?",
+    "icon_saved": "Zapisano ikonę „{name}”.",
+    "icons_saved_partial": "Zapisano ikon: {ok}, ale pozostałe zakończyły się błędem: {error}",
+    "backs_saved": "Zapisano rewersy: {n}.",
+    "back_saved": "Zapisano rewers „{name}”.",
+    "backs_saved_partial": "Zapisano rewersów: {ok}, ale pozostałe zakończyły się błędem: {error}",
+    "image_imported": "Obraz zaimportowany — gotowy do zapisu.",
+    "cannot_read_imported_image": "Nie można odczytać zaimportowanego obrazu.",
+    "boards_saved": "Zapisano plansze: {n}.",
+    "board_saved_named": "Zapisano planszę „{name}”.",
+    "boards_saved_partial": "Zapisano plansz: {ok}, ale pozostałe zakończyły się błędem: {error}",
+    "image_generated": "Obraz wygenerowany ({model})",
+    "generation_error": "Błąd generowania",
+    "server_error": "Błąd serwera",
+    "image_generation_error": "Błąd generowania obrazu",
+    "template_updated": "Szablon zaktualizowany",
+    "template_created": "Szablon utworzony",
+    "validation_convocation_x": "Przywołanie X: wybierz token w selektorze przed zapisem.",
+    "validation_convocation": "Przywołanie: wybierz token w selektorze przed zapisem.",
+    "validation_multi_convocation": "Wielokrotne przywołania: dodaj do listy co najmniej jeden token przed zapisem.",
+    "validation_lycanthropie": "Likantropia X: wybierz token przemiany przed zapisem.",
+    "validation_entraide": "Wzajemna pomoc (Rasa): wybierz rasę docelową przed zapisem.",
+    "validation_appel_supreme": "Najwyższe Wezwanie: wybierz rasę docelową przed zapisem.",
+    "validation_multi_convocation_spell": "Wielokrotne przywołania (akcja): dodaj do listy co najmniej jeden token przed zapisem.",
+    "validation_convocation_spell": "Przywołanie (akcja): wybierz token w selektorze przed zapisem.",
+    "card_added": "Dodano „{name}”!",
+    "unknown_error": "Nieznany błąd",
+    "illustration_generated": "Ilustracja wygenerowana ({model})",
+    "import_error": "Błąd importu",
+    "eveil_label": "PRZEBUDZENIE",
+    "eveil_cost_hint": "PRZEBUDZENIE: kartę można przebudzić ZAMIAST ją zagrywać. Opuszcza rękę z tą liczbą punktów; gracz płaci 1 many za punkt w każdej swojej turze, a przy ostatnim punkcie karta wchodzi do gry tak, jakby została zagrana z ręki. Zastępuje koszt many, nie dodaje się do niego. Nie można go zmniejszyć.",
+    "eveil_cost_title": "Można przebudzić za {count, plural, one {# punkt} few {# punkty} many {# punktów} other {# punktu}}, płacone po 1 manie na turę — zamiast kosztu many",
+    "label_occurrences": "POWTÓRZENIA",
+    "occurrences_hint": "1 = tylko raz. Powyżej treść odtwarza się kolejno (maksymalnie 10).",
+    "alternative_toggle": "LUB",
+    "alternative_toggle_title": "Ten efekt staje się jedną z opcji wyboru karty: gracz rozstrzygnie tylko JEDNĄ spośród wszystkich zaznaczonych.",
+    "alternative_warn_alone": "zaznaczono tylko jedną opcję: efekt rozstrzyga się normalnie",
+    "alternative_warn_triggers": "opcje z różnymi wyzwalaczami: nie wykluczają się nawzajem",
+    "random_hint_selection": "Każda ujawniona karta losuje WŁASNY koszt, od 1 do {max}. Bez zaznaczenia wszystkie trzy wynoszą dokładnie {max}.",
+    "random_min_hint": "Koszt minimalny (A): każdy koszt jest losowany od {min} do {max}.",
+    "cost_optional_hint": "Zostaw puste dla dowolnego kosztu.",
+    "cost_any_label": "dowolny koszt",
+    "cost_any_toggle": "Dowolny koszt (kliknij ponownie, aby wrócić do X = 1)",
+    "random_hint_faveur": "Koszt podarowanej karty jest losowany od 1 do {max}. Bez zaznaczonego pola wynosi dokładnie {max}.",
+    "content_appel": "Przywołanie z talii",
+    "content_appel_supreme": "Najwyższe Przywołanie (talia → ręka, najdroższa)",
+    "content_tuteur": "Tutor (wskazane karty → ręka)",
+    "content_transformation": "Przemień we wskazaną kartę",
+    "content_forge": "Kuźnia (1 przedmiot potasowany do talii)",
+    "forge_min_hint": "Minimalny koszt wykutego przedmiotu (dolna granica A). Maksymalny koszt to X; puste X = dowolny koszt.",
+    "transformation_card_hint": "Każda wskazana jednostka staje się tą kartą; przy kilku kartach każda losuje własną. Wraca do pierwotnej postaci, gdy opuszcza planszę.",
+    "content_epargne": "Oszczędności (licznik)",
+    "content_foi": "Wiara (licznik)",
+    "content_conquete": "Podbój (licznik)",
+    "content_exploration": "Eksploracja (licznik, dobiera przy 3)",
+    "content_incineration": "Spopielenie (recykling cmentarza)",
+    "content_devoration": "Pożarcie (zniszcz i wchłoń)",
+    "content_tactique": "Taktyka (losowe zdolności, ten sam koszt)",
+    "content_retour_differe": "Odroczony powrót (pod talię)",
+    "content_silence": "Cisza (odbiera celowi wszystko)",
+    "content_dechainement": "Rozpętanie X/Y (losowe akcje)",
+    "content_selection_magique": "Magiczny wybór (1 akcja z 3)",
+    "tab_style_guides": "Wytyczne",
+    "mode_title_delay": "Opóźnienie X: tylko raz, na początku X-tej następnej tury, jeśli jednostka nadal jest w grze",
+    "trigger_on_delay": "Opóźnienie X (na początku X-tej następnej tury)",
+    "retard_turns_title": "Opóźnienie: liczba tur do wyzwolenia",
+    "retard_spell_title": "Opóźnienie: efekt wyzwala się na początku X-tej następnej tury zagrywającego, cel wybierany w tym momencie",
+    "label_retard": "Opóźnienie",
+    "trigger_on_end_of_turn_in_graveyard": "Na koniec tury, dopóki jest na cmentarzu",
+    "content_enterrement": "Pochówek (talia → cmentarz, z filtrem)"
+  },
+  "game": {
+    "hero_power_grant": "Nadaje {kw} stworzeniu",
+    "hero_power_emblem": "Godło: {kw}",
+    "hero_power_counter": "Dodaje {x} do licznika {compteur}",
+    "hero_power_machine": "Dodaje +{x}/+{y} do twojej maszyny",
+    "error_not_authenticated": "Brak uwierzytelnienia",
+    "error_match_not_found": "Nie znaleziono partii",
+    "error_load_failed": "Nie udało się wczytać partii",
+    "loading": "Wczytywanie partii…",
+    "waiting_opponent": "Oczekiwanie na przeciwnika…",
+    "return_to_menu": "Powrót do menu",
+    "persist_warning": "Nie udało się zapisać akcji — ryzyko desynchronizacji. Odśwież stronę, aby zsynchronizować ponownie.",
+    "reload": "Wczytaj ponownie",
+    "close": "Zamknij",
+    "settings": "Ustawienia",
+    "choose_card": "Wybierz kartę",
+    "attack_choice_target": "⚔️ {label} — wybierz cel",
+    "attack_power_label": "Siła ataku",
+    "opponent_choosing": "⏳ Przeciwnik dokonuje wyboru…",
+    "no_creatures": "Brak stworzeń",
+    "drag_hint": "Przeciągnij tutaj karty, aby je zagrać",
+    "drop_hint": "Puść, aby zagrać stworzenie",
+    "cancel_targeting": "Anuluj celowanie",
+    "action_cancel": "Anuluj",
+    "action_confirm": "Potwierdź",
+    "action_close": "Zamknij",
+    "card_count": "{count, plural, one {# karta} few {# karty} many {# kart} other {# karty}}",
+    "selection_title": "🎴 Wybór",
+    "selection_subtitle": "Wybierz kartę, którą dodasz do ręki",
+    "discovery_title": "🔭 Odkrycie",
+    "discovery_subtitle": "Twój dobór w tej turze: wybierz kartę",
+    "discovery_other_clan": "Inny klan",
+    "discovery_other_faction": "Inna frakcja",
+    "power_hero_activated": "Moc bohatera aktywowana",
+    "power_used_this_turn": "Użyto w tej turze",
+    "power_hero_label": "Moc bohatera",
+    "power_cost_label": "Koszt:",
+    "power_mana_unit": "many",
+    "power_mode_grant_keyword": "Przekazanie zdolności",
+    "power_mode_spell_trigger": "Efekt jednorazowy",
+    "power_mode_aura": "Aura trwała",
+    "power_mode_active": "Aktywna",
+    "power_no_description": "Brak opisu.",
+    "power_activations_unlimited": "Aktywacje: bez limitu",
+    "power_activations_used": "Aktywacje: {used} / {limit}",
+    "power_usage_limit": "Limit: maks. {limit}×",
+    "hero_starting_hp": "{hp} PZ na start",
+    "power_close_hint": "Naciśnij Esc lub kliknij poza obszarem, aby zamknąć",
+    "divination_traque_title": "🔮 Pościg za przeznaczeniem",
+    "divination_title": "🔍 Wróżba",
+    "divination_traque_subtitle": "Wybierz kartę, którą weźmiesz na rękę. Pozostałe trafią pod spód talii.",
+    "divination_subtitle": "Wybierz kartę, którą położysz na wierzchu swojego dobieranego stosu",
+    "graveyard_select_prompt": "Wybierz kartę z cmentarza",
+    "graveyard_hint_touch": "Dotknij karty, aby powiększyć · dotknij ponownie, aby zobaczyć opis",
+    "graveyard_hint_hover": "Najedź na kartę, aby powiększyć · kliknij prawym przyciskiem, aby przełączyć obraz / opis",
+    "seconde_vie_hint": "Druga szansa: kliknij dwukrotnie kwalifikującą się kartę.",
+    "seconde_vie_blocked_turn": "To nie twoja tura.",
+    "graveyard_empty": "Brak kart na cmentarzu",
+    "cost_default_card_name": "karta",
+    "cost_pay_title": "Zapłać koszty: {name}",
+    "cost_discard_label": "🃏 {count, plural, one {Odrzuć # kartę} few {Odrzuć # karty} many {Odrzuć # kart} other {Odrzuć # karty}}",
+    "cost_topdeck_label": "{count, plural, one {Odwrót: odłóż # kartę na talię} few {Odwrót: odłóż # karty na talię} many {Odwrót: odłóż # kart na talię} other {Odwrót: odłóż # karty na talię}}",
+    "cost_retreat_label": "{count, plural, one {Zabierz # stworzenie na rękę} few {Zabierz # stworzenia na rękę} many {Zabierz # stworzeń na rękę} other {Zabierz # stworzenia na rękę}}",
+    "cost_topdeck_order_hint": "Pierwsza wskazana karta znajdzie się na wierzchu talii.",
+    "cost_hand_order_hint": "Twoje kliknięcia najpierw wypełniają odrzucone, potem odwrót.",
+    "topdeck_cost_caption": "{count, plural, one {Odwrót} other {Odwrót ×#}}",
+    "cost_sacrifice_label": "☠ {count, plural, one {Poświęć # stworzenie} few {Poświęć # stworzenia} many {Poświęć # stworzeń} other {Poświęć # stworzenia}}",
+    "convocation_title": "📣 Wezwanie",
+    "convocation_subtitle": "Wybierz rasę żetonu do przyzwania",
+    "cycle_eternel_caption": "♻ Wieczny Cykl",
+    "compagnons_caption": "🐾 Towarzysze",
+    "discard_label": "🔥 {count, plural, one {Odrzucona — # karta} few {Odrzucone — # karty} many {Odrzuconych — # kart} other {Odrzucone — # karty}}",
+    "graveyard_affect_label": "🪦 {count, plural, one {Cmentarz — # karta} few {Cmentarz — # karty} many {Cmentarz — # kart} other {Cmentarz — # karty}}",
+    "zone_deck": "Talia",
+    "zone_graveyard": "Cmentarz",
+    "zone_deck_yours": "Twoja talia",
+    "zone_deck_opponent": "Talia przeciwnika",
+    "zone_graveyard_yours": "Twój cmentarz",
+    "zone_graveyard_opponent": "Cmentarz przeciwnika",
+    "history_title": "Ostatnie akcje",
+    "history_hero_friendly": "twój bohater",
+    "history_hero_enemy": "bohater przeciwnika",
+    "history_spell": "Zagrano akcję: {source}",
+    "history_spell_on": "Zagrano akcję: {source} (cel: {target})",
+    "history_spell_countered": "{source} skontrowano",
+    "history_attack": "{source} atakuje: {target}",
+    "history_attack_alone": "{source} atakuje",
+    "history_death": "{source} zniszczono",
+    "history_bounce": "{source} wraca na rękę",
+    "history_power": "Moc: {source} na {target}",
+    "history_power_alone": "Moc: {source}",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, one {# obrażenie} few {# obrażenia} many {# obrażeń} other {# obrażenia}}",
+    "history_extra_targets": "{count, plural, one {+# inny cel} few {+# inne cele} many {+# innych celów} other {+# innego celu}}",
+    "history_expand": "{count, plural, one {Pokaż poprzednią akcję} few {Pokaż # poprzednie akcje} many {Pokaż # poprzednich akcji} other {Pokaż # poprzednich akcji}}",
+    "history_collapse": "Zwiń historię",
+    "convocation_prefix": "Tworzy {content}",
+    "convocation_create_list": "Tworzy {content}",
+    "convocation_token_one_named": "token {token}",
+    "convocation_token_many_named": "{count} × token {token}",
+    "convocation_invoke_one": "Przywołuje: {token} {atk}/{hp}",
+    "convocation_invoke_race": "Przywołuje: {race} {atk}/{hp}",
+    "convocation_create_one_named": "Tworzy token {token}",
+    "convocation_none": "brak tokenów",
+    "convocation_and": "{a} i {b}",
+    "spell_countered": "🛡️ Kontrakcja!",
+    "draw_trigger_self": "🃏 Efekt aktywowany przy twoim dobraniu karty",
+    "draw_trigger_opponent": "🃏 Efekt aktywowany przy dobraniu karty przez przeciwnika",
+    "faveur_self": "🎁 Łaska — karta dodana do twojej ręki",
+    "faveur_opponent": "🎁 Łaska — karta dodana do ręki przeciwnika",
+    "spell_grant_all_allies": " · wszystkim sojusznikom",
+    "spell_grant_target": " · wskazanej istocie",
+    "fire_breath_label": "Ognisty Oddech",
+    "queue_eyebrow": "Udowodnij swoją wartość",
+    "queue_subtitle": "Znajdź przeciwnika i walcz",
+    "queue_heading": "Graj",
+    "queue_select_deck_error": "Wybierz talię",
+    "queue_connection_error": "Błąd połączenia z matchmakingiem",
+    "queue_no_valid_deck": "Do gry potrzebujesz co najmniej jednej prawidłowej talii (50 kart).",
+    "queue_create_deck": "Utwórz talię",
+    "queue_format_label": "Format:",
+    "queue_select_deck_label": "Wybierz swoją talię:",
+    "queue_no_deck_for_format": "Brak talii dla tego formatu. Utwórz ją w kreatorze talii.",
+    "queue_find_match": "Znajdź grę",
+    "queue_back_to_menu": "Powrót do menu",
+    "queue_searching": "Szukanie przeciwnika…",
+    "mode_suffix_death": " · po śmierci",
+    "mode_suffix_tap": " · tap",
+    "mode_suffix_return": " · powrót na rękę",
+    "mode_suffix_end_of_turn": " · koniec tury",
+    "presage_title": "🌙 Wróżba",
+    "presage_subtitle": "Która karta jest pierwsza w twojej talii?",
+    "presage_hit": "Dobrze trafiona — dołącza do twojej ręki.",
+    "presage_miss": "Pudło. Właściwa karta jest zaznaczona na zielono.",
+    "apprentissage_title": "📖 Nauka",
+    "apprentissage_subtitle": "Którą akcję stwór ma zapamiętać?",
+    "foi_title": "✨ Wiara",
+    "foi_subtitle": "Wybierz kartę, którą weźmiesz na rękę. Jej koszt zostanie odjęty od twojej Wiary, a reszta zostanie zachowana.",
+    "conquete_title": "🚩 Podbój",
+    "conquete_subtitle": "Trzy karty z talii przeciwnika. Wybierz tę, którą weźmiesz na rękę – będzie twoja do końca partii.",
+    "zone_eveil": "Przebudzenie",
+    "zone_eveil_yours": "Twoje przebudzenie",
+    "zone_eveil_opponent": "Przebudzenie przeciwnika",
+    "hand_show": "Pokaż rękę",
+    "eveil_hint": "Wpłacaj 1 manę za kliknięcie. Przy ostatnim punkcie karta wchodzi do gry tak, jakby została zagrana z twojej ręki.",
+    "eveil_remaining": "{count, plural, one {Pozostał # punkt} few {Pozostały # punkty} many {Pozostało # punktów} other {Pozostało # punktu}}",
+    "eveil_next_point": "Następny punkt kosztuje 1 manę.",
+    "eveil_next_arrives": "Ostatni punkt: karta wchodzi do gry.",
+    "eveil_play_now": "Wprowadź do gry",
+    "eveil_blocked_mana": "Za mało many.",
+    "eveil_blocked_board_plein": "Twoja plansza jest pełna.",
+    "eveil_blocked_vie": "Nie masz wystarczająco punktów życia na pokrycie kosztu.",
+    "eveil_blocked_main": "Za mało kart na ręce na pokrycie dodatkowych kosztów.",
+    "eveil_blocked_plateau": "Za mało stworów do poświęcenia.",
+    "eveil_blocked_deck": "Za mało kart do wygnania w twojej talii.",
+    "eveil_blocked_sans_cible": "Brak prawidłowego celu dla tej akcji.",
+    "eveil_suspend": "Wprowadź w przebudzenie ({count, plural, one {# punkt} few {# punkty} many {# punktów} other {# punktu}})",
+    "eveil_pay_n": "{count, plural, one {Zapłać #} few {Zapłać #} many {Zapłać #} other {Zapłać #}}",
+    "eveil_max": "maks. {count}",
+    "eveil_max_hint": "Ostatni punkt to wejście do gry: płaci się go osobno, z wyborem celów.",
+    "choix_ou_title": "⚖️ Do wyboru",
+    "synergie_title": "Synergia – wybierz zdolność",
+    "synergie_subtitle": "Ten stwór zyska premię przy każdym uruchomieniu wybranej zdolności, zarówno u ciebie, jak i u przeciwnika.",
+    "synergie_search": "Szukaj zdolności…",
+    "synergie_in_play": "W grze",
+    "synergie_others": "Pozostałe zdolności",
+    "synergie_none": "Żadna zdolność nie pasuje.",
+    "choix_ou_subtitle": "Zostanie rozpatrzony tylko jeden z tych efektów.",
+    "activation_menu_title": "Którą moc aktywować?",
+    "activation_learned": "Zagraj {name}",
+    "mutation_button": "Mutuj",
+    "mutation_button_title": "Mutacja: przekształć tę kartę (za darmo, tylko raz)",
+    "mutation_discover": "Mutacja – Odkrycie {n}/2",
+    "mutation_discover_subtitle": "Wybierz zwykłą istotę o koszcie {x}",
+    "mutation_pick_ability": "Mutacja — zdolność {n}/2",
+    "mutation_pick_subtitle": "Wybierz zdolność, którą ta istota przekaże w spadku",
+    "mutation_empty": "Brak dostępnych istot o tym koszcie.",
+    "mutation_cancel": "Anuluj",
+    "infestation_caption": "🪳 Plaga",
+    "infestation_eclosion_caption": "🪳 Plaga — wylęg",
+    "enterrement_caption": "⚰ Pochówek"
+  },
+  "tutorial": {
+    "page_eyebrow": "Poznaj sztukę pojedynku",
+    "page_subtitle": "Armies of Legends — średniowieczno-fantasy pojedynek kart",
+    "page_title": "Jak grać",
+    "track_beginner": "Początkujący — pełny przewodnik",
+    "track_tcg": "Gracz TCG — najważniejsze informacje",
+    "track_factions": "Frakcje i klany",
+    "goal_title": "Cel gry",
+    "stat_hero_start": "Bohater na starcie",
+    "stat_starting_hand": "Ręka startowa",
+    "stat_mana_growth": "Mana (rośnie co turę)",
+    "stat_max_board": "Maks. istot na polu bitwy",
+    "turn_title": "Przebieg tury",
+    "turn_intro": "Na początku każdej z waszych tur, w tej kolejności:",
+    "hand_title": "Ręka i dobieranie",
+    "creatures_title": "Istoty",
+    "spells_title": "Akcje",
+    "combat_title": "Walka",
+    "combat_see_full_list": "Pełna lista zdolności znajduje się na dole strony.",
+    "hero_title": "Bohater i jego moc",
+    "alt_costs_title": "Dodatkowe koszty i przebudzenie",
+    "counters_title": "Liczniki: Oszczędność, Wiara i Podbój",
+    "singulier_title": "Unikat: premia dla talii bez duplikatów",
+    "deck_title": "Budowanie talii",
+    "tcg_numbers_title": "Kluczowe liczby",
+    "stat_hero_hp": "PZ bohatera",
+    "stat_deck_exact": "Karty / talia (dokładnie)",
+    "stat_hand_range": "Ręka (start → maks.)",
+    "stat_mana_per_turn": "Mana (+1 / turę)",
+    "tcg_gameloop_title": "Pętla gry (specyfika AoL)",
+    "tcg_deckbuilding_title": "Budowanie talii",
+    "tcg_combat_title": "Walka — rozstrzyganie",
+    "tcg_hero_spells_title": "Bohater i akcje",
+    "lexicon_eyebrow": "Leksykon walki",
+    "lexicon_subtitle": "Pełne zestawienie, zawsze zgodne z aktualną wersją gry. „X” i „Y” to wartości ustalone na każdej karcie.",
+    "lexicon_title": "Wszystkie zdolności",
+    "search_placeholder": "Szukaj zdolności…",
+    "creature_abilities_group": "Zdolności stworzeń ({count})",
+    "spell_abilities_group": "Zdolności akcji ({count})",
+    "no_ability_match": "Żadna zdolność nie pasuje do „{query}”.",
+    "goal_text": "Każdy gracz wciela się w <hi>bohatera</hi>, który zaczyna z <hi>{min}–{max} punktami życia</hi> zależnie od bohatera (najczęściej {usual}): potężna moc kosztuje kilka PŻ, a skromna moc jest zrekompensowana kilkoma dodatkowymi PŻ. Wygrywasz partię, redukując punkty życia bohatera przeciwnika do <hi>{zero}</hi>. Aby to zrobić, przyzywasz stworzenia i zagrywasz akcje.",
+    "stat_hero_start_value": "{min}–{max} PŻ",
+    "stat_starting_hand_value": "{first} lub {second} karty"
+  },
+  "deck": {
+    "alignment_incompatible": "Charakter Dobry i Zły są niekompatybilne",
+    "max_mercenaires_current": "Maks. {max} Najemników (obecnie {current})",
+    "max_capability_current": "Maks. {max} zdolności „{label}” (obecnie {count})",
+    "card_not_owned": "Karta nieposiadana",
+    "no_items_in_deck": "Przedmioty nie trafiają do talii: znajduje się je w grze.",
+    "no_items_in_deck_current": "Ta talia zawiera {count, plural, one {# przedmiot} few {# przedmioty} many {# przedmiotów} other {# przedmiotu}}: usuń je, przedmioty nie trafiają już do talii.",
+    "deck_full": "Talia pełna",
+    "singleton_yes": "Talia singletonowa ✓",
+    "singleton_no": "Talia singletonowa ✗",
+    "singleton_hint": "Talia singletonowa nie zawiera żadnych duplikatów kart: zdolności oznaczone jako Singleton aktywują się tylko pod tym warunkiem. To nie jest zasada budowy talii.",
+    "unique_copy": "Egzemplarz unikatowy",
+    "max_three_copies": "Maks. 3 kopie",
+    "alignment_conflict": "Konflikt charakteru",
+    "one_faction_only": "Dozwolona tylko 1 frakcja",
+    "one_clan_only": "Dozwolony tylko 1 klan",
+    "max_mercenaires": "Maks. {max} Najemników",
+    "no_slot_available": "Brak wolnych miejsc",
+    "max_capability": "Maks. {max} × zdolność „{label}”",
+    "enter_deck_name": "Wpisz nazwę talii",
+    "choose_faction_prep": "Wybierz frakcję (zakładka Przygotowanie)",
+    "select_format": "Wybierz format",
+    "select_hero": "Wybierz bohatera",
+    "deck_exact_size": "Talia musi zawierać dokładnie {size} kart (obecnie {current})",
+    "illegal_cards": "Karty niedozwolone w tym formacie: {cards}",
+    "deck_contains_unowned": "Talia zawiera karty nieposiadane",
+    "save_failed": "Nie udało się zapisać talii",
+    "forge_your_deck": "Wykuj swoją talię",
+    "step_preparation": "1 · Przygotowanie",
+    "step_appearance": "2 · Wygląd",
+    "step_cards": "3 · Karty",
+    "cancel": "Anuluj",
+    "choose_faction_first_tab": "Najpierw wybierz frakcję w zakładce 1 · Przygotowanie.",
+    "search_placeholder": "Szukaj...",
+    "creatures": "Stworzenia",
+    "spells": "Akcje",
+    "items": "Przedmioty",
+    "all_capabilities": "Zdolności",
+    "all_races": "Rasy",
+    "all_clans": "Klany",
+    "all_sets": "Zestawy",
+    "year": "Rok",
+    "rarity_abbr_uncommon": "NS",
+    "rarity_abbr_legendary": "Leg.",
+    "expert_only_title": "Pokaż tylko karty eksperckie (niepospolite)",
+    "expert": "Ekspert",
+    "preparation": "Przygotowanie",
+    "forge_a_deck": "Stwórz talię",
+    "deck_name": "Nazwa talii",
+    "deck_name_placeholder": "Nazwa talii...",
+    "faction": "Frakcja",
+    "choose_faction": "Wybierz frakcję...",
+    "faction_hint": "Jedna frakcja + Najemnicy. Zmiana frakcji usuwa niekompatybilne karty/bohaterów.",
+    "format": "Format",
+    "mode_placeholder": "Tryb...",
+    "mode_classic": "Klasyczny",
+    "mode_expert": "Ekspercki",
+    "extent_placeholder": "Zakres...",
+    "extent_standard": "Standardowy",
+    "extent_extended": "Rozszerzony",
+    "choose_faction_first_tab_short": "Najpierw wybierz frakcję (zakładka 1 · Przygotowanie).",
+    "choose_hero": "Wybierz bohatera",
+    "right_click_power": "Prawy przycisk myszy: zobacz moc",
+    "no_hero_for_faction": "Brak bohaterów dla tej frakcji.",
+    "board": "Plansza",
+    "change": "Zmień",
+    "choose_board": "Wybierz planszę",
+    "card_back": "Rewers karty",
+    "choose_card_back": "Wybierz rewers",
+    "mono_faction": "Jedna frakcja",
+    "mono_clan": "Jeden klan",
+    "clan_label": "Klan:",
+    "no_clan": "Bez klanu",
+    "alignment_label": "Charakter:",
+    "deck": "Talia",
+    "mana_curve_tooltip": "{label} many: {count, plural, one {# karta} few {# karty} many {# kart} other {# karty}}",
+    "click_cards_to_add": "Kliknij karty, aby je dodać",
+    "free_slot": "wolne miejsce",
+    "more_slots": "+{count} miejsc",
+    "keywords": "Słowa kluczowe",
+    "max_suffix": "(maks. {max})",
+    "saving": "Zapisywanie...",
+    "save_deck": "Zapisz",
+    "create_deck": "Utwórz talię",
+    "passive": "PASYWNA",
+    "mana": "MANA",
+    "no_board_available": "Brak dostępnych plansz.",
+    "no_card_back_available": "Brak dostępnych rewersów.",
+    "format_number": "Format {id}",
+    "no_format": "Bez formatu",
+    "compose_your_army": "Skomponuj swoją armię",
+    "my_decks": "Moje talie",
+    "decks_in_armory": "{count, plural, one {# talia} few {# talie} many {# talii} other {# talii}} w twoim arsenale",
+    "decks_in_format": "{count, plural, one {# talia} few {# talie} many {# talii} other {# talii}} w tym formacie",
+    "new_deck": "Nowa talia",
+    "back_to_menu": "Powrót do menu",
+    "all": "Wszystkie",
+    "no_decks_yet": "Nie masz jeszcze żadnej talii",
+    "create_first_deck": "Stwórz swoją pierwszą talię",
+    "no_decks_in_format": "Brak talii w tym formacie",
+    "show_all_decks": "Pokaż wszystkie talie",
+    "cards_count_label": "{count}/{size} kart",
+    "valid_suffix": " (Poprawna)",
+    "edit": "Edytuj",
+    "confirm": "Potwierdź",
+    "delete": "Usuń",
+    "admire_your_armies": "Podziwiaj swoje armie",
+    "card_collection": "Kolekcja kart",
+    "cards_count": "{count, plural, one {# karta} few {# karty} many {# kart} other {# karty}}",
+    "cards_of_total": " z {total}",
+    "search_by_name": "Szukaj po nazwie...",
+    "mana_label": "Mana:",
+    "reset_filters": "Zresetuj filtry",
+    "faction_label": "Frakcja:",
+    "all_fem": "Wszystkie",
+    "rarity_label": "Rzadkość:",
+    "expert_only": "Tylko dla ekspertów",
+    "capability_label": "Zdolność:",
+    "race_label": "Rasa:",
+    "all_masc": "Wszyscy",
+    "format_label": "Format:",
+    "set_label": "Zestaw:",
+    "year_label": "Rok:",
+    "no_cards_match": "Żadna karta nie pasuje do twoich filtrów",
+    "show_locked": "Pokaż zablokowane",
+    "locked_badge": "Zablokowana",
+    "locked_summary": "{count, plural, one {# zablokowana karta} few {# zablokowane karty} many {# zablokowanych kart} other {# zablokowanej karty}}",
+    "locked_hint": "Pospolite karty innych frakcji będą dostępne w ramach oferty pełnego odblokowania.",
+    "unplayable_badge": "Brakujące karty: {count}",
+    "items_badge": "Zawiera {count, plural, one {# przedmiot} few {# przedmioty} many {# przedmiotów} other {# przedmiotu}} — do usunięcia",
+    "unplayable_reason": "Ta talia zawiera karty frakcji, których już nie posiadasz: {factions}. Pozostaje nienaruszona — odzyskaj frakcję, aby znów nią zagrać.",
+    "unplayable_rebuy": "Odzyskaj w sklepie"
+  },
+  "cardBacks": {
+    "eyebrow": "Pokaż swój styl",
+    "title": "Moje rewersy kart",
+    "subtitle": "{visible, plural, one {# widoczny} few {# widoczne} many {# widocznych} other {# widocznego}} · {prints, plural, one {# posiadany print} few {# posiadane printy} many {# posiadanych printów} other {# posiadanego printa}}",
+    "back_to_menu": "Powrót do menu",
+    "rarity_label": "Rzadkość:",
+    "owned_only": "Tylko posiadane",
+    "empty": "Brak rewersów do wyświetlenia.",
+    "equipped": "Wyposażony",
+    "default_badge": "Domyślny",
+    "not_owned": "nieposiadany"
+  },
+  "boards": {
+    "eyebrow": "Przygotuj swoją arenę",
+    "title": "Moje plansze",
+    "subtitle": "{visible, plural, one {# widoczna} few {# widoczne} many {# widocznych} other {# widocznej}} · {prints, plural, one {# posiadany print} few {# posiadane printy} many {# posiadanych printów} other {# posiadanego printa}}",
+    "back_to_menu": "Powrót do menu",
+    "rarity_label": "Rzadkość:",
+    "owned_only": "Tylko posiadane",
+    "empty": "Brak plansz do wyświetlenia.",
+    "equipped": "Wyposażona",
+    "default_badge": "Domyślna",
+    "not_owned": "nieposiadane"
+  },
+  "legal": {
+    "back_to_site": "← Powrót do strony",
+    "draft_warning": "⚠ Dokument w trakcie opracowywania — w obecnym stanie nie ma mocy prawnej.",
+    "todo": "DO UZUPEŁNIENIA — sekcja do napisania przed udostępnieniem publicznym.",
+    "updated": "Ostatnia aktualizacja: {date}",
+    "cgu_title": "Regulamin korzystania z usługi",
+    "cgu_s1": "Przedmiot i akceptacja",
+    "cgu_s2": "Dostęp do usługi i tworzenie konta",
+    "cgu_s3": "Minimalny wymagany wiek",
+    "cgu_s4": "Waluta w grze, karty i zakupy",
+    "cgu_s5": "Zasady postępowania i sankcje",
+    "cgu_s6": "Własność intelektualna",
+    "cgu_s7": "Dostępność, zmiany i zakończenie usługi",
+    "cgu_s8": "Odpowiedzialność",
+    "cgu_s9": "Usunięcie konta",
+    "cgu_s10": "Prawo właściwe i kontakt",
+    "privacy_title": "Polityka prywatności",
+    "privacy_s1": "Administrator danych",
+    "privacy_s2": "Gromadzone dane",
+    "privacy_s3": "Cele i podstawy prawne",
+    "privacy_s4": "Podmioty przetwarzające i hosting",
+    "privacy_s5": "Okresy przechowywania",
+    "privacy_s6": "Pliki cookie i identyfikatory",
+    "privacy_s7": "Twoje prawa (RODO)",
+    "privacy_s8": "Bezpieczeństwo",
+    "privacy_s9": "Kontakt i skargi"
+  },
+  "factions_page": {
+    "back": "Powrót do strony głównej",
+    "races": "Rasy",
+    "signature": "Charakterystyczne zdolności",
+    "profile": "Profil rozgrywki",
+    "offense": "Ofensywny",
+    "defense": "Defensywny",
+    "commons": "{count, plural, one {# zwykła} few {# zwykłe} many {# zwykłych} other {# zwykłej}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# zwykła karta} few {# zwykłe karty} many {# zwykłych kart} other {# zwykłej karty}} · {clans, plural, one {# klan} few {# klany} many {# klanów} other {# klanu}} — za darmo od pierwszego dnia.",
+    "no_clan_title": "Otwarte dla wszystkich klanów",
+    "no_clan_desc": "Te karty nie należą do żadnego klanu: pasują do każdej talii frakcji, niezależnie od klanu, wokół którego ją budujesz.",
+    "other_factions": "Zobacz pozostałe frakcje",
+    "costs": "Dodatkowe koszty",
+    "cost_life": "Punkty życia",
+    "cost_discard": "Odrzucenie",
+    "cost_sacrifice": "Poświęcenie",
+    "cost_exile": "Wygnanie",
+    "cost_topdeck": "Odwrót",
+    "cost_retreat": "Wycofanie",
+    "cost_retreat_desc": "Te karty wymagają cofnięcia stworzeń z pola bitwy na rękę, oprócz kosztu many.",
+    "cost_life_desc": "Te karty kosztują także punkty życia bohatera, oprócz kosztu many.",
+    "cost_discard_desc": "Te karty wymagają odrzucenia kart z ręki, oprócz kosztu many.",
+    "cost_sacrifice_desc": "Te karty wymagają poświęcenia kontrolowanych przez ciebie stworzeń, oprócz kosztu many.",
+    "cost_exile_desc": "Te karty wygnają karty z wierzchu twojej talii, oprócz kosztu many.",
+    "cost_topdeck_desc": "Te karty wymagają odłożenia kart z ręki na wierzch talii, oprócz kosztu many.",
+    "commons_count": "{count, plural, one {# karta pospolita} few {# karty pospolite} many {# kart pospolitych} other {# karty pospolitej}} · {clans, plural, one {# klan} few {# klany} many {# klanów} other {# klanu}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "Załóż konto, aby zacząć z {faction}: wszystkie jej karty pospolite otrzymasz w prezencie.",
+    "visitor_cta": "ZAŁÓŻ KONTO",
+    "owned_just_chosen": "{faction} to twoja frakcja",
+    "owned_bundle": "Wliczona w twój pakiet",
+    "owned_starter": "Twoja frakcja startowa",
+    "owned_bought": "Frakcja zakupiona",
+    "owned_note": "Wszystkie poniższe karty pospolite są w twojej kolekcji.",
+    "enter_game": "WEJDŹ DO GRY",
+    "see_collection": "ZOBACZ MOJĄ KOLEKCJĘ",
+    "free_pitch": "Nie wybrano jeszcze frakcji startowej. Zacznij z <strong>{faction}</strong> i otrzymaj wszystkie jej karty pospolite za darmo.",
+    "free_cta": "ZACZNIJ Z TĄ FRAKCJĄ",
+    "free_warning": "Ten wybór jest ostateczny: nie będzie można go zmienić, a jedynie później zdobywać kolejne frakcje.",
+    "free_confirm": "POTWIERDŹ — {faction}",
+    "cancel": "ANULUJ",
+    "buy_pitch": "Dodaj {faction} do swojej kolekcji: wszystkie jej karty pospolite, na stałe.",
+    "your_balance": "(masz {balance})",
+    "debt_blocks": "Twój dług w wysokości {debt} złota musi zostać spłacony przed kolejnym zakupem.",
+    "not_enough_gold": "ZA MAŁO ZŁOTA",
+    "buy_cta": "ODBLOKUJ TĘ FRAKCJĘ",
+    "err_already_chosen": "Frakcja startowa została już wybrana.",
+    "err_choice": "Nie udało się zapisać wyboru.",
+    "err_purchase": "Nie udało się sfinalizować zakupu.",
+    "badge_starter": "START",
+    "badge_owned": "ZDOBYTA",
+    "bundle_hint": "Lub weź brakujące frakcje ({count}) za {price} złota →"
+  },
+  "cardStatus": {
+    "draft": "Szkic",
+    "playable": "Grywalna",
+    "retired": "Wycofana",
+    "excluded": "Wykluczona",
+    "deck_unavailable": "{count, plural, one {# niedostępna karta} few {# niedostępne karty} many {# niedostępnych kart} other {# niedostępnej karty}}",
+    "cannot_add": "Karta niedostępna: nie może trafić do talii",
+    "reason": "Powód: {reason}"
+  },
+  "tournaments": {
+    "qualification_title": "Turniej kwalifikacyjny",
+    "grand_title": "Wielki turniej miesięczny",
+    "players": "graczy",
+    "access_ticket": "Dostępny za bilet turniejowy",
+    "access_golden": "Dostępny wyłącznie za Golden Ticket",
+    "winner_golden_title": "Zwycięzca zdobywa Golden Ticket",
+    "winner_golden_desc": "Jedyny klucz wstępu do wielkiego turnieju miesięcznego",
+    "bracket_size": "Wielkość drabinki",
+    "bracket_size_aria": "Wielkość wielkiego turnieju",
+    "participation_rewards": "Plansza + Bohater w limitowanej edycji",
+    "participation_desc": "Dla każdego uczestnika, niezależnie od wyniku",
+    "prize_pool": "Pula nagród",
+    "real_money": "w prawdziwych pieniądzach",
+    "market_credits": "kredyty rynkowe",
+    "essences": "esencje",
+    "wins_count": "{count, plural, one {# zwycięstwo} few {# zwycięstwa} many {# zwycięstw} other {# zwycięstwa}}",
+    "credits_count": "{count} kredytów",
+    "col_wins": "Zwycięstwa",
+    "col_money": "Pieniądze",
+    "col_reward": "Nagroda",
+    "col_credits": "Kredyty",
+    "col_essence": "Esencja",
+    "meta_title": "Turnieje — Armies of Legends",
+    "page_eyebrow": "Obwód rywalizacji",
+    "page_subtitle": "Bilet otwiera turniej kwalifikacyjny; jego zwycięzca zdobywa Golden Ticket na wielki turniej miesięczny. Każde zwycięstwo przynosi kredyty rynkowe i esencję.",
+    "page_title": "Turnieje",
+    "tickets_held": "Posiadasz <b>{count}</b> {count, plural, one {bilet} few {bilety} many {biletów} other {biletu}}",
+    "get_tickets": "zdobądź",
+    "open_title": "Otwarte turnieje",
+    "none_open": "Brak otwartych turniejów.",
+    "kind_weekly": "Tygodniowy",
+    "kind_free": "Darmowy",
+    "kind_special": "Specjalny",
+    "capacity": "{count} graczy",
+    "running": "w toku",
+    "registration_closed": "Zapisy zamknięte",
+    "circuit_eyebrow": "Obwód",
+    "circuit_title": "Od biletu do miesięcznego tytułu",
+    "rewards_eyebrow": "Nagrody",
+    "rewards_title": "Co daje każde zwycięstwo",
+    "footnote_rounds": "Gracz odpadły w rundzie <i>r</i> wygrał <i>r</i>−1 meczów.",
+    "footnote_credits": "Kredyty rynkowe wygasają po {days} dniach od zdobycia.",
+    "footnote_cash": "Gotówka jest wypłacana od {wins} zwycięstw;",
+    "footnote_all": "Kredyty, esencja i kosmetyki trafiają do wszystkich nagrodzonych uczestników.",
+    "step_label": "ETAP {n}",
+    "step_ticket_title": "Bilet turniejowy",
+    "step_ticket_text": "Do kupienia w sklepie — aktywni gracze otrzymują co miesiąc jeden darmowy bilet.",
+    "step_qualification_title": "Kwalifikacje",
+    "step_qualification_text": "{size} graczy, pojedyncza eliminacja w {rounds} rundach, na żywo, gdy tylko wszystkich {size} jest gotowych.",
+    "step_golden_text": "Zwycięzca zdobywa miejsce w wielkim turnieju miesiąca.",
+    "step_grand_text": "Posiadacze Golden Ticket stają do walki, z jedną rundą do rozegrania przed każdym terminem.",
+    "how_it_works": "Jak to działa",
+    "rule_wins": "Nagrody zależą od <b>liczby zwycięstw</b>, a nie od końcowego miejsca: dwa zwycięstwa dają to samo w każdej drabince. Tylko mistrz otrzymuje więcej.",
+    "rule_bracket": "Wielki turniej rozgrywa się na pełnej drabince (16, 32, 64… graczy). Nadwyżka kwalifikowanych jest <b>przenoszona z priorytetem</b> na kolejny miesiąc; przy mniej niż {min} kwalifikowanych cała edycja zostaje przełożona.",
+    "rule_golden": "Kilka Golden Ticketów? Na jedną edycję przypada jedna rejestracja: nadmiarowe bilety ważą na kolejne edycje.",
+    "rule_forfeit": "Gracz nieobecny w terminie przegrywa walkowerem; jeśli nieobecni są obaj, obaj przegrywają walkowerem, a ich kolejny przeciwnik przechodzi dalej bez gry.",
+    "rule_credits": "<b>Kredyty rynkowe</b> służą do licytowania edycji limitowanych i wygasają po {days} dniach od zdobycia.",
+    "rule_essence": "<b>Esencja</b> jest trwała: {cost} esencji = wykucie jednej losowej karty limitowanej.",
+    "signup_error": "Rejestracja niemożliwa.",
+    "signup_done": "Jesteś zapisany.",
+    "signup_full": "Brak miejsc.",
+    "signup_blocked": "Zapisy zablokowane",
+    "signup_debt": "{count, plural, one {# bilet do uregulowania} few {# bilety do uregulowania} many {# biletów do uregulowania} other {# biletu do uregulowania}}",
+    "signup_get_ticket": "Zdobądź bilet",
+    "signup_no_ticket": "Brak dostępnych biletów",
+    "signup_pending": "Zapisywanie…",
+    "signup_with_ticket": "Zapisz się (1 🎟️)",
+    "signup_free": "Zapisz się (za darmo)",
+    "signup_seats": "{count, plural, one {# pozostałe miejsce} few {# pozostałe miejsca} many {# pozostałych miejsc} other {# pozostałego miejsca}}",
+    "signup_tickets_in_hand": "{count, plural, one {# bilet w ręku} few {# bilety w ręku} many {# biletów w ręku} other {# biletu w ręku}}"
+  },
+  "errors": {
+    "title": "Wystąpił błąd",
+    "body": "Coś poszło nie tak po naszej stronie. Możesz spróbować ponownie; jeśli problem się powtarza, wróć na stronę główną.",
+    "retry": "Spróbuj ponownie",
+    "home": "Powrót na stronę główną",
+    "not_found_title": "Nie znaleziono strony",
+    "not_found_body": "Ta strona nie istnieje lub została przeniesiona.",
+    "game_title": "W partii wystąpił błąd",
+    "game_body": "Wyświetlanie partii zostało przerwane. Wczytaj ją ponownie – wznowi się od tego samego miejsca.",
+    "game_reload": "Wczytaj partię ponownie"
+  },
+  "geo": {
+    "unavailable": "Ta funkcja nie jest jeszcze dostępna w Twoim kraju. Gra pozostaje w pełni dostępna.",
+    "age_title": "Potwierdzenie wieku",
+    "age_intro": "Zakupy są dostępne wyłącznie dla osób, które ukończyły co najmniej {age} lat. To potwierdzenie zostanie wymagane tylko raz.",
+    "age_checkbox": "Oświadczam, że mam co najmniej {age} lat.",
+    "age_confirm": "Potwierdź i kontynuuj",
+    "age_cancel": "Anuluj",
+    "age_error": "Zapis nie powiódł się. Spróbuj ponownie."
+  }
+}

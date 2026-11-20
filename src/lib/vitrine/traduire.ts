@@ -1,4 +1,4 @@
-// Traduction automatique d'un texte de la page d'accueil, FR → 7 langues, en
+// Traduction automatique d'un texte de la page d'accueil, FR → toutes les autres langues, en
 // UN appel : les textes sont courts, et un seul aller-retour garde
 // l'enregistrement rapide pour l'admin.
 //
@@ -13,6 +13,8 @@ const MAX_TOKENS = 4000;
 const LANG_NAMES: Record<string, string> = {
   en: "English", es: "Spanish", de: "German", it: "Italian",
   pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese",
+  ru: "Russian", ar: "Modern Standard Arabic", ko: "Korean",
+  "zh-TW": "Traditional Chinese (Taiwan)", tr: "Turkish", pl: "Polish",
 };
 
 export const LOCALES_CIBLES: Locale[] = SUPPORTED_LOCALES.filter((l) => l !== DEFAULT_LOCALE);
@@ -25,7 +27,7 @@ Where the text appears: ${role}
 
 Rules:
 - Idiomatic and concise, same tone and same length as the source. Address the reader informally where the language allows it.
-- The game is called "Armies of Legends" in every Latin-script language: never translate that name there. In Japanese write 伝説の軍団 and in Simplified Chinese write 传奇军团.
+- The game is called "Armies of Legends" in every Latin-script language: never translate that name there. In Japanese write 伝説の軍団 and in Simplified Chinese write 传奇军团. In Russian write Армии Легенд (uninflected, inside «…» within a sentence) in Arabic write جيوش الأساطير, in Korean write 전설의 군단 and in Traditional Chinese write 傳奇軍團.
 - Keep faction names and card names unchanged unless an official translation is obvious.
 - Do not add or remove content. No quotes around the text, no code fences.
 - Output ONLY a JSON object, nothing else, with exactly these keys: ${LOCALES_CIBLES.map((l) => `"${l}"`).join(", ")}.
@@ -92,7 +94,7 @@ async function appelerModele(apiKey: string, prompt: string): Promise<string> {
 }
 
 /**
- * Traduit `texte` dans les sept langues. Un second appel ne redemande rien de
+ * Traduit `texte` dans toutes les langues cibles. Un second appel ne redemande rien de
  * plus : si des langues manquent après deux essais, elles sont listées dans
  * `manquantes` et le visiteur garde le texte par défaut dans ces langues.
  */

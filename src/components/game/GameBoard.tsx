@@ -1080,15 +1080,61 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             ? "Séquence d'attaques en cours…"
             : "Aucune créature ne peut attaquer le héros"
       }
-      className={`relative w-9 h-9 rounded-full flex items-center justify-center text-base transition-all border-2 ${
+      // Même médaillon que le bouton des réglages (jante dorée du « Fin de
+      // tour ») ; le cœur passe au carmin des gemmes quand une attaque est
+      // possible. Lames dessinées : le caractère ⚔ variait selon le système.
+      className={`group relative w-9 h-9 rounded-full flex items-center justify-center transition-[filter,transform] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c44a] ${
         canAutoAttack
-          ? "bg-red-900/80 hover:bg-red-700 hover:scale-110 cursor-pointer border-red-500/70 shadow-[0_0_12px_rgba(239,68,68,0.5)]"
-          : "bg-gray-800/50 border-gray-600/40 cursor-not-allowed opacity-50"
+          ? "cursor-pointer hover:brightness-125 hover:scale-110 active:scale-95"
+          : "cursor-not-allowed saturate-0 brightness-[0.6] opacity-70"
       }`}
+      style={{
+        background: "linear-gradient(180deg, #e8c44a 0%, #c8a84e 50%, #8a6e2f 100%)",
+        boxShadow: canAutoAttack
+          ? "0 0 0 1.5px #3a2a10, 0 3px 8px rgba(0,0,0,0.55), 0 0 12px rgba(231,76,60,0.55)"
+          : "0 0 0 1.5px #3a2a10, 0 3px 8px rgba(0,0,0,0.55)",
+      }}
     >
-      <span className={isAutoAttacking ? "animate-pulse" : undefined}>⚔</span>
+      <span
+        aria-hidden="true"
+        className="absolute rounded-full"
+        style={{
+          inset: 2.5,
+          background: canAutoAttack
+            ? "radial-gradient(circle at 50% 30%, #a3261b 0%, #4a0f0a 75%)"
+            : "radial-gradient(circle at 50% 30%, #3b2c14 0%, #1a1208 70%)",
+          boxShadow: "inset 0 1px 3px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(232,196,74,0.25)",
+        }}
+      />
+      <svg
+        aria-hidden="true"
+        viewBox="-12 -12 24 24"
+        className={`relative w-[22px] h-[22px] ${isAutoAttacking ? "animate-pulse" : ""}`}
+        style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.65))" }}
+      >
+        <defs>
+          <linearGradient id="lames-attaque" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fbeaa0" />
+            <stop offset="100%" stopColor="#c8a04a" />
+          </linearGradient>
+        </defs>
+        {[-45, 45].map((angle) => (
+          <g key={angle} transform={`rotate(${angle})`} fill="url(#lames-attaque)">
+            <polygon points="0,-10.5 1.4,-8.3 1.4,3 -1.4,3 -1.4,-8.3" />
+            <rect x={-3.8} y={3} width={7.6} height={1.7} rx={0.7} />
+            <rect x={-0.95} y={4.7} width={1.9} height={3.4} />
+            <circle cy={9} r={1.4} />
+          </g>
+        ))}
+      </svg>
       {canAutoAttack && (
-        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border border-red-900">
+        <span
+          className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold flex items-center justify-center text-[#2a1a00]"
+          style={{
+            background: "linear-gradient(180deg, #f6dc7a 0%, #c8a84e 100%)",
+            boxShadow: "0 0 0 1.5px #3a2a10, 0 1px 3px rgba(0,0,0,0.6)",
+          }}
+        >
           {eligibleHeroAttackerCount}
         </span>
       )}
@@ -1276,12 +1322,48 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             stays in the top-right corner. */}
         <button
           onClick={() => setSettingsOpen(true)}
-          className={`absolute z-30 w-11 h-11 flex items-center justify-center text-lg bg-secondary/80 border border-card-border rounded-lg text-foreground/70 hover:text-foreground hover:border-primary/40 transition-colors backdrop-blur-sm ${
+          // Médaillon dans la matière du bouton « Fin de tour » : jante dorée,
+          // cœur sombre, roue dentée dessinée (le caractère ⚙ changeait
+          // d'allure d'un système à l'autre et restait gris sur gris).
+          className={`group absolute z-30 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-[filter,transform] duration-150 hover:brightness-125 hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e8c44a] ${
             isMtgo ? "top-[26%] right-[2%]" : "top-[1%] right-[2%]"
           }`}
+          style={{
+            background: "linear-gradient(180deg, #e8c44a 0%, #c8a84e 50%, #8a6e2f 100%)",
+            boxShadow: "0 0 0 1.5px #3a2a10, 0 3px 8px rgba(0,0,0,0.55)",
+          }}
           title={t("settings")}
+          aria-label={t("settings")}
         >
-          ⚙
+          <span
+            aria-hidden="true"
+            className="absolute rounded-full"
+            style={{
+              inset: 3,
+              background: "radial-gradient(circle at 50% 30%, #3b2c14 0%, #1a1208 70%)",
+              boxShadow: "inset 0 1px 3px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(232,196,74,0.25)",
+            }}
+          />
+          <svg
+            aria-hidden="true"
+            viewBox="-12 -12 24 24"
+            className="relative w-[22px] h-[22px] transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none"
+            style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.6))" }}
+          >
+            <defs>
+              <linearGradient id="roue-reglages" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f6dc7a" />
+                <stop offset="100%" stopColor="#b8923a" />
+              </linearGradient>
+            </defs>
+            <g fill="url(#roue-reglages)">
+              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+                <rect key={angle} x={-2.2} y={-11} width={4.4} height={5.5} rx={1} transform={`rotate(${angle})`} />
+              ))}
+              <circle r={7.6} />
+            </g>
+            <circle r={3.1} fill="#1a1208" />
+          </svg>
         </button>
 
         {/* ============= OPPONENT HAND (single card back + count) =============

@@ -53,7 +53,7 @@ describe("slugifyNewsTitle", () => {
 });
 
 describe("NEWS_TARGET_LOCALES", () => {
-  it("les 7 locales hors français", () => {
-    expect(NEWS_TARGET_LOCALES).toEqual(["en", "es", "de", "it", "pt", "ja", "zh"]);
+  it("toutes les locales hors français", () => {
+    expect(NEWS_TARGET_LOCALES).toEqual(["en", "es", "de", "it", "pt", "ja", "zh", "ru", "ar", "ko", "zh-TW", "tr", "pl"]);
   });
 });

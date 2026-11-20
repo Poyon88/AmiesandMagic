@@ -1,4 +1,4 @@
-// Traduction automatique d'une news FR → 7 locales (admin).
+// Traduction automatique d'une news FR → toutes les autres locales (admin).
 // Pattern d'appel : fetch direct sur api.anthropic.com (comme
 // api/heroes/compose-prompt et scripts/translate-messages.mjs — le repo n'a
 // pas de SDK Anthropic, on n'en introduit pas pour une route).
@@ -10,12 +10,17 @@ import { requireAdmin } from '@/lib/admin/requireAdmin';
 import { NEWS_TARGET_LOCALES, type NewsTranslation } from '@/lib/news/types';
 import { isLocale, type Locale } from '@/i18n/config';
 
+// Un appel modèle par langue, à la suite : on laisse de la marge.
+export const maxDuration = 300;
+
 const MODEL = 'claude-sonnet-5-5';
 const MAX_TOKENS = 8000;
 
 const LANG_NAMES: Record<string, string> = {
   en: 'English', es: 'Spanish', de: 'German', it: 'Italian',
   pt: 'Portuguese', ja: 'Japanese', zh: 'Simplified Chinese',
+  ru: 'Russian', ar: 'Modern Standard Arabic', ko: 'Korean',
+  'zh-TW': 'Traditional Chinese (Taiwan)', tr: 'Turkish', pl: 'Polish',
 };
 
 function buildPrompt(locale: Locale, title: string, teaser: string, bodyMd: string): string {
@@ -27,6 +32,7 @@ function buildPrompt(locale: Locale, title: string, teaser: string, bodyMd: stri
 Rules:
 - Keep the tone of a game announcement (enthusiastic but concise).
 - Keep game-specific proper nouns and card names unchanged unless an official translation is obvious.
+- The game's name "Armies of Legends" stays as is in Latin-script languages; write 伝説の軍団 in Japanese, 传奇军团 in Simplified Chinese, 傳奇軍團 in Traditional Chinese, 전설의 군단 in Korean, Армии Легенд in Russian and جيوش الأساطير in Arabic.
 - The body is Markdown: preserve the syntax EXACTLY (headings #/##/###, **bold**, *italic*, lists, links). In links [text](url), translate the text but NEVER the URL.
 - Do not add or remove content. No code fences.
 - Output ONLY a JSON object, nothing else: {"title": "...", "teaser": "...", "body_md": "..."}

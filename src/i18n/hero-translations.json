@@ -887,5 +887,1247 @@
       "power_name": "骤然消隐",
       "power_description": "将目标友方单位返回其原属玩家的手牌。"
     }
+  },
+  "ru": {
+    "19": {
+      "name": "Тестовый портрет 2",
+      "power_name": "Исцеление",
+      "power_description": "Исцелите цель на 2 ЗДР"
+    },
+    "24": {
+      "name": "Сильвен, Владычица Листвы",
+      "power_name": "Меткий выстрел",
+      "power_description": "Наносит 1 урон вражеской цели"
+    },
+    "28": {
+      "name": "Гораш Стратег",
+      "power_name": "Мощный удар",
+      "power_description": "Наносит 2 единицы урона вражеской цели"
+    },
+    "29": {
+      "name": "Дургрим",
+      "power_name": "Броня",
+      "power_description": "Даёт броню указанному существу (уменьшает вдвое получаемый урон, не исходящий от действий)"
+    },
+    "30": {
+      "name": "Астерион",
+      "power_name": "Удар копытом",
+      "power_description": "Наносит 2 единицы урона вражескому герою"
+    },
+    "31": {
+      "name": "Малдрак",
+      "power_name": "Клыки",
+      "power_description": "Крадёт 1 ЗДР у цели"
+    },
+    "33": {
+      "name": "Алдрик Справедливый",
+      "power_name": "Божественный щит",
+      "power_description": "Даёт божественный щит указанному существу"
+    },
+    "34": {
+      "name": "Велкин",
+      "power_name": "Порча",
+      "power_description": "Переманивает выбранное вражеское существо на вашу сторону до конца хода; оно получает Погоню до конца хода."
+    },
+    "35": {
+      "name": "Балинор",
+      "power_name": "Верность",
+      "power_description": "Существа той же фракции получают +1/+1"
+    },
+    "36": {
+      "name": "Примордис",
+      "power_name": "Каменная кожа",
+      "power_description": "Указанное существо получает Броню: уменьшает вдвое получаемый боевой урон (с округлением вверх); урон от действий не уменьшается."
+    },
+    "37": {
+      "name": "Сильваран",
+      "power_name": "Повышенная стойкость",
+      "power_description": "Даёт «Сопротивление 2» указанному существу."
+    },
+    "38": {
+      "name": "Майло",
+      "power_name": "Зов друга",
+      "power_description": "Призывает юного доблестного хоббита 0/1"
+    },
+    "39": {
+      "name": "Наиа",
+      "power_name": "Мгновенное действие",
+      "power_description": "Выберите одно из 3 случайных действий (любых фракций) со стоимостью ≤ X, чтобы добавить его в руку."
+    },
+    "40": {
+      "name": "Элиндра",
+      "power_name": "Целительство",
+      "power_description": "Полностью исцеляет указанное существо"
+    },
+    "41": {
+      "name": "Карвок",
+      "power_name": "Сила медведей",
+      "power_description": "Даёт +1/+1 союзному существу"
+    },
+    "43": {
+      "name": "Этерон",
+      "power_name": "Буря",
+      "power_description": "Наносит 2 урона, случайно распределённого между вражескими существами"
+    },
+    "44": {
+      "name": "Сигурд",
+      "power_name": "Берсерк",
+      "power_description": "Даёт «Слава +3/+0» указанному существу."
+    },
+    "45": {
+      "name": "Амайя",
+      "power_name": "Зов клана",
+      "power_description": "Призывает союзника-инка 1/1"
+    },
+    "46": {
+      "name": "Рагнар Лунный Вой",
+      "power_name": "Командование",
+      "power_description": "Существа фракции «Стая» в игре получают +1/+1"
+    },
+    "47": {
+      "name": "Арджун Огненный Гриф",
+      "power_name": "Кошачья грация",
+      "power_description": "Даёт «Набег» указанному существу."
+    },
+    "48": {
+      "name": "Нимбор, Хранитель Гроз",
+      "power_name": "Буря",
+      "power_description": "Дважды наносит урон случайным врагам"
+    },
+    "49": {
+      "name": "Наткин, хранительница грёз",
+      "power_name": "Бодрящий орех",
+      "power_description": "Даёт +1/+1 указанному союзному существу"
+    },
+    "50": {
+      "name": "Ноам-переговорщик",
+      "power_name": "Выгодная сделка",
+      "power_description": "Выберите одну из 3 случайных обычных карт со стоимостью ≤ 4 из фракций того же мировоззрения, что и эта карта, чтобы добавить её в руку."
+    },
+    "51": {
+      "name": "Ваелкор, Повелитель Бездн",
+      "power_name": "Зов Бездны",
+      "power_description": "Добавляет в вашу руку демона с наибольшей стоимостью в мане, оставшегося в вашей колоде (случайного при равенстве)."
+    },
+    "53": {
+      "name": "Хаято, Мастер Теней",
+      "power_name": "Внезапное исчезновение",
+      "power_description": "Возвращает указанное союзное существо в руку его первоначального владельца."
+    },
+    "54": {
+      "name": "Великий стратег Трёх Королевств",
+      "power_name": "Стратегическое предвидение",
+      "power_description": "Возьмите карту"
+    },
+    "55": {
+      "name": "Борин, Хранитель Первой Жилы",
+      "power_name": "Сбережения",
+      "power_description": "Активирует Пощаду 1"
+    },
+    "56": {
+      "name": "Айомиде, Говорящая с Масками",
+      "power_name": "Спиритизм",
+      "power_description": "Призывает случайного духа стоимостью 3 маны"
+    },
+    "57": {
+      "name": "Кеахи, Наследник Вулкана",
+      "power_name": "Вспышка гнева",
+      "power_description": "Наносит 2 урона, случайно распределённого между вражескими существами"
+    },
+    "58": {
+      "name": "Оргун, Хан Трёх Границ",
+      "power_name": "Укрепление",
+      "power_description": "Первое существо в вашей колоде сверху получает +1 АТК и +1 ЗДР навсегда."
+    },
+    "59": {
+      "name": "Орхан, Ага Тысячи Ружей",
+      "power_name": "Заградительный огонь",
+      "power_description": "Наносит 3 урона, случайно распределённого между вражескими существами."
+    },
+    "60": {
+      "name": "Федерико Блистательный",
+      "power_name": "Пылание",
+      "power_description": "Открывает 3 коллекционные карты (стоимость от 8 до 10) и оставляет одну в руке. Получите 10 маны в этот ход."
+    },
+    "61": {
+      "name": "Астерия, Первая из Всадниц",
+      "power_name": "Сёстры по оружию",
+      "power_description": "Открывает 3 карты фракции «Свободные королевства» клана «Воительницы ветра» и оставляет одну в руке."
+    },
+    "62": {
+      "name": "Годфруа, Защитник Непобеждённого Солнца",
+      "power_name": "Очищение",
+      "power_description": "Удаляет до 2 карт из указанного кладбища."
+    },
+    "63": {
+      "name": "Алдоран, Первый Пробуждённый",
+      "power_name": "Обвал",
+      "power_description": "Наносит 1 урон всем существам (союзным И вражеским)."
+    },
+    "65": {
+      "name": "Кельтарион, Маршал Зари",
+      "power_name": "Сбор армии",
+      "power_description": "Призывает Высшего эльфа."
+    },
+    "66": {
+      "name": "Гракк, Сержант Орды",
+      "power_name": "Набор рекрутов",
+      "power_description": "Добавляет в вашу руку гоблина-близнеца"
+    },
+    "67": {
+      "name": "Турлин Вирбулон",
+      "power_name": "Изобретение",
+      "power_description": "Добавляет +1/+1 вашей машине (изначально 0/1)"
+    },
+    "68": {
+      "name": "Эйрик Сокрушитель Бастионов",
+      "power_name": "Завоевание",
+      "power_description": "Добавляет 1 к вашему Завоеванию (порог 3). При достижении порога: возьмите в руку 1 карту из 3 карт колоды противника, счётчик сбрасывается до 0."
+    },
+    "69": {
+      "name": "Мальверис, Архонт Последнего Вздоха",
+      "power_name": "Погребение",
+      "power_description": "Помещает 1 верхнюю карту колоды указанного игрока на его кладбище."
+    },
+    "70": {
+      "name": "Морваэль, Властелин Покрова",
+      "power_name": "Зов Завесы",
+      "power_description": "Создаёт настроенный токен."
+    }
+  },
+  "ar": {
+    "19": {
+      "name": "صورة اختبار 2",
+      "power_name": "شفاء",
+      "power_description": "عالج هدفًا واحدًا بمقدار 2 من نقاط الحياة"
+    },
+    "24": {
+      "name": "سيلوين، سيدة الأوراق المتشابكة",
+      "power_name": "سهم دقيق",
+      "power_description": "يُلحق ضررًا مقداره 1 بهدف معادٍ"
+    },
+    "28": {
+      "name": "غوراش الاستراتيجي",
+      "power_name": "ضربة قوية",
+      "power_description": "يُلحق ضررًا مقداره 2 بهدف معادٍ"
+    },
+    "29": {
+      "name": "دورغريم",
+      "power_name": "درع",
+      "power_description": "يمنح درعًا لوحدة مستهدفة (يقلّل الضرر الذي تتلقاه إلى النصف إذا لم يكن ناتجًا عن الأفعال)"
+    },
+    "30": {
+      "name": "أستيريون",
+      "power_name": "رفسة الحافر",
+      "power_description": "يُلحق ضررًا مقداره 2 ببطل الخصم"
+    },
+    "31": {
+      "name": "مالدراك",
+      "power_name": "أنياب",
+      "power_description": "يسرق نقطة حياة واحدة من الهدف"
+    },
+    "33": {
+      "name": "ألدريك العادل",
+      "power_name": "درع إلهي",
+      "power_description": "يمنح الدرع الإلهي للوحدة المستهدفة"
+    },
+    "34": {
+      "name": "فيلكين",
+      "power_name": "فساد",
+      "power_description": "يحوّل الوحدة المعادية المحددة إلى صفّك حتى نهاية الدور؛ وتكتسب «التعقّب» حتى نهاية الدور."
+    },
+    "35": {
+      "name": "بالينور",
+      "power_name": "الولاء",
+      "power_description": "تحصل الوحدات من الفصيل نفسه على +1/+1"
+    },
+    "36": {
+      "name": "بريموردس",
+      "power_name": "جلد الحجر",
+      "power_description": "تكتسب المخلوقة المستهدفة «الدرع»: يقلّل ضرر القتال الذي تتلقاه إلى النصف (مع التقريب إلى الأعلى)؛ أما ضرر الأفعال فلا يُقلَّل."
+    },
+    "37": {
+      "name": "سيلفاران",
+      "power_name": "مقاومة معززة",
+      "power_description": "يمنح «المقاومة 2» لمخلوق مستهدف."
+    },
+    "38": {
+      "name": "ميلو",
+      "power_name": "نداء إلى صديق",
+      "power_description": "يستدعي هوبيت صغيرًا شجاعًا 0/1"
+    },
+    "39": {
+      "name": "نايا",
+      "power_name": "فعل فوري",
+      "power_description": "اختر فعلًا واحدًا من بين 3 أفعال عشوائية (من جميع الفصائل) تكلفتها ≤ X لإضافته إلى يدك."
+    },
+    "40": {
+      "name": "إيليندرا",
+      "power_name": "التئام",
+      "power_description": "يشفي الوحدة المستهدفة بالكامل"
+    },
+    "41": {
+      "name": "كارفوك",
+      "power_name": "قوة الدببة",
+      "power_description": "يمنح +1/+1 لوحدة حليفة"
+    },
+    "43": {
+      "name": "إيثيرون",
+      "power_name": "عاصفة",
+      "power_description": "يُلحق ضررًا مقداره 2 موزعًا عشوائيًا بين الوحدات المعادية"
+    },
+    "44": {
+      "name": "سيغورد",
+      "power_name": "هياج",
+      "power_description": "يمنح «المجد +3/+0» لمخلوق مستهدف."
+    },
+    "45": {
+      "name": "أمايا",
+      "power_name": "نداء العشيرة",
+      "power_description": "يستدعي حليفًا من الإنكا 1/1"
+    },
+    "46": {
+      "name": "راغنار عاوي القمر",
+      "power_name": "قيادة",
+      "power_description": "تحصل الوحدات من فصيل «القطيع» الموجودة في اللعب على +1/+1"
+    },
+    "47": {
+      "name": "أرجون مخلب النار",
+      "power_name": "رشاقة السنور",
+      "power_description": "يمنح «الغارة» لمخلوق مستهدف."
+    },
+    "48": {
+      "name": "نيمبور، حارس العواصف",
+      "power_name": "عاصفة",
+      "power_description": "يُلحق ضررًا مرتين بأعداء عشوائيين"
+    },
+    "49": {
+      "name": "ناتكين، حارسة الأحلام",
+      "power_name": "بندقة منعشة",
+      "power_description": "يمنح +1/+1 للوحدة الحليفة المستهدفة"
+    },
+    "50": {
+      "name": "نوهام المفاوض",
+      "power_name": "سوق مواتية",
+      "power_description": "اختر بطاقة واحدة من بين 3 بطاقات شائعة عشوائية تكلفتها ≤ 4 من فصائل ذات الميل نفسه لهذه البطاقة، لإضافتها إلى يدك."
+    },
+    "51": {
+      "name": "فاelkور، سيد الأعماق",
+      "power_name": "نداء الهاوية",
+      "power_description": "يضيف إلى يدك الشيطان صاحب أعلى تكلفة مانا المتبقي في مجموعتك (عشوائيًا في حال التعادل)."
+    },
+    "53": {
+      "name": "هاياتو، سيد الظلال",
+      "power_name": "اختفاء مفاجئ",
+      "power_description": "يعيد وحدة حليفة مستهدفة إلى يد مالكها الأصلي."
+    },
+    "54": {
+      "name": "كبير استراتيجيي الممالك الثلاث",
+      "power_name": "استشراف تكتيكي",
+      "power_description": "اسحب بطاقة"
+    },
+    "55": {
+      "name": "بورين، حارس العِرق الأول",
+      "power_name": "ادخار",
+      "power_description": "يفعّل «الادّخار 1»"
+    },
+    "56": {
+      "name": "أيوميدي، من تخاطب الأقنعة",
+      "power_name": "استحضار الأرواح",
+      "power_description": "يستدعي روحًا عشوائية تكلفتها 3 مانا"
+    },
+    "57": {
+      "name": "كياهي، وريث البركان",
+      "power_name": "ثورة غضب",
+      "power_description": "يُلحق ضررًا مقداره 2 موزعًا عشوائيًا بين الوحدات المعادية"
+    },
+    "58": {
+      "name": "أورغون، خان الحدود الثلاث",
+      "power_name": "تحصين",
+      "power_description": "أول مخلوق في مجموعتك من الأعلى يكتسب +1 هجوم و+1 نقطة حياة بشكل دائم."
+    },
+    "59": {
+      "name": "أورهان، آغا الألف بندقية",
+      "power_name": "وابل نيران",
+      "power_description": "يُلحق ضررًا مقداره 3 موزعًا عشوائيًا بين الوحدات المعادية."
+    },
+    "60": {
+      "name": "فيديريكو الباهر",
+      "power_name": "توهج",
+      "power_description": "يكشف 3 بطاقات من المجموعة (تكلفتها من 8 إلى 10) ويُبقي واحدة منها في يدك. اكسب 10 مانا في هذا الدور."
+    },
+    "61": {
+      "name": "أستيريا، أولى الفارسات",
+      "power_name": "أخوات المعركة",
+      "power_description": "يكشف 3 بطاقات من فصيل الممالك الحرة التابع لعشيرة محاربات الريح ويُبقي واحدة منها في يدك."
+    },
+    "62": {
+      "name": "غودفروا، بطل الشمس التي لا تُقهر",
+      "power_name": "تطهير",
+      "power_description": "يزيل حتى بطاقتين من المقبرة المستهدفة."
+    },
+    "63": {
+      "name": "ألدوران، أول المستيقظين",
+      "power_name": "انهيار صخري",
+      "power_description": "يُلحق ضررًا مقداره 1 بجميع المخلوقات (الحليفة والمعادية)."
+    },
+    "65": {
+      "name": "كايلثاريون، مارشال الفجر",
+      "power_name": "تجنيد جيش",
+      "power_description": "يستدعي إلفًا رفيعًا."
+    },
+    "66": {
+      "name": "غراك، رقيب الجحافل",
+      "power_name": "استقطاب",
+      "power_description": "يضيف توأم غوبلن إلى يدك"
+    },
+    "67": {
+      "name": "تورلين فيربولون",
+      "power_name": "ابتكار",
+      "power_description": "يضيف +1/+1 إلى آلتك (0/1 في البداية)"
+    },
+    "68": {
+      "name": "إيريك كاسر الأسوار",
+      "power_name": "غزو",
+      "power_description": "يضيف 1 إلى «الغزو» لديك (المرحلة 3). عند بلوغ المرحلة: خذ في يدك بطاقة واحدة من بين 3 بطاقات من مجموعة الخصم، ثم يُعاد العدّاد إلى 0."
+    },
+    "69": {
+      "name": "مالفيريس، أرخون النفس الأخير",
+      "power_name": "دفن",
+      "power_description": "يضع أول بطاقة من مجموعة اللاعب المستهدف في مقبرته."
+    },
+    "70": {
+      "name": "مورفهايل، سيد الحجاب",
+      "power_name": "نداء الحجاب",
+      "power_description": "ينشئ الرمز المُعدّ."
+    }
+  },
+  "ko": {
+    "19": {
+      "name": "테스트 초상화 2",
+      "power_name": "치유",
+      "power_description": "대상 하나를 체력 2 회복시킵니다"
+    },
+    "24": {
+      "name": "실웬, 우거진 잎새의 여주인",
+      "power_name": "정밀 사격",
+      "power_description": "적 대상 하나에게 피해 1을 줍니다"
+    },
+    "28": {
+      "name": "전략가 고라쉬",
+      "power_name": "강타",
+      "power_description": "적 대상 하나에게 피해 2를 줍니다"
+    },
+    "29": {
+      "name": "두르그림",
+      "power_name": "갑옷",
+      "power_description": "대상 유닛에게 방어구를 부여합니다 (행동으로 받는 피해가 아닌 피해를 절반으로 줄입니다)"
+    },
+    "30": {
+      "name": "아스테리온",
+      "power_name": "발굽 차기",
+      "power_description": "상대 영웅에게 피해 2를 줍니다"
+    },
+    "31": {
+      "name": "말드락",
+      "power_name": "송곳니",
+      "power_description": "대상의 체력 1을 흡수합니다"
+    },
+    "33": {
+      "name": "정의로운 알드릭",
+      "power_name": "신성한 방패",
+      "power_description": "대상 유닛에게 신성한 보호막을 부여합니다"
+    },
+    "34": {
+      "name": "벨킨",
+      "power_name": "타락",
+      "power_description": "선택한 적 유닛을 이번 턴이 끝날 때까지 내 편으로 전향시킵니다. 해당 유닛은 이번 턴이 끝날 때까지 추적을 얻습니다."
+    },
+    "35": {
+      "name": "발리노르",
+      "power_name": "충성 서약",
+      "power_description": "같은 진영의 유닛이 +1/+1을 받습니다"
+    },
+    "36": {
+      "name": "프리모르디스",
+      "power_name": "돌 피부",
+      "power_description": "대상 크리처가 방어구를 얻습니다: 받는 전투 피해를 절반으로 줄입니다(올림). 행동으로 받는 피해는 줄어들지 않습니다."
+    },
+    "37": {
+      "name": "실바란",
+      "power_name": "강화된 저항력",
+      "power_description": "대상 크리처에게 «저항 2»를 부여합니다."
+    },
+    "38": {
+      "name": "밀로",
+      "power_name": "친구 부르기",
+      "power_description": "0/1 용감한 어린 호빗을 소환합니다"
+    },
+    "39": {
+      "name": "나이아",
+      "power_name": "즉시 행동",
+      "power_description": "무작위 행동 카드 3장(모든 진영) 중 비용이 X 이하인 카드 하나를 선택하여 손에 추가합니다."
+    },
+    "40": {
+      "name": "엘린드라",
+      "power_name": "회복",
+      "power_description": "대상 유닛의 체력을 완전히 회복시킵니다"
+    },
+    "41": {
+      "name": "카르복",
+      "power_name": "곰의 힘",
+      "power_description": "아군 유닛 하나에게 +1/+1을 부여합니다"
+    },
+    "43": {
+      "name": "에테론",
+      "power_name": "폭풍",
+      "power_description": "적 유닛들에게 무작위로 나누어 피해 2를 줍니다"
+    },
+    "44": {
+      "name": "지그루드",
+      "power_name": "광폭화",
+      "power_description": "대상 크리처에게 «영광 +3/+0»을 부여합니다."
+    },
+    "45": {
+      "name": "아마야",
+      "power_name": "부족의 부름",
+      "power_description": "1/1 잉카 아군을 소환합니다"
+    },
+    "46": {
+      "name": "라그나르 달울음",
+      "power_name": "지휘",
+      "power_description": "전장에 있는 \"무리\" 진영의 유닛이 +1/+1을 받습니다"
+    },
+    "47": {
+      "name": "아르준 불꽃그리폰",
+      "power_name": "고양이의 우아함",
+      "power_description": "대상 크리처에게 «습격»을 부여합니다."
+    },
+    "48": {
+      "name": "님보르, 폭풍의 수호자",
+      "power_name": "폭풍",
+      "power_description": "무작위 적에게 피해를 2번 줍니다"
+    },
+    "49": {
+      "name": "넛킨, 꿈의 수호자",
+      "power_name": "활력의 개암",
+      "power_description": "대상 아군 유닛에게 +1/+1을 부여합니다"
+    },
+    "50": {
+      "name": "협상가 노암",
+      "power_name": "유리한 거래",
+      "power_description": "이 카드와 같은 성향의 진영들에서 나온 무작위 일반 카드 3장(비용 4 이하) 중 하나를 선택하여 손에 추가합니다."
+    },
+    "51": {
+      "name": "바엘코르, 심연의 주인",
+      "power_name": "심연의 부름",
+      "power_description": "덱에 남아 있는 마나 비용이 가장 높은 악마를 손에 추가합니다(동률이면 무작위)."
+    },
+    "53": {
+      "name": "하야토, 그림자의 대가",
+      "power_name": "돌연한 소멸",
+      "power_description": "대상 아군 유닛을 원래 소유자의 손으로 되돌립니다."
+    },
+    "54": {
+      "name": "삼왕국의 대전략가",
+      "power_name": "전략적 예측",
+      "power_description": "카드 한 장을 뽑습니다"
+    },
+    "55": {
+      "name": "보린, 첫 광맥의 수호자",
+      "power_name": "비축",
+      "power_description": "아낌 1을 발동합니다"
+    },
+    "56": {
+      "name": "아요미데, 가면에게 말을 거는 자",
+      "power_name": "강령술",
+      "power_description": "비용 3 마나의 무작위 정령을 소환합니다"
+    },
+    "57": {
+      "name": "케아히, 화산의 후계자",
+      "power_name": "분노의 폭발",
+      "power_description": "적 유닛들에게 무작위로 나누어 피해 2를 줍니다"
+    },
+    "58": {
+      "name": "오르군, 세 국경의 칸",
+      "power_name": "요새화",
+      "power_description": "덱 맨 위에서부터 첫 번째 크리처가 영구적으로 공격력 +1, 체력 +1을 얻습니다."
+    },
+    "59": {
+      "name": "오르한, 천 자루 총의 아가",
+      "power_name": "탄막 사격",
+      "power_description": "적 유닛들에게 무작위로 나누어 피해 3을 줍니다."
+    },
+    "60": {
+      "name": "화려한 페데리코",
+      "power_name": "작열",
+      "power_description": "수집 카드 3장(비용 8~10)을 공개하고 그중 한 장을 손에 넣습니다. 이번 턴에 마나 10을 얻습니다."
+    },
+    "61": {
+      "name": "아스테리아, 기병대의 으뜸",
+      "power_name": "전투의 자매들",
+      "power_description": "바람의 여전사 클랜의 자유 왕국 진영 카드 3장을 공개하고 그중 한 장을 손에 넣습니다."
+    },
+    "62": {
+      "name": "고드프루아, 불패의 태양의 용사",
+      "power_name": "정화",
+      "power_description": "대상 묘지에서 카드를 최대 2장까지 제거합니다."
+    },
+    "63": {
+      "name": "알도란, 최초로 눈뜬 자",
+      "power_name": "낙석",
+      "power_description": "모든 크리처(아군 및 적)에게 피해 1을 줍니다."
+    },
+    "65": {
+      "name": "카엘타리옹, 새벽의 원수",
+      "power_name": "군대 소집",
+      "power_description": "하이엘프를 소환합니다."
+    },
+    "66": {
+      "name": "그라크, 무리의 중사",
+      "power_name": "징집",
+      "power_description": "고블린 쌍둥이를 손에 추가합니다"
+    },
+    "67": {
+      "name": "투를랭 비르불롱",
+      "power_name": "발명",
+      "power_description": "당신의 기계에 +1/+1을 부여합니다(시작 시 0/1)"
+    },
+    "68": {
+      "name": "에이리크 성벽파괴자",
+      "power_name": "정복",
+      "power_description": "정복을 1 올립니다(단계 3). 단계 달성 시: 상대 덱의 카드 3장 중 1장을 손에 넣고 카운터를 0으로 되돌립니다."
+    },
+    "69": {
+      "name": "말베리스, 마지막 숨결의 아르콘",
+      "power_name": "매장",
+      "power_description": "대상 플레이어의 덱 맨 위 카드 1장을 묘지로 보냅니다."
+    },
+    "70": {
+      "name": "모르바엘, 장막의 군주",
+      "power_name": "장막의 부름",
+      "power_description": "설정된 토큰을 생성합니다."
+    }
+  },
+  "zh-TW": {
+    "19": {
+      "name": "測試肖像 2",
+      "power_name": "治療",
+      "power_description": "治療一個目標 2 點生命值"
+    },
+    "24": {
+      "name": "希爾雯，林冠之貴婦",
+      "power_name": "精準箭",
+      "power_description": "對一個敵方目標造成 1 點傷害"
+    },
+    "28": {
+      "name": "謀略家戈拉什",
+      "power_name": "強力打擊",
+      "power_description": "對一個敵方目標造成 2 點傷害"
+    },
+    "29": {
+      "name": "杜格林",
+      "power_name": "護甲",
+      "power_description": "賦予目標單位護甲(非行動造成的傷害減半)"
+    },
+    "30": {
+      "name": "阿斯特里昂",
+      "power_name": "蹄擊",
+      "power_description": "對敵方英雄造成 2 點傷害"
+    },
+    "31": {
+      "name": "馬爾德拉克",
+      "power_name": "獠牙",
+      "power_description": "從目標身上吸取 1 點生命值"
+    },
+    "33": {
+      "name": "公正者奧德里克",
+      "power_name": "神聖護盾",
+      "power_description": "賦予目標單位神聖護盾"
+    },
+    "34": {
+      "name": "維爾金",
+      "power_name": "腐化",
+      "power_description": "將選定的敵方單位轉換至你的陣營直到回合結束;該單位獲得追獵直到回合結束。"
+    },
+    "35": {
+      "name": "巴里諾",
+      "power_name": "效忠",
+      "power_description": "同陣營的單位獲得 +1/+1"
+    },
+    "36": {
+      "name": "普里莫迪斯",
+      "power_name": "石膚",
+      "power_description": "目標生物獲得護甲:受到的戰鬥傷害減半(無條件進位);行動造成的傷害不會減少。"
+    },
+    "37": {
+      "name": "席爾瓦蘭",
+      "power_name": "強化抗性",
+      "power_description": "賦予目標生物「抗性 2」。"
+    },
+    "38": {
+      "name": "米洛",
+      "power_name": "呼喚盟友",
+      "power_description": "召喚一個 0/1 的勇敢年輕哈比人"
+    },
+    "39": {
+      "name": "奈雅",
+      "power_name": "瞬發行動",
+      "power_description": "從 3 張隨機行動牌(所有陣營)中選擇一張加入手牌,其費用 ≤ X。"
+    },
+    "40": {
+      "name": "艾琳德拉",
+      "power_name": "痊癒",
+      "power_description": "完全治療目標單位"
+    },
+    "41": {
+      "name": "卡爾沃克",
+      "power_name": "熊之力",
+      "power_description": "賦予一個友方單位 +1/+1"
+    },
+    "43": {
+      "name": "艾瑟隆",
+      "power_name": "風暴",
+      "power_description": "造成 2 點傷害,隨機分配給敵方單位"
+    },
+    "44": {
+      "name": "西格德",
+      "power_name": "狂暴",
+      "power_description": "賦予目標生物「榮耀 +3/+0」。"
+    },
+    "45": {
+      "name": "阿馬雅",
+      "power_name": "氏族召喚",
+      "power_description": "召喚一個 1/1 的印加盟友"
+    },
+    "46": {
+      "name": "拉格納·嚎月",
+      "power_name": "號令",
+      "power_description": "場上「狼群」陣營的單位獲得 +1/+1"
+    },
+    "47": {
+      "name": "阿朱恩·火爪鷲",
+      "power_name": "貓之優雅",
+      "power_description": "賦予目標生物「突襲」。"
+    },
+    "48": {
+      "name": "尼姆博，風暴守護者",
+      "power_name": "風暴",
+      "power_description": "對隨機敵人造成 2 次傷害"
+    },
+    "49": {
+      "name": "納特金，夢境守護者",
+      "power_name": "活力榛果",
+      "power_description": "賦予目標友方單位 +1/+1"
+    },
+    "50": {
+      "name": "談判者諾姆",
+      "power_name": "有利交易",
+      "power_description": "從 3 張隨機的普通卡中選擇一張加入手牌,其費用 ≤ 4,且來自與此卡相同陣營屬性的各陣營。"
+    },
+    "51": {
+      "name": "瓦爾科，深淵之主",
+      "power_name": "深淵呼喚",
+      "power_description": "將你牌組中剩餘法力費用最高的惡魔加入你的手牌(若有並列則隨機選擇)。"
+    },
+    "53": {
+      "name": "隼人，暗影大師",
+      "power_name": "驟然消失",
+      "power_description": "將一個目標友方單位送回其原始擁有者的手牌。"
+    },
+    "54": {
+      "name": "三國大軍師",
+      "power_name": "戰略預判",
+      "power_description": "抽一張牌"
+    },
+    "55": {
+      "name": "博林，首礦脈守護者",
+      "power_name": "節約",
+      "power_description": "觸發節約 1"
+    },
+    "56": {
+      "name": "阿約米德，與面具對話者",
+      "power_name": "通靈術",
+      "power_description": "召喚一個費用為 3 點法力的隨機靈魂"
+    },
+    "57": {
+      "name": "凱阿希，火山繼承者",
+      "power_name": "怒火爆發",
+      "power_description": "造成 2 點傷害,隨機分配給敵方單位"
+    },
+    "58": {
+      "name": "奧爾岡，三境汗王",
+      "power_name": "強化防禦",
+      "power_description": "牌組頂端起的第一張生物永久獲得 +1 攻擊力與 +1 生命值。"
+    },
+    "59": {
+      "name": "奧爾罕，千槍阿迦",
+      "power_name": "彈幕射擊",
+      "power_description": "造成 3 點傷害,隨機分配給敵方單位。"
+    },
+    "60": {
+      "name": "華麗者費德里科",
+      "power_name": "烈焰燃燒",
+      "power_description": "展示 3 張收藏卡(費用 8 至 10),並選擇一張留在手牌。本回合獲得 10 點法力。"
+    },
+    "61": {
+      "name": "阿斯特里亞，騎士之首",
+      "power_name": "戰場姊妹",
+      "power_description": "展示 3 張屬於風之女戰士氏族的自由王國陣營卡牌,並選擇一張留在手牌。"
+    },
+    "62": {
+      "name": "戈德弗魯瓦，不敗之日的勇士",
+      "power_name": "淨化",
+      "power_description": "從目標墓地移除最多 2 張牌。"
+    },
+    "63": {
+      "name": "奧爾多蘭，首位覺醒者",
+      "power_name": "山崩",
+      "power_description": "對所有生物(友方與敵方)造成 1 點傷害。"
+    },
+    "65": {
+      "name": "凱爾薩里昂，黎明元帥",
+      "power_name": "招募軍隊",
+      "power_description": "召喚一個高等精靈。"
+    },
+    "66": {
+      "name": "格拉克，部落軍士",
+      "power_name": "徵募",
+      "power_description": "將一個哥布林雙生子加入你的手牌"
+    },
+    "67": {
+      "name": "圖林·轉栓",
+      "power_name": "發明",
+      "power_description": "為你的機器增加 +1/+1(初始為 0/1)"
+    },
+    "68": {
+      "name": "艾里克·碎壘",
+      "power_name": "征服",
+      "power_description": "使你的征服增加 1(階段 3)。達到階段時:從對手牌組的 3 張牌中選擇 1 張加入手牌,計數器歸零。"
+    },
+    "69": {
+      "name": "馬爾維里斯，終息之氣的執政官",
+      "power_name": "入土",
+      "power_description": "將目標玩家牌組頂端的 1 張牌放入其墓地。"
+    },
+    "70": {
+      "name": "莫爾瓦埃爾，帷幕之主",
+      "power_name": "迷霧呼喚",
+      "power_description": "建立已設定的衍生物。"
+    }
+  },
+  "tr": {
+    "19": {
+      "name": "Test Portrait 2",
+      "power_name": "Şifa",
+      "power_description": "2 CP'lik bir hedefi iyileştirin"
+    },
+    "24": {
+      "name": "Sylwen, Yaprak Tacının Hanımı",
+      "power_name": "Kesin Ok",
+      "power_description": "Bir düşman hedefe 1 hasar verir"
+    },
+    "28": {
+      "name": "Strateji Ustası Gorash",
+      "power_name": "Güçlü Darbe",
+      "power_description": "Bir düşman hedefe 2 hasar verir"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Zırh",
+      "power_description": "Hedeflenen birime zırh verir (aksiyonlardan kaynaklanmayan alınan hasarı yarıya indirir)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Toynak Darbesi",
+      "power_description": "Rakip kahramana 2 hasar verir"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Dişler",
+      "power_description": "Hedeften 1 CP çalar"
+    },
+    "33": {
+      "name": "Adil Aldric",
+      "power_name": "İlahi Kalkan",
+      "power_description": "Hedeflenen birime kutsal kalkan verir"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Yozlaşma",
+      "power_description": "Seçilen düşman birimini turun sonuna kadar sizin tarafınıza geçirir; birim turun sonuna kadar İz Sürme kazanır."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Bağlılık",
+      "power_description": "Aynı fraksiyondaki birimler +1/+1 kazanır"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Taş Deri",
+      "power_description": "Hedeflenen yaratık Zırh kazanır: Alınan savaş hasarını yarıya indirir (yukarı yuvarlanır); aksiyon hasarı azaltılmaz."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Artan Direnç",
+      "power_description": "Hedeflenen bir yaratığa \"Direnç 2\" verir."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Dosta Çağrı",
+      "power_description": "0/1 değerinde genç ve cesur bir hobbit çağırır"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Anlık Hamle",
+      "power_description": "Elinize eklemek için maliyeti ≤ X olan 3 rastgele aksiyondan (tüm fraksiyonlar) birini seçin."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "İyileşme",
+      "power_description": "Hedeflenen birimi tamamen iyileştirir"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Ayıların Gücü",
+      "power_description": "Bir müttefik birime +1/+1 verir"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Fırtına",
+      "power_description": "Düşman birimler arasında rastgele dağıtılan 2 hasar verir"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Çılgınlık",
+      "power_description": "Hedeflenen bir yaratığa \"Zafer +3/+0\" verir."
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Klan Çağrısı",
+      "power_description": "1/1 değerinde bir Inka müttefiki çağırır"
+    },
+    "46": {
+      "name": "Ragnar Ay-Uluyan",
+      "power_name": "Komuta",
+      "power_description": "Oyundaki \"Sürü\" fraksiyonunun birimleri +1/+1 kazanır"
+    },
+    "47": {
+      "name": "Arjun Ateşpençe",
+      "power_name": "Kedi Zarafeti",
+      "power_description": "Hedeflenen bir yaratığa \"Akın\" verir."
+    },
+    "48": {
+      "name": "Nimbor, Fırtınaların Bekçisi",
+      "power_name": "Fırtına",
+      "power_description": "Rastgele düşmanlara 2 kez hasar verir"
+    },
+    "49": {
+      "name": "Nutkin, Rüyaların Bekçisi",
+      "power_name": "Canlandıran Fındık",
+      "power_description": "Hedeflenen müttefik birime +1/+1 verir"
+    },
+    "50": {
+      "name": "Arabulucu Noham",
+      "power_name": "Elverişli Pazar",
+      "power_description": "Elinize eklemek için, bu kartla aynı yönelimdeki fraksiyonlardan gelen maliyeti ≤ 4 olan 3 rastgele sıradan karttan birini seçin."
+    },
+    "51": {
+      "name": "Vaelkor, Uçurumların Efendisi",
+      "power_name": "Uçurum Çağrısı",
+      "power_description": "Destenizde kalan en yüksek mana maliyetli iblisi elinize ekler (eşitlik durumunda rastgele)."
+    },
+    "53": {
+      "name": "Hayato, Gölgelerin Efendisi",
+      "power_name": "Ani Yok Oluş",
+      "power_description": "Hedeflenen müttefik birimi asıl sahibinin eline geri gönderir."
+    },
+    "54": {
+      "name": "Üç Krallığın Büyük Stratejisti",
+      "power_name": "Stratejik Öngörü",
+      "power_description": "Bir kart çeker"
+    },
+    "55": {
+      "name": "Borin, İlk Damarın Bekçisi",
+      "power_name": "Tasarruf",
+      "power_description": "Esirgeme 1'i tetikler"
+    },
+    "56": {
+      "name": "Ayomidé, Maskelerle Konuşan",
+      "power_name": "Ruhçuluk",
+      "power_description": "Maliyeti 3 mana olan rastgele bir ruh çağırır"
+    },
+    "57": {
+      "name": "Keahi, Yanardağın Varisi",
+      "power_name": "Öfke Patlaması",
+      "power_description": "Düşman birimler arasında rastgele dağıtılan 2 hasar verir"
+    },
+    "58": {
+      "name": "Orghun, Üç Sınırın Hanı",
+      "power_name": "Tahkim Et",
+      "power_description": "Destenizin en üstünden başlayarak ilk yaratık kalıcı olarak +1 SLD ve +1 CP kazanır."
+    },
+    "59": {
+      "name": "Orhan, Bin Tüfeğin Ağası",
+      "power_name": "Baraj Ateşi",
+      "power_description": "Düşman birimler arasında rastgele dağıtılan 3 hasar verir."
+    },
+    "60": {
+      "name": "Gösterişli Federico",
+      "power_name": "Alevlenme",
+      "power_description": "Koleksiyondan 3 kart gösterir (maliyet 8 ila 10) ve birini elinde tutar. Bu tur 10 mana kazanın."
+    },
+    "61": {
+      "name": "Asteria, Süvarilerin Birincisi",
+      "power_name": "Savaş Kızkardeşleri",
+      "power_description": "Özgür Krallıklar fraksiyonunun Rüzgâr Savaşçıları klanından 3 kart gösterir ve birini elinde tutar."
+    },
+    "62": {
+      "name": "Godefroy, Yenilmez Güneşin Şampiyonu",
+      "power_name": "Arınma",
+      "power_description": "Hedeflenen mezarlıktan en fazla 2 kart çıkarır."
+    },
+    "63": {
+      "name": "Aldoran, İlk Uyanan",
+      "power_name": "Heyelan",
+      "power_description": "Tüm yaratıklara (müttefik VE düşman) 1 hasar verir."
+    },
+    "65": {
+      "name": "Caeltharion, Şafağın Mareşali",
+      "power_name": "Ordu Toplama",
+      "power_description": "Bir Yüce Elf çağırır."
+    },
+    "66": {
+      "name": "Grakk, Sürünün Çavuşu",
+      "power_name": "Askere Alma",
+      "power_description": "Elinize bir goblin ikizi ekler"
+    },
+    "67": {
+      "name": "Turlin Burgutopaç",
+      "power_name": "İcat",
+      "power_description": "Makinenize +1/+1 ekler (başlangıçta 0/1)"
+    },
+    "68": {
+      "name": "Eirik Surkıran",
+      "power_name": "Fetih",
+      "power_description": "Fetih sayacınıza 1 ekler (eşik 3). Eşiğe ulaşıldığında: rakibin destesinden 3 karttan 1'ini elinize alın, sayaç 0'a döner."
+    },
+    "69": {
+      "name": "Malveris, Son Nefesin Arkonu",
+      "power_name": "Toprağa Verme",
+      "power_description": "Hedeflenen oyuncunun destesinin en üstteki 1 kartını mezarlığına koyar."
+    },
+    "70": {
+      "name": "Morvhaël, Peçenin Efendisi",
+      "power_name": "Perde Çağrısı",
+      "power_description": "Yapılandırılmış jetonu oluşturur."
+    }
+  },
+  "pl": {
+    "19": {
+      "name": "Test Portrait 2",
+      "power_name": "Leczenie",
+      "power_description": "Ulecz wybrany cel za 2 PZ"
+    },
+    "24": {
+      "name": "Sylwen, Pani Listowia",
+      "power_name": "Celny strzał",
+      "power_description": "Zadaje 1 obrażenie wybranemu wrogiemu celowi"
+    },
+    "28": {
+      "name": "Gorash Strateg",
+      "power_name": "Potężny cios",
+      "power_description": "Zadaje 2 obrażenia wybranemu wrogiemu celowi"
+    },
+    "29": {
+      "name": "Durgrim",
+      "power_name": "Pancerz",
+      "power_description": "Nadaje Pancerz wybranej jednostce (zmniejsza o połowę otrzymywane obrażenia, które nie pochodzą z akcji)"
+    },
+    "30": {
+      "name": "Asterion",
+      "power_name": "Kopyto",
+      "power_description": "Zadaje 2 obrażenia wrogiemu bohaterowi"
+    },
+    "31": {
+      "name": "Maldrak",
+      "power_name": "Kły",
+      "power_description": "Kradnie 1 PZ celowi"
+    },
+    "33": {
+      "name": "Aldric Sprawiedliwy",
+      "power_name": "Boska tarcza",
+      "power_description": "Nadaje Boską tarczę wybranej jednostce"
+    },
+    "34": {
+      "name": "Velkyn",
+      "power_name": "Zepsucie",
+      "power_description": "Przekonwertowuje wybraną wrogą jednostkę na waszą stronę do końca tury; zyskuje Tropienie do końca tury."
+    },
+    "35": {
+      "name": "Balinor",
+      "power_name": "Przysięga wierności",
+      "power_description": "Jednostki tej samej frakcji dostają +1/+1"
+    },
+    "36": {
+      "name": "Primordis",
+      "power_name": "Kamienna skóra",
+      "power_description": "Wybrana istota zyskuje Pancerz: zmniejsza o połowę otrzymywane obrażenia bojowe (zaokrąglając w górę); obrażenia z akcji nie są zmniejszane."
+    },
+    "37": {
+      "name": "Sylvaran",
+      "power_name": "Zwiększona odporność",
+      "power_description": "Nadaje „Odporność 2” wybranej istocie."
+    },
+    "38": {
+      "name": "Milo",
+      "power_name": "Wezwanie przyjaciela",
+      "power_description": "Przywołuje walecznego młodego hobbita 0/1"
+    },
+    "39": {
+      "name": "Naïa",
+      "power_name": "Natychmiastowe działanie",
+      "power_description": "Wybierz jedną akcję spośród 3 losowych akcji (ze wszystkich frakcji) o koszcie ≤ X, aby dodać ją do ręki."
+    },
+    "40": {
+      "name": "Elyndra",
+      "power_name": "Uzdrowienie",
+      "power_description": "W pełni leczy wybraną jednostkę"
+    },
+    "41": {
+      "name": "Karvok",
+      "power_name": "Siła niedźwiedzi",
+      "power_description": "Daje +1/+1 sojuszniczej jednostce"
+    },
+    "43": {
+      "name": "Aetheron",
+      "power_name": "Burza",
+      "power_description": "Zadaje 2 obrażenia rozdzielone losowo między wrogie jednostki"
+    },
+    "44": {
+      "name": "Sigurd",
+      "power_name": "Berserk",
+      "power_description": "Nadaje „Chwała +3/+0” wybranej istocie."
+    },
+    "45": {
+      "name": "Amaya",
+      "power_name": "Zew klanu",
+      "power_description": "Przywołuje sojusznika Inka 1/1"
+    },
+    "46": {
+      "name": "Ragnar Wyjący do Księżyca",
+      "power_name": "Dowodzenie",
+      "power_description": "Jednostki frakcji „Wataha” będące w grze dostają +1/+1"
+    },
+    "47": {
+      "name": "Arjun Ognisty Szpon",
+      "power_name": "Kocia gracja",
+      "power_description": "Nadaje „Najazd” wybranej istocie."
+    },
+    "48": {
+      "name": "Nimbor, Strażnik Burz",
+      "power_name": "Burza",
+      "power_description": "Dwukrotnie zadaje obrażenia losowym wrogom"
+    },
+    "49": {
+      "name": "Nutkin, Strażniczka Snów",
+      "power_name": "Orzeźwiający orzech",
+      "power_description": "Daje +1/+1 wybranej sojuszniczej jednostce"
+    },
+    "50": {
+      "name": "Noham Negocjator",
+      "power_name": "Korzystny targ",
+      "power_description": "Wybierz jedną kartę spośród 3 losowych pospolitych kart o koszcie ≤ 4 z frakcji o tym samym charakterze co ta karta, aby dodać ją do ręki."
+    },
+    "51": {
+      "name": "Vaelkor, Mistrz Otchłani",
+      "power_name": "Zew Otchłani",
+      "power_description": "Dodaje do twojej ręki demona o najwyższym koszcie many pozostałego w twojej talii (losowego w przypadku remisu)."
+    },
+    "53": {
+      "name": "Hayato, Mistrz Cieni",
+      "power_name": "Nagłe zniknięcie",
+      "power_description": "Zwraca wybraną sojuszniczą jednostkę na rękę jej pierwotnego właściciela."
+    },
+    "54": {
+      "name": "Wielki Strateg Trzech Królestw",
+      "power_name": "Strategiczne przewidywanie",
+      "power_description": "Dobierz kartę"
+    },
+    "55": {
+      "name": "Borin, Strażnik Pierwszej Żyły",
+      "power_name": "Oszczędność",
+      "power_description": "Aktywuje Oszczędzanie 1"
+    },
+    "56": {
+      "name": "Ayomidé, Ta, Która Przemawia do Masek",
+      "power_name": "Spirytyzm",
+      "power_description": "Przywołuje losowego ducha o koszcie 3 many"
+    },
+    "57": {
+      "name": "Keahi, Dziedzic Wulkanu",
+      "power_name": "Wybuch gniewu",
+      "power_description": "Zadaje 2 obrażenia rozdzielone losowo między wrogie jednostki"
+    },
+    "58": {
+      "name": "Orghun, Chan Trzech Rubieży",
+      "power_name": "Umocnienie",
+      "power_description": "Pierwsza istota w twojej talii, licząc od góry, zyskuje na stałe +1 ATK i +1 PZ."
+    },
+    "59": {
+      "name": "Orhan, Aga Tysiąca Muszkietów",
+      "power_name": "Ostrzał zaporowy",
+      "power_description": "Zadaje 3 obrażenia rozdzielone losowo między wrogie jednostki."
+    },
+    "60": {
+      "name": "Federico Olśniewający",
+      "power_name": "Płomienność",
+      "power_description": "Odkrywa 3 karty kolekcjonerskie (koszt 8–10) i zachowuje jedną na ręce. Zyskaj 10 many w tej turze."
+    },
+    "61": {
+      "name": "Asteria, Pierwsza z Jazdy",
+      "power_name": "Siostry broni",
+      "power_description": "Odkrywa 3 karty z frakcji Wolne Królestwa z klanu Wojowniczki Wiatru i zachowuje jedną na ręce."
+    },
+    "62": {
+      "name": "Godfryd, Czempion Niezwyciężonego Słońca",
+      "power_name": "Oczyszczenie",
+      "power_description": "Usuwa do 2 kart z wybranego cmentarza."
+    },
+    "63": {
+      "name": "Aldoran, Pierwszy Przebudzony",
+      "power_name": "Obsunięcie skał",
+      "power_description": "Zadaje 1 obrażenie wszystkim istotom (sojuszniczym I wrogim)."
+    },
+    "65": {
+      "name": "Caeltharion, Marszałek Świtu",
+      "power_name": "Zaciąg armii",
+      "power_description": "Przywołuje Wysokiego Elfa."
+    },
+    "66": {
+      "name": "Grakk, Sierżant Hordy",
+      "power_name": "Werbunek",
+      "power_description": "Dodaje do twojej ręki goblińskiego bliźniaka"
+    },
+    "67": {
+      "name": "Turlin Wirokręt",
+      "power_name": "Wynalazek",
+      "power_description": "Dodaje +1/+1 do twojej machiny (na początku 0/1)"
+    },
+    "68": {
+      "name": "Eirik Łamacz Wałów",
+      "power_name": "Podbój",
+      "power_description": "Dodaje 1 do twojego Podboju (próg 3). Po osiągnięciu progu: weź na rękę 1 kartę spośród 3 z talii przeciwnika, licznik wraca do 0."
+    },
+    "69": {
+      "name": "Malveris, Archont Ostatniego Tchnienia",
+      "power_name": "Pochówek",
+      "power_description": "Umieszcza 1 pierwszą kartę z talii wybranego gracza na jego cmentarzu."
+    },
+    "70": {
+      "name": "Morvhaël, Władca Zasłony",
+      "power_name": "Zew Zasłony",
+      "power_description": "Tworzy skonfigurowany token."
+    }
   }
 }

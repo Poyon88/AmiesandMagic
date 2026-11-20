@@ -250,6 +250,8 @@
   scroll-margin-top: 0;
 }
 .vt-h2 { font-weight: 800; font-size: clamp(2rem, 3.9vw, 4.2rem); line-height: 1; letter-spacing: -0.032em; max-width: 16em; }
+/* Renvoi d'astérisque sous un texte : petit, en retrait, mais lisible. */
+.vt-note { margin-top: 12px !important; max-width: 46em; font-size: 0.875rem; line-height: 1.45; color: var(--vt-ink-3); }
 .vt-corps { margin-top: clamp(14px, 2vh, 22px) !important; max-width: 38em; font-size: clamp(1.02rem, 1.25vw, 1.25rem); line-height: 1.5; color: var(--vt-ink-2); }
 .vt-h3 { font-weight: 800; font-size: clamp(1.25rem, 1.8vw, 1.75rem); line-height: 1.1; letter-spacing: -0.02em; }
 

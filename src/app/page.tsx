@@ -7,6 +7,7 @@ import { resolveNewsLocale, type NewsItem } from "@/lib/news/types";
 import type { BannerNews } from "@/components/NewsBanner";
 import { FACTIONS } from "@/lib/card-engine/constants";
 import { choisirAffiches, jourCourant } from "@/lib/home/affichesDuHub";
+import { CLE_IMAGE_JOUER } from "@/lib/vitrine/config";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export default async function HomePage() {
   // Visiteur non connecté : la vitrine, comme dans le proxy.
   if (!user) redirect("/landing");
 
-  const [profileResult, { data: wallet }, { data: activeNews }, locale, { data: illustrations }] = await Promise.all([
+  const [profileResult, { data: wallet }, { data: activeNews }, locale, { data: illustrations }, { data: visuelJouer }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
     supabase.from("wallets").select("balance, gold_debt").eq("user_id", user.id).single(),
     // News actives du bandeau (RLS : lecture publique). Résolues dans la
@@ -40,6 +41,9 @@ export default async function HomePage() {
       .not("image_url", "is", null)
       .order("id")
       .limit(400),
+    // Visuel de la tuile « Jouer » choisi dans l'admin. Ligne absente (ou
+    // lecture en échec) ⇒ `data` nul ⇒ l'image d'origine.
+    supabase.from("vitrine_textes").select("fr").eq("key", CLE_IMAGE_JOUER).maybeSingle(),
   ]);
   let profile = profileResult.data;
 
@@ -96,6 +100,7 @@ export default async function HomePage() {
       goldBalance={wallet?.balance ?? 0}
       goldDebt={wallet?.gold_debt ?? 0}
       news={news}
+      imageJouer={visuelJouer?.fr || undefined}
       affiches={choisirAffiches(
         illustrations ?? [],
         (f) => !!FACTIONS[f] && FACTIONS[f].alignment !== "spéciale",

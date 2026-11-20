@@ -7,6 +7,7 @@ import NewsBanner, { type BannerNews } from "@/components/NewsBanner";
 import { useTranslations } from "next-intl";
 import { isPlayerSellingEnabled } from "@/lib/auction/flags";
 import { bricolage } from "@/components/vitrine/font";
+import { IMAGE_JOUER_DEFAUT } from "@/lib/vitrine/config";
 import "@/components/vitrine/vitrine.css";
 
 interface MainMenuProps {
@@ -19,6 +20,9 @@ interface MainMenuProps {
    *  decks, collection, marché, tournois, règles. Une case vide retombe sur
    *  l'image historique de la tuile, ou sur un fond uni. */
   affiches?: string[];
+  /** Visuel de la grande tuile « Jouer » choisi dans l'admin (onglet Vitrine).
+   *  Absent : l'image d'origine. */
+  imageJouer?: string;
 }
 
 /** Images d'avant la refonte, gardées en repli si le catalogue ne répond pas. */
@@ -28,7 +32,7 @@ const REPLIS = ["/images/home/decks-bg.png", "/images/home/collection-bg-v2.png"
 // grande tuile pour jouer, cinq affiches pour le reste. Chaque tuile est un
 // vrai lien — clic du milieu, clic droit et clavier se comportent comme une
 // navigation.
-export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [], affiches = [] }: MainMenuProps) {
+export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [], affiches = [], imageJouer }: MainMenuProps) {
   const t = useTranslations("home");
 
   // Illustration de la tuile n° i : la carte du jour, sinon l'image historique.
@@ -56,7 +60,7 @@ export default function MainMenu({ username, goldBalance, goldDebt = 0, news = [
             <li>
               <Link href="/play" className="vt-tuile vt-tuile--une">
                 <Image
-                  src="/images/home/jouez-bg.png"
+                  src={imageJouer ?? IMAGE_JOUER_DEFAUT}
                   alt=""
                   fill
                   priority

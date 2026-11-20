@@ -12,6 +12,17 @@ export function estSectionVitrine(v: unknown): v is SectionVitrine {
   return typeof v === "string" && (SECTIONS_VITRINE as readonly string[]).includes(v);
 }
 
+/** Visuel de la grande tuile « Jouer » du hub, remplaçable depuis l'admin.
+ *  Son URL est rangée dans `vitrine_textes` sous une clé réservée, hors de
+ *  TEXTES_EDITABLES : la page d'accueil et l'écran des textes l'ignorent, et
+ *  aucune table n'est à créer. Ligne absente = image d'origine. */
+export const CLE_IMAGE_JOUER = "image.jouer";
+export const IMAGE_JOUER_DEFAUT = "/images/home/jouez-bg.png";
+export const BUCKET_IMAGE_JOUER = "news-images";
+/** Chemin d'un visuel « Jouer » dans le bucket : seul ce gabarit est accepté. */
+export const CHEMIN_IMAGE_JOUER = /^hub\/jouer_[a-z0-9_]+\.(png|jpg|jpeg|webp)$/;
+export const POIDS_MAX_IMAGE_JOUER = 20 * 1024 * 1024;
+
 /** En dessous, une rangée du mur ou la frise ne boucle pas proprement : la
  *  sélection à la main est ignorée et l'automatique reprend la main. */
 export const MIN_AFFICHES_PAR_RANGEE = 6;
@@ -54,6 +65,7 @@ export const TEXTES_EDITABLES: TexteEditable[] = [
   { key: "trailer_title", label: "Titre", groupe: "Bande-annonce" },
   { key: "f4_title", label: "Titre", groupe: "Tournois" },
   { key: "f4_desc", label: "Texte", groupe: "Tournois", long: true },
+  { key: "f4_note", label: "Renvoi de l'astérisque (sous le texte)", groupe: "Tournois", long: true },
   { key: "f4_example", label: "Légende du tableau", groupe: "Tournois", long: true },
   { key: "cta_title", label: "Titre", groupe: "Clôture" },
   { key: "cta_sub", label: "Texte", groupe: "Clôture", long: true },

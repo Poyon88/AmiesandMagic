@@ -1,0 +1,3777 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "추격",
+        "desc": "소환 즉시 공격하고 발동 능력을 사용할 수 있습니다."
+      },
+      "taunt": {
+        "label": "도발",
+        "desc": "적은 이 유닛을 우선적으로 공격해야 합니다."
+      },
+      "divine_shield": {
+        "label": "보호막",
+        "desc": "첫 번째 공격을 피해 없이 막아냅니다."
+      },
+      "ranged": {
+        "label": "비행",
+        "desc": "상대의 도발을 무시합니다."
+      },
+      "raid": {
+        "label": "습격",
+        "desc": "소환 즉시 적 크리처를 공격할 수 있습니다 (영웅은 제외)."
+      },
+      "convocations_multiples": {
+        "label": "다중 소환",
+        "desc": "{tokens}을(를) 생성합니다."
+      },
+      "loyaute": {
+        "label": "충성",
+        "desc": "전장에 있는 {race_bare} 아군 하나당 +1/+1."
+      },
+      "ancre": {
+        "label": "고정",
+        "desc": "이동되거나 추방될 수 없습니다."
+      },
+      "resistance": {
+        "label": "저항 X",
+        "desc": "받는 피해를 X만큼 줄입니다 (최소 피해 1)."
+      },
+      "premiere_frappe": {
+        "label": "선제공격",
+        "desc": "이 유닛이 공격하면 먼저 피해를 입히며, 상대 유닛은 살아남은 경우에만 반격합니다."
+      },
+      "gloire": {
+        "label": "영광 +X/+Y",
+        "desc": "이 유닛이 전투 피해를 입고 살아남을 때마다 영구적으로 +X/+Y를 얻습니다."
+      },
+      "vol": {
+        "label": "비행",
+        "desc": "상대의 도발을 무시합니다."
+      },
+      "precision": {
+        "label": "정밀",
+        "desc": "저항, 방어구, 보호막, 에테리얼 상한을 무시합니다."
+      },
+      "drain_de_vie": {
+        "label": "생명력 흡수",
+        "desc": "입힌 피해만큼 내 영웅을 회복합니다."
+      },
+      "esquive": {
+        "label": "회피",
+        "desc": "매 턴 처음 받는 공격을 자동으로 피합니다."
+      },
+      "poison": {
+        "label": "독",
+        "desc": "부상당한 유닛은 턴마다 체력 1을 잃습니다."
+      },
+      "celerite": {
+        "label": "신속",
+        "desc": "턴당 두 번 공격할 수 있습니다."
+      },
+      "augure": {
+        "label": "전조",
+        "desc": "이 유닛이 적 영웅에게 피해를 입히면 카드를 한 장 뽑습니다."
+      },
+      "benediction": {
+        "label": "축복",
+        "desc": "대상 유닛을 완전히 회복합니다."
+      },
+      "bravoure": {
+        "label": "용맹",
+        "desc": "자신보다 공격력이 높은 유닛에게 주는 피해가 두 배가 됩니다 (소수점 올림)."
+      },
+      "pillage": {
+        "label": "약탈 X",
+        "desc": "상대는 손에서 무작위로 카드 X장을 버립니다."
+      },
+      "riposte": {
+        "label": "반격 X",
+        "desc": "이 유닛이 피해를 받으면 공격의 원천(유닛 또는 영웅)에게 X의 피해를 줍니다."
+      },
+      "chant": {
+        "label": "성가",
+        "desc": "이 유닛이 필드에 있는 동안 성가를 가진 내 액션이 강화됩니다."
+      },
+      "lune": {
+        "label": "달 X",
+        "desc": "이번 턴에 두 번째로 사용한 카드부터 모든 수치가 영구적으로 X 증가합니다."
+      },
+      "soleil": {
+        "label": "태양 X",
+        "desc": "이번 턴에 처음 사용한 카드라면 모든 수치가 영구적으로 X 증가합니다."
+      },
+      "rappel": {
+        "label": "소환 X",
+        "desc": "비용이 X 이하인 대상 카드 한 장을 묘지에서 손으로 되돌립니다.",
+        "desc_any": "대상 카드 한 장을 묘지에서 손으로 되돌립니다."
+      },
+      "combustion": {
+        "label": "연소",
+        "desc": "손에서 카드 한 장을 버린 다음 카드 두 장을 뽑습니다."
+      },
+      "terreur": {
+        "label": "공포 X",
+        "desc": "이 카드가 있는 동안 상대 유닛의 ATK가 X 감소합니다."
+      },
+      "pauvrete": {
+        "label": "빈곤 X",
+        "desc": "상대 손의 카드 수만큼 ATK를 잃습니다(실시간 변동)."
+      },
+      "armure": {
+        "label": "방어구",
+        "desc": "받는 전투 피해를 절반으로 줄입니다(소수점 올림). 액션으로 받는 피해는 줄어들지 않습니다."
+      },
+      "commandement": {
+        "label": "지휘 X",
+        "desc": "{faction_de} 아군에게 +X/+X를 부여합니다."
+      },
+      "fureur": {
+        "label": "분노",
+        "desc": "피해를 받은 후 무작위 상대 유닛을 공격합니다(없으면 영웅). 턴당 1회."
+      },
+      "double_attaque": {
+        "label": "이중 공격",
+        "desc": "공격 단계에서만 공격 시 ATK의 두 배만큼 피해를 줍니다. 대상 유닛은 정상적으로 반격합니다."
+      },
+      "invisible": {
+        "label": "은신",
+        "desc": "상대의 액션이나 유닛 능력의 대상이 될 수 없습니다."
+      },
+      "canalisation": {
+        "label": "집중",
+        "desc": "이 유닛이 필드에 있는 동안 내 액션의 비용이 마나 1 감소합니다(최소 1)."
+      },
+      "contresort": {
+        "label": "반격 주문 X",
+        "desc": "상대의 다음 액션 X개를 무효화합니다."
+      },
+      "exclusion": {
+        "label": "배제 X",
+        "desc": "상대의 다음 유닛 소환 X회를 무효화합니다."
+      },
+      "maitre_darme": {
+        "label": "무기의 달인",
+        "desc": "필드에 있는 내 아이템 2개를 비싼 것부터 무료로 장착합니다. 다른 크리처가 장착 중인 것도 가능합니다."
+      },
+      "neutralisation": {
+        "label": "무력화",
+        "desc": "이 유닛이 필드에 있는 동안 대상으로 지정한 적 유닛은 마비되고 그 능력은 효과를 잃습니다."
+      },
+      "transformation": {
+        "label": "변신",
+        "desc": "지정된 카드로 변신합니다. 전장을 떠나면 원래 모습으로 돌아옵니다."
+      },
+      "convocation": {
+        "label": "소환 X",
+        "desc": "{token}을(를) 생성합니다."
+      },
+      "convocation_simple": {
+        "label": "소환",
+        "desc": "{token}을(를) 생성합니다."
+      },
+      "invocation": {
+        "label": "호출 X",
+        "desc": "내 컬렉션에서 비용이 X인 무작위 크리처를 호출합니다 ({alignment}, 현재 포맷).",
+        "desc_any": "내 컬렉션에서 무작위 크리처를 호출합니다 ({alignment}, 현재 포맷)."
+      },
+      "malediction": {
+        "label": "저주 X",
+        "desc": "비용이 X 이하인 적 유닛 하나를 지정하면, 상대의 다음 턴 종료 시 추방됩니다.",
+        "desc_any": "적 유닛 하나를 지정하면, 상대의 다음 턴 종료 시 추방됩니다."
+      },
+      "necrophagie": {
+        "label": "시체 포식",
+        "desc": "유닛(아군 또는 적)이 죽을 때마다 공격력 +1, 체력 +1을 얻습니다."
+      },
+      "richesse": {
+        "label": "풍요 X",
+        "desc": "플레이어가 손에서 카드를 버릴 때마다 이 유닛은 +X/+X를 얻습니다(영구)."
+      },
+      "sacrifice_demoniaque": {
+        "label": "악마의 희생 X",
+        "desc": "죽을 때, 손에 있는 악마들에게 마나 -1 감소 X개를 나누어 적용합니다(최소 1)."
+      },
+      "paralysie": {
+        "label": "마비",
+        "desc": "이 유닛에게 피해를 입은 유닛은 다음 턴이 끝날 때까지 공격하거나 능력을 발동할 수 없습니다."
+      },
+      "permutation": {
+        "label": "교환",
+        "desc": "지정한 두 유닛(아군 하나, 적 하나)의 현재 체력을 서로 교환합니다."
+      },
+      "persecution": {
+        "label": "박해 X",
+        "desc": "이 유닛이 공격할 때마다 상대 영웅에게 피해를 X 줍니다."
+      },
+      "pietinement": {
+        "label": "짓밟기",
+        "desc": "공격 시, 대상 크리처의 체력을 초과한 피해는 상대 영웅에게 전달됩니다."
+      },
+      "catalyse": {
+        "label": "촉매",
+        "desc": "손에 있는 {race_pl}의 비용이 마나 1 감소합니다."
+      },
+      "ombre_du_passe": {
+        "label": "과거의 그림자",
+        "desc": "묘지에 있는 {race_bare} 유닛 하나당 +1/+1."
+      },
+      "profanation": {
+        "label": "모독 X",
+        "desc": "묘지의 카드를 최근 순으로 최대 X장 추방합니다: 추방한 카드 한 장당 +1/+1."
+      },
+      "prescience": {
+        "label": "예지 X",
+        "desc": "손에 카드가 X장이 될 때까지 카드를 뽑습니다."
+      },
+      "suprematie": {
+        "label": "우위",
+        "desc": "소환 시 손에 있는 카드 한 장당 공격력 +1, 체력 +1을 얻습니다."
+      },
+      "divination": {
+        "label": "점술",
+        "desc": "덱 맨 위 카드 3장을 공개하고, 1장은 맨 위에, 2장은 맨 아래에 원하는 순서로 놓습니다."
+      },
+      "savant": {
+        "label": "학자",
+        "desc": "묘지에 있는 액션 한 장당 공격력 +1, 체력 +1을 얻습니다."
+      },
+      "liaison_de_vie": {
+        "label": "생명 결속",
+        "desc": "받은 피해를 적 영웅과 나눕니다."
+      },
+      "ombre": {
+        "label": "그림자",
+        "desc": "행동(공격 또는 능력)을 하기 전에는 대상으로 지정되거나 공격받을 수 없습니다."
+      },
+      "sacrifice": {
+        "label": "희생",
+        "desc": "아군 하나를 파괴하여 그 체력과 공격력을 영구적으로 얻습니다."
+      },
+      "malefice": {
+        "label": "저주",
+        "desc": "죽을 때 모든 유닛(아군과 적)에게 X의 피해를 줍니다. X = 이 유닛의 공격력."
+      },
+      "synergie": {
+        "label": "시너지 X",
+        "desc": "등장 시 능력 하나를 선택합니다. 해당 능력이 발동할 때마다 +X/+X를 얻습니다(출처당 턴마다 1회)."
+      },
+      "etheree": {
+        "label": "영체",
+        "desc": "전투에서 한 번의 타격당 최대 1의 피해만 받습니다. 액션으로 받는 피해는 두 배가 됩니다."
+      },
+      "indestructible": {
+        "label": "불멸",
+        "desc": "전투 피해를 받지 않습니다."
+      },
+      "regeneration": {
+        "label": "재생 X",
+        "desc": "내 턴 시작 시 체력을 X 회복합니다."
+      },
+      "corruption": {
+        "label": "타락 X",
+        "desc": "비용이 X 이하인 적 유닛 하나를 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 추적을 얻습니다.",
+        "desc_any": "선택한 적 유닛을 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 턴 종료까지 추적을 얻습니다."
+      },
+      "carnage": {
+        "label": "대학살 X",
+        "desc": "필드의 모든 유닛(아군과 적)에게 X의 피해를 줍니다."
+      },
+      "heritage": {
+        "label": "유산 X",
+        "desc": "필드의 아군 유닛 모두가 공격력 +X와 체력 +X를 영구적으로 얻습니다."
+      },
+      "mimique": {
+        "label": "모방",
+        "desc": "대상으로 지정한 유닛의 모든 능력을 복사하여 이 유닛에게 영구적으로 부여합니다."
+      },
+      "metamorphose": {
+        "label": "변신",
+        "desc": "이 유닛은 대상으로 지정한 유닛(공격력 / 체력 / 능력)의 완전한 복사본이 됩니다."
+      },
+      "dedoublement": {
+        "label": "분열",
+        "desc": "이 크리처의 완전한 복사본을 필드에 생성합니다."
+      },
+      "tactique": {
+        "label": "전술 X",
+        "desc": "대상으로 지정한 아군 유닛에게 같은 비용의 크리처들이 가진 능력 중 무작위로 X개를 부여합니다."
+      },
+      "exhumation": {
+        "label": "발굴 X",
+        "desc": "내 묘지에서 마나 비용이 X 이하인 유닛 하나를 되살립니다.",
+        "desc_any": "비용에 관계없이 내 묘지에서 유닛 하나를 되살립니다."
+      },
+      "heritage_du_cimetiere": {
+        "label": "묘지의 유산",
+        "desc": "내 묘지에서 대상으로 지정한 유닛의 능력을 이 유닛에게 부여합니다."
+      },
+      "pacte_de_sang": {
+        "label": "피의 맹약",
+        "desc": "죽을 때 같은 종족의 1/1 토큰 두 개를 소환합니다."
+      },
+      "souffle_de_feu": {
+        "label": "불꽃 숨결 X",
+        "desc": "공격 시 모든 적 유닛에게 X의 피해를 줍니다(예: 불꽃 숨결 2 = 피해 2)."
+      },
+      "domination": {
+        "label": "지배 X",
+        "desc": "소환 시 비용이 X 이하인 무작위 적 유닛의 통제권을 가져옵니다.",
+        "desc_any": "소환 시 무작위 적 유닛의 통제권을 가져옵니다."
+      },
+      "resurrection": {
+        "label": "부활",
+        "desc": "죽은 후 체력 1로 다시 전장에 돌아오며, 돌아올 때 부활 능력을 잃습니다."
+      },
+      "transcendance": {
+        "label": "초월",
+        "desc": "적의 액션에 완전 면역: 범위 액션을 포함해 어떤 액션의 피해나 효과도 받지 않습니다."
+      },
+      "vampirisme": {
+        "label": "흡혈 X",
+        "desc": "대상으로 지정한 적 유닛의 체력을 최대 X만큼 빼앗아 이 유닛의 체력에 더합니다."
+      },
+      "traque_du_destin": {
+        "label": "운명의 추적 X",
+        "desc": "덱의 맨 위 카드 X장을 공개하고, 그중 1장을 손에 넣은 뒤 나머지는 덱 아래에 무작위로 놓습니다."
+      },
+      "sang_mele": {
+        "label": "혼혈",
+        "desc": "전장에 있는 아군의 서로 다른 종족 종류마다 공격력 +1, 체력 +1을 얻습니다."
+      },
+      "fierte_du_clan": {
+        "label": "氏族의 긍지",
+        "desc": "이 유닛이 전장에 있는 동안, 소환되는 {clan_de} 유닛은 +1/+1로 등장합니다."
+      },
+      "solidarite": {
+        "label": "연대 X",
+        "desc": "{race_bare} 유닛 2개를 더 조종하고 있다면 카드를 X장 뽑습니다."
+      },
+      "entraide": {
+        "label": "상부상조",
+        "desc": "전장에 있는 {race_bare} 아군 하나당 마나 비용이 1 감소합니다(중첩 가능, 최소 0)."
+      },
+      "cycle_eternel": {
+        "label": "영원한 순환",
+        "desc": "이 카드의 복사본 1장을 덱에 추가합니다. 그 카드를 뽑으면 즉시 전장에 내보냅니다."
+      },
+      "instinct_de_meute": {
+        "label": "무리의 본능 X",
+        "desc": "이번 턴에 {faction_de} 아군이 죽었다면 +X/+X."
+      },
+      "totem": {
+        "label": "토템",
+        "desc": "전장에 있는 {race_pl}의 능력을 얻습니다."
+      },
+      "appel_du_clan": {
+        "label": "氏族의 부름 X",
+        "desc": "덱 맨 위에서 비용이 X 이하인 첫 번째 {clan_de} 유닛을 무료로 전장에 내보냅니다.",
+        "desc_any": "덱 맨 위에서 첫 번째 {clan_de} 유닛을 무료로 전장에 내보냅니다."
+      },
+      "appel_supreme": {
+        "label": "지고의 부름",
+        "desc": "덱에서 비용이 가장 높은 카드를 손에 추가합니다(동률이면 무작위)."
+      },
+      "rassemblement": {
+        "label": "집결 X",
+        "desc": "덱의 맨 위 카드 X장을 공개하고, {race_pl}은(는) 손에 넣고 나머지는 버립니다."
+      },
+      "invocations_multiples": {
+        "label": "다중 소환",
+        "desc": "{invocations}을(를) 소환합니다."
+      },
+      "touche_mortel": {
+        "label": "치명타",
+        "desc": "이 유닛에게 피해를 입은 모든 크리처는 체력과 상관없이 죽습니다."
+      },
+      "selection": {
+        "label": "선별 X",
+        "desc": "비용이 X인 {alignment} 일반 카드 3장을 공개하고, 그중 1장을 손에 추가합니다.",
+        "desc_any": "{alignment} 일반 카드 3장을 공개하고, 그중 1장을 손에 추가합니다."
+      },
+      "faveur": {
+        "label": "은총 X",
+        "desc": "비용이 X인 {alignment} 일반 카드 1장을 무작위로 손에 추가합니다.",
+        "desc_any": "{alignment} 일반 카드 한 장을 무작위로 손으로 가져옵니다."
+      },
+      "forge": {
+        "label": "단조 X",
+        "desc": "중립 아이템 한 장{forge_align}{forge_cout}을(를) 무작위로 덱에 섞어 넣습니다.",
+        "desc_any": "중립 아이템 한 장{forge_align}{forge_cout_libre}을(를) 무작위로 덱에 섞어 넣습니다."
+      },
+      "selection_magique": {
+        "label": "마법 선택 X",
+        "desc": "비용 X인 {alignment} 일반 액션 3장을 공개하고, 그중 한 장을 손으로 가져옵니다.",
+        "desc_any": "{alignment} 일반 액션 3장을 공개하고, 그중 한 장을 손으로 가져옵니다."
+      },
+      "renfort_royal": {
+        "label": "왕실 선택 X",
+        "desc": "비용 X인 한정판 카드 3장을 공개하고(30장 이상 필요, 부족하면 {alignment} 일반 카드 3장) 그중 한 장을 가집니다.",
+        "desc_any": "한정판 카드 3장을 공개하고(30장 이상 필요, 부족하면 {alignment} 일반 카드 3장) 그중 한 장을 가집니다."
+      },
+      "tresor": {
+        "label": "보물 X",
+        "desc": "비용 X인 {alignment} 또는 중립 일반 아이템 3장을 공개하고, 그중 한 장을 손으로 가져옵니다.",
+        "desc_any": "{alignment} 또는 중립 일반 아이템 3장을 공개하고, 그중 한 장을 손으로 가져옵니다."
+      },
+      "lycanthropie": {
+        "label": "수인화 X",
+        "desc": "추적을 지닌 {lycanthrope}(으)로 변신합니다."
+      },
+      "relancer": {
+        "label": "재발동 X",
+        "desc": "마지막으로 사용한 액션 X개를 무작위 대상으로 다시 발동합니다."
+      },
+      "tempete": {
+        "label": "폭풍 X",
+        "desc": "적 유닛들에게 X 피해를 무작위로 나누어 입힙니다."
+      },
+      "canon": {
+        "label": "대포 X",
+        "desc": "무작위 적 유닛 하나에게 X 피해를 입힙니다."
+      },
+      "cataclysme": {
+        "label": "대재앙 X",
+        "desc": "모든 크리처(아군과 적군 모두)에게 X 피해를 입힙니다."
+      },
+      "affaiblissement": {
+        "label": "약화 -X/-Y",
+        "desc": "지정한 적 크리처에게 공격력 -X, 체력 -Y를 줍니다."
+      },
+      "renforcement": {
+        "label": "강화 +X/+Y",
+        "desc": "지정한 다른 아군 유닛에게 공격력 +X, 체력 +Y를 영구적으로 줍니다."
+      },
+      "discipline": {
+        "label": "규율 +X/+Y",
+        "desc": "내 필드의 모든 비용이 이 카드와 같은 홀짝이면, 지정한 다른 아군 유닛에게 +X/+Y를 영구적으로 줍니다."
+      },
+      "lien_du_sang": {
+        "label": "피의 유대 X",
+        "desc": "+X/+X를 얻고 체력이 허락하면 체력 X를 잃습니다."
+      },
+      "usurpation": {
+        "label": "찬탈 +X/+Y",
+        "desc": "내가 사용한 카드가 적 카드의 대상이 된 다른 아군 유닛에게 +X/+Y를 영구적으로 줍니다."
+      },
+      "esprit_de_corps": {
+        "label": "단결심",
+        "desc": "지금까지 발동한 단결심 한 번당 공격력 +1 또는 체력 +1을 무작위로 얻습니다."
+      },
+      "presage": {
+        "label": "전조",
+        "desc": "덱 맨 위 카드 3장을 순서를 섞어 공개하고, 맨 위 카드를 지목해 손으로 가져온 뒤 덱을 섞습니다."
+      },
+      "apprentissage": {
+        "label": "습득 X",
+        "desc": "손에서 비용 X 이하의 액션 한 장을 제거해 기억합니다. 크리처는 마나를 내지 않고 그 액션을 사용할 수 있습니다.",
+        "desc_any": "손에서 액션 한 장을 제거해 기억합니다. 크리처는 마나를 내지 않고 그 액션을 사용할 수 있습니다."
+      },
+      "impact": {
+        "label": "충격 X",
+        "desc": "적 대상(유닛 또는 영웅) 하나에게 X의 피해를 줍니다."
+      },
+      "inspiration": {
+        "label": "영감 X",
+        "desc": "카드를 X장 뽑습니다."
+      },
+      "afflux": {
+        "label": "쇄도 X",
+        "desc": "이번 턴에 마나를 X 얻습니다."
+      },
+      "epargne": {
+        "label": "저축 X",
+        "desc": "저축 수치에 X를 더합니다(최대 8)."
+      },
+      "foi": {
+        "label": "신앙 X",
+        "desc": "신앙에 X를 더합니다(최대 10). 소모: 비용이 신앙 이하인 덱의 카드 3장 중 1장을 발견합니다. 해당 비용만큼만 차감됩니다."
+      },
+      "conquete": {
+        "label": "정복 X",
+        "desc": "정복에 X를 더합니다(단계 3). 단계 도달 시: 상대 덱의 카드 3장 중 1장을 패로 가져오고, 수치는 0으로 초기화됩니다."
+      },
+      "exploration": {
+        "label": "탐험 X",
+        "desc": "탐험에 X를 더합니다. 3에 도달할 때마다 카드를 1장 뽑고 3을 차감합니다(나머지는 유지됩니다)."
+      },
+      "invention": {
+        "label": "발명 +X/+Y",
+        "desc": "기계에 +X/+Y{machine_part}를 더합니다(초기 0/1, 발명당 마나 1, 최대 6)."
+      },
+      "seconde_vie": {
+        "label": "두 번째 삶 X",
+        "desc": "마나 X로 묘지에서 낼 수 있습니다. 이후 두 번째 삶을 잃습니다."
+      },
+      "incineration": {
+        "label": "소각 X",
+        "desc": "대상으로 지정한 묘지의 무작위 카드 X장을 해당 소유자의 덱 아래로 되돌립니다."
+      },
+      "devoration": {
+        "label": "포식",
+        "desc": "대상 유닛 하나를 파괴하고, 이 크리처는 그 공격력과 체력을 영구적으로 얻습니다."
+      },
+      "creuser": {
+        "label": "파헤치기 X",
+        "desc": "덱 아래의 카드 X장을 확인하고, 그중 1장을 맨 위에 놓습니다."
+      },
+      "retour_differe": {
+        "label": "지연 귀환 X",
+        "desc": "비용이 X 이하인 대상 유닛을 소유자의 덱 아래에 놓습니다.",
+        "desc_any": "대상 유닛을 소유자의 덱 아래에 놓습니다."
+      },
+      "concentration": {
+        "label": "집중 X",
+        "desc": "패의 각 액션이 비용 +X의 무작위 액션으로 바뀐 뒤 X만큼 감소합니다(모든 진영)."
+      },
+      "remontee": {
+        "label": "회수 X",
+        "desc": "대상 유닛 X개를 원래 소유자의 패로 되돌립니다."
+      },
+      "entrainement": {
+        "label": "훈련 X",
+        "desc": "패에 있는 {faction_de} 크리처에게 +X/+X를 부여합니다."
+      },
+      "fortifier": {
+        "label": "강화 +X/+Y",
+        "desc": "덱 맨 위부터 첫 번째 크리처가 영구적으로 공격력 +X, 체력 +Y를 얻습니다."
+      },
+      "preincanter": {
+        "label": "사전 시전 X",
+        "desc": "덱 맨 위부터 첫 번째 액션의 비용이 영구적으로 마나 X만큼 감소합니다(최소 1)."
+      },
+      "conferer": {
+        "label": "부여",
+        "desc": "{scope}에 {ability}를 부여합니다."
+      },
+      "declenchement": {
+        "label": "발동",
+        "desc": "다른 아군이 가진 복합 효과(입장 / 죽음 / 턴 종료 / 귀환)를 한 번 다시 발동합니다."
+      },
+      "dechainement": {
+        "label": "폭주 X/Y",
+        "desc": "당신의 컬렉션({alignment})에서 비용이 Y인 무작위 액션 X개를 무작위 대상에게 사용합니다.",
+        "desc_any": "당신의 컬렉션({alignment})에서 무작위 액션 X개를 무작위 대상에게 사용합니다."
+      },
+      "force_des_ancetres": {
+        "label": "선조의 힘 +X/+Y",
+        "desc": "묘지에 크리처가 7장 이상인 동안 공격력 +X, 체력 +Y를 얻습니다."
+      },
+      "purete": {
+        "label": "순수 +X/+Y",
+        "desc": "묘지가 비어 있는 동안 공격력 +X, 체력 +Y를 얻습니다."
+      },
+      "seuil_sacrificiel": {
+        "label": "희생의 문턱 +X/+Y",
+        "desc": "덱이 25장 이하인 동안 공격력 +X, 체력 +Y를 얻습니다."
+      },
+      "compagnons": {
+        "label": "동료",
+        "desc": "자신의 동료(제작 시 선택한 연결된 카드)를 덱에 섞은 뒤 덱을 다시 섞습니다. 한 번만 가능합니다."
+      },
+      "tuteur": {
+        "label": "스승",
+        "desc": "제작 시 지정된 카드를 손으로 가져옵니다(같은 카드를 여러 번 지정할 수 있습니다)."
+      },
+      "execution": {
+        "label": "처형 X",
+        "desc": "비용이 X 이하인 대상 적 유닛 하나를 파괴합니다.",
+        "desc_any": "대상 적 유닛 하나를 파괴합니다."
+      },
+      "silence": {
+        "label": "침묵",
+        "desc": "대상으로 지정한 다른 유닛의 모든 키워드를 제거하고 능력치를 원래 값으로 되돌립니다."
+      },
+      "guerison": {
+        "label": "치유 X",
+        "desc": "대상으로 지정한 다른 아군 유닛 또는 당신의 영웅의 체력을 X 회복합니다."
+      },
+      "mutation": {
+        "label": "돌연변이 X",
+        "desc": "손에 있을 때: 비용이 X인 일반 크리처 2장 중에서 발견합니다. 각자의 최고 공격력과 체력, 그리고 능력 1개씩을 얻습니다."
+      },
+      "infestation": {
+        "label": "감염 X",
+        "desc": "이 유닛의 복사본 X장을 덱에 섞습니다. 복사본을 뽑으면 소환되고 카드를 한 장 더 뽑습니다."
+      },
+      "enterrement": {
+        "label": "매장 X",
+        "desc": "대상 플레이어의 덱 맨 위 카드 X장을 묘지로 보냅니다(부족한 카드마다 피로 피해)."
+      }
+    },
+    "spell_keywords": {
+      "touche_mortel": {
+        "label": "치명타",
+        "desc": "이 액션으로 피해를 입은 크리처는 체력과 상관없이 죽습니다."
+      },
+      "precision": {
+        "label": "정밀",
+        "desc": "이 액션의 피해는 저항, 방어구, 보호막을 무시합니다."
+      },
+      "poison": {
+        "label": "독",
+        "desc": "피해를 입은 유닛은 매 턴 체력을 1 잃습니다."
+      },
+      "benediction": {
+        "label": "축복",
+        "desc": "대상 아군 유닛의 체력을 완전히 회복합니다."
+      },
+      "pillage": {
+        "label": "약탈 X",
+        "desc": "상대는 손에서 무작위 카드 X장을 버립니다."
+      },
+      "contresort": {
+        "label": "반격 액션 X",
+        "desc": "상대의 다음 액션 X개를 무효화합니다."
+      },
+      "exclusion": {
+        "label": "추방 X",
+        "desc": "상대의 다음 유닛 소환 X회를 무효화합니다."
+      },
+      "convocation_simple": {
+        "label": "소집",
+        "desc": "{token}을(를) 생성합니다."
+      },
+      "seuil_colere": {
+        "label": "분노의 문턱 X",
+        "desc": "덱에 남은 카드가 25장 이하라면, 이 액션은 피해를 X 더 줍니다."
+      },
+      "chant": {
+        "label": "노래 X",
+        "desc": "노래를 가진 크리처를 조종하고 있다면, 이 액션의 모든 수치가 X 증가합니다."
+      },
+      "lune": {
+        "label": "달 X",
+        "desc": "한 턴에 두 번째로 사용하는 카드부터, 이 카드의 모든 수치가 X 증가합니다."
+      },
+      "soleil": {
+        "label": "태양 X",
+        "desc": "이번 턴에 처음으로 사용하는 카드라면, 이 카드의 모든 수치가 X 증가합니다."
+      },
+      "divination": {
+        "label": "점술",
+        "desc": "덱 맨 위 카드 3장을 공개합니다. 1장은 맨 위에, 2장은 맨 아래에 원하는 순서로 되돌려 놓습니다."
+      },
+      "malediction": {
+        "label": "저주 X",
+        "desc": "비용이 X 이하인 대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다",
+        "desc_any": "대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다"
+      },
+      "corruption": {
+        "label": "타락 X",
+        "desc": "비용이 X 이하인 대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추적을 얻습니다.",
+        "desc_any": "대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추적을 얻습니다."
+      },
+      "domination": {
+        "label": "지배 X",
+        "desc": "비용이 X 이하인 대상 적 유닛의 통제권을 얻습니다.",
+        "desc_any": "대상 적 유닛의 통제권을 얻습니다."
+      },
+      "appel_du_clan": {
+        "label": "氏族의 부름 X",
+        "desc": "덱에서 비용이 X 이하인 첫 번째 {clan_de} 유닛을 무료로 필드에 내보냅니다.",
+        "desc_any": "덱에서 첫 번째 {clan_de} 유닛을 무료로 필드에 내보냅니다."
+      },
+      "appel_supreme": {
+        "label": "지고의 부름",
+        "desc": "덱에서 비용이 가장 높은 카드를 패에 추가합니다(동률이면 무작위)."
+      },
+      "rassemblement": {
+        "label": "결집 X",
+        "desc": "덱 맨 위 카드 X장을 공개합니다. {race_pl}은(는) 패에 가져오고 나머지는 버립니다."
+      },
+      "rappel": {
+        "label": "회수 X",
+        "desc": "묘지에서 비용이 X 이하인 카드 1장을 패로 되돌립니다",
+        "desc_any": "묘지에서 카드 1장을 패로 되돌립니다"
+      },
+      "exhumation": {
+        "label": "발굴 X",
+        "desc": "묘지에서 비용이 X 이하인 크리처 1장을 필드에 되살립니다",
+        "desc_any": "비용에 상관없이 묘지에서 크리처 1장을 필드에 되살립니다"
+      },
+      "selection": {
+        "label": "선별 X",
+        "desc": "비용이 X인 {alignment} 일반 카드 3장을 공개합니다. 그중 1장을 패에 추가합니다",
+        "desc_any": "{alignment} 일반 카드 3장을 공개합니다. 그중 1장을 패에 추가합니다"
+      },
+      "forge": {
+        "label": "단조 X",
+        "desc": "중립 아이템{forge_align}{forge_cout} 1개를 무작위로 덱에 섞어 넣습니다",
+        "desc_any": "무작위 중립 아이템 1장{forge_align}{forge_cout_libre}을(를) 덱에 섞어 넣습니다"
+      },
+      "faveur": {
+        "label": "은총 X",
+        "desc": "비용이 X인 {alignment} 일반 카드 1장을 무작위로 패에 추가합니다",
+        "desc_any": "{alignment} 일반 카드 1장을 무작위로 패에 추가합니다"
+      },
+      "selection_magique": {
+        "label": "마법 선택 X",
+        "desc": "비용이 X인 {alignment} 일반 액션 3장을 공개하고, 그중 1장을 패에 추가합니다",
+        "desc_any": "{alignment} 일반 액션 3장을 공개하고, 그중 1장을 패에 추가합니다"
+      },
+      "tresor": {
+        "label": "보물 X",
+        "desc": "비용이 X인 {alignment} 또는 중립 일반 아이템 3장을 공개하고, 그중 1장을 패에 추가합니다",
+        "desc_any": "{alignment} 또는 중립 일반 아이템 3장을 공개하고, 그중 1장을 패에 추가합니다"
+      },
+      "renfort_royal": {
+        "label": "왕실 선택 X",
+        "desc": "비용이 X인 한정판 카드 3장을 공개하고(30장 이상 필요, 부족하면 {alignment} 일반 카드 3장), 그중 1장을 가집니다",
+        "desc_any": "보유한 한정판 카드 3장을 공개하고(30장 이상 필요, 부족하면 {alignment} 일반 카드 3장), 그중 1장을 가집니다"
+      },
+      "relancer": {
+        "label": "재시전 X",
+        "desc": "마지막으로 사용한 액션 X개를 무작위 대상으로 다시 사용합니다"
+      },
+      "dechainement": {
+        "label": "폭주 X/Y",
+        "desc": "컬렉션({alignment})에서 비용이 Y인 무작위 액션 X개를 무작위 대상으로 사용합니다.",
+        "desc_any": "컬렉션({alignment})에서 무작위 액션 X개를 무작위 대상으로 사용합니다"
+      },
+      "invocation": {
+        "label": "소환 X",
+        "desc": "컬렉션({alignment}, 현재 포맷)에서 비용이 X인 무작위 크리처 1장을 소환합니다.",
+        "desc_any": "컬렉션({alignment}, 현재 포맷)에서 무작위 크리처 1장을 소환합니다"
+      },
+      "impact": {
+        "label": "충격 X",
+        "desc": "적 대상 1명(유닛 또는 영웅)에게 X의 피해를 줍니다."
+      },
+      "canon": {
+        "label": "대포 X",
+        "desc": "무작위 적 유닛 1명에게 X의 피해를 줍니다."
+      },
+      "deferlement": {
+        "label": "쇄도 X",
+        "desc": "모든 적 크리처에게 X의 피해를 줍니다"
+      },
+      "boomerang": {
+        "label": "부메랑",
+        "desc": "이 액션은 해결된 후 무덤으로 가지 않고 덱에 섞입니다."
+      },
+      "siphon": {
+        "label": "흡수 X",
+        "desc": "대상 1명에게 X의 피해를 주고 같은 양만큼 내 영웅을 회복시킵니다"
+      },
+      "entrave": {
+        "label": "속박 X",
+        "desc": "대상으로 지정한 적 크리처를 X턴 동안 마비시킵니다"
+      },
+      "execution": {
+        "label": "처형 X",
+        "desc": "비용이 X 이하인 대상 크리처 또는 아이템 1개를 파괴합니다",
+        "desc_any": "대상 크리처 또는 아이템 1개를 파괴합니다"
+      },
+      "silence": {
+        "label": "침묵",
+        "desc": "대상 크리처의 모든 키워드를 제거하고 능력치를 원래 값으로 되돌립니다. 아이템은 키워드만 제거하고 능력치는 유지합니다"
+      },
+      "renforcement": {
+        "label": "강화 +X/+Y",
+        "desc": "대상으로 지정한 아군 크리처에게 +X/+Y를 부여합니다."
+      },
+      "discipline": {
+        "label": "규율 +X/+Y",
+        "desc": "필드에 있는 아군 크리처의 비용이 모두 이 액션의 비용과 홀짝이 같다면, 대상으로 지정한 아군 크리처에 +X/+Y를 부여합니다."
+      },
+      "usurpation": {
+        "label": "찬탈 +X/+Y",
+        "desc": "당신이 사용한 카드가 상대의 카드를 대상으로 지정했다면, 대상으로 지정한 아군 크리처에 +X/+Y를 부여합니다."
+      },
+      "affaiblissement": {
+        "label": "약화 -X/-Y",
+        "desc": "대상으로 지정한 적 크리처에게 공격력 -X, 체력 -Y를 부여합니다."
+      },
+      "guerison": {
+        "label": "치유 X",
+        "desc": "아군 유닛 또는 당신의 영웅의 체력을 X 회복합니다."
+      },
+      "seconde_vie": {
+        "label": "두 번째 생명 X",
+        "desc": "묘지에서 마나 X로 사용할 수 있습니다. 사용하면 두 번째 생명을 잃습니다."
+      },
+      "incineration": {
+        "label": "소각 X",
+        "desc": "대상으로 지정한 묘지의 카드 X장을 무작위로 골라 그 주인의 덱 아래로 되돌립니다"
+      },
+      "creuser": {
+        "label": "파헤치기 X",
+        "desc": "덱 아래의 카드 X장을 확인하고, 그중 한 장을 맨 위에 놓습니다"
+      },
+      "presage": {
+        "label": "전조",
+        "desc": "덱 위의 카드 3장을 무작위 순서로 공개합니다. 맨 위의 카드를 지정해 손으로 가져온 뒤 덱을 섞습니다."
+      },
+      "retour_differe": {
+        "label": "지연 회수 X",
+        "desc": "비용이 X 이하인 대상 유닛 또는 아이템을 그 주인의 덱 아래에 놓습니다",
+        "desc_any": "대상 유닛 또는 아이템을 그 주인의 덱 아래에 놓습니다"
+      },
+      "epargne": {
+        "label": "저축 X",
+        "desc": "저축 수치에 X를 더합니다 (최대 8)"
+      },
+      "foi": {
+        "label": "신앙 X",
+        "desc": "신앙에 X를 더합니다 (최대 10). 소모: 덱에서 비용이 신앙 이하인 카드 3장 중 1장을 발견합니다. 해당 비용만큼만 차감됩니다"
+      },
+      "conquete": {
+        "label": "정복 X",
+        "desc": "정복에 X를 더합니다 (단계 3). 단계 달성 시: 상대 덱의 카드 3장 중 1장을 손으로 가져오고, 수치는 0으로 초기화됩니다"
+      },
+      "exploration": {
+        "label": "탐험 X",
+        "desc": "탐험에 X를 더합니다. 3에 도달할 때마다 카드 한 장을 뽑고 3을 차감합니다 (나머지는 유지)"
+      },
+      "invention": {
+        "label": "발명 +X/+Y",
+        "desc": "당신의 기계에 +X/+Y{machine_part}를 더합니다 (초기 0/1, 발명당 마나 1, 최대 6)"
+      },
+      "inspiration": {
+        "label": "영감 X",
+        "desc": "카드 X장을 뽑습니다"
+      },
+      "remontee": {
+        "label": "회귀 X",
+        "desc": "대상으로 지정한 유닛 또는 아이템 X개를 원래 주인의 손으로 되돌립니다."
+      },
+      "entrainement": {
+        "label": "훈련 X",
+        "desc": "손에 있는 {faction_de} 크리처에 +X/+X를 부여합니다."
+      },
+      "fortifier": {
+        "label": "강화 +X/+Y",
+        "desc": "덱 맨 위에서부터 첫 번째 크리처가 영구적으로 공격력 +X, 체력 +Y를 얻습니다."
+      },
+      "preincanter": {
+        "label": "선영창 X",
+        "desc": "덱 맨 위에서부터 첫 번째 액션의 비용이 영구적으로 마나 X 감소합니다 (최소 1)."
+      },
+      "concentration": {
+        "label": "집중 X",
+        "desc": "손에 있는 각 액션이 비용 +X의 무작위 액션으로 바뀌며, 비용이 X만큼 감소합니다 (모든 진영)."
+      },
+      "invocations_multiples": {
+        "label": "다중 소환",
+        "desc": "{invocations}을(를) 소환합니다."
+      },
+      "invocation_multiple": {
+        "label": "다중 창조",
+        "desc": "{tokens}을(를) 만듭니다."
+      },
+      "tempete": {
+        "label": "폭풍 X",
+        "desc": "적 유닛들에게 무작위로 나누어 X의 피해를 줍니다."
+      },
+      "cataclysme": {
+        "label": "대재앙 X",
+        "desc": "모든 크리처(아군 및 적)에게 X의 피해를 줍니다."
+      },
+      "afflux": {
+        "label": "쇄도 X",
+        "desc": "이번 턴에 마나 X를 얻습니다"
+      },
+      "compagnons": {
+        "label": "동료",
+        "desc": "동료(제작 시 선택한 연결된 카드)를 덱에 섞은 뒤 덱을 다시 섞습니다. 한 번만 가능합니다."
+      },
+      "tuteur": {
+        "label": "튜터",
+        "desc": "제작 시 지정된 카드를 손으로 가져옵니다 (같은 카드를 여러 번 지정할 수 있습니다)."
+      },
+      "enterrement": {
+        "label": "매장 X",
+        "desc": "대상 플레이어의 덱 위에서 X장의 카드를 묘지로 보냅니다"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "등장 시",
+        "on_death": "죽을 때",
+        "on_return": "손으로 돌아올 때",
+        "on_activation": "활성화 시",
+        "on_attack": "공격 시",
+        "on_end_of_turn": "턴 종료 시",
+        "on_end_of_turn_in_hand": "턴 종료 시, 손에 있는 동안",
+        "on_start_of_turn": "턴 시작 시",
+        "on_start_of_turn_in_hand": "턴 시작 시, 손에 있는 동안",
+        "in_hand_suffix": "손에서",
+        "on_draw": "이 카드를 뽑았을 때",
+        "on_low_hp": "체력 15 미만",
+        "on_wound": "부상",
+        "on_delay": "지연 {d}",
+        "on_end_of_turn_in_graveyard": "턴 종료 시, 묘지에 있는 동안",
+        "in_graveyard_suffix": "묘지에서"
+      },
+      "siphon": {
+        "heal": "그리고 내 영웅의 체력을 {x} 회복합니다",
+        "heal_each": "그리고 적중한 대상마다 내 영웅의 체력을 {x} 회복합니다",
+        "heal_scatter": "그리고 내 영웅의 체력을 총 {x} 회복합니다"
+      },
+      "neutralise": {
+        "suite_one": ": 마비되어 능력이 효과를 잃습니다",
+        "suite_many": ": 마비되어 능력이 효과를 잃습니다",
+        "tant_que": "필드에 있는 동안"
+      },
+      "malediction": {
+        "suite_one": ", 다음 상대 턴 종료 시 추방됩니다",
+        "suite_many": ", 다음 상대 턴 종료 시 추방됩니다"
+      },
+      "domination": {
+        "limit": "빈 자리 한도 내에서"
+      },
+      "content": {
+        "deal_damage_one": "피해 {x}를 줍니다",
+        "deal_damage_many": "피해 {x}를 줍니다",
+        "heal": "체력 {x}을 회복합니다",
+        "buff": "+{x}/+{y}를 부여합니다",
+        "usurpation": "상대가 카드를 낼 때마다 +{x}/+{y}를 부여합니다",
+        "debuff": "-{x}/-{y}를 줍니다",
+        "destroy": "파괴합니다",
+        "domination": "조종권을 얻습니다:",
+        "bounce": "손으로 되돌립니다",
+        "paralyze": "마비시킵니다",
+        "transformation": "변신시킵니다",
+        "transformation_en_one": "지정된 카드로",
+        "transformation_en_many": "지정된 카드 {n}장 중 무작위 한 장으로",
+        "paralyze_turns_one": "{n}턴 동안",
+        "paralyze_turns_many": "{n}턴 동안",
+        "poison": "중독시킵니다",
+        "malediction": "저주합니다",
+        "neutralise": "무력화합니다",
+        "grant_keyword": "{ability}를 부여합니다",
+        "random_range": "1~{max}",
+        "random_range_from": "{min}~{max}",
+        "appel": "덱에서 비용 {x} 이하인 첫 번째 유닛을 필드에 내놓습니다",
+        "appel_item": "덱에서 비용 {x} 이하인 첫 번째 아이템을 필드에 내놓습니다",
+        "ability_generic": "능력",
+        "draw_cards_one": "카드 {x}장을 뽑습니다",
+        "draw_cards_many": "카드 {x}장을 뽑습니다",
+        "discard_filtered_one": "상대가 무작위로 카드{filter} {x}장을 버립니다",
+        "discard_filtered_many": "상대가 무작위로 카드{filter} {x}장을 버립니다",
+        "discard_one": "상대가 무작위로 카드 {x}장을 버립니다",
+        "discard_many": "상대가 무작위로 카드 {x}장을 버립니다",
+        "summon_one": "{token} 하나를 소환합니다",
+        "summon_many": "{token} {x}개를 소환합니다",
+        "token_one": "토큰",
+        "token_many": "토큰",
+        "gain_mana": "이번 턴에 마나 {x}를 얻습니다",
+        "exhumation": "묘지에서 {who} 부활시킵니다 (비용 {x} 이하)",
+        "exhum_one": "크리처 하나를",
+        "exhum_all": "모든 크리처를",
+        "exhum_upto": "최대 {n}장의 크리처",
+        "exhumation_item": "무덤에 있는 {who}을(를) 다시 필드에 내보냅니다 (비용 ≤ {x})",
+        "exhum_item_one": "아이템 1개",
+        "exhum_item_all": "모든 아이템",
+        "exhum_item_upto": "최대 {n}개의 아이템",
+        "exhum_uoi_one": "크리처 1장 또는 아이템 1개",
+        "exhum_uoi_all": "모든 크리처와 모든 아이템",
+        "exhum_uoi_upto": "최대 {n}개의 크리처 또는 아이템",
+        "rappel_one_item": "아이템 1개",
+        "rappel_all_item": "모든 아이템",
+        "rappel_upto_item": "최대 {n}개의 아이템",
+        "rappel_one_creature_item": "유닛 1장 또는 아이템 1개",
+        "rappel_all_creature_item": "모든 유닛과 모든 아이템",
+        "rappel_upto_creature_item": "최대 {n}개의 유닛 또는 아이템",
+        "rappel_one_spell_item": "액션 1장 또는 아이템 1개",
+        "rappel_all_spell_item": "모든 액션과 모든 아이템",
+        "rappel_upto_spell_item": "최대 {n}개의 액션 또는 아이템",
+        "draw_items_one": "덱에서 아이템 {x}개를 뽑습니다",
+        "draw_items_many": "덱에서 아이템 {x}개를 뽑습니다",
+        "draw_filtered_one": "덱에서{filter} 카드 {x}장을 뽑습니다",
+        "draw_filtered_many": "덱에서{filter} 카드 {x}장을 뽑습니다",
+        "invocation_item": "비용 {x}{filter}의 무작위 아이템을 장착합니다",
+        "rappel": "무덤에 있는 {who}을(를) 손으로 되돌립니다{cost}",
+        "rappel_cost": " (비용 ≤ {max})",
+        "rappel_one_any": "카드 1장",
+        "rappel_one_creature": "유닛 1장",
+        "rappel_one_spell": "액션 1장",
+        "rappel_all_any": "모든 카드",
+        "rappel_all_creature": "모든 유닛",
+        "rappel_all_spell": "모든 액션",
+        "rappel_upto_any": "최대 {n}장의 카드",
+        "rappel_upto_creature": "최대 {n}장의 유닛",
+        "rappel_upto_spell": "최대 {n}장의 액션",
+        "invocation": "비용 {x}{filter}의 무작위 크리처를 소환합니다",
+        "invocation_card": "지정된 카드를 소환합니다",
+        "invocation_card_item": "지정된 아이템을 장착합니다",
+        "invocation_cards_item": "지정된 아이템 {n}개를 장착합니다",
+        "invocation_copies_item": "지정된 아이템의 복사본 {n}개를 장착합니다",
+        "invocation_cards": "지정된 카드 {n}장을 소환합니다",
+        "invocation_copies": "지정된 카드의 복사본 {n}장을 소환합니다",
+        "tuteur": "지정한 카드를 패에 추가합니다",
+        "tuteur_copies": "지정한 카드 {n}장을 패에 추가합니다",
+        "appel_supreme": "덱에서 비용이 가장 높은 카드{filter}{cost}를 패에 추가합니다",
+        "appel_supreme_cost": " (비용 {max} 이하)",
+        "tuteur_many": "지정한 카드 {n}장을 패에 추가합니다",
+        "epargne": "절약 카운터에 {x}를 추가합니다",
+        "foi": "신앙 카운터에 {x}를 추가합니다",
+        "conquete": "정복 카운터에 {x}를 추가합니다",
+        "exploration": "탐험 카운터에 {x}를 추가합니다",
+        "incineration": "지정한 묘지의 카드 {x}장을 덱 아래로 되돌립니다",
+        "incineration_cible": "{cartes} {zone} {deck} 아래로 되돌립니다",
+        "occurrences": "{n}회: ",
+        "alternative": "택일: ",
+        "devoration": "집어삼킵니다",
+        "silence": "침묵시킵니다",
+        "dechainement": "비용 {y}의 무작위 액션 {x}개를 사용합니다",
+        "dechainement_one": "비용 {y}의 무작위 액션 1개를 사용합니다",
+        "tactique_one": "비용이 같은 크리처의 능력 1개를 무작위로 부여합니다",
+        "tactique_many": "비용이 같은 크리처의 능력 {x}개를 무작위로 부여합니다",
+        "retour_differe": "주인의 덱 아래에 놓습니다",
+        "retour_differe_cible": "{target}을(를) {proprio}의 덱 아래에 놓습니다",
+        "proprio_one": "그 주인",
+        "proprio_many": "각각의 주인",
+        "selection": "카드{filter} 3장(비용 {x})을 공개하고 그중 1장을 패에 넣습니다",
+        "faveur": "카드{filter} 1장(비용 {x})을 무작위로 패에 추가합니다",
+        "selection_magique": "액션{filter} 3장(비용 {x})을 공개하고 그중 1장을 패에 넣습니다",
+        "renfort_royal": "컬렉션 카드{filter} 3장(비용 {x})을 공개하고 그중 1장을 패에 넣습니다",
+        "tresor": "아이템{filter} 3개(비용 {x})를 공개하고 그중 1개를 패에 넣습니다",
+        "selection_any": "카드{filter} 3장을 공개하고 그중 1장을 패에 넣습니다",
+        "faveur_any": "카드{filter} 1장을 무작위로 패에 추가합니다",
+        "selection_magique_any": "액션{filter} 3장을 공개하고 그중 1장을 패에 넣습니다",
+        "renfort_royal_any": "컬렉션 카드{filter} 3장을 공개하고 그중 1장을 패에 넣습니다",
+        "tresor_any": "아이템{filter} 3개를 공개하고 그중 1개를 패에 넣습니다",
+        "forge": "중립 또는 자신의 성향에 맞는 비용 {x} 이하의 아이템{filter} 1개를 무작위로 덱에 섞어 넣습니다",
+        "forge_range": "중립 또는 자신의 성향에 맞는 비용 {min} 이상 {x} 이하의 아이템{filter} 1개를 무작위로 덱에 섞어 넣습니다",
+        "forge_any": "중립 또는 자신의 성향에 맞는 아이템{filter} 1개를 무작위로 덱에 섞어 넣습니다",
+        "forge_any_min": "중립 또는 자신의 성향에 맞는 비용 {min} 이상의 아이템{filter} 1개를 무작위로 덱에 섞어 넣습니다",
+        "invocation_any": "무작위 크리처{filter}를 소환합니다",
+        "invocation_item_any": "무작위 아이템{filter}을 놓습니다",
+        "exhumation_any": "묘지에서 {who}을(를) 부활시킵니다",
+        "exhumation_item_any": "당신의 묘지에서 {who}을(를) 다시 필드에 올립니다",
+        "exhumation_enemy": "상대 묘지에서 {who}을(를) 당신의 지배하에 되살립니다 (비용 ≤ {x})",
+        "exhumation_item_enemy": "상대 묘지에서 {who}을(를) 당신의 지배하에 다시 필드에 올립니다 (비용 ≤ {x})",
+        "exhumation_enemy_any": "상대 묘지에서 {who}을(를) 당신의 지배하에 되살립니다",
+        "exhumation_item_enemy_any": "상대 묘지에서 {who}을(를) 당신의 지배하에 다시 필드에 올립니다",
+        "exhumation_both": "아무 묘지에서 {who}을(를) 당신의 지배하에 되살립니다 (비용 ≤ {x})",
+        "exhumation_item_both": "아무 묘지에서 {who}을(를) 당신의 지배하에 다시 필드에 올립니다 (비용 ≤ {x})",
+        "exhumation_both_any": "아무 묘지에서 {who}을(를) 당신의 지배하에 되살립니다",
+        "exhumation_item_both_any": "아무 묘지에서 {who}을(를) 당신의 지배하에 다시 필드에 올립니다",
+        "appel_any": "덱의 첫 번째 유닛을 필드에 내보냅니다",
+        "appel_item_any": "덱의 첫 번째 아이템을 필드에 내보냅니다",
+        "dechainement_any": "무작위 액션 {x}개를 사용합니다",
+        "dechainement_one_any": "무작위 액션 1개를 사용합니다",
+        "enterrement_one": "첫 번째 카드{filter}을(를) {deck}에 놓습니다",
+        "enterrement_many": "처음 {x}장의 카드{filter}을(를) {deck}에 놓습니다"
+      },
+      "self": {
+        "transformation": "변신합니다",
+        "deal_damage_one": "스스로에게 피해 {x}를 입힙니다",
+        "deal_damage_many": "스스로에게 피해 {x}를 입힙니다",
+        "heal": "체력을 {x} 회복합니다",
+        "buff": "스스로 +{x}/+{y}를 얻습니다",
+        "usurpation": "상대가 낸 카드 1장당 스스로 +{x}/+{y}를 얻습니다",
+        "debuff": "스스로 -{x}/-{y}를 받습니다",
+        "destroy": "스스로 파괴됩니다",
+        "bounce": "스스로 손으로 돌아갑니다",
+        "paralyze": "스스로 마비됩니다",
+        "poison": "스스로 중독됩니다",
+        "malediction": "스스로 저주받습니다",
+        "neutralise": "스스로 무력화됩니다",
+        "grant_keyword": "스스로 {ability}을(를) 얻습니다"
+      },
+      "choice": {
+        "transformation": "변신시킬 크리처를 선택하세요",
+        "deal_damage": "피해를 입힐 대상을 선택하세요",
+        "siphon": "흡수할 대상을 선택하세요",
+        "domination": "지배할 크리처를 선택하세요",
+        "heal": "치유할 대상을 선택하세요",
+        "buff": "강화할 크리처를 선택하세요",
+        "usurpation": "강화할 크리처를 선택하세요",
+        "debuff": "약화시킬 크리처를 선택하세요",
+        "destroy": "파괴할 크리처를 선택하세요",
+        "bounce": "손으로 되돌릴 크리처를 선택하세요",
+        "paralyze": "마비시킬 크리처를 선택하세요",
+        "poison": "중독시킬 크리처를 선택하세요",
+        "malediction": "저주할 크리처를 선택하세요",
+        "neutralise": "무력화할 크리처를 선택하세요",
+        "grant_keyword": "능력을 부여할 크리처를 선택하세요",
+        "exhumation": "되살릴 크리처를 선택하세요",
+        "rappel": "손으로 되돌릴 카드를 선택하세요",
+        "default": "대상을 선택하세요"
+      },
+      "emblem": {
+        "badge": "문장",
+        "self": "문장",
+        "opponent": "상대에게 설치된 문장",
+        "permanent": " (영구)",
+        "turns_one": " ({n}턴)",
+        "turns_many": " ({n}턴)",
+        "owner_self": "내",
+        "owner_opponent": "상대의",
+        "hero_self": "내 영웅의 체력이",
+        "hero_opponent": "상대 영웅의 체력이",
+        "turn_self": "내",
+        "turn_opponent": "상대의",
+        "when": {
+          "on_play": "{owner} 크리처가 필드에 나올 때마다",
+          "on_death": "{owner} 크리처가 죽을 때마다",
+          "on_attack": "{owner} 크리처가 공격할 때마다",
+          "on_return": "{owner} 크리처가 손으로 돌아올 때마다",
+          "on_activation": "{owner} 크리처가 활성화될 때마다",
+          "on_low_hp": "{hero} {n} 아래로 떨어질 때마다",
+          "on_end_of_turn": "{turn} 턴 종료 시",
+          "on_start_of_turn": "{turn} 턴 시작 시"
+        }
+      },
+      "grant_when": {
+        "on_play": ", 필드에 나올 때 발동합니다",
+        "on_death": ", 죽을 때 발동합니다",
+        "on_activation": ", 활성화될 때 발동합니다",
+        "on_return": ", 손으로 돌아올 때 발동합니다",
+        "on_end_of_turn": ", 턴 종료 시 발동합니다",
+        "on_start_of_turn": ", 턴 시작 시 발동합니다",
+        "on_attack": ", 공격할 때 발동합니다",
+        "on_draw": ", 뽑을 때 발동합니다",
+        "on_low_hp": ", 체력이 15 아래일 때 발동합니다",
+        "on_wound": ", 죽지 않고 부상을 입었을 때 발동합니다",
+        "on_end_of_turn_in_hand": ", 손에 있는 동안 턴 종료 시 발동합니다",
+        "on_start_of_turn_in_hand": ", 손에 있는 동안 턴 시작 시 발동합니다",
+        "on_end_of_turn_in_graveyard": ", 묘지에 있는 동안 턴 종료 시 발동합니다",
+        "on_delay": ", {n}턴 후에 발동합니다"
+      },
+      "incin": {
+        "zone_ally": "내 무덤의",
+        "zone_enemy": "상대 무덤의",
+        "zone_any": "무덤의",
+        "zone_both": "양쪽 무덤의",
+        "deck_ally": "내 덱",
+        "deck_enemy": "상대 덱",
+        "deck_any": "소유자의 덱",
+        "deck_both": "각 소유자의 덱",
+        "card_all": "모든 카드",
+        "card_one": "카드 1장",
+        "card_n": "카드 {n}장",
+        "unit_all": "모든 유닛",
+        "unit_one": "유닛 1개",
+        "unit_n": "유닛 {n}개",
+        "spell_all": "모든 액션",
+        "spell_one": "액션 1개",
+        "spell_n": "액션 {n}개",
+        "item_all": "모든 아이템",
+        "item_one": "아이템 1개",
+        "item_n": "아이템 {n}개"
+      },
+      "pool": {
+        "race": " 종족이 {v}인",
+        "faction": " 진영이 {v}인",
+        "clan": " 클랜이 {v}인",
+        "keyword": " {v} 능력을 가진",
+        "type_creature": " 유닛 유형의",
+        "type_spell": " 액션 유형의",
+        "min_cost": " 비용이 {n} 이상인",
+        "type_item": " 아이템 유형의"
+      },
+      "targetd": {
+        "count_all": "모든 유닛",
+        "count_one": "유닛 1개",
+        "count_n": "유닛 {n}개",
+        "count_scatter": "최대 {n}개의 유닛",
+        "item_count_all": "모든 아이템",
+        "item_count_one": "아이템 1개",
+        "item_count_n": "아이템 {n}개",
+        "item_count_scatter": "최대 {n}개의 아이템",
+        "uoi_count_all": "모든 유닛과 모든 아이템",
+        "uoi_count_one": "유닛 또는 아이템 1개",
+        "uoi_count_n": "유닛 또는 아이템 {n}개",
+        "uoi_count_scatter": "최대 {n}개의 유닛 또는 아이템",
+        "hero_ally": "아군 영웅",
+        "hero_enemy": "적 영웅",
+        "both_all": "{side} 모든 유닛과 영웅",
+        "both_one": "{side} 대상 하나(유닛 또는 영웅)",
+        "damage_source": "자신을 해친 대상"
+      },
+      "target": {
+        "self": "자기 자신에게",
+        "damage_source": "자신을 해친 대상에게",
+        "hero_ally": "아군 영웅에게",
+        "hero_enemy": "적 영웅에게",
+        "both_all": "{side} 모든 유닛과 영웅에게",
+        "both_one": "{side} 대상 하나(유닛 또는 영웅)에게",
+        "both_side_ally": "아군",
+        "both_side_enemy": "적",
+        "both_side_ally_one": "아군",
+        "both_side_enemy_one": "적",
+        "count_all": "모든 유닛에게",
+        "count_one": "유닛 하나에게",
+        "count_n": "유닛 {n}개에게",
+        "count_all_autres": "다른 모든 유닛에게",
+        "count_one_autre": "다른 유닛 하나에게",
+        "count_n_autres": "다른 유닛 {n}개에게",
+        "count_scatter": "최대 {n}개의 유닛에게",
+        "item_count_all": "모든 아이템에게",
+        "item_count_one": "아이템 하나에게",
+        "item_count_n": "아이템 {n}개에게",
+        "item_count_scatter": "최대 {n}개의 아이템에게",
+        "uoi_count_all": "모든 유닛과 아이템에게",
+        "uoi_count_one": "유닛 또는 아이템 하나에게",
+        "uoi_count_n": "유닛 또는 아이템 {n}개에게",
+        "uoi_count_scatter": "최대 {n}개의 유닛 또는 아이템에게",
+        "side_ally_one_m": "아군",
+        "side_ally_many_m": "아군",
+        "side_enemy_one_m": "적",
+        "side_enemy_many_m": "적",
+        "side_ally_one": "아군",
+        "side_ally_many": "아군",
+        "side_enemy_one": "적",
+        "side_enemy_many": "적",
+        "locs_board": "필드의",
+        "locs_hand": "손",
+        "locs_deck": "덱",
+        "locs_graveyard": "묘지",
+        "locs_sep": ", ",
+        "locs_and": " 및 ",
+        "locs_wrap": "{zones}",
+        "loc_hand": "손에 있는",
+        "loc_deck": "덱의",
+        "loc_graveyard": "묘지의",
+        "des_random": "무작위로",
+        "des_automatic": "자동으로",
+        "des_choice": "선택하여",
+        "max_cost": "비용 {n} 이하의",
+        "with_keyword": "{v} 능력을 가진"
+      },
+      "scatter": {
+        "action_damage": "피해를 줍니다",
+        "action_heal": "회복시킵니다",
+        "unit_damage": "피해",
+        "unit_heal": "체력",
+        "times": "무작위로 {unit} 1씩 {x}번",
+        "target_both": "무작위 {side} 대상(유닛 또는 영웅)에게",
+        "target_unit": "무작위 {side} 유닛에게"
+      },
+      "enterrement": {
+        "deck_enemy": "상대 덱에서 상대 묘지로",
+        "deck_ally": "내 덱에서 내 묘지로",
+        "deck_any": "대상 덱에서 해당 묘지로"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "천상 동맹",
+        "description": "선량한 숲의 백성들의 동맹: 은밀한 엘프, 마법사 요정, 교활한 호빗, 그리고 거대한 나무인간."
+      },
+      "Nains": {
+        "displayName": "산악 군대",
+        "description": "굳건하고 강인함: 방어, 끈기, 대장간, 노움의 공학, 그리고 산봉우리의 거인들."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "중원 제국",
+        "description": "전략과 통제: 규율, 진형, 신비주의, 은밀함, 사원을 지키는 나가 수호자, 산의 요괴인 텐구와 오니, 그리고 정의로운 치세의 징조인 기린."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "태양의 왕국",
+        "description": "태양, 사막, 정령: 의식의 화로, 약탈하는 유목민, 소환사."
+      },
+      "Humains": {
+        "displayName": "자유 왕국",
+        "description": "옛 대륙: 명예, 강철, 영웅적인 챔피언, 그리고 날개 달린 당당한 동맹들 — 그리핀, 매, 그리고 바람의 여전사들의 페가수스와 스핑크스."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "무리",
+        "description": "야만적이고 흉포함: 빠르게 공격하고, 재생하며, 분노에 빠집니다."
+      },
+      "Élémentaires": {
+        "displayName": "태초의 존재들",
+        "description": "자연의 태초의 힘. 각 원소마다 고유한 전투 방식이 있습니다."
+      },
+      "Mercenaires": {
+        "displayName": "용병",
+        "description": "충성심 없는 떠돌이 병사. 다재다능하여 모든 덱에 넣을 수 있습니다."
+      },
+      "Morts-Vivants": {
+        "displayName": "네크로폴리스",
+        "description": "끝없는 갈망과 타락: 부활, 생명력 흡수, 묘지의 마법."
+      },
+      "Elfes Noirs": {
+        "displayName": "혼돈의 군단",
+        "description": "혼돈의 모든 세력이 하나로: 조직된 무리, 악마의 궁정, 독에 타락한 자들, 몰락한 정예."
+      }
+    },
+    "rarities": {
+      "Commune": "일반",
+      "Peu Commune": "고급",
+      "Rare": "희귀",
+      "Épique": "영웅",
+      "Légendaire": "유일"
+    },
+    "clans": {
+      "Les Sylvains": "실반족",
+      "Les Hauts-Elfes": "고위 엘프",
+      "La Forêt d'Émeraude": "에메랄드 숲",
+      "La Combe Verte": "푸른 골짜기",
+      "La Forge Ardente": "불타는 대장간",
+      "La Guilde des Ingénieurs": "기술자 길드",
+      "Clan des Mille Tunnels": "천 개의 터널 클랜",
+      "Clan des Premiers Géants": "최초의 거인 클랜",
+      "Les Hordes des Steppes": "초원의 무리",
+      "L'Empire de Jade": "비취 제국",
+      "Les Lames de l'Ombre": "그림자의 칼날",
+      "Les Défenseurs d'Ivoire": "상아의 수호자",
+      "Les Enfants du Soleil": "태양의 아이들",
+      "Les Seigneurs des Dunes": "사구의 군주",
+      "Le Royaume des Masques": "가면의 왕국",
+      "Les Fils du Volcan": "화산의 아들들",
+      "Le Royaume du Nord": "북부 왕국",
+      "L'Ordre de l'Aube": "새벽의 기사단",
+      "Les Guerrières du Vent": "바람의 전사들",
+      "La Sublime Porte": "숭고한 문",
+      "Les Seigneurs Fauves": "맹수의 군주",
+      "Les Enfants de la Lune": "달의 아이들",
+      "Le Pacte des Griffes": "발톱의 서약",
+      "La Harde Sauvage": "야생의 무리",
+      "La Forêt Enchantée": "마법의 숲",
+      "La Colère des Flammes": "불꽃의 분노",
+      "Le Socle du Monde": "세계의 토대",
+      "La Vague Sans Fin": "끝없는 파도",
+      "Le Souffle des Cimes": "산정의 숨결",
+      "Les Rangs Silencieux": "침묵의 대열",
+      "Le Voile Hurlant": "울부짖는 장막",
+      "La Cour Écarlate": "진홍의 궁정",
+      "Le Cénacle Nécromant": "강령술사의 회합",
+      "Les Cohortes Sanglantes": "피의 군단",
+      "Les Princes des Abîmes": "심연의 군주",
+      "La Forêt Maudite": "저주받은 숲",
+      "La Garde Noire": "흑색 근위대"
+    },
+    "races": {
+      "Elfes": "엘프",
+      "Fées": "요정",
+      "Aigles Géants": "거대 독수리",
+      "Hobbits": "호빗",
+      "Hommes-Arbres": "나무인간",
+      "Farfadets": "파르파데",
+      "Korrigans": "코리강",
+      "Faunes": "파우누스",
+      "Dryades": "드리아드",
+      "Nains": "드워프",
+      "Golems": "골렘",
+      "Gnomes": "노움",
+      "Machines": "기계",
+      "Kobolds": "코볼트",
+      "Géants": "거인",
+      "Mammouths": "매머드",
+      "Humains": "인간",
+      "Nagas": "나가",
+      "Tengu": "텐구",
+      "Oni": "오니",
+      "Qilins": "기린",
+      "Esprits": "정령",
+      "Griffons": "그리폰",
+      "Faucons": "매",
+      "Pégases": "페가수스",
+      "Sphinx": "스핑크스",
+      "Yétis": "예티",
+      "Hommes-Loups": "늑대인간",
+      "Hommes-Ours": "곰인간",
+      "Hommes-Félins": "고양이인간",
+      "Centaures": "켄타우로스",
+      "Mimis": "미미",
+      "Hommes-Chiens": "개인간",
+      "Hommes-Renards": "여우인간",
+      "Hommes-Cerfs": "사슴인간",
+      "Hommes-Singes": "원숭이인간",
+      "Hommes-Poissons": "물고기인간",
+      "Hommes-Oiseaux": "새인간",
+      "Insectes": "곤충",
+      "Élémentaire": "정령",
+      "Ondins": "운디네",
+      "Sirènes": "세이렌",
+      "Léviathans": "레비아탄",
+      "Cristallins": "크리스탈린",
+      "Troglodytes": "트로글로다이트",
+      "Bêtes Chtoniennes": "지저의 야수",
+      "Salamandres": "샐러맨더",
+      "Sylphes": "실프",
+      "Néphélides": "네펠리드",
+      "Ogres": "오우거",
+      "Dragons": "드래곤",
+      "Chiens": "개",
+      "Phoenix": "불사조",
+      "Anges": "천사",
+      "Ours": "곰",
+      "Loups": "늑대",
+      "Fauves": "맹수",
+      "Éléphants": "코끼리",
+      "Squelettes": "스켈레톤",
+      "Zombies": "좀비",
+      "Ghoules": "구울",
+      "Spectres": "망령",
+      "Vampires": "뱀파이어",
+      "Lich": "리치",
+      "Banshees": "밴시",
+      "Homuncules de Sang": "피의 호문쿨루스",
+      "Gargouilles": "가고일",
+      "Dhampirs": "담피르",
+      "Chiroptères": "박쥐인간",
+      "Momies": "미라",
+      "Chimères nécrotiques": "죽음의 키메라",
+      "Vermines mortuaires": "죽음의 해충",
+      "Poltergeists": "폴터가이스트",
+      "Dullahans": "듈라한",
+      "Sluaghs": "슬루아",
+      "Elfes Corrompus": "타락한 엘프",
+      "Araignées Géantes": "거대 거미",
+      "Démons": "악마",
+      "Orcs": "오크",
+      "Gobelins": "고블린",
+      "Trolls": "트롤",
+      "Wargs": "와르그",
+      "Guerriers du Chaos": "혼돈의 전사",
+      "Bâtiments": "건물"
+    },
+    "alignments": {
+      "bon": "선",
+      "neutre": "중립",
+      "maléfique": "악",
+      "spéciale": "특수"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "엘프",
+        "bare": "엘프",
+        "de": "엘프의",
+        "one": "엘프 1명",
+        "all": "모든 엘프",
+        "upto": "엘프 최대 {n}명"
+      },
+      "Fées": {
+        "def": "요정",
+        "bare": "요정",
+        "de": "요정의",
+        "one": "요정 1명",
+        "all": "모든 요정",
+        "upto": "요정 최대 {n}명"
+      },
+      "Farfadets": {
+        "def": "파르파데",
+        "bare": "파르파데",
+        "de": "파르파데의",
+        "one": "파르파데 1명",
+        "all": "모든 파르파데",
+        "upto": "파르파데 최대 {n}명"
+      },
+      "Korrigans": {
+        "def": "코리강",
+        "bare": "코리강",
+        "de": "코리강의",
+        "one": "코리강 1명",
+        "all": "모든 코리강",
+        "upto": "코리강 최대 {n}명"
+      },
+      "Faunes": {
+        "def": "파우누스",
+        "bare": "파우누스",
+        "de": "파우누스의",
+        "one": "파우누스 1명",
+        "all": "모든 파우누스",
+        "upto": "파우누스 최대 {n}명"
+      },
+      "Dryades": {
+        "def": "드리아드",
+        "bare": "드리아드",
+        "de": "드리아드의",
+        "one": "드리아드 1명",
+        "all": "모든 드리아드",
+        "upto": "드리아드 최대 {n}명"
+      },
+      "Aigles Géants": {
+        "def": "거대 독수리",
+        "bare": "거대 독수리",
+        "de": "거대 독수리의",
+        "one": "거대 독수리 1마리",
+        "all": "모든 거대 독수리",
+        "upto": "거대 독수리 최대 {n}마리"
+      },
+      "Hobbits": {
+        "def": "호빗",
+        "bare": "호빗",
+        "de": "호빗의",
+        "one": "호빗 1명",
+        "all": "모든 호빗",
+        "upto": "호빗 최대 {n}명"
+      },
+      "Hommes-Arbres": {
+        "def": "나무인간",
+        "bare": "나무인간",
+        "de": "나무인간의",
+        "one": "나무인간 1명",
+        "all": "모든 나무인간",
+        "upto": "나무인간 최대 {n}명"
+      },
+      "Nains": {
+        "def": "드워프",
+        "bare": "드워프",
+        "de": "드워프의",
+        "one": "드워프 1명",
+        "all": "모든 드워프",
+        "upto": "드워프 최대 {n}명"
+      },
+      "Golems": {
+        "def": "골렘",
+        "bare": "골렘",
+        "de": "골렘의",
+        "one": "골렘 1체",
+        "all": "모든 골렘",
+        "upto": "골렘 최대 {n}체"
+      },
+      "Bâtiments": {
+        "def": "건물",
+        "bare": "건물",
+        "de": "건물의",
+        "one": "건물 1개",
+        "all": "모든 건물",
+        "upto": "최대 {n}개의 건물"
+      },
+      "Gnomes": {
+        "def": "놈",
+        "bare": "놈",
+        "de": "놈의",
+        "one": "놈 1명",
+        "all": "모든 놈",
+        "upto": "최대 {n}명의 놈"
+      },
+      "Machines": {
+        "def": "기계",
+        "bare": "기계",
+        "de": "기계의",
+        "one": "기계 1개",
+        "all": "모든 기계",
+        "upto": "최대 {n}개의 기계"
+      },
+      "Kobolds": {
+        "def": "코볼트",
+        "bare": "코볼트",
+        "de": "코볼트의",
+        "one": "코볼트 1명",
+        "all": "모든 코볼트",
+        "upto": "최대 {n}명의 코볼트"
+      },
+      "Humains": {
+        "def": "인간",
+        "bare": "인간",
+        "de": "인간의",
+        "one": "인간 1명",
+        "all": "모든 인간",
+        "upto": "최대 {n}명의 인간"
+      },
+      "Esprits": {
+        "def": "정령",
+        "bare": "정령",
+        "de": "정령의",
+        "one": "정령 1명",
+        "all": "모든 정령",
+        "upto": "최대 {n}명의 정령"
+      },
+      "Nagas": {
+        "def": "나가",
+        "bare": "나가",
+        "de": "나가의",
+        "one": "나가 1명",
+        "all": "모든 나가",
+        "upto": "최대 {n}명의 나가"
+      },
+      "Tengu": {
+        "def": "텐구",
+        "bare": "텐구",
+        "de": "텐구의",
+        "one": "텐구 1명",
+        "all": "모든 텐구",
+        "upto": "최대 {n}명의 텐구"
+      },
+      "Oni": {
+        "def": "오니",
+        "bare": "오니",
+        "de": "오니의",
+        "one": "오니 1명",
+        "all": "모든 오니",
+        "upto": "최대 {n}명의 오니"
+      },
+      "Qilins": {
+        "def": "기린",
+        "bare": "기린",
+        "de": "기린의",
+        "one": "기린 1마리",
+        "all": "모든 기린",
+        "upto": "최대 {n}마리의 기린"
+      },
+      "Griffons": {
+        "def": "그리핀",
+        "bare": "그리핀",
+        "de": "그리핀의",
+        "one": "그리핀 1마리",
+        "all": "모든 그리핀",
+        "upto": "최대 {n}마리의 그리핀"
+      },
+      "Faucons": {
+        "def": "매",
+        "bare": "매",
+        "de": "매의",
+        "one": "매 1마리",
+        "all": "모든 매",
+        "upto": "최대 {n}마리의 매"
+      },
+      "Pégases": {
+        "def": "페가수스",
+        "bare": "페가수스",
+        "de": "페가수스의",
+        "one": "페가수스 1마리",
+        "all": "모든 페가수스",
+        "upto": "최대 {n}마리의 페가수스"
+      },
+      "Sphinx": {
+        "def": "스핑크스",
+        "bare": "스핑크스",
+        "de": "스핑크스의",
+        "one": "스핑크스 1체",
+        "all": "모든 스핑크스",
+        "upto": "스핑크스 최대 {n}체"
+      },
+      "Yétis": {
+        "def": "예티",
+        "bare": "예티",
+        "de": "예티의",
+        "one": "예티 1체",
+        "all": "모든 예티",
+        "upto": "예티 최대 {n}체"
+      },
+      "Hommes-Loups": {
+        "def": "늑대인간",
+        "bare": "늑대인간",
+        "de": "늑대인간의",
+        "one": "늑대인간 1체",
+        "all": "모든 늑대인간",
+        "upto": "늑대인간 최대 {n}체"
+      },
+      "Hommes-Ours": {
+        "def": "곰인간",
+        "bare": "곰인간",
+        "de": "곰인간의",
+        "one": "곰인간 1체",
+        "all": "모든 곰인간",
+        "upto": "곰인간 최대 {n}체"
+      },
+      "Hommes-Félins": {
+        "def": "고양이인간",
+        "bare": "고양이인간",
+        "de": "고양이인간의",
+        "one": "고양이인간 1체",
+        "all": "모든 고양이인간",
+        "upto": "고양이인간 최대 {n}체"
+      },
+      "Centaures": {
+        "def": "켄타우로스",
+        "bare": "켄타우로스",
+        "de": "켄타우로스의",
+        "one": "켄타우로스 1체",
+        "all": "모든 켄타우로스",
+        "upto": "켄타우로스 최대 {n}체"
+      },
+      "Mimis": {
+        "def": "미미",
+        "bare": "미미",
+        "de": "미미의",
+        "one": "미미 1체",
+        "all": "모든 미미",
+        "upto": "미미 최대 {n}체"
+      },
+      "Hommes-Chiens": {
+        "def": "개인간",
+        "bare": "개인간",
+        "de": "개인간의",
+        "one": "개인간 하나",
+        "all": "모든 개인간",
+        "upto": "최대 {n}명의 개인간"
+      },
+      "Hommes-Renards": {
+        "def": "여우인간",
+        "bare": "여우인간",
+        "de": "여우인간의",
+        "one": "여우인간 하나",
+        "all": "모든 여우인간",
+        "upto": "최대 {n}명의 여우인간"
+      },
+      "Hommes-Cerfs": {
+        "def": "사슴인간",
+        "bare": "사슴인간",
+        "de": "사슴인간의",
+        "one": "사슴인간 하나",
+        "all": "모든 사슴인간",
+        "upto": "최대 {n}명의 사슴인간"
+      },
+      "Insectes": {
+        "def": "곤충",
+        "bare": "곤충",
+        "de": "곤충의",
+        "one": "곤충 하나",
+        "all": "모든 곤충",
+        "upto": "최대 {n}마리의 곤충"
+      },
+      "Hommes-Singes": {
+        "def": "원숭이인간",
+        "bare": "원숭이인간",
+        "de": "원숭이인간의",
+        "one": "원숭이인간 하나",
+        "all": "모든 원숭이인간",
+        "upto": "최대 {n}명의 원숭이인간"
+      },
+      "Hommes-Poissons": {
+        "def": "물고기인간",
+        "bare": "물고기인간",
+        "de": "물고기인간의",
+        "one": "물고기인간 하나",
+        "all": "모든 물고기인간",
+        "upto": "최대 {n}명의 물고기인간"
+      },
+      "Hommes-Oiseaux": {
+        "def": "새인간",
+        "bare": "새인간",
+        "de": "새인간의",
+        "one": "새인간 하나",
+        "all": "모든 새인간",
+        "upto": "새인간 최대 {n}명"
+      },
+      "Élémentaire": {
+        "def": "정령",
+        "bare": "정령",
+        "de": "정령의",
+        "pl": "정령들",
+        "one": "정령 하나",
+        "all": "모든 정령",
+        "upto": "정령 최대 {n}명"
+      },
+      "Géants": {
+        "def": "거인",
+        "bare": "거인",
+        "de": "거인의",
+        "one": "거인 하나",
+        "all": "모든 거인",
+        "upto": "거인 최대 {n}명"
+      },
+      "Mammouths": {
+        "def": "매머드",
+        "bare": "매머드",
+        "de": "매머드의",
+        "one": "매머드 하나",
+        "all": "모든 매머드",
+        "upto": "매머드 최대 {n}마리"
+      },
+      "Ogres": {
+        "def": "오우거",
+        "bare": "오우거",
+        "de": "오우거의",
+        "one": "오우거 하나",
+        "all": "모든 오우거",
+        "upto": "오우거 최대 {n}명"
+      },
+      "Dragons": {
+        "def": "드래곤",
+        "bare": "드래곤",
+        "de": "드래곤의",
+        "one": "드래곤 하나",
+        "all": "모든 드래곤",
+        "upto": "드래곤 최대 {n}마리"
+      },
+      "Éléphants": {
+        "def": "코끼리",
+        "bare": "코끼리",
+        "de": "코끼리의",
+        "one": "코끼리 하나",
+        "all": "모든 코끼리",
+        "upto": "코끼리 최대 {n}마리"
+      },
+      "Chiens": {
+        "def": "개",
+        "bare": "개",
+        "de": "개의",
+        "one": "개 1마리",
+        "all": "모든 개",
+        "upto": "개 최대 {n}마리"
+      },
+      "Phoenix": {
+        "def": "불사조",
+        "bare": "불사조",
+        "de": "불사조의",
+        "one": "불사조 1마리",
+        "all": "모든 불사조",
+        "upto": "불사조 최대 {n}마리"
+      },
+      "Anges": {
+        "def": "천사",
+        "bare": "천사",
+        "de": "천사의",
+        "one": "천사 1명",
+        "all": "모든 천사",
+        "upto": "천사 최대 {n}명"
+      },
+      "Ours": {
+        "def": "곰",
+        "bare": "곰",
+        "de": "곰의",
+        "one": "곰 1마리",
+        "all": "모든 곰",
+        "upto": "곰 최대 {n}마리"
+      },
+      "Loups": {
+        "def": "늑대",
+        "bare": "늑대",
+        "de": "늑대의",
+        "one": "늑대 1마리",
+        "all": "모든 늑대",
+        "upto": "늑대 최대 {n}마리"
+      },
+      "Fauves": {
+        "def": "맹수",
+        "bare": "맹수",
+        "de": "맹수의",
+        "one": "맹수 1마리",
+        "all": "모든 맹수",
+        "upto": "맹수 최대 {n}마리"
+      },
+      "Squelettes": {
+        "def": "해골",
+        "bare": "해골",
+        "de": "해골의",
+        "one": "해골 1체",
+        "all": "모든 해골",
+        "upto": "최대 {n}체의 스켈레톤"
+      },
+      "Zombies": {
+        "def": "좀비",
+        "bare": "좀비",
+        "de": "좀비의",
+        "one": "좀비 1체",
+        "all": "모든 좀비",
+        "upto": "최대 {n}체의 좀비"
+      },
+      "Ghoules": {
+        "def": "구울",
+        "bare": "구울",
+        "de": "구울의",
+        "one": "구울 1체",
+        "all": "모든 구울",
+        "upto": "최대 {n}체의 구울"
+      },
+      "Spectres": {
+        "def": "스펙터",
+        "bare": "스펙터",
+        "de": "스펙터의",
+        "one": "스펙터 1체",
+        "all": "모든 스펙터",
+        "upto": "최대 {n}체의 스펙터"
+      },
+      "Vampires": {
+        "def": "뱀파이어",
+        "bare": "뱀파이어",
+        "de": "뱀파이어의",
+        "one": "뱀파이어 1체",
+        "all": "모든 뱀파이어",
+        "upto": "최대 {n}체의 뱀파이어"
+      },
+      "Lich": {
+        "def": "리치",
+        "bare": "리치",
+        "de": "리치의",
+        "one": "리치 1체",
+        "all": "모든 리치",
+        "upto": "최대 {n}체의 리치"
+      },
+      "Momies": {
+        "def": "미라",
+        "bare": "미라",
+        "de": "미라의",
+        "one": "미라 1체",
+        "all": "모든 미라",
+        "upto": "최대 {n}체의 미라"
+      },
+      "Chimères nécrotiques": {
+        "def": "강령 키메라",
+        "bare": "강령 키메라",
+        "de": "강령 키메라의",
+        "one": "괴사 키메라 1체",
+        "all": "모든 괴사 키메라",
+        "upto": "최대 {n}체의 괴사 키메라"
+      },
+      "Vermines mortuaires": {
+        "def": "망자의 해충",
+        "bare": "망자의 해충",
+        "de": "망자의 해충의",
+        "one": "망자의 해충 1체",
+        "all": "모든 망자의 해충",
+        "upto": "최대 {n}체의 망자의 해충"
+      },
+      "Poltergeists": {
+        "def": "폴터가이스트",
+        "bare": "폴터가이스트",
+        "de": "폴터가이스트의",
+        "one": "폴터가이스트 1체",
+        "all": "모든 폴터가이스트",
+        "upto": "최대 {n}체의 폴터가이스트"
+      },
+      "Dullahans": {
+        "def": "듀라한",
+        "bare": "듀라한",
+        "de": "듀라한의",
+        "one": "듀라한 1체",
+        "all": "모든 듀라한",
+        "upto": "최대 {n}체의 듀라한"
+      },
+      "Sluaghs": {
+        "def": "슬루아",
+        "bare": "슬루아",
+        "de": "슬루아의",
+        "one": "슬루아 1체",
+        "all": "모든 슬루아",
+        "upto": "최대 {n}체의 슬루아"
+      },
+      "Ondins": {
+        "def": "운디네",
+        "bare": "운디네",
+        "de": "운디네의",
+        "one": "운디네 1체",
+        "all": "모든 운디네",
+        "upto": "최대 {n}체의 운디네"
+      },
+      "Sirènes": {
+        "def": "세이렌",
+        "bare": "세이렌",
+        "de": "세이렌의",
+        "one": "세이렌 1체",
+        "all": "모든 세이렌",
+        "upto": "최대 {n}체의 세이렌"
+      },
+      "Léviathans": {
+        "def": "레비아탄",
+        "bare": "리바이어던",
+        "de": "리바이어던의",
+        "one": "리바이어던 1체",
+        "all": "모든 리바이어던",
+        "upto": "최대 {n}체의 리바이어던"
+      },
+      "Cristallins": {
+        "def": "크리스탈린",
+        "bare": "크리스탈린",
+        "de": "크리스탈린의",
+        "one": "크리스탈린 1체",
+        "all": "모든 크리스탈린",
+        "upto": "최대 {n}체의 크리스탈린"
+      },
+      "Troglodytes": {
+        "def": "트로글로다이트",
+        "bare": "트로글로다이트",
+        "de": "트로글로다이트의",
+        "one": "트로글로다이트 1체",
+        "all": "모든 트로글로다이트",
+        "upto": "최대 {n}체의 트로글로다이트"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "대지의 야수",
+        "bare": "대지의 야수",
+        "de": "대지의 야수의",
+        "one": "대지의 야수 1체",
+        "all": "모든 대지의 야수",
+        "upto": "최대 {n}체의 대지의 야수"
+      },
+      "Salamandres": {
+        "def": "샐러맨더",
+        "bare": "샐러맨더",
+        "de": "샐러맨더의",
+        "one": "샐러맨더 1체",
+        "all": "모든 샐러맨더",
+        "upto": "최대 {n}체의 샐러맨더"
+      },
+      "Sylphes": {
+        "def": "실프",
+        "bare": "실프",
+        "de": "실프의",
+        "one": "실프 1체",
+        "all": "모든 실프",
+        "upto": "최대 {n}체의 실프"
+      },
+      "Néphélides": {
+        "def": "네펠리드",
+        "bare": "네펠리드",
+        "de": "네펠리드의",
+        "one": "네펠리드 1체",
+        "all": "모든 네펠리드",
+        "upto": "최대 {n}명의 네펠리드"
+      },
+      "Banshees": {
+        "def": "밴시",
+        "bare": "밴시",
+        "de": "밴시의",
+        "one": "밴시 한 명",
+        "all": "모든 밴시",
+        "upto": "최대 {n}명의 밴시"
+      },
+      "Homuncules de Sang": {
+        "def": "피의 호문쿨루스",
+        "bare": "피의 호문쿨루스",
+        "de": "피의 호문쿨루스의",
+        "one": "피의 호문쿨루스 한 명",
+        "all": "모든 피의 호문쿨루스",
+        "upto": "최대 {n}명의 피의 호문쿨루스"
+      },
+      "Gargouilles": {
+        "def": "가고일",
+        "bare": "가고일",
+        "de": "가고일의",
+        "one": "가고일 한 마리",
+        "all": "모든 가고일",
+        "upto": "최대 {n}마리의 가고일"
+      },
+      "Dhampirs": {
+        "def": "담피르",
+        "bare": "담피르",
+        "de": "담피르의",
+        "one": "담피르 한 명",
+        "all": "모든 담피르",
+        "upto": "최대 {n}명의 담피르"
+      },
+      "Chiroptères": {
+        "def": "박쥐인간",
+        "bare": "박쥐인간",
+        "de": "박쥐인간의",
+        "one": "박쥐인간 한 명",
+        "all": "모든 박쥐인간",
+        "upto": "최대 {n}명의 박쥐인간"
+      },
+      "Elfes Corrompus": {
+        "def": "타락한 엘프",
+        "bare": "타락한 엘프",
+        "de": "타락한 엘프의",
+        "one": "타락한 엘프 한 명",
+        "all": "모든 타락한 엘프",
+        "upto": "최대 {n}명의 타락한 엘프"
+      },
+      "Araignées Géantes": {
+        "def": "거대 거미",
+        "bare": "거대 거미",
+        "de": "거대 거미의",
+        "one": "거대 거미 1마리",
+        "all": "모든 거대 거미",
+        "upto": "거대 거미 최대 {n}마리"
+      },
+      "Démons": {
+        "def": "악마",
+        "bare": "악마",
+        "de": "악마의",
+        "one": "악마 1명",
+        "all": "모든 악마",
+        "upto": "악마 최대 {n}명"
+      },
+      "Orcs": {
+        "def": "오크",
+        "bare": "오크",
+        "de": "오크의",
+        "one": "오크 1명",
+        "all": "모든 오크",
+        "upto": "오크 최대 {n}명"
+      },
+      "Gobelins": {
+        "def": "고블린",
+        "bare": "고블린",
+        "de": "고블린의",
+        "one": "고블린 1명",
+        "all": "모든 고블린",
+        "upto": "고블린 최대 {n}명"
+      },
+      "Trolls": {
+        "def": "트롤",
+        "bare": "트롤",
+        "de": "트롤의",
+        "one": "트롤 1명",
+        "all": "모든 트롤",
+        "upto": "트롤 최대 {n}명"
+      },
+      "Wargs": {
+        "def": "워그",
+        "bare": "워그",
+        "de": "워그의",
+        "one": "워그 1마리",
+        "all": "모든 워그",
+        "upto": "워그 최대 {n}마리"
+      },
+      "Guerriers du Chaos": {
+        "def": "혼돈의 전사",
+        "bare": "혼돈의 전사",
+        "de": "혼돈의 전사의",
+        "one": "혼돈의 전사 1명",
+        "all": "모든 혼돈의 전사",
+        "upto": "혼돈의 전사 최대 {n}명"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "실반",
+      "Les Hauts-Elfes": "하이엘프",
+      "La Forêt d'Émeraude": "에메랄드 숲",
+      "La Combe Verte": "푸른 골짜기",
+      "Les Gardiens de la Montagne": "산의 수호자들",
+      "La Forge Ardente": "불타는 대장간",
+      "Les Sentinelles d'Airain": "청동 파수꾼",
+      "La Guilde des Ingénieurs": "기술자 길드",
+      "Les Hordes des Steppes": "초원의 무리",
+      "L'Empire de Jade": "비취 제국",
+      "Les Lames de l'Ombre": "그림자의 칼날",
+      "Les Défenseurs d'Ivoire": "상아의 수호자",
+      "Les Enfants du Soleil": "태양의 아이들",
+      "Les Seigneurs des Dunes": "사구의 군주",
+      "Le Royaume des Masques": "가면 왕국",
+      "Les Fils du Volcan": "화산의 아들들",
+      "Le Royaume du Nord": "북부 왕국",
+      "L'Ordre de l'Aube": "새벽 기사단",
+      "Les Guerrières du Vent": "바람의 여전사들",
+      "La Sublime Porte": "숭고한 문",
+      "Les Seigneurs Fauves": "야수 군주",
+      "Les Enfants de la Lune": "달의 아이들",
+      "Le Pacte des Griffes": "발톱의 서약",
+      "La Harde Sauvage": "야생의 무리",
+      "La Forêt Enchantée": "마법의 숲",
+      "La Colère des Flammes": "불꽃의 분노",
+      "Le Socle du Monde": "세계의 기반",
+      "La Vague Sans Fin": "끝없는 파도",
+      "Le Souffle des Cimes": "산정의 숨결",
+      "Les Rangs Silencieux": "침묵의 대열",
+      "Le Voile Hurlant": "울부짖는 장막",
+      "La Cour Écarlate": "진홍의 궁정",
+      "Le Cénacle Nécromant": "강령술사 집회",
+      "Les Cohortes Sanglantes": "피의 군단",
+      "Les Princes des Abîmes": "심연의 군주",
+      "La Forêt Maudite": "저주받은 숲",
+      "La Garde Noire": "흑색 근위대"
+    },
+    "factions_forms": {
+      "Elfes": "천상 동맹",
+      "Nains": "산악 군대",
+      "EmpireDuMilieu": "중원 제국",
+      "RoyaumesDuSoleil": "태양 왕국",
+      "Humains": "자유 왕국",
+      "Hommes-Bêtes": "무리",
+      "Élémentaires": "원초의 존재",
+      "Mercenaires": "용병",
+      "Morts-Vivants": "네크로폴리스",
+      "Elfes Noirs": "혼돈의 군단"
+    },
+    "markers": {
+      "race": "선택한 종족의 크리처",
+      "race_bare": "같은 종족",
+      "race_de": "같은 종족",
+      "race_pl": "같은 종족의 유닛",
+      "clan": "당신의 클랜",
+      "clan_de": "같은 클랜",
+      "faction": "당신의 진영",
+      "faction_de": "같은 진영",
+      "alignment": "같은 성향",
+      "alignment_of": "{a} 성향",
+      "token": "설정된 토큰",
+      "tokens": "여러 토큰",
+      "invocations": "내 컬렉션의 무작위 크리처 여러 장",
+      "invocations_first_one": "비용 {cost}의 무작위 크리처 1장",
+      "invocations_first_many": "비용 {cost}의 무작위 크리처 {count}장",
+      "invocations_more_one": "비용 {cost} 1장",
+      "invocations_more_many": "비용 {cost} {count}장",
+      "invocations_join": " 및 ",
+      "race_or": " 또는 ",
+      "invocations_of_race": " ({v} 중에서)",
+      "invocations_of_faction": " ({v} 진영 중에서)",
+      "lycanthrope": "X/X 토큰",
+      "ability": "능력",
+      "scope": "아군 유닛 하나(또는 전체)에게",
+      "scope_target": "아군 유닛 하나에게",
+      "edc_compte": "무작위로 ATK +1 또는 HP +1을 {n}회 얻습니다 (이미 발동한 단결심 1회당 1회).",
+      "usurpation_actuel": "상대가 낸 카드: {n}장 — 현재 +{x}/+{y}.",
+      "scope_all": "아군 유닛 전체에게",
+      "machine_part": " 및 {ability}",
+      "machine_part_timed": " 및 {ability} ({timing})",
+      "machine_name": "기계",
+      "neutralise_cible": "대상으로 지정한 적 유닛(또는 전체)의",
+      "neutralise_cible_target": "대상으로 지정한 적 유닛에게서",
+      "neutralise_cible_all": "모든 적 유닛에게서",
+      "forge_align": " 또는 {alignment}",
+      "forge_cout": " 코스트 X 이하의",
+      "forge_cout_libre": "",
+      "forge_cout_max": " 코스트 X 이하의",
+      "forge_cout_range": " 코스트 {n}에서 X 사이의",
+      "forge_cout_min": " 코스트 {n} 이상의"
+    },
+    "sets": {
+      "1": "기본 세트"
+    },
+    "formats": {
+      "expert-standard": "엑스퍼트 · 스탠더드",
+      "expert-etendu": "엑스퍼트 · 확장",
+      "classique-etendu": "클래식 · 확장",
+      "classique-standard": "클래식 · 스탠더드"
+    },
+    "singulier": {
+      "label": "싱귤러",
+      "help": "시작 덱에 중복된 카드가 없으면 {timing} 발동합니다.",
+      "help_permanent": "시작 덱에 중복된 카드가 없으면 활성화됩니다.",
+      "timing": {
+        "entry": "등장 시",
+        "death": "죽을 때",
+        "tap": "활성화 시",
+        "return": "손으로 돌아올 때",
+        "attack": "공격 시",
+        "end_of_turn": "턴 종료 시",
+        "start_of_turn": "턴 시작 시",
+        "draw": "카드를 뽑을 때",
+        "low_hp": "체력이 {n} 이하일 때",
+        "spell": "액션 해결 시",
+        "wound": "죽지 않고 피해를 입었을 때",
+        "delay": "지연이 끝날 때"
+      }
+    },
+    "triggers": {
+      "permanent": "영구",
+      "entry": "등장",
+      "attack": "공격",
+      "death": "죽음",
+      "return": "회수",
+      "tap": "활성화 가능",
+      "end_of_turn": "턴 종료",
+      "start_of_turn": "턴 시작",
+      "draw": "드로우",
+      "low_hp": "체력 {n} 이하",
+      "wound": "부상",
+      "delay": "지연 {d}"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "{cibles}에게 X의 피해를 줍니다.",
+        "affaiblissement": "{cibles}에게 공격력 -X, 체력 -Y를 줍니다.",
+        "retour_differe": "비용이 X 이하인 {cibles}을(를) 소유자의 덱 아래에 놓습니다.",
+        "retour_differe_any": "{cibles}을(를) 소유자의 덱 아래에 놓습니다.",
+        "remontee": "{cibles}을(를) 원래 소유자의 손으로 되돌립니다.",
+        "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
+        "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
+        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
+        "domination_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
+        "benediction": "{cibles}을(를) 완전히 치유합니다.",
+        "poison": "{cibles}에게 독을 겁니다: 매 턴 종료 시 체력을 1 잃습니다.",
+        "siphon": "{cibles}에게 피해를 X 주고, 피해를 입은 유닛마다 아군 영웅의 체력을 X 회복합니다.",
+        "entrave": "{cibles}을(를) X턴 동안 마비시킵니다.",
+        "execution": "비용이 X 이하인 {cibles}을(를) 아이템 포함하여 파괴합니다.",
+        "execution_any": "{cibles}을(를) 아이템 포함하여 파괴합니다.",
+        "silence": "{cibles}의 모든 키워드를 아이템 포함하여 제거하고, 능력치를 원래 값으로 되돌립니다.",
+        "renforcement": "{cibles}에게 +X/+Y.",
+        "discipline": "필드에 있는 아군 크리처의 비용이 모두 이 액션의 비용과 홀짝이 같다면, {cibles}에게 +X/+Y.",
+        "usurpation": "내가 사용한 상대 카드 1장당 {cibles}에게 +X/+Y.",
+        "guerison": "{cibles}와(과) 아군 영웅의 체력을 X 회복합니다."
+      },
+      "creature": {
+        "neutralisation": "이 유닛이 필드에 있는 동안, {cibles}은(는) 마비되고 능력이 효과를 잃습니다.",
+        "impact": "{cibles}에게 피해를 X 줍니다.",
+        "affaiblissement": "{cibles}에게 공격력 -X, 체력 -Y를 줍니다.",
+        "retour_differe": "비용이 X 이하인 {cibles}을(를) 소유자의 덱 아래에 놓습니다.",
+        "retour_differe_any": "{cibles}을(를) 소유자의 덱 아래에 놓습니다.",
+        "remontee": "{cibles}을(를) 원래 소유자의 손으로 되돌립니다.",
+        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
+        "domination_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
+        "benediction": "{cibles}을(를) 완전히 치유합니다.",
+        "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
+        "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
+        "tactique": "{cibles}에게 같은 비용 크리처의 능력 중 무작위로 뽑은 X개를 부여합니다(유닛마다 한 번씩 뽑음).",
+        "vampirisme": "{cibles}에게서 체력을 최대 X까지 빼앗아 이 유닛의 체력에 더합니다.",
+        "devoration": "{cibles}을(를) 파괴합니다. 이 유닛은 그 공격력과 체력을 영구적으로 얻습니다.",
+        "sacrifice": "다른 아군 유닛을 모두 파괴하고 그 체력과 공격력을 영구적으로 얻습니다.",
+        "renforcement": "다른 모든 아군 유닛에게 공격력 +X, 체력 +Y를 영구적으로 부여합니다.",
+        "discipline": "내 필드의 모든 비용이 이 유닛의 비용과 홀짝이 같다면, 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
+        "usurpation": "내가 사용한 상대 카드 1장당 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
+        "renforcement_soi": "ATK +X, HP +Y를 영구적으로 얻습니다.",
+        "discipline_soi": "필드에 있는 아군 크리처의 비용이 모두 이 크리처와 같은 홀짝일 경우, ATK +X, HP +Y를 영구적으로 얻습니다.",
+        "usurpation_soi": "당신이 사용한 상대 카드 한 장당 ATK +X, HP +Y를 영구적으로 얻습니다.",
+        "execution": "비용이 X 이하인 {cibles}을(를) 아이템 포함하여 파괴합니다.",
+        "execution_any": "{cibles}을(를) 아이템 포함하여 파괴합니다.",
+        "silence": "{cibles}의 모든 키워드를 아이템 포함하여 제거하고, 능력치를 원래 값으로 되돌립니다.",
+        "guerison": "자신을 제외한 모든 아군 유닛과 당신의 영웅의 HP를 X 회복합니다.",
+        "purete": "당신의 무덤이 비어 있는 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
+        "force_des_ancetres": "당신의 무덤에 크리처가 7장 이상 있는 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
+        "seuil_sacrificiel": "당신의 덱이 25장 이하인 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
+        "silence_soi": "모든 키워드를 잃고 능력치가 원래 값으로 돌아갑니다.",
+        "guerison_soi": "HP를 X 회복합니다.",
+        "tactique_soi": "비용이 같은 크리처들의 능력 중 무작위로 X개를 얻습니다."
+      },
+      "cibles": {
+        "all_enemies": "모든 적 유닛",
+        "all_allies": "모든 아군 유닛",
+        "all": "양측의 모든 유닛"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "생명 비용 {n}",
+        "desc": "마나에 더해, 이 카드를 사용할 때 당신의 영웅이 HP를 {n} 잃습니다. HP가 0이 되는 경우에는 사용할 수 없습니다."
+      },
+      "defausse": {
+        "title": "버리기 {n}",
+        "desc_one": "마나에 더해, 손에서 원하는 카드 한 장을 버립니다.",
+        "desc_many": "마나에 더해, 손에서 원하는 카드 {n}장을 버립니다."
+      },
+      "sacrifice": {
+        "title": "희생 {n}",
+        "desc_one": "마나에 더해, 필드에 있는 당신의 크리처 중 원하는 하나를 희생합니다.",
+        "desc_many": "마나에 더해, 필드에 있는 당신의 크리처 중 원하는 {n}장을 희생합니다."
+      },
+      "exil": {
+        "title": "추방 {n}",
+        "desc_one": "마나에 더해, 덱 맨 위의 카드가 추방되어 게임에서 제외됩니다. 덱이 비어 있으면 사용할 수 없습니다.",
+        "desc_many": "마나에 더해, 덱 맨 위의 카드 {n}장이 추방되어 게임에서 제외됩니다. 덱에 카드가 최소 {n}장 있어야 합니다."
+      },
+      "repli": {
+        "title": "후퇴 {n}",
+        "desc_one": "마나에 더해, 손에서 원하는 카드 한 장을 덱 맨 위에 되돌려 놓습니다.",
+        "desc_many": "마나에 더해, 손에서 원하는 카드 {n}장을 덱 맨 위에 되돌려 놓습니다. 처음 고른 카드가 맨 위에 놓입니다."
+      },
+      "retraite": {
+        "title": "귀환 {n}",
+        "desc_one": "마나에 더해, 필드에 있는 당신의 크리처 중 원하는 하나를 손으로 되돌립니다. 손에 들어갈 공간이 없으면 사용할 수 없습니다.",
+        "desc_many": "마나에 더해, 필드에 있는 당신의 크리처 중 원하는 {n}장을 손으로 되돌립니다. 손에 들어갈 공간이 없으면 사용할 수 없습니다."
+      },
+      "eveil": {
+        "title": "각성 {n}",
+        "desc": "이 카드를 사용하는 대신 각성 상태로 둘 수 있습니다. 이후 당신의 턴마다 마나 1당 1포인트씩, 총 {n}포인트를 채웁니다. 마지막 포인트를 채우면 사용한 것처럼 필드에 나옵니다.",
+        "remaining": "{n}포인트 중 {left}포인트가 남았습니다."
+      },
+      "equipement": {
+        "title": "장착 {n}",
+        "desc": "아이템이 필드에 나온 후, 당신의 크리처에게 장착하는 데 마나 {n}가 듭니다. 이동을 포함해 장착할 때마다 비용을 지불합니다.",
+        "desc_free": "아이템이 필드에 나온 후, 당신의 크리처에게 장착하는 것은 이동을 포함해 무료입니다."
+      }
+    }
+  },
+  "home": {
+    "home_subtitle": "카드 한 장. 하나의 전설. 이제 네 차례야.",
+    "play_label": "플레이",
+    "play_desc": "상대를 찾아 게임을 시작하세요",
+    "market_label": "시장",
+    "market_desc": "경매로 사고팔기",
+    "market_desc_buy": "경매로 구매하기",
+    "collection_label": "내 컬렉션",
+    "collection_desc": "카드, 영웅, 카드 뒷면, 게임판",
+    "decks_label": "내 덱",
+    "decks_desc": "덱을 구성하고 조정하세요",
+    "tutorial_label": "플레이 방법",
+    "tutorial_desc": "규칙과 능력을 배워 보세요",
+    "tutorial_back": "홈으로 돌아가기",
+    "news_banner_label": "뉴스",
+    "news_banner_open": "뉴스 보기",
+    "news_banner_collapse": "뉴스 접기",
+    "news_read_more": "더 읽기",
+    "news_back_home": "홈으로 돌아가기",
+    "welcome": "환영합니다,",
+    "logout": "로그아웃",
+    "settings": "설정",
+    "skip_to_content": "본문으로 건너뛰기",
+    "collection_title": "내 컬렉션",
+    "collection_back": "홈으로 돌아가기",
+    "my_cards": "내 카드",
+    "my_cards_desc": "보유한 카드 목록",
+    "my_heroes": "내 영웅",
+    "my_heroes_desc": "잠금 해제한 챔피언",
+    "my_card_backs": "내 카드 뒷면",
+    "my_card_backs_desc": "보유한 카드 뒷면",
+    "my_boards": "내 게임판",
+    "my_boards_desc": "보유한 게임판",
+    "heroes_title": "내 영웅",
+    "heroes_empty": "아직 잠금 해제한 영웅이 없습니다.",
+    "heroes_filter_all": "전체",
+    "heroes_label_faction": "진영",
+    "heroes_label_clan": "클랜",
+    "heroes_label_rarity": "희귀도",
+    "heroes_loading": "불러오는 중…",
+    "heroes_load_error": "영웅을 불러올 수 없습니다.",
+    "hero_power": "능력",
+    "tournaments_label": "토너먼트",
+    "tournaments_desc": "최강자들과 맞서 싸우고 특별한 보상을 획득하세요."
+  },
+  "landing": {
+    "nav_play": "플레이",
+    "hero_eyebrow": "판타지 TCG — 차세대",
+    "hero_title": "전설의 군단",
+    "hero_sub": "가입 즉시 300장이 넘는 카드를 원하는 군대로 받으세요. 나머지는 한정판이 채워 줍니다. 어떤 엑스퍼트 덱도 당신의 덱과 같지 않습니다.",
+    "hero_cta": "무료 진영 선택하기",
+    "hero_cta_secondary": "아홉 개 진영 보기",
+    "hero_proof": "첫 게임부터 500장이 넘는 카드를 무료로 제공",
+    "features_title": "전설의 군단를 선택하는 이유",
+    "f1_title": "전설의 깊이.",
+    "f1_desc": "전설의 군단는 전설적인 TCG의 전략성을 오늘날의 챔피언을 위해 설계된 메커니즘과 결합했습니다.",
+    "f2_title": "시작부터 최대한 많은 카드.",
+    "f2_desc": "원하는 진영의 일반 카드를 모두 무료로 받으세요(300장 이상). 일반 TCG 비용의 극히 일부만으로 모든 진영(약 2,500장)을 보유할 수 있습니다.",
+    "f3_title": "모든 엑스퍼트 덱이 유일한 작품.",
+    "f3_desc": "한정판 카드는 모든 엑스퍼트 덱을 특별하게 만듭니다. 일반판 덕분에 오직 당신의 전략만이 승패를 가릅니다.",
+    "f_icons_title": "한눈에 읽히는 카드.",
+    "f_icons_desc": "정성껏 그려진 전설의 군단의 카드는 아름다울 뿐 아니라 읽기도 쉽습니다. 발동 조건마다 고유한 색상 아이콘 체계 덕분에 텍스트를 읽지 않아도 한눈에 효과를 이해할 수 있습니다.",
+    "f4_title": "모바일 아레나, 드디어 제대로.",
+    "f4_desc": "희귀 카드와 상금이 걸린 토너먼트. 지금까지 최대 규모의 데스크톱 TCG에서만 볼 수 있던 수준의 승부입니다.",
+    "f4_standings": "최종 순위",
+    "factions_title": "아홉 개의 군대. 첫 번째는 당신의 것.",
+    "factions_sub": "가입할 때 진영을 선택하세요. 300장이 넘는 해당 진영의 일반 카드를 모두 무료로 드립니다. 다른 진영은 일반 TCG 비용의 극히 일부로 추가할 수 있습니다.",
+    "showcase_title": "하나의 마수 도감. 수천 가지 조합.",
+    "showcase_sub": "가장 보잘것없는 크리처부터 신화 속 영웅까지, 모든 카드가 중요합니다.",
+    "cta_title": "아레나가 당신을 기다립니다.",
+    "cta_sub": "전장에서 소환사들과 함께하세요.",
+    "cta_btn": "모험 시작하기",
+    "footer": "전설의 군단 — 모든 권리 보유",
+    "factions": {
+      "Humains": {
+        "tagline": "깃발 아래 하나 되어"
+      },
+      "Elfes": {
+        "tagline": "영원한 숲의 수호자"
+      },
+      "Nains": {
+        "tagline": "바위에서 벼려진 자들"
+      },
+      "Hommes-Bêtes": {
+        "tagline": "야생의 땅의 분노"
+      },
+      "Élémentaires": {
+        "tagline": "원소가 깨어난다"
+      },
+      "Elfes Noirs": {
+        "tagline": "그림자에게도 이름이 있다"
+      },
+      "Morts-Vivants": {
+        "tagline": "무덤의 정적이 깨졌다"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "분노보다 규율"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "사막은 왕들을 기억한다"
+      }
+    },
+    "nav_factions": "진영",
+    "nav_limited": "한정판",
+    "nav_tournaments": "토너먼트",
+    "hero_claim": "한 진영 전체를 선물로 드립니다.",
+    "wall_pause": "월 일시정지",
+    "wall_play": "월 다시 재생",
+    "factions_see": "진영 보기",
+    "limited_title": "당신의 덱과 같은 엑스퍼트 덱은 없습니다.",
+    "limited_desc": "한정판 카드는 모든 엑스퍼트 덱을 특별하게 만듭니다. 일반판은 오직 당신의 전략만이 승부를 결정하도록 보장합니다.",
+    "trailer_title": "전설들이 무대에 오릅니다.",
+    "nav_language": "언어",
+    "f4_example": "랭킹 예시: 플레이어는 가상의 인물이며, 점수 체계는 실제 게임과 동일합니다.",
+    "limited_run": "{count}장",
+    "limited_unique": "단 한 장뿐인 카드",
+    "f4_note": "* 금전적 보상은 법으로 허용되는 국가에서만 제공됩니다."
+  },
+  "auction": {
+    "ended": "종료됨",
+    "unknown_item": "알 수 없는 아이템",
+    "board": "게임판",
+    "card_back": "카드 뒷면",
+    "extra_items": "+{count, plural, =1 {#개 아이템} other {#개 아이템}}",
+    "current_bid": "현재 입찰가",
+    "starting_bid": "시작가",
+    "buyout_short": "즉시 구매:",
+    "bid_count": "{count, plural, =1 {입찰 #건} other {입찰 #건}}",
+    "seller": "판매자:",
+    "system": "시스템",
+    "invalid_amount": "잘못된 금액",
+    "buyout_success": "즉시 구매 성공!",
+    "bid_placed": "입찰 완료!",
+    "loading": "로딩 중...",
+    "not_found": "경매를 찾을 수 없음",
+    "back_to_auctions": "경매로 돌아가기",
+    "lot": "로트",
+    "item": "아이템",
+    "copies": "{count}장",
+    "source_print": "한정판",
+    "source_board_print": "한정 게임판",
+    "source_card_back_print": "한정 카드 뒷면",
+    "source_admin": "시스템",
+    "source_collection": "컬렉션",
+    "admin_badge": "관리자",
+    "time_left": "남은 시간",
+    "commission": "수수료: {rate}%",
+    "highest_bidder": "최고 입찰자입니다",
+    "status_sold": "판매됨",
+    "status_unsold": "유찰됨",
+    "status_cancelled": "취소됨",
+    "bid_button": "입찰",
+    "buyout_immediate": "즉시 구매",
+    "cancel_auction": "경매 취소",
+    "bid_history": "입찰 내역",
+    "no_bids_yet": "아직 입찰이 없습니다",
+    "anonymous": "익명",
+    "buyout_tag": "(즉시 구매)",
+    "sort_ending_soon": "마감 임박",
+    "sort_price_asc": "가격 낮은 순",
+    "sort_price_desc": "가격 높은 순",
+    "sort_newest": "최신순",
+    "header_kicker": "부대를 모집하라",
+    "title": "경매장",
+    "subtitle_sell": "카드를 사고팔아 보세요",
+    "subtitle_buy": "카드를 구매하세요",
+    "menu": "메뉴",
+    "sell_card": "카드 판매",
+    "tab_browse": "둘러보기",
+    "tab_my": "내 경매",
+    "search_placeholder": "검색...",
+    "all_factions": "모든 진영",
+    "all_rarities": "모든 희귀도",
+    "all_types": "모든 유형",
+    "type_creature": "크리처",
+    "type_spell": "액션",
+    "no_auctions": "경매를 찾을 수 없습니다",
+    "previous": "이전",
+    "next": "다음",
+    "page_of": "{page} / {total} 페이지",
+    "duration_1min": "1분",
+    "duration_1h": "1시간",
+    "duration_6h": "6시간",
+    "duration_12h": "12시간",
+    "duration_24h": "24시간",
+    "duration_generic": "{n}분",
+    "create_title": "경매 등록",
+    "select_cards": "판매할 카드를 선택하세요 (최대 {max}장 중 {selected}장 선택)",
+    "search_card_placeholder": "카드 검색...",
+    "no_cards_available": "사용 가능한 카드가 없습니다",
+    "starting_bid_label": "시작 입찰가 (골드)",
+    "buyout_optional": "즉시 구매 (선택 사항)",
+    "none": "없음",
+    "duration": "기간",
+    "commission_info": "수수료: 판매 금액에서 {rate}%가 차감됩니다",
+    "error_select_card": "카드를 한 장 이상 선택하세요",
+    "error_invalid_bid": "시작 입찰가가 올바르지 않습니다",
+    "error_buyout_too_low": "즉시 구매 가격은 시작 입찰가보다 높아야 합니다",
+    "cancel": "취소",
+    "creating": "생성 중...",
+    "submit_sell": "판매 등록 ({count, plural, =1 {카드 #장} other {카드 #장}})",
+    "my_sales": "내 판매 ({count})",
+    "my_bids": "내 입찰 ({count})",
+    "no_sales": "판매 중인 항목이 없습니다",
+    "no_bids_placed": "입찰한 항목이 없습니다",
+    "unknown_card": "알 수 없는 카드",
+    "ends_at": "종료: {date}",
+    "status_active": "진행 중",
+    "page_title": "경매장 — 전설의 군단",
+    "detail_page_title": "경매 상세 — 전설의 군단"
+  },
+  "auth": {
+    "forgot_email_required": "재설정을 요청하기 전에 이메일을 입력하세요.",
+    "forgot_email_sent": "{email}(으)로 재설정 이메일을 보냈습니다. 받은 편지함과 스팸 폴더를 확인하세요.",
+    "forgot_send_error": "재설정 이메일을 보낼 수 없습니다.",
+    "password_min_length": "비밀번호는 8자 이상이어야 합니다.",
+    "generic_error": "오류가 발생했습니다.",
+    "tagline": "판타지 수집형 카드 게임",
+    "back_to_site": "← 사이트로 돌아가기",
+    "login": "로그인",
+    "register": "회원가입",
+    "username_label": "사용자 이름",
+    "username_placeholder": "사용자 이름을 입력하세요",
+    "email_label": "이메일",
+    "email_placeholder": "example@email.com",
+    "password_label": "비밀번호",
+    "sending": "전송 중...",
+    "forgot_password": "비밀번호를 잊으셨나요?",
+    "password_min_placeholder": "최소 8자",
+    "password_placeholder_login": "비밀번호를 입력하세요",
+    "loading": "불러오는 중...",
+    "create_account": "계정 만들기",
+    "sign_in": "로그인",
+    "or": "또는",
+    "continue_google": "Google로 계속하기",
+    "continue_discord": "Discord로 계속하기",
+    "passwords_mismatch": "두 비밀번호가 일치하지 않습니다.",
+    "password_updated_redirect": "비밀번호가 변경되었습니다. 이동 중...",
+    "unknown_error": "알 수 없는 오류입니다.",
+    "reset_heading": "비밀번호 재설정",
+    "reset_sub": "계정에 사용할 새 비밀번호를 선택하세요.",
+    "back_to_login": "← 로그인으로 돌아가기",
+    "reset_link_invalid": "재설정 링크가 만료되었거나 유효하지 않습니다. 로그인 페이지에서 다시 시작하여 이메일을 다시 요청하세요.",
+    "new_password_label": "새 비밀번호",
+    "confirm_label": "확인",
+    "confirm_placeholder": "비밀번호를 다시 입력하세요",
+    "updating": "변경 중...",
+    "update": "변경하기",
+    "signup_check_email_title": "이메일을 확인하세요",
+    "signup_check_email": "{email}(으)로 확인 링크를 보냈습니다. 링크를 클릭하여 계정을 활성화하세요.",
+    "signup_check_spam": "받은 메일이 없나요? 스팸함을 확인해 보세요. 메일이 도착하는 데 1분 정도 걸릴 수 있습니다.",
+    "signup_resend": "이메일 다시 보내기",
+    "signup_resend_wait": "{seconds}초 후 다시 보내기",
+    "signup_resent": "{email}(으)로 이메일을 다시 보냈습니다.",
+    "signup_resend_error": "확인 이메일을 다시 보낼 수 없습니다.",
+    "signup_back_to_login": "← 로그인으로 돌아가기",
+    "error_oauth_cancelled": "로그인이 취소되었습니다. 다시 시도하거나 이메일을 사용하세요.",
+    "error_oauth_failed": "해당 서비스로 로그인하지 못했습니다. 다시 시도하거나 이메일을 사용하세요.",
+    "error_link_expired": "이 링크는 만료되었거나 이미 사용되었습니다. 새 링크를 요청하세요.",
+    "error_auth_failed": "로그인에 실패했습니다. 다시 시도하세요.",
+    "cgu_accept": "이용약관 및 개인정보 처리방침에 동의합니다.",
+    "cgu_link": "이용약관 읽기",
+    "privacy_link": "개인정보 처리방침 읽기",
+    "cgu_required": "계정을 만들려면 약관에 동의해야 합니다.",
+    "onboarding_title": "플레이어 이름을 정하세요",
+    "onboarding_sub": "다른 플레이어에게 경매와 프로필에서 표시됩니다. 나중에 변경할 수 있습니다.",
+    "onboarding_submit": "확인",
+    "username_rules": "3~20자: 영문자, 숫자, 하이픈 또는 밑줄.",
+    "username_too_short": "이름은 3자 이상이어야 합니다.",
+    "username_too_long": "이름은 20자를 넘을 수 없습니다.",
+    "username_invalid_chars": "영문자, 숫자, 하이픈, 밑줄만 사용할 수 있으며 공백과 악센트는 쓸 수 없습니다.",
+    "username_reserved": "예약된 이름입니다. 다른 이름을 선택하세요.",
+    "username_taken": "이미 사용 중인 이름입니다. 다른 변형을 시도해 보세요.",
+    "username_required": "플레이어 이름을 선택하세요.",
+    "faction_title": "진영을 선택하세요",
+    "faction_sub": "선택한 진영의 모든 일반 카드를 무료로 받습니다. 다른 진영은 나중에 해금할 수 있습니다.",
+    "faction_warning": "⚠ 이 선택은 최종적이며 이후에 변경할 수 없습니다.",
+    "faction_submit": "이 진영에 가입",
+    "faction_required": "진영을 선택하세요.",
+    "faction_invalid_faction": "존재하지 않는 진영입니다.",
+    "faction_already_chosen": "이미 진영을 선택했습니다.",
+    "error_email_rate_limit": "짧은 시간에 너무 많은 이메일이 발송되었습니다. 몇 분 후에 다시 시도하세요.",
+    "error_invalid_credentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
+    "error_email_not_confirmed": "계정이 아직 인증되지 않았습니다. 이메일로 받은 링크를 클릭하세요.",
+    "error_weak_password": "비밀번호가 너무 약합니다. 더 긴 비밀번호를 선택하세요.",
+    "error_user_already_exists": "이 주소로 만든 계정이 이미 있습니다.",
+    "error_signups_disabled": "현재 가입이 일시적으로 중단되었습니다.",
+    "error_database_error": "저희 측 문제로 계정 생성에 실패했습니다. 잠시 후 다시 시도하고, 문제가 계속되면 문의해 주세요.",
+    "error_captcha_failed": "로봇 방지 확인에 실패했거나 만료되었습니다. 페이지를 새로고침하고 다시 시도하세요.",
+    "faction_see_cards": "결정하기 전에 {faction} 카드 보기 →",
+    "faction_browse": "고민 중이신가요? 각 진영과 카드를 살펴보세요 →"
+  },
+  "common": {
+    "brand": "전설의 군단",
+    "settings_title": "설정",
+    "music": "음악",
+    "sound_effects": "효과음",
+    "muted": "음소거",
+    "active": "활성",
+    "concede_match": "매치 항복",
+    "concede_confirm": "⚠ 항복 확인",
+    "concede_hint": "확인하려면 다시 클릭하세요 · 5초 후 자동 취소",
+    "notifications": "알림",
+    "mark_all_read": "모두 읽음으로 표시",
+    "no_notifications": "알림 없음",
+    "see_auction": "경매 보기",
+    "rotate_device": "휴대폰을 돌려 주세요",
+    "rotate_device_hint": "전설의 군단은 가로 모드로 플레이합니다. 계속하려면 기기를 가로로 돌려 주세요."
+  },
+  "forge": {
+    "forge_first_card": "첫 번째 카드를 제작하세요",
+    "forging": "제작 중…",
+    "mana_cost_title": "마나 비용: {mana}",
+    "life_cost_title": "생명력 비용: {life}",
+    "discard_cost_title": "카드 {count, plural, one {#장} other {#장}} 버리기",
+    "sacrifice_cost_title": "크리처 {count, plural, one {#장} other {#장}} 희생",
+    "exile_cost_title": "덱 맨 위의 카드 {count, plural, one {#장} other {#장}} 추방",
+    "topdeck_cost_title": "손에서 카드 {count, plural, one {#장} other {#장}}을 덱 맨 위로 되돌리기",
+    "detail_note_all_allies": " (모든 아군 대상)",
+    "detail_note_target": " (지정한 크리처 대상)",
+    "trigger_on_play": "등장 시",
+    "trigger_on_death": "죽을 때",
+    "trigger_on_return": "손으로 돌아올 때",
+    "trigger_on_activation": "발동 능력 (탭)",
+    "trigger_on_attack": "공격 시",
+    "trigger_on_end_of_turn": "턴 종료 시",
+    "trigger_on_end_of_turn_in_hand": "턴 종료 시, 손에 있는 동안",
+    "trigger_on_start_of_turn": "턴 시작 시",
+    "trigger_on_start_of_turn_in_hand": "턴 시작 시, 손에 있는 동안",
+    "trigger_on_draw": "이 카드를 뽑았을 때",
+    "trigger_on_low_hp": "체력 15 미만",
+    "trigger_on_wound": "부상 (죽지 않고 피해를 입음)",
+    "trigger_spell_resolution": "해결 시",
+    "composed_effects_heading": "복합 효과 (고급)",
+    "composed_effects_subtitle": "내용 + 범위 + 대상",
+    "composed_effect_n": "복합 효과 {n}",
+    "token_composed_hint": "토큰은 카드를 내서 등장하는 것이 아니므로 '등장 시'는 절대 발동하지 않아 제공되지 않습니다.",
+    "remove": "삭제",
+    "label_trigger": "발동 조건",
+    "singulier_toggle": "단일",
+    "singulier_toggle_title": "단일 조건: 플레이어의 시작 덱에 중복된 카드가 없을 때만 이 능력이 발동합니다.",
+    "label_emblem": "상징",
+    "emblem_permanent": "플레이어에게 부여되는 영구 효과",
+    "emblem_trigger_note": "카드가 등장할 때 부여됨. 발동 조건은 이후 무엇에 반응하는지를 나타냄",
+    "label_emblem_side": "대상",
+    "emblem_side_self": "아군",
+    "emblem_side_opponent": "상대",
+    "label_emblem_duration": "지속 시간",
+    "emblem_duration_turns": "턴",
+    "emblem_duration_permanent": "영구",
+    "emblem_repeat_warning": "이 발동 조건은 반복됩니다. 상징이 매번 중첩되며, N중첩된 복합 상징은 N번 해결됩니다.",
+    "label_content": "내용",
+    "label_target_scope": "범위",
+    "label_neutralised_ability": "무력화된 능력",
+    "neutralisation_hint": "시전자가 필드에 있는 동안 대상으로 지정된 적(또는 대상 범위가 '모든 적'일 경우 모든 적)의 능력을 봉인합니다.",
+    "target_scope_target": "대상",
+    "target_scope_self": "자신",
+    "target_scope_all_enemies": "모든 적",
+    "target_scope_all_allies": "모든 아군",
+    "target_scope_all": "모두 (양측)",
+    "target_scope_hint_all_enemies": "선택한 대상 대신 모든 적 유닛을 공격합니다 (영웅과 아이템 제외).",
+    "target_scope_hint_all_allies": "선택한 대상 대신 모든 아군 유닛을 공격합니다 (영웅과 아이템 제외).",
+    "target_scope_hint_all": "선택한 대상 대신 양측의 모든 유닛을 공격합니다 (영웅과 아이템 제외).",
+    "content_deal_damage": "피해 주기",
+    "content_siphon": "흡수 X (피해 + 영웅 치유)",
+    "content_domination": "지배 (control 획득)",
+    "content_heal": "치유",
+    "content_buff": "버프 +X/+Y",
+    "content_usurpation": "찬탈 +X/+Y (상대가 낸 카드당)",
+    "content_debuff": "디버프 -X/-Y",
+    "content_destroy": "파괴",
+    "content_bounce": "손으로 되돌리기",
+    "content_paralyze": "마비",
+    "content_poison": "중독 (매 턴 체력 -1)",
+    "content_malediction": "저주 (다음 상대 턴 종료 시 추방)",
+    "content_neutralise": "무력화 (마비, 능력 효과 없음)",
+    "invocation_costs_label": "소환 비용",
+    "invocation_costs_hint": "나열된 비용마다 컬렉션의 무작위 크리처가 소환됩니다.",
+    "add_invocation": "+ 소환",
+    "invocation_pool_label": "소환 풀",
+    "invocation_pool_any_race": "— 모든 종족 —",
+    "invocation_pool_any_faction": "— 모든 진영 —",
+    "invocation_pool_hint": "나열된 비용마다 무작위 크리처가 소환됩니다. 종족과 진영이 없으면 카드의 성향에 따라 풀이 정해집니다.",
+    "content_grant_keyword": "능력 부여",
+    "content_draw_cards": "카드 뽑기",
+    "content_discard": "버리기 (상대)",
+    "content_summon_token": "토큰 소환",
+    "content_gain_mana": "마나 얻기",
+    "content_exhumation": "부활 (묘지)",
+    "content_rappel": "회수 (묘지 → 손)",
+    "label_card_kind": "대상 카드",
+    "card_kind_all": "전체",
+    "card_kind_creature": "유닛만",
+    "card_kind_spell": "액션만",
+    "legacy_grants_heading": "계승된 부여 효과 (구형식) — 상대를 대상으로 지정하려면 변환하세요",
+    "convert_to_composed": "변환",
+    "effects_heading": "카드 효과",
+    "effects_subtitle": "액션의 모든 효과를 하나의 목록으로",
+    "effect_kind_curated": "메커니즘",
+    "group_composed": "설정 가능한 효과",
+    "group_curated": "특수 메커니즘",
+    "content_invocation": "소환 (무작위 크리처)",
+    "pool_hint_invocation": "필터는 중첩 적용됩니다. 필터가 없으면 풀은 카드의 성향을 따르며, 소환되는 비용은 정확히 X입니다.",
+    "label_designated_card": "지정된 카드",
+    "designated_card_hint": "크리처를 하나 이상 지정하세요. 지정한 순서대로 그대로 소환됩니다 (같은 카드를 여러 번 지정할 수 있습니다). 지정하지 않으면 필터에 따라 비용 X의 카드가 무작위로 선택됩니다.",
+    "tuteur_card_hint": "크리처나 액션 카드를 하나 이상 지정하세요. 지정한 순서대로 손으로 들어옵니다. 같은 카드를 여러 번 지정할 수 있습니다 (지정한 수만큼 복사본). 지정하지 않으면 효과는 아무 작용도 하지 않습니다.",
+    "content_selection": "선택 (3장 중 1장)",
+    "content_faveur": "은총 (무작위 카드 1장 → 손)",
+    "content_renfort_royal": "왕실 선택 (3장 중 1장)",
+    "content_tresor": "보물 (3개 중 아이템 1개)",
+    "label_pool_membership": "풀 — 소속",
+    "label_pool_faction": "풀 — 진영",
+    "label_pool_min_cost": "풀 — 최소 비용",
+    "label_pool_keyword": "풀 — 보유 키워드",
+    "label_pool_card_type": "풀 — 카드 유형",
+    "pool_type_creature": "유닛",
+    "pool_type_spell": "액션",
+    "pool_type_item": "아이템",
+    "draw_items_only": "덱의 아이템만",
+    "pool_any": "무관",
+    "pool_hint": "기본 규칙(일반 등급, 비용 ≤ X, 카드의 성향)에 더해 필터가 중첩 적용됩니다.",
+    "pool_hint_discard": "필터는 중첩 적용됩니다. 상대는 조건에 맞는 손의 카드 중에서 무작위로 버립니다 (0 = 비용 무관). X장보다 적으면 해당 카드만 버립니다.",
+    "pool_hint_draw": "필터는 중첩 적용됩니다. 조건에 맞는 덱의 첫 X장을 덱 순서대로 뽑으며, 나머지는 그대로 남습니다.",
+    "label_magnitude": "규모",
+    "random_hint": "1에서 {max} 사이에서 무작위로 정해지며, 발동 시 한 번만 결정됩니다.",
+    "move_earlier": "먼저 해결",
+    "move_later": "나중에 해결",
+    "random_needs_ceiling": "무작위로 정하려면 최대값이 2 이상이어야 합니다.",
+    "label_granted_ability": "부여되는 능력",
+    "label_grant_trigger": "부여 발동 조건",
+    "label_token": "토큰",
+    "label_targets": "대상",
+    "label_type": "유형",
+    "entity_unit": "유닛",
+    "entity_item": "아이템",
+    "entity_spell": "액션",
+    "entity_unit_or_item": "유닛 또는 아이템",
+    "entity_hero": "영웅",
+    "entity_both": "둘 다 (영웅 + 유닛)",
+    "entity_self": "자신 (크리처)",
+    "entity_damage_source": "피해의 출처",
+    "label_side": "진영",
+    "side_ally": "아군",
+    "side_enemy": "적군",
+    "side_any": "무관",
+    "label_count": "수량",
+    "scatter_points_hint": "X ({x})포인트를 풀에 무작위로 분배",
+    "scatter_passes_hint": "복원 추출 {n}회 → 최대 {n}개의 서로 다른 대상",
+    "count_all": "전체",
+    "label_location": "위치",
+    "location_board": "필드",
+    "location_hand": "손패",
+    "location_deck": "덱",
+    "location_graveyard": "묘지",
+    "label_membership": "소속",
+    "label_target_keyword": "보유 키워드",
+    "label_max_cost": "최대 비용",
+    "max_cost_any": "— 무관 —",
+    "label_designation": "지정 방식",
+    "designation_choice": "선택",
+    "designation_random": "무작위",
+    "designation_scatter": "무작위 분배 (복원)",
+    "designation_automatic": "자동",
+    "add_composed_effect": "+ 복합 효과 추가",
+    "tab_forge": "포지",
+    "tab_capacities": "능력",
+    "tab_edition": "편집",
+    "tab_tokens": "토큰",
+    "tab_card_backs": "카드 뒷면",
+    "tab_boards": "필드판",
+    "tab_icons": "아이콘",
+    "tab_sets": "세트",
+    "tab_formats": "포맷",
+    "tab_bulk": "보조 제작",
+    "tab_budget": "예산",
+    "tab_schema": "도식",
+    "tab_prints": "시리즈",
+    "tab_news": "뉴스",
+    "menu": "메뉴",
+    "collections": "컬렉션",
+    "section_faction": "진영",
+    "section_race": "종족",
+    "section_race2": "종족 2 (이중 종족 유닛)",
+    "main_races": "주요 종족",
+    "all_races": "모든 종족",
+    "section_clan": "클랜",
+    "section_alignment": "성향",
+    "section_type": "유형",
+    "section_rarity": "희귀도",
+    "section_set_year": "세트 / 연도",
+    "no_set": "— 세트 없음 —",
+    "or_month_year": "또는 월/연도:",
+    "month": "월",
+    "year_placeholder": "예: 2026",
+    "section_mode": "모드",
+    "mode_auto": "자동",
+    "mode_manual": "수동",
+    "forging_caps": "제작 중…",
+    "forge_button": "제작",
+    "create_button": "생성",
+    "reset_button": "초기화",
+    "summon_sound": "소환 사운드",
+    "death_sound": "사망 사운드",
+    "exile_sound": "추방 비용 사운드",
+    "reroll": "다시 뽑기",
+    "new_card": "새 카드",
+    "illustration_prompt_label": "일러스트 프롬프트",
+    "reference": "참조",
+    "no_reference": "참조 없음",
+    "reference_image_optional": "참조 이미지 (선택 사항)",
+    "reference_image_hint": "포즈, 구도, 분위기에 영감을 줍니다. 프롬프트의 스타일이 우선합니다.",
+    "replace": "교체",
+    "choose_image": "이미지 선택",
+    "remove_image": "제거",
+    "copy": "복사",
+    "reset_short": "초기화",
+    "generating": "생성 중…",
+    "illustrate": "일러스트 생성",
+    "image_model_auto": "모델: 자동",
+    "image_model_hint": "두 결과물을 비교하기 위해 지정하는 이미지 모델입니다. \"자동\"은 기존의 단계별 선택 방식을 따릅니다. 지정한 모델은 다른 모델로 대체되지 않으며, 실패하면 그대로 오류가 표시됩니다.",
+    "history": "기록",
+    "no_card": "카드 없음",
+    "edition_label": "에디션",
+    "name_label": "이름",
+    "card_name_placeholder": "카드 이름",
+    "name_taken": "이미 \"{name}\"(ID {id})이(가) 사용 중인 이름입니다. 저장 시 확인을 요청합니다.",
+    "mana_label": "마나",
+    "power_label": "공격력",
+    "life_cost_hint": "소환 시 영웅이 지불하는 체력입니다. 합계로 인해 체력이 0이 되는 경우 이 카드는 사용할 수 없습니다.",
+    "life_label": "체력",
+    "discard_cost_hint": "이 카드를 사용하기 위해 플레이어가 손에서 버려야 하는 카드 수입니다.",
+    "discard_label": "버리기",
+    "sacrifice_cost_hint": "이 카드를 사용하기 위해 플레이어가 제물로 바쳐야 하는 아군 크리처 수입니다.",
+    "exile_cost_hint": "플레이어의 덱 맨 위에서 제거되는 카드 수입니다. 추방된 카드는 무덤으로 가지 않으며 회수할 수 없습니다.",
+    "topdeck_cost_hint": "플레이어가 손에서 덱 맨 위로 되돌리는 카드 수입니다. 무덤으로 가지 않으며 다시 뽑게 됩니다. 템포 비용이며 감소할 수 없습니다.",
+    "equip_label": "장착",
+    "equip_cost_hint": "아이템 — 아군 크리처에게 아이템을 장착하는 데 드는 마나 비용입니다. 이동을 포함하여 장착할 때마다 지불합니다. 0 = 무료.",
+    "item_trigger_bearer": "(장착자의)",
+    "sacrifice_label": "희생",
+    "exile_label": "추방",
+    "topdeck_label": "후퇴",
+    "retreat_cost_hint": "플레이어가 전장에서 손으로 되돌리는 아군 크리처 수입니다. 영구 보너스를 유지하며 귀환 효과가 발동합니다. 템포 비용이며 감소할 수 없습니다.",
+    "retreat_label": "철수",
+    "spell_effects_label": "액션 효과",
+    "spell_keywords_label": "액션 키워드",
+    "token_to_summon": "소환할 토큰",
+    "config_below_tokens": "아래 \"소환할 토큰\"에서 설정",
+    "targeted_race": "대상 종족",
+    "required": "필수",
+    "choose_race": "-- 종족 선택 --",
+    "tokens_to_summon": "소환할 토큰",
+    "override_label": "오버라이드:",
+    "atk_override": "공격력 (덮어쓰기)",
+    "def_override": "DEF (덮어쓰기)",
+    "add_token": "+ 토큰 추가",
+    "composable_effects_advanced": "구형 JSON 형식 (사용 중단)",
+    "json_hint": "사용 중단: 엔진은 이전 카드의 재시전(Relancer) 용도로만 이 값을 읽습니다. 효과를 구성하려면 아래의 \"복합 효과\"를 사용하세요.",
+    "abilities_count": "능력 ({count})",
+    "conferred_abilities_toggle": "크리처에게 부여되는 능력 ({count})",
+    "conferred_abilities_hint": "액션을 사용할 때 크리처에게 주어짐 (녹색 = 모든 아군, 회색 = 대상 크리처)",
+    "mode_title_play": "소환 시 (기본)",
+    "mode_title_death": "죽을 때 (유언)",
+    "mode_title_tap": "탭으로 발동 (참여)",
+    "mode_title_return": "손으로 돌아올 때",
+    "mode_title_attack": "공격 시",
+    "mode_title_end_of_turn": "턴 종료 시",
+    "mode_title_start_of_turn": "턴 시작 시 (카드를 뽑은 후)",
+    "mode_title_draw": "이 카드를 뽑았을 때",
+    "mode_title_low_hp": "영웅의 체력이 15 이하가 될 때 (한 번만)",
+    "mode_title_wound": "부상: 죽지 않고 피해를 입었을 때 (출처당 턴마다 한 번)",
+    "grant_scope_target": "대상 크리처에게 부여",
+    "grant_scope_all_allies": "모든 아군 유닛에게 부여",
+    "required_caps": "필수",
+    "transformation_token": "변신 토큰",
+    "target_race_label": "대상 종족",
+    "required_caps_f": "필수",
+    "neg_atk_is_x": "(-ATK = X 값)",
+    "spell_cost_y": "액션 비용 (Y)",
+    "spell_count_is_x": "(액션 수 = X 값)",
+    "fda_condition": "(묘지에 크리처 7장 이상)",
+    "choose_ability": "-- 능력 선택 --",
+    "scope_one_ally": "대상 아군 1명",
+    "scope_all_allies": "모든 아군",
+    "replayed_triggers": "재발동되는 트리거",
+    "required_m": "필수",
+    "trigger_short_on_play": "등장",
+    "trigger_short_on_death": "죽음",
+    "trigger_short_end_of_turn": "턴 종료",
+    "trigger_short_on_return": "손으로 복귀",
+    "tier_label": "티어:",
+    "cost_label": "비용:",
+    "points_value": "{pts}점",
+    "specific_power_label": "고유 능력",
+    "specific_power_placeholder": "고유 능력 텍스트…",
+    "flavor_text_label": "플레이버 텍스트",
+    "flavor_text_placeholder": "서사적 인용문…",
+    "extra_context_label": "추가 컨텍스트 (선택)",
+    "extra_context_placeholder": "예: 불타는 검을 든 모습, 위협적인 눈빛, 뒷모습, 붉은 안개, 황금 갑옷…",
+    "illustration_prompt_label2": "일러스트 프롬프트",
+    "api_error": "API 오류 ({status}): {detail}",
+    "see_console": "콘솔 참조",
+    "ai_no_prompt": "AI가 프롬프트를 반환하지 않았습니다 — ANTHROPIC_API_KEY와 서버 로그를 확인하세요",
+    "illustration_prompt_generated": "일러스트 프롬프트 생성됨",
+    "network_error": "네트워크 오류",
+    "generate_by_ai": "AI로 생성",
+    "english_prompt_placeholder": "이미지 생성용 영어 프롬프트…",
+    "trigger_tap_activation": "발동 시 (탭)",
+    "trigger_automatic": "자동 (지속/조건부)",
+    "trigger_spell_resolution_full": "액션 처리 시",
+    "container_label": "컨테이너:",
+    "derived_from_type": "(카드 유형에서 추정됨)",
+    "no_ability_add_below": "능력이 없습니다. 아래에서 추가하세요.",
+    "effect_type_label": "효과 유형",
+    "immediate_effect": "즉시 효과",
+    "effect_label": "효과",
+    "x_value_title": "X 값",
+    "targets_label2": "대상",
+    "one_target": "대상 1개",
+    "neg_atk_equals_x": "(-ATK = X)",
+    "on_self": "(자신에게)",
+    "add_ability": "+ 능력 추가:",
+    "choose_dash": "-- 선택 --",
+    "no_ability_add_effect": "능력이 없습니다. 아래에서 효과나 부여할 능력을 추가하세요.",
+    "race_label": "종족",
+    "race_dash": "-- 종족 --",
+    "confer_prefix": "부여:",
+    "confer_ability_to_unit": "유닛에 능력 부여",
+    "scope_label": "범위",
+    "all_allied_units": "모든 아군 유닛",
+    "one_allied_unit": "아군 유닛 1개",
+    "add_effect": "+ 효과:",
+    "spell_effect_dash": "-- 액션 효과 --",
+    "add_confer": "+ 부여:",
+    "ability_to_confer_dash": "-- 부여할 능력 --",
+    "save": "저장",
+    "generate_to_save": "저장하려면 ⚒ 포지에서 카드를 생성하거나 입력하세요.",
+    "token_templates_title": "토큰 템플릿",
+    "edit_template": "템플릿 수정",
+    "new_template": "새 템플릿",
+    "faction_optional": "진영 (선택)",
+    "deduced_from_race": "-- 종족에 따라 결정됨 --",
+    "choose_dash_cap": "-- 선택 --",
+    "clan_optional": "클랜 (선택)",
+    "no_clan_available": "사용 가능한 클랜 없음",
+    "none_dash": "-- 없음 --",
+    "token_name_label": "토큰 이름",
+    "token_name_placeholder": "예: 엘프 신병",
+    "default_attack": "기본 공격력",
+    "default_defense": "기본 방어력",
+    "token_abilities": "토큰 능력",
+    "image_prompt_label": "이미지 프롬프트",
+    "auto_prompt_placeholder": "«자동 프롬프트»를 클릭해 생성하거나 직접 작성하세요...",
+    "auto_prompt": "자동 프롬프트",
+    "generate_image": "이미지 생성",
+    "or_upload_image": "또는 이미지 업로드",
+    "preview": "미리보기",
+    "saving": "저장 중...",
+    "update": "업데이트",
+    "create2": "만들기",
+    "cancel": "취소",
+    "existing_templates": "기존 템플릿 ({count})",
+    "load_refresh": "불러오기 / 새로고침",
+    "no_template": "템플릿 없음 — 불러오기를 클릭하세요",
+    "edit": "수정",
+    "generate_card_back_title": "카드 뒷면 생성",
+    "metadata": "메타데이터",
+    "card_back_name_placeholder": "예: 고목숲의 수호자",
+    "faction_label": "진영",
+    "none_dash_f": "-- 없음 --",
+    "clan_label": "클랜",
+    "rarity_label": "희귀도",
+    "copies_label": "카드 수량",
+    "default_checkbox": "기본값",
+    "frame_label": "프레임",
+    "frame_hint": "프레임은 생성 후에 적용됩니다. AI는 일러스트에만 집중할 수 있으며, 프레임을 그릴 필요가 없습니다.",
+    "generation_mode": "생성 모드",
+    "one_variant": "변형 1개",
+    "three_variants": "변형 3개",
+    "extra_instructions": "추가 지침",
+    "card_back_instructions_placeholder": "예: 금빛 룬, 깃털, 윤이 나는 거울, 똬리를 튼 용...",
+    "reference_image_hint2": "시각적 영감(주제 / 팔레트 / 분위기)으로 사용됩니다. 프롬프트 규칙이 우선 적용됩니다.",
+    "manual_upload": "수동 업로드",
+    "variants_count": "변형 ({selected} / {total} {selected, plural, other {선택됨}})",
+    "variant_n": "변형 {n}",
+    "card_back_preview": "카드 뒷면 미리보기",
+    "saving2": "저장 중…",
+    "save_n_backs": "카드 뒷면 {n}개 저장",
+    "save_back": "카드 뒷면 저장",
+    "generate_board_title": "게임 보드 생성",
+    "board_name_placeholder": "예: 잠든 용의 선술집",
+    "composition_style": "구도 스타일",
+    "board_style_surface": "프레임 전체를 채우는 지형(풀, 눈, 모래, 돌 등)만 표시합니다. 장식과 테두리가 없어 순수한 분위기 연출에 적합합니다.",
+    "board_style_minimal": "보드 중앙은 평평한 표면으로 비워 두고 가장자리를 장식합니다. 3D 피규어에 적합합니다.",
+    "board_style_mtgo": "MTG Arena 구도: 깔끔한 중앙, 장식은 양옆 패널에만 배치합니다. 게임 중에는 왼쪽에 클릭 가능한 대형 무덤 타일, 오른쪽에 영웅 + 덱 + 마나 + 체력이 표시됩니다(상대는 대칭 반전). MTGO 레이아웃이 자동으로 활성화됩니다.",
+    "board_style_hearthstone": "Hearthstone 구도: 곳곳에 테마 소품, 중앙에 화려한 구분선이 배치됩니다.",
+    "graveyard_image_optional": "무덤 이미지 (선택)",
+    "graveyard": "무덤",
+    "graveyard_image_hint": "클릭 가능한 무덤 타일로 표시되는 이미지입니다. 이미지가 없으면 기본 관 이미지가 표시됩니다.",
+    "environment_label": "환경",
+    "race_optional": "종족 (선택)",
+    "default_board_hint": "기본 보드 (덱에 지정된 보드가 없을 때 사용)",
+    "extra_instructions_optional": "추가 지침 (선택)",
+    "board_instructions_placeholder": "예: 보라색 네온과 쏟아지는 비, 금속 바닥에 비치는 반사가 있는 사이버펑크 분위기…",
+    "board_instructions_hint": "입력하면 프롬프트의 주제/환경 블록을 대체합니다. 구도 규칙(Hearthstone, 16:9, 대칭, 프레임)은 항상 적용됩니다.",
+    "reference_image_hint3": "시각적 영감(주제 / 팔레트 / 분위기)으로 사용됩니다. 구도 규칙이 우선 적용됩니다.",
+    "rerun_variants": "변형 {n}개 다시 실행",
+    "generate_variants": "변형 {n}개 생성",
+    "or": "또는",
+    "import_image": "이미지 가져오기",
+    "preview_caps": "미리보기",
+    "variants_check_hint": "변형 (클릭하여 선택 — 복수 선택 가능)",
+    "save_board": "보드 저장",
+    "save_n_boards": "선택한 보드 {n}개 저장",
+    "generate_ability_icon_title": "능력 아이콘 생성",
+    "parameters": "설정",
+    "ability_label": "능력",
+    "ability_polymorph": "🔀 다형 능력 — 아이콘이 크리처와 액션 모두에 저장됩니다.",
+    "ability_creature": "👤 크리처 능력.",
+    "ability_spell": "🪄 액션 능력.",
+    "ability_legend": "👤 크리처 · 🪄 액션 · 🔀 공유",
+    "icon_name_label": "아이콘 이름",
+    "icon_name_placeholder": "예: 방패 v2",
+    "style_label": "스타일",
+    "style_white": "순백색",
+    "style_grey": "순회색",
+    "style_colored": "컬러",
+    "style_sculpture": "조각",
+    "icon_instructions_placeholder": "예: 번개나 도식화된 해골을 우선 사용",
+    "reference_image_hint4": "주제에 대한 시각적 영감으로만 사용되며, 모든 스타일 제약(배경, 실루엣, 팔레트 등)은 그대로 유지됩니다.",
+    "rerun_3_variants": "변형 3개 다시 생성",
+    "generate_3_variants": "변형 3개 생성",
+    "variants_check_save_hint": "변형 (클릭하여 저장할 항목을 선택하세요 — 복수 선택 가능)",
+    "save_variant": "선택한 변형 저장",
+    "save_n_variants": "선택한 변형 {n}개 저장",
+    "gallery": "갤러리",
+    "all_abilities": "모든 능력",
+    "refresh": "새로고침",
+    "no_icon": "아이콘이 없습니다. 위에서 먼저 생성해 보세요.",
+    "active": "활성",
+    "activate": "활성화",
+    "create_set": "세트 만들기",
+    "set_name_placeholder": "이름 (예: 기본 세트)",
+    "set_code_placeholder": "코드 (예: BASE)",
+    "icon_placeholder": "아이콘",
+    "release_date": "출시일",
+    "set_icon_import": "아이콘 가져오기",
+    "set_icon_change": "변경",
+    "set_icon_clear": "가져온 아이콘 제거",
+    "set_type_base": "기본 세트",
+    "set_type_special": "특별",
+    "set_type_hint": "특별 세트는 플레이와 수집이 가능하지만, 해당 카드는 무작위 또는 반무작위 추첨(선택, 소환, 해방, 집중, 절약)에 절대 나타나지 않습니다.",
+    "existing_sets": "기존 세트 ({count})",
+    "no_set_created": "생성된 세트 없음",
+    "error": "오류",
+    "no_format_found": "포맷을 찾을 수 없습니다. 「formats」 테이블이 생성되어 데이터가 입력되었는지 확인하세요.",
+    "active_m": "활성",
+    "inactive": "비활성",
+    "all_random": "모든 설정 무작위",
+    "launch": "실행",
+    "budget_system_reference": "예산 시스템 — 참조",
+    "cost_credit": "추가 비용으로 환급된 {points}pt",
+    "cost_credit_title": "마나 외에 추가로 지불하는 비용은 카드의 부담을 덜어 주며, 나머지 부분을 충당합니다. 각성은 제외됩니다. 대체 비용이므로 마나를 대신합니다.",
+    "panel_mana_rarity": "마나 비용별 희귀도 분포 (벌크 모드)",
+    "mana_th": "마나",
+    "panel_rarity_multipliers": "희귀도별 배수",
+    "panel_stat_costs": "능력치 비용",
+    "atk_cost_desc": "1포인트당 2.5pt",
+    "def_cost_desc": "1포인트당 2.0pt",
+    "budget_algo_desc": "알고리즘은 먼저 ATK(남은 예산의 45%), 이어서 DEF(55%)를 배분한 뒤, 예산이 소진될 때까지 능력 추가를 시도합니다. 진영 배수(ATK weight, DEF weight)는 추첨 범위를 변경합니다.",
+    "panel_ability_costs": "능력 비용",
+    "panel_faction_profiles": "진영 프로필",
+    "guaranteed_label": "보장:",
+    "forbidden_label": "금지:",
+    "card_schema_label": "카드 스키마 — JSON",
+    "limited_series_assignment": "한정 시리즈 — 배정",
+    "no_dated_card": "데이터베이스에 날짜가 있는 제작 카드가 없습니다.",
+    "search_placeholder": "검색...",
+    "select_card_for_copies": "카드를 선택하여 사본을 확인하세요",
+    "loading": "불러오는 중...",
+    "prints_summary": "{rarity} — 총 {total}장 — {assigned}장 배정, {available}장 사용 가능",
+    "owner_th": "소유자",
+    "tradeable_th": "교환 가능",
+    "actions_th": "액션",
+    "available_dash": "— 사용 가능 —",
+    "yes": "예",
+    "no": "아니요",
+    "unassign": "해제",
+    "assign_to": "배정 대상...",
+    "cannot_read_ref_image": "참조 이미지를 읽을 수 없습니다.",
+    "cannot_load_image": "이미지를 불러올 수 없습니다.",
+    "variants_failed": "변형 {n}개가 실패했습니다.",
+    "confirm_delete_icon": "아이콘 「{name}」을(를) 삭제하시겠습니까?",
+    "icon_saved": "아이콘 「{name}」이(가) 저장되었습니다.",
+    "icons_saved_partial": "아이콘 {ok}개 저장됨, 나머지에서 오류 발생: {error}",
+    "backs_saved": "카드 뒷면 {n}개 저장됨.",
+    "back_saved": "카드 뒷면 « {name} » 저장됨.",
+    "backs_saved_partial": "카드 뒷면 {ok}개 저장됨, 나머지에서 오류 발생: {error}",
+    "image_imported": "이미지를 가져왔습니다 — 저장할 수 있습니다.",
+    "cannot_read_imported_image": "가져온 이미지를 읽을 수 없습니다.",
+    "boards_saved": "게임판 {n}개 저장됨.",
+    "board_saved_named": "게임판 « {name} » 저장됨.",
+    "boards_saved_partial": "게임판 {ok}개 저장됨, 나머지에서 오류 발생: {error}",
+    "image_generated": "이미지 생성됨 ({model})",
+    "generation_error": "생성 오류",
+    "server_error": "서버 오류",
+    "image_generation_error": "이미지 생성 오류",
+    "template_updated": "템플릿 업데이트됨",
+    "template_created": "템플릿 생성됨",
+    "validation_convocation_x": "소환 X: 저장하기 전에 선택기에서 토큰을 선택하세요.",
+    "validation_convocation": "소환: 저장하기 전에 선택기에서 토큰을 선택하세요.",
+    "validation_multi_convocation": "다중 소환: 저장하기 전에 목록에 토큰을 하나 이상 추가하세요.",
+    "validation_lycanthropie": "라이칸스로피 X: 저장하기 전에 변신 토큰을 선택하세요.",
+    "validation_entraide": "상부상조 (종족): 저장하기 전에 대상 종족을 선택하세요.",
+    "validation_appel_supreme": "지고의 부름: 저장하기 전에 대상 종족을 선택하세요.",
+    "validation_multi_convocation_spell": "다중 소환 (액션): 저장하기 전에 목록에 토큰을 하나 이상 추가하세요.",
+    "validation_convocation_spell": "소환 (액션): 저장하기 전에 선택기에서 토큰을 선택하세요.",
+    "card_added": "« {name} » 추가됨!",
+    "unknown_error": "알 수 없는 오류",
+    "illustration_generated": "일러스트 생성됨 ({model})",
+    "import_error": "가져오기 오류",
+    "eveil_label": "각성",
+    "eveil_cost_hint": "각성: 이 카드는 플레이하는 대신 각성 상태로 둘 수 있습니다. 카드는 이 수치의 포인트를 가진 채 손에서 떠나며, 플레이어는 매 턴마다 마나 1을 지불해 포인트를 1씩 소모합니다. 마지막 포인트가 소모되면 손에서 낸 것처럼 필드에 등장합니다. 마나 비용을 대체하며 추가되지 않습니다. 감소 불가.",
+    "eveil_cost_title": "{count, plural, one {# 포인트} other {# 포인트}}로 각성할 수 있음, 턴마다 마나 1 지불 — 마나 비용 대신",
+    "label_occurrences": "횟수",
+    "occurrences_hint": "1 = 한 번만. 그 이상이면 내용이 연속으로 반복됩니다(최대 10회).",
+    "alternative_toggle": "또는",
+    "alternative_toggle_title": "이 효과는 카드 선택지의 한 갈래가 됩니다. 플레이어는 체크된 갈래 중 하나만 처리합니다.",
+    "alternative_warn_alone": "체크된 갈래가 하나뿐입니다: 효과가 정상적으로 처리됩니다",
+    "alternative_warn_triggers": "갈래의 발동 조건이 서로 다릅니다: 서로 배타적이지 않습니다",
+    "random_hint_selection": "공개된 각 카드는 1에서 {max} 사이의 자신만의 비용을 무작위로 정합니다. 체크하지 않으면 세 값 모두 정확히 {max}입니다.",
+    "random_min_hint": "최소 비용 (A): 각 비용은 {min}에서 {max} 사이에서 무작위로 정해집니다.",
+    "cost_optional_hint": "비워 두면 모든 비용을 허용합니다.",
+    "cost_any_label": "모든 비용",
+    "cost_any_toggle": "모든 코스트 (다시 클릭하면 X = 1로 복귀)",
+    "random_hint_faveur": "제공되는 카드의 코스트는 1에서 {max} 사이에서 무작위로 정해집니다. 체크하지 않으면 정확히 {max}입니다.",
+    "content_appel": "덱에서 소환",
+    "content_appel_supreme": "최상위 소환 (덱 → 손, 가장 비싼 카드)",
+    "content_tuteur": "탐색 (지정한 카드 → 손)",
+    "content_transformation": "지정한 카드로 변환",
+    "content_forge": "제작 (아이템 1장을 덱에 섞기)",
+    "forge_min_hint": "제작되는 아이템의 최소 코스트 (하한 A). 최대 코스트는 X이며, X가 비어 있으면 모든 코스트입니다.",
+    "transformation_card_hint": "대상이 된 각 유닛이 이 카드로 변합니다. 카드가 여러 장이면 각 유닛이 무작위로 하나씩 받습니다. 필드를 떠나면 원래 모습으로 돌아옵니다.",
+    "content_epargne": "저축 (카운터)",
+    "content_foi": "신앙 (카운터)",
+    "content_conquete": "정복 (카운터)",
+    "content_exploration": "탐험 (카운터, 3에서 카드 뽑기)",
+    "content_incineration": "소각 (묘지 재활용)",
+    "content_devoration": "포식 (파괴 후 흡수)",
+    "content_tactique": "전술 (무작위 능력, 동일 코스트)",
+    "content_retour_differe": "지연 귀환 (덱 아래로)",
+    "content_silence": "침묵 (대상의 모든 것을 제거)",
+    "content_dechainement": "폭주 X/Y (무작위 액션)",
+    "content_selection_magique": "마법 선택 (3장 중 액션 1장)",
+    "tab_style_guides": "스타일 가이드",
+    "mode_title_delay": "지연 X: 이후 X번째 턴 시작 시, 유닛이 아직 필드에 있다면 단 한 번 발동",
+    "trigger_on_delay": "지연 X (이후 X번째 턴 시작 시)",
+    "retard_turns_title": "지연: 발동까지 필요한 턴 수",
+    "retard_spell_title": "지연: 시전자의 이후 X번째 턴 시작 시 효과가 발동하며, 대상은 그때 선택됩니다",
+    "label_retard": "지연",
+    "trigger_on_end_of_turn_in_graveyard": "턴 종료 시, 묘지에 있는 동안",
+    "content_enterrement": "매장 (덱 → 묘지, 필터 가능)"
+  },
+  "game": {
+    "hero_power_grant": "크리처 하나에게 {kw} 부여",
+    "hero_power_emblem": "문장: {kw}",
+    "hero_power_counter": "{compteur} 카운터에 {x} 추가",
+    "hero_power_machine": "기계에 +{x}/+{y} 추가",
+    "error_not_authenticated": "인증되지 않음",
+    "error_match_not_found": "게임을 찾을 수 없음",
+    "error_load_failed": "게임을 불러오지 못했습니다",
+    "loading": "게임을 불러오는 중…",
+    "waiting_opponent": "상대를 기다리는 중…",
+    "return_to_menu": "메뉴로 돌아가기",
+    "persist_warning": "액션 하나를 저장하지 못했습니다. 동기화 오류가 발생할 수 있습니다. 페이지를 새로고침하여 다시 동기화하세요.",
+    "reload": "새로고침",
+    "close": "닫기",
+    "settings": "설정",
+    "choose_card": "카드를 선택하세요",
+    "attack_choice_target": "⚔️ {label} — 대상을 선택하세요",
+    "attack_power_label": "공격력",
+    "opponent_choosing": "⏳ 상대가 선택하는 중…",
+    "no_creatures": "크리처 없음",
+    "drag_hint": "카드를 여기로 끌어다 놓아 사용하세요",
+    "drop_hint": "놓아서 크리처를 소환하세요",
+    "cancel_targeting": "대상 지정 취소",
+    "action_cancel": "취소",
+    "action_confirm": "확인",
+    "action_close": "닫기",
+    "card_count": "{count, plural, one {카드 #장} other {카드 #장}}",
+    "selection_title": "🎴 선택",
+    "selection_subtitle": "손에 추가할 카드를 선택하세요",
+    "discovery_title": "🔭 발견",
+    "discovery_subtitle": "이번 턴의 드로우: 카드를 선택하세요",
+    "discovery_other_clan": "다른 클랜",
+    "discovery_other_faction": "다른 진영",
+    "power_hero_activated": "영웅 능력 발동됨",
+    "power_used_this_turn": "이번 턴에 사용함",
+    "power_hero_label": "영웅 능력",
+    "power_cost_label": "비용:",
+    "power_mana_unit": "마나",
+    "power_mode_grant_keyword": "능력 부여",
+    "power_mode_spell_trigger": "일회성 효과",
+    "power_mode_aura": "지속 오라",
+    "power_mode_active": "활성",
+    "power_no_description": "설명이 없습니다.",
+    "power_activations_unlimited": "발동 횟수: 무제한",
+    "power_activations_used": "발동 횟수: {used} / {limit}",
+    "power_usage_limit": "제한: 최대 {limit}회",
+    "hero_starting_hp": "시작 체력 {hp}",
+    "power_close_hint": "Esc 키 또는 바깥 영역을 클릭하여 닫기",
+    "divination_traque_title": "🔮 운명의 추적",
+    "divination_title": "🔍 점술",
+    "divination_traque_subtitle": "손에 넣을 카드를 선택하세요. 나머지는 덱 맨 아래로 갑니다.",
+    "divination_subtitle": "덱 맨 위에 놓을 카드를 선택하세요",
+    "graveyard_select_prompt": "묘지에서 카드를 선택하세요",
+    "graveyard_hint_touch": "카드를 터치하면 확대 · 다시 터치하면 설명 보기",
+    "graveyard_hint_hover": "카드에 마우스를 올리면 확대 · 오른쪽 클릭으로 이미지 / 설명 전환",
+    "seconde_vie_hint": "두 번째 삶: 사용 가능한 카드를 더블클릭하세요.",
+    "seconde_vie_blocked_turn": "당신의 차례가 아닙니다.",
+    "graveyard_empty": "묘지에 카드가 없습니다",
+    "cost_default_card_name": "카드",
+    "cost_pay_title": "{name}의 비용을 지불하세요",
+    "cost_discard_label": "🃏 {count, plural, other {카드 #장 버리기}}",
+    "cost_topdeck_label": "{count, plural, other {카드 #장 덱 위로 후퇴}}",
+    "cost_retreat_label": "{count, plural, other {크리처 #체 손으로 되돌리기}}",
+    "cost_topdeck_order_hint": "처음 지정한 카드가 덱의 맨 위에 놓입니다.",
+    "cost_hand_order_hint": "클릭하면 먼저 버리는 카드가 채워지고, 그다음 후퇴 카드가 채워집니다.",
+    "topdeck_cost_caption": "{count, plural, one {후퇴} other {후퇴 ×#}}",
+    "cost_sacrifice_label": "☠ {count, plural, other {크리처 #체 희생}}",
+    "convocation_title": "📣 소집",
+    "convocation_subtitle": "소환할 토큰의 종족을 선택하세요",
+    "cycle_eternel_caption": "♻ 영원의 순환",
+    "compagnons_caption": "🐾 동료",
+    "discard_label": "🔥 {count, plural, other {버린 카드 — #장}}",
+    "graveyard_affect_label": "🪦 {count, plural, other {묘지 — 카드 #장}}",
+    "zone_deck": "덱",
+    "zone_graveyard": "묘지",
+    "zone_deck_yours": "내 덱",
+    "zone_deck_opponent": "상대 덱",
+    "zone_graveyard_yours": "내 묘지",
+    "zone_graveyard_opponent": "상대 묘지",
+    "history_title": "최근 액션",
+    "history_hero_friendly": "내 영웅",
+    "history_hero_enemy": "상대 영웅",
+    "history_spell": "액션 사용: {source}",
+    "history_spell_on": "액션 사용: {source} (대상: {target})",
+    "history_spell_countered": "{source} 무효화됨",
+    "history_attack": "{source}이(가) {target}을(를) 공격",
+    "history_attack_alone": "{source} 공격",
+    "history_death": "{source} 파괴됨",
+    "history_bounce": "{source} 손으로 되돌아감",
+    "history_power": "{target}에 대한 {source}의 능력",
+    "history_power_alone": "{source}의 능력",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, other {피해 #}}",
+    "history_extra_targets": "{count, plural, other {+#개 추가 대상}}",
+    "history_expand": "{count, plural, other {이전 액션 #개 보기}}",
+    "history_collapse": "기록 접기",
+    "convocation_prefix": "{content} 생성",
+    "convocation_create_list": "{content} 생성",
+    "convocation_token_one_named": "{token} 토큰 1개",
+    "convocation_token_many_named": "{token} 토큰 {count}개",
+    "convocation_invoke_one": "{token} {atk}/{hp} 1개 소환",
+    "convocation_invoke_race": "{race} {atk}/{hp} 1개 소환",
+    "convocation_create_one_named": "{token} 토큰 1개 생성",
+    "convocation_none": "토큰 없음",
+    "convocation_and": "{a} 및 {b}",
+    "spell_countered": "🛡️ 반격 주문!",
+    "draw_trigger_self": "🃏 내가 카드를 뽑을 때 효과 발동",
+    "draw_trigger_opponent": "🃏 상대가 카드를 뽑을 때 효과 발동",
+    "faveur_self": "🎁 호의 — 카드가 당신의 손으로 추가됨",
+    "faveur_opponent": "🎁 호의 — 카드가 상대의 손으로 추가됨",
+    "spell_grant_all_allies": " · 모든 아군에게",
+    "spell_grant_target": " · 대상 크리처에게",
+    "fire_breath_label": "불꽃 숨결",
+    "queue_eyebrow": "그대의 가치를 증명하라",
+    "queue_subtitle": "상대를 찾아 싸우세요",
+    "queue_heading": "플레이",
+    "queue_select_deck_error": "덱을 선택해 주세요",
+    "queue_connection_error": "매치메이킹 연결 오류",
+    "queue_no_valid_deck": "플레이하려면 유효한 덱(50장)이 최소 1개 필요합니다.",
+    "queue_create_deck": "덱 만들기",
+    "queue_format_label": "포맷:",
+    "queue_select_deck_label": "덱을 선택하세요:",
+    "queue_no_deck_for_format": "이 포맷에 맞는 덱이 없습니다. 덱 빌더에서 만들어 보세요.",
+    "queue_find_match": "게임 찾기",
+    "queue_back_to_menu": "메뉴로 돌아가기",
+    "queue_searching": "상대를 찾는 중…",
+    "mode_suffix_death": " · 죽을 때",
+    "mode_suffix_tap": " · 탭",
+    "mode_suffix_return": " · 손으로 되돌리기",
+    "mode_suffix_end_of_turn": " · 턴 종료 시",
+    "presage_title": "🌙 전조",
+    "presage_subtitle": "덱의 첫 번째 카드는 무엇일까요?",
+    "presage_hit": "훌륭해요 — 그 카드가 손으로 들어옵니다.",
+    "presage_miss": "빗나갔습니다. 정답 카드는 초록색으로 표시됩니다.",
+    "apprentissage_title": "📖 습득",
+    "apprentissage_subtitle": "크리처가 어떤 액션을 기억해야 할까요?",
+    "foi_title": "✨ 신앙",
+    "foi_subtitle": "손으로 가져올 카드를 선택하세요. 해당 비용만큼 신앙이 차감되며, 나머지는 유지됩니다.",
+    "conquete_title": "🚩 정복",
+    "conquete_subtitle": "상대 덱의 카드 3장입니다. 손으로 가져올 카드를 선택하세요. 해당 카드는 남은 게임 동안 당신의 것이 됩니다.",
+    "zone_eveil": "각성",
+    "zone_eveil_yours": "내 각성",
+    "zone_eveil_opponent": "상대 각성",
+    "hand_show": "손패 보기",
+    "eveil_hint": "클릭할 때마다 마나 1을 지불합니다. 마지막 포인트에서 카드가 손에서 나온 것처럼 필드에 등장합니다.",
+    "eveil_remaining": "{count, plural, one {#포인트 남음} other {#포인트 남음}}",
+    "eveil_next_point": "다음 포인트의 비용은 마나 1입니다.",
+    "eveil_next_arrives": "마지막 포인트: 카드가 필드에 등장합니다.",
+    "eveil_play_now": "필드에 등장시키기",
+    "eveil_blocked_mana": "마나가 부족합니다.",
+    "eveil_blocked_board_plein": "필드가 가득 찼습니다.",
+    "eveil_blocked_vie": "비용을 지불할 생명력이 부족합니다.",
+    "eveil_blocked_main": "추가 비용을 지불할 손패가 부족합니다.",
+    "eveil_blocked_plateau": "희생할 크리처가 부족합니다.",
+    "eveil_blocked_deck": "덱에 추방할 카드가 부족합니다.",
+    "eveil_blocked_sans_cible": "이 액션에 유효한 대상이 없습니다.",
+    "eveil_suspend": "각성 시작 ({count, plural, one {#포인트} other {#포인트}})",
+    "eveil_pay_n": "{count, plural, one {# 지불} other {# 지불}}",
+    "eveil_max": "최대 {count}",
+    "eveil_max_hint": "마지막 포인트는 필드 등장 단계이며, 대상 선택과 함께 따로 지불합니다.",
+    "choix_ou_title": "⚖️ 택일",
+    "synergie_title": "시너지 — 능력을 선택하세요",
+    "synergie_subtitle": "이 크리처는 선택한 능력이 발동할 때마다, 내 쪽이든 상대 쪽이든 보너스를 얻습니다.",
+    "synergie_search": "능력 검색…",
+    "synergie_in_play": "필드에 있는 능력",
+    "synergie_others": "기타 능력",
+    "synergie_none": "일치하는 능력이 없습니다.",
+    "choix_ou_subtitle": "이 효과 중 하나만 처리됩니다.",
+    "activation_menu_title": "어떤 능력을 발동할까요?",
+    "activation_learned": "{name} 발동",
+    "mutation_button": "변이",
+    "mutation_button_title": "변이: 이 카드를 변환합니다 (무료, 1회)",
+    "mutation_discover": "변이 — 발견 {n}/2",
+    "mutation_discover_subtitle": "코스트 {x}의 일반 크리처를 선택하세요",
+    "mutation_pick_ability": "돌연변이 — 능력 {n}/2",
+    "mutation_pick_subtitle": "이 크리처가 물려줄 능력을 선택하세요",
+    "mutation_empty": "이 코스트로 선택 가능한 크리처가 없습니다.",
+    "mutation_cancel": "취소",
+    "infestation_caption": "🪳 감염",
+    "infestation_eclosion_caption": "🪳 감염 — 부화",
+    "enterrement_caption": "⚰ 매장"
+  },
+  "tutorial": {
+    "page_eyebrow": "결투의 기술을 배워 보세요",
+    "page_subtitle": "전설의 군단 — 중세 판타지 카드 결투",
+    "page_title": "플레이 방법",
+    "track_beginner": "입문자 — 전체 가이드",
+    "track_tcg": "TCG 플레이어 — 핵심 요약",
+    "track_factions": "진영 & 클랜",
+    "goal_title": "게임의 목표",
+    "stat_hero_start": "시작 시 영웅",
+    "stat_starting_hand": "시작 손패",
+    "stat_mana_growth": "마나 (매 턴 증가)",
+    "stat_max_board": "필드 최대 크리처 수",
+    "turn_title": "턴 진행 순서",
+    "turn_intro": "각 턴이 시작될 때 다음 순서로 진행됩니다:",
+    "hand_title": "손패와 드로우",
+    "creatures_title": "크리처",
+    "spells_title": "액션",
+    "combat_title": "전투",
+    "combat_see_full_list": "전체 능력 목록은 페이지 하단에 있습니다.",
+    "hero_title": "영웅과 영웅의 능력",
+    "alt_costs_title": "추가 비용과 각성",
+    "counters_title": "카운터: 저축, 신앙, 정복",
+    "singulier_title": "싱귤러: 중복 없는 덱에 주는 보너스",
+    "deck_title": "덱 구성하기",
+    "tcg_numbers_title": "핵심 수치",
+    "stat_hero_hp": "영웅 체력",
+    "stat_deck_exact": "카드 수 / 덱 (정확히)",
+    "stat_hand_range": "손패 (시작 → 최대)",
+    "stat_mana_per_turn": "마나 (턴당 +1)",
+    "tcg_gameloop_title": "게임 루프 (AoL 특이 사항)",
+    "tcg_deckbuilding_title": "덱 빌딩",
+    "tcg_combat_title": "전투 — 해결",
+    "tcg_hero_spells_title": "영웅 & 액션",
+    "lexicon_eyebrow": "전투 용어집",
+    "lexicon_subtitle": "게임과 항상 동기화되는 전체 참조입니다. 「X」와 「Y」는 카드마다 정해진 값입니다.",
+    "lexicon_title": "모든 능력",
+    "search_placeholder": "능력 검색…",
+    "creature_abilities_group": "크리처 능력 ({count})",
+    "spell_abilities_group": "액션 능력 ({count})",
+    "no_ability_match": "「{query}」에 해당하는 능력이 없습니다.",
+    "goal_text": "각 플레이어는 <hi>영웅</hi>이 되어 영웅에 따라 <hi>{min}~{max} 생명력</hi>({usual}이 가장 흔함)으로 시작합니다. 강력한 능력은 생명력이 조금 낮은 대가를 치르고, 평범한 능력은 생명력이 조금 더 높아 보완됩니다. 상대 영웅의 생명력을 <hi>{zero}</hi>(으)로 만들면 승리합니다. 이를 위해 크리처를 소환하고 액션을 사용하세요.",
+    "stat_hero_start_value": "{min}–{max} HP",
+    "stat_starting_hand_value": "카드 {first}장 또는 {second}장"
+  },
+  "deck": {
+    "alignment_incompatible": "선과 악 성향은 함께 쓸 수 없습니다",
+    "max_mercenaires_current": "용병 최대 {max}장 (현재 {current}장)",
+    "max_capability_current": "「{label}」 능력 최대 {max}장 (현재 {count}장)",
+    "card_not_owned": "보유하지 않은 카드",
+    "no_items_in_deck": "아이템은 덱에 넣을 수 없습니다. 게임 중에 획득합니다.",
+    "no_items_in_deck_current": "이 덱에 아이템이 {count, plural, other {#장}} 있습니다. 아이템은 더 이상 덱에 넣을 수 없으니 제거하세요.",
+    "deck_full": "덱이 가득 참",
+    "singleton_yes": "싱글턴 덱 ✓",
+    "singleton_no": "싱글턴 덱 ✗",
+    "singleton_hint": "싱글턴 덱에는 중복된 카드가 없습니다. 싱글턴 표시가 있는 능력은 이 조건에서만 발동합니다. 덱 구축 규칙은 아닙니다.",
+    "unique_copy": "유일한 카드",
+    "max_three_copies": "최대 3장",
+    "alignment_conflict": "성향 충돌",
+    "one_faction_only": "진영은 1개만 허용",
+    "one_clan_only": "클랜은 1개만 허용",
+    "max_mercenaires": "용병 최대 {max}장",
+    "no_slot_available": "남은 슬롯 없음",
+    "max_capability": "「{label}」 능력 최대 {max}장",
+    "enter_deck_name": "덱 이름을 입력하세요",
+    "choose_faction_prep": "진영을 선택하세요 (준비 탭)",
+    "select_format": "포맷을 선택하세요",
+    "select_hero": "영웅을 선택하세요",
+    "deck_exact_size": "덱은 정확히 {size}장이어야 합니다 (현재 {current}장)",
+    "illegal_cards": "이 포맷에서 허용되지 않는 카드: {cards}",
+    "deck_contains_unowned": "덱에 보유하지 않은 카드가 있습니다",
+    "save_failed": "덱 저장 실패",
+    "forge_your_deck": "덱을 제작하라",
+    "step_preparation": "1 · 준비",
+    "step_appearance": "2 · 외형",
+    "step_cards": "3 · 카드",
+    "cancel": "취소",
+    "choose_faction_first_tab": "먼저 1 · 준비 탭에서 진영을 선택하세요.",
+    "search_placeholder": "검색...",
+    "creatures": "크리처",
+    "spells": "액션",
+    "items": "아이템",
+    "all_capabilities": "능력",
+    "all_races": "종족",
+    "all_clans": "클랜",
+    "all_sets": "세트",
+    "year": "연도",
+    "rarity_abbr_uncommon": "비흔함",
+    "rarity_abbr_legendary": "유니",
+    "expert_only_title": "전문가 카드만 표시 (일반 제외)",
+    "expert": "전문가",
+    "preparation": "준비",
+    "forge_a_deck": "덱 제작",
+    "deck_name": "덱 이름",
+    "deck_name_placeholder": "덱 이름...",
+    "faction": "진영",
+    "choose_faction": "진영 선택...",
+    "faction_hint": "단일 진영 + 용병. 진영을 변경하면 호환되지 않는 카드/영웅이 제거됩니다.",
+    "format": "포맷",
+    "mode_placeholder": "모드...",
+    "mode_classic": "클래식",
+    "mode_expert": "전문가",
+    "extent_placeholder": "범위...",
+    "extent_standard": "스탠다드",
+    "extent_extended": "확장",
+    "choose_faction_first_tab_short": "먼저 진영을 선택하세요 (1 · 준비 탭).",
+    "choose_hero": "영웅 선택",
+    "right_click_power": "우클릭: 능력 보기",
+    "no_hero_for_faction": "이 진영에 사용할 수 있는 영웅이 없습니다.",
+    "board": "게임판",
+    "change": "변경",
+    "choose_board": "게임판 선택",
+    "card_back": "카드 뒷면",
+    "choose_card_back": "카드 뒷면 선택",
+    "mono_faction": "단일 진영",
+    "mono_clan": "단일 클랜",
+    "clan_label": "클랜:",
+    "no_clan": "클랜 없음",
+    "alignment_label": "성향:",
+    "deck": "덱",
+    "mana_curve_tooltip": "마나 {label}: {count, plural, one {카드 #장} other {카드 #장}}",
+    "click_cards_to_add": "카드를 클릭하여 추가",
+    "free_slot": "빈 슬롯",
+    "more_slots": "+{count}개 슬롯",
+    "keywords": "키워드",
+    "max_suffix": "(최대 {max})",
+    "saving": "저장 중...",
+    "save_deck": "저장",
+    "create_deck": "덱 만들기",
+    "passive": "패시브",
+    "mana": "마나",
+    "no_board_available": "사용 가능한 보드가 없습니다.",
+    "no_card_back_available": "사용 가능한 카드 뒷면이 없습니다.",
+    "format_number": "포맷 {id}",
+    "no_format": "포맷 없음",
+    "compose_your_army": "군대를 구성하라",
+    "my_decks": "내 덱",
+    "decks_in_armory": "무기고에 덱 {count, plural, one {#개} other {#개}}",
+    "decks_in_format": "이 포맷에 덱 {count, plural, one {#개} other {#개}}",
+    "new_deck": "새 덱",
+    "back_to_menu": "메뉴로 돌아가기",
+    "all": "전체",
+    "no_decks_yet": "아직 덱이 없습니다",
+    "create_first_deck": "첫 덱을 만들어 보세요",
+    "no_decks_in_format": "이 포맷에 덱이 없습니다",
+    "show_all_decks": "모든 덱 보기",
+    "cards_count_label": "카드 {count}/{size}장",
+    "valid_suffix": " (유효)",
+    "edit": "수정",
+    "confirm": "확인",
+    "delete": "삭제",
+    "admire_your_armies": "군대를 감상하라",
+    "card_collection": "카드 컬렉션",
+    "cards_count": "{count, plural, one {카드 #장} other {카드 #장}}",
+    "cards_of_total": " / {total}",
+    "search_by_name": "이름으로 검색...",
+    "mana_label": "마나:",
+    "reset_filters": "필터 초기화",
+    "faction_label": "진영:",
+    "all_fem": "전체",
+    "rarity_label": "희귀도:",
+    "expert_only": "전문가 전용",
+    "capability_label": "능력:",
+    "race_label": "종족:",
+    "all_masc": "전체",
+    "format_label": "형식:",
+    "set_label": "세트:",
+    "year_label": "연도:",
+    "no_cards_match": "필터와 일치하는 카드가 없습니다",
+    "show_locked": "잠긴 카드 표시",
+    "locked_badge": "잠김",
+    "locked_summary": "{count, plural, one {잠긴 카드 #장} other {잠긴 카드 #장}}",
+    "locked_hint": "다른 진영의 일반 카드는 전체 잠금 해제 상품을 통해 이용할 수 있습니다.",
+    "unplayable_badge": "부족한 카드 {count}장",
+    "items_badge": "{count, plural, one {아이템 #개 포함} other {아이템 #개 포함}} — 제거 필요",
+    "unplayable_reason": "이 덱에는 더 이상 보유하지 않은 진영의 카드가 포함되어 있습니다: {factions}. 덱은 그대로 유지되며, 해당 진영을 되찾으면 다시 사용할 수 있습니다.",
+    "unplayable_rebuy": "상점에서 되찾기"
+  },
+  "cardBacks": {
+    "eyebrow": "나만의 스타일을 뽐내세요",
+    "title": "내 카드 뒷면",
+    "subtitle": "{visible, plural, one {#개 표시} other {#개 표시}} · {prints, plural, one {보유 프린트 #개} other {보유 프린트 #개}}",
+    "back_to_menu": "메뉴로 돌아가기",
+    "rarity_label": "희귀도:",
+    "owned_only": "보유한 것만",
+    "empty": "표시할 카드 뒷면이 없습니다.",
+    "equipped": "장착됨",
+    "default_badge": "기본",
+    "not_owned": "미보유"
+  },
+  "boards": {
+    "eyebrow": "나만의 전장을 꾸미세요",
+    "title": "내 보드",
+    "subtitle": "{visible, plural, one {#개 표시} other {#개 표시}} · {prints, plural, one {보유 프린트 #개} other {보유 프린트 #개}}",
+    "back_to_menu": "메뉴로 돌아가기",
+    "rarity_label": "희귀도:",
+    "owned_only": "보유한 것만",
+    "empty": "표시할 보드가 없습니다.",
+    "equipped": "장착됨",
+    "default_badge": "기본",
+    "not_owned": "미보유"
+  },
+  "legal": {
+    "back_to_site": "← 사이트로 돌아가기",
+    "draft_warning": "⚠ 작성 중인 문서입니다 — 현재 상태로는 계약상 효력이 없습니다.",
+    "todo": "작성 필요 — 일반 공개 전에 작성해야 하는 항목입니다.",
+    "updated": "최종 업데이트: {date}",
+    "cgu_title": "이용약관",
+    "cgu_s1": "목적 및 동의",
+    "cgu_s2": "서비스 이용 및 계정 생성",
+    "cgu_s3": "최소 연령 요건",
+    "cgu_s4": "게임 화폐, 카드 및 구매",
+    "cgu_s5": "행동 규칙 및 제재",
+    "cgu_s6": "지식재산권",
+    "cgu_s7": "서비스의 제공, 변경 및 종료",
+    "cgu_s8": "책임",
+    "cgu_s9": "계정 삭제",
+    "cgu_s10": "준거법 및 문의",
+    "privacy_title": "개인정보 처리방침",
+    "privacy_s1": "개인정보 처리 책임자",
+    "privacy_s2": "수집하는 정보",
+    "privacy_s3": "처리 목적 및 법적 근거",
+    "privacy_s4": "수탁업체 및 호스팅",
+    "privacy_s5": "보관 기간",
+    "privacy_s6": "쿠키 및 추적기",
+    "privacy_s7": "이용자의 권리 (GDPR)",
+    "privacy_s8": "보안",
+    "privacy_s9": "문의 및 이의 제기"
+  },
+  "factions_page": {
+    "back": "홈으로 돌아가기",
+    "races": "종족",
+    "signature": "대표 능력",
+    "profile": "플레이 성향",
+    "offense": "공격형",
+    "defense": "방어형",
+    "commons": "{count, plural, one {일반 #장} other {일반 #장}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {일반 카드 #장} other {일반 카드 #장}} · {clans, plural, one {클랜 #개} other {클랜 #개}} — 첫날부터 무료로 제공됩니다.",
+    "no_clan_title": "모든 클랜에 개방",
+    "no_clan_desc": "이 카드들은 어떤 클랜에도 속하지 않습니다. 어떤 클랜을 중심으로 덱을 구성하든 해당 진영의 모든 덱에 넣을 수 있습니다.",
+    "other_factions": "다른 진영 보기",
+    "costs": "추가 비용",
+    "cost_life": "체력",
+    "cost_discard": "버리기",
+    "cost_sacrifice": "희생",
+    "cost_exile": "추방",
+    "cost_topdeck": "후퇴",
+    "cost_retreat": "철수",
+    "cost_retreat_desc": "이 카드들은 마나 비용 외에 전장의 크리처를 손으로 되돌려야 합니다.",
+    "cost_life_desc": "이 카드들은 마나 비용 외에 영웅의 생명력으로도 지불해야 합니다.",
+    "cost_discard_desc": "이 카드들은 마나 비용 외에 손의 카드를 버려야 합니다.",
+    "cost_sacrifice_desc": "이 카드들은 마나 비용 외에 자신이 조종하는 크리처를 희생해야 합니다.",
+    "cost_exile_desc": "이 카드들은 마나 비용 외에 덱 맨 위의 카드를 추방합니다.",
+    "cost_topdeck_desc": "이 카드들은 마나 비용 외에 손의 카드를 덱 맨 위에 되돌려놓아야 합니다.",
+    "commons_count": "{count, plural, one {일반 카드 #장} other {일반 카드 #장}} · {clans, plural, one {클랜 #개} other {클랜 #개}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "계정을 만들고 {faction}(으)로 시작하세요. 모든 일반 카드가 지급됩니다.",
+    "visitor_cta": "계정 만들기",
+    "owned_just_chosen": "{faction}이(가) 내 진영입니다",
+    "owned_bundle": "패키지에 포함됨",
+    "owned_starter": "내 시작 진영",
+    "owned_bought": "획득한 진영",
+    "owned_note": "아래의 모든 일반 카드가 내 컬렉션에 있습니다.",
+    "enter_game": "게임 입장",
+    "see_collection": "내 컬렉션 보기",
+    "free_pitch": "아직 시작 진영을 선택하지 않았습니다. <strong>{faction}</strong>(으)로 시작하고 모든 일반 카드를 무료로 받으세요.",
+    "free_cta": "이 진영으로 시작하기",
+    "free_warning": "이 선택은 되돌릴 수 없습니다. 변경은 불가능하며, 이후 다른 진영을 추가로 획득할 수만 있습니다.",
+    "free_confirm": "확인 — {faction}",
+    "cancel": "취소",
+    "buy_pitch": "{faction}을(를) 컬렉션에 추가하세요. 모든 일반 카드를 영구히 얻습니다.",
+    "your_balance": "(보유: {balance})",
+    "debt_blocks": "새로 구매하려면 먼저 {debt} 골드의 부채를 상환해야 합니다.",
+    "not_enough_gold": "골드 부족",
+    "buy_cta": "이 진영 잠금 해제",
+    "err_already_chosen": "이미 시작 진영을 선택했습니다.",
+    "err_choice": "선택을 저장하지 못했습니다.",
+    "err_purchase": "구매를 완료하지 못했습니다.",
+    "badge_starter": "시작",
+    "badge_owned": "보유",
+    "bundle_hint": "또는 부족한 {count}개 진영을 {price} 골드에 모두 받으세요 →"
+  },
+  "cardStatus": {
+    "draft": "초안",
+    "playable": "플레이 가능",
+    "retired": "은퇴",
+    "excluded": "제외됨",
+    "deck_unavailable": "{count, plural, one {사용 불가 카드 #장} other {사용 불가 카드 #장}}",
+    "cannot_add": "사용 불가 카드: 덱에 넣을 수 없습니다",
+    "reason": "사유: {reason}"
+  },
+  "tournaments": {
+    "qualification_title": "예선 토너먼트",
+    "grand_title": "월간 그랜드 토너먼트",
+    "players": "플레이어",
+    "access_ticket": "토너먼트 티켓으로 참가 가능",
+    "access_golden": "골든 티켓으로만 참가 가능",
+    "winner_golden_title": "우승자에게 골든 티켓 증정",
+    "winner_golden_desc": "월간 그랜드 토너먼트의 유일한 입장 열쇠",
+    "bracket_size": "대진표 규모",
+    "bracket_size_aria": "그랜드 토너먼트 규모",
+    "participation_rewards": "한정판 플레이 매트 + 영웅",
+    "participation_desc": "결과와 상관없이 모든 참가자에게 지급",
+    "prize_pool": "상금 풀",
+    "real_money": "현금",
+    "market_credits": "마켓 크레딧",
+    "essences": "에센스",
+    "wins_count": "{count, plural, one {#승} other {#승}}",
+    "credits_count": "{count} 크레딧",
+    "col_wins": "승리",
+    "col_money": "현금",
+    "col_reward": "보상",
+    "col_credits": "크레딧",
+    "col_essence": "에센스",
+    "meta_title": "토너먼트 — 전설의 군단",
+    "page_eyebrow": "경쟁 서킷",
+    "page_subtitle": "티켓 한 장으로 예선 토너먼트에 참가할 수 있으며, 우승자는 월간 그랜드 토너먼트의 골든 티켓을 획득합니다. 승리할 때마다 마켓 크레딧과 에센스를 얻습니다.",
+    "page_title": "토너먼트",
+    "tickets_held": "티켓 <b>{count}</b>장 보유 중",
+    "get_tickets": "티켓 얻기",
+    "open_title": "진행 중인 토너먼트",
+    "none_open": "현재 열려 있는 토너먼트가 없습니다.",
+    "kind_weekly": "주간",
+    "kind_free": "무료",
+    "kind_special": "특별",
+    "capacity": "플레이어 {count}명",
+    "running": "진행 중",
+    "registration_closed": "등록 마감",
+    "circuit_eyebrow": "서킷",
+    "circuit_title": "티켓에서 월간 타이틀까지",
+    "rewards_eyebrow": "보상",
+    "rewards_title": "승리마다 받는 보상",
+    "footnote_rounds": "<i>r</i>라운드에서 탈락한 플레이어는 <i>r</i>−1경기를 이긴 것입니다.",
+    "footnote_credits": "마켓 크레딧은 획득 후 {days}일이 지나면 만료됩니다.",
+    "footnote_cash": "현금은 {wins}승부터 지급되며,",
+    "footnote_all": "크레딧, 에센스, 코스메틱은 보상을 받는 모든 참가자에게 지급됩니다.",
+    "step_label": "{n}단계",
+    "step_ticket_title": "토너먼트 티켓",
+    "step_ticket_text": "상점에서 구매하며, 활동적인 플레이어에게는 매월 무료 티켓이 제공됩니다.",
+    "step_qualification_title": "예선",
+    "step_qualification_text": "{size}명의 플레이어가 {rounds}라운드 단판 토너먼트로 겨루며, {size}명이 모두 준비되면 바로 시작됩니다.",
+    "step_golden_text": "우승자는 월간 그랜드 토너먼트 출전권을 획득합니다.",
+    "step_grand_text": "골든 티켓 보유자들이 맞붙으며, 매 마감일 전까지 한 라운드씩 진행합니다.",
+    "how_it_works": "진행 방식",
+    "rule_wins": "보상은 최종 순위가 아니라 <b>승리 횟수</b>에 따라 결정됩니다. 어느 대진표에서든 2승의 보상은 같습니다. 챔피언만 더 많이 받습니다.",
+    "rule_bracket": "그랜드 토너먼트는 완전한 대진표(16, 32, 64명…)로 진행됩니다. 초과 인원은 다음 달로 <b>우선 이월</b>되며, 예선 통과자가 {min}명 미만이면 해당 대회 전체가 연기됩니다.",
+    "rule_golden": "골든 티켓이 여러 장인가요? 대회당 한 번만 등록할 수 있으며, 남는 티켓은 다음 대회에 사용할 수 있습니다.",
+    "rule_forfeit": "마감일에 나타나지 않은 플레이어는 기권패 처리됩니다. 양쪽 모두 불참하면 양측 기권패이며, 다음 상대는 경기 없이 진출합니다.",
+    "rule_credits": "<b>마켓 크레딧</b>은 한정판 경매에 사용되며 획득 후 {days}일이 지나면 만료됩니다.",
+    "rule_essence": "<b>에센스</b>는 영구적입니다. 에센스 {cost}개 = 무작위 한정판 카드 1장 제작.",
+    "signup_error": "등록할 수 없습니다.",
+    "signup_done": "등록되었습니다.",
+    "signup_full": "마감되었습니다.",
+    "signup_blocked": "등록 불가",
+    "signup_debt": "{count, plural, one {정산해야 할 티켓 #장} other {정산해야 할 티켓 #장}}",
+    "signup_get_ticket": "티켓 받기",
+    "signup_no_ticket": "사용 가능한 티켓 없음",
+    "signup_pending": "등록 중…",
+    "signup_with_ticket": "등록 (1 🎟️)",
+    "signup_free": "등록 (무료)",
+    "signup_seats": "{count, plural, one {남은 자리 #개} other {남은 자리 #개}}",
+    "signup_tickets_in_hand": "{count, plural, one {보유 티켓 #장} other {보유 티켓 #장}}"
+  },
+  "errors": {
+    "title": "오류가 발생했습니다",
+    "body": "저희 쪽에서 문제가 발생했습니다. 다시 시도해 보시고, 문제가 계속되면 홈으로 돌아가 주세요.",
+    "retry": "다시 시도",
+    "home": "홈으로 돌아가기",
+    "not_found_title": "페이지를 찾을 수 없음",
+    "not_found_body": "이 페이지는 존재하지 않거나 이동되었습니다.",
+    "game_title": "게임에 오류가 발생했습니다",
+    "game_body": "게임 화면 표시가 중단되었습니다. 게임을 다시 불러오면 중단된 지점부터 이어서 진행됩니다.",
+    "game_reload": "게임 다시 불러오기"
+  },
+  "geo": {
+    "unavailable": "이 기능은 아직 회원님의 국가에서 이용할 수 없습니다. 게임은 계속 모두 이용하실 수 있습니다.",
+    "age_title": "나이 확인",
+    "age_intro": "구매는 만 {age}세 이상만 가능합니다. 이 확인은 한 번만 요청됩니다.",
+    "age_checkbox": "만 {age}세 이상임을 확인합니다.",
+    "age_confirm": "확인 후 계속",
+    "age_cancel": "취소",
+    "age_error": "저장에 실패했습니다. 다시 시도해 주세요."
+  }
+}

@@ -49,6 +49,9 @@ type Dict = {
   trailer_title: string;
   f4_title: string;
   f4_desc: string;
+  /** Renvoi de l'astérisque de `f4_desc`. Absent d'une langue pas encore
+   *  traduite : la ligne ne s'affiche alors pas. */
+  f4_note?: string;
   f4_example: string;
   cta_title: string;
   cta_sub: string;
@@ -230,6 +233,7 @@ export default function LandingPage({
             <div className="vt-duo-texte">
               <h2 className="vt-h2">{txt.f4_title}</h2>
               <p className="vt-corps">{txt.f4_desc}</p>
+              {txt.f4_note && <p className="vt-note">{txt.f4_note}</p>}
             </div>
             <figure className="vt-tournoi">
               <div className="vt-tournoi-cadre">

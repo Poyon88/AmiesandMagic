@@ -33,8 +33,8 @@ const SUPA_KEY = ENV.SUPABASE_SERVICE_ROLE_KEY;
 if (!ANTHROPIC_KEY) throw new Error("ANTHROPIC_API_KEY manquant");
 if (!SUPA_URL || !SUPA_KEY) throw new Error("SUPABASE URL / service role manquant");
 
-const TARGETS = ["en", "es", "de", "it", "pt", "ja", "zh"];
-const LANG = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
+const TARGETS = ["en", "es", "de", "it", "pt", "ja", "zh", "ru", "ar", "ko", "zh-TW", "tr", "pl"];
+const LANG = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese", ru: "Russian", ar: "Modern Standard Arabic", ko: "Korean", "zh-TW": "Traditional Chinese (Taiwan)", tr: "Turkish", pl: "Polish" };
 const MODEL = "claude-sonnet-5-5";
 
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));

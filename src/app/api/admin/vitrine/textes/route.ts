@@ -1,5 +1,5 @@
 // Textes de la page d'accueil réécrits depuis l'admin. Le français est
-// enregistré D'ABORD, puis traduit dans les sept autres langues : un échec de
+// enregistré D'ABORD, puis traduit dans toutes les autres langues : un échec de
 // traduction ne perd pas la saisie, et réenregistrer complète ce qui manque.
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";

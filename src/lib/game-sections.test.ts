@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { GAME_SECTIONS, findGameSection, gameSectionMarkdownLink } from "./game-sections";
+import { SUPPORTED_LOCALES } from "@/i18n/config";
 
 const RACINE = process.cwd();
 const MAIN_MENU = fs.readFileSync(
@@ -59,14 +60,14 @@ describe("GAME_SECTIONS", () => {
 
 // Le bouton d'action appelle `t(section.labelKey)` sur la page de la news. Une
 // clé absente d'une locale ferait lever next-intl pour ce joueur-là seulement —
-// invisible en test français. On vérifie donc les 8 fichiers de messages.
+// invisible en test français. On vérifie donc tous les fichiers de messages.
 describe("libellés de section présents dans toutes les locales", () => {
   const locales = fs
     .readdirSync(path.join(RACINE, "messages"))
-    .filter((f) => /^[a-z]{2}\.json$/.test(f));
+    .filter((f) => /^[a-z]{2}(-[A-Z]{2})?\.json$/.test(f));
 
-  it("trouve bien les 8 fichiers de messages", () => {
-    expect(locales.length).toBe(8);
+  it("trouve bien un fichier de messages par langue", () => {
+    expect(locales.length).toBe(SUPPORTED_LOCALES.length);
   });
 
   it.each(locales)("%s traduit toutes les sections", (fichier) => {

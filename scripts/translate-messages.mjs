@@ -21,8 +21,8 @@ const MESSAGES_DIR = path.join(ROOT, "messages");
 const HASH_FILE = path.join(ROOT, ".i18n-hashes.json");
 
 const SOURCE_LOCALE = "fr";
-const TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh"];
-const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese" };
+const TARGET_LOCALES = ["en", "es", "de", "it", "pt", "ja", "zh", "ru", "ar", "ko", "zh-TW", "tr", "pl"];
+const LANG_NAMES = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese", ja: "Japanese", zh: "Simplified Chinese", ru: "Russian", ar: "Modern Standard Arabic", ko: "Korean", "zh-TW": "Traditional Chinese (Taiwan)", tr: "Turkish", pl: "Polish" };
 const MODEL = "claude-sonnet-5-5";
 
 const args = process.argv.slice(2);
@@ -100,6 +100,9 @@ You receive one entry per line: a key, a TAB, then the French value. Rules:
 - GLOSSARY — the creature ability « Neutralisation » (it silences a chosen ability on enemy units while its carrier is in play) is named EXACTLY: English "Neutralize", Spanish "Neutralización", German "Neutralisierung", Italian "Neutralizzazione", Portuguese "Neutralização", Japanese "無力化", Simplified Chinese "中和"; the verb « neutraliser » follows the same root.
 - GLOSSARY — the additional cost « Repli » (label « Repli {n} »: put cards from your hand back on top of your deck) keeps its established name EXACTLY: English "Retreat", Spanish "Repliegue", German "Rückzug", Italian "Ripiego", Portuguese "Recolocação", Japanese "リプレイス", Simplified Chinese "回置". Never rename it (never "Fallback").
 - GLOSSARY — the creature ability « Apprentissage » (label « Apprentissage X »: the creature memorizes an action from your hand and can play it without mana) is named EXACTLY: English "Learning", Spanish "Aprendizaje", German "Lehre", Italian "Apprendistato", Portuguese "Aprendizado", Japanese "習得", Simplified Chinese "修习" (followed by " X" in the label). Never "Apprenticeship".
+- GLOSSARY (Russian / Arabic) — the same established terms are: « action » → Russian "Действие", Arabic "إجراء" ; « objet » → "Предмет", "غرض" ; « Entrave » → "Оковы", "تقييد" ; « Neutralisation » → "Нейтрализация", "تحييد" ; « Repli » → "Отступление", "تراجع" ; « Apprentissage » → "Обучение", "تعلّم". In Arabic always write numbers with Western digits (0-9) and keep X, Y, +X/+Y and every {placeholder} in Latin characters exactly as given.
+- GLOSSARY (Korean / Traditional Chinese / Turkish / Polish) — the same established terms are: « action » → Korean "액션", Traditional Chinese "行動", Turkish "Aksiyon", Polish "Akcja" ; « objet » → "아이템", "物品", "Eşya", "Przedmiot" ; « Entrave » → "속박", "束縛", "Pranga", "Pęta" ; « Neutralisation » → "무력화", "中和", "Etkisizleştirme", "Neutralizacja" ; « Repli » → "후퇴", "回置", "Geri Çekilme", "Odwrót" ; « Apprentissage » → "습득", "修習", "Öğrenme", "Nauka". Traditional Chinese must use Traditional characters and Taiwan vocabulary throughout, never Simplified.
+- GAME NAME — "Armies of Legends" stays untranslated in every Latin-script language (Turkish and Polish included). It is written 伝説の軍団 in Japanese, 传奇军团 in Simplified Chinese, 傳奇軍團 in Traditional Chinese, 전설의 군단 in Korean, Армии Легенд in Russian (uninflected, inside «…» when it sits in a sentence) and جيوش الأساطير in Arabic.
 - Keys under vocab.markers.* are generic FALLBACK fragments substituted INSIDE a sentence in place of a concrete noun. Translate them so they remain grammatical in that slot; keep them the same part of speech as the French.
 
 OUTPUT FORMAT — follow exactly:
@@ -220,7 +223,10 @@ async function main() {
     console.log(`\n[${locale}] écrit → ${outPath}`);
   }
 
-  fs.writeFileSync(HASH_FILE, JSON.stringify(hashes, null, 2) + "\n");
+  // Relu juste avant d'écrire : plusieurs langues lancées en parallèle (un
+  // processus par langue) ne s'écrasent pas leurs empreintes.
+  const aJour = FORCE ? {} : readJson(HASH_FILE, {});
+  fs.writeFileSync(HASH_FILE, JSON.stringify({ ...aJour, ...hashes }, null, 2) + "\n");
   console.log("\n✅ Terminé. Hashes mis à jour.");
 }
 

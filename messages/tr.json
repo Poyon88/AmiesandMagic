@@ -1,0 +1,3777 @@
+{
+  "vocab": {
+    "keywords": {
+      "charge": {
+        "label": "Av",
+        "desc": "Sahaya çağrıldığı anda saldırabilir ve etkinleştirilebilir gücünü kullanabilir."
+      },
+      "taunt": {
+        "label": "Kışkırtma",
+        "desc": "Düşmanlar öncelikle bu birime saldırmak zorundadır."
+      },
+      "divine_shield": {
+        "label": "Kalkan",
+        "desc": "İlk saldırıyı hasar almadan emer."
+      },
+      "ranged": {
+        "label": "Uçuş",
+        "desc": "Rakibin kışkırtmalarını yok sayar."
+      },
+      "raid": {
+        "label": "Akın",
+        "desc": "Sahaya çağrıldığı anda düşman bir yaratığa saldırabilir (ama kahramana saldıramaz)."
+      },
+      "convocations_multiples": {
+        "label": "Çoklu Çağrı",
+        "desc": "{tokens} oluşturur."
+      },
+      "loyaute": {
+        "label": "Sadakat",
+        "desc": "Sahadaki her {race_bare} müttefik için +1/+1."
+      },
+      "ancre": {
+        "label": "Demirli",
+        "desc": "Yeri değiştirilemez veya sürgüne gönderilemez."
+      },
+      "resistance": {
+        "label": "Direnç X",
+        "desc": "Alınan hasarı X azaltır (en az 1 hasar)."
+      },
+      "premiere_frappe": {
+        "label": "İlk Vuruş",
+        "desc": "Bu birim saldırdığında hasarını önce verir; rakip birim yalnızca hayatta kalırsa karşılık verir."
+      },
+      "gloire": {
+        "label": "Şan +X/+Y",
+        "desc": "Bu birim her savaş hasarından sağ çıktığında kalıcı olarak +X/+Y kazanır."
+      },
+      "vol": {
+        "label": "Uçuş",
+        "desc": "Rakibin kışkırtmalarını yok sayar."
+      },
+      "precision": {
+        "label": "İsabet",
+        "desc": "Direnci, Zırhı, Kalkanı ve Hayalet sınırını yok sayar."
+      },
+      "drain_de_vie": {
+        "label": "Can Emme",
+        "desc": "Verilen hasar kadar kahramanınızı iyileştirir."
+      },
+      "esquive": {
+        "label": "Savuşturma",
+        "desc": "Her tur aldığı ilk saldırıyı otomatik olarak savuşturur."
+      },
+      "poison": {
+        "label": "Zehir",
+        "desc": "Yaralı birimler her tur 1 CP kaybeder."
+      },
+      "celerite": {
+        "label": "Çeviklik",
+        "desc": "Tur başına iki kez saldırabilir."
+      },
+      "augure": {
+        "label": "Kehanet",
+        "desc": "Bu birim rakip kahramana hasar verdiğinde bir kart çekersiniz."
+      },
+      "benediction": {
+        "label": "Kutsama",
+        "desc": "Hedeflenen birimi tamamen iyileştirir."
+      },
+      "bravoure": {
+        "label": "Cesaret",
+        "desc": "Saldırı gücü kendisininkinden yüksek birimlere karşı hasarını iki katına çıkarır (yukarı yuvarlanır)."
+      },
+      "pillage": {
+        "label": "Yağma X",
+        "desc": "Rakip elinden rastgele X kart atar."
+      },
+      "riposte": {
+        "label": "Karşılık X",
+        "desc": "Bu birim hasar aldığında, saldırının kaynağına (birim veya kahraman) X hasar verir."
+      },
+      "chant": {
+        "label": "Ilahi",
+        "desc": "Bu birim oyundayken, İlahi özellikli aksiyonlarınız güçlenir."
+      },
+      "lune": {
+        "label": "Ay X",
+        "desc": "Turda oynanan ikinci karttan itibaren, tüm değerleri X artar — kalıcı olarak."
+      },
+      "soleil": {
+        "label": "Güneş X",
+        "desc": "Turda oynanan ilk kart ise, tüm değerleri X artar — kalıcı olarak."
+      },
+      "rappel": {
+        "label": "Geri Çağırma X",
+        "desc": "Mezarlığınızdan maliyeti ≤ X olan hedeflenen bir kartı eline geri alın.",
+        "desc_any": "Mezarlığınızdan hedeflenen bir kartı eline geri alın."
+      },
+      "combustion": {
+        "label": "Yanma",
+        "desc": "Elinizden bir kart atın, sonra iki kart çekin."
+      },
+      "terreur": {
+        "label": "Dehşet X",
+        "desc": "Bu kart oyundayken rakip birimler X ATK kaybeder."
+      },
+      "pauvrete": {
+        "label": "Yoksulluk X",
+        "desc": "Rakibin elindeki kart sayısı kadar ATK kaybeder (dinamik)."
+      },
+      "armure": {
+        "label": "Zırh",
+        "desc": "Alınan savaş hasarını yarıya indirir (yukarı yuvarlanır); aksiyon hasarı azaltılmaz."
+      },
+      "commandement": {
+        "label": "Komuta X",
+        "desc": "{faction_de} müttefiklerinize +X/+X verir."
+      },
+      "fureur": {
+        "label": "Öfke",
+        "desc": "Hasar aldıktan sonra rastgele bir rakip birime saldırır (yoksa kahramana). Turda 1 kez."
+      },
+      "double_attaque": {
+        "label": "Çift Saldırı",
+        "desc": "Yalnızca saldırı aşamasında: saldırırken ATK değerinin iki katı hasar verir. Hedeflenen birim normal şekilde karşılık verir."
+      },
+      "invisible": {
+        "label": "Görünmez",
+        "desc": "Rakip aksiyonlar veya birim yetenekleri tarafından hedeflenemez."
+      },
+      "canalisation": {
+        "label": "Kanalizasyon",
+        "desc": "Bu birim oyundayken aksiyonlarınız 1 mana daha ucuza mal olur (en az 1)."
+      },
+      "contresort": {
+        "label": "Karşı Aksiyon X",
+        "desc": "Rakibin sonraki X aksiyonunu iptal eder."
+      },
+      "exclusion": {
+        "label": "Dışlama X",
+        "desc": "Rakibin sonraki X birim çağırmasını iptal eder."
+      },
+      "maitre_darme": {
+        "label": "Silah Ustası",
+        "desc": "Oyundaki en pahalı 2 eşyanızı, diğer yaratıklarınızın taşıdıkları dahil, ücretsiz kuşanır."
+      },
+      "neutralisation": {
+        "label": "Etkisizleştirme",
+        "desc": "Oyunda kaldığı sürece, hedeflenen düşman birim felç olur ve yeteneklerinin etkisi kalmaz."
+      },
+      "transformation": {
+        "label": "Dönüşüm",
+        "desc": "Belirtilen karta dönüşür. Sahadan çıkarsa özgün haline geri döner."
+      },
+      "convocation": {
+        "label": "Çağrı X",
+        "desc": "{token} oluşturur."
+      },
+      "convocation_simple": {
+        "label": "Çağrı",
+        "desc": "{token} oluşturur."
+      },
+      "invocation": {
+        "label": "Tasarlama X",
+        "desc": "Koleksiyonunuzdan maliyeti X olan rastgele bir yaratık çağırır ({alignment}, geçerli format).",
+        "desc_any": "Koleksiyonunuzdan rastgele bir yaratık çağırır ({alignment}, geçerli format)."
+      },
+      "malediction": {
+        "label": "Lanet X",
+        "desc": "Maliyeti ≤ X olan bir düşman birimi hedefleyin; rakibin bir sonraki turunun sonunda sürgün edilir.",
+        "desc_any": "Bir düşman birimi hedefleyin; rakibin bir sonraki turunun sonunda sürgün edilir."
+      },
+      "necrophagie": {
+        "label": "Leşyiyicilik",
+        "desc": "Bir birim (müttefik veya düşman) her öldüğünde +1 SLD ve +1 CAN kazanır."
+      },
+      "richesse": {
+        "label": "Zenginlik X",
+        "desc": "Bir oyuncu elinden her kart attığında bu birim +X/+X kazanır (kalıcı)."
+      },
+      "sacrifice_demoniaque": {
+        "label": "Şeytani Kurban X",
+        "desc": "Öldüğünde, X adet -1 mana indirimini elinizdeki Şeytanlar arasında dağıtır (en az 1)."
+      },
+      "paralysie": {
+        "label": "Felç",
+        "desc": "Yaraladığı birimler, bir sonraki turlarının sonuna kadar saldıramaz ve yetenek etkinleştiremez."
+      },
+      "permutation": {
+        "label": "Yer Değiştirme",
+        "desc": "Hedeflenen iki birimin (biri müttefik, biri düşman) mevcut CAN değerlerini takas eder."
+      },
+      "persecution": {
+        "label": "Zulüm X",
+        "desc": "Bu birim her saldırdığında rakip kahramana X hasar verir."
+      },
+      "pietinement": {
+        "label": "Çiğneme",
+        "desc": "Saldırırken, hedeflenen yaratığın CAN değerini aşan hasar rakip kahramana gider."
+      },
+      "catalyse": {
+        "label": "Kataliz",
+        "desc": "Elinizdeki {race_pl} 1 mana daha az olur."
+      },
+      "ombre_du_passe": {
+        "label": "Geçmişin Gölgesi",
+        "desc": "Mezarlığınızdaki her {race_bare} birimi için +1/+1."
+      },
+      "profanation": {
+        "label": "Kutsal Bozma X",
+        "desc": "Mezarlığınızdan en yeniden başlayarak en fazla X kartı sürgün eder: sürgün edilen her kart için +1/+1."
+      },
+      "prescience": {
+        "label": "Önsezi X",
+        "desc": "Elinizde X kart olana kadar kart çekin."
+      },
+      "suprematie": {
+        "label": "Üstünlük",
+        "desc": "Çağrıldığı anda elinizdeki her kart için +1 SLD ve +1 CAN kazanır."
+      },
+      "divination": {
+        "label": "Kehanet",
+        "desc": "Destenin ilk 3 kartını gösterir; 1'ini üste, 2'sini alta istediğiniz sırayla geri koyun."
+      },
+      "savant": {
+        "label": "Âlim",
+        "desc": "Mezarlığınızdaki her aksiyon için +1 SLD ve +1 CAN kazanır."
+      },
+      "liaison_de_vie": {
+        "label": "Can Bağı",
+        "desc": "Aldığı hasarı rakip kahramanla paylaşır."
+      },
+      "ombre": {
+        "label": "Gölge",
+        "desc": "Bir eylem (saldırı veya yetenek) gerçekleştirene kadar hedef alınamaz ve saldırıya uğrayamaz."
+      },
+      "sacrifice": {
+        "label": "Kurban",
+        "desc": "Bir müttefiki yok et; canını ve SAL değerini kalıcı olarak kazan."
+      },
+      "malefice": {
+        "label": "Lanet",
+        "desc": "Öldüğünde tüm birimlere (müttefik ve düşman) X hasar verir, X = SAL değeri."
+      },
+      "synergie": {
+        "label": "Sinerji X",
+        "desc": "Oyuna girdiğinde bir yetenek seç: her tetiklenişinde +X/+X kazanır (kaynak başına ve tur başına 1 kez)."
+      },
+      "etheree": {
+        "label": "Ruhani",
+        "desc": "Savaşta vuruş başına en fazla 1 hasar alır. Aksiyonlardan aldığı hasar ikiye katlanır."
+      },
+      "indestructible": {
+        "label": "Yıkılmaz",
+        "desc": "Savaş hasarı almaz."
+      },
+      "regeneration": {
+        "label": "Yenilenme X",
+        "desc": "Turunun başında X can yeniler."
+      },
+      "corruption": {
+        "label": "Yozlaşma X",
+        "desc": "Maliyeti ≤ X olan bir düşman birimini turun sonuna kadar senin tarafına geçirir; birim Takip kazanır.",
+        "desc_any": "Seçilen düşman birimini turun sonuna kadar senin tarafına geçirir; birim turun sonuna kadar Takip kazanır."
+      },
+      "carnage": {
+        "label": "Kıyım X",
+        "desc": "Oyundaki tüm birimlere (müttefik ve düşman) X hasar verir."
+      },
+      "heritage": {
+        "label": "Miras X",
+        "desc": "Oyundaki her müttefik birim kalıcı olarak +X SAL ve +X can kazanır."
+      },
+      "mimique": {
+        "label": "Taklit",
+        "desc": "Hedeflenen bir birimin tüm yeteneklerini kopyalar ve bu birime kalıcı olarak verir."
+      },
+      "metamorphose": {
+        "label": "Başkalaşım",
+        "desc": "Bu birim, hedeflenen bir birimin birebir kopyasına (SAL / can / yetenekler) dönüşür."
+      },
+      "dedoublement": {
+        "label": "İkizleme",
+        "desc": "Bu yaratığın birebir kopyasını oyunda oluşturur."
+      },
+      "tactique": {
+        "label": "Taktik X",
+        "desc": "Hedeflenen bir müttefik birime, aynı maliyetli yaratıkların yetenekleri arasından rastgele X yetenek verir."
+      },
+      "exhumation": {
+        "label": "Mezar Açma X",
+        "desc": "Mezarlığındaki mana maliyeti X veya daha düşük olan bir birimi diriltir.",
+        "desc_any": "Mezarlığındaki bir birimi maliyetine bakmaksızın diriltir."
+      },
+      "heritage_du_cimetiere": {
+        "label": "Mezarlık Mirası",
+        "desc": "Mezarlığındaki hedeflenen bir birimin yeteneklerini bu birime verir."
+      },
+      "pacte_de_sang": {
+        "label": "Kan Sözleşmesi",
+        "desc": "Öldüğünde kendi ırkından iki adet 1/1 jeton çağırır."
+      },
+      "souffle_de_feu": {
+        "label": "Ateş Nefesi X",
+        "desc": "Saldırırken tüm düşman birimlere X hasar verir (örn: Ateş Nefesi 2 = 2 hasar)."
+      },
+      "domination": {
+        "label": "Hâkimiyet X",
+        "desc": "Çağrıldığında, maliyeti ≤ X olan rastgele bir düşman birimin kontrolünü ele geçirir.",
+        "desc_any": "Çağrıldığında rastgele bir düşman birimin kontrolünü ele geçirir."
+      },
+      "resurrection": {
+        "label": "Diriliş",
+        "desc": "Öldükten sonra 1 CP ile oyuna geri döner; döndüğünde Diriliş yeteneğini kaybeder."
+      },
+      "transcendance": {
+        "label": "Aşkınlık",
+        "desc": "Rakip aksiyonlara karşı tam bağışıklık: alan aksiyonları dahil hiçbir aksiyonun hasarını veya etkisini almaz."
+      },
+      "vampirisme": {
+        "label": "Vampirizm X",
+        "desc": "Hedeflenen bir düşman birimden en fazla X CP çalar ve bunları bu birimin CP'sine ekler."
+      },
+      "traque_du_destin": {
+        "label": "Kader Avı X",
+        "desc": "Destenin ilk X kartını gösterir; birini elinde tut, diğerlerini rastgele sırayla destenin altına koy."
+      },
+      "sang_mele": {
+        "label": "Melez Kan",
+        "desc": "Oyundaki müttefiklerin arasındaki her farklı ırk türü için +1 ATK ve +1 CP kazanır."
+      },
+      "fierte_du_clan": {
+        "label": "Klan Gururu",
+        "desc": "Oyundayken, çağrılan {clan_de} birimleriniz +1/+1 ile gelir."
+      },
+      "solidarite": {
+        "label": "Dayanışma X",
+        "desc": "Kontrolünüzde {race_bare} olan 2 birim daha varsa X kart çekin."
+      },
+      "entraide": {
+        "label": "Yardımlaşma",
+        "desc": "Oyundaki her {race_bare} müttefik için 1 mana daha ucuza mal olur (birikir, en az 0)."
+      },
+      "cycle_eternel": {
+        "label": "Ebedi Döngü",
+        "desc": "Destenize bu kartın bir kopyasını ekleyin; çekilirse doğrudan oyuna sokun."
+      },
+      "instinct_de_meute": {
+        "label": "Sürü İçgüdüsü X",
+        "desc": "Bu tur bir {faction_de} müttefik öldüyse +X/+X."
+      },
+      "totem": {
+        "label": "Totem",
+        "desc": "Oyundaki {race_pl} birimlerinizin yeteneklerini kazanır."
+      },
+      "appel_du_clan": {
+        "label": "Klan Çağrısı X",
+        "desc": "Destenizin üstündeki maliyeti ≤ X olan ilk {clan_de} birimi ücretsiz oyuna sokar.",
+        "desc_any": "Destenizin üstündeki ilk {clan_de} birimi ücretsiz oyuna sokar."
+      },
+      "appel_supreme": {
+        "label": "Yüce Çağrı",
+        "desc": "Destenizdeki maliyeti en yüksek kartı ele ekler (eşitlikte rastgele)."
+      },
+      "rassemblement": {
+        "label": "Toplanma X",
+        "desc": "Destenin ilk X kartını gösterir; {race_pl} olanları elinde tut, kalanları at."
+      },
+      "invocations_multiples": {
+        "label": "Çoklu Çağırma",
+        "desc": "{invocations} çağırır."
+      },
+      "touche_mortel": {
+        "label": "Ölümcül Dokunuş",
+        "desc": "Bu birimin yaraladığı her yaratık, CP'si ne olursa olsun ölür."
+      },
+      "selection": {
+        "label": "Seçim X",
+        "desc": "Maliyeti X olan 3 {alignment} sıradan kart gösterir; birini ele ekleyin.",
+        "desc_any": "3 {alignment} sıradan kart gösterir; birini ele ekleyin."
+      },
+      "faveur": {
+        "label": "Lütuf X",
+        "desc": "Maliyeti X olan rastgele bir {alignment} sıradan kartı ele ekler.",
+        "desc_any": "Eline rastgele bir {alignment} sıradan kart ekler."
+      },
+      "forge": {
+        "label": "Demirci X",
+        "desc": "Destene rastgele bir nötr eşya karıştırır{forge_align}{forge_cout}.",
+        "desc_any": "Destene rastgele bir nötr eşya karıştırır{forge_align}{forge_cout_libre}."
+      },
+      "selection_magique": {
+        "label": "Büyülü Seçim X",
+        "desc": "Maliyeti X olan 3 {alignment} sıradan aksiyonu gösterir; birini ele ekleyin.",
+        "desc_any": "3 {alignment} sıradan aksiyonu gösterir; birini ele ekleyin."
+      },
+      "renfort_royal": {
+        "label": "Kraliyet Seçimi X",
+        "desc": "Maliyeti X olan 3 sınırlı sürüm kartınızı gösterir (en az 30 gerekir; yoksa 3 {alignment} sıradan kart); birini saklayın.",
+        "desc_any": "3 sınırlı sürüm kartınızı gösterir (en az 30 gerekir; yoksa 3 {alignment} sıradan kart); birini saklayın."
+      },
+      "tresor": {
+        "label": "Hazine X",
+        "desc": "Maliyeti X olan 3 {alignment} veya nötr sıradan eşyayı gösterir; birini ele ekleyin.",
+        "desc_any": "3 {alignment} veya nötr sıradan eşyayı gösterir; birini ele ekleyin."
+      },
+      "lycanthropie": {
+        "label": "Likantropi X",
+        "desc": "İz Sürme yeteneğine sahip {lycanthrope} formuna dönüşür."
+      },
+      "relancer": {
+        "label": "Yeniden At X",
+        "desc": "Oynanan son X aksiyonu rastgele hedeflerle yeniden oynar."
+      },
+      "tempete": {
+        "label": "Fırtına X",
+        "desc": "Düşman birimlerine rastgele dağıtılan X hasar verir."
+      },
+      "canon": {
+        "label": "Top X",
+        "desc": "Rastgele bir düşman birimine X hasar verir."
+      },
+      "cataclysme": {
+        "label": "Kıyamet X",
+        "desc": "Tüm yaratıklara (müttefik VE düşman) X hasar verir."
+      },
+      "affaiblissement": {
+        "label": "Zayıflatma -X/-Y",
+        "desc": "Hedeflenen bir düşman yaratığa -X SLD ve -Y CAN verir."
+      },
+      "renforcement": {
+        "label": "Güçlendirme +X/+Y",
+        "desc": "Hedeflenen başka bir müttefik birime kalıcı olarak +X SLD ve +Y CAN verir."
+      },
+      "discipline": {
+        "label": "Disiplin +X/+Y",
+        "desc": "Sahanızdaki tüm maliyetler kendisininkiyle aynı çift/tek durumundaysa, hedeflenen başka bir müttefik birime kalıcı +X/+Y verir."
+      },
+      "lien_du_sang": {
+        "label": "Kan Bağı X",
+        "desc": "+X/+X kazanır ve siz X CAN kaybedersiniz, canınız yeterliyse."
+      },
+      "usurpation": {
+        "label": "Gasp +X/+Y",
+        "desc": "Oynadığınız ve rakibin kartı tarafından hedeflenen başka bir müttefik birime kalıcı +X/+Y verir."
+      },
+      "esprit_de_corps": {
+        "label": "Birlik Ruhu",
+        "desc": "Daha önce tetiklediğiniz her Birlik Ruhu için rastgele +1 SLD veya +1 CAN kazanır."
+      },
+      "presage": {
+        "label": "Kehanet",
+        "desc": "Destenin üstündeki 3 kartı karışık sırayla gösterir; en üsttekini seçip ele alın, ardından desteyi karıştırın."
+      },
+      "apprentissage": {
+        "label": "Öğrenme X",
+        "desc": "Elinizden maliyeti ≤ X olan bir aksiyonu çıkarıp ezberler: yaratık onu mana ödemeden oynayabilir.",
+        "desc_any": "Elinizden bir aksiyonu çıkarıp ezberler: yaratık onu mana ödemeden oynayabilir."
+      },
+      "impact": {
+        "label": "Darbe X",
+        "desc": "Bir düşman hedefe (birim veya kahraman) X hasar verir."
+      },
+      "inspiration": {
+        "label": "İlham X",
+        "desc": "X kart çek."
+      },
+      "afflux": {
+        "label": "Akın X",
+        "desc": "Bu tur X mana kazan."
+      },
+      "epargne": {
+        "label": "Tasarruf X",
+        "desc": "Tasarruf sayacına X ekler (en fazla 8)."
+      },
+      "foi": {
+        "label": "İnanç X",
+        "desc": "İnancına X ekler (en fazla 10). Harca: destenden maliyeti ≤ İnanç olan 3 karttan 1'ini keşfet, yalnızca bu maliyet düşülür."
+      },
+      "conquete": {
+        "label": "Fetih X",
+        "desc": "Fethine X ekler (eşik 3). Eşikte: rakibin destesinden 3 karttan 1'ini ele al, sayaç 0'a döner."
+      },
+      "exploration": {
+        "label": "Keşif X",
+        "desc": "Keşfine X ekler. 3'e her ulaştığında: bir kart çek ve 3 düş (kalanı korunur)."
+      },
+      "invention": {
+        "label": "İcat +X/+Y",
+        "desc": "Makinene +X/+Y{machine_part} ekler (başlangıçta 0/1, İcat başına 1 mana, en fazla 6)."
+      },
+      "seconde_vie": {
+        "label": "İkinci Hayat X",
+        "desc": "Mezarlığından X mana karşılığında oynanabilir. Ardından İkinci Hayat'ı kaybeder."
+      },
+      "incineration": {
+        "label": "Yakma X",
+        "desc": "Hedeflenen mezarlıktan rastgele X kartı sahibinin destesinin altına koyar."
+      },
+      "devoration": {
+        "label": "Yutma",
+        "desc": "Hedeflenen bir birimi yok eder; bu yaratık onun ATK ve CAN değerlerini kalıcı olarak kazanır."
+      },
+      "creuser": {
+        "label": "Kazı X",
+        "desc": "Destenin altındaki X karta bak; birini en üste koy."
+      },
+      "retour_differe": {
+        "label": "Ertelenmiş Dönüş X",
+        "desc": "Maliyeti ≤ X olan hedef birimi sahibinin destesinin altına koyar.",
+        "desc_any": "Hedef birimi sahibinin destesinin altına koyar."
+      },
+      "concentration": {
+        "label": "Odaklanma X",
+        "desc": "Eldeki her aksiyon, maliyeti +X olan rastgele bir aksiyona dönüşür ve maliyeti X azalır (tüm fraksiyonlar)."
+      },
+      "remontee": {
+        "label": "Geri Dönüş X",
+        "desc": "Hedeflenen X birimi asıl sahibinin eline geri gönderir."
+      },
+      "entrainement": {
+        "label": "Antrenman X",
+        "desc": "Eldeki {faction_de} yaratıklarına +X/+X verir."
+      },
+      "fortifier": {
+        "label": "Güçlendirme +X/+Y",
+        "desc": "Destenin en üstünden başlayarak ilk yaratık kalıcı olarak +X ATK ve +Y CAN kazanır."
+      },
+      "preincanter": {
+        "label": "Ön Büyü X",
+        "desc": "Destenin en üstünden başlayarak ilk aksiyon kalıcı olarak X mana daha ucuza mal olur (en az 1)."
+      },
+      "conferer": {
+        "label": "Bahşetme",
+        "desc": "{scope} için {ability} bahşeder."
+      },
+      "declenchement": {
+        "label": "Tetikleme",
+        "desc": "Diğer müttefiklerinizin bileşik etkilerini (giriş / ölüm / tur sonu / geri dönüş) bir kez daha tetikler."
+      },
+      "dechainement": {
+        "label": "Serbest Bırakma X/Y",
+        "desc": "Koleksiyonunuzdan ({alignment}) maliyeti Y olan X rastgele aksiyonu rastgele hedeflerle oynar.",
+        "desc_any": "Koleksiyonunuzdan ({alignment}) X rastgele aksiyonu rastgele hedeflerle oynar."
+      },
+      "force_des_ancetres": {
+        "label": "Ataların Gücü +X/+Y",
+        "desc": "Mezarlığınızda 7 veya daha fazla yaratık olduğu sürece +X SAL ve +Y CAN kazanır."
+      },
+      "purete": {
+        "label": "Saflık +X/+Y",
+        "desc": "Mezarlığınız boş olduğu sürece +X SAL ve +Y CAN kazanır."
+      },
+      "seuil_sacrificiel": {
+        "label": "Kurban Eşiği +X/+Y",
+        "desc": "Destenizde 25 veya daha az kart olduğu sürece +X SAL ve +Y CAN kazanır."
+      },
+      "compagnons": {
+        "label": "Yoldaşlar",
+        "desc": "Yoldaşlarını (oluşturma sırasında seçilen bağlı kartlar) destenize karıştırır, ardından desteyi tekrar karıştırır. Yalnızca bir kez."
+      },
+      "tuteur": {
+        "label": "Öğretmen",
+        "desc": "Oluşturma sırasında belirlenen kartları elinize ekler (aynı kart birden fazla kez belirlenebilir)."
+      },
+      "execution": {
+        "label": "İnfaz X",
+        "desc": "Maliyeti ≤ X olan hedeflenen bir düşman birimini yok eder.",
+        "desc_any": "Hedeflenen bir düşman birimini yok eder."
+      },
+      "silence": {
+        "label": "Susturma",
+        "desc": "Hedeflenen başka bir birimin tüm anahtar sözcüklerini kaldırır ve statlarını orijinal değerlerine döndürür."
+      },
+      "guerison": {
+        "label": "Şifa X",
+        "desc": "Hedeflenen başka bir müttefik birime veya kahramanınıza X CAN yeniler."
+      },
+      "mutation": {
+        "label": "Mutasyon X",
+        "desc": "Elde: maliyeti X olan 2 sıradan yaratık keşfedin. Onların en iyi SAL ve CAN değerlerini ve her birinden 1 yeteneği alır."
+      },
+      "infestation": {
+        "label": "Istila X",
+        "desc": "Bu birimin X kopyasını destenize karıştırır. Çekildiğinde bir kopya çağrılır ve başka bir kart çekersiniz."
+      },
+      "enterrement": {
+        "label": "Gömme X",
+        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar (eksik her kart için yorgunluk)."
+      }
+    },
+    "spell_keywords": {
+      "touche_mortel": {
+        "label": "Ölümcül Dokunuş",
+        "desc": "Bu aksiyonla yaralanan her yaratık, CAN değeri ne olursa olsun ölür."
+      },
+      "precision": {
+        "label": "Hassasiyet",
+        "desc": "Bu aksiyonun hasarı Direnci, Zırhı ve Kalkanı yok sayar."
+      },
+      "poison": {
+        "label": "Zehir",
+        "desc": "Yaralı birimler her tur 1 CAN kaybeder."
+      },
+      "benediction": {
+        "label": "Kutsama",
+        "desc": "Hedeflenen bir müttefik birimi tamamen iyileştirir."
+      },
+      "pillage": {
+        "label": "Yağma X",
+        "desc": "Rakip elinden rastgele X kart atar."
+      },
+      "contresort": {
+        "label": "Karşı Aksiyon X",
+        "desc": "Rakibin sonraki X aksiyonunu iptal eder."
+      },
+      "exclusion": {
+        "label": "Dışlama X",
+        "desc": "Rakibin sonraki X birim çağırmasını iptal eder."
+      },
+      "convocation_simple": {
+        "label": "Çağrı",
+        "desc": "{token} oluşturur."
+      },
+      "seuil_colere": {
+        "label": "Öfke Eşiği X",
+        "desc": "Destenizde 25 veya daha az kart varsa bu aksiyon X ek hasar verir."
+      },
+      "chant": {
+        "label": "Ezgi X",
+        "desc": "Ezgi yeteneğine sahip bir yaratığı kontrol ediyorsanız bu aksiyonun tüm değerleri X artar."
+      },
+      "lune": {
+        "label": "Ay X",
+        "desc": "Tur içinde oynanan ikinci karttan itibaren bu kartın tüm değerleri X artar."
+      },
+      "soleil": {
+        "label": "Güneş X",
+        "desc": "Tur içinde oynanan ilk kart buysa bu kartın tüm değerleri X artar."
+      },
+      "divination": {
+        "label": "Kehanet",
+        "desc": "Destenin ilk 3 kartını gösterir; 1'ini üste, 2'sini alta istediğiniz sırayla geri koyun."
+      },
+      "malediction": {
+        "label": "Lanet X",
+        "desc": "Maliyeti ≤ X olan hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir",
+        "desc_any": "Hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir"
+      },
+      "corruption": {
+        "label": "Yozlaşma X",
+        "desc": "Maliyeti ≤ X olan hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; İz Sürme kazanır.",
+        "desc_any": "Hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; İz Sürme kazanır."
+      },
+      "domination": {
+        "label": "Hükmetme X",
+        "desc": "Maliyeti ≤ X olan hedef düşman biriminin kontrolünü ele geçirir.",
+        "desc_any": "Hedef düşman biriminin kontrolünü ele geçirir."
+      },
+      "appel_du_clan": {
+        "label": "Klan Çağrısı X",
+        "desc": "Destenizdeki maliyeti ≤ X olan ilk {clan_de} birimini ücretsiz oyuna sokar.",
+        "desc_any": "Destenizdeki ilk {clan_de} birimini ücretsiz oyuna sokar."
+      },
+      "appel_supreme": {
+        "label": "Yüce Çağrı",
+        "desc": "Destenizdeki en yüksek maliyetli kartı ele ekler (eşitlik varsa rastgele)."
+      },
+      "rassemblement": {
+        "label": "Toplanma X",
+        "desc": "Destenin ilk X kartını gösterir; {race_pl} elinizde kalsın, kalanını atın."
+      },
+      "rappel": {
+        "label": "Geri Çağırma X",
+        "desc": "Mezarlığınızdan maliyeti ≤ X olan bir kartı elinize geri gönderir",
+        "desc_any": "Mezarlığınızdan bir kartı elinize geri gönderir"
+      },
+      "exhumation": {
+        "label": "Mezar Açma X",
+        "desc": "Mezarlığınızdan bir yaratığı (maliyet ≤ X) sahaya diriltir",
+        "desc_any": "Mezarlığınızdan bir yaratığı maliyetine bakılmaksızın sahaya diriltir"
+      },
+      "selection": {
+        "label": "Seçki X",
+        "desc": "Maliyeti X olan 3 {alignment} sıradan kartı gösterir; birini ele ekleyin",
+        "desc_any": "3 {alignment} sıradan kartı gösterir; birini ele ekleyin"
+      },
+      "forge": {
+        "label": "Demirci X",
+        "desc": "Destenize rastgele nötr bir eşya{forge_align}{forge_cout} karıştırır",
+        "desc_any": "Destenize rastgele nötr bir eşya karıştırır{forge_align}{forge_cout_libre}"
+      },
+      "faveur": {
+        "label": "Lütuf X",
+        "desc": "Eline rastgele {alignment} türünden, bedeli X olan bir sıradan kart ekler",
+        "desc_any": "Eline rastgele {alignment} türünden bir sıradan kart ekler"
+      },
+      "selection_magique": {
+        "label": "Büyülü Seçim X",
+        "desc": "Bedeli X olan 3 sıradan {alignment} aksiyonunu açığa çıkarır; birini eline ekle",
+        "desc_any": "3 sıradan {alignment} aksiyonunu açığa çıkarır; birini eline ekle"
+      },
+      "tresor": {
+        "label": "Hazine X",
+        "desc": "Bedeli X olan 3 sıradan {alignment} veya nötr eşyayı açığa çıkarır; birini eline ekle",
+        "desc_any": "3 sıradan {alignment} veya nötr eşyayı açığa çıkarır; birini eline ekle"
+      },
+      "renfort_royal": {
+        "label": "Kraliyet Seçimi X",
+        "desc": "Bedeli X olan 3 sınırlı sürüm kartını açığa çıkarır (en az 30 gerekir; yoksa 3 sıradan {alignment} kartı); birini sakla",
+        "desc_any": "3 sınırlı sürüm kartını açığa çıkarır (en az 30 gerekir; yoksa 3 sıradan {alignment} kartı); birini sakla"
+      },
+      "relancer": {
+        "label": "Yeniden At X",
+        "desc": "Oynanan son X aksiyonu rastgele hedeflerle yeniden oynar"
+      },
+      "dechainement": {
+        "label": "Çılgınlık X/Y",
+        "desc": "Koleksiyonunuzdan ({alignment}) bedeli Y olan X rastgele aksiyonu rastgele hedeflerle oynar.",
+        "desc_any": "Koleksiyonunuzdan ({alignment}) X rastgele aksiyonu rastgele hedeflerle oynar"
+      },
+      "invocation": {
+        "label": "Çağrı X",
+        "desc": "Koleksiyonunuzdan ({alignment}, mevcut format) bedeli X olan rastgele bir yaratık çağırır.",
+        "desc_any": "Koleksiyonunuzdan ({alignment}, mevcut format) rastgele bir yaratık çağırır"
+      },
+      "impact": {
+        "label": "Darbe X",
+        "desc": "Düşman hedefe (birim veya kahraman) X hasar verir."
+      },
+      "canon": {
+        "label": "Top X",
+        "desc": "Rastgele bir düşman birime X hasar verir."
+      },
+      "deferlement": {
+        "label": "Hücum Dalgası X",
+        "desc": "Tüm düşman yaratıklara X hasar verir"
+      },
+      "boomerang": {
+        "label": "Bumerang",
+        "desc": "Etkisi çözüldükten sonra bu aksiyon mezarlığa gitmek yerine destenize karıştırılır."
+      },
+      "siphon": {
+        "label": "Emme X",
+        "desc": "Bir hedefe X hasar verir ve kahramanınızı aynı miktarda iyileştirir"
+      },
+      "entrave": {
+        "label": "Pranga X",
+        "desc": "Hedeflenen bir düşman yaratığı X tur boyunca felç eder"
+      },
+      "execution": {
+        "label": "İnfaz X",
+        "desc": "Bedeli X veya daha düşük olan hedeflenen bir yaratığı ya da eşyayı yok eder",
+        "desc_any": "Hedeflenen bir yaratığı ya da eşyayı yok eder"
+      },
+      "silence": {
+        "label": "Sessizlik",
+        "desc": "Hedeflenen bir yaratığın tüm anahtar sözcüklerini kaldırır ve değerlerini orijinal haline döndürür; eşyada ise anahtar sözcüklerini kaldırır, özelliklerine dokunmaz"
+      },
+      "renforcement": {
+        "label": "Güçlendirme +X/+Y",
+        "desc": "Hedeflenen bir müttefik yaratığa +X/+Y verir."
+      },
+      "discipline": {
+        "label": "Disiplin +X/+Y",
+        "desc": "Oyundaki tüm yaratıklarınızın maliyeti bu aksiyonun maliyetiyle aynı paritedeyse (tek/çift), hedef alınan bir müttefik yaratığa +X/+Y verir."
+      },
+      "usurpation": {
+        "label": "Gasp +X/+Y",
+        "desc": "Oynadığınız ve rakibin bir kartının hedef aldığı müttefik yaratığa +X/+Y verir."
+      },
+      "affaiblissement": {
+        "label": "Zayıflatma -X/-Y",
+        "desc": "Hedef alınan bir düşman yaratığa -X SLD ve -Y CAN verir."
+      },
+      "guerison": {
+        "label": "Şifa X",
+        "desc": "Bir müttefik birime veya kahramanınıza X CAN yeniler."
+      },
+      "seconde_vie": {
+        "label": "İkinci Can X",
+        "desc": "Mezarlığınızdan X mana karşılığında oynanabilir. Bundan sonra İkinci Can'ı kaybeder."
+      },
+      "incineration": {
+        "label": "Yakıp Yok Etme X",
+        "desc": "Hedef alınan mezarlıktan rastgele X kartı sahibinin destesinin altına geri koyar."
+      },
+      "creuser": {
+        "label": "Kazma X",
+        "desc": "Destenizin altındaki X karta bakın; birini en üste yerleştirin."
+      },
+      "presage": {
+        "label": "Kehanet",
+        "desc": "Destenin üstündeki 3 kartı karışık sırada gösterir; üstteki kartı belirleyip ele alın, ardından desteyi karıştırın."
+      },
+      "retour_differe": {
+        "label": "Ertelenmiş Dönüş X",
+        "desc": "Maliyeti ≤ X olan hedef birimi veya eşyayı sahibinin destesinin altına koyar.",
+        "desc_any": "Hedef alınan birimi veya eşyayı sahibinin destesinin altına koyar."
+      },
+      "epargne": {
+        "label": "Tasarruf X",
+        "desc": "Tasarruf sayacınıza X ekler (en fazla 8)."
+      },
+      "foi": {
+        "label": "İnanç X",
+        "desc": "İnancınıza X ekler (en fazla 10). Harca: destenizden maliyeti ≤ İnanç olan 3 karttan birini keşfedin, yalnızca bu maliyet düşülür."
+      },
+      "conquete": {
+        "label": "Fetih X",
+        "desc": "Fetihinize X ekler (eşik 3). Eşikte: rakibin destesinden 3 karttan birini ele alın, sayaç 0'a döner."
+      },
+      "exploration": {
+        "label": "Keşif X",
+        "desc": "Keşfinize X ekler. 3'e her ulaştığında: bir kart çekin ve 3 düşün (kalan korunur)."
+      },
+      "invention": {
+        "label": "İcat +X/+Y",
+        "desc": "Makinenize +X/+Y{machine_part} ekler (başlangıçta 0/1, İcat başına 1 mana, en fazla 6)."
+      },
+      "inspiration": {
+        "label": "İlham X",
+        "desc": "X kart çekin."
+      },
+      "remontee": {
+        "label": "Geri Çağırma X",
+        "desc": "Hedef alınan X birimi veya eşyayı asıl sahibinin eline geri gönderir."
+      },
+      "entrainement": {
+        "label": "Antrenman X",
+        "desc": "Elinizdeki {faction_de} yaratıklarınıza +X/+X verir."
+      },
+      "fortifier": {
+        "label": "Güçlendirme +X/+Y",
+        "desc": "Destenizin en üstünden başlayarak ilk yaratık kalıcı olarak +X SLD ve +Y CAN kazanır."
+      },
+      "preincanter": {
+        "label": "Ön Büyü X",
+        "desc": "Destenizin en üstünden başlayarak ilk aksiyon kalıcı olarak X mana daha ucuza mal olur (en az 1)."
+      },
+      "concentration": {
+        "label": "Konsantrasyon X",
+        "desc": "Eldeki her aksiyon, maliyeti +X olan rastgele bir aksiyona dönüşür ve maliyeti X azalır (tüm fraksiyonlar)."
+      },
+      "invocations_multiples": {
+        "label": "Çoklu Çağırma",
+        "desc": "{invocations} çağırır."
+      },
+      "invocation_multiple": {
+        "label": "Çoklu Çağrı",
+        "desc": "{tokens} yaratır."
+      },
+      "tempete": {
+        "label": "Fırtına X",
+        "desc": "Düşman birimlere rastgele dağıtılan X hasar verir."
+      },
+      "cataclysme": {
+        "label": "Felaket X",
+        "desc": "Tüm yaratıklara X hasar verir (müttefik VE düşman)."
+      },
+      "afflux": {
+        "label": "Akın X",
+        "desc": "Bu tur X mana kazanın"
+      },
+      "compagnons": {
+        "label": "Yoldaşlar",
+        "desc": "Yoldaşlarını (oluşturulurken seçilen bağlı kartlar) destenize karıştırır, ardından desteyi yeniden karıştırır. Yalnızca bir kez."
+      },
+      "tuteur": {
+        "label": "Öğretmen",
+        "desc": "Oluşturulurken belirlenen kartları eline ekler (aynı kart birden fazla kez belirlenebilir)."
+      },
+      "enterrement": {
+        "label": "Gömme X",
+        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar"
+      }
+    },
+    "composed": {
+      "trigger": {
+        "on_play": "Oynandığında",
+        "on_death": "Öldüğünde",
+        "on_return": "Ele geri döndüğünde",
+        "on_activation": "Etkinleştirildiğinde",
+        "on_attack": "Saldırdığında",
+        "on_end_of_turn": "Tur sonunda",
+        "on_end_of_turn_in_hand": "Tur sonunda, elde olduğu sürece",
+        "on_start_of_turn": "Tur başında",
+        "on_start_of_turn_in_hand": "Tur başında, elde olduğu sürece",
+        "in_hand_suffix": "elde",
+        "on_draw": "Bu kart çekildiğinde",
+        "on_low_hp": "15 CP altında",
+        "on_wound": "Yara",
+        "on_delay": "Gecikme {d}",
+        "on_end_of_turn_in_graveyard": "Tur sonunda, mezarlıkta olduğu sürece",
+        "in_graveyard_suffix": "mezarlıkta"
+      },
+      "siphon": {
+        "heal": "ve kahramanınızı {x} CP iyileştirir",
+        "heal_each": "ve vurulan her hedef için kahramanınızı {x} CP iyileştirir",
+        "heal_scatter": "ve kahramanınızı toplamda {x} CP iyileştirir"
+      },
+      "neutralise": {
+        "suite_one": ": felç olur, yetenekleri etkisiz kalır",
+        "suite_many": ": felç olurlar, yetenekleri etkisiz kalır",
+        "tant_que": "oyunda olduğu sürece"
+      },
+      "malediction": {
+        "suite_one": ", rakibin bir sonraki turunun sonunda sürgün edilir",
+        "suite_many": ", bir sonraki rakip turunun sonunda sürgün edilir"
+      },
+      "domination": {
+        "limit": "boş yer sayısı kadar"
+      },
+      "content": {
+        "deal_damage_one": "{x} hasar verir",
+        "deal_damage_many": "{x} hasar verir",
+        "heal": "{x} CP iyileştirir",
+        "buff": "+{x}/+{y} verir",
+        "usurpation": "oynanan her rakip kartı başına +{x}/+{y} verir",
+        "debuff": "-{x}/-{y} uygular",
+        "destroy": "yok eder",
+        "domination": "kontrolünü ele geçirir:",
+        "bounce": "ele geri gönderir",
+        "paralyze": "felç eder",
+        "transformation": "dönüştürür",
+        "transformation_en_one": "belirlenen karta",
+        "transformation_en_many": "belirlenen {n} karttan rastgele birine",
+        "paralyze_turns_one": "{n} tur boyunca",
+        "paralyze_turns_many": "{n} tur boyunca",
+        "poison": "zehirler",
+        "malediction": "lanetler",
+        "neutralise": "etkisizleştirir",
+        "grant_keyword": "{ability} kazandırır",
+        "random_range": "1 ile {max} arasında",
+        "random_range_from": "{min} ile {max} arasında",
+        "appel": "destenizdeki maliyeti ≤ {x} olan ilk birimi oyuna sokar",
+        "appel_item": "destenizdeki maliyeti ≤ {x} olan ilk eşyayı oyuna sokar",
+        "ability_generic": "bir yetenek",
+        "draw_cards_one": "{x} kart çekin",
+        "draw_cards_many": "{x} kart çekin",
+        "discard_filtered_one": "rakip rastgele {x} kart{filter} atar",
+        "discard_filtered_many": "rakip rastgele {x} kart{filter} atar",
+        "discard_one": "rakip rastgele {x} kart atar",
+        "discard_many": "rakip rastgele {x} kart atar",
+        "summon_one": "bir {token} çağırır",
+        "summon_many": "{x} {token} çağırır",
+        "token_one": "token",
+        "token_many": "token",
+        "gain_mana": "bu tur {x} mana kazanın",
+        "exhumation": "mezarlığınızdan {who} diriltir (maliyet ≤ {x})",
+        "exhum_one": "bir yaratığı",
+        "exhum_all": "tüm yaratıkları",
+        "exhum_upto": "en fazla {n} yaratık",
+        "exhumation_item": "mezarlığınızdan {who} oyuna geri sokar (maliyet ≤ {x})",
+        "exhum_item_one": "bir eşya",
+        "exhum_item_all": "tüm eşyalar",
+        "exhum_item_upto": "en fazla {n} eşya",
+        "exhum_uoi_one": "bir yaratık veya bir eşya",
+        "exhum_uoi_all": "tüm yaratıklar ve tüm eşyalar",
+        "exhum_uoi_upto": "en fazla {n} yaratık veya eşya",
+        "rappel_one_item": "bir eşya",
+        "rappel_all_item": "tüm eşyalar",
+        "rappel_upto_item": "en fazla {n} eşya",
+        "rappel_one_creature_item": "bir birim veya bir eşya",
+        "rappel_all_creature_item": "tüm birimler ve tüm eşyalar",
+        "rappel_upto_creature_item": "en fazla {n} birim veya eşya",
+        "rappel_one_spell_item": "bir aksiyon veya bir eşya",
+        "rappel_all_spell_item": "tüm aksiyonlar ve tüm eşyalar",
+        "rappel_upto_spell_item": "en fazla {n} aksiyon veya eşya",
+        "draw_items_one": "destenizden {x} eşya çekin",
+        "draw_items_many": "destenizden {x} eşya çekin",
+        "draw_filtered_one": "destenizden {x} kart{filter} çekin",
+        "draw_filtered_many": "destenizden {x} kart{filter} çekin",
+        "invocation_item": "maliyeti {x} olan rastgele bir eşya yerleştirir{filter}",
+        "rappel": "mezarlığınızdan {who} elinize geri gönderir{cost}",
+        "rappel_cost": " (maliyet ≤ {max})",
+        "rappel_one_any": "bir kart",
+        "rappel_one_creature": "bir birim",
+        "rappel_one_spell": "bir aksiyon",
+        "rappel_all_any": "tüm kartlar",
+        "rappel_all_creature": "tüm birimler",
+        "rappel_all_spell": "tüm aksiyonlar",
+        "rappel_upto_any": "en fazla {n} kart",
+        "rappel_upto_creature": "en fazla {n} birim",
+        "rappel_upto_spell": "en fazla {n} aksiyon",
+        "invocation": "maliyeti {x} olan rastgele bir yaratık çağırır{filter}",
+        "invocation_card": "belirlenen kartı çağırır",
+        "invocation_card_item": "belirlenen eşyayı yerleştirir",
+        "invocation_cards_item": "belirlenen {n} eşyayı yerleştirir",
+        "invocation_copies_item": "belirlenen eşyanın {n} kopyasını yerleştirir",
+        "invocation_cards": "belirlenen {n} kartı çağırır",
+        "invocation_copies": "belirlenen kartın {n} kopyasını çağırır",
+        "tuteur": "belirlenen kartı elinize ekleyin",
+        "tuteur_copies": "belirlenen kartın {n} kopyasını elinize ekleyin",
+        "appel_supreme": "destenizdeki en yüksek maliyetli kartı elinize ekleyin{filter}{cost}",
+        "appel_supreme_cost": " (maliyet ≤ {max})",
+        "tuteur_many": "belirlenen {n} kartı elinize ekleyin",
+        "epargne": "Tasarruf sayacınıza {x} ekler",
+        "foi": "İnanç sayacınıza {x} ekler",
+        "conquete": "Fetih sayacınıza {x} ekler",
+        "incineration": "hedef mezarlıktaki {x} kartı destesinin altına koyar",
+        "incineration_cible": "{cartes} {zone} içinden {deck} altına koyar",
+        "occurrences": "{n} kez: ",
+        "alternative": "Birini seç: ",
+        "devoration": "yutar",
+        "silence": "susturur",
+        "dechainement": "maliyeti {y} olan {x} rastgele aksiyon oynar",
+        "dechainement_one": "maliyeti {y} olan rastgele bir aksiyon oynar",
+        "tactique_one": "aynı maliyetli bir yaratığın rastgele bir yeteneğini verir",
+        "tactique_many": "aynı maliyetli yaratıkların rastgele {x} yeteneğini verir",
+        "retour_differe": "sahibinin destesinin altına yerleştirir",
+        "retour_differe_cible": "{target} hedefini {proprio} destesinin altına yerleştirir",
+        "proprio_one": "sahibinin",
+        "proprio_many": "ilgili sahiplerinin",
+        "selection": "3 kart{filter} (maliyet {x}) gösterir ve birini elinde tutar",
+        "faveur": "rastgele bir kart{filter} (maliyet {x}) elinize ekler",
+        "selection_magique": "3 aksiyon{filter} (maliyet {x}) gösterir ve birini elinde tutar",
+        "renfort_royal": "3 koleksiyon kartı{filter} (maliyet {x}) gösterir ve birini elinde tutar",
+        "tresor": "3 eşya{filter} (maliyet {x}) gösterir ve birini elinde tutar",
+        "selection_any": "3 kart{filter} gösterir ve birini elinde tutar",
+        "faveur_any": "rastgele bir kart{filter} elinize ekler",
+        "selection_magique_any": "3 aksiyon{filter} gösterir ve birini elinde tutar",
+        "renfort_royal_any": "3 koleksiyon kartı{filter} gösterir ve birini elinde tutar",
+        "tresor_any": "3 eşya{filter} gösterir ve birini elinde tutar",
+        "forge": "destenize maliyeti en fazla {x} olan, nötr veya sizin yönelimden rastgele bir eşya{filter} karıştırır",
+        "forge_range": "destenize maliyeti {min} ile {x} arasında olan, nötr veya sizin yönelimden rastgele bir eşya{filter} karıştırır",
+        "forge_any": "destenize nötr veya sizin yönelimden rastgele bir eşya{filter} karıştırır",
+        "forge_any_min": "destenize maliyeti en az {min} olan, nötr veya sizin yönelimden rastgele bir eşya{filter} karıştırır",
+        "invocation_any": "rastgele bir yaratık{filter} çağırır",
+        "invocation_item_any": "rastgele bir eşya{filter} yerleştirir",
+        "exhumation_any": "mezarlığınızdan {who} diriltir",
+        "exhumation_item_any": "{who} kartını mezarlığınızdan yeniden oyuna sokar",
+        "exhumation_enemy": "rakibin mezarlığındaki {who} kartını diriltip kontrolünüze alır (maliyet ≤ {x})",
+        "exhumation_item_enemy": "rakibin mezarlığındaki {who} kartını kontrolünüz altında yeniden oyuna sokar (maliyet ≤ {x})",
+        "exhumation_enemy_any": "rakibin mezarlığındaki {who} kartını diriltip kontrolünüze alır",
+        "exhumation_item_enemy_any": "rakibin mezarlığındaki {who} kartını kontrolünüz altında yeniden oyuna sokar",
+        "exhumation_both": "herhangi bir mezarlıktaki {who} kartını diriltip kontrolünüze alır (maliyet ≤ {x})",
+        "exhumation_item_both": "herhangi bir mezarlıktaki {who} kartını kontrolünüz altında yeniden oyuna sokar (maliyet ≤ {x})",
+        "exhumation_both_any": "herhangi bir mezarlıktaki {who} kartını diriltip kontrolünüze alır",
+        "exhumation_item_both_any": "herhangi bir mezarlıktaki {who} kartını kontrolünüz altında yeniden oyuna sokar",
+        "appel_any": "destenizdeki ilk birimi oyuna sokar",
+        "appel_item_any": "destenizdeki ilk eşyayı oyuna sokar",
+        "dechainement_any": "rastgele {x} aksiyon oynar",
+        "dechainement_one_any": "rastgele bir aksiyon oynar",
+        "enterrement_one": "ilk kartı{filter} {deck} yerleştirir",
+        "enterrement_many": "ilk {x} kartı{filter} {deck} yerleştirir",
+        "exploration": "Keşif sayacınıza {x} ekler"
+      },
+      "self": {
+        "transformation": "dönüşür",
+        "deal_damage_one": "kendine {x} hasar verir",
+        "deal_damage_many": "kendine {x} hasar verir",
+        "heal": "kendini {x} CP iyileştirir",
+        "buff": "kendine +{x}/+{y} kazandırır",
+        "usurpation": "rakibin oynadığı her kart için kendine +{x}/+{y} kazandırır",
+        "debuff": "kendine -{x}/-{y} verir",
+        "destroy": "kendini yok eder",
+        "bounce": "kendini ele geri gönderir",
+        "paralyze": "kendini felç eder",
+        "poison": "kendini zehirler",
+        "malediction": "kendini lanetler",
+        "neutralise": "kendini etkisizleştirir",
+        "grant_keyword": "kendine {ability} kazandırır"
+      },
+      "choice": {
+        "transformation": "dönüştürülecek bir yaratık seçin",
+        "deal_damage": "yaralanacak bir hedef seçin",
+        "siphon": "canı emilecek bir hedef seçin",
+        "domination": "ele geçirilecek bir yaratık seçin",
+        "heal": "iyileştirilecek bir hedef seçin",
+        "buff": "güçlendirilecek bir yaratık seçin",
+        "usurpation": "güçlendirilecek bir yaratık seçin",
+        "debuff": "zayıflatılacak bir yaratık seçin",
+        "destroy": "yok edilecek bir yaratık seçin",
+        "bounce": "ele geri gönderilecek bir yaratık seçin",
+        "paralyze": "felç edilecek bir yaratık seçin",
+        "poison": "zehirlenecek bir yaratık seçin",
+        "malediction": "lanetlenecek bir yaratık seçin",
+        "neutralise": "etkisizleştirilecek bir yaratık seçin",
+        "grant_keyword": "yeteneğin verileceği bir yaratık seçin",
+        "exhumation": "diriltilecek bir yaratık seçin",
+        "rappel": "ele geri alınacak bir kart seçin",
+        "default": "bir hedef seçin"
+      },
+      "emblem": {
+        "badge": "Amblem",
+        "self": "Amblem",
+        "opponent": "Rakibin sahasına konan amblem",
+        "permanent": " (kalıcı)",
+        "turns_one": " ({n} tur)",
+        "turns_many": " ({n} tur)",
+        "owner_self": "sizin",
+        "owner_opponent": "rakibin",
+        "hero_self": "kahramanınız",
+        "hero_opponent": "rakibin kahramanı",
+        "turn_self": "sizin",
+        "turn_opponent": "rakibin",
+        "when": {
+          "on_play": "{owner} bir yaratığı oyuna girdiğinde",
+          "on_death": "{owner} bir yaratığı öldüğünde",
+          "on_attack": "{owner} bir yaratığı saldırdığında",
+          "on_return": "{owner} bir yaratığı ele geri döndüğünde",
+          "on_activation": "{owner} bir yaratığı etkinleştiğinde",
+          "on_low_hp": "{hero} {n} CP'nin altına düştüğünde",
+          "on_end_of_turn": "{turn} turunun sonunda",
+          "on_start_of_turn": "{turn} turunun başında"
+        }
+      },
+      "grant_when": {
+        "on_play": ", oyuna girdiğinde tetiklenecek",
+        "on_death": ", öldüğünde tetiklenecek",
+        "on_activation": ", etkinleştiğinde tetiklenecek",
+        "on_return": ", ele geri döndüğünde tetiklenecek",
+        "on_end_of_turn": ", turun sonunda tetiklenecek",
+        "on_start_of_turn": ", turun başında tetiklenecek",
+        "on_attack": ", saldırdığında tetiklenecek",
+        "on_draw": ", çekildiğinde tetiklenecek",
+        "on_low_hp": ", 15 CP'nin altına düşüldüğünde tetiklenecek",
+        "on_wound": ", ölmeden yaralandığında tetiklenecek",
+        "on_end_of_turn_in_hand": ", elde olduğu sürece turun sonunda tetiklenecek",
+        "on_start_of_turn_in_hand": ", elde olduğu sürece turun başında tetiklenecek",
+        "on_end_of_turn_in_graveyard": ", mezarlıkta olduğu sürece turun sonunda tetiklenecek",
+        "on_delay": ", {n} tur sonra tetiklenecek"
+      },
+      "incin": {
+        "zone_ally": "mezarlığınızdaki",
+        "zone_enemy": "rakibin mezarlığındaki",
+        "zone_any": "bir mezarlıktaki",
+        "zone_both": "iki mezarlıktaki",
+        "deck_ally": "desteniz",
+        "deck_enemy": "rakibin destesi",
+        "deck_any": "sahibinin destesi",
+        "deck_both": "sahiplerinin destesi",
+        "card_all": "tüm kartlar",
+        "card_one": "bir kart",
+        "card_n": "{n} kart",
+        "unit_all": "tüm birimler",
+        "unit_one": "bir birim",
+        "unit_n": "{n} birim",
+        "spell_all": "tüm aksiyonlar",
+        "spell_one": "bir aksiyon",
+        "spell_n": "{n} aksiyon",
+        "item_all": "tüm eşyalar",
+        "item_one": "bir eşya",
+        "item_n": "{n} eşya"
+      },
+      "pool": {
+        "race": " {v} ırkından",
+        "faction": " {v} hizbinden",
+        "clan": " {v} klanından",
+        "keyword": " {v} yeteneğine sahip",
+        "type_creature": " birim türünde",
+        "type_spell": " aksiyon türünde",
+        "min_cost": " maliyeti {n} veya daha yüksek",
+        "type_item": " eşya türünde"
+      },
+      "targetd": {
+        "count_all": "tüm birimler",
+        "count_one": "bir birim",
+        "count_n": "{n} birim",
+        "count_scatter": "en fazla {n} birim",
+        "item_count_all": "tüm eşyalar",
+        "item_count_one": "bir eşya",
+        "item_count_n": "{n} eşya",
+        "item_count_scatter": "en fazla {n} eşya",
+        "uoi_count_all": "tüm birimler ve eşyalar",
+        "uoi_count_one": "bir birim veya eşya",
+        "uoi_count_n": "{n} birim veya eşya",
+        "uoi_count_scatter": "en fazla {n} birim veya eşya",
+        "hero_ally": "kahramanınız",
+        "hero_enemy": "rakip kahraman",
+        "both_all": "{side} tüm birimler ve kahraman",
+        "both_one": "bir hedef (birim veya kahraman){side}",
+        "damage_source": "ona zarar veren şey"
+      },
+      "target": {
+        "self": "kendisine",
+        "damage_source": "ona zarar veren şeye",
+        "hero_ally": "kahramanınıza",
+        "hero_enemy": "rakip kahramana",
+        "both_all": "{side} tüm birimlere ve kahramana",
+        "both_one": "bir hedefe (birim veya kahraman){side}",
+        "both_side_ally": "müttefik",
+        "both_side_enemy": "düşman",
+        "both_side_ally_one": "müttefik",
+        "both_side_enemy_one": "düşman",
+        "count_all": "tüm birimlere",
+        "count_one": "bir birime",
+        "count_n": "{n} birime",
+        "count_all_autres": "diğer tüm birimlere",
+        "count_one_autre": "başka bir birime",
+        "count_n_autres": "{n} başka birime",
+        "count_scatter": "en fazla {n} birime",
+        "item_count_all": "tüm eşyalara",
+        "item_count_one": "bir eşyaya",
+        "item_count_n": "{n} eşyaya",
+        "item_count_scatter": "en fazla {n} eşyaya",
+        "uoi_count_all": "tüm birimlere ve eşyalara",
+        "uoi_count_one": "bir birime veya eşyaya",
+        "uoi_count_n": "{n} birime veya eşyaya",
+        "uoi_count_scatter": "en fazla {n} birime veya eşyaya",
+        "side_ally_one_m": "müttefik",
+        "side_ally_many_m": "müttefik",
+        "side_enemy_one_m": "düşman",
+        "side_enemy_many_m": "düşman",
+        "side_ally_one": "müttefik",
+        "side_ally_many": "müttefik",
+        "side_enemy_one": "düşman",
+        "side_enemy_many": "düşman",
+        "locs_board": "tahtadaki",
+        "locs_hand": "elden",
+        "locs_deck": "desteden",
+        "locs_graveyard": "mezarlıktan",
+        "locs_sep": ", ",
+        "locs_and": " ve ",
+        "locs_wrap": "{zones}",
+        "loc_hand": "elde",
+        "loc_deck": "destede",
+        "loc_graveyard": "mezarlıkta",
+        "des_random": "rastgele",
+        "des_automatic": "otomatik olarak",
+        "des_choice": "seçime bağlı",
+        "max_cost": "maliyeti {n} veya daha az olan",
+        "with_keyword": "{v} yeteneğine sahip"
+      },
+      "scatter": {
+        "action_damage": "verir",
+        "action_heal": "iyileştirir",
+        "unit_damage": "hasar",
+        "unit_heal": "CP",
+        "times": "her seferinde 1 {unit} olacak şekilde {x} kez",
+        "target_both": "rastgele bir {side} hedefe (birim veya kahraman)",
+        "target_unit": "rastgele bir {side} birime"
+      },
+      "enterrement": {
+        "deck_enemy": "rakip destesinden kendi mezarlığına",
+        "deck_ally": "destenden mezarlığına",
+        "deck_any": "hedeflenen destesinden kendi mezarlığına"
+      }
+    },
+    "factions": {
+      "Elfes": {
+        "displayName": "Göksel İttifak",
+        "description": "Orman halkının iyi yürekli ittifakı: sinsi elfler, büyücü periler, kurnaz hobbitler ve devasa Ağaç-Adamlar."
+      },
+      "Nains": {
+        "displayName": "Dağ Orduları",
+        "description": "Sağlam ve dayanıklı: savunma, azim, demircilik, cüce mühendisliği ve zirvelerin devleri."
+      },
+      "EmpireDuMilieu": {
+        "displayName": "Orta İmparatorluk",
+        "description": "Strateji ve kontrol: disiplin, düzenler, mistisizm, sinsilik, tapınakların naga muhafızları, dağların yōkai'leri — tengu ve oni — ve adil hükümdarlıkların alâmeti qilin."
+      },
+      "RoyaumesDuSoleil": {
+        "displayName": "Güneş Krallıkları",
+        "description": "Güneş, çöl ve ruhlar: ritüel ateşi, yağmacı göçebeler ve çağırıcılar."
+      },
+      "Humains": {
+        "displayName": "Özgür Krallıklar",
+        "description": "Eski kıta: onur, çelik, kahraman şampiyonlar ve onların gururlu kanatlı müttefikleri — griffonlar, şahinler ve Rüzgâr Savaşçıları'nın pegasus ve sfenksleri."
+      },
+      "Hommes-Bêtes": {
+        "displayName": "Sürü",
+        "description": "Vahşi ve acımasız: hızlı saldırır, yenilenir, öfkelenir."
+      },
+      "Élémentaires": {
+        "displayName": "İlkel Varlıklar",
+        "description": "Doğanın ilkel güçleri. Her elementin kendine özgü bir savaş tarzı vardır."
+      },
+      "Mercenaires": {
+        "displayName": "Paralı Askerler",
+        "description": "Bağlılığı olmayan ücretli askerler. Çok yönlüdürler ve tüm desteler için uygundurlar."
+      },
+      "Morts-Vivants": {
+        "displayName": "Nekropol",
+        "description": "Doymak bilmez ve yozlaşmış: diriliş, yaşam emme ve mezarlık büyüsü."
+      },
+      "Elfes Noirs": {
+        "displayName": "Kaos Lejyonları",
+        "description": "Kaosun tüm güçleri birleşti: örgütlü ordu, iblis sarayı, zehirle yozlaşmışlar ve düşmüş seçkinler."
+      }
+    },
+    "rarities": {
+      "Commune": "Yaygın",
+      "Peu Commune": "Nadir Bulunan",
+      "Rare": "Ender",
+      "Épique": "Destansı",
+      "Légendaire": "Eşsiz"
+    },
+    "clans": {
+      "Les Sylvains": "Orman Halkı",
+      "Les Hauts-Elfes": "Yüce Elfler",
+      "La Forêt d'Émeraude": "Zümrüt Orman",
+      "La Combe Verte": "Yeşil Vadi",
+      "La Forge Ardente": "Alevli Demirhane",
+      "La Guilde des Ingénieurs": "Mühendisler Loncası",
+      "Clan des Mille Tunnels": "Bin Tünel Klanı",
+      "Clan des Premiers Géants": "İlk Devler Klanı",
+      "Les Hordes des Steppes": "Bozkır Orduları",
+      "L'Empire de Jade": "Yeşim İmparatorluğu",
+      "Les Lames de l'Ombre": "Gölge Bıçakları",
+      "Les Défenseurs d'Ivoire": "Fildişi Savunucuları",
+      "Les Enfants du Soleil": "Güneşin Çocukları",
+      "Les Seigneurs des Dunes": "Kum Tepeleri Lordları",
+      "Le Royaume des Masques": "Maskeler Krallığı",
+      "Les Fils du Volcan": "Yanardağın Oğulları",
+      "Le Royaume du Nord": "Kuzey Krallığı",
+      "L'Ordre de l'Aube": "Şafak Tarikatı",
+      "Les Guerrières du Vent": "Rüzgâr Savaşçıları",
+      "La Sublime Porte": "Babıâli",
+      "Les Seigneurs Fauves": "Vahşi Lordlar",
+      "Les Enfants de la Lune": "Ayın Çocukları",
+      "Le Pacte des Griffes": "Pençeler Paktı",
+      "La Harde Sauvage": "Yabani Sürü",
+      "La Forêt Enchantée": "Büyülü Orman",
+      "La Colère des Flammes": "Alevlerin Gazabı",
+      "Le Socle du Monde": "Dünyanın Temeli",
+      "La Vague Sans Fin": "Sonsuz Dalga",
+      "Le Souffle des Cimes": "Zirvelerin Nefesi",
+      "Les Rangs Silencieux": "Sessiz Saflar",
+      "Le Voile Hurlant": "Uluyan Perde",
+      "La Cour Écarlate": "Kızıl Saray",
+      "Le Cénacle Nécromant": "Ölü Büyücüler Meclisi",
+      "Les Cohortes Sanglantes": "Kanlı Lejyonlar",
+      "Les Princes des Abîmes": "Uçurum Prensleri",
+      "La Forêt Maudite": "Lanetli Orman",
+      "La Garde Noire": "Kara Muhafızlar"
+    },
+    "races": {
+      "Elfes": "Elfler",
+      "Fées": "Periler",
+      "Aigles Géants": "Dev Kartallar",
+      "Hobbits": "Hobbitler",
+      "Hommes-Arbres": "Ağaç Adamlar",
+      "Farfadets": "Cinciller",
+      "Korrigans": "Korriganlar",
+      "Faunes": "Faunlar",
+      "Dryades": "Dryadlar",
+      "Nains": "Cüceler",
+      "Golems": "Golemler",
+      "Gnomes": "Gnomlar",
+      "Machines": "Makineler",
+      "Kobolds": "Koboldlar",
+      "Géants": "Devler",
+      "Mammouths": "Mamutlar",
+      "Humains": "İnsanlar",
+      "Nagas": "Nagalar",
+      "Tengu": "Tengular",
+      "Oni": "Oniler",
+      "Qilins": "Qilinler",
+      "Esprits": "Ruhlar",
+      "Griffons": "Griffonlar",
+      "Faucons": "Şahinler",
+      "Pégases": "Pegasuslar",
+      "Sphinx": "Sfenksler",
+      "Yétis": "Yetiler",
+      "Hommes-Loups": "Kurt Adamlar",
+      "Hommes-Ours": "Ayı Adamlar",
+      "Hommes-Félins": "Kedi Adamlar",
+      "Centaures": "Centaurlar",
+      "Mimis": "Mimiler",
+      "Hommes-Chiens": "Köpek Adamlar",
+      "Hommes-Renards": "Tilki Adamlar",
+      "Hommes-Cerfs": "Geyik İnsanlar",
+      "Hommes-Singes": "Maymun İnsanlar",
+      "Hommes-Poissons": "Balık İnsanlar",
+      "Hommes-Oiseaux": "Kuş İnsanlar",
+      "Insectes": "Böcekler",
+      "Élémentaire": "Elemental",
+      "Ondins": "Ondinler",
+      "Sirènes": "Denizkızları",
+      "Léviathans": "Leviathanlar",
+      "Cristallins": "Kristalimsiler",
+      "Troglodytes": "Trogloditler",
+      "Bêtes Chtoniennes": "Khtonik Canavarlar",
+      "Salamandres": "Salamandralar",
+      "Sylphes": "Silfler",
+      "Néphélides": "Nefelitler",
+      "Ogres": "Orklar",
+      "Dragons": "Ejderhalar",
+      "Chiens": "Köpekler",
+      "Phoenix": "Anka Kuşları",
+      "Anges": "Melekler",
+      "Ours": "Ayılar",
+      "Loups": "Kurtlar",
+      "Fauves": "Yırtıcılar",
+      "Éléphants": "Filler",
+      "Squelettes": "İskeletler",
+      "Zombies": "Zombiler",
+      "Ghoules": "Gulyabaniler",
+      "Spectres": "Hayaletler",
+      "Vampires": "Vampirler",
+      "Lich": "Lich",
+      "Banshees": "Banshee'ler",
+      "Homuncules de Sang": "Kan Homunkulusları",
+      "Gargouilles": "Gargoyllar",
+      "Dhampirs": "Dhampirler",
+      "Chiroptères": "Yarasalar",
+      "Momies": "Mumyalar",
+      "Chimères nécrotiques": "Nekrotik Kimeralar",
+      "Vermines mortuaires": "Ölüm Haşereleri",
+      "Poltergeists": "Poltergeistlar",
+      "Dullahans": "Dullahanlar",
+      "Sluaghs": "Sluaghlar",
+      "Elfes Corrompus": "Yozlaşmış Elfler",
+      "Araignées Géantes": "Dev Örümcekler",
+      "Démons": "Iblisler",
+      "Orcs": "Orklar",
+      "Gobelins": "Goblinler",
+      "Trolls": "Troller",
+      "Wargs": "Warglar",
+      "Guerriers du Chaos": "Kaos Savaşçıları",
+      "Bâtiments": "Yapılar"
+    },
+    "alignments": {
+      "bon": "İyi",
+      "neutre": "Tarafsız",
+      "maléfique": "Kötü",
+      "spéciale": "Özel"
+    },
+    "races_forms": {
+      "Elfes": {
+        "def": "Elf",
+        "bare": "Elf",
+        "de": "Elfin",
+        "one": "bir Elf",
+        "all": "tüm Elfler",
+        "upto": "en fazla {n} Elf"
+      },
+      "Fées": {
+        "def": "Peri",
+        "bare": "Peri",
+        "de": "Perinin",
+        "one": "bir Peri",
+        "all": "tüm Periler",
+        "upto": "en fazla {n} Peri"
+      },
+      "Farfadets": {
+        "def": "Farfadet",
+        "bare": "Farfadet",
+        "de": "Farfadet'nin",
+        "one": "bir Farfadet",
+        "all": "tüm Farfadetler",
+        "upto": "en fazla {n} Farfadet"
+      },
+      "Korrigans": {
+        "def": "Korrigan",
+        "bare": "Korrigan",
+        "de": "Korrigan'ın",
+        "one": "bir Korrigan",
+        "all": "tüm Korrigan'lar",
+        "upto": "en fazla {n} Korrigan"
+      },
+      "Faunes": {
+        "def": "Faun",
+        "bare": "Faun",
+        "de": "Faunun",
+        "one": "bir Faun",
+        "all": "tüm Faunlar",
+        "upto": "en fazla {n} Faun"
+      },
+      "Dryades": {
+        "def": "Dryad",
+        "bare": "Dryad",
+        "de": "Dryad'ın",
+        "one": "bir Dryad",
+        "all": "tüm Dryad'lar",
+        "upto": "en fazla {n} Dryad"
+      },
+      "Aigles Géants": {
+        "def": "Dev Kartal",
+        "bare": "Dev Kartal",
+        "de": "Dev Kartal'ın",
+        "one": "bir Dev Kartal",
+        "all": "tüm Dev Kartallar",
+        "upto": "en fazla {n} Dev Kartal"
+      },
+      "Hobbits": {
+        "def": "Hobbit",
+        "bare": "Hobbit",
+        "de": "Hobbit'in",
+        "one": "bir Hobbit",
+        "all": "tüm Hobbit'ler",
+        "upto": "en fazla {n} Hobbit"
+      },
+      "Hommes-Arbres": {
+        "def": "Ağaç Adam",
+        "bare": "Ağaç Adam",
+        "de": "Ağaç Adam'ın",
+        "one": "bir Ağaç Adam",
+        "all": "tüm Ağaç Adamlar",
+        "upto": "en fazla {n} Ağaç Adam"
+      },
+      "Nains": {
+        "def": "Cüce",
+        "bare": "Cüce",
+        "de": "Cüce'nin",
+        "one": "bir Cüce",
+        "all": "tüm Cüceler",
+        "upto": "en fazla {n} Cüce"
+      },
+      "Golems": {
+        "def": "Golem",
+        "bare": "Golem",
+        "de": "Golem'in",
+        "one": "bir Golem",
+        "all": "tüm Golemler",
+        "upto": "en fazla {n} Golem"
+      },
+      "Bâtiments": {
+        "def": "Bina",
+        "bare": "Bina",
+        "de": "Binanın",
+        "one": "bir Bina",
+        "all": "tüm Binalar",
+        "upto": "en fazla {n} Bina"
+      },
+      "Gnomes": {
+        "def": "Gnome",
+        "bare": "Gnome",
+        "de": "Gnome'un",
+        "one": "bir Gnome",
+        "all": "tüm Gnome'lar",
+        "upto": "en fazla {n} Gnome"
+      },
+      "Machines": {
+        "def": "Makine",
+        "bare": "Makine",
+        "de": "Makinenin",
+        "one": "bir Makine",
+        "all": "tüm Makineler",
+        "upto": "en fazla {n} Makine"
+      },
+      "Kobolds": {
+        "def": "Kobold",
+        "bare": "Kobold",
+        "de": "Kobold'un",
+        "one": "bir Kobold",
+        "all": "tüm Kobold'lar",
+        "upto": "en fazla {n} Kobold"
+      },
+      "Humains": {
+        "def": "İnsan",
+        "bare": "İnsan",
+        "de": "İnsanın",
+        "one": "bir İnsan",
+        "all": "tüm İnsanlar",
+        "upto": "en fazla {n} İnsan"
+      },
+      "Esprits": {
+        "def": "Ruh",
+        "bare": "Ruh",
+        "de": "Ruhun",
+        "one": "bir Ruh",
+        "all": "tüm Ruhlar",
+        "upto": "en fazla {n} Ruh"
+      },
+      "Nagas": {
+        "def": "Naga",
+        "bare": "Naga",
+        "de": "Naga'nın",
+        "one": "bir Naga",
+        "all": "tüm Nagalar",
+        "upto": "en fazla {n} Naga"
+      },
+      "Tengu": {
+        "def": "Tengu",
+        "bare": "Tengu",
+        "de": "Tengu'nun",
+        "one": "bir Tengu",
+        "all": "tüm Tengular",
+        "upto": "en fazla {n} Tengu"
+      },
+      "Oni": {
+        "def": "Oni",
+        "bare": "Oni",
+        "de": "Oni'nin",
+        "one": "bir Oni",
+        "all": "tüm Oniler",
+        "upto": "en fazla {n} Oni"
+      },
+      "Qilins": {
+        "def": "Qilin",
+        "bare": "Qilin",
+        "de": "Qilin'in",
+        "one": "bir Qilin",
+        "all": "tüm Qilinler",
+        "upto": "en fazla {n} Qilin"
+      },
+      "Griffons": {
+        "def": "Griffon",
+        "bare": "Griffon",
+        "de": "Griffon'un",
+        "one": "bir Griffon",
+        "all": "tüm Griffonlar",
+        "upto": "en fazla {n} Griffon"
+      },
+      "Faucons": {
+        "def": "Şahin",
+        "bare": "Şahin",
+        "de": "Şahin'in",
+        "one": "bir Şahin",
+        "all": "tüm Şahinler",
+        "upto": "en fazla {n} Şahin"
+      },
+      "Pégases": {
+        "def": "Pegasus",
+        "bare": "Pegasus",
+        "de": "Pegasus'un",
+        "one": "bir Pegasus",
+        "all": "tüm Pegasuslar",
+        "upto": "en fazla {n} Pegasus"
+      },
+      "Sphinx": {
+        "def": "Sfenks",
+        "bare": "Sfenks",
+        "de": "Sfenks'in",
+        "one": "bir Sfenks",
+        "all": "tüm Sfenksler",
+        "upto": "en fazla {n} Sfenks"
+      },
+      "Yétis": {
+        "def": "Yeti",
+        "bare": "Yeti",
+        "de": "Yeti'nin",
+        "one": "bir Yeti",
+        "all": "tüm Yetiler",
+        "upto": "en fazla {n} Yeti"
+      },
+      "Hommes-Loups": {
+        "def": "Kurtadam",
+        "bare": "Kurtadam",
+        "de": "Kurtadam'ın",
+        "one": "bir Kurtadam",
+        "all": "tüm Kurtadamlar",
+        "upto": "en fazla {n} Kurtadam"
+      },
+      "Hommes-Ours": {
+        "def": "Ayıadam",
+        "bare": "Ayıadam",
+        "de": "Ayıadam'ın",
+        "one": "bir Ayıadam",
+        "all": "tüm Ayıadamlar",
+        "upto": "en fazla {n} Ayıadam"
+      },
+      "Hommes-Félins": {
+        "def": "Kedi-Adam",
+        "bare": "Kedi-Adam",
+        "de": "Kedi-Adam'ın",
+        "one": "bir Kedi-Adam",
+        "all": "tüm Kedi-Adamlar",
+        "upto": "en fazla {n} Kedi-Adam"
+      },
+      "Centaures": {
+        "def": "Centaur",
+        "bare": "Centaur",
+        "de": "Centaur'un",
+        "one": "bir Centaur",
+        "all": "tüm Centaurlar",
+        "upto": "en fazla {n} Centaur"
+      },
+      "Mimis": {
+        "def": "Mimi",
+        "bare": "Mimi",
+        "de": "Mimi'nin",
+        "one": "bir Mimi",
+        "all": "tüm Mimiler",
+        "upto": "en fazla {n} Mimi"
+      },
+      "Hommes-Chiens": {
+        "def": "Köpek Adam",
+        "bare": "Köpek Adam",
+        "de": "Köpek Adam'ın",
+        "one": "bir Köpek Adam",
+        "all": "tüm Köpek Adamlar",
+        "upto": "en fazla {n} Köpek Adam"
+      },
+      "Hommes-Renards": {
+        "def": "Tilki Adam",
+        "bare": "Tilki Adam",
+        "de": "Tilki Adam'ın",
+        "one": "bir Tilki Adam",
+        "all": "tüm Tilki Adamlar",
+        "upto": "en fazla {n} Tilki Adam"
+      },
+      "Hommes-Cerfs": {
+        "def": "Geyik Adam",
+        "bare": "Geyik Adam",
+        "de": "Geyik Adam'ın",
+        "one": "bir Geyik Adam",
+        "all": "tüm Geyik Adamlar",
+        "upto": "en fazla {n} Geyik Adam"
+      },
+      "Insectes": {
+        "def": "Böcek",
+        "bare": "Böcek",
+        "de": "Böceğin",
+        "one": "bir Böcek",
+        "all": "tüm Böcekler",
+        "upto": "en fazla {n} Böcek"
+      },
+      "Hommes-Singes": {
+        "def": "Maymun Adam",
+        "bare": "Maymun Adam",
+        "de": "Maymun Adam'ın",
+        "one": "bir Maymun Adam",
+        "all": "tüm Maymun Adamlar",
+        "upto": "en fazla {n} Maymun Adam"
+      },
+      "Hommes-Poissons": {
+        "def": "Balık Adam",
+        "bare": "Balık Adam",
+        "de": "Balık Adam'ın",
+        "one": "bir Balık Adam",
+        "all": "tüm Balık Adamlar",
+        "upto": "en fazla {n} Balık Adam"
+      },
+      "Hommes-Oiseaux": {
+        "def": "Kuş Adam",
+        "bare": "Kuş Adam",
+        "de": "Kuş Adam'ın",
+        "one": "bir Kuş Adam",
+        "all": "tüm Kuş-İnsanlar",
+        "upto": "en fazla {n} Kuş-İnsan"
+      },
+      "Élémentaire": {
+        "def": "Element",
+        "bare": "Element",
+        "de": "Elementin",
+        "pl": "Elementler",
+        "one": "bir Element",
+        "all": "tüm Elementler",
+        "upto": "en fazla {n} Element"
+      },
+      "Géants": {
+        "def": "Dev",
+        "bare": "Dev",
+        "de": "Devin",
+        "one": "bir Dev",
+        "all": "tüm Devler",
+        "upto": "en fazla {n} Dev"
+      },
+      "Mammouths": {
+        "def": "Mamut",
+        "bare": "Mamut",
+        "de": "Mamutun",
+        "one": "bir Mamut",
+        "all": "tüm Mamutlar",
+        "upto": "en fazla {n} Mamut"
+      },
+      "Ogres": {
+        "def": "Ogre",
+        "bare": "Ogre",
+        "de": "Ogrenin",
+        "one": "bir Ogre",
+        "all": "tüm Ogreler",
+        "upto": "en fazla {n} Ogre"
+      },
+      "Dragons": {
+        "def": "Ejderha",
+        "bare": "Ejderha",
+        "de": "Ejderhanın",
+        "one": "bir Ejderha",
+        "all": "tüm Ejderhalar",
+        "upto": "en fazla {n} Ejderha"
+      },
+      "Éléphants": {
+        "def": "Fil",
+        "bare": "Fil",
+        "de": "Filin",
+        "one": "bir Fil",
+        "all": "tüm Filler",
+        "upto": "en fazla {n} Fil"
+      },
+      "Chiens": {
+        "def": "Köpek",
+        "bare": "Köpek",
+        "de": "Köpeğin",
+        "one": "bir Köpek",
+        "all": "tüm Köpekler",
+        "upto": "en fazla {n} Köpek"
+      },
+      "Phoenix": {
+        "def": "Anka Kuşu",
+        "bare": "Anka Kuşu",
+        "de": "Anka Kuşu'nun",
+        "one": "bir Anka Kuşu",
+        "all": "tüm Anka Kuşları",
+        "upto": "en fazla {n} Anka Kuşu"
+      },
+      "Anges": {
+        "def": "Melek",
+        "bare": "Melek",
+        "de": "Meleğin",
+        "one": "bir Melek",
+        "all": "tüm Melekler",
+        "upto": "en fazla {n} Melek"
+      },
+      "Ours": {
+        "def": "Ayı",
+        "bare": "Ayı",
+        "de": "Ayının",
+        "one": "bir Ayı",
+        "all": "tüm Ayılar",
+        "upto": "en fazla {n} Ayı"
+      },
+      "Loups": {
+        "def": "Kurt",
+        "bare": "Kurt",
+        "de": "Kurdun",
+        "one": "bir Kurt",
+        "all": "tüm Kurtlar",
+        "upto": "en fazla {n} Kurt"
+      },
+      "Fauves": {
+        "def": "Yırtıcı",
+        "bare": "Yırtıcı",
+        "de": "Yırtıcının",
+        "one": "bir Yırtıcı",
+        "all": "tüm Yırtıcılar",
+        "upto": "en fazla {n} Yırtıcı"
+      },
+      "Squelettes": {
+        "def": "İskelet",
+        "bare": "İskelet",
+        "de": "İskeletin",
+        "one": "bir İskelet",
+        "all": "tüm İskeletler",
+        "upto": "en fazla {n} İskelet"
+      },
+      "Zombies": {
+        "def": "Zombi",
+        "bare": "Zombi",
+        "de": "Zombinin",
+        "one": "bir Zombi",
+        "all": "tüm Zombiler",
+        "upto": "en fazla {n} Zombi"
+      },
+      "Ghoules": {
+        "def": "Gul",
+        "bare": "Gul",
+        "de": "Gulun",
+        "one": "bir Gul",
+        "all": "tüm Gullar",
+        "upto": "en fazla {n} Gul"
+      },
+      "Spectres": {
+        "def": "Hayalet",
+        "bare": "Hayalet",
+        "de": "Hayaletin",
+        "one": "bir Hayalet",
+        "all": "tüm Hayaletler",
+        "upto": "en fazla {n} Hayalet"
+      },
+      "Vampires": {
+        "def": "Vampir",
+        "bare": "Vampir",
+        "de": "Vampirin",
+        "one": "bir Vampir",
+        "all": "tüm Vampirler",
+        "upto": "en fazla {n} Vampir"
+      },
+      "Lich": {
+        "def": "Lich",
+        "bare": "Lich",
+        "de": "Lich'in",
+        "one": "bir Lich",
+        "all": "tüm Lich'ler",
+        "upto": "en fazla {n} Lich"
+      },
+      "Momies": {
+        "def": "Mumya",
+        "bare": "Mumya",
+        "de": "Mumyanın",
+        "one": "bir Mumya",
+        "all": "tüm Mumyalar",
+        "upto": "en fazla {n} Mumya"
+      },
+      "Chimères nécrotiques": {
+        "def": "Nekrotik Kimera",
+        "bare": "Nekrotik Kimera",
+        "de": "Nekrotik Kimeranın",
+        "one": "bir Nekrotik Kimera",
+        "all": "tüm Nekrotik Kimeralar",
+        "upto": "en fazla {n} Nekrotik Kimera"
+      },
+      "Vermines mortuaires": {
+        "def": "Ölüm Asalağı",
+        "bare": "Ölüm Asalağı",
+        "de": "Ölüm Asalağı'nın",
+        "one": "bir Ölüm Asalağı",
+        "all": "tüm Ölüm Asalakları",
+        "upto": "en fazla {n} Ölüm Asalağı"
+      },
+      "Poltergeists": {
+        "def": "Poltergeist",
+        "bare": "Poltergeist",
+        "de": "Poltergeist'ın",
+        "one": "bir Poltergeist",
+        "all": "tüm Poltergeist'lar",
+        "upto": "en fazla {n} Poltergeist"
+      },
+      "Dullahans": {
+        "def": "Dullahan",
+        "bare": "Dullahan",
+        "de": "Dullahan'ın",
+        "one": "bir Dullahan",
+        "all": "tüm Dullahan'lar",
+        "upto": "en fazla {n} Dullahan"
+      },
+      "Sluaghs": {
+        "def": "Sluagh",
+        "bare": "Sluagh",
+        "de": "Sluagh'ın",
+        "one": "bir Sluagh",
+        "all": "tüm Sluagh'lar",
+        "upto": "en fazla {n} Sluagh"
+      },
+      "Ondins": {
+        "def": "Ondin",
+        "bare": "Ondin",
+        "de": "Ondin'in",
+        "one": "bir Ondin",
+        "all": "tüm Ondin'ler",
+        "upto": "en fazla {n} Ondin"
+      },
+      "Sirènes": {
+        "def": "Deniz Kızı",
+        "bare": "Deniz Kızı",
+        "de": "Deniz Kızı'nın",
+        "one": "bir Deniz Kızı",
+        "all": "tüm Deniz Kızları",
+        "upto": "en fazla {n} Deniz Kızı"
+      },
+      "Léviathans": {
+        "def": "Leviathan",
+        "bare": "Leviathan",
+        "de": "Leviathan'ın",
+        "one": "bir Leviathan",
+        "all": "tüm Leviathanlar",
+        "upto": "en fazla {n} Leviathan"
+      },
+      "Cristallins": {
+        "def": "Kristalin",
+        "bare": "Kristalin",
+        "de": "Kristalin'in",
+        "one": "bir Kristalin",
+        "all": "tüm Kristaliner",
+        "upto": "en fazla {n} Kristalin"
+      },
+      "Troglodytes": {
+        "def": "Troglodit",
+        "bare": "Troglodit",
+        "de": "Troglodit'in",
+        "one": "bir Troglodit",
+        "all": "tüm Trogloditler",
+        "upto": "en fazla {n} Troglodit"
+      },
+      "Bêtes Chtoniennes": {
+        "def": "Khtonik Canavar",
+        "bare": "Khtonik Canavar",
+        "de": "Khtonik Canavar'ın",
+        "one": "bir Khtonik Canavar",
+        "all": "tüm Khtonik Canavarlar",
+        "upto": "en fazla {n} Khtonik Canavar"
+      },
+      "Salamandres": {
+        "def": "Semender",
+        "bare": "Semender",
+        "de": "Semender'in",
+        "one": "bir Semender",
+        "all": "tüm Semenderler",
+        "upto": "en fazla {n} Semender"
+      },
+      "Sylphes": {
+        "def": "Silf",
+        "bare": "Silf",
+        "de": "Silf'in",
+        "one": "bir Silf",
+        "all": "tüm Silfler",
+        "upto": "en fazla {n} Silf"
+      },
+      "Néphélides": {
+        "def": "Nefelid",
+        "bare": "Nefelid",
+        "de": "Nefelid'in",
+        "one": "bir Nefelid",
+        "all": "tüm Nefelidler",
+        "upto": "en fazla {n} Nefelid"
+      },
+      "Banshees": {
+        "def": "Banshee",
+        "bare": "Banshee",
+        "de": "Banshee'nin",
+        "one": "bir Banshee",
+        "all": "tüm Banshee'ler",
+        "upto": "en fazla {n} Banshee"
+      },
+      "Homuncules de Sang": {
+        "def": "Kan Homunkulusu",
+        "bare": "Kan Homunkulusu",
+        "de": "Kan Homunkulusu'nun",
+        "one": "bir Kan Homunkulusu",
+        "all": "tüm Kan Homunkulusları",
+        "upto": "en fazla {n} Kan Homunkulusu"
+      },
+      "Gargouilles": {
+        "def": "Gargoyle",
+        "bare": "Gargoyle",
+        "de": "Gargoyle'un",
+        "one": "bir Gargoyle",
+        "all": "tüm Gargoyle'lar",
+        "upto": "en fazla {n} Gargoyle"
+      },
+      "Dhampirs": {
+        "def": "Dhampir",
+        "bare": "Dhampir",
+        "de": "Dhampir'in",
+        "one": "bir Dhampir",
+        "all": "tüm Dhampir'ler",
+        "upto": "en fazla {n} Dhampir"
+      },
+      "Chiroptères": {
+        "def": "Yarasamsı",
+        "bare": "Yarasamsı",
+        "de": "Yarasamsı'nın",
+        "one": "bir Yarasamsı",
+        "all": "tüm Yarasamsılar",
+        "upto": "en fazla {n} Yarasamsı"
+      },
+      "Elfes Corrompus": {
+        "def": "Yozlaşmış Elf",
+        "bare": "Yozlaşmış Elf",
+        "de": "Yozlaşmış Elf'in",
+        "one": "bir Yozlaşmış Elf",
+        "all": "tüm Yozlaşmış Elfler",
+        "upto": "en fazla {n} Yozlaşmış Elf"
+      },
+      "Araignées Géantes": {
+        "def": "Dev Örümcek",
+        "bare": "Dev Örümcek",
+        "de": "Dev Örümcek'in",
+        "one": "bir Dev Örümcek",
+        "all": "tüm Dev Örümcekler",
+        "upto": "en fazla {n} Dev Örümcek"
+      },
+      "Démons": {
+        "def": "Şeytan",
+        "bare": "Şeytan",
+        "de": "Şeytan'ın",
+        "one": "bir Şeytan",
+        "all": "tüm Şeytanlar",
+        "upto": "en fazla {n} Şeytan"
+      },
+      "Orcs": {
+        "def": "Ork",
+        "bare": "Ork",
+        "de": "Ork'un",
+        "one": "bir Ork",
+        "all": "tüm Orklar",
+        "upto": "en fazla {n} Ork"
+      },
+      "Gobelins": {
+        "def": "Goblin",
+        "bare": "Goblin",
+        "de": "Goblin'in",
+        "one": "bir Goblin",
+        "all": "tüm Goblinler",
+        "upto": "en fazla {n} Goblin"
+      },
+      "Trolls": {
+        "def": "Trol",
+        "bare": "Trol",
+        "de": "Trol'ün",
+        "one": "bir Trol",
+        "all": "tüm Troller",
+        "upto": "en fazla {n} Trol"
+      },
+      "Wargs": {
+        "def": "Warg",
+        "bare": "Warg",
+        "de": "Warg'ın",
+        "one": "bir Warg",
+        "all": "tüm Wargler",
+        "upto": "en fazla {n} Warg"
+      },
+      "Guerriers du Chaos": {
+        "def": "Kaos Savaşçısı",
+        "bare": "Kaos Savaşçısı",
+        "de": "Kaos Savaşçısı'nın",
+        "one": "bir Kaos Savaşçısı",
+        "all": "tüm Kaos Savaşçıları",
+        "upto": "en fazla {n} Kaos Savaşçısı"
+      }
+    },
+    "clans_forms": {
+      "Les Sylvains": "Sylvain'ler",
+      "Les Hauts-Elfes": "Yüce Elflerin",
+      "La Forêt d'Émeraude": "Zümrüt Ormanı'nın",
+      "La Combe Verte": "Yeşil Vadi'nin",
+      "Les Gardiens de la Montagne": "Dağ Muhafızları'nın",
+      "La Forge Ardente": "Yanan Ocak'ın",
+      "Les Sentinelles d'Airain": "Tunç Nöbetçiler'in",
+      "La Guilde des Ingénieurs": "Mühendisler Loncası'nın",
+      "Les Hordes des Steppes": "Bozkır Orduları'nın",
+      "L'Empire de Jade": "Yeşim İmparatorluğu'nun",
+      "Les Lames de l'Ombre": "Gölge Bıçakları'nın",
+      "Les Défenseurs d'Ivoire": "Fildişi Savunucuları'nın",
+      "Les Enfants du Soleil": "Güneşin Çocukları'nın",
+      "Les Seigneurs des Dunes": "Kum Tepesi Lordları'nın",
+      "Le Royaume des Masques": "Maskeler Krallığı'nın",
+      "Les Fils du Volcan": "Yanardağın Oğulları'nın",
+      "Le Royaume du Nord": "Kuzey Krallığı'nın",
+      "L'Ordre de l'Aube": "Şafak Tarikatı'nın",
+      "Les Guerrières du Vent": "Rüzgâr Savaşçıları'nın",
+      "La Sublime Porte": "Yüce Kapı'nın",
+      "Les Seigneurs Fauves": "Yabani Lordlar'ın",
+      "Les Enfants de la Lune": "Ayın Çocukları'nın",
+      "Le Pacte des Griffes": "Pençeler Paktı'nın",
+      "La Harde Sauvage": "Vahşi Sürü'nün",
+      "La Forêt Enchantée": "Büyülü Orman'ın",
+      "La Colère des Flammes": "Alevlerin Gazabı'nın",
+      "Le Socle du Monde": "Dünya Temeli'nin",
+      "La Vague Sans Fin": "Sonsuz Dalga'nın",
+      "Le Souffle des Cimes": "Zirvelerin Soluğu'nun",
+      "Les Rangs Silencieux": "Sessiz Saflar'ın",
+      "Le Voile Hurlant": "Uluyan Perde'nin",
+      "La Cour Écarlate": "Kızıl Saray'ın",
+      "Le Cénacle Nécromant": "Ölü Büyücüler Meclisi'nin",
+      "Les Cohortes Sanglantes": "Kanlı Kohortlar'ın",
+      "Les Princes des Abîmes": "Uçurum Prensleri'nin",
+      "La Forêt Maudite": "Lanetli Orman'ın",
+      "La Garde Noire": "Kara Muhafızlar'ın"
+    },
+    "factions_forms": {
+      "Elfes": "Göksel İttifak'ın",
+      "Nains": "Dağ Orduları'nın",
+      "EmpireDuMilieu": "Orta İmparatorluk'un",
+      "RoyaumesDuSoleil": "Güneş Krallıkları'nın",
+      "Humains": "Özgür Krallıkların",
+      "Hommes-Bêtes": "Sürünün",
+      "Élémentaires": "Kadim Elementlerin",
+      "Mercenaires": "Paralı Askerlerin",
+      "Morts-Vivants": "Nekropolün",
+      "Elfes Noirs": "Kaos Lejyonlarının"
+    },
+    "markers": {
+      "race": "seçilen ırktan yaratık",
+      "race_bare": "aynı ırktan",
+      "race_de": "aynı ırktan",
+      "race_pl": "aynı ırktan birimler",
+      "clan": "klanınız",
+      "clan_de": "aynı klandan",
+      "faction": "fraksiyonunuz",
+      "faction_de": "aynı fraksiyondan",
+      "alignment": "aynı yönelimden",
+      "alignment_of": "{a} yönelimli",
+      "token": "yapılandırılmış token",
+      "tokens": "birkaç token",
+      "invocations": "koleksiyonunuzdan rastgele birkaç yaratık",
+      "invocations_first_one": "maliyeti {cost} olan rastgele bir yaratık",
+      "invocations_first_many": "maliyeti {cost} olan rastgele {count} yaratık",
+      "invocations_more_one": "maliyeti {cost} olan bir tane",
+      "invocations_more_many": "maliyeti {cost} olan {count} tane",
+      "invocations_join": " ve ",
+      "race_or": " veya ",
+      "invocations_of_race": " ({v} arasından)",
+      "invocations_of_faction": " ({v} fraksiyonu arasından)",
+      "lycanthrope": "X/X token",
+      "ability": "bir yetenek",
+      "scope": "bir müttefik birime (veya tümüne)",
+      "scope_target": "bir müttefik birime",
+      "edc_compte": "Rastgele +1 SLD veya +1 CAN kazanır, bunu {n} kez yapar (daha önce tetiklediğiniz her Takım Ruhu için 1).",
+      "usurpation_actuel": "Oynanan rakip kartları: {n} — şu an +{x}/+{y}.",
+      "scope_all": "tüm birimlerinize",
+      "machine_part": " ve {ability}",
+      "machine_part_timed": " ve {ability} ({timing})",
+      "machine_name": "Makine",
+      "neutralise_cible": "hedeflenen bir düşman biriminin (veya tümünün)",
+      "neutralise_cible_target": "hedeflenen bir düşman biriminde",
+      "neutralise_cible_all": "tüm düşman birimlerinde",
+      "forge_align": " veya {alignment}",
+      "forge_cout": " maliyeti en fazla X olan",
+      "forge_cout_libre": "",
+      "forge_cout_max": " maliyeti en fazla X olan",
+      "forge_cout_range": " maliyeti {n} ile X arasında olan",
+      "forge_cout_min": " maliyeti en az {n} olan"
+    },
+    "sets": {
+      "1": "Temel Set"
+    },
+    "formats": {
+      "expert-standard": "Uzman · Standart",
+      "expert-etendu": "Uzman · Genişletilmiş",
+      "classique-etendu": "Klasik · Genişletilmiş",
+      "classique-standard": "Klasik · Standart"
+    },
+    "singulier": {
+      "label": "Tekil",
+      "help": "Başlangıç desteniz hiç tekrar eden kart içermiyorsa {timing} tetiklenir.",
+      "help_permanent": "Başlangıç desteniz hiç tekrar eden kart içermiyorsa etkindir.",
+      "timing": {
+        "entry": "oyuna girdiğinde",
+        "death": "öldüğünde",
+        "tap": "etkinleştirildiğinde",
+        "return": "ele geri döndüğünde",
+        "attack": "saldırdığında",
+        "end_of_turn": "turun sonunda",
+        "start_of_turn": "turun başında",
+        "draw": "çekildiğinde",
+        "low_hp": "{n} CP altındayken",
+        "spell": "aksiyon çözüldüğünde",
+        "wound": "ölmeden yaralandığında",
+        "delay": "Gecikmesi sona erdiğinde"
+      }
+    },
+    "triggers": {
+      "permanent": "Kalıcı",
+      "entry": "Giriş",
+      "attack": "Saldırı",
+      "death": "Ölüm",
+      "return": "Geri Dönüş",
+      "tap": "Etkinleştirilebilir",
+      "end_of_turn": "Tur Sonu",
+      "start_of_turn": "Tur Başı",
+      "draw": "Çekiş",
+      "low_hp": "{n} CP Altında",
+      "wound": "Yara",
+      "delay": "Gecikme {d}"
+    },
+    "target_scope": {
+      "spell": {
+        "impact": "{cibles} hedefine X hasar verir.",
+        "affaiblissement": "{cibles} hedefine -X SLD ve -Y CP verir.",
+        "retour_differe": "Maliyeti ≤ X olan {cibles} sahiplerinin destesinin altına yerleştirir.",
+        "retour_differe_any": "{cibles} sahiplerinin destesinin altına yerleştirir.",
+        "remontee": "{cibles} ilk sahiplerinin eline geri gönderir.",
+        "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
+        "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
+        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
+        "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
+        "benediction": "{cibles} tamamen iyileştirir.",
+        "poison": "{cibles} zehirler: her tur sonunda 1 CP kaybederler.",
+        "siphon": "{cibles} X hasar verir ve isabet alan her birim için kahramanınızı X iyileştirir.",
+        "entrave": "{cibles} X tur boyunca felç eder.",
+        "execution": "Maliyeti ≤ X olan {cibles} eşyalar dahil yok eder.",
+        "execution_any": "{cibles} eşyalar dahil yok eder.",
+        "silence": "{cibles} üzerindeki eşyalar dahil tüm anahtar sözcükleri kaldırır ve istatistiklerini orijinal değerlerine döndürür.",
+        "renforcement": "{cibles} +X/+Y verir.",
+        "discipline": "Oyundaki tüm yaratıklarınızın maliyeti bu aksiyonun maliyetiyle aynı paritedeyse {cibles} +X/+Y verir.",
+        "usurpation": "Oynadığınız her rakip kartı için {cibles} +X/+Y verir.",
+        "guerison": "{cibles} ve kahramanınıza X CP yeniler."
+      },
+      "creature": {
+        "neutralisation": "Oyunda olduğu sürece {cibles} felç olur ve yetenekleri etkisiz kalır.",
+        "impact": "{cibles} X hasar verir.",
+        "affaiblissement": "{cibles} -X SAL ve -Y CP verir.",
+        "retour_differe": "Maliyeti ≤ X olan {cibles} sahiplerinin destesinin altına yerleştirir.",
+        "retour_differe_any": "{cibles} sahiplerinin destesinin altına yerleştirir.",
+        "remontee": "{cibles} ilk sahiplerinin eline geri gönderir.",
+        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
+        "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
+        "benediction": "{cibles} tamamen iyileştirir.",
+        "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
+        "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
+        "tactique": "{cibles} aynı maliyetli yaratıkların yetenekleri arasından rastgele X yetenek verir (birim başına bir çekiliş).",
+        "vampirisme": "{cibles} en fazla X CP çalar ve bunları bu birimin CP'sine ekler.",
+        "devoration": "{cibles} yok eder; bu birim onların SAL ve CP değerlerini kalıcı olarak kazanır.",
+        "sacrifice": "CP ve SAL değerlerini kalıcı olarak kazanmak için diğer tüm müttefik birimleri yok edin.",
+        "renforcement": "Diğer tüm müttefik birimlere kalıcı olarak +X SAL ve +Y CP verir.",
+        "discipline": "Tahtanızdaki tüm maliyetler onunkiyle aynı paritedeyse, diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
+        "usurpation": "Oynadığınız her rakip kartı için diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
+        "renforcement_soi": "Kalıcı olarak +X ATK ve +Y CAN kazanır.",
+        "discipline_soi": "Oyundaki tüm yaratıklarınızın maliyeti kendisininkiyle aynı paritedeyse, kalıcı olarak +X ATK ve +Y CAN kazanır.",
+        "usurpation_soi": "Oynadığınız her rakip kartı başına kalıcı olarak +X ATK ve +Y CAN kazanır.",
+        "execution": "Maliyeti ≤ X olan {cibles} yok eder, eşyalar dahil.",
+        "execution_any": "{cibles} yok eder, eşyalar dahil.",
+        "silence": "{cibles} üzerindeki tüm anahtar sözcükleri, eşyalar dahil, kaldırır ve statlarını orijinal değerlerine döndürür.",
+        "guerison": "Diğer tüm müttefik birimlerin ve kahramanınızın CAN değerini X kadar yeniler.",
+        "purete": "Mezarlığınız boş olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
+        "force_des_ancetres": "Mezarlığınızda 7 veya daha fazla yaratık olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
+        "seuil_sacrificiel": "Destenizde 25 veya daha az kart olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
+        "silence_soi": "Tüm anahtar sözcüklerini kaybeder ve statları orijinal değerlerine döner.",
+        "guerison_soi": "X CAN yeniler.",
+        "tactique_soi": "Aynı maliyetli yaratıkların yetenekleri arasından rastgele seçilen X yetenek kazanır."
+      },
+      "cibles": {
+        "all_enemies": "tüm düşman birimleri",
+        "all_allies": "tüm müttefik birimleri",
+        "all": "iki tarafın tüm birimlerini"
+      }
+    },
+    "cost_help": {
+      "vie": {
+        "title": "Can Bedeli {n}",
+        "desc": "Mananın yanı sıra, bu kartı oynadığınızda kahramanınız {n} CAN kaybeder. Kahramanınızı 0 CAN'a düşürecekse oynanamaz."
+      },
+      "defausse": {
+        "title": "Eleme {n}",
+        "desc_one": "Mananın yanı sıra, elinizden seçtiğiniz bir kartı atın.",
+        "desc_many": "Mananın yanı sıra, elinizden seçtiğiniz {n} kartı atın."
+      },
+      "sacrifice": {
+        "title": "Kurban {n}",
+        "desc_one": "Mananın yanı sıra, oyundaki yaratıklarınızdan seçtiğiniz birini kurban edin.",
+        "desc_many": "Mananın yanı sıra, oyundaki yaratıklarınızdan seçtiğiniz {n} tanesini kurban edin."
+      },
+      "exil": {
+        "title": "Sürgün {n}",
+        "desc_one": "Mananın yanı sıra, destenizin en üstündeki kart sürgüne gönderilir: oyundan çıkar. Destenizde kart yoksa oynanamaz.",
+        "desc_many": "Mananın yanı sıra, destenizin en üstündeki {n} kart sürgüne gönderilir: oyundan çıkar. Destenizde en az {n} kart olmalıdır."
+      },
+      "repli": {
+        "title": "Geri Çekilme {n}",
+        "desc_one": "Mananın yanı sıra, elinizden seçtiğiniz bir kartı destenizin en üstüne geri koyun.",
+        "desc_many": "Mananın yanı sıra, elinizden seçtiğiniz {n} kartı destenizin en üstüne geri koyun. İlk seçtiğiniz kart en üstte kalır."
+      },
+      "retraite": {
+        "title": "Geri Dönüş {n}",
+        "desc_one": "Mananın yanı sıra, oyundaki yaratıklarınızdan seçtiğiniz birini ele geri alın. Eliniz onu alamıyorsa oynanamaz.",
+        "desc_many": "Mananın yanı sıra, oyundaki yaratıklarınızdan seçtiğiniz {n} tanesini ele geri alın. Eliniz onları alamıyorsa oynanamaz."
+      },
+      "eveil": {
+        "title": "Uyanış {n}",
+        "desc": "Bu kartı oynamak yerine uyanışa alabilirsiniz. Ardından turlarınız boyunca mananızla, mana başına 1 puan olacak şekilde {n} puanını ödersiniz. Son puanda, sanki onu oynamışsınız gibi oyuna girer.",
+        "remaining": "{n} puanın {left} tanesi daha ödenecek."
+      },
+      "equipement": {
+        "title": "Donatım {n}",
+        "desc": "Eşya oyuna girdikten sonra, onu yaratıklarınızdan birine kuşanmak {n} mana tutar. Maliyet, yer değiştirme dahil her kuşanışta ödenir.",
+        "desc_free": "Eşya oyuna girdikten sonra, onu yaratıklarınızdan birine kuşanmak ücretsizdir, yer değiştirme dahil."
+      }
+    }
+  },
+  "home": {
+    "home_subtitle": "Bir kart. Bir efsane. Sıra sende.",
+    "play_label": "Oyna",
+    "play_desc": "Bir rakip bul ve maça başla",
+    "market_label": "Pazar",
+    "market_desc": "Müzayedeyle al ve sat",
+    "market_desc_buy": "Müzayedeyle satın al",
+    "collection_label": "Koleksiyonum",
+    "collection_desc": "Kartlar, kahramanlar, kart arkaları, oyun tahtaları",
+    "decks_label": "Destelerim",
+    "decks_desc": "Destelerini oluştur ve düzenle",
+    "tutorial_label": "Nasıl Oynanır",
+    "tutorial_desc": "Kuralları ve yetenekleri öğren",
+    "tutorial_back": "Ana sayfaya dön",
+    "news_banner_label": "Haberler",
+    "news_banner_open": "Haberleri göster",
+    "news_banner_collapse": "Haberleri daralt",
+    "news_read_more": "Devamını oku",
+    "news_back_home": "Ana sayfaya dön",
+    "welcome": "Hoş geldin,",
+    "logout": "Çıkış yap",
+    "settings": "Ayarlar",
+    "skip_to_content": "İçeriğe geç",
+    "collection_title": "Koleksiyonum",
+    "collection_back": "Ana sayfaya dön",
+    "my_cards": "Kartlarım",
+    "my_cards_desc": "Sahip olduğun kartların kataloğu",
+    "my_heroes": "Kahramanlarım",
+    "my_heroes_desc": "Kilidi açılan şampiyonlar",
+    "my_card_backs": "Kart Arkalarım",
+    "my_card_backs_desc": "Sahip olunan kart arkaları",
+    "my_boards": "Tahtalarım",
+    "my_boards_desc": "Sahip olunan oyun tahtaları",
+    "heroes_title": "Kahramanlarım",
+    "heroes_empty": "Henüz kilidi açılmış kahraman yok.",
+    "heroes_filter_all": "Tümü",
+    "heroes_label_faction": "Hizip",
+    "heroes_label_clan": "Klan",
+    "heroes_label_rarity": "Nadirlik",
+    "heroes_loading": "Yükleniyor…",
+    "heroes_load_error": "Kahramanların yüklenemedi.",
+    "hero_power": "Güç",
+    "tournaments_label": "Turnuvalar",
+    "tournaments_desc": "En iyilerle karşılaş, olağanüstü ödüller kazan."
+  },
+  "landing": {
+    "nav_play": "Oyna",
+    "hero_eyebrow": "Fantezi TCG — Yeni Nesil",
+    "hero_title": "Armies of Legends",
+    "hero_sub": "Kayıt olduğun andan itibaren seçtiğin ordudan 300'den fazla kart. Sınırlı sürümler gerisini halleder: hiçbir Uzman destesi seninkine benzemez.",
+    "hero_cta": "Hediye fraksiyonumu seç",
+    "hero_cta_secondary": "Dokuz fraksiyonu gör",
+    "hero_proof": "İlk maçtan itibaren 500'den fazla kart hediye",
+    "features_title": "Neden Armies of Legends",
+    "f1_title": "Efsanelerin derinliği.",
+    "f1_desc": "Armies of Legends, kült TCG'lerin stratejisini günümüzün şampiyonları için tasarlanmış mekaniklerle buluşturuyor.",
+    "f2_title": "Baştan itibaren azami kart.",
+    "f2_desc": "Seçtiğin fraksiyonun tüm klasik kartlarını (300'den fazla kart) ücretsiz edin. Tüm fraksiyonlara (yaklaşık 2.500 kart) klasik bir TCG'nin maliyetinin çok küçük bir kısmıyla sahip ol.",
+    "f3_title": "Her Uzman destesi eşsiz bir eser.",
+    "f3_desc": "Sınırlı sürüm kartlar her Uzman destesini benzersiz kılar. Ortak sürüm ise yalnızca stratejinin belirleyici olmasını garanti eder.",
+    "f_icons_title": "Tek bakışta okunaklı.",
+    "f_icons_desc": "Özenle çizilen Armies of Legends kartları hem güzel hem okunaklıdır: her tetikleyiciye özgü renkli simgeler sayesinde, metni okumadan bile etkisini tek bakışta anlarsın.",
+    "f4_title": "Mobil arena, nihayet hak ettiği seviyede.",
+    "f4_desc": "Nadir kartlar ve para ödülleriyle ödüllendirilen turnuvalar — şimdiye kadar yalnızca en büyük masaüstü TCG'lere özgü bir rekabet seviyesi.",
+    "f4_standings": "Final sıralaması",
+    "factions_title": "Dokuz ordu. İlki senin.",
+    "factions_sub": "Kayıt sırasında fraksiyonunu seç: tüm klasik kartları, 300'den fazla, ücretsiz senin olur. Diğer fraksiyonlar sonradan klasik bir TCG'nin maliyetinin çok küçük bir kısmıyla eklenir.",
+    "showcase_title": "Bir yaratık dizisi. Binlerce kombinasyon.",
+    "showcase_sub": "En mütevazı yaratıktan efsanevi kahramana, her kart önemlidir.",
+    "cta_title": "Arena seni bekliyor.",
+    "cta_sub": "Savaştaki çağırıcılara katıl.",
+    "cta_btn": "Maceraya başla",
+    "footer": "Armies of Legends — Tüm hakları saklıdır",
+    "factions": {
+      "Humains": {
+        "tagline": "Sancağın altında birleşenler"
+      },
+      "Elfes": {
+        "tagline": "Ebedi ormanın bekçileri"
+      },
+      "Nains": {
+        "tagline": "Taştan dövülmüşler"
+      },
+      "Hommes-Bêtes": {
+        "tagline": "Vahşi toprakların öfkesi"
+      },
+      "Élémentaires": {
+        "tagline": "Elementler uyanıyor"
+      },
+      "Elfes Noirs": {
+        "tagline": "Gölgelerin bir adı var"
+      },
+      "Morts-Vivants": {
+        "tagline": "Mezarların sessizliği bozuldu"
+      },
+      "EmpireDuMilieu": {
+        "tagline": "Disiplin, öfkeden önce gelir"
+      },
+      "RoyaumesDuSoleil": {
+        "tagline": "Çöl krallarını hatırlıyor"
+      }
+    },
+    "nav_factions": "Fraksiyonlar",
+    "nav_limited": "Sınırlı Sürümler",
+    "nav_tournaments": "Turnuvalar",
+    "hero_claim": "Koca bir hizip, bedava.",
+    "wall_pause": "Duvarı duraklat",
+    "wall_play": "Duvarı yeniden başlat",
+    "factions_see": "Hizbi gör",
+    "limited_title": "Hiçbir Uzman destesi seninkine benzemez.",
+    "limited_desc": "Sınırlı sayıdaki kartlar her Uzman destesini benzersiz kılar. Ortak baskı, yalnızca stratejinin belirleyici olmasını sağlar.",
+    "trailer_title": "Efsaneler sahneye çıkıyor.",
+    "nav_language": "Dil",
+    "f4_example": "Örnek sıralama: oyuncular kurgusaldır, puan tablosu oyunun gerçek tablosudur.",
+    "limited_run": "{count} adet",
+    "limited_unique": "Tek adet",
+    "f4_note": "* Parasal ödüller yalnızca yasaların izin verdiği ülkelerde sunulmaktadır."
+  },
+  "auction": {
+    "ended": "Sona erdi",
+    "unknown_item": "Bilinmeyen eşya",
+    "board": "Tahta",
+    "card_back": "Kart arkası",
+    "extra_items": "+{count, plural, =1 {# eşya} other {# eşya}}",
+    "current_bid": "Güncel teklif",
+    "starting_bid": "Başlangıç teklifi",
+    "buyout_short": "Hemen al:",
+    "bid_count": "{count, plural, =1 {# teklif} other {# teklif}}",
+    "seller": "Satıcı:",
+    "system": "Sistem",
+    "invalid_amount": "Geçersiz miktar",
+    "buyout_success": "Anında satın alma başarılı!",
+    "bid_placed": "Teklif verildi!",
+    "loading": "Yükleniyor...",
+    "not_found": "Açık artırma bulunamadı",
+    "back_to_auctions": "Açık artırmalara dön",
+    "lot": "Lot",
+    "item": "Eşya",
+    "copies": "{count} adet",
+    "source_print": "Sınırlı baskı",
+    "source_board_print": "Sınırlı tahta",
+    "source_card_back_print": "Sınırlı kart arkası",
+    "source_admin": "Sistem",
+    "source_collection": "Koleksiyon",
+    "admin_badge": "YÖNETİCİ",
+    "time_left": "Kalan süre",
+    "commission": "Komisyon: %{rate}",
+    "highest_bidder": "En yüksek teklif sizde",
+    "status_sold": "Satıldı",
+    "status_unsold": "Satılmadı",
+    "status_cancelled": "İptal edildi",
+    "bid_button": "Teklif Ver",
+    "buyout_immediate": "Hemen Satın Al",
+    "cancel_auction": "Müzayedeyi iptal et",
+    "bid_history": "Teklif geçmişi",
+    "no_bids_yet": "Henüz teklif yok",
+    "anonymous": "Anonim",
+    "buyout_tag": "(Hemen Satın Al)",
+    "sort_ending_soon": "Yakında bitecekler",
+    "sort_price_asc": "Fiyat: Artan",
+    "sort_price_desc": "Fiyat: Azalan",
+    "sort_newest": "En yeniler",
+    "header_kicker": "Birliklerini topla",
+    "title": "Müzayede Salonu",
+    "subtitle_sell": "Kart al ve sat",
+    "subtitle_buy": "Kart satın al",
+    "menu": "Menü",
+    "sell_card": "Kart sat",
+    "tab_browse": "Göz at",
+    "tab_my": "Müzayedelerim",
+    "search_placeholder": "Ara...",
+    "all_factions": "Tüm fraksiyonlar",
+    "all_rarities": "Tüm nadirlikler",
+    "all_types": "Tüm türler",
+    "type_creature": "Yaratık",
+    "type_spell": "Aksiyon",
+    "no_auctions": "Müzayede bulunamadı",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "page_of": "Sayfa {page} / {total}",
+    "duration_1min": "1 dakika",
+    "duration_1h": "1 saat",
+    "duration_6h": "6 saat",
+    "duration_12h": "12 saat",
+    "duration_24h": "24 saat",
+    "duration_generic": "{n} dk",
+    "create_title": "Müzayede oluştur",
+    "select_cards": "Satılacak kartları seç (en fazla {max}, seçilen: {selected})",
+    "search_card_placeholder": "Kart ara...",
+    "no_cards_available": "Uygun kart yok",
+    "starting_bid_label": "Başlangıç teklifi (altın)",
+    "buyout_optional": "Hemen satın al (isteğe bağlı)",
+    "none": "Yok",
+    "duration": "Süre",
+    "commission_info": "Komisyon: Satış tutarından %{rate} kesilecektir",
+    "error_select_card": "En az bir kart seç",
+    "error_invalid_bid": "Geçersiz başlangıç teklifi",
+    "error_buyout_too_low": "Hemen satın alma fiyatı başlangıç teklifinden yüksek olmalıdır",
+    "cancel": "İptal",
+    "creating": "Oluşturuluyor...",
+    "submit_sell": "Satışa çıkar ({count, plural, =1 {# kart} other {# kart}})",
+    "my_sales": "Satışlarım ({count})",
+    "my_bids": "Tekliflerim ({count})",
+    "no_sales": "Hiç satışın yok",
+    "no_bids_placed": "Hiçbir şeye teklif vermedin",
+    "unknown_card": "Bilinmeyen kart",
+    "ends_at": "Bitiş: {date}",
+    "status_active": "Aktif",
+    "page_title": "Müzayede Evi — Armies of Legends",
+    "detail_page_title": "Müzayede Detayı — Armies of Legends"
+  },
+  "auth": {
+    "forgot_email_required": "Sıfırlama talep etmeden önce e-posta adresini gir.",
+    "forgot_email_sent": "{email} adresine bir sıfırlama e-postası gönderildi. Gelen kutunu (ve spam klasörünü) kontrol et.",
+    "forgot_send_error": "Sıfırlama e-postası gönderilemedi.",
+    "password_min_length": "Şifre en az 8 karakter olmalıdır.",
+    "generic_error": "Bir hata oluştu.",
+    "tagline": "Fantastik koleksiyon kart oyunu",
+    "back_to_site": "← Siteye dön",
+    "login": "Giriş yap",
+    "register": "Kayıt ol",
+    "username_label": "Kullanıcı adı",
+    "username_placeholder": "Bir kullanıcı adı seç",
+    "email_label": "E-posta",
+    "email_placeholder": "sen@eposta.com",
+    "password_label": "Şifre",
+    "sending": "Gönderiliyor...",
+    "forgot_password": "Şifreni mi unuttun?",
+    "password_min_placeholder": "En az 8 karakter",
+    "password_placeholder_login": "Şifreni gir",
+    "loading": "Yükleniyor...",
+    "create_account": "Hesap oluştur",
+    "sign_in": "Giriş yap",
+    "or": "veya",
+    "continue_google": "Google ile devam et",
+    "continue_discord": "Discord ile devam et",
+    "passwords_mismatch": "İki şifre birbiriyle eşleşmiyor.",
+    "password_updated_redirect": "Şifre güncellendi. Yönlendiriliyorsun...",
+    "unknown_error": "Bilinmeyen hata.",
+    "reset_heading": "Şifreyi sıfırla",
+    "reset_sub": "Hesabın için yeni bir şifre seç.",
+    "back_to_login": "← Girişe dön",
+    "reset_link_invalid": "Sıfırlama bağlantısının süresi dolmuş veya bağlantı geçersiz. Giriş sayfasından yeniden başla ve yeni bir e-posta iste.",
+    "new_password_label": "Yeni şifre",
+    "confirm_label": "Onayla",
+    "confirm_placeholder": "Şifreyi tekrar yaz",
+    "updating": "Güncelleniyor...",
+    "update": "Güncelle",
+    "signup_check_email_title": "E-posta kutunu kontrol et",
+    "signup_check_email": "{email} adresine bir onay bağlantısı gönderdik. Hesabını etkinleştirmek için bağlantıya tıkla.",
+    "signup_check_spam": "Hiçbir şey gelmedi mi? Spam klasörüne bak — e-postanın ulaşması bir dakika sürebilir.",
+    "signup_resend": "E-postayı yeniden gönder",
+    "signup_resend_wait": "{seconds} sn sonra yeniden gönder",
+    "signup_resent": "E-posta {email} adresine yeniden gönderildi.",
+    "signup_resend_error": "Onay e-postası yeniden gönderilemedi.",
+    "signup_back_to_login": "← Girişe dön",
+    "error_oauth_cancelled": "Giriş iptal edildi. Tekrar deneyebilir veya e-postanı kullanabilirsin.",
+    "error_oauth_failed": "Bu hizmetle giriş başarısız oldu. Tekrar dene veya e-postanı kullan.",
+    "error_link_expired": "Bu bağlantının süresi dolmuş veya daha önce kullanılmış. Yeni bir tane iste.",
+    "error_auth_failed": "Giriş tamamlanamadı. Tekrar dene.",
+    "cgu_accept": "Kullanım koşullarını ve gizlilik politikasını kabul ediyorum.",
+    "cgu_link": "Kullanım koşullarını oku",
+    "privacy_link": "Gizlilik politikasını oku",
+    "cgu_required": "Hesap oluşturmak için koşulları kabul etmelisin.",
+    "onboarding_title": "Oyuncu adını seç",
+    "onboarding_sub": "Diğer oyuncular bunu açık artırmalarda ve profilinde görecek. Daha sonra değiştirebilirsin.",
+    "onboarding_submit": "Onayla",
+    "username_rules": "3 ila 20 karakter: harf, rakam, tire veya alt çizgi.",
+    "username_too_short": "Ad en az 3 karakter olmalı.",
+    "username_too_long": "İsim 20 karakteri geçemez.",
+    "username_invalid_chars": "Yalnızca harf, rakam, tire ve alt çizgi kullanılabilir — boşluk ve aksanlı karakter olmaz.",
+    "username_reserved": "Bu isim rezerve edilmiş, başka bir tane seç.",
+    "username_taken": "Bu isim zaten alınmış. Bir varyasyon dene.",
+    "username_required": "Bir oyuncu adı seç.",
+    "faction_title": "Fraksiyonunu seç",
+    "faction_sub": "Seçtiğin fraksiyonun tüm yaygın kartlarını ücretsiz alırsın. Diğer fraksiyonların kilidi daha sonra açılabilir.",
+    "faction_warning": "⚠ Bu seçim kesindir: sonradan değiştirilemez.",
+    "faction_submit": "Bu fraksiyona katıl",
+    "faction_required": "Bir fraksiyon seç.",
+    "faction_invalid_faction": "Böyle bir fraksiyon yok.",
+    "faction_already_chosen": "Fraksiyonunu zaten seçtin.",
+    "error_email_rate_limit": "Kısa sürede çok fazla e-posta gönderildi. Tekrar denemeden önce birkaç dakika bekle.",
+    "error_invalid_credentials": "E-posta veya şifre hatalı.",
+    "error_email_not_confirmed": "Hesabın henüz doğrulanmadı. E-postayla gelen bağlantıya tıkla.",
+    "error_weak_password": "Bu şifre çok zayıf. Daha uzun bir tane seç.",
+    "error_user_already_exists": "Bu adresle zaten bir hesap var.",
+    "error_signups_disabled": "Kayıtlar geçici olarak kapalı.",
+    "error_database_error": "Hesap oluşturma işlemi bizim tarafımızda başarısız oldu. Birazdan tekrar dene; sorun devam ederse bizimle iletişime geç.",
+    "error_captcha_failed": "Robot doğrulaması başarısız oldu veya süresi doldu. Sayfayı yenileyip tekrar dene.",
+    "faction_see_cards": "Karar vermeden önce {faction} kartlarını gör →",
+    "faction_browse": "Kararsız mısın? Her fraksiyonu ve kartlarını keşfet →"
+  },
+  "common": {
+    "brand": "Armies of Legends",
+    "settings_title": "Ayarlar",
+    "music": "Müzik",
+    "sound_effects": "Ses efektleri",
+    "muted": "Sessiz",
+    "active": "Açık",
+    "concede_match": "Maçı bırak",
+    "concede_confirm": "⚠ Pes etmeyi onayla",
+    "concede_hint": "Onaylamak için tekrar tıkla · 5 sn içinde otomatik iptal",
+    "notifications": "Bildirimler",
+    "mark_all_read": "Tümünü okundu işaretle",
+    "no_notifications": "Bildirim yok",
+    "see_auction": "Müzayedeyi gör",
+    "rotate_device": "Telefonunu döndür",
+    "rotate_device_hint": "Armies of Legends yatay modda oynanır. Devam etmek için cihazını yatay konuma getir."
+  },
+  "forge": {
+    "forge_first_card": "İlk kartını dövün",
+    "forging": "Dövülüyor…",
+    "mana_cost_title": "Mana maliyeti: {mana}",
+    "life_cost_title": "Can maliyeti: {life}",
+    "discard_cost_title": "{count, plural, one {# kart} other {# kart}} at",
+    "sacrifice_cost_title": "{count, plural, one {# yaratığı} other {# yaratığı}} feda et",
+    "exile_cost_title": "Destenin en üstünden {count, plural, one {# kartı} other {# kartı}} sürgün et",
+    "topdeck_cost_title": "Elinizden {count, plural, one {# kartı} other {# kartı}} destenin en üstüne geri koyun",
+    "detail_note_all_allies": " (tüm müttefiklere)",
+    "detail_note_target": " (hedeflenen yaratığa)",
+    "trigger_on_play": "Oyuna girince",
+    "trigger_on_death": "Ölünce",
+    "trigger_on_return": "Ele dönünce",
+    "trigger_on_activation": "Etkinleştirilebilir güç (yatır)",
+    "trigger_on_attack": "Saldırırken",
+    "trigger_on_end_of_turn": "Tur sonunda",
+    "trigger_on_end_of_turn_in_hand": "Tur sonunda, elde olduğu sürece",
+    "trigger_on_start_of_turn": "Tur başında",
+    "trigger_on_start_of_turn_in_hand": "Tur başında, elde olduğu sürece",
+    "trigger_on_draw": "Bu kart çekildiğinde",
+    "trigger_on_low_hp": "15 CP altında",
+    "trigger_on_wound": "Yaralanma (ölmeden hasar alma)",
+    "trigger_spell_resolution": "Çözülürken",
+    "composed_effects_heading": "Birleşik etkiler (gelişmiş)",
+    "composed_effects_subtitle": "içerik + kapsam + hedefler",
+    "composed_effect_n": "Birleşik etki {n}",
+    "token_composed_hint": "Jeton oyuna oynanarak girmez: “oyuna girince” hiçbir zaman tetiklenmez, bu yüzden sunulmaz.",
+    "remove": "Kaldır",
+    "label_trigger": "TETİKLEYİCİ",
+    "singulier_toggle": "Tekil",
+    "singulier_toggle_title": "Tekil koşulu: Bu yetenek yalnızca oyuncunun başlangıç destesinde tekrar eden kart yoksa tetiklenir.",
+    "label_emblem": "AMBLEM",
+    "emblem_permanent": "Bir oyuncunun üzerine konan kalıcı etki",
+    "emblem_trigger_note": "kart geldiğinde konur; tetikleyici, sonrasında neye tepki vereceğini belirtir",
+    "label_emblem_side": "kimde",
+    "emblem_side_self": "benim tarafım",
+    "emblem_side_opponent": "rakip",
+    "label_emblem_duration": "süre",
+    "emblem_duration_turns": "tur",
+    "emblem_duration_permanent": "kalıcı",
+    "emblem_repeat_warning": "Bu tetikleyici tekrarlanır: amblem her seferinde üst üste biner ve N yığınlı birleşik bir amblem N kez çözülür.",
+    "label_content": "İÇERİK",
+    "label_target_scope": "KAPSAM",
+    "label_neutralised_ability": "ETKİSİZLEŞTİRİLEN YETENEK",
+    "neutralisation_hint": "Taşıyıcı oyundayken hedeflenen düşmanda (veya \"Tüm düşmanlar\" kapsamında hepsinde) susturulur.",
+    "target_scope_target": "Hedef",
+    "target_scope_self": "Kendisi",
+    "target_scope_all_enemies": "Tüm düşmanlar",
+    "target_scope_all_allies": "Tüm müttefikler",
+    "target_scope_all": "Hepsi (2 taraf)",
+    "target_scope_hint_all_enemies": "Seçilen tek bir hedef yerine tüm düşman birimlerine vurur (kahramanlara ve eşyalara değil).",
+    "target_scope_hint_all_allies": "Seçilen tek bir hedef yerine tüm müttefik birimlere vurur (kahramanlara ve eşyalara değil).",
+    "target_scope_hint_all": "Seçilen tek bir hedef yerine iki tarafın tüm birimlerine vurur (kahramanlara ve eşyalara değil).",
+    "content_deal_damage": "Hasar ver",
+    "content_siphon": "Emme X (hasar + kahraman iyileştirme)",
+    "content_domination": "Hâkimiyet (kontrolü ele geçir)",
+    "content_heal": "İyileştir",
+    "content_buff": "Güçlendirme +X/+Y",
+    "content_usurpation": "Gasp +X/+Y (oynanan her rakip kartı için)",
+    "content_debuff": "Zayıflatma -X/-Y",
+    "content_destroy": "Yok et",
+    "content_bounce": "Ele geri gönder",
+    "content_paralyze": "Felç et",
+    "content_poison": "Zehirle (tur başına −1 CP)",
+    "content_malediction": "Lanetle (rakibin bir sonraki turunun sonunda sürgün)",
+    "content_neutralise": "Etkisizleştir (felçli, yetenekler etkisiz)",
+    "invocation_costs_label": "ÇAĞRILARIN MALİYETLERİ",
+    "invocation_costs_hint": "Listelenen her maliyet için koleksiyonunuzdan rastgele bir yaratık çağrılır.",
+    "add_invocation": "+ Çağrı",
+    "invocation_pool_label": "ÇAĞRI HAVUZU",
+    "invocation_pool_any_race": "— Herhangi bir ırk —",
+    "invocation_pool_any_faction": "— Herhangi bir hizip —",
+    "invocation_pool_hint": "Listelenen her maliyet için rastgele bir yaratık çağrılır. Irk veya hizip yoksa havuz kartın yönelimini izler.",
+    "content_grant_keyword": "Yetenek ver",
+    "content_draw_cards": "Kart çek",
+    "content_discard": "Kart attır (rakip)",
+    "content_summon_token": "Token çağır",
+    "content_gain_mana": "Mana kazan",
+    "content_exhumation": "Diriltme (mezarlık)",
+    "content_rappel": "Geri çağırma (mezarlık → el)",
+    "label_card_kind": "HEDEFLENEN KARTLAR",
+    "card_kind_all": "Hepsi",
+    "card_kind_creature": "Yalnızca birimler",
+    "card_kind_spell": "Yalnızca Aksiyonlar",
+    "legacy_grants_heading": "Devralınan bahşedilenler (eski biçim) — rakibi hedefleyebilmek için bunları dönüştürün",
+    "convert_to_composed": "Dönüştür",
+    "effects_heading": "Kart Efektleri",
+    "effects_subtitle": "aksiyonun tüm efektleri, tek bir listede",
+    "effect_kind_curated": "MEKANİK",
+    "group_composed": "Ayarlanabilir efektler",
+    "group_curated": "Özel mekanikler",
+    "content_invocation": "Çağırma (rastgele yaratık)",
+    "pool_hint_invocation": "Filtreler birikimlidir. Filtre yoksa havuz kartın yönelimini izler; çağırılan maliyet TAM OLARAK X'tir.",
+    "label_designated_card": "BELİRLENEN KART",
+    "designated_card_hint": "Bir veya daha fazla yaratık belirleyin: Bu sırayla, olduğu gibi çağırılırlar (aynı kart birden çok kez belirlenebilir). Belirleme yoksa filtrelere göre X maliyetinde rastgele seçim yapılır.",
+    "tuteur_card_hint": "Bir veya daha fazla kart, yaratık ya da aksiyon belirleyin: Bu sırayla elinize katılırlar. Aynı kart birden çok kez belirlenebilir (o kadar kopya). Belirleme yoksa efekt hiçbir şey yapmaz.",
+    "content_selection": "Seçim (3 karttan 1'i)",
+    "content_faveur": "Lütuf (rastgele 1 kart → el)",
+    "content_renfort_royal": "Kraliyet Seçimi (3 karttan 1'i)",
+    "content_tresor": "Hazine (3 eşyadan 1'i)",
+    "label_pool_membership": "HAVUZ — AİDİYET",
+    "label_pool_faction": "HAVUZ — HİZİP",
+    "label_pool_min_cost": "HAVUZ — MİNİMUM MALİYET",
+    "label_pool_keyword": "HAVUZ — TAŞINAN ANAHTAR KELİME",
+    "label_pool_card_type": "HAVUZ — KART TÜRÜ",
+    "pool_type_creature": "Birimler",
+    "pool_type_spell": "Aksiyonlar",
+    "pool_type_item": "Eşyalar",
+    "draw_items_only": "Yalnızca desteden eşyalar",
+    "pool_any": "Fark etmez",
+    "pool_hint": "Filtreler birikimlidir; temel kurallara (Yaygın, maliyet ≤ X, kartın yönelimi) ek olarak uygulanır.",
+    "pool_hint_discard": "Filtreler birikimlidir. Rakip, elindeki bunlara uyan kartlar arasından rastgele atar (0 = maliyet fark etmez); X'ten az varsa yalnızca onları atar.",
+    "pool_hint_draw": "Filtreler birikimlidir. Desteden bunlara uyan ilk X kartı, deste sırasına göre çeker; diğerleri yerinde kalır.",
+    "label_magnitude": "ŞİDDET",
+    "random_hint": "1 ile {max} arasında rastgele seçilir, çözülürken yalnızca bir kez.",
+    "move_earlier": "Daha erken çöz",
+    "move_later": "Daha geç çöz",
+    "random_needs_ceiling": "Rastgele seçim için en az 2 olan bir üst sınır gerekir.",
+    "label_granted_ability": "VERİLEN YETENEK",
+    "label_grant_trigger": "BAHŞİN TETİKLEYİCİSİ",
+    "label_token": "JETON",
+    "label_targets": "HEDEFLER",
+    "label_type": "TÜR",
+    "entity_unit": "Birim",
+    "entity_item": "Eşya",
+    "entity_spell": "Aksiyon",
+    "entity_unit_or_item": "Birim veya eşya",
+    "entity_hero": "Kahraman",
+    "entity_both": "Her ikisi (kahraman + birimler)",
+    "entity_self": "Kendisi (yaratık)",
+    "entity_damage_source": "Hasarın kaynağı",
+    "label_side": "TARAF",
+    "side_ally": "Müttefik",
+    "side_enemy": "Düşman",
+    "side_any": "Fark etmez",
+    "label_count": "SAYI",
+    "scatter_points_hint": "X ({x}) puan havuza rastgele dağıtılır",
+    "scatter_passes_hint": "İadeli {n} çekiliş → en fazla {n} farklı hedef",
+    "count_all": "Tümü",
+    "label_location": "KONUM",
+    "location_board": "Tahta",
+    "location_hand": "El",
+    "location_deck": "Deste",
+    "location_graveyard": "Mezarlık",
+    "label_membership": "AİDİYET",
+    "label_target_keyword": "TAŞINAN ANAHTAR KELİME",
+    "label_max_cost": "AZami MALİYET",
+    "max_cost_any": "— Fark etmez —",
+    "label_designation": "BELİRLEME",
+    "designation_choice": "Seçime göre",
+    "designation_random": "Rastgele",
+    "designation_scatter": "Rastgele dağıtılmış (iadeli)",
+    "designation_automatic": "Otomatik",
+    "add_composed_effect": "+ Birleşik etki ekle",
+    "tab_forge": "Demirhane",
+    "tab_capacities": "Yetenekler",
+    "tab_edition": "Düzenleme",
+    "tab_tokens": "Jetonlar",
+    "tab_card_backs": "Arka yüzler",
+    "tab_boards": "Tahtalar",
+    "tab_icons": "Simgeler",
+    "tab_sets": "Setler",
+    "tab_formats": "Formatlar",
+    "tab_bulk": "Yardımlı Üretim",
+    "tab_budget": "Bütçe",
+    "tab_schema": "Şema",
+    "tab_prints": "Seriler",
+    "tab_news": "Haberler",
+    "menu": "Menü",
+    "collections": "Koleksiyonlar",
+    "section_faction": "Hizip",
+    "section_race": "Irk",
+    "section_race2": "Irk 2 (çift ırklı birim)",
+    "main_races": "Ana ırklar",
+    "all_races": "Tüm ırklar",
+    "section_clan": "Klan",
+    "section_alignment": "Yönelim",
+    "section_type": "Tür",
+    "section_rarity": "Nadirlik",
+    "section_set_year": "Set / Yıl",
+    "no_set": "— Set yok —",
+    "or_month_year": "VEYA Ay/Yıl:",
+    "month": "Ay",
+    "year_placeholder": "örn: 2026",
+    "section_mode": "Mod",
+    "mode_auto": "Otomatik",
+    "mode_manual": "Manuel",
+    "forging_caps": "DÖVME SÜRÜYOR…",
+    "forge_button": "DÖV",
+    "create_button": "OLUŞTUR",
+    "reset_button": "SIFIRLA",
+    "summon_sound": "Çağırma sesi",
+    "death_sound": "Ölüm sesi",
+    "exile_sound": "Sürgün bedeli sesi",
+    "reroll": "Yeniden At",
+    "new_card": "Yeni kart",
+    "illustration_prompt_label": "İLLÜSTRASYON İSTEMİ",
+    "reference": "Referans",
+    "no_reference": "Referans yok",
+    "reference_image_optional": "REFERANS GÖRSELİ (isteğe bağlı)",
+    "reference_image_hint": "Poz / kompozisyon / atmosfer için ilham verir. İstemin üslubu öncelikli kalır.",
+    "replace": "Değiştir",
+    "choose_image": "Görsel seç",
+    "remove_image": "Kaldır",
+    "copy": "kopyala",
+    "reset_short": "sıfırla",
+    "generating": "Oluşturuluyor…",
+    "illustrate": "Resimle",
+    "image_model_auto": "Model: otomatik",
+    "image_model_hint": "İki çıktıyı karşılaştırmak için zorunlu kılınan görsel modeli. «Otomatik» olduğunda her zamanki kademeli seçim modeli belirler. Zorunlu kılınan model başka bir modele geçmez: başarısızlık olduğu gibi bildirilir.",
+    "history": "GEÇMİŞ",
+    "no_card": "Kart yok",
+    "edition_label": "BASKI",
+    "name_label": "AD",
+    "card_name_placeholder": "Kart adı",
+    "name_taken": "Bu ad zaten « {name} » (id {id}) tarafından kullanılıyor. Kaydetme onay isteyecek.",
+    "mana_label": "MANA",
+    "power_label": "GÜÇ",
+    "life_cost_hint": "Kahramanın çağırma sırasında ödediği can puanı. Toplam 0 CP'ye düşecekse kart oynanamaz.",
+    "life_label": "CAN",
+    "discard_cost_hint": "Oyuncunun bu kartı oynamak için elinden atması gereken kart sayısı.",
+    "discard_label": "ATMA",
+    "sacrifice_cost_hint": "Oyuncunun bu kartı oynamak için feda etmesi gereken müttefik yaratık sayısı.",
+    "exile_cost_hint": "Oyuncunun destesinin üstünden çıkarılan kart sayısı. Sürgün edilirler: mezarlığa gitmezler ve geri alınamazlar.",
+    "topdeck_cost_hint": "Oyuncunun elinden destesinin üstüne geri koyduğu kart sayısı. Mezarlığa gitmezler: tekrar çekilirler. Tempo bedelidir, azaltılamaz.",
+    "equip_label": "Kuşan.",
+    "equip_cost_hint": "EŞYALAR — eşyayı müttefik bir yaratığa kuşandırmanın mana bedeli. Yer değiştirme dahil HER kuşanmada ödenir. 0 = ücretsiz.",
+    "item_trigger_bearer": "(taşıyıcının)",
+    "sacrifice_label": "FEDA",
+    "exile_label": "SÜRGÜN",
+    "topdeck_label": "GERİ ÇEKİLME",
+    "retreat_cost_hint": "Oyuncunun sahadan eline geri aldığı müttefik yaratık sayısı. Kalıcı bonuslarını korurlar ve geri dönüş etkilerini tetiklerler. Tempo bedelidir, azaltılamaz.",
+    "retreat_label": "GERİ ÇEKİLME",
+    "spell_effects_label": "AKSİYON ETKİLERİ",
+    "spell_keywords_label": "AKSİYON ANAHTAR KELİMELERİ",
+    "token_to_summon": "ÇAĞRILACAK JETON",
+    "config_below_tokens": "Ayar aşağıdaki « Çağrılacak jetonlar » bölümünde",
+    "targeted_race": "HEDEF IRK",
+    "required": "gerekli",
+    "choose_race": "-- Irk seç --",
+    "tokens_to_summon": "ÇAĞRILACAK JETONLAR",
+    "override_label": "GEÇERSİZ KILMA:",
+    "atk_override": "SLD (geçersiz kılma)",
+    "def_override": "DEF (geçersiz kılma)",
+    "add_token": "+ Token ekle",
+    "composable_effects_advanced": "ESKİ JSON FORMATI (kullanımdan kalktı)",
+    "json_hint": "Kullanımdan kalktı: motor artık bunu yalnızca eski kartlardaki Yeniden Oynat için okuyor. Bir efekt oluşturmak için aşağıdaki « Birleşik efekt » seçeneğini kullanın.",
+    "abilities_count": "YETENEKLER ({count})",
+    "conferred_abilities_toggle": "YARATIKLARA VERİLEN YETENEKLER ({count})",
+    "conferred_abilities_hint": "aksiyon oynandığında yaratıklara verilir (yeşil = tüm müttefikler, gri = hedeflenen yaratık)",
+    "mode_title_play": "Çağrıldığında (varsayılan)",
+    "mode_title_death": "Öldüğünde (deathrattle)",
+    "mode_title_tap": "Yatırarak etkinleştirilir (angaje)",
+    "mode_title_return": "Ele geri dönünce",
+    "mode_title_attack": "Saldırırken",
+    "mode_title_end_of_turn": "Tur sonunda",
+    "mode_title_start_of_turn": "Tur başında (kart çekildikten sonra)",
+    "mode_title_draw": "Bu kart çekildiğinde",
+    "mode_title_low_hp": "Kahramanınız 15 CP'nin altına düştüğünde (yalnızca bir kez)",
+    "mode_title_wound": "Yara: ölmeden hasar aldığında (kaynak başına ve tur başına bir kez)",
+    "grant_scope_target": "Hedeflenen yaratığa verilir",
+    "grant_scope_all_allies": "Tüm müttefik birimlere verilir",
+    "required_caps": "Gerekli",
+    "transformation_token": "DÖNÜŞÜM TOKENI",
+    "target_race_label": "HEDEF IRK",
+    "required_caps_f": "Gerekli",
+    "neg_atk_is_x": "(-ATK = X değeri)",
+    "spell_cost_y": "AKSİYON MALİYETİ (Y)",
+    "spell_count_is_x": "(aksiyon sayısı = X değeri)",
+    "fda_condition": "(mezarlıkta ≥7 yaratık)",
+    "choose_ability": "-- Bir yetenek seç --",
+    "scope_one_ally": "1 hedeflenen müttefik",
+    "scope_all_allies": "Tüm müttefikler",
+    "replayed_triggers": "TEKRAR OYNATILAN TETİKLEYİCİLER",
+    "required_m": "gerekli",
+    "trigger_short_on_play": "Oyuna giriş",
+    "trigger_short_on_death": "Ölüm",
+    "trigger_short_end_of_turn": "Tur sonu",
+    "trigger_short_on_return": "Ele dönüş",
+    "tier_label": "Kademe:",
+    "cost_label": "Maliyet:",
+    "points_value": "{pts} puan",
+    "specific_power_label": "ÖZEL GÜÇ",
+    "specific_power_placeholder": "Özel yeteneğin metni…",
+    "flavor_text_label": "ATMOSFER METNİ",
+    "flavor_text_placeholder": "Anlatısal alıntı…",
+    "extra_context_label": "EK BAĞLAM (isteğe bağlı)",
+    "extra_context_placeholder": "Örn: alevli bir kılıç tutuyor, tehditkâr bakış, arkadan görünüm, kırmızımsı sis, altın zırh…",
+    "illustration_prompt_label2": "İLLÜSTRASYON PROMPT'U",
+    "api_error": "API hatası ({status}): {detail}",
+    "see_console": "konsola bakın",
+    "ai_no_prompt": "Yapay zekâ prompt döndürmedi — ANTHROPIC_API_KEY'i ve sunucu günlüklerini kontrol edin",
+    "illustration_prompt_generated": "İllüstrasyon prompt'u oluşturuldu",
+    "network_error": "Ağ hatası",
+    "generate_by_ai": "Yapay zekâ ile oluştur",
+    "english_prompt_placeholder": "Görsel üretimi için İngilizce prompt…",
+    "trigger_tap_activation": "Etkinleştirildiğinde (tap)",
+    "trigger_automatic": "Otomatik (pasif/koşullu)",
+    "trigger_spell_resolution_full": "Aksiyonun çözülmesinde",
+    "container_label": "Kapsayıcı:",
+    "derived_from_type": "(kart türünden çıkarıldı)",
+    "no_ability_add_below": "Yetenek yok. Aşağıdan ekleyin.",
+    "effect_type_label": "ETKİ TÜRÜ",
+    "immediate_effect": "Anlık etki",
+    "effect_label": "ETKİ",
+    "x_value_title": "X değeri",
+    "targets_label2": "HEDEF(LER)",
+    "one_target": "1 hedef",
+    "neg_atk_equals_x": "(-ATK = X)",
+    "on_self": "(kendi üzerinde)",
+    "add_ability": "+ Yetenek ekle:",
+    "choose_dash": "-- seç --",
+    "no_ability_add_effect": "Yetenek yok. Aşağıdan bir etki veya verilecek bir yetenek ekleyin.",
+    "race_label": "IRK",
+    "race_dash": "-- Irk --",
+    "confer_prefix": "Ver:",
+    "confer_ability_to_unit": "Bir birime yetenek ver",
+    "scope_label": "KAPSAM",
+    "all_allied_units": "Tüm müttefik birimler",
+    "one_allied_unit": "1 müttefik birim",
+    "add_effect": "+ Etki:",
+    "spell_effect_dash": "-- aksiyon etkisi --",
+    "add_confer": "+ Ver:",
+    "ability_to_confer_dash": "-- verilecek yetenek --",
+    "save": "Kaydet",
+    "generate_to_save": "Kaydedebilmek için ⚒ Forge'da bir kart oluşturun/girin.",
+    "token_templates_title": "TOKEN ŞABLONLARI",
+    "edit_template": "ŞABLONU DÜZENLE",
+    "new_template": "YENİ ŞABLON",
+    "faction_optional": "FRAKSİYON (isteğe bağlı)",
+    "deduced_from_race": "-- Irktan çıkarılır --",
+    "choose_dash_cap": "-- Seç --",
+    "clan_optional": "KLAN (isteğe bağlı)",
+    "no_clan_available": "Uygun klan yok",
+    "none_dash": "-- Yok --",
+    "token_name_label": "TOKEN ADI",
+    "token_name_placeholder": "Örn: Elf Acemisi",
+    "default_attack": "VARSAYILAN SALDIRI",
+    "default_defense": "VARSAYILAN SAVUNMA",
+    "token_abilities": "TOKEN YETENEKLERİ",
+    "image_prompt_label": "GÖRSEL PROMPTU",
+    "auto_prompt_placeholder": "Oluşturmak için « Otomatik prompt »a tıklayın veya kendi isteminizi yazın...",
+    "auto_prompt": "Otomatik prompt",
+    "generate_image": "Görsel oluştur",
+    "or_upload_image": "VEYA BİR GÖRSEL YÜKLE",
+    "preview": "önizleme",
+    "saving": "Kaydediliyor...",
+    "update": "Güncelle",
+    "create2": "Oluştur",
+    "cancel": "İptal",
+    "existing_templates": "MEVCUT ŞABLONLAR ({count})",
+    "load_refresh": "Yükle / Yenile",
+    "no_template": "Şablon yok — Yükle'ye tıklayın",
+    "edit": "Düzenle",
+    "generate_card_back_title": "KART ARKASI OLUŞTUR",
+    "metadata": "METAVERİ",
+    "card_back_name_placeholder": "Örn: Kadim Ormanların Muhafızı",
+    "faction_label": "FRAKSİYON",
+    "none_dash_f": "-- Yok --",
+    "clan_label": "KLAN",
+    "rarity_label": "NADİRLİK",
+    "copies_label": "KOPYA SAYISI",
+    "default_checkbox": "Varsayılan",
+    "frame_label": "ÇERÇEVE",
+    "frame_hint": "Çerçeve, üretimden sonra uygulanır. Yapay zekâ yalnızca illüstrasyona odaklanabilir — çizilecek çerçeve yok.",
+    "generation_mode": "ÜRETİM MODU",
+    "one_variant": "1 varyant",
+    "three_variants": "3 varyant",
+    "extra_instructions": "EK TALİMATLAR",
+    "card_back_instructions_placeholder": "Örn: altın rünler, tüyler, cilalı ayna, kıvrılmış ejderha...",
+    "reference_image_hint2": "Görsel ilham kaynağı olarak kullanılır (konu / palet / atmosfer). İstem kuralları öncelikli kalır.",
+    "manual_upload": "Manuel yükleme",
+    "variants_count": "VARYANTLAR ({selected} / {total} {selected, plural, one {seçildi} other {seçildi}})",
+    "variant_n": "Varyant {n}",
+    "card_back_preview": "Arka yüz önizlemesi",
+    "saving2": "Kaydediliyor…",
+    "save_n_backs": "{n} arka yüzü kaydet",
+    "save_back": "Arka yüzü kaydet",
+    "generate_board_title": "OYUN TAHTASI ÜRET",
+    "board_name_placeholder": "Örn: Uyuyan Ejderha Hanı",
+    "composition_style": "KOMPOZİSYON STİLİ",
+    "board_style_surface": "Yalnızca tüm çerçeveyi dolduran zemin (çimen, kar, kum, taş…). Dekor yok, kenarlık yok — tamamen atmosfere yönelik bir görünüm için ideal.",
+    "board_style_minimal": "Tahtanın merkezi boş bırakılır (düz yüzey), dekor kenarlardadır. 3D figürinler için tasarlanmıştır.",
+    "board_style_mtgo": "MTG Arena kompozisyonu: sade merkez, dekor yan panellerle sınırlı. Oyunda: solda tıklanabilir büyük mezarlık karosu, sağda kahraman + deste + mana + CP (rakip için ters simetri). MTGO düzenini otomatik olarak etkinleştirir.",
+    "board_style_hearthstone": "Hearthstone kompozisyonu: her yerde temalı objeler, süslü merkez ayırıcı.",
+    "graveyard_image_optional": "MEZARLIK GÖRSELİ (isteğe bağlı)",
+    "graveyard": "Mezarlık",
+    "graveyard_image_hint": "Mezarlığın tıklanabilir karosu olarak gösterilen görsel. Görsel yoksa varsayılan bir tabut gösterilir.",
+    "environment_label": "ORTAM",
+    "race_optional": "IRK (isteğe bağlı)",
+    "default_board_hint": "Varsayılan tahta (destede belirtilmediğinde kullanılır)",
+    "extra_instructions_optional": "EK TALİMATLAR (isteğe bağlı)",
+    "board_instructions_placeholder": "Örn: mor neonlu siberpunk atmosferi, sağanak yağmur, metal zeminde yansımalar…",
+    "board_instructions_hint": "Doldurulursa istemin konu/ortam bloğunun yerine geçer. Kompozisyon kuralları (Hearthstone, 16:9, simetri, çerçeve) her zaman uygulanmaya devam eder.",
+    "reference_image_hint3": "Görsel ilham kaynağı olarak kullanılır (konu / palet / atmosfer). Kompozisyon kuralları öncelikli kalır.",
+    "rerun_variants": "{n} varyantı yeniden başlat",
+    "generate_variants": "{n} varyant üret",
+    "or": "veya",
+    "import_image": "Görsel içe aktar",
+    "preview_caps": "ÖNİZLEME",
+    "variants_check_hint": "VARYANTLAR (işaretlemek için tıklayın — birden fazla seçilebilir)",
+    "save_board": "Tahtayı kaydet",
+    "save_n_boards": "Seçilen {n} tahtayı kaydet",
+    "generate_ability_icon_title": "YETENEK SİMGESİ OLUŞTUR",
+    "parameters": "PARAMETRELER",
+    "ability_label": "YETENEK",
+    "ability_polymorph": "🔀 Çok biçimli yetenek — simge hem yaratık hem de aksiyon için kaydedilecek.",
+    "ability_creature": "👤 Yaratık yeteneği.",
+    "ability_spell": "🪄 Aksiyon yeteneği.",
+    "ability_legend": "👤 yaratık · 🪄 aksiyon · 🔀 ortak",
+    "icon_name_label": "SİMGE ADI",
+    "icon_name_placeholder": "Örn: Kalkan v2",
+    "style_label": "STİL",
+    "style_white": "Saf beyaz",
+    "style_grey": "Saf gri",
+    "style_colored": "Renkli",
+    "style_sculpture": "Heykel",
+    "icon_instructions_placeholder": "Örn: bir yıldırım, stilize bir kafatası tercih et...",
+    "reference_image_hint4": "Yalnızca konu için görsel ilham kaynağı olarak kullanılır; tüm stil kısıtlamaları (arka plan, siluet, palet…) korunur.",
+    "rerun_3_variants": "3 varyantı yeniden oluştur",
+    "generate_3_variants": "3 varyant oluştur",
+    "variants_check_save_hint": "VARYANTLAR (kaydedilecekleri işaretlemek için tıkla — birden fazla seçilebilir)",
+    "save_variant": "Seçili varyantı kaydet",
+    "save_n_variants": "Seçili {n} varyantı kaydet",
+    "gallery": "GALERİ",
+    "all_abilities": "Tüm yetenekler",
+    "refresh": "Yenile",
+    "no_icon": "Simge yok. Önce yukarıdan bir tane oluşturarak başla.",
+    "active": "Aktif",
+    "activate": "Etkinleştir",
+    "create_set": "SET OLUŞTUR",
+    "set_name_placeholder": "Ad (örn: Temel Set)",
+    "set_code_placeholder": "Kod (örn: BASE)",
+    "icon_placeholder": "Simge",
+    "release_date": "Çıkış tarihi",
+    "set_icon_import": "Simge içe aktar",
+    "set_icon_change": "Değiştir",
+    "set_icon_clear": "İçe aktarılan simgeyi kaldır",
+    "set_type_base": "Temel set",
+    "set_type_special": "Özel",
+    "set_type_hint": "Özel set oynanabilir ve koleksiyona eklenebilir kalır, ancak kartları rastgele veya yarı rastgele çekilişlerde (Seçim, Çağrı, Salıverme, Yoğunlaşma, Tasarruf) asla görünmez.",
+    "existing_sets": "MEVCUT SETLER ({count})",
+    "no_set_created": "Hiç set oluşturulmadı",
+    "error": "Hata",
+    "no_format_found": "Hiçbir format bulunamadı. « formats » tablosunun oluşturulduğunu ve doldurulduğunu kontrol edin.",
+    "active_m": "Aktif",
+    "inactive": "Pasif",
+    "all_random": "Tüm parametreler rastgele",
+    "launch": "Başlat",
+    "budget_system_reference": "BÜTÇE SİSTEMİ — REFERANS",
+    "cost_credit": "Ek maliyetlerle geri kazanılan {points} puan",
+    "cost_credit_title": "Mana'ya ek olarak ödenen bir maliyet kartın yükünü hafifletir: kalan kısmı finanse eder. Uyanış hariçtir — alternatif bir maliyet olduğu için mana'nın yerini alır.",
+    "panel_mana_rarity": "MANA MALİYETİNE GÖRE NADİRLİK DAĞILIMI (TOPLU MOD)",
+    "mana_th": "Mana",
+    "panel_rarity_multipliers": "NADİRLİK ÇARPANLARI",
+    "panel_stat_costs": "İSTATİSTİK MALİYETLERİ",
+    "atk_cost_desc": "Puan başına 2.5 puan",
+    "def_cost_desc": "Puan başına 2.0 puan",
+    "budget_algo_desc": "Algoritma önce ATK'ya (kalan bütçenin %45'i), ardından DEF'e (%55) pay ayırır, sonra bütçe tükenene kadar yetenek eklemeye çalışır. Hizip çarpanları (ATK weight, DEF weight) çekiliş aralıklarını değiştirir.",
+    "panel_ability_costs": "YETENEK MALİYETLERİ",
+    "panel_faction_profiles": "HİZİP PROFİLLERİ",
+    "guaranteed_label": "Garanti:",
+    "forbidden_label": "Yasak:",
+    "card_schema_label": "KART ŞEMASI — JSON",
+    "limited_series_assignment": "SINIRLI SERİLER — ATAMA",
+    "no_dated_card": "Veritabanında tarihli üretilmiş kart yok.",
+    "search_placeholder": "Ara...",
+    "select_card_for_copies": "Kopyalarını görmek için bir kart seçin",
+    "loading": "Yükleniyor...",
+    "prints_summary": "{rarity} — {total} kopya — {assigned} atanmış, {available} müsait",
+    "owner_th": "SAHİP",
+    "tradeable_th": "TAKAS EDİLEBİLİR",
+    "actions_th": "İŞLEMLER",
+    "available_dash": "— müsait —",
+    "yes": "Evet",
+    "no": "Hayır",
+    "unassign": "Geri al",
+    "assign_to": "Ata...",
+    "cannot_read_ref_image": "Referans görseli okunamadı.",
+    "cannot_load_image": "Görsel yüklenemedi.",
+    "variants_failed": "{n} varyant başarısız oldu.",
+    "confirm_delete_icon": "« {name} » simgesi silinsin mi?",
+    "icon_saved": "« {name} » simgesi kaydedildi.",
+    "icons_saved_partial": "{ok} simge kaydedildi, ancak diğerlerinde hata oluştu: {error}",
+    "backs_saved": "{n} kart arkası kaydedildi.",
+    "back_saved": "« {name} » kart arkası kaydedildi.",
+    "backs_saved_partial": "{ok} kart arkası kaydedildi, ancak diğerlerinde hata oluştu: {error}",
+    "image_imported": "Görsel içe aktarıldı — kaydetmeye hazır.",
+    "cannot_read_imported_image": "İçe aktarılan görsel okunamadı.",
+    "boards_saved": "{n} tahta kaydedildi.",
+    "board_saved_named": "« {name} » tahtası kaydedildi.",
+    "boards_saved_partial": "{ok} tahta kaydedildi, ancak diğerlerinde hata oluştu: {error}",
+    "image_generated": "Görsel oluşturuldu ({model})",
+    "generation_error": "Oluşturma hatası",
+    "server_error": "Sunucu hatası",
+    "image_generation_error": "Görsel oluşturma hatası",
+    "template_updated": "Şablon güncellendi",
+    "template_created": "Şablon oluşturuldu",
+    "validation_convocation_x": "Çağrı X: Kaydetmeden önce seçicide bir token seçin.",
+    "validation_convocation": "Çağrı: Kaydetmeden önce seçicide bir token seçin.",
+    "validation_multi_convocation": "Çoklu çağrı: Kaydetmeden önce listeye en az bir token ekleyin.",
+    "validation_lycanthropie": "Likantropi X: Kaydetmeden önce bir dönüşüm tokenı seçin.",
+    "validation_entraide": "Yardımlaşma (Irk): Kaydetmeden önce hedef ırkı seçin.",
+    "validation_appel_supreme": "Yüce Çağrı: Kaydetmeden önce hedef ırkı seçin.",
+    "validation_multi_convocation_spell": "Çoklu çağrı (aksiyon): Kaydetmeden önce listeye en az bir token ekleyin.",
+    "validation_convocation_spell": "Çağrı (aksiyon): Kaydetmeden önce seçicide bir token seçin.",
+    "card_added": "« {name} » eklendi!",
+    "unknown_error": "Bilinmeyen hata",
+    "illustration_generated": "İllüstrasyon oluşturuldu ({model})",
+    "import_error": "İçe aktarma hatası",
+    "eveil_label": "UYANIŞ",
+    "eveil_cost_hint": "UYANIŞ: Kart oynanmak YERİNE uyanışa alınabilir. Eli bu sayıda puanla terk eder; oyuncu her turunda mana başına 1 puan öder ve son puanda kart elden oynanmış gibi oyuna girer. Mana maliyetinin yerine geçer, ona eklenmez. Azaltılamaz.",
+    "eveil_cost_title": "{count, plural, one {# puan} other {# puan}} karşılığında uyanışa alınabilir, tur başına 1 mana ödenir — mana maliyeti yerine",
+    "label_occurrences": "TEKRAR SAYISI",
+    "occurrences_hint": "1 = yalnızca bir kez. Daha fazlasında içerik art arda tekrar oynanır (en fazla 10).",
+    "alternative_toggle": "VEYA",
+    "alternative_toggle_title": "Bu etki, kartın seçiminin bir dalı olur: oyuncu işaretlenenlerin yalnızca BİRİNİ uygular.",
+    "alternative_warn_alone": "yalnızca bir dal işaretli: etki normal şekilde uygulanır",
+    "alternative_warn_triggers": "dallar farklı tetikleyicilere bağlı: birbirini dışlamazlar",
+    "random_hint_selection": "Açığa çıkan her kart KENDİ maliyetini 1 ile {max} arasında çeker. Kutu işaretli değilse üçü de tam olarak {max} olur.",
+    "random_min_hint": "Asgari maliyet (A): her maliyet {min} ile {max} arasında çekilir.",
+    "cost_optional_hint": "Herhangi bir maliyet için boş bırakın.",
+    "cost_any_label": "herhangi bir maliyet",
+    "cost_any_toggle": "Herhangi bir maliyet (X = 1'e dönmek için tekrar tıkla)",
+    "random_hint_faveur": "Verilen kartın maliyeti 1 ile {max} arasında rastgele belirlenir. Kutu işaretli değilse maliyet tam olarak {max} olur.",
+    "content_appel": "Desteden çağrı",
+    "content_appel_supreme": "Yüce Çağrı (deste → el, en pahalı kart)",
+    "content_tuteur": "Gözetmen (belirlenen kartlar → el)",
+    "content_transformation": "Belirlenen karta dönüştür",
+    "content_forge": "Demirci (desteye karıştırılan 1 eşya)",
+    "forge_min_hint": "Dövülen eşyanın minimum maliyeti (alt sınır A). Maksimum maliyet X'tir; X boşsa her maliyet olur.",
+    "transformation_card_hint": "Hedeflenen her birim bu karta dönüşür; birden fazla kartta her biri rastgele kendi kartını çeker. Alandan ayrılınca özgün haline geri döner.",
+    "content_epargne": "Tasarruf (sayaç)",
+    "content_foi": "İnanç (sayaç)",
+    "content_conquete": "Fetih (sayaç)",
+    "content_exploration": "Keşif (sayaç, 3'te kart çeker)",
+    "content_incineration": "Yakma (bir mezarlığı geri dönüştür)",
+    "content_devoration": "Yutma (yok et ve özümse)",
+    "content_tactique": "Taktik (rastgele yetenekler, aynı maliyet)",
+    "content_retour_differe": "Ertelenmiş dönüş (destenin altına)",
+    "content_silence": "Sessizlik (hedefin her şeyini kaldırır)",
+    "content_dechainement": "Çılgınlık X/Y (rastgele aksiyonlar)",
+    "content_selection_magique": "Büyülü Seçim (3 aksiyondan 1'i)",
+    "tab_style_guides": "Stil Rehberleri",
+    "mode_title_delay": "Gecikme X: yalnızca bir kez, X. sonraki turun başında, birim hâlâ oyundaysa",
+    "trigger_on_delay": "Gecikme X (X. sonraki turun başında)",
+    "retard_turns_title": "Gecikme: tetiklenmeden önceki tur sayısı",
+    "retard_spell_title": "Gecikme: etki, oynayanın X. sonraki turunun başında tetiklenir; hedef o anda seçilir",
+    "label_retard": "Gecikme",
+    "trigger_on_end_of_turn_in_graveyard": "Turun sonunda, mezarlıkta olduğu sürece",
+    "content_enterrement": "Gömme (deste → mezarlık, filtrelenebilir)"
+  },
+  "game": {
+    "hero_power_grant": "Bir yaratığa {kw} verir",
+    "hero_power_emblem": "Amblem: {kw}",
+    "hero_power_counter": "{compteur} sayacına {x} ekler",
+    "hero_power_machine": "Makinenize +{x}/+{y} ekler",
+    "error_not_authenticated": "Kimlik doğrulanmadı",
+    "error_match_not_found": "Maç bulunamadı",
+    "error_load_failed": "Maç yüklenemedi",
+    "loading": "Maç yükleniyor…",
+    "waiting_opponent": "Rakip bekleniyor…",
+    "return_to_menu": "Menüye dön",
+    "persist_warning": "Bir aksiyon kaydedilemedi — senkronizasyon kaybı riski var. Yeniden senkronize etmek için sayfayı yenileyin.",
+    "reload": "Yenile",
+    "close": "Kapat",
+    "settings": "Ayarlar",
+    "choose_card": "Bir kart seç",
+    "attack_choice_target": "⚔️ {label} — hedefi seç",
+    "attack_power_label": "Saldırı Gücü",
+    "opponent_choosing": "⏳ Rakip seçim yapıyor…",
+    "no_creatures": "Yaratık yok",
+    "drag_hint": "Oynamak için kartlarını buraya sürükle",
+    "drop_hint": "Yaratığı oynamak için bırak",
+    "cancel_targeting": "Hedeflemeyi iptal et",
+    "action_cancel": "İptal",
+    "action_confirm": "Onayla",
+    "action_close": "Kapat",
+    "card_count": "{count, plural, one {# kart} other {# kart}}",
+    "selection_title": "🎴 Seçim",
+    "selection_subtitle": "Elinize eklemek için bir kart seçin",
+    "discovery_title": "🔭 Keşif",
+    "discovery_subtitle": "Bu turki çekişin: bir kart seç",
+    "discovery_other_clan": "Başka klan",
+    "discovery_other_faction": "Başka hizip",
+    "power_hero_activated": "Kahraman gücü etkinleştirildi",
+    "power_used_this_turn": "Bu tur kullanıldı",
+    "power_hero_label": "Kahraman Gücü",
+    "power_cost_label": "Maliyet:",
+    "power_mana_unit": "mana",
+    "power_mode_grant_keyword": "Yetenek bahşetme",
+    "power_mode_spell_trigger": "Tek seferlik etki",
+    "power_mode_aura": "Kalıcı aura",
+    "power_mode_active": "Aktif",
+    "power_no_description": "Açıklama yok.",
+    "power_activations_unlimited": "Etkinleştirme: sınırsız",
+    "power_activations_used": "Etkinleştirme: {used} / {limit}",
+    "power_usage_limit": "Sınır: en fazla {limit}×",
+    "hero_starting_hp": "Başlangıç canı: {hp}",
+    "power_close_hint": "Kapatmak için Esc tuşuna bas veya alanın dışına tıkla",
+    "divination_traque_title": "🔮 Kaderin İzi",
+    "divination_title": "🔍 Kehanet",
+    "divination_traque_subtitle": "Ele alacağın kartı seç. Diğerleri destenin altına gidecek.",
+    "divination_subtitle": "Çekme destenin üstüne koyacağın kartı seç",
+    "graveyard_select_prompt": "Mezarlıktan bir kart seç",
+    "graveyard_hint_touch": "Yakınlaştırmak için bir karta dokun · açıklamayı görmek için tekrar dokun",
+    "graveyard_hint_hover": "Yakınlaştırmak için bir kartın üzerine gel · görsel / açıklama arasında geçiş yapmak için sağ tıkla",
+    "seconde_vie_hint": "İkinci can: uygun bir karta çift tıklayın.",
+    "seconde_vie_blocked_turn": "Sıra sizde değil.",
+    "graveyard_empty": "Mezarlıkta kart yok",
+    "cost_default_card_name": "kart",
+    "cost_pay_title": "{name} maliyetlerini ödeyin",
+    "cost_discard_label": "🃏 {count, plural, one {# kart at} other {# kart at}}",
+    "cost_topdeck_label": "{count, plural, one {# kartı destenin üstüne geri koy} other {# kartı destenin üstüne geri koy}}",
+    "cost_retreat_label": "{count, plural, one {# yaratığı ele geri al} other {# yaratığı ele geri al}}",
+    "cost_topdeck_order_hint": "İlk seçilen kart destenin en üstüne gelir.",
+    "cost_hand_order_hint": "Tıklamalarınız önce atılanları, sonra geri çekilmeyi doldurur.",
+    "topdeck_cost_caption": "{count, plural, one {Geri Çekilme} other {Geri Çekilme ×#}}",
+    "cost_sacrifice_label": "☠ {count, plural, one {# yaratığı feda et} other {# yaratığı feda et}}",
+    "convocation_title": "📣 Çağrı",
+    "convocation_subtitle": "Çağrılacak jetonun ırkını seçin",
+    "cycle_eternel_caption": "♻ Ebedi Döngü",
+    "compagnons_caption": "🐾 Yoldaşlar",
+    "discard_label": "🔥 {count, plural, one {Atılan — # kart} other {Atılan — # kart}}",
+    "graveyard_affect_label": "🪦 {count, plural, one {Mezarlık — # kart} other {Mezarlık — # kart}}",
+    "zone_deck": "Deste",
+    "zone_graveyard": "Mezarlık",
+    "zone_deck_yours": "Destiniz",
+    "zone_deck_opponent": "Rakibin destesi",
+    "zone_graveyard_yours": "Mezarlığınız",
+    "zone_graveyard_opponent": "Rakibin mezarlığı",
+    "history_title": "Son aksiyonlar",
+    "history_hero_friendly": "kahramanınız",
+    "history_hero_enemy": "rakip kahraman",
+    "history_spell": "Aksiyon oynandı: {source}",
+    "history_spell_on": "Aksiyon oynandı: {source} (hedef: {target})",
+    "history_spell_countered": "{source} karşılandı",
+    "history_attack": "{source}, {target} hedefine saldırdı",
+    "history_attack_alone": "{source} saldırdı",
+    "history_death": "{source} yok edildi",
+    "history_bounce": "{source} ele geri gönderildi",
+    "history_power": "{source} gücü, {target} üzerinde",
+    "history_power_alone": "{source} gücü",
+    "history_hero_power": "{hero} — {power}",
+    "history_amount": "{amount, plural, one {# hasar} other {# hasar}}",
+    "history_extra_targets": "{count, plural, one {+# hedef daha} other {+# hedef daha}}",
+    "history_expand": "{count, plural, one {Önceki aksiyonu gör} other {Önceki # aksiyonu gör}}",
+    "history_collapse": "Geçmişi daralt",
+    "convocation_prefix": "{content} oluşturur",
+    "convocation_create_list": "{content} oluşturur",
+    "convocation_token_one_named": "bir {token} tokeni",
+    "convocation_token_many_named": "{count} {token} tokeni",
+    "convocation_invoke_one": "{atk}/{hp} bir {token} çağırır",
+    "convocation_invoke_race": "{atk}/{hp} bir {race} çağırır",
+    "convocation_create_one_named": "Bir {token} tokeni oluşturur",
+    "convocation_none": "token yok",
+    "convocation_and": "{a} ve {b}",
+    "spell_countered": "🛡️ Karşı büyü!",
+    "draw_trigger_self": "🃏 Çektiğiniz kartla efekt tetiklendi",
+    "draw_trigger_opponent": "🃏 Rakibin çektiği kartla efekt tetiklendi",
+    "faveur_self": "🎁 Lütuf — kart elinize eklendi",
+    "faveur_opponent": "🎁 Lütuf — kart rakibin eline eklendi",
+    "spell_grant_all_allies": " · tüm müttefiklere",
+    "spell_grant_target": " · hedeflenen yaratığa",
+    "fire_breath_label": "Ateş Nefesi",
+    "queue_eyebrow": "Değerini kanıtla",
+    "queue_subtitle": "Bir rakip bul ve savaş",
+    "queue_heading": "Oyna",
+    "queue_select_deck_error": "Lütfen bir deste seçin",
+    "queue_connection_error": "Eşleştirme bağlantı hatası",
+    "queue_no_valid_deck": "Oynamak için en az bir geçerli deste (50 kart) gerekir.",
+    "queue_create_deck": "Deste oluştur",
+    "queue_format_label": "Format:",
+    "queue_select_deck_label": "Destenizi seçin:",
+    "queue_no_deck_for_format": "Bu format için deste yok. Deste oluşturucuda bir tane oluşturun.",
+    "queue_find_match": "Maç bul",
+    "queue_back_to_menu": "Menüye dön",
+    "queue_searching": "Rakip aranıyor…",
+    "mode_suffix_death": " · ölünce",
+    "mode_suffix_tap": " · tap",
+    "mode_suffix_return": " · ele dönüş",
+    "mode_suffix_end_of_turn": " · tur sonu",
+    "presage_title": "🌙 Kehanet",
+    "presage_subtitle": "Destenizin ilk kartı hangisi?",
+    "presage_hit": "Güzel tahmin — kart elinize katıldı.",
+    "presage_miss": "Iskalandı. Doğru kart yeşil renkte.",
+    "apprentissage_title": "📖 Öğrenme",
+    "apprentissage_subtitle": "Yaratık hangi aksiyonu ezberlemeli?",
+    "foi_title": "✨ İnanç",
+    "foi_subtitle": "Ele alınacak bir kart seçin. Maliyeti İnancınızdan düşülür, kalanı korunur.",
+    "conquete_title": "🚩 Fetih",
+    "conquete_subtitle": "Rakibin destesinden üç kart. Ele alacağınız kartı seçin: oyunun geri kalanında sizin olur.",
+    "zone_eveil": "Uyanış",
+    "zone_eveil_yours": "Uyanışınız",
+    "zone_eveil_opponent": "Rakibin uyanışı",
+    "hand_show": "Eli göster",
+    "eveil_hint": "Her tıklamada 1 mana yatırın. Son puanda kart, elinizden gelmiş gibi oyuna girer.",
+    "eveil_remaining": "{count, plural, one {# puan kaldı} other {# puan kaldı}}",
+    "eveil_next_point": "Sıradaki puan 1 mana tutar.",
+    "eveil_next_arrives": "Son puan: kart oyuna girer.",
+    "eveil_play_now": "Oyuna sok",
+    "eveil_blocked_mana": "Yeterli mana yok.",
+    "eveil_blocked_board_plein": "Alanınız dolu.",
+    "eveil_blocked_vie": "Maliyeti için yeterli can puanınız yok.",
+    "eveil_blocked_main": "Ek maliyetleri için elinizde yeterli kart yok.",
+    "eveil_blocked_plateau": "Feda edilecek yeterli yaratık yok.",
+    "eveil_blocked_deck": "Destenizde sürgüne gönderilecek yeterli kart yok.",
+    "eveil_blocked_sans_cible": "Bu aksiyon için geçerli hedef yok.",
+    "eveil_suspend": "Uyanışa al ({count, plural, one {# puan} other {# puan}})",
+    "eveil_pay_n": "{count, plural, one {# öde} other {# öde}}",
+    "eveil_max": "maks {count}",
+    "eveil_max_hint": "Son puan oyuna girişin kendisidir: hedef seçimiyle birlikte ayrıca ödenir.",
+    "choix_ou_title": "⚖️ Seçim",
+    "synergie_title": "Sinerji — bir yetenek seçin",
+    "synergie_subtitle": "Bu yaratık, seçilen yetenek hem sizde hem rakipte her tetiklendiğinde bonusunu kazanır.",
+    "synergie_search": "Yetenek ara…",
+    "synergie_in_play": "Oyunda olanlar",
+    "synergie_others": "Diğer yetenekler",
+    "synergie_none": "Eşleşen yetenek yok.",
+    "choix_ou_subtitle": "Bu efektlerden yalnızca biri uygulanır.",
+    "activation_menu_title": "Hangi güç etkinleştirilsin?",
+    "activation_learned": "{name} oyna",
+    "mutation_button": "Mutasyon",
+    "mutation_button_title": "Mutasyon: bu kartı dönüştür (ücretsiz, yalnızca bir kez)",
+    "mutation_discover": "Mutasyon — Keşif {n}/2",
+    "mutation_discover_subtitle": "Maliyeti {x} olan sıradan bir yaratık seç",
+    "mutation_pick_ability": "Mutasyon — Yetenek {n}/2",
+    "mutation_pick_subtitle": "Bu yaratığın miras bırakacağı yeteneği seç",
+    "mutation_empty": "Bu maliyette uygun yaratık yok.",
+    "mutation_cancel": "İptal",
+    "infestation_caption": "🪳 Istila",
+    "infestation_eclosion_caption": "🪳 Istila — yumurtadan çıkış",
+    "enterrement_caption": "⚰ Gömülme"
+  },
+  "tutorial": {
+    "page_eyebrow": "Düello sanatını öğren",
+    "page_subtitle": "Armies of Legends — ortaçağ fantezisi kart düellosu",
+    "page_title": "Nasıl Oynanır",
+    "track_beginner": "Acemi — tam rehber",
+    "track_tcg": "TCG oyuncusu — temel bilgiler",
+    "track_factions": "Fraksiyonlar ve klanlar",
+    "goal_title": "Oyunun amacı",
+    "stat_hero_start": "Başlangıç kahramanı",
+    "stat_starting_hand": "Başlangıç eli",
+    "stat_mana_growth": "Mana (her tur artar)",
+    "stat_max_board": "Sahadaki azami yaratık",
+    "turn_title": "Bir turun akışı",
+    "turn_intro": "Her turunuzun başında, sırasıyla:",
+    "hand_title": "El ve kart çekme",
+    "creatures_title": "Yaratıklar",
+    "spells_title": "Aksiyonlar",
+    "combat_title": "Savaş",
+    "combat_see_full_list": "Yeteneklerin tam listesi sayfanın altında.",
+    "hero_title": "Kahraman ve gücü",
+    "alt_costs_title": "Ek maliyetler ve uyanış",
+    "counters_title": "Sayaçlar: Tasarruf, İnanç ve Fetih",
+    "singulier_title": "Tekil: tekrarsız destelere ödül",
+    "deck_title": "Deste oluşturma",
+    "tcg_numbers_title": "Önemli sayılar",
+    "stat_hero_hp": "Kahramanın canı",
+    "stat_deck_exact": "Kart / deste (tam)",
+    "stat_hand_range": "El (başlangıç → azami)",
+    "stat_mana_per_turn": "Mana (+1 / tur)",
+    "tcg_gameloop_title": "Oyun döngüsü (AoL özellikleri)",
+    "tcg_deckbuilding_title": "Deste kurma",
+    "tcg_combat_title": "Savaş — çözümleme",
+    "tcg_hero_spells_title": "Kahraman ve aksiyonlar",
+    "lexicon_eyebrow": "Savaş sözlüğü",
+    "lexicon_subtitle": "Oyunla her zaman güncel, eksiksiz başvuru kaynağı. « X » ve « Y », her kartta belirlenen değerlerdir.",
+    "lexicon_title": "Tüm yetenekler",
+    "search_placeholder": "Yetenek ara…",
+    "creature_abilities_group": "Yaratık yetenekleri ({count})",
+    "spell_abilities_group": "Aksiyon yetenekleri ({count})",
+    "no_ability_match": "« {query} » ile eşleşen yetenek yok.",
+    "goal_text": "Her oyuncu, kahramana göre <hi>{min} ile {max} arasında can puanıyla</hi> başlayan bir <hi>kahramanı</hi> canlandırır (çoğunlukla {usual}): güçlü bir yetenek birkaç CP eksiğe mal olur, mütevazı bir yetenek birkaç CP fazlayla dengelenir. Rakip kahramanın can puanını <hi>{zero}</hi> seviyesine düşürerek oyunu kazanırsınız. Bunun için yaratıklar çağırır ve aksiyonlar oynarsınız.",
+    "stat_hero_start_value": "{min}–{max} CP",
+    "stat_starting_hand_value": "{first} veya {second} kart"
+  },
+  "deck": {
+    "alignment_incompatible": "İyi ve Kötü yönelim uyumsuz",
+    "max_mercenaires_current": "En fazla {max} Paralı Asker (şu an {current})",
+    "max_capability_current": "En fazla {max} « {label} » yeteneği (şu an {count})",
+    "card_not_owned": "Kart sahip olunmuyor",
+    "no_items_in_deck": "Eşyalar desteye konmaz: oyun içinde bulunurlar.",
+    "no_items_in_deck_current": "Bu destede {count, plural, one {# eşya} other {# eşya}} var: onları çıkarın, eşyalar artık desteye konmuyor.",
+    "deck_full": "Deste dolu",
+    "singleton_yes": "Tekil deste ✓",
+    "singleton_no": "Tekil deste ✗",
+    "singleton_hint": "Tekil bir deste hiçbir kartı birden fazla içermez: Tekil işaretli yetenekler yalnızca bu koşulda tetiklenir. Bu bir deste kurma kuralı değildir.",
+    "unique_copy": "Tek kopya",
+    "max_three_copies": "En fazla 3 kopya",
+    "alignment_conflict": "Yönelim çakışması",
+    "one_faction_only": "Yalnızca 1 hizip serbest",
+    "one_clan_only": "Yalnızca 1 klan serbest",
+    "max_mercenaires": "En fazla {max} Paralı Asker",
+    "no_slot_available": "Boş yuva kalmadı",
+    "max_capability": "En fazla {max} × « {label} » yeteneği",
+    "enter_deck_name": "Lütfen bir deste adı girin",
+    "choose_faction_prep": "Lütfen bir hizip seçin (Hazırlık sekmesi)",
+    "select_format": "Lütfen bir format seçin",
+    "select_hero": "Lütfen bir kahraman seçin",
+    "deck_exact_size": "Deste tam olarak {size} kart içermeli (şu an {current})",
+    "illegal_cards": "Bu formatta izin verilmeyen kartlar: {cards}",
+    "deck_contains_unowned": "Deste sahip olunmayan kartlar içeriyor",
+    "save_failed": "Deste kaydedilemedi",
+    "forge_your_deck": "Destenü şekillendir",
+    "step_preparation": "1 · Hazırlık",
+    "step_appearance": "2 · Görünüm",
+    "step_cards": "3 · Kartlar",
+    "cancel": "İptal",
+    "choose_faction_first_tab": "Önce 1 · Hazırlık sekmesinden bir hizip seçin.",
+    "search_placeholder": "Ara...",
+    "creatures": "Yaratıklar",
+    "spells": "Aksiyonlar",
+    "items": "Eşyalar",
+    "all_capabilities": "Yetenekler",
+    "all_races": "Irklar",
+    "all_clans": "Klanlar",
+    "all_sets": "Setler",
+    "year": "Yıl",
+    "rarity_abbr_uncommon": "NY",
+    "rarity_abbr_legendary": "Tek",
+    "expert_only_title": "Yalnızca uzman kartları göster (yaygın olmayanlar)",
+    "expert": "Uzman",
+    "preparation": "Hazırlık",
+    "forge_a_deck": "Deste oluştur",
+    "deck_name": "Deste adı",
+    "deck_name_placeholder": "Deste adı...",
+    "faction": "Hizip",
+    "choose_faction": "Hizip seç...",
+    "faction_hint": "Tek hizip + Paralı Askerler. Hizip değiştirmek uyumsuz kartları/kahramanları kaldırır.",
+    "format": "Format",
+    "mode_placeholder": "Mod...",
+    "mode_classic": "Klasik",
+    "mode_expert": "Uzman",
+    "extent_placeholder": "Kapsam...",
+    "extent_standard": "Standart",
+    "extent_extended": "Genişletilmiş",
+    "choose_faction_first_tab_short": "Önce bir hizip seçin (1 · Hazırlık sekmesi).",
+    "choose_hero": "Kahraman seç",
+    "right_click_power": "Sağ tık: gücü gör",
+    "no_hero_for_faction": "Bu hizip için kahraman yok.",
+    "board": "Tahta",
+    "change": "Değiştir",
+    "choose_board": "Tahta seç",
+    "card_back": "Kart arkası",
+    "choose_card_back": "Kart arkası seç",
+    "mono_faction": "Tek hizip",
+    "mono_clan": "Tek klan",
+    "clan_label": "Klan:",
+    "no_clan": "Klansız",
+    "alignment_label": "Yönelim:",
+    "deck": "Deste",
+    "mana_curve_tooltip": "{label} mana: {count, plural, one {# kart} other {# kart}}",
+    "click_cards_to_add": "Eklemek için kartlara tıkla",
+    "free_slot": "boş yuva",
+    "more_slots": "+{count} yuva",
+    "keywords": "Anahtar Kelimeler",
+    "max_suffix": "(maks. {max})",
+    "saving": "Kaydediliyor...",
+    "save_deck": "Kaydet",
+    "create_deck": "Deste oluştur",
+    "passive": "PASİF",
+    "mana": "MANA",
+    "no_board_available": "Kullanılabilir tahta yok.",
+    "no_card_back_available": "Kullanılabilir kart arkası yok.",
+    "format_number": "Format {id}",
+    "no_format": "Formatsız",
+    "compose_your_army": "Ordunu oluştur",
+    "my_decks": "Destelerim",
+    "decks_in_armory": "Cephaneliğinde {count, plural, one {# deste} other {# deste}}",
+    "decks_in_format": "Bu formatta {count, plural, one {# deste} other {# deste}}",
+    "new_deck": "Yeni deste",
+    "back_to_menu": "Menüye dön",
+    "all": "Tümü",
+    "no_decks_yet": "Henüz destein yok",
+    "create_first_deck": "İlk deseni oluştur",
+    "no_decks_in_format": "Bu formatta deste yok",
+    "show_all_decks": "Tüm desteleri göster",
+    "cards_count_label": "{count}/{size} kart",
+    "valid_suffix": " (Geçerli)",
+    "edit": "Düzenle",
+    "confirm": "Onayla",
+    "delete": "Sil",
+    "admire_your_armies": "Ordularına hayran kal",
+    "card_collection": "Kart koleksiyonu",
+    "cards_count": "{count, plural, one {# kart} other {# kart}}",
+    "cards_of_total": " / {total}",
+    "search_by_name": "İsme göre ara...",
+    "mana_label": "Mana:",
+    "reset_filters": "Filtreleri sıfırla",
+    "faction_label": "Hizip:",
+    "all_fem": "Tümü",
+    "rarity_label": "Nadirlik:",
+    "expert_only": "Yalnızca uzman",
+    "capability_label": "Yetenek:",
+    "race_label": "Irk:",
+    "all_masc": "Tümü",
+    "format_label": "Format:",
+    "set_label": "Set:",
+    "year_label": "Yıl:",
+    "no_cards_match": "Filtrelerinize uyan kart yok",
+    "show_locked": "Kilitli olanları göster",
+    "locked_badge": "Kilitli",
+    "locked_summary": "{count, plural, one {# kilitli kart} other {# kilitli kart}}",
+    "locked_hint": "Diğer hiziplerin yaygın kartlarına tam kilit açma teklifi üzerinden erişilebilecek.",
+    "unplayable_badge": "{count} eksik kart",
+    "items_badge": "{count, plural, one {# eşya} other {# eşya}} içeriyor — çıkarılmalı",
+    "unplayable_reason": "Bu deste artık sahip olmadığınız hiziplere ait kartlar içeriyor: {factions}. Deste olduğu gibi duruyor — tekrar oynamak için hizbi geri alın.",
+    "unplayable_rebuy": "Mağazadan geri al"
+  },
+  "cardBacks": {
+    "eyebrow": "Tarzını sergile",
+    "title": "Kart Arkalarım",
+    "subtitle": "{visible, plural, one {# görünür} other {# görünür}} · {prints, plural, one {# sahip olunan baskı} other {# sahip olunan baskı}}",
+    "back_to_menu": "Menüye dön",
+    "rarity_label": "Nadirlik:",
+    "owned_only": "Yalnızca sahip olunanlar",
+    "empty": "Gösterilecek kart arkası yok.",
+    "equipped": "Kuşanıldı",
+    "default_badge": "Varsayılan",
+    "not_owned": "sahip olunmuyor"
+  },
+  "boards": {
+    "eyebrow": "Arenanı hazırla",
+    "title": "Tahtalarım",
+    "subtitle": "{visible, plural, one {# görünür} other {# görünür}} · {prints, plural, one {# sahip olunan baskı} other {# sahip olunan baskı}}",
+    "back_to_menu": "Menüye dön",
+    "rarity_label": "Nadirlik:",
+    "owned_only": "Yalnızca sahip olunanlar",
+    "empty": "Gösterilecek tahta yok.",
+    "equipped": "Kuşanıldı",
+    "default_badge": "Varsayılan",
+    "not_owned": "sahip değilsin"
+  },
+  "legal": {
+    "back_to_site": "← Siteye dön",
+    "draft_warning": "⚠ Belge hazırlık aşamasındadır — mevcut haliyle hiçbir sözleşme hükmü taşımaz.",
+    "todo": "TAMAMLANACAK — halka açılmadan önce yazılması gereken bölüm.",
+    "updated": "Son güncelleme: {date}",
+    "cgu_title": "Kullanım Koşulları",
+    "cgu_s1": "Konu ve kabul",
+    "cgu_s2": "Hizmete erişim ve hesap oluşturma",
+    "cgu_s3": "Gerekli asgari yaş",
+    "cgu_s4": "Oyun parası, kartlar ve satın alımlar",
+    "cgu_s5": "Davranış kuralları ve yaptırımlar",
+    "cgu_s6": "Fikri mülkiyet",
+    "cgu_s7": "Hizmetin sürekliliği, gelişimi ve sona ermesi",
+    "cgu_s8": "Sorumluluk",
+    "cgu_s9": "Hesabın silinmesi",
+    "cgu_s10": "Uygulanacak hukuk ve iletişim",
+    "privacy_title": "Gizlilik Politikası",
+    "privacy_s1": "Veri sorumlusu",
+    "privacy_s2": "Toplanan veriler",
+    "privacy_s3": "Amaçlar ve hukuki dayanaklar",
+    "privacy_s4": "Veri işleyenler ve barındırma",
+    "privacy_s5": "Saklama süreleri",
+    "privacy_s6": "Çerezler ve izleyiciler",
+    "privacy_s7": "Haklarınız (GDPR)",
+    "privacy_s8": "Güvenlik",
+    "privacy_s9": "İletişim ve şikâyet"
+  },
+  "factions_page": {
+    "back": "Ana sayfaya dön",
+    "races": "Irklar",
+    "signature": "Simgesel yetenekler",
+    "profile": "Oyun profili",
+    "offense": "Saldırı odaklı",
+    "defense": "Savunma odaklı",
+    "commons": "{count, plural, one {# sıradan} other {# sıradan}}",
+    "more_races": "+{count}",
+    "free_commons": "{count, plural, one {# sıradan kart} other {# sıradan kart}} · {clans, plural, one {# klan} other {# klan}} — ilk günden itibaren hediye.",
+    "no_clan_title": "Tüm klanlara açık",
+    "no_clan_desc": "Bu kartlar hiçbir klana ait değildir: destenizi hangi klan etrafında kurarsanız kurun, hizbin her destesine katılabilirler.",
+    "other_factions": "Diğer hizipleri gör",
+    "costs": "Ek maliyetler",
+    "cost_life": "Can Puanı",
+    "cost_discard": "Harç: Eli Atma",
+    "cost_sacrifice": "Kurban Etme",
+    "cost_exile": "Sürgün",
+    "cost_topdeck": "Geri Çekilme",
+    "cost_retreat": "Geri Çekilme",
+    "cost_retreat_desc": "Bu kartlar, mana bedeline ek olarak savaş alanındaki yaratıkların elinize geri alınmasını gerektirir.",
+    "cost_life_desc": "Bu kartlar, mana bedeline ek olarak kahramanın can puanlarıyla da ödenir.",
+    "cost_discard_desc": "Bu kartlar, mana bedeline ek olarak elinizden kart atmanızı gerektirir.",
+    "cost_sacrifice_desc": "Bu kartlar, mana bedeline ek olarak kontrol ettiğiniz yaratıkları kurban etmenizi gerektirir.",
+    "cost_exile_desc": "Bu kartlar, mana bedeline ek olarak destenizin üstündeki kartları sürgüne gönderir.",
+    "cost_topdeck_desc": "Bu kartlar, mana bedeline ek olarak elinizdeki kartları destenizin üstüne geri koymanızı gerektirir.",
+    "commons_count": "{count, plural, one {# sıradan kart} other {# sıradan kart}} · {clans, plural, one {# klan} other {# klan}}"
+  },
+  "faction_action": {
+    "visitor_pitch": "{faction} ile başlamak için hesabınızı oluşturun: tüm sıradan kartları size hediye edilecek.",
+    "visitor_cta": "HESAP OLUŞTUR",
+    "owned_just_chosen": "{faction} sizin fraksiyonunuz",
+    "owned_bundle": "Paketinize dahil",
+    "owned_starter": "Başlangıç fraksiyonunuz",
+    "owned_bought": "Fraksiyon satın alındı",
+    "owned_note": "Aşağıdaki tüm sıradan kartlar koleksiyonunuzda.",
+    "enter_game": "OYUNA GİR",
+    "see_collection": "KOLEKSİYONUMU GÖR",
+    "free_pitch": "Henüz başlangıç fraksiyonunuzu seçmediniz. <strong>{faction}</strong> ile başlayın ve tüm sıradan kartlarını ücretsiz kazanın.",
+    "free_cta": "BU FRAKSİYONLA BAŞLA",
+    "free_warning": "Bu seçim kesindir: sonradan değiştiremezsiniz, yalnızca başka fraksiyonlar edinebilirsiniz.",
+    "free_confirm": "ONAYLA — {faction}",
+    "cancel": "İPTAL",
+    "buy_pitch": "{faction} koleksiyonunuza ekleyin: tüm sıradan kartları, kalıcı olarak.",
+    "your_balance": "(bakiyeniz: {balance})",
+    "debt_blocks": "Yeni bir satın alma yapmadan önce {debt} altın borcunuzu ödemelisiniz.",
+    "not_enough_gold": "YETERSİZ ALTIN",
+    "buy_cta": "BU FRAKSİYONUN KİLİDİNİ AÇ",
+    "err_already_chosen": "Başlangıç fraksiyonunuzu zaten seçtiniz.",
+    "err_choice": "Seçim kaydedilemedi.",
+    "err_purchase": "Satın alma tamamlanamadı.",
+    "badge_starter": "BAŞLANGIÇ",
+    "badge_owned": "SATIN ALINDI",
+    "bundle_hint": "Ya da eksik olan {count} fraksiyonun hepsini {price} altına alın →"
+  },
+  "cardStatus": {
+    "draft": "Taslak",
+    "playable": "Oynanabilir",
+    "retired": "Kaldırıldı",
+    "excluded": "Hariç tutuldu",
+    "deck_unavailable": "{count, plural, one {# kart kullanılamıyor} other {# kart kullanılamıyor}}",
+    "cannot_add": "Kart kullanılamıyor: desteye eklenemez",
+    "reason": "Neden: {reason}"
+  },
+  "tournaments": {
+    "qualification_title": "Eleme Turnuvası",
+    "grand_title": "Aylık Büyük Turnuva",
+    "players": "oyuncu",
+    "access_ticket": "Turnuva bileti ile girilebilir",
+    "access_golden": "Yalnızca Golden Ticket ile girilebilir",
+    "winner_golden_title": "Kazanan Golden Ticket'ı alır",
+    "winner_golden_desc": "Aylık büyük turnuvanın tek giriş anahtarı",
+    "bracket_size": "Eşleşme tablosu boyutu",
+    "bracket_size_aria": "Büyük turnuva boyutu",
+    "participation_rewards": "Oyun tahtası + Sınırlı sürüm Kahraman",
+    "participation_desc": "Sonucu ne olursa olsun her katılımcıya",
+    "prize_pool": "Ödül havuzu",
+    "real_money": "gerçek para",
+    "market_credits": "pazar kredisi",
+    "essences": "öz",
+    "wins_count": "{count, plural, one {# galibiyet} other {# galibiyet}}",
+    "credits_count": "{count} kredi",
+    "col_wins": "Galibiyet",
+    "col_money": "Para",
+    "col_reward": "Ödül",
+    "col_credits": "Kredi",
+    "col_essence": "Öz",
+    "meta_title": "Turnuvalar — Armies of Legends",
+    "page_eyebrow": "Rekabet Serisi",
+    "page_subtitle": "Bir bilet bir eleme turnuvasının kapısını açar; kazananı aylık büyük turnuva için Golden Ticket kazanır. Her galibiyet pazar kredisi ve öz kazandırır.",
+    "page_title": "Turnuvalar",
+    "tickets_held": "<b>{count}</b> biletiniz var",
+    "get_tickets": "bilet edin",
+    "open_title": "Açık Turnuvalar",
+    "none_open": "Şu anda açık turnuva yok.",
+    "kind_weekly": "Haftalık",
+    "kind_free": "Ücretsiz",
+    "kind_special": "Özel",
+    "capacity": "{count} oyuncu",
+    "running": "devam ediyor",
+    "registration_closed": "Kayıtlar kapandı",
+    "circuit_eyebrow": "Devre",
+    "circuit_title": "Biletten aylık şampiyonluğa",
+    "rewards_eyebrow": "Ödüller",
+    "rewards_title": "Her galibiyetin getirdikleri",
+    "footnote_rounds": "<i>r</i>. turda elenen oyuncu <i>r</i>−1 maç kazanmıştır.",
+    "footnote_credits": "Pazar kredileri kazanıldıktan {days} gün sonra sona erer.",
+    "footnote_cash": "Nakit ödül {wins} galibiyetten itibaren verilir;",
+    "footnote_all": "Krediler, öz ve kozmetikler ödül alan tüm katılımcılara verilir.",
+    "step_label": "ADIM {n}",
+    "step_ticket_title": "Turnuva Bileti",
+    "step_ticket_text": "Mağazadan satın alınır — aktif oyunculara ayda bir ücretsiz bilet verilir.",
+    "step_qualification_title": "Eleme",
+    "step_qualification_text": "{size} oyuncu, {rounds} turluk eleme usulü; {size} oyuncunun tamamı hazır olur olmaz canlı oynanır.",
+    "step_golden_text": "Kazanan, aylık büyük turnuvadaki yerini alır.",
+    "step_grand_text": "Golden Ticket sahipleri karşı karşıya gelir; her son tarihten önce oynanacak bir tur vardır.",
+    "how_it_works": "Nasıl işler?",
+    "rule_wins": "Ödüller final sıralamasına değil, <b>galibiyet sayısına</b> bağlıdır: iki galibiyet her tabloda aynı ödülü getirir. Yalnızca şampiyon daha fazlasını alır.",
+    "rule_bracket": "Büyük turnuva tam bir tabloda oynanır (16, 32, 64… oyuncu). Fazla kalan finalistler <b>öncelikli olarak</b> sonraki aya ertelenir; {min} finalistin altında tüm edisyon ertelenir.",
+    "rule_golden": "Birden fazla Golden Ticket mı var? Her edisyona yalnızca bir kez kayıt olunur; fazla biletler sonraki edisyonlarda geçerlidir.",
+    "rule_forfeit": "Son tarihte hazır bulunmayan oyuncu hükmen mağlup sayılır; ikisi de gelmezse çifte hükmen mağlubiyet uygulanır ve bir sonraki rakipleri oynamadan tur atlar.",
+    "rule_credits": "<b>Pazar kredileri</b> sınırlı sürümlerde teklif vermek için kullanılır ve kazanıldıktan {days} gün sonra sona erer.",
+    "rule_essence": "<b>Öz</b> kalıcıdır: {cost} öz = rastgele bir sınırlı kartın dövülmesi.",
+    "signup_error": "Kayıt yapılamadı.",
+    "signup_done": "Kayıtlısınız.",
+    "signup_full": "Dolu.",
+    "signup_blocked": "Kayıtlar engellendi",
+    "signup_debt": "{count, plural, one {# bilet düzenlenmeli} other {# bilet düzenlenmeli}}",
+    "signup_get_ticket": "Bilet al",
+    "signup_no_ticket": "Kullanılabilir bilet yok",
+    "signup_pending": "Kaydediliyor…",
+    "signup_with_ticket": "Kayıt ol (1 🎟️)",
+    "signup_free": "Kayıt ol (ücretsiz)",
+    "signup_seats": "{count, plural, one {# yer kaldı} other {# yer kaldı}}",
+    "signup_tickets_in_hand": "{count, plural, one {elinizde # bilet} other {elinizde # bilet}}"
+  },
+  "errors": {
+    "title": "Bir hata oluştu",
+    "body": "Bizim tarafımızda bir şeyler ters gitti. Tekrar deneyebilirsiniz; sorun devam ederse ana sayfaya dönün.",
+    "retry": "Tekrar dene",
+    "home": "Ana sayfaya dön",
+    "not_found_title": "Sayfa bulunamadı",
+    "not_found_body": "Bu sayfa mevcut değil ya da taşınmış.",
+    "game_title": "Oyunda bir hata oluştu",
+    "game_body": "Oyun ekranı kesintiye uğradı. Oyunu yeniden yükleyin: kaldığı yerden devam edecek.",
+    "game_reload": "Oyunu yeniden yükle"
+  },
+  "geo": {
+    "unavailable": "Bu özellik henüz ülkenizde kullanılamıyor. Oyuna tüm özellikleriyle erişmeye devam edebilirsiniz.",
+    "age_title": "Yaş doğrulaması",
+    "age_intro": "Satın alma işlemleri yalnızca en az {age} yaşında olan kişilere açıktır. Bu doğrulama yalnızca bir kez istenecektir.",
+    "age_checkbox": "En az {age} yaşında olduğumu onaylıyorum.",
+    "age_confirm": "Onayla ve devam et",
+    "age_cancel": "İptal",
+    "age_error": "Kayıt başarısız oldu. Tekrar deneyin."
+  }
+}
