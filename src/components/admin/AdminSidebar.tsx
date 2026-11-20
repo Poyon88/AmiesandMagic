@@ -21,6 +21,7 @@ const menuItems = [
   { label: "Vitrine", href: "/admin/vitrine", icon: "🖼️" },
   { label: "Icônes", href: "/admin/keyword-icons", icon: "🎨" },
   { label: "Joueurs", href: "/admin/players", icon: "👥" },
+  { label: "Retours joueurs", href: "/admin/feedback", icon: "💬" },
   { label: "Équilibrage", href: "/admin/analytics", icon: "⚖️" },
   { label: "Simulateur", href: "/admin/simulator", icon: "🤖" },
 ];

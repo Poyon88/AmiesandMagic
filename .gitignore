@@ -57,6 +57,7 @@ next-env.d.ts
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/goon/
+!.claude/skills/retours/
 skills-lock.json
 
 # Generated docs (regenerate from generate-keywords-pdf.py if needed)

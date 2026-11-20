@@ -11,6 +11,7 @@ import KeywordIconPreloader from "@/components/KeywordIconPreloader";
 import LocaleMigration from "@/components/LocaleMigration";
 import { headers } from "next/headers";
 import { GeoProvider } from "@/components/shared/GeoProvider";
+import FeedbackHost from "@/components/feedback/FeedbackHost";
 import { geoContext } from "@/lib/geo/rules";
 
 const geistSans = Geist({
@@ -91,6 +92,7 @@ export default async function RootLayout({
           <AudioProvider />
           <KeywordIconPreloader />
           <GeoProvider value={geo}>{children}</GeoProvider>
+          <FeedbackHost />
         </NextIntlClientProvider>
       </CorpsDuSite>
     </html>

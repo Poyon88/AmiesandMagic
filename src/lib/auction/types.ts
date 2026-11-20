@@ -6,7 +6,10 @@ export type NotificationType =
   | 'auction_won'
   | 'auction_sold'
   | 'auction_ended_unsold'
-  | 'auction_cancelled';
+  | 'auction_cancelled'
+  | 'credits_expiring'
+  | 'feedback_reply'
+  | 'feedback_shipped';
 
 export interface AuctionSettings {
   id: number;

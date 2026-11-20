@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAudioStore } from "@/lib/store/audioStore";
+import { useFeedbackStore } from "@/lib/feedback/client";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface SettingsModalProps {
 
 export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsModalProps) {
   const t = useTranslations("common");
+  const tf = useTranslations("feedback");
+  const ouvrirRetour = useFeedbackStore((s) => s.openModal);
   const { settings, setMusicVolume, toggleMusicMute, setSfxVolume, toggleSfxMute } = useAudioStore();
   const [concedeArmed, setConcedeArmed] = useState(false);
   const armTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,6 +169,29 @@ export default function SettingsModal({ isOpen, onClose, onConcede }: SettingsMo
           <div style={{ textAlign: "right", fontSize: 10, color: "#888" }}>
             {Math.round(settings.sfxVolume * 100)}%
           </div>
+        </div>
+
+        {/* Signaler un problème : seule porte d'entrée des retours en partie,
+            où le bouton flottant du site n'est pas affiché. */}
+        <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid #333" }}>
+          <button
+            onClick={() => { onClose(); ouvrirRetour(); }}
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 6,
+              border: "1px solid #555",
+              background: "transparent",
+              color: "var(--foreground)",
+              fontFamily: "var(--font-cinzel), serif",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 1,
+              cursor: "pointer",
+            }}
+          >
+            {tf('settings_entry')}
+          </button>
         </div>
 
         {/* Concede — game contexts only. Two-click confirm: first click

@@ -51,6 +51,10 @@ export default function NotificationBell() {
   /** Page vers laquelle mène une notification, ou `null`. */
   function hrefOf(notif: { type?: string; metadata?: Record<string, unknown> }): string | null {
     if (notif.type === "credits_expiring") return "/compte/credits";
+    if (notif.type === "feedback_reply" || notif.type === "feedback_shipped") {
+      const fil = notif.metadata?.thread_id;
+      return typeof fil === "string" && fil.length > 0 ? `/compte/retours/${fil}` : "/compte/retours";
+    }
     const auctionId = auctionIdOf(notif);
     return auctionId ? `/auction/${auctionId}` : null;
   }
@@ -72,6 +76,8 @@ export default function NotificationBell() {
     auction_ended_unsold: "📦",
     auction_cancelled: "❌",
     credits_expiring: "⏳",
+    feedback_reply: "💬",
+    feedback_shipped: "✅",
   };
 
   return (
