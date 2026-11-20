@@ -11,6 +11,7 @@
 //   ?disposition=mtgo|classic   disposition du plateau (défaut : mtgo)
 //   ?main=7                     cartes en main (défaut : 7)
 //   ?terrain=5                  unités par rangée (défaut : 5, 8 au plus)
+//   ?historique=7               vignettes dans la bande d'historique (défaut : 3)
 //   ?image=<url>                illustration du plateau à essayer
 //   ?large=<url>                sa version 21:9 (centre identique à ?image)
 import { useEffect } from "react";
@@ -49,12 +50,20 @@ export default function BoardLab() {
       adversaire.deck.push(unite(i + 200, 2));
     }
     etat.turnStartedAt = Date.now();
+    const historique = borne("historique", 3, 7);
 
     useGameStore.setState({
       gameState: etat,
       localPlayerId: moi.id,
       isAnimating: false,
       boardLayout: q.get("disposition") === "classic" ? "classic" : "mtgo",
+      actionHistory: Array.from({ length: historique }, (_, i) => ({
+        id: `essai-${i}`,
+        kind: i % 2 ? ("attack" as const) : ("spell" as const),
+        side: i % 3 ? ("friendly" as const) : ("enemy" as const),
+        card: unite(i + 300, 2).card,
+        timestamp: Date.now() - i * 1000,
+      })),
       boardImageUrl: q.get("image"),
       boardImageWideUrl: q.get("large"),
     });

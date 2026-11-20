@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,10 +23,19 @@ import { HERO_IMAGES } from "./HeroPowerOverlay";
  * et on échappe entièrement aux corrections `overlayRect`/`zoom` iPad.
  *
  * z-30 volontaire : les overlays plein écran (z-50) doivent la recouvrir.
+ *
+ * PLACÉE SOUS LA COLONNE DU HÉROS ADVERSE. Elle partageait le coin haut-gauche
+ * avec lui et masquait son portrait et ses emblèmes — gêne devenue visible
+ * quand le terrain s'est élargi jusqu'au bord de la fenêtre (avant, sur un
+ * grand écran, la bande tombait dans la marge vide à côté du plateau). Elle se
+ * cale donc sous cette colonne (portrait, emblèmes, mana), mesurée à l'écran,
+ * et ne descend pas sur la pioche et le cimetière du joueur : dépliée, ce qui
+ * dépasse passe dans une seconde colonne.
  */
 export default function ActionHistoryStrip({ entries }: { entries: ActionHistoryEntry[] }) {
   const t = useTranslations("game");
   const [expanded, setExpanded] = useState(false);
+  const zone = useZoneSousLeHeros();
 
   if (entries.length === 0) return null;
 
@@ -44,8 +53,13 @@ export default function ActionHistoryStrip({ entries }: { entries: ActionHistory
         left: 8,
         // Ancré en haut (et non centré) : déplier ne doit pas faire glisser la
         // dernière action sous le curseur — la liste pousse vers le bas.
-        top: "12%",
-        maxHeight: "80vh",
+        top: zone.top,
+        maxHeight: zone.maxHeight,
+        // Dépliée, la liste peut dépasser la hauteur libre : le surplus passe
+        // dans une colonne voisine au lieu de recouvrir pioche et cimetière.
+        flexWrap: "wrap",
+        alignContent: "flex-start",
+        columnGap: 6,
         zIndex: 30,
         display: "flex",
         flexDirection: "column",
@@ -94,6 +108,66 @@ export default function ActionHistoryStrip({ entries }: { entries: ActionHistory
       )}
     </div>
   );
+}
+
+/** Marge entre la colonne du héros adverse et la bande, en pixels d'écran. */
+const MARGE_SOUS_HEROS = 10;
+/** Part basse du plateau laissée à la pioche, au cimetière et à la main du joueur. */
+const RESERVE_BAS = 0.24;
+/** Position tant que rien n'est mesuré (plateau pas encore rendu) : sous
+ *  l'emplacement habituel de la colonne du héros adverse. */
+const ZONE_PAR_DEFAUT = { top: "32%", maxHeight: "44vh" } as const;
+
+/**
+ * Zone libre du bord gauche, sous la colonne du héros adverse : où poser la
+ * bande, et de quelle hauteur elle dispose.
+ *
+ * Mesurée À L'ÉCRAN (la bande est hors du canevas mis à l'échelle) et suivie
+ * par un ResizeObserver : la colonne grandit quand un compteur ou un emblème
+ * apparaît, et tout bouge quand la fenêtre change de taille.
+ */
+function useZoneSousLeHeros(): { top: number | string; maxHeight: number | string } {
+  const [zone, setZone] = useState<{ top: number | string; maxHeight: number | string }>(ZONE_PAR_DEFAUT);
+
+  useEffect(() => {
+    const mesurer = () => {
+      const colonne = document.querySelector("[data-colonne-heros-adverse]");
+      const canevas = document.querySelector("[data-board-scale]");
+      if (!colonne || !canevas) return;
+      const p = canevas.getBoundingClientRect();
+      // Le bas RÉEL de la colonne : la barre de mana et l'écu des PV débordent
+      // de sa boîte (décalages, positions absolues), on prend donc le plus bas
+      // de ses descendants. Ceux qui sortent du haut du plateau (bulles) ou
+      // n'ont pas de taille ne comptent pas.
+      let bas0 = colonne.getBoundingClientRect().bottom;
+      for (const el of colonne.querySelectorAll("*")) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0 && r.bottom < p.top + p.height * 0.6) bas0 = Math.max(bas0, r.bottom);
+      }
+      const top = Math.round(bas0 + MARGE_SOUS_HEROS);
+      const bas = p.bottom - p.height * RESERVE_BAS;
+      // Jamais moins d'une vignette et son bouton, même sur un écran bas.
+      setZone({ top, maxHeight: Math.max(140, Math.round(bas - top)) });
+    };
+
+    const observateur = typeof ResizeObserver !== "undefined" ? new ResizeObserver(mesurer) : null;
+    const colonne = document.querySelector("[data-colonne-heros-adverse]");
+    const canevas = document.querySelector("[data-board-scale]");
+    if (colonne) observateur?.observe(colonne);
+    if (canevas) observateur?.observe(canevas);
+    // Le canevas change d'échelle sans changer de taille de mise en page : le
+    // ResizeObserver ne le voit pas, la fenêtre si.
+    window.addEventListener("resize", mesurer);
+    // Première mesure hors du corps de l'effet (au prochain rafraîchissement).
+    const image = requestAnimationFrame(mesurer);
+    return () => {
+      observateur?.disconnect();
+      window.removeEventListener("resize", mesurer);
+      cancelAnimationFrame(image);
+    };
+  }, []);
+
+  return zone;
 }
 
 // Sélecteur de variante emoji (U+FE0F) sur ⚔ : sans lui, Safari/Chrome rendent
