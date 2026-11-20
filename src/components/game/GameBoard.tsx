@@ -34,6 +34,7 @@ import SynergieOverlay from "./SynergieOverlay";
 import CostPaymentOverlay from "./CostPaymentOverlay";
 import EffectLog from "./EffectLog";
 import ActionHistoryStrip from "./ActionHistoryStrip";
+import { aDesBandes, DESIGN_H, DESIGN_W, echellePlateau } from "./board-fit";
 import TurnTimer from "./TurnTimer";
 import ChoiceTimerBadge from "./ChoiceTimerBadge";
 import TargetingArrow from "./TargetingArrow";
@@ -66,10 +67,8 @@ import useLongPress from "@/hooks/useLongPress";
 import { useScreenShake } from "@/hooks/useScreenShake";
 import { lent } from "@/lib/fx/overlayMotion";
 
-// Fixed design size the board is authored against (16:9). The whole board is a
-// canvas of this size, scaled uniformly to fit the viewport (see boardScale).
-const DESIGN_W = 1920;
-const DESIGN_H = 1080;
+// The board is authored against a fixed 16:9 design size (DESIGN_W × DESIGN_H,
+// in ./board-fit) and scaled uniformly to fit the viewport (see boardScale).
 
 interface GameBoardProps {
   onAction?: (action: GameAction) => void;
@@ -250,6 +249,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   // to before. scale = min(availW / 1920, availH / 1080).
   const boardWrapRef = useRef<HTMLDivElement>(null);
   const [boardScale, setBoardScale] = useState(1);
+  // Vrai quand la fenêtre n'est pas en 16:9 : des bandes entourent le canevas.
+  const [boardBands, setBoardBands] = useState(false);
 
   // Pulse des emblèmes qui viennent d'agir : l'orbite rejoue l'animation à
   // chaque horodatage, on vide l'événement une fois le pulse terminé.
@@ -269,7 +270,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         el?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : DESIGN_W);
       const availH =
         el?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : DESIGN_H);
-      setBoardScale(Math.min(availW / DESIGN_W, availH / DESIGN_H));
+      setBoardScale(echellePlateau(availW, availH));
+      setBoardBands(aDesBandes(availW, availH));
     };
     update();
     const ro =
@@ -1251,6 +1253,32 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
         }
       }}
     >
+      {/* FOND DES BANDES. Le plateau est un canevas 16:9 mis à l'échelle : sur
+          une fenêtre plus large (écran ultra-large) ou plus haute (tablette), il
+          laissait des bandes unies de part et d'autre, et le champ de bataille
+          semblait ne pas remplir l'écran (retour joueur du 2026-11-20). On y
+          prolonge l'illustration du plateau, floutée et assombrie : le décor
+          couvre toute la fenêtre sans déplacer ni déformer le canevas — cartes,
+          zones et effets restent alignés sur l'illustration nette.
+          Rendu seulement quand il y a des bandes ; débordement de 6 % pour que
+          le flou ne laisse pas voir ses bords. */}
+      {boardBands && (
+        <div
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: "-6%",
+              backgroundImage: `url("${boardImageUrl || "/images/battlefield.jpg"}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(28px) brightness(0.6) saturate(1.1)",
+            }}
+          />
+        </div>
+      )}
       {/* Scale-to-fit canvas wrapper. The board is a fixed DESIGN_W×DESIGN_H
           canvas centred in the viewport and scaled uniformly by boardScale, so
           every fixed-px child (cards, portraits, buttons, text) shrinks together
