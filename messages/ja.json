@@ -22,7 +22,7 @@
         "desc": "召喚直後から敵クリーチャーに攻撃できる（ヒーローには不可）。"
       },
       "convocations_multiples": {
-        "label": "複数召喚",
+        "label": "複数招集",
         "desc": "{tokens}を作成する。"
       },
       "loyaute": {
@@ -70,7 +70,7 @@
         "desc": "1ターンに2回攻撃できる。"
       },
       "augure": {
-        "label": "予兆",
+        "label": "兆し",
         "desc": "このユニットが相手ヒーローにダメージを与えるたびにカードを1枚引く。"
       },
       "benediction": {
@@ -163,11 +163,11 @@
         "desc": "指定されたカードに変身する。プレイエリアを離れると元の姿に戻る。"
       },
       "convocation": {
-        "label": "召喚 X",
+        "label": "招集 X",
         "desc": "{token}を作成する。"
       },
       "convocation_simple": {
-        "label": "召喚",
+        "label": "招集",
         "desc": "{token}を作成する。"
       },
       "invocation": {
@@ -286,7 +286,7 @@
         "desc": "対象ユニットの全能力をコピーし、このユニットに永続的に付与する。"
       },
       "metamorphose": {
-        "label": "変身",
+        "label": "変貌",
         "desc": "このユニットは対象ユニットの完全なコピー（ATK／PV／能力）になる。"
       },
       "dedoublement": {
@@ -512,7 +512,7 @@
         "desc": "対象のユニットを1体破壊する。このクリーチャーはそのATKとPVを永久に得る。"
       },
       "creuser": {
-        "label": "発掘X",
+        "label": "掘削 X",
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く。"
       },
       "retour_differe": {
@@ -629,7 +629,7 @@
         "desc": "次のX回の敵のユニット召喚を無効化する。"
       },
       "convocation_simple": {
-        "label": "召喚",
+        "label": "招集",
         "desc": "{token}を生成する。"
       },
       "seuil_colere": {
@@ -796,7 +796,7 @@
         "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す"
       },
       "creuser": {
-        "label": "発掘X",
+        "label": "掘削 X",
         "desc": "デッキの一番下からX枚のカードを見て、その中の1枚を一番上に置く"
       },
       "presage": {
@@ -857,7 +857,7 @@
         "desc": "{invocations}を召喚する。"
       },
       "invocation_multiple": {
-        "label": "複数召喚",
+        "label": "複数招集",
         "desc": "{tokens}を生成する。"
       },
       "tempete": {
@@ -3154,14 +3154,14 @@
     "image_generation_error": "画像生成エラー",
     "template_updated": "テンプレートを更新しました",
     "template_created": "テンプレートを作成しました",
-    "validation_convocation_x": "召喚 X：保存前にピッカーでトークンを選択してください。",
-    "validation_convocation": "召喚：保存前にピッカーでトークンを選択してください。",
-    "validation_multi_convocation": "複数召喚：保存前にリストへトークンを1つ以上追加してください。",
+    "validation_convocation_x": "招集 X：保存前にピッカーでトークンを選択してください。",
+    "validation_convocation": "招集：保存前にピッカーでトークンを選択してください。",
+    "validation_multi_convocation": "複数招集：保存前にリストへトークンを1つ以上追加してください。",
     "validation_lycanthropie": "狼男変身 X：保存前に変身トークンを選択してください。",
     "validation_entraide": "相互援助（種族）：保存前に対象種族を選択してください。",
     "validation_appel_supreme": "至高の召集：保存前に対象種族を選択してください。",
-    "validation_multi_convocation_spell": "複数召集（アクション）：保存する前にリストに少なくとも1つのトークンを追加してください。",
-    "validation_convocation_spell": "召集（アクション）：保存する前にピッカーでトークンを選択してください。",
+    "validation_multi_convocation_spell": "複数招集（アクション）：保存する前にリストに少なくとも1つのトークンを追加してください。",
+    "validation_convocation_spell": "招集（アクション）：保存する前にピッカーでトークンを選択してください。",
     "card_added": "「{name}」を追加しました！",
     "unknown_error": "不明なエラー",
     "illustration_generated": "イラストを生成しました（{model}）",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "クリックはまず捨て札を、その後リプレイスを埋めます。",
     "topdeck_cost_caption": "{count, plural, one {リプレイス} other {リプレイス×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {クリーチャーを # 体生贄に捧げる} other {クリーチャーを # 体生贄に捧げる}}",
-    "convocation_title": "📣 召喚",
+    "convocation_title": "📣 招集",
     "convocation_subtitle": "召喚するトークンの種族を選んでください",
     "cycle_eternel_caption": "♻ 永遠のサイクル",
     "compagnons_caption": "🐾 仲間",

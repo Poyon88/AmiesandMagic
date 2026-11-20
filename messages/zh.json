@@ -22,7 +22,7 @@
         "desc": "召唤当回合即可攻击一个敌方生物（但不能攻击英雄）。"
       },
       "convocations_multiples": {
-        "label": "多重召唤",
+        "label": "多重征召",
         "desc": "创造{tokens}。"
       },
       "loyaute": {
@@ -70,7 +70,7 @@
         "desc": "每回合可攻击两次。"
       },
       "augure": {
-        "label": "预兆",
+        "label": "征兆",
         "desc": "此单位对敌方英雄造成伤害时，你抽一张牌。"
       },
       "benediction": {
@@ -159,15 +159,15 @@
         "desc": "在场期间,被指定的敌方单位被麻痹,其能力全部失效。"
       },
       "transformation": {
-        "label": "变形",
+        "label": "变身",
         "desc": "变形为指定的卡牌。若其离开场上,则恢复原本形态。"
       },
       "convocation": {
-        "label": "召唤 X",
+        "label": "召集 X",
         "desc": "创造{token}。"
       },
       "convocation_simple": {
-        "label": "召唤",
+        "label": "召集",
         "desc": "创造{token}。"
       },
       "invocation": {
@@ -249,7 +249,7 @@
         "desc": "摧毁一个盟友，永久获得其生命值和ATK。"
       },
       "malefice": {
-        "label": "诅咒",
+        "label": "邪咒",
         "desc": "死亡时，对所有单位（友方与敌方）造成 X 点伤害，X 等于其攻击力。"
       },
       "synergie": {
@@ -629,7 +629,7 @@
         "desc": "抵消接下来的X次对方单位召唤。"
       },
       "convocation_simple": {
-        "label": "召唤",
+        "label": "召集",
         "desc": "创建{token}。"
       },
       "seuil_colere": {
@@ -857,7 +857,7 @@
         "desc": "召唤{invocations}。"
       },
       "invocation_multiple": {
-        "label": "多重召唤",
+        "label": "多重征召",
         "desc": "创建{tokens}。"
       },
       "tempete": {
@@ -3154,14 +3154,14 @@
     "image_generation_error": "图片生成错误",
     "template_updated": "模板已更新",
     "template_created": "模板已创建",
-    "validation_convocation_x": "召唤 X：请在选择器中选择一个 token 后再保存。",
-    "validation_convocation": "召唤：请在选择器中选择一个 token 后再保存。",
-    "validation_multi_convocation": "多重召唤：请在列表中至少添加一个 token 后再保存。",
+    "validation_convocation_x": "召集 X：请在选择器中选择一个 token 后再保存。",
+    "validation_convocation": "召集：请在选择器中选择一个 token 后再保存。",
+    "validation_multi_convocation": "多重征召：请在列表中至少添加一个 token 后再保存。",
     "validation_lycanthropie": "狼人变身 X：请选择一个变身 token 后再保存。",
     "validation_entraide": "互助（种族）：请选择目标种族后再保存。",
     "validation_appel_supreme": "至高召唤：请选择目标种族后再保存。",
-    "validation_multi_convocation_spell": "多重召唤（行动）：保存前请在列表中至少添加一个衍生物。",
-    "validation_convocation_spell": "召唤（行动）：保存前请在选择器中选择一个衍生物。",
+    "validation_multi_convocation_spell": "多重征召（行动）：保存前请在列表中至少添加一个衍生物。",
+    "validation_convocation_spell": "召集（行动）：保存前请在选择器中选择一个衍生物。",
     "card_added": "「{name}」已添加！",
     "unknown_error": "未知错误",
     "illustration_generated": "插图已生成（{model}）",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "您的点击将先填满弃牌堆，再填充回置。",
     "topdeck_cost_caption": "{count, plural, one {回置} other {回置 ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {牺牲 # 个生物} other {牺牲 # 个生物}}",
-    "convocation_title": "📣 召唤",
+    "convocation_title": "📣 召集",
     "convocation_subtitle": "选择要召唤的token种族",
     "cycle_eternel_caption": "♻ 永恒循环",
     "compagnons_caption": "🐾 伙伴",

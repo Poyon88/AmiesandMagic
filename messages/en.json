@@ -743,7 +743,7 @@
         "desc": "Deals X damage to a random enemy unit."
       },
       "deferlement": {
-        "label": "Surge X",
+        "label": "Onslaught X",
         "desc": "Deal X damage to all enemy creatures."
       },
       "boomerang": {

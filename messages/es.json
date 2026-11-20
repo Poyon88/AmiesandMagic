@@ -22,7 +22,7 @@
         "desc": "Puede atacar a una criatura enemiga desde su invocación (pero no al héroe)."
       },
       "convocations_multiples": {
-        "label": "Invocaciones múltiples",
+        "label": "Convocaciones múltiples",
         "desc": "Crea {tokens}."
       },
       "loyaute": {
@@ -163,11 +163,11 @@
         "desc": "Se transforma en la carta indicada. Recupera su forma original si abandona el tablero."
       },
       "convocation": {
-        "label": "Invocación X",
+        "label": "Convocación X",
         "desc": "Crea {token}."
       },
       "convocation_simple": {
-        "label": "Invocación",
+        "label": "Convocación",
         "desc": "Crea {token}."
       },
       "invocation": {
@@ -3160,8 +3160,8 @@
     "validation_lycanthropie": "Licantropía X: selecciona un token de transformación antes de guardar.",
     "validation_entraide": "Apoyo mutuo (Raza): selecciona la raza objetivo antes de guardar.",
     "validation_appel_supreme": "Llamada Suprema: selecciona la raza objetivo antes de guardar.",
-    "validation_multi_convocation_spell": "Convocatorias múltiples (acción): añade al menos un token a la lista antes de guardar.",
-    "validation_convocation_spell": "Convocatoria (acción): selecciona un token en el selector antes de guardar.",
+    "validation_multi_convocation_spell": "Convocaciones múltiples (acción): añade al menos un token a la lista antes de guardar.",
+    "validation_convocation_spell": "Convocación (acción): selecciona un token en el selector antes de guardar.",
     "card_added": "¡«{name}» añadida!",
     "unknown_error": "Error desconocido",
     "illustration_generated": "Ilustración generada ({model})",

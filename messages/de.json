@@ -22,7 +22,7 @@
         "desc": "Kann sofort nach der Beschwörung eine feindliche Kreatur angreifen (aber nicht den Helden)."
       },
       "convocations_multiples": {
-        "label": "Mehrfachbeschwörung",
+        "label": "Mehrfachherbeirufung",
         "desc": "Erschafft {tokens}."
       },
       "loyaute": {
@@ -163,11 +163,11 @@
         "desc": "Verwandelt sich in die angegebene Karte. Nimmt ihre ursprüngliche Form wieder an, wenn sie das Spielfeld verlässt."
       },
       "convocation": {
-        "label": "Beschwörung X",
+        "label": "Herbeirufung X",
         "desc": "Erschafft {token}."
       },
       "convocation_simple": {
-        "label": "Beschwörung",
+        "label": "Herbeirufung",
         "desc": "Erschafft {token}."
       },
       "invocation": {
@@ -201,7 +201,7 @@
         "desc": "Tauscht die aktuellen LP zweier anvisierter Einheiten (eine verbündete und eine gegnerische)."
       },
       "persecution": {
-        "label": "Verfolgung X",
+        "label": "Peinigung X",
         "desc": "Jedes Mal, wenn diese Einheit angreift, fügt sie dem gegnerischen Helden X Schaden zu."
       },
       "pietinement": {
@@ -629,7 +629,7 @@
         "desc": "Annulliert die nächsten X gegnerischen Einheitenbeschwörungen."
       },
       "convocation_simple": {
-        "label": "Beschwörung",
+        "label": "Herbeirufung",
         "desc": "Erschafft {token}."
       },
       "seuil_colere": {
@@ -857,7 +857,7 @@
         "desc": "Beschwört {invocations}."
       },
       "invocation_multiple": {
-        "label": "Mehrfachbeschwörung",
+        "label": "Mehrfachherbeirufung",
         "desc": "Erschafft {tokens}."
       },
       "tempete": {
@@ -3154,14 +3154,14 @@
     "image_generation_error": "Fehler bei der Bildgenerierung",
     "template_updated": "Vorlage aktualisiert",
     "template_created": "Vorlage erstellt",
-    "validation_convocation_x": "Beschwörung X: Vor dem Speichern ein Token im Picker auswählen.",
-    "validation_convocation": "Beschwörung: Wähle einen Token im Picker aus, bevor du speicherst.",
-    "validation_multi_convocation": "Mehrfachbeschwörung: Füge mindestens einen Token zur Liste hinzu, bevor du speicherst.",
+    "validation_convocation_x": "Herbeirufung X: Vor dem Speichern ein Token im Picker auswählen.",
+    "validation_convocation": "Herbeirufung: Wähle einen Token im Picker aus, bevor du speicherst.",
+    "validation_multi_convocation": "Mehrfachherbeirufung: Füge mindestens einen Token zur Liste hinzu, bevor du speicherst.",
     "validation_lycanthropie": "Lykanthropie X: Wähle einen Verwandlungstoken aus, bevor du speicherst.",
     "validation_entraide": "Zusammenhalt (Rasse): Wähle die Zielrasse aus, bevor du speicherst.",
     "validation_appel_supreme": "Höchster Ruf: Wähle die Zielrasse aus, bevor du speicherst.",
-    "validation_multi_convocation_spell": "Mehrfachbeschwörungen (Aktion): Fügt mindestens ein Token zur Liste hinzu, bevor ihr speichert.",
-    "validation_convocation_spell": "Beschwörung (Aktion): Wählt ein Token im Picker aus, bevor ihr speichert.",
+    "validation_multi_convocation_spell": "Mehrfachherbeirufung (Aktion): Fügt mindestens ein Token zur Liste hinzu, bevor ihr speichert.",
+    "validation_convocation_spell": "Herbeirufung (Aktion): Wählt ein Token im Picker aus, bevor ihr speichert.",
     "card_added": "„{name}\" hinzugefügt!",
     "unknown_error": "Unbekannter Fehler",
     "illustration_generated": "Illustration generiert ({model})",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "Ihre Klicks füllen zuerst den Friedhof, dann den Rückzug.",
     "topdeck_cost_caption": "{count, plural, one {Rückzug} other {Rückzug ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {# Kreatur opfern} other {# Kreaturen opfern}}",
-    "convocation_title": "📣 Beschwörung",
+    "convocation_title": "📣 Herbeirufung",
     "convocation_subtitle": "Wähle die Rasse des zu beschworenen Tokens",
     "cycle_eternel_caption": "♻ Ewiger Kreislauf",
     "compagnons_caption": "🐾 Begleiter",
