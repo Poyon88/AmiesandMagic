@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precisione",
-        "desc": "Ignora Resistenza, Armatura, Scudo e il limite degli Eterei."
+        "desc": "Ignora Resistenza, Armatura, Scudo e il limite di Eterea."
       },
       "drain_de_vie": {
         "label": "Drenaggio vitale",
@@ -270,7 +270,7 @@
       },
       "corruption": {
         "label": "Corruzione X",
-        "desc": "Converte un'unità nemica di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Inseguimento.",
+        "desc": "Converte un'unità nemica di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Caccia.",
         "desc_any": "Converte l'unità nemica selezionata dalla tua parte fino alla fine del turno; guadagna Caccia fino alla fine del turno."
       },
       "carnage": {
@@ -659,7 +659,7 @@
       },
       "corruption": {
         "label": "Corruzione X",
-        "desc": "Converte l'unità nemica bersaglio di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Inseguimento.",
+        "desc": "Converte l'unità nemica bersaglio di costo ≤ X al tuo schieramento fino alla fine del turno; ottiene Caccia.",
         "desc_any": "Converte l'unità nemica bersaglio al vostro schieramento fino alla fine del turno; guadagna Caccia."
       },
       "domination": {
@@ -2247,7 +2247,7 @@
         "remontee": "Rimanda {cibles} nella mano dei loro proprietari originari.",
         "malediction": "Maledice {cibles} con costo ≤ X: vengono esiliate alla fine del prossimo turno avversario.",
         "malediction_any": "Maledice {cibles}: vengono esiliate alla fine del prossimo turno avversario.",
-        "corruption": "Converte {cibles} di costo ≤ X dalla tua parte fino alla fine del turno, nei limiti dei posti disponibili; ottengono Braccamento.",
+        "corruption": "Converte {cibles} di costo ≤ X dalla tua parte fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
         "corruption_any": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
         "domination": "Prende il controllo di {cibles} di costo ≤ X, nei limiti dei posti disponibili.",
         "domination_any": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
@@ -2270,7 +2270,7 @@
         "retour_differe": "Mette {cibles} di costo ≤ X sotto il mazzo del loro proprietario.",
         "retour_differe_any": "Mette {cibles} sotto il mazzo dei loro proprietari.",
         "remontee": "Rimanda {cibles} nella mano dei loro proprietari originari.",
-        "corruption": "Converte {cibles} di costo ≤ X al tuo schieramento fino alla fine del turno, entro il limite dei posti disponibili; ottengono Traccia.",
+        "corruption": "Converte {cibles} di costo ≤ X al tuo schieramento fino alla fine del turno, entro il limite dei posti disponibili; ottengono Caccia.",
         "corruption_any": "Converte {cibles} al tuo schieramento fino alla fine del turno, nei limiti dei posti disponibili; ottengono Caccia.",
         "domination": "Prende il controllo di {cibles} di costo ≤ X, entro il limite dei posti disponibili.",
         "domination_any": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
@@ -3313,7 +3313,7 @@
     "convocation_create_one_named": "Crea un token {token}",
     "convocation_none": "nessun token",
     "convocation_and": "{a} e {b}",
-    "spell_countered": "🛡️ Contromagia!",
+    "spell_countered": "🛡️ Contromalia!",
     "draw_trigger_self": "🃏 Effetto attivato alla vostra pesca",
     "draw_trigger_opponent": "🃏 Effetto attivato alla pesca avversaria",
     "faveur_self": "🎁 Favore — carta aggiunta alla tua mano",

@@ -124,6 +124,86 @@
       "name": "Hayato, Master of Shadows",
       "power_name": "Sudden Disappearance",
       "power_description": "Return a target friendly unit to its original owner's hand."
+    },
+    "54": {
+      "name": "Grand Strategist of the Three Realms",
+      "power_name": "Strategic Foresight",
+      "power_description": "Draw a card."
+    },
+    "55": {
+      "name": "Borin, Guardian of the First Vein",
+      "power_name": "Frugality",
+      "power_description": "Trigger Spare 1."
+    },
+    "56": {
+      "name": "Ayomidé, She Who Speaks to Masks",
+      "power_name": "Spiritism",
+      "power_description": "Summon a random 3-mana spirit."
+    },
+    "57": {
+      "name": "Keahi, Heir of the Volcano",
+      "power_name": "Outburst of Wrath",
+      "power_description": "Deal 2 damage split randomly among enemy units."
+    },
+    "58": {
+      "name": "Orghun, Khan of the Three Borders",
+      "power_name": "Fortify",
+      "power_description": "The first creature in your deck, from the top, permanently gains +1 ATK and +1 HP."
+    },
+    "59": {
+      "name": "Orhan, Agha of a Thousand Rifles",
+      "power_name": "Barrage",
+      "power_description": "Deal 3 damage split randomly among enemy units."
+    },
+    "60": {
+      "name": "Federico the Flamboyant",
+      "power_name": "Blazing Radiance",
+      "power_description": "Reveal 3 collectible cards (cost 8 to 10) and keep one in your hand. Gain 10 mana this turn."
+    },
+    "61": {
+      "name": "Asteria, First of the Horsewomen",
+      "power_name": "Sisters in Arms",
+      "power_description": "Reveal 3 cards from the Free Kingdoms faction of the Wind Maidens clan and keep one in your hand."
+    },
+    "62": {
+      "name": "Godfrey, Champion of the Unconquered Sun",
+      "power_name": "Purification",
+      "power_description": "Remove up to 2 cards from the targeted graveyard."
+    },
+    "63": {
+      "name": "Aldoran, the First Awakened",
+      "power_name": "Rockslide",
+      "power_description": "Deal 1 damage to all creatures (allied AND enemy)."
+    },
+    "65": {
+      "name": "Caeltharion, Marshal of the Dawn",
+      "power_name": "Raise an Army",
+      "power_description": "Summon a High Elf."
+    },
+    "66": {
+      "name": "Grakk, Sergeant of the Horde",
+      "power_name": "Recruitment",
+      "power_description": "Add a Goblin Twin to your hand."
+    },
+    "67": {
+      "name": "Turlin Bolttwist",
+      "power_name": "Invention",
+      "power_description": "Add +1/+1 to your machine (starts at 0/1)."
+    },
+    "68": {
+      "name": "Eirik Rampartbreaker",
+      "power_name": "Conquest",
+      "power_description": "Add 1 to your Conquest (tier 3). At the tier: take 1 card of your choice from 3 in the opponent's deck into your hand, and reset the counter to 0."
+    },
+    "69": {
+      "name": "Malveris, Archon of the Final Breath",
+      "power_name": "Interment",
+      "power_description": "Put the top 1 card of the targeted player's deck into their graveyard."
+    },
+    "70": {
+      "name": "Morvhaël, Lord of the Veil",
+      "power_name": "Call of the Veil",
+      "power_description": "Create the configured token."
     }
   },
   "es": {
@@ -251,6 +331,86 @@
       "name": "Hayato, Maestro de las Sombras",
       "power_name": "Desaparición Súbita",
       "power_description": "Devuelve una unidad aliada objetivo a la mano de su propietario original."
+    },
+    "54": {
+      "name": "Gran Estratega de los Tres Reinos",
+      "power_name": "Anticipación estratégica",
+      "power_description": "Roba una carta"
+    },
+    "55": {
+      "name": "Borin, Guardián del Primer Filón",
+      "power_name": "Ahorro",
+      "power_description": "Activa Ahorro 1"
+    },
+    "56": {
+      "name": "Ayomidé, la que Habla con las Máscaras",
+      "power_name": "Espiritismo",
+      "power_description": "Invoca un espíritu aleatorio de coste 3 de maná"
+    },
+    "57": {
+      "name": "Keahi, Heredero del Volcán",
+      "power_name": "Arrebato de cólera",
+      "power_description": "Inflige 2 puntos de daño repartidos aleatoriamente entre las unidades enemigas"
+    },
+    "58": {
+      "name": "Orghun, Kan de las Tres Fronteras",
+      "power_name": "Fortificar",
+      "power_description": "La primera criatura de tu mazo, empezando por arriba, obtiene +1 de ATQ y +1 de PV de forma permanente."
+    },
+    "59": {
+      "name": "Orhan, Agá de los Mil Fusiles",
+      "power_name": "Fuego de barrera",
+      "power_description": "Inflige 3 puntos de daño repartidos aleatoriamente entre las unidades enemigas."
+    },
+    "60": {
+      "name": "Federico el Flamboyante",
+      "power_name": "Llamarada",
+      "power_description": "Revela 3 cartas de colección (coste de 8 a 10) y conserva una en la mano. Ganas 10 de maná este turno."
+    },
+    "61": {
+      "name": "Asteria, Primera de las Jinetes",
+      "power_name": "Hermanas de batalla",
+      "power_description": "Revela 3 cartas de la facción Los Reinos Libres del clan Las Guerreras del Viento y conserva una en la mano."
+    },
+    "62": {
+      "name": "Godofredo, Campeón del Sol Invicto",
+      "power_name": "Purificación",
+      "power_description": "Retira hasta 2 cartas del cementerio objetivo."
+    },
+    "63": {
+      "name": "Aldoran, el Primer Despierto",
+      "power_name": "Derrumbe",
+      "power_description": "Inflige 1 punto de daño a todas las criaturas (aliadas Y enemigas)."
+    },
+    "65": {
+      "name": "Caeltharion, Mariscal del Alba",
+      "power_name": "Leva de un ejército",
+      "power_description": "Invoca un Alto Elfo."
+    },
+    "66": {
+      "name": "Grakk, Sargento de la Horda",
+      "power_name": "Reclutamiento",
+      "power_description": "Añade un gemelo goblin a tu mano"
+    },
+    "67": {
+      "name": "Turlin Girapernos",
+      "power_name": "Invención",
+      "power_description": "Añade +1/+1 a tu máquina (0/1 al inicio)"
+    },
+    "68": {
+      "name": "Eirik Rompemurallas",
+      "power_name": "Conquista",
+      "power_description": "Añade 1 a tu Conquista (nivel 3). Al alcanzar el nivel: coge a tu mano 1 carta de entre 3 del mazo rival y el contador vuelve a 0."
+    },
+    "69": {
+      "name": "Malveris, el Arconte del Último Aliento",
+      "power_name": "Sepelio",
+      "power_description": "Coloca las primeras carta(s) del mazo del jugador objetivo en su cementerio."
+    },
+    "70": {
+      "name": "Morvhaël, el Señor del Velo",
+      "power_name": "Llamado del Velo",
+      "power_description": "Crea el token configurado."
     }
   },
   "de": {
@@ -378,6 +538,86 @@
       "name": "Hayato, Meister der Schatten",
       "power_name": "Plötzliches Verschwinden",
       "power_description": "Schicke eine Zielverbündete zurück in die Hand ihres ursprünglichen Besitzers."
+    },
+    "54": {
+      "name": "Großstratege der Drei Königreiche",
+      "power_name": "Strategische Vorausschau",
+      "power_description": "Ziehe eine Karte."
+    },
+    "55": {
+      "name": "Borin, Hüter der Ersten Erzader",
+      "power_name": "Sparsamkeit",
+      "power_description": "Löst Verschonen 1 aus."
+    },
+    "56": {
+      "name": "Ayomidé, Sie, die zu den Masken spricht",
+      "power_name": "Spiritismus",
+      "power_description": "Beschwört einen zufälligen Geist mit Manakosten 3."
+    },
+    "57": {
+      "name": "Keahi, Erbe des Vulkans",
+      "power_name": "Zornesausbruch",
+      "power_description": "Verursacht 2 Schaden, zufällig auf feindliche Einheiten verteilt."
+    },
+    "58": {
+      "name": "Orghun, Khan der Drei Grenzen",
+      "power_name": "Befestigen",
+      "power_description": "Die erste Kreatur in deinem Deck (von oben gezählt) erhält dauerhaft +1 ANG und +1 LP."
+    },
+    "59": {
+      "name": "Orhan, Agha der Tausend Gewehre",
+      "power_name": "Sperrfeuer",
+      "power_description": "Verursacht 3 Schaden, zufällig auf feindliche Einheiten verteilt."
+    },
+    "60": {
+      "name": "Federico der Prächtige",
+      "power_name": "Lodernde Glut",
+      "power_description": "Deckt 3 Sammlerkarten (Kosten 8 bis 10) auf und behält eine davon auf der Hand. Du erhältst in diesem Zug 10 Mana."
+    },
+    "61": {
+      "name": "Asteria, Erste der Reiterinnen",
+      "power_name": "Schlachtschwestern",
+      "power_description": "Deckt 3 Karten der Fraktion Die Freien Königreiche aus dem Clan Die Kriegerinnen des Windes auf und behält eine davon auf der Hand."
+    },
+    "62": {
+      "name": "Gottfried, Champion der unbesiegten Sonne",
+      "power_name": "Läuterung",
+      "power_description": "Entfernt bis zu 2 Karten vom gewählten Friedhof."
+    },
+    "63": {
+      "name": "Aldoran, der Erste Erwachte",
+      "power_name": "Erdrutsch",
+      "power_description": "Verursacht 1 Schaden bei allen Kreaturen (verbündeten UND feindlichen)."
+    },
+    "65": {
+      "name": "Caeltharion, Marschall der Morgenröte",
+      "power_name": "Aufstellung einer Armee",
+      "power_description": "Beschwört einen Hochelfen."
+    },
+    "66": {
+      "name": "Grakk, Feldwebel der Horde",
+      "power_name": "Rekrutierung",
+      "power_description": "Fügt deiner Hand einen Goblin-Zwilling hinzu."
+    },
+    "67": {
+      "name": "Turlin Wirbelbolzen",
+      "power_name": "Erfindung",
+      "power_description": "Gibt deiner Maschine +1/+1 (zu Beginn 0/1)."
+    },
+    "68": {
+      "name": "Eirik Wallbrecher",
+      "power_name": "Eroberung",
+      "power_description": "Erhöht deine Eroberung um 1 (Stufe 3). Bei Erreichen der Stufe: Nimm 1 von 3 Karten aus dem gegnerischen Deck auf die Hand; der Zähler wird auf 0 zurückgesetzt."
+    },
+    "69": {
+      "name": "Malveris, Archont des letzten Atemzugs",
+      "power_name": "Beisetzung",
+      "power_description": "Legt die obersten 1 Karten aus dem Deck des gewählten Spielers auf dessen Friedhof."
+    },
+    "70": {
+      "name": "Morvhaël, Herr des Schleiers",
+      "power_name": "Ruf des Schleiers",
+      "power_description": "Erschafft den konfigurierten Token."
     }
   },
   "it": {
@@ -505,6 +745,86 @@
       "name": "Hayato, Maestro delle Ombre",
       "power_name": "Scomparsa Improvvisa",
       "power_description": "Restituisce un'unità alleata bersaglio alla mano del suo proprietario originale."
+    },
+    "54": {
+      "name": "Grande Stratega dei Tre Regni",
+      "power_name": "Anticipazione strategica",
+      "power_description": "Pesca una carta"
+    },
+    "55": {
+      "name": "Borin, Custode del Primo Filone",
+      "power_name": "Risparmio",
+      "power_description": "Attiva Risparmio 1"
+    },
+    "56": {
+      "name": "Ayomidé, Colei che Parla alle Maschere",
+      "power_name": "Spiritismo",
+      "power_description": "Evoca uno spirito casuale dal costo di 3 mana"
+    },
+    "57": {
+      "name": "Keahi, Erede del Vulcano",
+      "power_name": "Eruzione d'ira",
+      "power_description": "Infligge 2 danni ripartiti casualmente tra le unità nemiche"
+    },
+    "58": {
+      "name": "Orghun, Khan delle Tre Frontiere",
+      "power_name": "Fortificare",
+      "power_description": "La prima creatura del tuo mazzo, a partire dalla cima, ottiene +1 ATT e +1 PV in modo permanente."
+    },
+    "59": {
+      "name": "Orhan, Agha dei Mille Fucili",
+      "power_name": "Fuoco di sbarramento",
+      "power_description": "Infligge 3 danni ripartiti casualmente tra le unità nemiche."
+    },
+    "60": {
+      "name": "Federico il Fiammeggiante",
+      "power_name": "Vampa ardente",
+      "power_description": "Rivela 3 carte da collezione (costo da 8 a 10) e ne tiene una in mano. Ottieni 10 mana questo turno."
+    },
+    "61": {
+      "name": "Asteria, Prima tra le Cavallerizze",
+      "power_name": "Sorelle di battaglia",
+      "power_description": "Rivela 3 carte della fazione I Liberi Regni del clan Le Guerriere del Vento e ne tiene una in mano."
+    },
+    "62": {
+      "name": "Goffredo, Campione del Sole Invitto",
+      "power_name": "Purificazione",
+      "power_description": "Rimuove fino a 2 carte dal cimitero bersaglio."
+    },
+    "63": {
+      "name": "Aldoran, il Primo Risvegliato",
+      "power_name": "Frana",
+      "power_description": "Infligge 1 danno a tutte le creature (alleate E nemiche)."
+    },
+    "65": {
+      "name": "Caeltharion, Maresciallo dell’Alba",
+      "power_name": "Leva di un esercito",
+      "power_description": "Evoca un Alto Elfo."
+    },
+    "66": {
+      "name": "Grakk, Sergente dell’Orda",
+      "power_name": "Reclutamento",
+      "power_description": "Aggiunge alla tua mano un gemello goblin"
+    },
+    "67": {
+      "name": "Turlin Girabullone",
+      "power_name": "Invenzione",
+      "power_description": "Aggiunge +1/+1 alla tua macchina (inizialmente 0/1)"
+    },
+    "68": {
+      "name": "Eirik Spezzabastioni",
+      "power_name": "Conquista",
+      "power_description": "Aggiunge 1 alla tua Conquista (livello 3). Al raggiungimento del livello: prendi in mano 1 carta a scelta tra 3 del mazzo avversario, contatore riportato a 0."
+    },
+    "69": {
+      "name": "Malveris, l’Arconte dell’Ultimo Respiro",
+      "power_name": "Sepoltura",
+      "power_description": "Mette le prime 1 carte del mazzo del giocatore bersaglio nel suo cimitero."
+    },
+    "70": {
+      "name": "Morvhaël, il Signore del Velo",
+      "power_name": "Richiamo del Velo",
+      "power_description": "Crea il token configurato."
     }
   },
   "pt": {
@@ -632,6 +952,86 @@
       "name": "Hayato, Mestre das Sombras",
       "power_name": "Desaparecimento Súbito",
       "power_description": "Retorna uma unidade aliada-alvo para a mão de seu proprietário original."
+    },
+    "54": {
+      "name": "Grande Estrategista dos Três Reinos",
+      "power_name": "Antecipação estratégica",
+      "power_description": "Compre uma carta"
+    },
+    "55": {
+      "name": "Borin, Guardião do Primeiro Veio",
+      "power_name": "Poupança",
+      "power_description": "Ativa Poupança 1"
+    },
+    "56": {
+      "name": "Ayomidé, Aquela que Fala com as Máscaras",
+      "power_name": "Espiritismo",
+      "power_description": "Invoca um espírito aleatório de custo 3 de mana"
+    },
+    "57": {
+      "name": "Keahi, Herdeiro do Vulcão",
+      "power_name": "Erupção de fúria",
+      "power_description": "Causa 2 de dano, distribuído aleatoriamente entre as unidades inimigas"
+    },
+    "58": {
+      "name": "Orghun, Khan das Três Fronteiras",
+      "power_name": "Fortificar",
+      "power_description": "A primeira criatura do seu deck, a partir do topo, ganha +1 de ATK e +1 de PV permanentemente."
+    },
+    "59": {
+      "name": "Orhan, Agá dos Mil Fuzis",
+      "power_name": "Fogo de barragem",
+      "power_description": "Causa 3 de dano, distribuído aleatoriamente entre as unidades inimigas."
+    },
+    "60": {
+      "name": "Federico, o Flamejante",
+      "power_name": "Chama ardente",
+      "power_description": "Revela 3 cartas de coleção (custo 8 a 10) e mantém uma na mão. Ganhe 10 de mana neste turno."
+    },
+    "61": {
+      "name": "Asteria, Primeira das Cavaleiras",
+      "power_name": "Irmãs de batalha",
+      "power_description": "Revela 3 cartas da facção Os Reinos Livres do clã As Guerreiras do Vento e mantém uma na mão."
+    },
+    "62": {
+      "name": "Godofredo, Campeão do Sol Invicto",
+      "power_name": "Purificação",
+      "power_description": "Remove até 2 cartas do cemitério alvo."
+    },
+    "63": {
+      "name": "Aldoran, o Primeiro Desperto",
+      "power_name": "Desmoronamento",
+      "power_description": "Causa 1 de dano a todas as criaturas (aliadas E inimigas)."
+    },
+    "65": {
+      "name": "Caeltharion, Marechal da Alvorada",
+      "power_name": "Convocação de um exército",
+      "power_description": "Invoca um Alto Elfo."
+    },
+    "66": {
+      "name": "Grakk, Sargento da Horda",
+      "power_name": "Recrutamento",
+      "power_description": "Adiciona um gêmeo goblin à sua mão"
+    },
+    "67": {
+      "name": "Turlin Viraboulon",
+      "power_name": "Invenção",
+      "power_description": "Adiciona +1/+1 à sua máquina (0/1 no início)"
+    },
+    "68": {
+      "name": "Eirik Quebra-Muralha",
+      "power_name": "Conquista",
+      "power_description": "Adiciona 1 à sua Conquista (patamar 3). Ao atingir o patamar: pegue na mão 1 carta entre 3 do deck adversário, e o contador volta a 0."
+    },
+    "69": {
+      "name": "Malveris, o Arconte do Último Suspiro",
+      "power_name": "Sepultamento",
+      "power_description": "Coloca as primeiras 1 cartas do deck do jogador alvo no cemitério dele."
+    },
+    "70": {
+      "name": "Morvhaël, o Senhor do Véu",
+      "power_name": "Chamado do Véu",
+      "power_description": "Cria o token configurado."
     }
   },
   "ja": {
@@ -759,6 +1159,86 @@
       "name": "ハヤト、影の達人",
       "power_name": "突然の消滅",
       "power_description": "対象の味方ユニットを、その元の所有者の手札に戻す。"
+    },
+    "54": {
+      "name": "三王国の大軍師",
+      "power_name": "戦略的先読み",
+      "power_description": "カードを1枚引く。"
+    },
+    "55": {
+      "name": "ボリン、最初の鉱脈の守護者",
+      "power_name": "温存",
+      "power_description": "倹約1を発動する。"
+    },
+    "56": {
+      "name": "アヨミデ、仮面と語らう者",
+      "power_name": "降霊術",
+      "power_description": "コスト3マナのランダムな精霊を1体召喚する。"
+    },
+    "57": {
+      "name": "ケアヒ、火山の継承者",
+      "power_name": "怒りの噴出",
+      "power_description": "敵ユニットにランダムに分配して2ダメージを与える。"
+    },
+    "58": {
+      "name": "オルグン、三国境のカン",
+      "power_name": "要塞化",
+      "power_description": "デッキの一番上から数えて最初のクリーチャーが、永続的に+1ATKと+1HPを得る。"
+    },
+    "59": {
+      "name": "オルハン、千挺の銃を率いるアガ",
+      "power_name": "弾幕射撃",
+      "power_description": "敵ユニットにランダムに分配して3ダメージを与える。"
+    },
+    "60": {
+      "name": "華麗なるフェデリコ",
+      "power_name": "燃え立つ輝き",
+      "power_description": "コスト8～10のコレクションカードを3枚公開し、1枚を手札に加える。このターン、10マナを得る。"
+    },
+    "61": {
+      "name": "アステリア、騎兵の長姉",
+      "power_name": "戦場の姉妹",
+      "power_description": "クラン「風の戦姫たち」の派閥「自由王国」のカードを3枚公開し、1枚を手札に加える。"
+    },
+    "62": {
+      "name": "ゴドフロワ、不敗の太陽の勇者",
+      "power_name": "浄化",
+      "power_description": "対象の墓地からカードを最大2枚取り除く。"
+    },
+    "63": {
+      "name": "アルドラン、最初に目覚めし者",
+      "power_name": "崩落",
+      "power_description": "すべてのクリーチャー(味方と敵の両方)に1ダメージを与える。"
+    },
+    "65": {
+      "name": "ケルタリオン、暁の元帥",
+      "power_name": "軍勢招集",
+      "power_description": "ハイエルフを1体召喚する。"
+    },
+    "66": {
+      "name": "グラック、ホードの軍曹",
+      "power_name": "徴募",
+      "power_description": "ゴブリンの双子を1枚手札に加える。"
+    },
+    "67": {
+      "name": "ターリン・ヴィルブーロン",
+      "power_name": "発明",
+      "power_description": "あなたのマシンに+1/+1を加える(初期値は0/1)。"
+    },
+    "68": {
+      "name": "エイリク・ブリズランパール",
+      "power_name": "征服",
+      "power_description": "あなたの征服に1を加える(段階3)。段階に達すると、相手のデッキから3枚の中から1枚を手札に加え、カウンターを0に戻す。"
+    },
+    "69": {
+      "name": "マルヴェリス、終焉の息吹の執政官",
+      "power_name": "埋葬",
+      "power_description": "対象プレイヤーのデッキの上から1枚を墓地に置く。"
+    },
+    "70": {
+      "name": "モルヴァエル、帳の主",
+      "power_name": "帳の呼び声",
+      "power_description": "設定済みのトークンを生成する。"
     }
   },
   "zh": {
@@ -886,6 +1366,86 @@
       "name": "隼人·暗影宗师",
       "power_name": "骤然消隐",
       "power_description": "将目标友方单位返回其原属玩家的手牌。"
+    },
+    "54": {
+      "name": "三王国大战略家",
+      "power_name": "战略预判",
+      "power_description": "抽一张牌"
+    },
+    "55": {
+      "name": "博林,首矿脉守护者",
+      "power_name": "节流",
+      "power_description": "触发节流1"
+    },
+    "56": {
+      "name": "阿约米德,与面具对话者",
+      "power_name": "通灵术",
+      "power_description": "随机召唤一个法力费用为3的灵体"
+    },
+    "57": {
+      "name": "凯阿希,火山的继承者",
+      "power_name": "怒火爆发",
+      "power_description": "随机分配对敌方单位造成2点伤害"
+    },
+    "58": {
+      "name": "奥尔衮,三界汗王",
+      "power_name": "加固",
+      "power_description": "你牌库顶部的第一张生物永久获得+1攻击力和+1生命值。"
+    },
+    "59": {
+      "name": "奥尔汉,千枪阿迦",
+      "power_name": "弹幕齐射",
+      "power_description": "随机分配对敌方单位造成3点伤害。"
+    },
+    "60": {
+      "name": "“华彩”费德里科",
+      "power_name": "烈焰绽放",
+      "power_description": "展示3张收藏卡(费用8至10),并将其中一张留在手牌中。本回合获得10点法力。"
+    },
+    "61": {
+      "name": "阿斯忒里亚,骑士之首",
+      "power_name": "战斗姐妹",
+      "power_description": "展示3张属于“自由王国”阵营、“风之女武神”氏族的卡牌,并将其中一张留在手牌中。"
+    },
+    "62": {
+      "name": "戈德弗鲁瓦,不败太阳的勇士",
+      "power_name": "净化",
+      "power_description": "从目标墓地中移除至多2张牌。"
+    },
+    "63": {
+      "name": "奥尔多然,第一位觉醒者",
+      "power_name": "山崩",
+      "power_description": "对所有生物(友方和敌方)造成1点伤害。"
+    },
+    "65": {
+      "name": "凯尔萨里翁,黎明元帅",
+      "power_name": "召集大军",
+      "power_description": "召唤一名高等精灵。"
+    },
+    "66": {
+      "name": "格拉克,兽群中士",
+      "power_name": "征募",
+      "power_description": "将一张哥布林双子牌加入你的手牌"
+    },
+    "67": {
+      "name": "图林·转栓",
+      "power_name": "发明",
+      "power_description": "为你的机械增加+1/+1(初始为0/1)"
+    },
+    "68": {
+      "name": "艾里克·破垒",
+      "power_name": "征服",
+      "power_description": "使你的征服值+1(阈值3)。达到阈值时:从对手牌库的3张牌中选择1张加入手牌,计数器归零。"
+    },
+    "69": {
+      "name": "马尔维里斯,终息执政官",
+      "power_name": "入土",
+      "power_description": "将目标玩家牌库顶部的1张牌置入其墓地。"
+    },
+    "70": {
+      "name": "莫尔瓦埃尔,帷幕之主",
+      "power_name": "帷幕的呼唤",
+      "power_description": "创建已配置的衍生物。"
     }
   },
   "ru": {

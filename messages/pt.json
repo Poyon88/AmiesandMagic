@@ -271,7 +271,7 @@
       "corruption": {
         "label": "Corrupção X",
         "desc": "Converte uma unidade inimiga de custo ≤ X para o seu lado até o fim do turno; ela ganha Perseguição.",
-        "desc_any": "Converte a unidade inimiga selecionada para o seu lado até o fim do turno; ela ganha Rastreamento até o fim do turno."
+        "desc_any": "Converte a unidade inimiga selecionada para o seu lado até o fim do turno; ela ganha Perseguição até o fim do turno."
       },
       "carnage": {
         "label": "Carnificina X",
@@ -312,7 +312,7 @@
       },
       "souffle_de_feu": {
         "label": "Bafo de fogo X",
-        "desc": "Inflige X de dano a todas as unidades inimigas ao atacar (ex: Sopro de Fogo 2 = 2 de dano)."
+        "desc": "Inflige X de dano a todas as unidades inimigas ao atacar (ex: Bafo de fogo 2 = 2 de dano)."
       },
       "domination": {
         "label": "Dominação X",
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "Licantropia X",
-        "desc": "Transforma-se em {lycanthrope} com Rastreio."
+        "desc": "Transforma-se em {lycanthrope} com Perseguição."
       },
       "relancer": {
         "label": "Relançar X",
@@ -833,7 +833,7 @@
         "desc": "Compre X cartas"
       },
       "remontee": {
-        "label": "Retorno X",
+        "label": "Reviravolta X",
         "desc": "Devolve X unidade(s) ou objeto(s) alvo à mão de seu dono original."
       },
       "entrainement": {
@@ -2247,7 +2247,7 @@
         "remontee": "Devolve {cibles} à mão de seu proprietário original.",
         "malediction": "Amaldiçoa {cibles} de custo ≤ X: elas são exiladas no final do próximo turno do adversário.",
         "malediction_any": "Amaldiçoa {cibles}: elas são exiladas ao final do próximo turno adversário.",
-        "corruption": "Converte {cibles} de custo ≤ X para o seu lado até o fim do turno, dentro do limite de vagas; elas ganham Caça.",
+        "corruption": "Converte {cibles} de custo ≤ X para o seu lado até o fim do turno, dentro do limite de vagas; elas ganham Perseguição.",
         "corruption_any": "Converte {cibles} para o seu lado até o final do turno, dentro do limite de espaços; elas ganham Perseguição.",
         "domination": "Assume o controle de {cibles} de custo ≤ X, dentro do limite de vagas.",
         "domination_any": "Assume o controle de {cibles}, dentro do limite de espaços.",
@@ -2270,7 +2270,7 @@
         "retour_differe": "Coloca {cibles} de custo ≤ X embaixo do deck de seu dono.",
         "retour_differe_any": "Coloca {cibles} sob o deck de seu proprietário.",
         "remontee": "Devolve {cibles} à mão de seu proprietário original.",
-        "corruption": "Converte {cibles} com custo ≤ X para o seu lado até o fim do turno, dentro do limite de espaços; elas ganham Rastreio.",
+        "corruption": "Converte {cibles} com custo ≤ X para o seu lado até o fim do turno, dentro do limite de espaços; elas ganham Perseguição.",
         "corruption_any": "Converte {cibles} para o seu lado até o final do turno, dentro do limite de espaços; elas ganham Perseguição.",
         "domination": "Assume o controle de {cibles} com custo ≤ X, dentro do limite de espaços.",
         "domination_any": "Assume o controle de {cibles}, dentro do limite de espaços.",
@@ -2405,7 +2405,7 @@
     "f2_title": "Um máximo de cartas desde o início.",
     "f2_desc": "Obtenha gratuitamente todas as cartas clássicas da facção de sua escolha (mais de 300 cartas). Tenha acesso a todas as facções (cerca de 2.500 cartas) por uma fração do custo de um TCG clássico.",
     "f3_title": "Cada deck Expert, uma obra única.",
-    "f3_desc": "As cartas em edição limitada tornam cada deck Expert singular. A cota comum garante que só a sua estratégia decide.",
+    "f3_desc": "As cartas em edição limitada tornam cada deck Expert singular. A edição comum garante que só a sua estratégia decide.",
     "f_icons_title": "Legíveis num relance.",
     "f_icons_desc": "Ilustradas com esmero, as cartas de Armies of Legends são tão belas quanto legíveis: graças a um código de ícones coloridos próprio de cada gatilho, você entende o efeito delas num simples relance, sem sequer ler o texto.",
     "f4_title": "A arena mobile, finalmente à altura.",
@@ -3256,8 +3256,8 @@
     "power_usage_limit": "Limite: {limit}× máx",
     "hero_starting_hp": "{hp} PV iniciais",
     "power_close_hint": "Esc ou clique fora da área para fechar",
-    "divination_traque_title": "🔮 Rastreio do destino",
-    "divination_title": "🔍 Adivinhação",
+    "divination_traque_title": "🔮 Caça ao destino",
+    "divination_title": "🔍 Divinação",
     "divination_traque_subtitle": "Escolha a carta para colocar na mão. As outras irão para baixo do deck.",
     "divination_subtitle": "Escolha a carta a colocar no topo do seu deck",
     "graveyard_select_prompt": "Escolha uma carta do cemitério",
@@ -3342,7 +3342,7 @@
     "presage_subtitle": "Qual é a primeira carta do seu deck?",
     "presage_hit": "Bem visto — ela junta-se à sua mão.",
     "presage_miss": "Falhou. A carta certa está a verde.",
-    "apprentissage_title": "📖 Aprendizagem",
+    "apprentissage_title": "📖 Aprendizado",
     "apprentissage_subtitle": "Qual ação a criatura deve memorizar?",
     "foi_title": "✨ Fé",
     "foi_subtitle": "Escolha uma carta para a sua mão. O seu custo é deduzido da sua Fé; o resto é conservado.",

@@ -22,7 +22,7 @@
         "desc": "召喚後即可攻擊敵方生物(但不能攻擊英雄)。"
       },
       "convocations_multiples": {
-        "label": "多重召喚",
+        "label": "多重徵召",
         "desc": "創造{tokens}。"
       },
       "loyaute": {
@@ -70,7 +70,7 @@
         "desc": "每回合可攻擊兩次。"
       },
       "augure": {
-        "label": "預兆",
+        "label": "徵兆",
         "desc": "此單位對敵方英雄造成傷害時,你抽一張牌。"
       },
       "benediction": {
@@ -533,7 +533,7 @@
         "desc": "你手牌中{faction_de}的生物獲得 +X/+X。"
       },
       "fortifier": {
-        "label": "強化 +X/+Y",
+        "label": "鞏固 +X/+Y",
         "desc": "你牌組中從頂端數來第一張生物永久獲得 +X 攻擊力與 +Y 生命值。"
       },
       "preincanter": {
@@ -629,7 +629,7 @@
         "desc": "取消對手接下來的 X 次單位召喚。"
       },
       "convocation_simple": {
-        "label": "召喚",
+        "label": "召集",
         "desc": "創造 {token}。"
       },
       "seuil_colere": {
@@ -841,7 +841,7 @@
         "desc": "使你手牌中{faction_de}生物獲得 +X/+X。"
       },
       "fortifier": {
-        "label": "強化 +X/+Y",
+        "label": "鞏固 +X/+Y",
         "desc": "你牌庫中從頂部數起的第一個生物永久獲得 +X 攻擊力與 +Y 生命值。"
       },
       "preincanter": {
@@ -857,7 +857,7 @@
         "desc": "召喚 {invocations}。"
       },
       "invocation_multiple": {
-        "label": "多重召集",
+        "label": "多重徵召",
         "desc": "創造 {tokens}。"
       },
       "tempete": {
@@ -3235,7 +3235,7 @@
     "action_confirm": "確認",
     "action_close": "關閉",
     "card_count": "{count, plural, one {# 張卡牌} other {# 張卡牌}}",
-    "selection_title": "🎴 選擇",
+    "selection_title": "🎴 精選",
     "selection_subtitle": "選擇一張卡牌加入你的手牌",
     "discovery_title": "🔭 發現",
     "discovery_subtitle": "本回合的抽牌:請選擇一張卡牌",
@@ -3256,7 +3256,7 @@
     "power_usage_limit": "上限:最多 {limit} 次",
     "hero_starting_hp": "初始生命值 {hp}",
     "power_close_hint": "按 Esc 或點擊區域外即可關閉",
-    "divination_traque_title": "🔮 命運追尋",
+    "divination_traque_title": "🔮 命運追獵",
     "divination_title": "🔍 占卜",
     "divination_traque_subtitle": "選擇一張加入手牌,其餘的將放到牌組底部。",
     "divination_subtitle": "選擇一張卡牌放到你的牌組頂端",
@@ -3386,8 +3386,8 @@
     "mutation_pick_subtitle": "選擇這隻生物所傳承的能力",
     "mutation_empty": "此費用下沒有可用的生物。",
     "mutation_cancel": "取消",
-    "infestation_caption": "🪳 蟲害",
-    "infestation_eclosion_caption": "🪳 蟲害 — 孵化",
+    "infestation_caption": "🪳 侵蝕",
+    "infestation_eclosion_caption": "🪳 侵蝕 — 孵化",
     "enterrement_caption": "⚰ 掩埋"
   },
   "tutorial": {
@@ -3634,7 +3634,7 @@
     "costs": "額外費用",
     "cost_life": "生命值",
     "cost_discard": "棄牌",
-    "cost_sacrifice": "犧牲",
+    "cost_sacrifice": "獻祭",
     "cost_exile": "放逐",
     "cost_topdeck": "回置",
     "cost_retreat": "撤退",

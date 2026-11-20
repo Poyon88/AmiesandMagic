@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "Canto",
-        "desc": "Tus acciones con Cántico se ven reforzadas mientras esta unidad esté en juego."
+        "desc": "Tus acciones con Canto se ven reforzadas mientras esta unidad esté en juego."
       },
       "lune": {
         "label": "Luna X",
@@ -177,7 +177,7 @@
       },
       "malediction": {
         "label": "Maldición X",
-        "desc": "Elige una unidad enemiga de coste ≤ X; es exiliada al final del próximo turno del adversario.",
+        "desc": "Elige una unidad enemiga de coste ≤ X; es exiliada al final del próximo turno del adversario",
         "desc_any": "Elige una unidad enemiga; será exiliada al final del próximo turno rival."
       },
       "necrophagie": {
@@ -270,7 +270,7 @@
       },
       "corruption": {
         "label": "Corrupción X",
-        "desc": "Convierte a una unidad enemiga de coste ≤ X a tu bando hasta el final del turno; gana Acoso.",
+        "desc": "Convierte a una unidad enemiga de coste ≤ X a tu bando hasta el final del turno; gana Acecho.",
         "desc_any": "Convierte la unidad enemiga seleccionada a tu bando hasta el final del turno; gana Acecho hasta el final del turno."
       },
       "carnage": {
@@ -638,7 +638,7 @@
       },
       "chant": {
         "label": "Canto X",
-        "desc": "Si controlas una criatura con Cántico, todos los valores de esta acción aumentan en X."
+        "desc": "Si controlas una criatura con Canto, todos los valores de esta acción aumentan en X."
       },
       "lune": {
         "label": "Luna X",
@@ -659,7 +659,7 @@
       },
       "corruption": {
         "label": "Corrupción X",
-        "desc": "Convierte a la unidad enemiga objetivo de coste ≤ X a tu bando hasta el final del turno; gana Acoso.",
+        "desc": "Convierte a la unidad enemiga objetivo de coste ≤ X a tu bando hasta el final del turno; gana Acecho.",
         "desc_any": "Convierte a la unidad enemiga objetivo a tu bando hasta el final del turno; gana Acecho."
       },
       "domination": {
@@ -2247,7 +2247,7 @@
         "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
         "malediction": "Maldice a {cibles} de coste ≤ X: son exiliadas al final del próximo turno del adversario.",
         "malediction_any": "Maldice a {cibles}: son exiliadas al final del próximo turno del adversario.",
-        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; obtienen Acoso.",
+        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; obtienen Acecho.",
         "corruption_any": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
         "domination": "Toma el control de {cibles} de coste ≤ X, dentro del límite de espacios.",
         "domination_any": "Toma el control de {cibles}, dentro del límite de espacios.",
@@ -2270,7 +2270,7 @@
         "retour_differe": "Coloca {cibles} de coste ≤ X debajo del mazo de su propietario.",
         "retour_differe_any": "Coloca a {cibles} bajo el mazo de su propietario.",
         "remontee": "Devuelve a {cibles} a la mano de su propietario original.",
-        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acoso.",
+        "corruption": "Convierte a {cibles} de coste ≤ X a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
         "corruption_any": "Convierte a {cibles} a tu bando hasta el final del turno, dentro del límite de espacios; ganan Acecho.",
         "domination": "Toma el control de {cibles} de coste ≤ X, dentro del límite de espacios.",
         "domination_any": "Toma el control de {cibles}, dentro del límite de espacios.",
@@ -2405,7 +2405,7 @@
     "f2_title": "Un máximo de cartas desde el principio.",
     "f2_desc": "Obtén gratis el conjunto de cartas clásicas de la facción que elijas (más de 300 cartas). Dispón de todas las facciones (unas 2500 cartas) por una fracción del coste de un TCG clásico.",
     "f3_title": "Cada mazo Experto, una obra única.",
-    "f3_desc": "Las cartas de edición limitada hacen que cada mazo Experto sea singular. El cupo común garantiza que solo tu estrategia decida.",
+    "f3_desc": "Las cartas de edición limitada hacen que cada mazo Experto sea singular. La edición común garantiza que solo tu estrategia decida.",
     "f_icons_title": "Legibles de un vistazo.",
     "f_icons_desc": "Ilustradas con esmero, las cartas de Armies of Legends son tan bellas como legibles: gracias a un código de iconos de colores propio de cada desencadenante, entiendes su efecto de un simple vistazo, sin siquiera leer el texto.",
     "f4_title": "La arena móvil, por fin a la altura.",
@@ -3256,7 +3256,7 @@
     "power_usage_limit": "Límite: {limit}× máx.",
     "hero_starting_hp": "{hp} PV iniciales",
     "power_close_hint": "Esc o clic fuera del área para cerrar",
-    "divination_traque_title": "🔮 Rastreo del destino",
+    "divination_traque_title": "🔮 Acecho del destino",
     "divination_title": "🔍 Adivinación",
     "divination_traque_subtitle": "Elige la carta que tomarás en mano. Las demás irán bajo el mazo.",
     "divination_subtitle": "Elige la carta que colocarás en la cima de tu mazo",

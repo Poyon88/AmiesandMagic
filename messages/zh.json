@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "精准",
-        "desc": "无视抗性、护甲、护盾以及虚灵上限。"
+        "desc": "无视抗性、护甲、圣盾以及虚灵上限。"
       },
       "drain_de_vie": {
         "label": "生命汲取",
@@ -91,7 +91,7 @@
       },
       "chant": {
         "label": "咏唱",
-        "desc": "只要此单位在场，你拥有\"吟唱\"的行动便会得到强化。"
+        "desc": "只要此单位在场，你拥有\"咏唱\"的行动便会得到强化。"
       },
       "lune": {
         "label": "月 X",
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "狼人变身 X",
-        "desc": "变身为拥有追踪的{lycanthrope}。"
+        "desc": "变身为拥有追猎的{lycanthrope}。"
       },
       "relancer": {
         "label": "重铸 X",
@@ -606,7 +606,7 @@
       },
       "precision": {
         "label": "精准",
-        "desc": "此行动造成的伤害无视抗性、护甲和护盾。"
+        "desc": "此行动造成的伤害无视抗性、护甲和圣盾。"
       },
       "poison": {
         "label": "中毒",
@@ -638,7 +638,7 @@
       },
       "chant": {
         "label": "咏唱 X",
-        "desc": "如果你控制一个拥有\"吟唱\"的生物，此行动的所有数值都提高X。"
+        "desc": "如果你控制一个拥有\"咏唱\"的生物，此行动的所有数值都提高X。"
       },
       "lune": {
         "label": "月 X",
@@ -3235,7 +3235,7 @@
     "action_confirm": "确认",
     "action_close": "关闭",
     "card_count": "{count, plural, one {# 张牌} other {# 张牌}}",
-    "selection_title": "🎴 选牌",
+    "selection_title": "🎴 抉择",
     "selection_subtitle": "选择一张牌加入手牌",
     "discovery_title": "🔭 发现",
     "discovery_subtitle": "本回合你的抽牌：请选择一张牌",
@@ -3313,11 +3313,11 @@
     "convocation_create_one_named": "创造一个{token}衍生物",
     "convocation_none": "无token",
     "convocation_and": "{a} 和 {b}",
-    "spell_countered": "🛡️ 反制！",
+    "spell_countered": "🛡️ 反制法术！",
     "draw_trigger_self": "🃏 效果在你抽牌时触发",
     "draw_trigger_opponent": "🃏 效果在对手抽牌时触发",
-    "faveur_self": "🎁 恩惠——一张卡牌已加入你的手牌",
-    "faveur_opponent": "🎁 恩惠——一张卡牌已加入对手的手牌",
+    "faveur_self": "🎁 恩宠——一张卡牌已加入你的手牌",
+    "faveur_opponent": "🎁 恩宠——一张卡牌已加入对手的手牌",
     "spell_grant_all_allies": " · 对所有友方单位",
     "spell_grant_target": " · 对目标生物",
     "fire_breath_label": "烈焰吐息",
@@ -3342,7 +3342,7 @@
     "presage_subtitle": "哪一张是您牌库的第一张卡？",
     "presage_hit": "猜对了——它将进入您的手牌。",
     "presage_miss": "猜错了。正确的卡以绿色标出。",
-    "apprentissage_title": "📖 学习",
+    "apprentissage_title": "📖 修习",
     "apprentissage_subtitle": "该单位应记住哪个行动？",
     "foi_title": "✨ 信仰",
     "foi_subtitle": "选择一张牌加入手牌。其费用将从你的信仰中扣除，其余保留。",

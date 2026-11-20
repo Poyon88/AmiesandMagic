@@ -38,6 +38,9 @@ const LANG = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "P
 const MODEL = "claude-sonnet-5-5";
 
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+// --missing : ne traduit que les entrées absentes du fichier, sans retoucher
+// les traductions déjà en place (un nom déjà vu par les joueurs ne change pas).
+const MISSING = process.argv.includes("--missing");
 const locales = onlyArg ? onlyArg.slice(7).split(",").map((s) => s.trim()).filter((l) => TARGETS.includes(l)) : TARGETS;
 
 // ─── fetch heroes ────────────────────────────────────────────────────────────
@@ -116,11 +119,14 @@ let result = {};
 try { result = JSON.parse(fs.readFileSync(OUT, "utf8")); } catch { result = {}; }
 
 for (const locale of locales) {
-  const byId = {};
+  const deja = MISSING ? (result[locale] ?? {}) : {};
+  const cibles = heroes.filter((h) => !deja[h.id]);
+  if (cibles.length === 0) { console.log(`[${locale}] rien à traduire`); continue; }
+  const byId = { ...deja };
   for (const field of ["name", "power_name", "power_description"]) {
-    const rows = heroes.filter((h) => h[field]).map((h) => ({ id: h.id, text: h[field] }));
+    const rows = cibles.filter((h) => h[field]).map((h) => ({ id: h.id, text: h[field] }));
     const map = await translateField(rows, field, locale);
-    for (const h of heroes) {
+    for (const h of cibles) {
       const v = map.get(h.id);
       if (v) (byId[h.id] ??= {})[field] = v;
     }

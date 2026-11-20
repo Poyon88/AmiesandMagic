@@ -65,3 +65,6 @@ Armies-and-Magic-Capacites.pdf
 # bande-annonce (projet Remotion)
 /video/node_modules
 /video/out
+
+# Rapports de scripts/review-vocab-consistency.mjs
+.i18n-review/

@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "İsabet",
-        "desc": "Direnci, Zırhı, Kalkanı ve Hayalet sınırını yok sayar."
+        "desc": "Direnci, Zırhı, Kalkanı ve Ruhani sınırını yok sayar."
       },
       "drain_de_vie": {
         "label": "Can Emme",
@@ -70,7 +70,7 @@
         "desc": "Tur başına iki kez saldırabilir."
       },
       "augure": {
-        "label": "Kehanet",
+        "label": "Kâhin",
         "desc": "Bu birim rakip kahramana hasar verdiğinde bir kart çekersiniz."
       },
       "benediction": {
@@ -249,7 +249,7 @@
         "desc": "Bir müttefiki yok et; canını ve SAL değerini kalıcı olarak kazan."
       },
       "malefice": {
-        "label": "Lanet",
+        "label": "Uğursuzluk",
         "desc": "Öldüğünde tüm birimlere (müttefik ve düşman) X hasar verir, X = SAL değeri."
       },
       "synergie": {
@@ -270,8 +270,8 @@
       },
       "corruption": {
         "label": "Yozlaşma X",
-        "desc": "Maliyeti ≤ X olan bir düşman birimini turun sonuna kadar senin tarafına geçirir; birim Takip kazanır.",
-        "desc_any": "Seçilen düşman birimini turun sonuna kadar senin tarafına geçirir; birim turun sonuna kadar Takip kazanır."
+        "desc": "Maliyeti ≤ X olan bir düşman birimini turun sonuna kadar senin tarafına geçirir; birim Av kazanır.",
+        "desc_any": "Seçilen düşman birimini turun sonuna kadar senin tarafına geçirir; birim turun sonuna kadar Av kazanır."
       },
       "carnage": {
         "label": "Kıyım X",
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "Likantropi X",
-        "desc": "İz Sürme yeteneğine sahip {lycanthrope} formuna dönüşür."
+        "desc": "Av yeteneğine sahip {lycanthrope} formuna dönüşür."
       },
       "relancer": {
         "label": "Yeniden At X",
@@ -459,7 +459,7 @@
         "desc": "Daha önce tetiklediğiniz her Birlik Ruhu için rastgele +1 SLD veya +1 CAN kazanır."
       },
       "presage": {
-        "label": "Kehanet",
+        "label": "Alamet",
         "desc": "Destenin üstündeki 3 kartı karışık sırayla gösterir; en üsttekini seçip ele alın, ardından desteyi karıştırın."
       },
       "apprentissage": {
@@ -476,7 +476,7 @@
         "desc": "X kart çek."
       },
       "afflux": {
-        "label": "Akın X",
+        "label": "Mana Seli X",
         "desc": "Bu tur X mana kazan."
       },
       "epargne": {
@@ -533,7 +533,7 @@
         "desc": "Eldeki {faction_de} yaratıklarına +X/+X verir."
       },
       "fortifier": {
-        "label": "Güçlendirme +X/+Y",
+        "label": "Tahkim +X/+Y",
         "desc": "Destenin en üstünden başlayarak ilk yaratık kalıcı olarak +X ATK ve +Y CAN kazanır."
       },
       "preincanter": {
@@ -659,8 +659,8 @@
       },
       "corruption": {
         "label": "Yozlaşma X",
-        "desc": "Maliyeti ≤ X olan hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; İz Sürme kazanır.",
-        "desc_any": "Hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; İz Sürme kazanır."
+        "desc": "Maliyeti ≤ X olan hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; Av kazanır.",
+        "desc_any": "Hedef düşman birimini turun sonuna kadar sizin tarafınıza geçirir; Av kazanır."
       },
       "domination": {
         "label": "Hükmetme X",
@@ -730,7 +730,7 @@
         "desc_any": "Koleksiyonunuzdan ({alignment}) X rastgele aksiyonu rastgele hedeflerle oynar"
       },
       "invocation": {
-        "label": "Çağrı X",
+        "label": "Tasarlama X",
         "desc": "Koleksiyonunuzdan ({alignment}, mevcut format) bedeli X olan rastgele bir yaratık çağırır.",
         "desc_any": "Koleksiyonunuzdan ({alignment}, mevcut format) rastgele bir yaratık çağırır"
       },
@@ -800,7 +800,7 @@
         "desc": "Destenizin altındaki X karta bakın; birini en üste yerleştirin."
       },
       "presage": {
-        "label": "Kehanet",
+        "label": "Alamet",
         "desc": "Destenin üstündeki 3 kartı karışık sırada gösterir; üstteki kartı belirleyip ele alın, ardından desteyi karıştırın."
       },
       "retour_differe": {
@@ -833,7 +833,7 @@
         "desc": "X kart çekin."
       },
       "remontee": {
-        "label": "Geri Çağırma X",
+        "label": "Geri Dönüş X",
         "desc": "Hedef alınan X birimi veya eşyayı asıl sahibinin eline geri gönderir."
       },
       "entrainement": {
@@ -841,7 +841,7 @@
         "desc": "Elinizdeki {faction_de} yaratıklarınıza +X/+X verir."
       },
       "fortifier": {
-        "label": "Güçlendirme +X/+Y",
+        "label": "Tahkim +X/+Y",
         "desc": "Destenizin en üstünden başlayarak ilk yaratık kalıcı olarak +X SLD ve +Y CAN kazanır."
       },
       "preincanter": {
@@ -869,7 +869,7 @@
         "desc": "Tüm yaratıklara X hasar verir (müttefik VE düşman)."
       },
       "afflux": {
-        "label": "Akın X",
+        "label": "Mana Seli X",
         "desc": "Bu tur X mana kazanın"
       },
       "compagnons": {
@@ -2180,7 +2180,7 @@
       "ability": "bir yetenek",
       "scope": "bir müttefik birime (veya tümüne)",
       "scope_target": "bir müttefik birime",
-      "edc_compte": "Rastgele +1 SLD veya +1 CAN kazanır, bunu {n} kez yapar (daha önce tetiklediğiniz her Takım Ruhu için 1).",
+      "edc_compte": "Rastgele +1 SLD veya +1 CAN kazanır, bunu {n} kez yapar (daha önce tetiklediğiniz her Birlik Ruhu için 1).",
       "usurpation_actuel": "Oynanan rakip kartları: {n} — şu an +{x}/+{y}.",
       "scope_all": "tüm birimlerinize",
       "machine_part": " ve {ability}",
@@ -2247,8 +2247,8 @@
         "remontee": "{cibles} ilk sahiplerinin eline geri gönderir.",
         "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
         "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
-        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
-        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
+        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
         "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "benediction": "{cibles} tamamen iyileştirir.",
@@ -2270,8 +2270,8 @@
         "retour_differe": "Maliyeti ≤ X olan {cibles} sahiplerinin destesinin altına yerleştirir.",
         "retour_differe_any": "{cibles} sahiplerinin destesinin altına yerleştirir.",
         "remontee": "{cibles} ilk sahiplerinin eline geri gönderir.",
-        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
-        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar İz Sürme kazanır.",
+        "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
+        "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
         "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "benediction": "{cibles} tamamen iyileştirir.",
@@ -3256,7 +3256,7 @@
     "power_usage_limit": "Sınır: en fazla {limit}×",
     "hero_starting_hp": "Başlangıç canı: {hp}",
     "power_close_hint": "Kapatmak için Esc tuşuna bas veya alanın dışına tıkla",
-    "divination_traque_title": "🔮 Kaderin İzi",
+    "divination_traque_title": "🔮 Kader Avı",
     "divination_title": "🔍 Kehanet",
     "divination_traque_subtitle": "Ele alacağın kartı seç. Diğerleri destenin altına gidecek.",
     "divination_subtitle": "Çekme destenin üstüne koyacağın kartı seç",
@@ -3313,7 +3313,7 @@
     "convocation_create_one_named": "Bir {token} tokeni oluşturur",
     "convocation_none": "token yok",
     "convocation_and": "{a} ve {b}",
-    "spell_countered": "🛡️ Karşı büyü!",
+    "spell_countered": "🛡️ Karşı Aksiyon!",
     "draw_trigger_self": "🃏 Çektiğiniz kartla efekt tetiklendi",
     "draw_trigger_opponent": "🃏 Rakibin çektiği kartla efekt tetiklendi",
     "faveur_self": "🎁 Lütuf — kart elinize eklendi",
@@ -3338,7 +3338,7 @@
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · ele dönüş",
     "mode_suffix_end_of_turn": " · tur sonu",
-    "presage_title": "🌙 Kehanet",
+    "presage_title": "🌙 Alamet",
     "presage_subtitle": "Destenizin ilk kartı hangisi?",
     "presage_hit": "Güzel tahmin — kart elinize katıldı.",
     "presage_miss": "Iskalandı. Doğru kart yeşil renkte.",
@@ -3388,7 +3388,7 @@
     "mutation_cancel": "İptal",
     "infestation_caption": "🪳 Istila",
     "infestation_eclosion_caption": "🪳 Istila — yumurtadan çıkış",
-    "enterrement_caption": "⚰ Gömülme"
+    "enterrement_caption": "⚰ Gömme"
   },
   "tutorial": {
     "page_eyebrow": "Düello sanatını öğren",

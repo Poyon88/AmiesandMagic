@@ -38,6 +38,9 @@ const LANG = { en: "English", es: "Spanish", de: "German", it: "Italian", pt: "P
 const MODEL = "claude-sonnet-5-5";
 
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+// --missing : ne traduit que les entrées absentes du fichier, sans retoucher
+// les traductions déjà en place (un nom déjà vu par les joueurs ne change pas).
+const MISSING = process.argv.includes("--missing");
 const locales = onlyArg ? onlyArg.slice(7).split(",").map((s) => s.trim()).filter((l) => TARGETS.includes(l)) : TARGETS;
 
 // ─── fetch boards ────────────────────────────────────────────────────────────
@@ -109,14 +112,17 @@ try { result = JSON.parse(fs.readFileSync(OUT, "utf8")); } catch { result = {}; 
 
 const rows = boards.filter((b) => b.name).map((b) => ({ id: b.id, name: b.name }));
 for (const locale of locales) {
-  const map = await translateNames(rows, locale);
-  const byId = {};
+  const deja = MISSING ? (result[locale] ?? {}) : {};
+  const aFaire = rows.filter((r) => !deja[r.id]);
+  if (aFaire.length === 0) { console.log(`[${locale}] rien à traduire`); continue; }
+  const map = await translateNames(aFaire, locale);
+  const byId = { ...deja };
   for (const b of boards) {
     const v = map.get(b.id);
     if (v) byId[b.id] = { name: v };
   }
   result[locale] = byId;
-  console.log(`[${locale}] ✓ ${map.size}/${rows.length}`);
+  console.log(`[${locale}] ✓ ${map.size}/${aFaire.length}`);
 }
 
 fs.writeFileSync(OUT, JSON.stringify(result, null, 2) + "\n");

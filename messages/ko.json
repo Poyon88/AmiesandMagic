@@ -22,7 +22,7 @@
         "desc": "소환 즉시 적 크리처를 공격할 수 있습니다 (영웅은 제외)."
       },
       "convocations_multiples": {
-        "label": "다중 소환",
+        "label": "다중 소집",
         "desc": "{tokens}을(를) 생성합니다."
       },
       "loyaute": {
@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "정밀",
-        "desc": "저항, 방어구, 보호막, 에테리얼 상한을 무시합니다."
+        "desc": "저항, 방어구, 보호막, 영체 상한을 무시합니다."
       },
       "drain_de_vie": {
         "label": "생명력 흡수",
@@ -70,7 +70,7 @@
         "desc": "턴당 두 번 공격할 수 있습니다."
       },
       "augure": {
-        "label": "전조",
+        "label": "징조",
         "desc": "이 유닛이 적 영웅에게 피해를 입히면 카드를 한 장 뽑습니다."
       },
       "benediction": {
@@ -102,7 +102,7 @@
         "desc": "이번 턴에 처음 사용한 카드라면 모든 수치가 영구적으로 X 증가합니다."
       },
       "rappel": {
-        "label": "소환 X",
+        "label": "귀환 X",
         "desc": "비용이 X 이하인 대상 카드 한 장을 묘지에서 손으로 되돌립니다.",
         "desc_any": "대상 카드 한 장을 묘지에서 손으로 되돌립니다."
       },
@@ -139,7 +139,7 @@
         "desc": "상대의 액션이나 유닛 능력의 대상이 될 수 없습니다."
       },
       "canalisation": {
-        "label": "집중",
+        "label": "마력 유도",
         "desc": "이 유닛이 필드에 있는 동안 내 액션의 비용이 마나 1 감소합니다(최소 1)."
       },
       "contresort": {
@@ -249,7 +249,7 @@
         "desc": "아군 하나를 파괴하여 그 체력과 공격력을 영구적으로 얻습니다."
       },
       "malefice": {
-        "label": "저주",
+        "label": "액운",
         "desc": "죽을 때 모든 유닛(아군과 적)에게 X의 피해를 줍니다. X = 이 유닛의 공격력."
       },
       "synergie": {
@@ -270,8 +270,8 @@
       },
       "corruption": {
         "label": "타락 X",
-        "desc": "비용이 X 이하인 적 유닛 하나를 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 추적을 얻습니다.",
-        "desc_any": "선택한 적 유닛을 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 턴 종료까지 추적을 얻습니다."
+        "desc": "비용이 X 이하인 적 유닛 하나를 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 추격을 얻습니다.",
+        "desc_any": "선택한 적 유닛을 턴 종료까지 내 편으로 전향시킵니다. 해당 유닛은 턴 종료까지 추격을 얻습니다."
       },
       "carnage": {
         "label": "대학살 X",
@@ -286,7 +286,7 @@
         "desc": "대상으로 지정한 유닛의 모든 능력을 복사하여 이 유닛에게 영구적으로 부여합니다."
       },
       "metamorphose": {
-        "label": "변신",
+        "label": "탈바꿈",
         "desc": "이 유닛은 대상으로 지정한 유닛(공격력 / 체력 / 능력)의 완전한 복사본이 됩니다."
       },
       "dedoublement": {
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "수인화 X",
-        "desc": "추적을 지닌 {lycanthrope}(으)로 변신합니다."
+        "desc": "추격을 지닌 {lycanthrope}(으)로 변신합니다."
       },
       "relancer": {
         "label": "재발동 X",
@@ -476,7 +476,7 @@
         "desc": "카드를 X장 뽑습니다."
       },
       "afflux": {
-        "label": "쇄도 X",
+        "label": "마력 유입 X",
         "desc": "이번 턴에 마나를 X 얻습니다."
       },
       "epargne": {
@@ -533,7 +533,7 @@
         "desc": "패에 있는 {faction_de} 크리처에게 +X/+X를 부여합니다."
       },
       "fortifier": {
-        "label": "강화 +X/+Y",
+        "label": "단련 +X/+Y",
         "desc": "덱 맨 위부터 첫 번째 크리처가 영구적으로 공격력 +X, 체력 +Y를 얻습니다."
       },
       "preincanter": {
@@ -629,7 +629,7 @@
         "desc": "상대의 다음 유닛 소환 X회를 무효화합니다."
       },
       "convocation_simple": {
-        "label": "소집",
+        "label": "소환",
         "desc": "{token}을(를) 생성합니다."
       },
       "seuil_colere": {
@@ -659,8 +659,8 @@
       },
       "corruption": {
         "label": "타락 X",
-        "desc": "비용이 X 이하인 대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추적을 얻습니다.",
-        "desc_any": "대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추적을 얻습니다."
+        "desc": "비용이 X 이하인 대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추격을 얻습니다.",
+        "desc_any": "대상 적 유닛을 턴 종료 시까지 아군으로 전향시킵니다. 해당 유닛은 추격을 얻습니다."
       },
       "domination": {
         "label": "지배 X",
@@ -681,7 +681,7 @@
         "desc": "덱 맨 위 카드 X장을 공개합니다. {race_pl}은(는) 패에 가져오고 나머지는 버립니다."
       },
       "rappel": {
-        "label": "회수 X",
+        "label": "귀환 X",
         "desc": "묘지에서 비용이 X 이하인 카드 1장을 패로 되돌립니다",
         "desc_any": "묘지에서 카드 1장을 패로 되돌립니다"
       },
@@ -730,7 +730,7 @@
         "desc_any": "컬렉션({alignment})에서 무작위 액션 X개를 무작위 대상으로 사용합니다"
       },
       "invocation": {
-        "label": "소환 X",
+        "label": "호출 X",
         "desc": "컬렉션({alignment}, 현재 포맷)에서 비용이 X인 무작위 크리처 1장을 소환합니다.",
         "desc_any": "컬렉션({alignment}, 현재 포맷)에서 무작위 크리처 1장을 소환합니다"
       },
@@ -841,7 +841,7 @@
         "desc": "손에 있는 {faction_de} 크리처에 +X/+X를 부여합니다."
       },
       "fortifier": {
-        "label": "강화 +X/+Y",
+        "label": "단련 +X/+Y",
         "desc": "덱 맨 위에서부터 첫 번째 크리처가 영구적으로 공격력 +X, 체력 +Y를 얻습니다."
       },
       "preincanter": {
@@ -857,7 +857,7 @@
         "desc": "{invocations}을(를) 소환합니다."
       },
       "invocation_multiple": {
-        "label": "다중 창조",
+        "label": "다중 소집",
         "desc": "{tokens}을(를) 만듭니다."
       },
       "tempete": {
@@ -869,7 +869,7 @@
         "desc": "모든 크리처(아군 및 적)에게 X의 피해를 줍니다."
       },
       "afflux": {
-        "label": "쇄도 X",
+        "label": "마력 유입 X",
         "desc": "이번 턴에 마나 X를 얻습니다"
       },
       "compagnons": {
@@ -1005,7 +1005,7 @@
         "appel_supreme": "덱에서 비용이 가장 높은 카드{filter}{cost}를 패에 추가합니다",
         "appel_supreme_cost": " (비용 {max} 이하)",
         "tuteur_many": "지정한 카드 {n}장을 패에 추가합니다",
-        "epargne": "절약 카운터에 {x}를 추가합니다",
+        "epargne": "저축 카운터에 {x}를 추가합니다",
         "foi": "신앙 카운터에 {x}를 추가합니다",
         "conquete": "정복 카운터에 {x}를 추가합니다",
         "exploration": "탐험 카운터에 {x}를 추가합니다",
@@ -2247,8 +2247,8 @@
         "remontee": "{cibles}을(를) 원래 소유자의 손으로 되돌립니다.",
         "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
         "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
-        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
-        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
+        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
         "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "domination_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "benediction": "{cibles}을(를) 완전히 치유합니다.",
@@ -2270,8 +2270,8 @@
         "retour_differe": "비용이 X 이하인 {cibles}을(를) 소유자의 덱 아래에 놓습니다.",
         "retour_differe_any": "{cibles}을(를) 소유자의 덱 아래에 놓습니다.",
         "remontee": "{cibles}을(를) 원래 소유자의 손으로 되돌립니다.",
-        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
-        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추적을 얻습니다.",
+        "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
+        "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
         "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "domination_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "benediction": "{cibles}을(를) 완전히 치유합니다.",
@@ -3235,7 +3235,7 @@
     "action_confirm": "확인",
     "action_close": "닫기",
     "card_count": "{count, plural, one {카드 #장} other {카드 #장}}",
-    "selection_title": "🎴 선택",
+    "selection_title": "🎴 선별",
     "selection_subtitle": "손에 추가할 카드를 선택하세요",
     "discovery_title": "🔭 발견",
     "discovery_subtitle": "이번 턴의 드로우: 카드를 선택하세요",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "클릭하면 먼저 버리는 카드가 채워지고, 그다음 후퇴 카드가 채워집니다.",
     "topdeck_cost_caption": "{count, plural, one {후퇴} other {후퇴 ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, other {크리처 #체 희생}}",
-    "convocation_title": "📣 소집",
+    "convocation_title": "📣 소환",
     "convocation_subtitle": "소환할 토큰의 종족을 선택하세요",
     "cycle_eternel_caption": "♻ 영원의 순환",
     "compagnons_caption": "🐾 동료",
@@ -3316,8 +3316,8 @@
     "spell_countered": "🛡️ 반격 주문!",
     "draw_trigger_self": "🃏 내가 카드를 뽑을 때 효과 발동",
     "draw_trigger_opponent": "🃏 상대가 카드를 뽑을 때 효과 발동",
-    "faveur_self": "🎁 호의 — 카드가 당신의 손으로 추가됨",
-    "faveur_opponent": "🎁 호의 — 카드가 상대의 손으로 추가됨",
+    "faveur_self": "🎁 은총 — 카드가 당신의 손으로 추가됨",
+    "faveur_opponent": "🎁 은총 — 카드가 상대의 손으로 추가됨",
     "spell_grant_all_allies": " · 모든 아군에게",
     "spell_grant_target": " · 대상 크리처에게",
     "fire_breath_label": "불꽃 숨결",
@@ -3379,8 +3379,8 @@
     "activation_menu_title": "어떤 능력을 발동할까요?",
     "activation_learned": "{name} 발동",
     "mutation_button": "변이",
-    "mutation_button_title": "변이: 이 카드를 변환합니다 (무료, 1회)",
-    "mutation_discover": "변이 — 발견 {n}/2",
+    "mutation_button_title": "돌연변이: 이 카드를 변환합니다 (무료, 1회)",
+    "mutation_discover": "돌연변이 — 발견 {n}/2",
     "mutation_discover_subtitle": "코스트 {x}의 일반 크리처를 선택하세요",
     "mutation_pick_ability": "돌연변이 — 능력 {n}/2",
     "mutation_pick_subtitle": "이 크리처가 물려줄 능력을 선택하세요",

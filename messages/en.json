@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precision",
-        "desc": "Ignores Resistance, Armor, Shield, and the Ethereal cap."
+        "desc": "Ignores Resistance, Armor, Divine Shield, and the Ethereal cap."
       },
       "drain_de_vie": {
         "label": "Lifedrain",
@@ -270,7 +270,7 @@
       },
       "corruption": {
         "label": "Corruption X",
-        "desc": "Converts an enemy unit with cost ≤ X to your side until end of turn; it gains Hunt.",
+        "desc": "Converts an enemy unit with cost ≤ X to your side until end of turn; it gains Charge.",
         "desc_any": "Convert a target enemy unit to your side until end of turn; it gains Charge until end of turn."
       },
       "carnage": {
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "Lycanthropy X",
-        "desc": "Transforms into {lycanthrope} with Hunt."
+        "desc": "Transforms into {lycanthrope} with Charge."
       },
       "relancer": {
         "label": "Reroll X",
@@ -606,7 +606,7 @@
       },
       "precision": {
         "label": "Precision",
-        "desc": "This action's damage ignores Resistance, Armor, and Shield."
+        "desc": "This action's damage ignores Resistance, Armor, and Divine Shield."
       },
       "poison": {
         "label": "Poison",
@@ -659,7 +659,7 @@
       },
       "corruption": {
         "label": "Corruption X",
-        "desc": "Converts the targeted enemy unit with cost ≤ X to your side until end of turn; it gains Hunt.",
+        "desc": "Converts the targeted enemy unit with cost ≤ X to your side until end of turn; it gains Charge.",
         "desc_any": "Converts the targeted enemy unit to your side until the end of the turn; it gains Charge."
       },
       "domination": {
@@ -833,7 +833,7 @@
         "desc": "Draw X cards."
       },
       "remontee": {
-        "label": "Recall X",
+        "label": "Comeback X",
         "desc": "Returns X targeted unit(s) or item(s) to their original owner's hand."
       },
       "entrainement": {
@@ -2247,8 +2247,8 @@
         "remontee": "Returns {cibles} to their original owner's hand.",
         "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
         "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
-        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Traque.",
-        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
+        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Charge.",
+        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Charge.",
         "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
         "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
@@ -2270,8 +2270,8 @@
         "retour_differe": "Places {cibles} with cost ≤ X beneath their owner's deck.",
         "retour_differe_any": "Places {cibles} on the bottom of their owner's deck.",
         "remontee": "Returns {cibles} to their original owner's hand.",
-        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Trample.",
-        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Hunt.",
+        "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Charge.",
+        "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Charge.",
         "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
         "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
@@ -3256,7 +3256,7 @@
     "power_usage_limit": "Limit: {limit}× max",
     "hero_starting_hp": "{hp} starting HP",
     "power_close_hint": "Esc or click outside to close",
-    "divination_traque_title": "🔮 Fate Tracker",
+    "divination_traque_title": "🔮 Fate Hunt",
     "divination_title": "🔍 Divination",
     "divination_traque_subtitle": "Choose a card to take into your hand. The rest will go to the bottom of the deck.",
     "divination_subtitle": "Choose a card to place on top of your deck",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "Your clicks fill the discard first, then the topdeck.",
     "topdeck_cost_caption": "{count, plural, one {Retreat} other {Retreat ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Sacrifice # creature} other {Sacrifice # creatures}}",
-    "convocation_title": "📣 Convocation",
+    "convocation_title": "📣 Summon",
     "convocation_subtitle": "Choose the race of the token to summon",
     "cycle_eternel_caption": "♻ Eternal Cycle",
     "compagnons_caption": "🐾 Companions",
@@ -3338,7 +3338,7 @@
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · return to hand",
     "mode_suffix_end_of_turn": " · end of turn",
-    "presage_title": "🌙 Omen",
+    "presage_title": "🌙 Presage",
     "presage_subtitle": "Which one is the top card of your deck?",
     "presage_hit": "Well spotted — it joins your hand.",
     "presage_miss": "Missed. The correct card is highlighted in green.",
@@ -3411,7 +3411,7 @@
     "combat_see_full_list": "The full ability list is at the bottom of the page.",
     "hero_title": "Hero & Hero Power",
     "alt_costs_title": "Additional Costs and Awakening",
-    "counters_title": "Counters: Savings, Faith and Conquest",
+    "counters_title": "Counters: Thrift, Faith and Conquest",
     "singulier_title": "Singular: the Bonus for Decks Without Duplicates",
     "deck_title": "Building a Deck",
     "tcg_numbers_title": "Key Numbers",

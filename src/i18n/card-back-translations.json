@@ -110,6 +110,48 @@
     },
     "42": {
       "name": "The Claw Pact"
+    },
+    "43": {
+      "name": "Vikings"
+    },
+    "44": {
+      "name": "Order of the Dawn"
+    },
+    "45": {
+      "name": "Ancient China"
+    },
+    "46": {
+      "name": "Kobold Back"
+    },
+    "47": {
+      "name": "Masks"
+    },
+    "48": {
+      "name": "Volcano 1"
+    },
+    "49": {
+      "name": "Steppes"
+    },
+    "50": {
+      "name": "Sublime Porte"
+    },
+    "51": {
+      "name": "Giants"
+    },
+    "52": {
+      "name": "High Elves Base 1"
+    },
+    "53": {
+      "name": "Gnomes"
+    },
+    "54": {
+      "name": "Cenacle"
+    },
+    "55": {
+      "name": "Veil Base"
+    },
+    "56": {
+      "name": "Sylvans"
     }
   },
   "es": {
@@ -223,6 +265,48 @@
     },
     "42": {
       "name": "El Pacto de las Garras"
+    },
+    "43": {
+      "name": "Vikingos"
+    },
+    "44": {
+      "name": "Orden del Alba"
+    },
+    "45": {
+      "name": "China Antigua"
+    },
+    "46": {
+      "name": "Dorso Kobolds"
+    },
+    "47": {
+      "name": "Máscaras"
+    },
+    "48": {
+      "name": "Volcán 1"
+    },
+    "49": {
+      "name": "Estepas"
+    },
+    "50": {
+      "name": "Sublime Puerta"
+    },
+    "51": {
+      "name": "Gigantes"
+    },
+    "52": {
+      "name": "Altos Elfos Base 1"
+    },
+    "53": {
+      "name": "Gnomos"
+    },
+    "54": {
+      "name": "Cenáculo"
+    },
+    "55": {
+      "name": "Velo Base"
+    },
+    "56": {
+      "name": "Silvanos"
     }
   },
   "de": {
@@ -336,6 +420,48 @@
     },
     "42": {
       "name": "Der Pakt der Klauen"
+    },
+    "43": {
+      "name": "Wikinger"
+    },
+    "44": {
+      "name": "Orden der Morgenröte"
+    },
+    "45": {
+      "name": "Antikes China"
+    },
+    "46": {
+      "name": "Kobold-Rückseite"
+    },
+    "47": {
+      "name": "Masken"
+    },
+    "48": {
+      "name": "Vulkan 1"
+    },
+    "49": {
+      "name": "Steppen"
+    },
+    "50": {
+      "name": "Erhabene Pforte"
+    },
+    "51": {
+      "name": "Riesen"
+    },
+    "52": {
+      "name": "Hochelfen Basis 1"
+    },
+    "53": {
+      "name": "Gnome"
+    },
+    "54": {
+      "name": "Zönakel"
+    },
+    "55": {
+      "name": "Schleier Basis"
+    },
+    "56": {
+      "name": "Sylvaner"
     }
   },
   "it": {
@@ -449,6 +575,48 @@
     },
     "42": {
       "name": "Il Patto degli Artigli"
+    },
+    "43": {
+      "name": "Vichinghi"
+    },
+    "44": {
+      "name": "Ordine dell'Alba"
+    },
+    "45": {
+      "name": "Cina Antica"
+    },
+    "46": {
+      "name": "Dorso Coboldi"
+    },
+    "47": {
+      "name": "Maschere"
+    },
+    "48": {
+      "name": "Vulcano 1"
+    },
+    "49": {
+      "name": "Steppe"
+    },
+    "50": {
+      "name": "Sublime Porta"
+    },
+    "51": {
+      "name": "Giganti"
+    },
+    "52": {
+      "name": "Alti Elfi Base 1"
+    },
+    "53": {
+      "name": "Gnomi"
+    },
+    "54": {
+      "name": "Cenacolo"
+    },
+    "55": {
+      "name": "Velo Base"
+    },
+    "56": {
+      "name": "Silvani"
     }
   },
   "pt": {
@@ -562,6 +730,48 @@
     },
     "42": {
       "name": "O Pacto das Garras"
+    },
+    "43": {
+      "name": "Vikings"
+    },
+    "44": {
+      "name": "Ordem da Alvorada"
+    },
+    "45": {
+      "name": "China Antiga"
+    },
+    "46": {
+      "name": "Verso dos Kobolds"
+    },
+    "47": {
+      "name": "Máscaras"
+    },
+    "48": {
+      "name": "Vulcão 1"
+    },
+    "49": {
+      "name": "Estepes"
+    },
+    "50": {
+      "name": "Sublime Porta"
+    },
+    "51": {
+      "name": "Gigantes"
+    },
+    "52": {
+      "name": "Altos Elfos Base 1"
+    },
+    "53": {
+      "name": "Gnomos"
+    },
+    "54": {
+      "name": "Cenáculo"
+    },
+    "55": {
+      "name": "Véu Base"
+    },
+    "56": {
+      "name": "Silvanos"
     }
   },
   "ja": {
@@ -675,6 +885,48 @@
     },
     "42": {
       "name": "爪の契約"
+    },
+    "43": {
+      "name": "ヴァイキング"
+    },
+    "44": {
+      "name": "暁の騎士団"
+    },
+    "45": {
+      "name": "古代中国"
+    },
+    "46": {
+      "name": "コボルドの背面"
+    },
+    "47": {
+      "name": "仮面"
+    },
+    "48": {
+      "name": "火山 1"
+    },
+    "49": {
+      "name": "ステップ"
+    },
+    "50": {
+      "name": "崇高なる門"
+    },
+    "51": {
+      "name": "巨人"
+    },
+    "52": {
+      "name": "ハイエルフ ベース 1"
+    },
+    "53": {
+      "name": "ノーム"
+    },
+    "54": {
+      "name": "セナクル"
+    },
+    "55": {
+      "name": "ヴェール ベース"
+    },
+    "56": {
+      "name": "シルヴァン"
     }
   },
   "zh": {
@@ -788,6 +1040,48 @@
     },
     "42": {
       "name": "利爪之盟"
+    },
+    "43": {
+      "name": "维京人"
+    },
+    "44": {
+      "name": "黎明骑士团"
+    },
+    "45": {
+      "name": "古代中国"
+    },
+    "46": {
+      "name": "狗头人卡背"
+    },
+    "47": {
+      "name": "面具"
+    },
+    "48": {
+      "name": "火山 1"
+    },
+    "49": {
+      "name": "草原"
+    },
+    "50": {
+      "name": "崇高门"
+    },
+    "51": {
+      "name": "巨人"
+    },
+    "52": {
+      "name": "高等精灵 基础 1"
+    },
+    "53": {
+      "name": "侏儒"
+    },
+    "54": {
+      "name": "圣餐堂"
+    },
+    "55": {
+      "name": "面纱 基础"
+    },
+    "56": {
+      "name": "林地精灵"
     }
   },
   "ru": {

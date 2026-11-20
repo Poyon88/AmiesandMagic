@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Precyzja",
-        "desc": "Ignoruje Odporność, Pancerz, Tarczę i limit Eteryczności."
+        "desc": "Ignoruje Odporność, Pancerz, Tarczę i limit Eterycznej."
       },
       "drain_de_vie": {
         "label": "Wyssanie życia",
@@ -70,7 +70,7 @@
         "desc": "Może atakować dwa razy na turę."
       },
       "augure": {
-        "label": "Wróżba",
+        "label": "Augur",
         "desc": "Gdy ta jednostka zada obrażenia bohaterowi przeciwnika, dobierasz kartę."
       },
       "benediction": {
@@ -171,7 +171,7 @@
         "desc": "Tworzy {token}."
       },
       "invocation": {
-        "label": "Przywołanie X",
+        "label": "Inwokacja X",
         "desc": "Przywołuje losową istotę o koszcie X z twojej kolekcji ({alignment}, bieżący format).",
         "desc_any": "Przywołuje losową istotę z twojej kolekcji ({alignment}, bieżący format)."
       },
@@ -270,8 +270,8 @@
       },
       "corruption": {
         "label": "Zepsucie X",
-        "desc": "Przejmuje wrogą jednostkę o koszcie ≤ X na twoją stronę do końca tury; zyskuje Tropienie.",
-        "desc_any": "Przejmuje wybraną wrogą jednostkę na twoją stronę do końca tury; zyskuje Tropienie do końca tury."
+        "desc": "Przejmuje wrogą jednostkę o koszcie ≤ X na twoją stronę do końca tury; zyskuje Pościg.",
+        "desc_any": "Przejmuje wybraną wrogą jednostkę na twoją stronę do końca tury; zyskuje Pościg do końca tury."
       },
       "carnage": {
         "label": "Rzeź X",
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "Likantropia X",
-        "desc": "Przemienia się w {lycanthrope} z Tropieniem."
+        "desc": "Przemienia się w {lycanthrope} z Pościgiem."
       },
       "relancer": {
         "label": "Powtórka X",
@@ -629,7 +629,7 @@
         "desc": "Anuluje następne X wezwań jednostek przeciwnika."
       },
       "convocation_simple": {
-        "label": "Przywołanie",
+        "label": "Zwołanie",
         "desc": "Tworzy {token}."
       },
       "seuil_colere": {
@@ -659,8 +659,8 @@
       },
       "corruption": {
         "label": "Zepsucie X",
-        "desc": "Przeciąga wskazaną jednostkę przeciwnika o koszcie ≤ X na twoją stronę do końca tury; zyskuje Tropienie.",
-        "desc_any": "Przeciąga wskazaną jednostkę przeciwnika na twoją stronę do końca tury; zyskuje Tropienie."
+        "desc": "Przeciąga wskazaną jednostkę przeciwnika o koszcie ≤ X na twoją stronę do końca tury; zyskuje Pościg.",
+        "desc_any": "Przeciąga wskazaną jednostkę przeciwnika na twoją stronę do końca tury; zyskuje Pościg."
       },
       "domination": {
         "label": "Dominacja X",
@@ -681,7 +681,7 @@
         "desc": "Odkrywa X wierzchnich kart talii; zachowaj na ręce {race_pl}, resztę odrzuć."
       },
       "rappel": {
-        "label": "Przywołanie z cmentarza X",
+        "label": "Przywołanie X",
         "desc": "Zwraca na rękę kartę o koszcie ≤ X z twojego cmentarza",
         "desc_any": "Zwraca na rękę kartę z twojego cmentarza"
       },
@@ -730,7 +730,7 @@
         "desc_any": "Zagrywa X losowych akcji z twojej kolekcji ({alignment}) z losowymi celami"
       },
       "invocation": {
-        "label": "Przywołanie X",
+        "label": "Inwokacja X",
         "desc": "Przywołuje losową istotę o koszcie X z twojej kolekcji ({alignment}, obecny format).",
         "desc_any": "Przywołuje losową istotę z twojej kolekcji ({alignment}, obecny format)"
       },
@@ -800,7 +800,7 @@
         "desc": "Spójrz na X dolnych kart swojej talii; umieść jedną z nich na wierzchu"
       },
       "presage": {
-        "label": "Wróżba",
+        "label": "Omen",
         "desc": "Odkrywa 3 wierzchnie karty w losowej kolejności; wskaż tę, która leżała na samej górze, aby wziąć ją na rękę, a następnie przetasuj talię."
       },
       "retour_differe": {
@@ -2180,7 +2180,7 @@
       "ability": "zdolność",
       "scope": "jednej sojuszniczej jednostce (lub wszystkim)",
       "scope_target": "jednej sojuszniczej jednostce",
-      "edc_compte": "Zyskuje {n} razy +1 ATK lub +1 PV losowo (1 za każdego Ducha korpusu, którego już aktywowałeś).",
+      "edc_compte": "Zyskuje {n} razy +1 ATK lub +1 PV losowo (1 za każdego Ducha drużyny, którego już aktywowałeś).",
       "usurpation_actuel": "Zagrane karty przeciwnika: {n} — obecnie +{x}/+{y}.",
       "scope_all": "wszystkim twoim jednostkom",
       "machine_part": " i {ability}",
@@ -2247,8 +2247,8 @@
         "remontee": "Zwraca {cibles} na rękę ich pierwotnego właściciela.",
         "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
         "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
-        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
-        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
+        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
         "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
         "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
         "benediction": "Całkowicie leczy {cibles}.",
@@ -2270,8 +2270,8 @@
         "retour_differe": "Umieszcza {cibles} o koszcie ≤ X pod talią ich właściciela.",
         "retour_differe_any": "Umieszcza {cibles} pod talią ich właściciela.",
         "remontee": "Zwraca {cibles} na rękę ich pierwotnego właściciela.",
-        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
-        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Tropienie.",
+        "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
+        "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
         "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
         "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
         "benediction": "Całkowicie leczy {cibles}.",
@@ -3256,14 +3256,14 @@
     "power_usage_limit": "Limit: maks. {limit}×",
     "hero_starting_hp": "{hp} PZ na start",
     "power_close_hint": "Naciśnij Esc lub kliknij poza obszarem, aby zamknąć",
-    "divination_traque_title": "🔮 Pościg za przeznaczeniem",
+    "divination_traque_title": "🔮 Pościg przeznaczenia",
     "divination_title": "🔍 Wróżba",
     "divination_traque_subtitle": "Wybierz kartę, którą weźmiesz na rękę. Pozostałe trafią pod spód talii.",
     "divination_subtitle": "Wybierz kartę, którą położysz na wierzchu swojego dobieranego stosu",
     "graveyard_select_prompt": "Wybierz kartę z cmentarza",
     "graveyard_hint_touch": "Dotknij karty, aby powiększyć · dotknij ponownie, aby zobaczyć opis",
     "graveyard_hint_hover": "Najedź na kartę, aby powiększyć · kliknij prawym przyciskiem, aby przełączyć obraz / opis",
-    "seconde_vie_hint": "Druga szansa: kliknij dwukrotnie kwalifikującą się kartę.",
+    "seconde_vie_hint": "Drugie życie: kliknij dwukrotnie kwalifikującą się kartę.",
     "seconde_vie_blocked_turn": "To nie twoja tura.",
     "graveyard_empty": "Brak kart na cmentarzu",
     "cost_default_card_name": "karta",
@@ -3275,7 +3275,7 @@
     "cost_hand_order_hint": "Twoje kliknięcia najpierw wypełniają odrzucone, potem odwrót.",
     "topdeck_cost_caption": "{count, plural, one {Odwrót} other {Odwrót ×#}}",
     "cost_sacrifice_label": "☠ {count, plural, one {Poświęć # stworzenie} few {Poświęć # stworzenia} many {Poświęć # stworzeń} other {Poświęć # stworzenia}}",
-    "convocation_title": "📣 Wezwanie",
+    "convocation_title": "📣 Zwołanie",
     "convocation_subtitle": "Wybierz rasę żetonu do przyzwania",
     "cycle_eternel_caption": "♻ Wieczny Cykl",
     "compagnons_caption": "🐾 Towarzysze",
@@ -3316,8 +3316,8 @@
     "spell_countered": "🛡️ Kontrakcja!",
     "draw_trigger_self": "🃏 Efekt aktywowany przy twoim dobraniu karty",
     "draw_trigger_opponent": "🃏 Efekt aktywowany przy dobraniu karty przez przeciwnika",
-    "faveur_self": "🎁 Łaska — karta dodana do twojej ręki",
-    "faveur_opponent": "🎁 Łaska — karta dodana do ręki przeciwnika",
+    "faveur_self": "🎁 Przysługa — karta dodana do twojej ręki",
+    "faveur_opponent": "🎁 Przysługa — karta dodana do ręki przeciwnika",
     "spell_grant_all_allies": " · wszystkim sojusznikom",
     "spell_grant_target": " · wskazanej istocie",
     "fire_breath_label": "Ognisty Oddech",
@@ -3338,7 +3338,7 @@
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · powrót na rękę",
     "mode_suffix_end_of_turn": " · koniec tury",
-    "presage_title": "🌙 Wróżba",
+    "presage_title": "🌙 Omen",
     "presage_subtitle": "Która karta jest pierwsza w twojej talii?",
     "presage_hit": "Dobrze trafiona — dołącza do twojej ręki.",
     "presage_miss": "Pudło. Właściwa karta jest zaznaczona na zielono.",

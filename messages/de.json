@@ -51,7 +51,7 @@
       },
       "precision": {
         "label": "Präzision",
-        "desc": "Ignoriert Widerstand, Rüstung, Schild und die Obergrenze von Ätherisch."
+        "desc": "Ignoriert Resistenz, Rüstung, Schild und die Obergrenze von Ätherisch."
       },
       "drain_de_vie": {
         "label": "Lebensraub",
@@ -270,8 +270,8 @@
       },
       "corruption": {
         "label": "Korruption X",
-        "desc": "Bekehrt eine feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Hetzjagd.",
-        "desc_any": "Konvertiert die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Jagdinstinkt."
+        "desc": "Bekehrt eine feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Verfolgung.",
+        "desc_any": "Konvertiert die gewählte feindliche Einheit bis zum Ende des Zuges auf deine Seite; sie erhält bis zum Ende des Zuges Verfolgung."
       },
       "carnage": {
         "label": "Gemetzel X",
@@ -416,7 +416,7 @@
       },
       "lycanthropie": {
         "label": "Lykanthropie X",
-        "desc": "Verwandelt sich mit Jagd in {lycanthrope}."
+        "desc": "Verwandelt sich mit Verfolgung in {lycanthrope}."
       },
       "relancer": {
         "label": "Neu würfeln X",
@@ -659,7 +659,7 @@
       },
       "corruption": {
         "label": "Korruption X",
-        "desc": "Bekehrt die ausgewählte feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Hetzjagd.",
+        "desc": "Bekehrt die ausgewählte feindliche Einheit mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite; sie erhält Verfolgung.",
         "desc_any": "Bekehrt die anvisierte gegnerische Einheit bis zum Ende der Runde auf Ihre Seite; sie erhält Verfolgung."
       },
       "domination": {
@@ -2247,7 +2247,7 @@
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
         "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
-        "corruption": "Bekehrt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite, im Rahmen der freien Plätze; sie erhalten Hetzjagd.",
+        "corruption": "Bekehrt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite, im Rahmen der freien Plätze; sie erhalten Verfolgung.",
         "corruption_any": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
         "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, im Rahmen der freien Plätze.",
         "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
@@ -2270,7 +2270,7 @@
         "retour_differe": "Legt {cibles} mit Kosten ≤ X unter das Deck des jeweiligen Besitzers.",
         "retour_differe_any": "Legt {cibles} unter das Deck ihres Besitzers.",
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
-        "corruption": "Wechselt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf Eure Seite, soweit Plätze vorhanden sind; sie erhalten Hetzjagd.",
+        "corruption": "Wechselt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf Eure Seite, soweit Plätze vorhanden sind; sie erhalten Verfolgung.",
         "corruption_any": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
         "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, soweit Plätze vorhanden sind.",
         "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
@@ -2315,7 +2315,7 @@
         "desc_many": "Wirf zusätzlich zum Mana {n} Karten deiner Wahl aus deiner Hand ab."
       },
       "sacrifice": {
-        "title": "Opfer {n}",
+        "title": "Opferung {n}",
         "desc_one": "Opfere zusätzlich zum Mana eine deiner Kreaturen im Spiel nach Wahl.",
         "desc_many": "Opfere zusätzlich zum Mana {n} deiner Kreaturen im Spiel nach Wahl."
       },
@@ -2407,7 +2407,7 @@
     "f3_title": "Jedes Experten-Deck ein Unikat.",
     "f3_desc": "Limitierte Karten machen jedes Experten-Deck einzigartig. Das gemeinsame Kontingent stellt sicher, dass allein deine Strategie entscheidet.",
     "f_icons_title": "Auf einen Blick lesbar.",
-    "f_icons_desc": "Liebevoll illustriert, sind die Karten von Armies of Legends ebenso schön wie lesbar: Dank eines Farbcodes der Symbole, der jedem Auslöser eigen ist, erfassen Sie ihre Wirkung auf einen Blick – ganz ohne den Text zu lesen.",
+    "f_icons_desc": "Liebevoll illustriert, sind die Karten von Armies of Legends ebenso schön wie lesbar: Dank eines Farbcodes der Symbole, der jedem Auslöser eigen ist, erfasst du ihre Wirkung auf einen Blick – ganz ohne den Text zu lesen.",
     "f4_title": "Die mobile Arena — endlich auf Augenhöhe.",
     "f4_desc": "Turniere mit seltenen Karten und Geldpreisen — ein Niveau, das bisher den größten Desktop-TCGs vorbehalten war.",
     "f4_note": "* Finanzielle Zuwendungen werden nur in Ländern angeboten, in denen das Gesetz sie erlaubt.",
@@ -3278,7 +3278,7 @@
     "convocation_title": "📣 Beschwörung",
     "convocation_subtitle": "Wähle die Rasse des zu beschworenen Tokens",
     "cycle_eternel_caption": "♻ Ewiger Kreislauf",
-    "compagnons_caption": "🐾 Gefährten",
+    "compagnons_caption": "🐾 Begleiter",
     "discard_label": "🔥 {count, plural, one {Abgeworfen — # Karte} other {Abgeworfen — # Karten}}",
     "graveyard_affect_label": "🪦 {count, plural, one {Friedhof — # Karte} other {Friedhof — # Karten}}",
     "zone_deck": "Nachziehstapel",
@@ -3338,7 +3338,7 @@
     "mode_suffix_tap": " · tap",
     "mode_suffix_return": " · zurück auf die Hand",
     "mode_suffix_end_of_turn": " · Rundenende",
-    "presage_title": "🌙 Vorzeichen",
+    "presage_title": "🌙 Vorahnung",
     "presage_subtitle": "Welche ist die oberste Karte Ihres Decks?",
     "presage_hit": "Richtig erkannt — sie wandert in Ihre Hand.",
     "presage_miss": "Daneben. Die richtige Karte ist grün markiert.",
@@ -3411,7 +3411,7 @@
     "combat_see_full_list": "Die vollständige Fähigkeitenliste befindet sich am Seitenende.",
     "hero_title": "Der Held und seine Fähigkeit",
     "alt_costs_title": "Zusätzliche Kosten und das Erwachen",
-    "counters_title": "Die Zähler: Ersparnis, Glaube und Eroberung",
+    "counters_title": "Die Zähler: Sparen, Glaube und Eroberung",
     "singulier_title": "Singulär: Der Bonus für Decks ohne Duplikate",
     "deck_title": "Ein Deck bauen",
     "tcg_numbers_title": "Die wichtigsten Zahlen",
@@ -3634,7 +3634,7 @@
     "costs": "Zusätzliche Kosten",
     "cost_life": "Lebenspunkte",
     "cost_discard": "Abwerfen",
-    "cost_sacrifice": "Opfer",
+    "cost_sacrifice": "Opferung",
     "cost_exile": "Verbannung",
     "cost_topdeck": "Rücklegen",
     "cost_retreat": "Rückzug",

@@ -92,6 +92,72 @@
     },
     "48": {
       "name": "Green Felt"
+    },
+    "49": {
+      "name": "Snowy Steppes"
+    },
+    "50": {
+      "name": "Dwarven Mountain"
+    },
+    "51": {
+      "name": "Ancient China"
+    },
+    "53": {
+      "name": "Kobolds"
+    },
+    "54": {
+      "name": "Masks"
+    },
+    "55": {
+      "name": "Volcano"
+    },
+    "56": {
+      "name": "Steppes"
+    },
+    "57": {
+      "name": "Sublime Gate"
+    },
+    "58": {
+      "name": "Sublime Gate 2"
+    },
+    "59": {
+      "name": "Giants"
+    },
+    "60": {
+      "name": "High Elves"
+    },
+    "61": {
+      "name": "Orcs 2"
+    },
+    "62": {
+      "name": "Orcs 3"
+    },
+    "63": {
+      "name": "Hobbits Base"
+    },
+    "64": {
+      "name": "Gnome Workshop"
+    },
+    "65": {
+      "name": "Northern Kingdom Base"
+    },
+    "66": {
+      "name": "Sublime Gate Default"
+    },
+    "67": {
+      "name": "Wind Warriors"
+    },
+    "68": {
+      "name": "Vampire Base"
+    },
+    "69": {
+      "name": "Cenalce Base"
+    },
+    "70": {
+      "name": "Howling Veil Base"
+    },
+    "71": {
+      "name": "Sylvan Forest"
     }
   },
   "es": {
@@ -187,6 +253,72 @@
     },
     "48": {
       "name": "Tapete verde"
+    },
+    "49": {
+      "name": "Estepas Nevadas"
+    },
+    "50": {
+      "name": "Montaña Enana"
+    },
+    "51": {
+      "name": "China Antigua"
+    },
+    "53": {
+      "name": "Kobolds"
+    },
+    "54": {
+      "name": "Máscaras"
+    },
+    "55": {
+      "name": "Volcán"
+    },
+    "56": {
+      "name": "Estepas"
+    },
+    "57": {
+      "name": "Sublime Puerta"
+    },
+    "58": {
+      "name": "Sublime Puerta 2"
+    },
+    "59": {
+      "name": "Gigantes"
+    },
+    "60": {
+      "name": "Altos Elfos"
+    },
+    "61": {
+      "name": "Orcos 2"
+    },
+    "62": {
+      "name": "Orcos 3"
+    },
+    "63": {
+      "name": "Hobbits Base"
+    },
+    "64": {
+      "name": "Taller Gnomo"
+    },
+    "65": {
+      "name": "Reino del Norte Base"
+    },
+    "66": {
+      "name": "Sublime Puerta Predeterminada"
+    },
+    "67": {
+      "name": "Guerreras del Viento"
+    },
+    "68": {
+      "name": "Vampiro Base"
+    },
+    "69": {
+      "name": "Cenalce Base"
+    },
+    "70": {
+      "name": "Velo Aullante Base"
+    },
+    "71": {
+      "name": "Bosque de los Silvanos"
     }
   },
   "de": {
@@ -282,6 +414,72 @@
     },
     "48": {
       "name": "Grüner Tisch"
+    },
+    "49": {
+      "name": "Verschneite Steppen"
+    },
+    "50": {
+      "name": "Zwergenberg"
+    },
+    "51": {
+      "name": "Antikes China"
+    },
+    "53": {
+      "name": "Kobolde"
+    },
+    "54": {
+      "name": "Masken"
+    },
+    "55": {
+      "name": "Vulkan"
+    },
+    "56": {
+      "name": "Steppen"
+    },
+    "57": {
+      "name": "Erhabene Pforte"
+    },
+    "58": {
+      "name": "Erhabene Pforte 2"
+    },
+    "59": {
+      "name": "Riesen"
+    },
+    "60": {
+      "name": "Hochelfen"
+    },
+    "61": {
+      "name": "Orks 2"
+    },
+    "62": {
+      "name": "Orks 3"
+    },
+    "63": {
+      "name": "Hobbits Basis"
+    },
+    "64": {
+      "name": "Gnomenwerkstatt"
+    },
+    "65": {
+      "name": "Nordreich Basis"
+    },
+    "66": {
+      "name": "Erhabene Pforte Standard"
+    },
+    "67": {
+      "name": "Windkriegerinnen"
+    },
+    "68": {
+      "name": "Vampire Basis"
+    },
+    "69": {
+      "name": "Cenalce Basis"
+    },
+    "70": {
+      "name": "Heulender Schleier Basis"
+    },
+    "71": {
+      "name": "Wald der Sylvaner"
     }
   },
   "it": {
@@ -377,6 +575,72 @@
     },
     "48": {
       "name": "Tappeto Verde"
+    },
+    "49": {
+      "name": "Steppe Innevate"
+    },
+    "50": {
+      "name": "Montagna Nanica"
+    },
+    "51": {
+      "name": "Cina Antica"
+    },
+    "53": {
+      "name": "Coboldi"
+    },
+    "54": {
+      "name": "Maschere"
+    },
+    "55": {
+      "name": "Vulcano"
+    },
+    "56": {
+      "name": "Steppe"
+    },
+    "57": {
+      "name": "Sublime Porta"
+    },
+    "58": {
+      "name": "Sublime Porta 2"
+    },
+    "59": {
+      "name": "Giganti"
+    },
+    "60": {
+      "name": "Alti Elfi"
+    },
+    "61": {
+      "name": "Orchi 2"
+    },
+    "62": {
+      "name": "Orchi 3"
+    },
+    "63": {
+      "name": "Hobbit Base"
+    },
+    "64": {
+      "name": "Officina Gnomica"
+    },
+    "65": {
+      "name": "Regno del Nord Base"
+    },
+    "66": {
+      "name": "Sublime Porta Predefinita"
+    },
+    "67": {
+      "name": "Guerriere del Vento"
+    },
+    "68": {
+      "name": "Vampiro Base"
+    },
+    "69": {
+      "name": "Cenalce Base"
+    },
+    "70": {
+      "name": "Velo Ululante Base"
+    },
+    "71": {
+      "name": "Foresta dei Silvani"
     }
   },
   "pt": {
@@ -472,6 +736,72 @@
     },
     "48": {
       "name": "Tapete Verde"
+    },
+    "49": {
+      "name": "Estepes Nevadas"
+    },
+    "50": {
+      "name": "Montanha Anã"
+    },
+    "51": {
+      "name": "China Antiga"
+    },
+    "53": {
+      "name": "Kobolds"
+    },
+    "54": {
+      "name": "Máscaras"
+    },
+    "55": {
+      "name": "Vulcão"
+    },
+    "56": {
+      "name": "Estepes"
+    },
+    "57": {
+      "name": "Sublime Porta"
+    },
+    "58": {
+      "name": "Sublime Porta 2"
+    },
+    "59": {
+      "name": "Gigantes"
+    },
+    "60": {
+      "name": "Altos Elfos"
+    },
+    "61": {
+      "name": "Orcs 2"
+    },
+    "62": {
+      "name": "Orcs 3"
+    },
+    "63": {
+      "name": "Hobbits Base"
+    },
+    "64": {
+      "name": "Oficina Gnoma"
+    },
+    "65": {
+      "name": "Reino do Norte Base"
+    },
+    "66": {
+      "name": "Sublime Porta Padrão"
+    },
+    "67": {
+      "name": "Guerreiras do Vento"
+    },
+    "68": {
+      "name": "Vampiro Base"
+    },
+    "69": {
+      "name": "Cenalce Base"
+    },
+    "70": {
+      "name": "Véu Uivante Base"
+    },
+    "71": {
+      "name": "Floresta dos Silvanos"
     }
   },
   "ja": {
@@ -567,6 +897,72 @@
     },
     "48": {
       "name": "緑のテーブル"
+    },
+    "49": {
+      "name": "雪原のステップ"
+    },
+    "50": {
+      "name": "ドワーフの山"
+    },
+    "51": {
+      "name": "古代中国"
+    },
+    "53": {
+      "name": "コボルド"
+    },
+    "54": {
+      "name": "仮面"
+    },
+    "55": {
+      "name": "火山"
+    },
+    "56": {
+      "name": "ステップ"
+    },
+    "57": {
+      "name": "崇高なる門"
+    },
+    "58": {
+      "name": "崇高なる門 2"
+    },
+    "59": {
+      "name": "巨人族"
+    },
+    "60": {
+      "name": "ハイエルフ"
+    },
+    "61": {
+      "name": "オーク 2"
+    },
+    "62": {
+      "name": "オーク 3"
+    },
+    "63": {
+      "name": "ホビット 基本"
+    },
+    "64": {
+      "name": "ノームの工房"
+    },
+    "65": {
+      "name": "北の王国 基本"
+    },
+    "66": {
+      "name": "崇高なる門 デフォルト"
+    },
+    "67": {
+      "name": "風の女戦士たち"
+    },
+    "68": {
+      "name": "ヴァンパイア 基本"
+    },
+    "69": {
+      "name": "セナルス 基本"
+    },
+    "70": {
+      "name": "ヴォワール・ユルラン 基本"
+    },
+    "71": {
+      "name": "シルヴァンの森"
     }
   },
   "zh": {
@@ -662,6 +1058,72 @@
     },
     "48": {
       "name": "绿毡"
+    },
+    "49": {
+      "name": "积雪草原"
+    },
+    "50": {
+      "name": "矮人山脉"
+    },
+    "51": {
+      "name": "上古中国"
+    },
+    "53": {
+      "name": "狗头人"
+    },
+    "54": {
+      "name": "面具"
+    },
+    "55": {
+      "name": "火山"
+    },
+    "56": {
+      "name": "草原"
+    },
+    "57": {
+      "name": "崇高之门"
+    },
+    "58": {
+      "name": "崇高之门 2"
+    },
+    "59": {
+      "name": "巨人"
+    },
+    "60": {
+      "name": "高等精灵"
+    },
+    "61": {
+      "name": "兽人 2"
+    },
+    "62": {
+      "name": "兽人 3"
+    },
+    "63": {
+      "name": "半身人 基础"
+    },
+    "64": {
+      "name": "侏儒工坊"
+    },
+    "65": {
+      "name": "北方王国 基础"
+    },
+    "66": {
+      "name": "崇高之门 默认"
+    },
+    "67": {
+      "name": "风之女战士"
+    },
+    "68": {
+      "name": "吸血鬼 基础"
+    },
+    "69": {
+      "name": "塞纳尔斯 基础"
+    },
+    "70": {
+      "name": "啸风之帆 基础"
+    },
+    "71": {
+      "name": "林神森林"
     }
   },
   "ru": {
