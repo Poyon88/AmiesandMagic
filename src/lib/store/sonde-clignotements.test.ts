@@ -14,7 +14,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { useGameStore } from "./gameStore";
 import { applyAction } from "@/lib/game/engine";
-import { initialStateFromSetup, loadMatchSetup, setupFromSnapshot, type MatchRow, type MatchSetupSnapshot } from "@/lib/game/match-setup";
+import { initialStateFromSetup, loadMatchSetup, reglesDuSnapshot, setupFromSnapshot, type MatchRow, type MatchSetupSnapshot } from "@/lib/game/match-setup";
 import type { GameState, GameAction } from "@/lib/game/types";
 
 if (typeof globalThis.document === "undefined") {
@@ -95,7 +95,7 @@ describe.skipIf(!process.env.SCAN_N)("sonde clignotements", () => {
           db.from("match_mulligans").select("player_id, action").eq("match_id", m.id),
         ]);
         let state: GameState;
-        if (setupRow?.setup) { const s = setupRow.setup as MatchSetupSnapshot; const r = await setupFromSnapshot(db, s); state = initialStateFromSetup(r.setup, s.decouverteAlternee); }
+        if (setupRow?.setup) { const s = setupRow.setup as MatchSetupSnapshot; const r = await setupFromSnapshot(db, s); state = initialStateFromSetup(r.setup, reglesDuSnapshot(s)); }
         else state = initialStateFromSetup(await loadMatchSetup(db, m as MatchRow));
         const ordre = state.players.map((p) => p.id);
         for (const mu of [...(mulls ?? [])].sort((a, b) => ordre.indexOf(a.player_id) - ordre.indexOf(b.player_id))) state = applyAction(state, mu.action);

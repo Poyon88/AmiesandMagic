@@ -2,7 +2,7 @@
 // Partagée par la route finalize (appelée par les joueurs) et par la clôture
 // automatique des parties inactives, pour qu'il n'existe qu'une seule règle.
 import type { getAdminClient } from "@/lib/admin/requireAdmin";
-import { initialStateFromSetup, setupFromSnapshot, type MatchSetupSnapshot } from "@/lib/game/match-setup";
+import { initialStateFromSetup, reglesDuSnapshot, setupFromSnapshot, type MatchSetupSnapshot } from "@/lib/game/match-setup";
 import { replayMatch, type ActionRow, type MulliganRow } from "@/lib/game/replay";
 import { decideResult, type ResultDecision } from "@/lib/game/match-result";
 
@@ -43,7 +43,7 @@ export async function cloturerPartie(
     let replay;
     try {
       replay = replayMatch(
-        initialStateFromSetup(setup, snap.decouverteAlternee),
+        initialStateFromSetup(setup, reglesDuSnapshot(snap)),
         (mulligansRes.data ?? []) as MulliganRow[],
         (actionsRes.data ?? []) as ActionRow[],
       );

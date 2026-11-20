@@ -18,6 +18,7 @@ import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { useTranslations } from "next-intl";
 import { GAME_CARD_COLUMNS, mapHeroRow, selectionFactionsFor, buildPools, buildMutationPool, fetchMutationPoolRows, missingLinkedCardIds, type HeroRow } from "@/lib/game/match-setup";
 import { vainqueurTransition } from "@/lib/game/match-result";
+import { lireRegles, reglesDeCetteBuild, type ReglesDecouverte } from "@/lib/game/decouverte";
 
 interface MatchData {
   player1_id: string;
@@ -105,6 +106,9 @@ export default function GamePage() {
   // Rattrapage de l'état depuis match_actions ; défini dans loadMatch et appelé
   // au réveil de veille / retour réseau / re-souscription realtime.
   const resyncRef = useRef<(() => void) | null>(null);
+  // Règles de la partie figées par le serveur (cf. /api/matches/[id]/setup).
+  // Nul tant que la réponse n'est pas arrivée : la partie ne s'initialise pas.
+  const reglesPartieRef = useRef<ReglesDecouverte | null>(null);
   // Seq d'un snapshot à écrire dès que l'animation de l'action locale se termine
   // (le commit du gameState est différé pendant l'animation — cf. writeSnapshot).
   const pendingSnapshotSeqRef = useRef<number | null>(null);
@@ -446,7 +450,26 @@ export default function GamePage() {
         // Le SERVEUR fige sa propre copie de la configuration (decks, pools,
         // héros…) pour pouvoir rejouer la partie à la fin et en décider l'issue.
         // Idempotent : la première capture fait foi.
-        void fetch(`/api/matches/${matchId}/setup`, { method: "POST" }).catch(() => {});
+        // Sa réponse porte les RÈGLES de la partie (variante de découverte) :
+        // les deux clients les reprennent, au lieu de lire chacun le drapeau de
+        // sa build — deux déploiements différents figeaient la partie à la
+        // première découverte. La partie ne s'initialise qu'une fois la réponse
+        // arrivée ; sans réponse (capture indisponible, réseau), on se rabat
+        // sur le drapeau local, comme avant.
+        const repliLocal = () => {
+          if (reglesPartieRef.current) return;
+          console.warn("[match] règles figées indisponibles — drapeau local utilisé");
+          reglesPartieRef.current = reglesDeCetteBuild();
+        };
+        void fetch(`/api/matches/${matchId}/setup`, { method: "POST", signal: AbortSignal.timeout(8000) })
+          .then((r) => r.json())
+          .then((d) => {
+            const lues = lireRegles(d?.regles);
+            if (lues) reglesPartieRef.current = lues;
+            else repliLocal();
+          })
+          .catch(repliLocal)
+          .finally(() => tryInit("poll"));
 
         // Join realtime channel with presence
         const channel = supabase.channel(`match:${matchId}`, {
@@ -721,6 +744,9 @@ export default function GamePage() {
         function tryInit(_source: "sync" | "poll") {
           if (gameInitializedRef.current) return;
           if (!matchDataRef.current) return;
+          // Les règles figées par le serveur ne sont pas encore arrivées.
+          const regles = reglesPartieRef.current;
+          if (!regles) return;
           const state = channel.presenceState();
           const playerCount = Object.keys(state).length;
           if (playerCount < 2) return;
@@ -728,7 +754,7 @@ export default function GamePage() {
           const { match: m, p1Cards: p1, p2Cards: p2, p1Hero, p2Hero, factionCards, allSpells, p1OwnedLimitedIds, p2OwnedLimitedIds, formatCode } = matchDataRef.current;
           const seed = seedForMatch(matchId);
           const firstPlayer = firstPlayerIndexForMatch(matchId);
-          initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells, formatCode);
+          initGame(m.player1_id, m.player2_id, p1, p2, firstPlayer, seed, p1Hero, p2Hero, factionCards, allSpells, formatCode, regles);
           setOwnedLimitedCardIds(p1OwnedLimitedIds, p2OwnedLimitedIds);
           setPhase("playing");
           if (presencePollRef.current) {

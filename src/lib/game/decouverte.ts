@@ -30,6 +30,14 @@
 // partagé par les deux clients (inclus dans le hash de synchro). Le drapeau de
 // build `NEXT_PUBLIC_REGLE_DECOUVERTE` choisit l'offre : "1" variante 1, "2"
 // variante 2.
+//
+// QUI LIT LE DRAPEAU (2026-11-20). Le SERVEUR, une fois par partie, quand il
+// fige la configuration (`snapshotSetup`) ; les deux clients et le rejeu
+// reprennent ce qu'il a figé (`reglesDuSnapshot`). Avant, chaque navigateur
+// lisait le drapeau de SA build : deux onglets servis par deux déploiements
+// (l'un ouvert avant un changement de drapeau) calculaient deux offres
+// différentes, le choix de l'un était refusé en silence chez l'autre, et la
+// partie se figeait à la première découverte.
 import type { Card, GameState, HeroDefinition, IdentiteDeck } from "./types";
 
 /** La variante est-elle activée pour cette build ? Lue par la page de match et
@@ -42,6 +50,42 @@ export function regleDecouverteActivee(): boolean {
 /** Offre de découverte de cette build : 2 si le drapeau vaut "2", 1 sinon. */
 export function varianteDecouverte(): 1 | 2 {
   return process.env.NEXT_PUBLIC_REGLE_DECOUVERTE === "2" ? 2 : 1;
+}
+
+/** Règles de découverte d'une partie, telles que le serveur les fige. */
+export interface ReglesDecouverte {
+  decouverteAlternee: boolean;
+  decouverteVariante?: 2;
+}
+
+/** Règles de CETTE build. À n'appeler qu'au moment de figer une partie (ou
+ *  hors partie réelle : simulateur, tests) — jamais pour initialiser un client. */
+export function reglesDeCetteBuild(): ReglesDecouverte {
+  if (!regleDecouverteActivee()) return { decouverteAlternee: false };
+  return varianteDecouverte() === 2
+    ? { decouverteAlternee: true, decouverteVariante: 2 }
+    : { decouverteAlternee: true };
+}
+
+/** Lit des règles venues d'ailleurs (réponse du serveur, capture en base) en
+ *  n'en gardant que les valeurs connues. `null` si ce n'en sont pas. */
+export function lireRegles(brut: unknown): ReglesDecouverte | null {
+  if (!brut || typeof brut !== "object") return null;
+  const r = brut as Record<string, unknown>;
+  if (typeof r.decouverteAlternee !== "boolean") return null;
+  if (!r.decouverteAlternee) return { decouverteAlternee: false };
+  return r.decouverteVariante === 2
+    ? { decouverteAlternee: true, decouverteVariante: 2 }
+    : { decouverteAlternee: true };
+}
+
+/** Le `regles` initial passé à `initializeGame`. Variante 1 : pas de champ
+ *  `decouverteVariante` — l'état (et son hash) reste celui d'avant la variante 2. */
+export function reglesInitiales(r: ReglesDecouverte): GameState["regles"] {
+  if (!r.decouverteAlternee) return undefined;
+  return r.decouverteVariante === 2
+    ? { decouverteAlternee: true, decouverteVariante: 2 }
+    : { decouverteAlternee: true };
 }
 
 /** Tour propre du joueur actif (1, 2, 3…) : `turnNumber` est global, le 1er

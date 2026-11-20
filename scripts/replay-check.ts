@@ -14,7 +14,7 @@
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import {
-  initialStateFromSetup, loadMatchSetup, setupFromSnapshot,
+  initialStateFromSetup, loadMatchSetup, reglesDuSnapshot, setupFromSnapshot,
   type MatchRow, type MatchSetupSnapshot,
 } from "@/lib/game/match-setup";
 import { replayMatch, type ActionRow, type MulliganRow } from "@/lib/game/replay";
@@ -78,7 +78,7 @@ async function main() {
         const snapSetup = setupRow.setup as MatchSetupSnapshot;
         const restored = await setupFromSnapshot(db, snapSetup);
         const n = restored.changedCardIds.length;
-        initial = () => initialStateFromSetup(restored.setup, snapSetup.decouverteAlternee);
+        initial = () => initialStateFromSetup(restored.setup, reglesDuSnapshot(snapSetup));
         source = `config figée${n ? ` (${n} cartes modifiées depuis)` : ""}`;
       } else {
         const setup = await loadMatchSetup(db, m as MatchRow);

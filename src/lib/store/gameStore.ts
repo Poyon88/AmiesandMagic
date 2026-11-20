@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { regleDecouverteActivee, varianteDecouverte } from "@/lib/game/decouverte";
+import { reglesDeCetteBuild, reglesInitiales, type ReglesDecouverte } from "@/lib/game/decouverte";
 import type { Capability, GameState, GameAction, Card, CardInstance, DamageEvent, DeathFxEvent, HeroDefinition, HeroPowerAction, KeywordMode, PlayerState, SpellTargetSlot, TokenTemplate } from "@/lib/game/types";
 import { effetsDuPouvoir } from "@/lib/game/hero-power";
 import type { DeckPickerKeyword } from "@/lib/game/engine";
@@ -880,6 +880,8 @@ interface GameStore {
     factionCardPool?: Card[],
     allSpellsPool?: Card[],
     formatCode?: import("@/lib/game/types").FormatCode | null,
+    /** Règles figées par le serveur pour CETTE partie. À défaut : celles de la build. */
+    regles?: ReglesDecouverte,
   ) => void;
   setGameState: (state: GameState) => void;
   setLocalPlayerId: (id: string) => void;
@@ -2054,7 +2056,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   boardDefeatMusicUrl: null,
   lastSfxEvents: [],
 
-  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool, allSpellsPool, formatCode) => {
+  initGame: (player1Id, player2Id, player1Cards, player2Cards, firstPlayerIndex, seed, player1Hero, player2Hero, factionCardPool, allSpellsPool, formatCode, regles) => {
     const state = initializeGame(
       player1Id,
       player2Id,
@@ -2067,12 +2069,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       factionCardPool,
       allSpellsPool,
       formatCode,
-      // Variante de règles de CETTE build : les deux clients d'une partie
-      // tournent sur le même déploiement, donc sur le même drapeau.
-      // Variante 1 : `regles` inchangé (hash identique à avant la variante 2).
-      regleDecouverteActivee()
-        ? { decouverteAlternee: true, ...(varianteDecouverte() === 2 ? { decouverteVariante: 2 as const } : {}) }
-        : undefined,
+      // Règles de découverte : celles que le SERVEUR a figées pour la partie,
+      // transmises par la page de match. Le drapeau de la build ne sert que de
+      // repli (capture indisponible) — deux clients servis par deux
+      // déploiements n'ont pas forcément le même, et lire chacun le sien
+      // figeait la partie à la première découverte.
+      reglesInitiales(regles ?? reglesDeCetteBuild()),
     );
     // Inject token templates into GameState for engine access
     state.tokenTemplates = get().tokenTemplates;

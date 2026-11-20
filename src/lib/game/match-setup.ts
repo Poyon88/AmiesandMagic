@@ -19,7 +19,7 @@ import { effetsDuPouvoir } from "./hero-power";
 import { fetchAllRows } from "@/lib/supabase/fetchAllRows";
 import { firstPlayerIndexForMatch, seedForMatch } from "./first-player";
 import { initializeGame } from "./engine";
-import { regleDecouverteActivee } from "./decouverte";
+import { lireRegles, reglesDeCetteBuild, reglesInitiales, type ReglesDecouverte } from "./decouverte";
 
 // Colonnes de `cards` réellement consommées par le moteur en partie. Projection
 // explicite (au lieu de select("*")) pour réduire l'egress : le pool de sorts +
@@ -298,7 +298,7 @@ export async function loadMatchSetup(db: SupabaseClient, match: MatchRow): Promi
 
 /** État initial, construit EXACTEMENT comme `gameStore.initGame` + l'appel
  *  `setOwnedLimitedCardIds` de la page de match. */
-export function initialStateFromSetup(setup: MatchSetup, decouverteAlternee = regleDecouverteActivee()): GameState {
+export function initialStateFromSetup(setup: MatchSetup, regles: ReglesDecouverte = reglesDeCetteBuild()): GameState {
   const { match } = setup;
   const state = initializeGame(
     match.player1_id,
@@ -312,7 +312,7 @@ export function initialStateFromSetup(setup: MatchSetup, decouverteAlternee = re
     setup.factionCards,
     setup.allSpells,
     setup.formatCode,
-    decouverteAlternee ? { decouverteAlternee: true } : undefined,
+    reglesInitiales(regles),
   );
   state.tokenTemplates = setup.tokenTemplates;
   state.machineTemplates = setup.machineTemplates;
@@ -349,6 +349,14 @@ export interface MatchSetupSnapshot {
   p2OwnedLimitedIds: number[];
   formatCode: FormatCode | null;
   decouverteAlternee: boolean;
+  /** Absent des captures d'avant le 2026-11-20 et en variante 1. */
+  decouverteVariante?: 2;
+}
+
+/** Règles figées avec la partie : celles que les deux clients et le rejeu
+ *  appliquent, quel que soit le drapeau de leur propre build. */
+export function reglesDuSnapshot(snap: Pick<MatchSetupSnapshot, "decouverteAlternee" | "decouverteVariante">): ReglesDecouverte {
+  return lireRegles(snap) ?? { decouverteAlternee: false };
 }
 
 export function snapshotSetup(setup: MatchSetup, capturedAt = new Date()): MatchSetupSnapshot {
@@ -369,7 +377,7 @@ export function snapshotSetup(setup: MatchSetup, capturedAt = new Date()): Match
     p1OwnedLimitedIds: setup.p1OwnedLimitedIds,
     p2OwnedLimitedIds: setup.p2OwnedLimitedIds,
     formatCode: setup.formatCode,
-    decouverteAlternee: regleDecouverteActivee(),
+    ...reglesDeCetteBuild(),
   };
 }
 
