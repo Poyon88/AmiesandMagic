@@ -19,6 +19,11 @@ import sharp from "sharp";
 export const RATIO_LARGE = 21 / 9;
 /** Largeur du fondu à chaque raccord, en fraction de la hauteur de l'image. */
 const FONDU = 0.06;
+/** Largeur maximale d'une illustration enregistrée. Le générateur rend jusqu'à
+ *  6336 px de large en « 4K », mais aucun écran n'en affiche autant : au-delà de
+ *  3840 px, on ne ferait que servir des fichiers plus lourds. */
+export const LARGEUR_MAX = 3840;
+const WEBP = { quality: 88, effort: 4 } as const;
 
 export interface Gabarit {
   /** Largeur et hauteur de la version large. */
@@ -53,7 +58,9 @@ async function dimensions(image: Buffer): Promise<{ w: number; h: number }> {
 }
 
 /** Canevas 21:9 à soumettre au générateur : l'original au centre, ses reflets
- *  floutés dans les marges. Rendu en PNG (sans perte : le centre sert de repère). */
+ *  floutés dans les marges. En JPEG : c'est un modèle à lire, pas l'image
+ *  finale (le centre est recollé depuis l'original), et un PNG de plateau en
+ *  haute définition pèserait une dizaine de Mo. */
 export async function preparerCanevas(original: Buffer): Promise<{ canevas: Buffer; gabarit: Gabarit }> {
   const { w, h } = await dimensions(original);
   if (!estEtendable(w, h)) throw new Error(`illustration ${w}×${h} : seul un format proche du 16:9 peut être étendu`);
@@ -81,7 +88,7 @@ export async function preparerCanevas(original: Buffer): Promise<{ canevas: Buff
         : []),
       { input: net, left: g.marge, top: 0 },
     ])
-    .png()
+    .jpeg({ quality: 92 })
     .toBuffer();
   return { canevas, gabarit: g };
 }
@@ -120,15 +127,61 @@ export async function recomposer(original: Buffer, genere: Buffer): Promise<{ im
     .png()
     .toBuffer();
 
-  const image = await sharp(fond)
-    .composite([{ input: centre, left: g.marge, top: 0 }])
-    .webp({ quality: 92, effort: 4 })
+  const colle = await sharp(fond).composite([{ input: centre, left: g.marge, top: 0 }]).png().toBuffer();
+  return enregistrable(colle);
+}
+
+/** Ramène une illustration à LARGEUR_MAX au plus et l'encode en WebP. */
+async function enregistrable(image: Buffer): Promise<{ image: Buffer; gabarit: Gabarit }> {
+  const { w, h } = await dimensions(image);
+  const echelle = Math.min(1, LARGEUR_MAX / w);
+  const largeur = Math.round(w * echelle);
+  const hauteur = Math.round(h * echelle);
+  const sortie = await sharp(image).rotate().resize(largeur, hauteur, { fit: "fill" }).webp(WEBP).toBuffer();
+  const centre = Math.min(largeur, Math.round((hauteur * 16) / 9));
+  return { image: sortie, gabarit: { largeur, hauteur, centre, marge: Math.floor((largeur - centre) / 2) } };
+}
+
+/**
+ * Version large REDESSINÉE : l'image rendue par le générateur est gardée telle
+ * quelle, centre compris. À la différence de `recomposer`, le centre n'est plus
+ * l'original au pixel près — il est redessiné fidèlement, en haute définition.
+ * C'est le seul moyen de gagner en netteté sur un plateau dont l'original est
+ * petit ; à valider à l'œil, le modèle pouvant s'écarter du dessin d'origine.
+ */
+export async function redessiner(genere: Buffer): Promise<{ image: Buffer; gabarit: Gabarit }> {
+  return enregistrable(genere);
+}
+
+/** Une illustration est-elle déjà au format large (générée en 21:9) ? */
+export function estLarge(w: number, h: number): boolean {
+  return w > 0 && h > 0 && w / h > 2.1;
+}
+
+/**
+ * Plateau généré directement en large : on en tire l'illustration 16:9 (le
+ * centre, à la même hauteur) pour les écrans ordinaires, les vignettes et la
+ * collection. Rend les deux images prêtes à enregistrer.
+ */
+export async function deplierLarge(genere: Buffer): Promise<{ large: Buffer; centre: Buffer; gabarit: Gabarit }> {
+  const { image: large, gabarit } = await enregistrable(genere);
+  const centre = await sharp(large)
+    .extract({ left: gabarit.marge, top: 0, width: gabarit.centre, height: gabarit.hauteur })
+    .webp(WEBP)
     .toBuffer();
-  return { image, gabarit: g };
+  return { large, centre, gabarit };
 }
 
 /** Consigne donnée au générateur avec le canevas préparé. */
 export const CONSIGNE_EXTENSION = `This is a game board illustration for a fantasy card game, placed in the CENTER of a wider 21:9 canvas. The left and right margins of the canvas currently contain only a blurred, mirrored placeholder.
 Redraw the whole canvas at 21:9 so that the two blurred margins become a sharp, natural, seamless CONTINUATION of the central scene: same environment, same lighting, same colour palette, same painting style, same level of detail. Extend the ground, walls, sky, vegetation and decorative borders outward as they would naturally continue.
 Keep the central part of the image exactly as it is: do not move, redraw, recolour or crop it.
+The margins are background scenery only: no characters, no creatures, no cards, no frames, no interface elements, no logos, no new focal point, no symmetry line or visible seam where the margins meet the centre.`;
+
+/** Consigne du mode « redessiner » : même canevas, mais tout est repeint en
+ *  haute définition, centre compris. */
+export const CONSIGNE_REDESSIN = `This is a game board illustration for a fantasy card game, placed in the CENTER of a wider 21:9 canvas. The left and right margins of the canvas currently contain only a blurred, mirrored placeholder.
+Repaint the whole canvas at 21:9 in very high resolution.
+The central part must stay the SAME picture: same composition, same objects in the same positions, same shapes, same colours, same lighting, same painting style — only sharper and more finely detailed, as if the original had been painted at a much larger size. Do not add, remove, move or redesign anything in it.
+The two blurred margins become a sharp, natural, seamless CONTINUATION of the central scene: extend the ground, walls, sky, vegetation and decorative borders outward as they would naturally continue.
 The margins are background scenery only: no characters, no creatures, no cards, no frames, no interface elements, no logos, no new focal point, no symmetry line or visible seam where the margins meet the centre.`;

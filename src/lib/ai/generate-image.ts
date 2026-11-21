@@ -33,15 +33,18 @@ const IMAGEN_MODELS_2K = [
 // alors qu'une réponse normale arrive en 8 à 10 s : sans borne, le bouton
 // restait sur « Génération… » tout ce temps avant que le repli ne s'enclenche.
 const DELAI_ESSAI_MS = 45_000;
+// Une image « 4K » met 25 à 30 s sans image de référence, davantage avec : la
+// borne ordinaire la couperait en plein rendu.
+const DELAI_ESSAI_4K_MS = 150_000;
 
 /** fetch borné : un dépassement devient une erreur lisible, rangée dans
  *  `errorSink` par l'appelant comme les autres échecs (et donc suivie du repli). */
-async function fetchBorne(model: string, url: string, init: RequestInit): Promise<Response> {
+async function fetchBorne(model: string, url: string, init: RequestInit, delaiMs = DELAI_ESSAI_MS): Promise<Response> {
   try {
-    return await fetch(url, { ...init, signal: AbortSignal.timeout(DELAI_ESSAI_MS) });
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(delaiMs) });
   } catch (err) {
     if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new Error(`${model} n'a pas répondu en ${DELAI_ESSAI_MS / 1000} s`);
+      throw new Error(`${model} n'a pas répondu en ${delaiMs / 1000} s`);
     }
     throw err;
   }
@@ -63,12 +66,21 @@ function consigneOrientation(ratio: string): string {
     : ` Horizontal landscape composition (${ratio}), wider than tall.`;
 }
 
+export type TailleImage = '1K' | '2K' | '4K';
+
 export type GenerateImageOptions = {
   prompt: string;
   highRes?: boolean;
   aspectRatio?: string;
   referenceImageBase64?: string;
   referenceImageMimeType?: string;
+  /** Définition demandée à Gemini. Sans elle, le modèle rend sa taille par
+   *  défaut (environ 1 400 px de large en paysage) ; « 4K » en donne quatre
+   *  fois plus dans chaque sens (6336×2688 en 21:9, mesuré le 2026-11-21 sur
+   *  Gemini 3 Pro Image et 3.1 Flash Image). Plus lent et plus cher : réservé
+   *  aux images affichées en plein écran, comme les plateaux. Avec elle, Imagen
+   *  n'est pas tenté : il ne connaît ni cette option ni le format 21:9. */
+  imageSize?: TailleImage;
   /** Modèle IMPOSÉ. Sans lui, la cascade habituelle s'applique. Avec lui, aucun
    *  repli : comparer deux modèles n'a de sens que si l'on sait lequel a
    *  répondu, et un repli silencieux ferait passer le rendu de l'un pour celui
@@ -141,6 +153,7 @@ async function callGemini(
   referenceImageBase64?: string,
   referenceImageMimeType?: string,
   aspectRatio?: string,
+  imageSize?: TailleImage,
 ): Promise<GenerateImageResult | null> {
   const parts: Array<
     | { text: string }
@@ -166,10 +179,18 @@ async function callGemini(
           responseModalities: ['IMAGE', 'TEXT'],
           // Sans format imposé, Gemini (Nano Banana) choisit seul — souvent du
           // paysage, alors que l'illustration d'une carte est verticale.
-          ...(aspectRatio && RATIOS_GEMINI.has(aspectRatio) ? { imageConfig: { aspectRatio } } : {}),
+          ...((aspectRatio && RATIOS_GEMINI.has(aspectRatio)) || imageSize
+            ? {
+                imageConfig: {
+                  ...(aspectRatio && RATIOS_GEMINI.has(aspectRatio) ? { aspectRatio } : {}),
+                  ...(imageSize ? { imageSize } : {}),
+                },
+              }
+            : {}),
         },
       }),
     },
+    imageSize === '4K' || imageSize === '2K' ? DELAI_ESSAI_4K_MS : DELAI_ESSAI_MS,
   );
   const data = await res.json();
   if (data.error) {
@@ -193,7 +214,7 @@ async function callGemini(
 }
 
 export async function generateImage(opts: GenerateImageOptions): Promise<GenerateImageResult> {
-  const { prompt, highRes, aspectRatio, referenceImageBase64, referenceImageMimeType } = opts;
+  const { prompt, highRes, aspectRatio, referenceImageBase64, referenceImageMimeType, imageSize } = opts;
   if (!prompt) throw new GenerateImageError('Prompt requis', 400);
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -212,7 +233,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
     const estImagen = impose.startsWith('imagen-');
     const result = estImagen
       ? await callImagen(impose, promptText, apiKey, ratio, '2K', errorSink)
-      : await callGemini(impose, promptText, apiKey, errorSink, referenceImageBase64, referenceImageMimeType, ratio);
+      : await callGemini(impose, promptText, apiKey, errorSink, referenceImageBase64, referenceImageMimeType, ratio, imageSize);
     if (result) return result;
     throw new GenerateImageError(
       `Le modèle « ${impose} » n'a rien renvoyé. Détails: ${errorSink.join(' | ') || '(aucune erreur capturée)'}`,
@@ -223,7 +244,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   // Imagen path — high-res, no reference image. If a reference was attached,
   // skip Imagen entirely since its :predict endpoint doesn't accept inline
   // image conditioning the way Gemini's multimodal does.
-  if (highRes && !hasReference) {
+  if (highRes && !hasReference && !imageSize) {
     for (const model of IMAGEN_MODELS_2K) {
       try {
         const result = await callImagen(model, promptText, apiKey, ratio, '2K', errorSink);
@@ -239,7 +260,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
   // jusqu'ici que si Gemini échouait lui aussi — or c'est précisément quand
   // Gemini réussit que le silence trompe : l'illustration part en résolution
   // Gemini alors que l'auteur croit obtenir du 2K.
-  if (highRes && !hasReference && errorSink.length > 0) {
+  if (highRes && !hasReference && !imageSize && errorSink.length > 0) {
     console.warn(`[generate-image] Imagen indisponible, repli sur Gemini. ${errorSink.join(' | ')}`);
   }
 
@@ -254,6 +275,7 @@ export async function generateImage(opts: GenerateImageOptions): Promise<Generat
         referenceImageBase64,
         referenceImageMimeType,
         ratio,
+        imageSize,
       );
       if (result) return result;
     } catch (err) {

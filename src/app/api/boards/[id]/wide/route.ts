@@ -1,9 +1,15 @@
 // Version ultra-large (21:9) de l'illustration d'un plateau — admin.
 //
-//   POST    génère un BROUILLON : les côtés sont inventés par le générateur
-//           d'images, le centre est recollé depuis l'original (cf.
-//           src/lib/boards/wide.ts). Rien n'est écrit en base : l'admin compare
-//           d'abord.
+//   POST    génère un BROUILLON, en demandant au générateur sa plus haute
+//           définition. Deux modes (corps `{ mode }`) :
+//             « etendre » (défaut) — les côtés sont inventés, le centre est
+//               recollé depuis l'original : identique au pixel près, à la
+//               définition de l'original ;
+//             « redessiner » — tout est repeint en haute définition, centre
+//               compris : plus net qu'un petit original, mais plus tout à fait
+//               le même dessin.
+//           Rien n'est écrit en base : l'admin compare d'abord
+//           (cf. src/lib/boards/wide.ts).
 //   PUT     { url } : valide un brouillon — il devient l'illustration large du
 //           plateau, utilisée en partie.
 //   DELETE  retire l'illustration large : le plateau revient à son image 16:9.
@@ -12,7 +18,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/requireAdmin";
 import { generateImage, GenerateImageError } from "@/lib/ai/generate-image";
-import { CONSIGNE_EXTENSION, preparerCanevas, recomposer } from "@/lib/boards/wide";
+import { CONSIGNE_EXTENSION, CONSIGNE_REDESSIN, preparerCanevas, recomposer, redessiner } from "@/lib/boards/wide";
 
 export const maxDuration = 300;
 
@@ -36,11 +42,14 @@ function cheminDeCePlateau(url: unknown, id: number): string | null {
   return new RegExp(`^${dossier(id)}/[0-9]+_[a-z0-9]+\\.webp$`).test(chemin) ? chemin : null;
 }
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
   const id = identifiant((await params).id);
   if (!id) return NextResponse.json({ error: "identifiant invalide" }, { status: 400 });
+
+  const corps = (await request.json().catch(() => ({}))) as { mode?: unknown };
+  const mode = corps.mode === "redessiner" ? "redessiner" : "etendre";
 
   const { data: board, error } = await auth.supabase.from("game_boards").select("id, image_url").eq("id", id).maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,12 +62,14 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
     const { canevas } = await preparerCanevas(original);
     const genere = await generateImage({
-      prompt: CONSIGNE_EXTENSION,
+      prompt: mode === "redessiner" ? CONSIGNE_REDESSIN : CONSIGNE_EXTENSION,
       aspectRatio: "21:9",
+      imageSize: "4K",
       referenceImageBase64: canevas.toString("base64"),
-      referenceImageMimeType: "image/png",
+      referenceImageMimeType: "image/jpeg",
     });
-    const { image, gabarit } = await recomposer(original, Buffer.from(genere.imageBase64, "base64"));
+    const rendu = Buffer.from(genere.imageBase64, "base64");
+    const { image, gabarit } = mode === "redessiner" ? await redessiner(rendu) : await recomposer(original, rendu);
 
     const chemin = `${dossier(id)}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.webp`;
     const { error: envoi } = await auth.supabase.storage
@@ -67,7 +78,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     if (envoi) throw new Error(`stockage : ${envoi.message}`);
 
     const url = auth.supabase.storage.from(BUCKET).getPublicUrl(chemin).data.publicUrl;
-    return NextResponse.json({ url, largeur: gabarit.largeur, hauteur: gabarit.hauteur, modele: genere.model });
+    return NextResponse.json({ url, mode, largeur: gabarit.largeur, hauteur: gabarit.hauteur, poids: image.length, modele: genere.model });
   } catch (e) {
     const statut = e instanceof GenerateImageError ? e.status : 500;
     const message = e instanceof Error ? e.message : String(e);

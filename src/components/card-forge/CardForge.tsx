@@ -579,7 +579,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       label: "Classique (Hearthstone)",
       compositionRules: [
         "A Hearthstone-style fantasy game board viewed from a slight top-down 3/4 perspective, like a polished wooden / stone play surface tilted gently toward the viewer.",
-        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, photoreal detail, no blur, no soft focus, no motion blur, no depth-of-field haze. Every prop and every texture must remain readable when the image is displayed at 1080p or 1440p on a widescreen monitor.",
+        "Ultra-wide 21:9 cinematic framing (aspect ratio about 2.35:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, no blur, no soft focus, no depth-of-field haze; every prop and texture must stay readable on a 1440p ultrawide monitor. SAFE-ZONE RULE — on a standard 16:9 screen only the CENTRAL 76% of the WIDTH is shown (about 12% is cropped off on the left and 12% on the right). The composition must be complete and balanced inside that central 76%; any width-based rule below (side panels, edge strips, central play area) is measured INSIDE that central zone, not on the full canvas. The outer 12% on each side is a natural, seamless continuation of the same scene — more of the same ground and scenery, nothing essential, no second frame, no border where it begins.",
         "Two perfectly symmetric halves separated by a clear central ornamental divider running horizontally across the middle — the upper half mirrors the lower half (player vs opponent zones).",
         "Ornate rectangular outer frame with continuous baroque filigree along all four edges, full-bleed (the frame IS the edge of the image — NO black letterbox, NO padding outside the frame).",
         "Thematic props flanking each side of the play area (candles, books, weapons, tools, trinkets appropriate to the scene). Rich volumetric lighting, deep contrast, polished AAA trading-card-game board quality.",
@@ -589,7 +589,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       label: "Minimal (figurines 3D)",
       compositionRules: [
         "A minimalist fantasy game board viewed from a slight top-down 3/4 perspective, like a clean, uncluttered play surface tilted gently toward the viewer.",
-        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every edge readable at 1440p.",
+        "Ultra-wide 21:9 cinematic framing (aspect ratio about 2.35:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, no blur, no soft focus, no depth-of-field haze; every prop and texture must stay readable on a 1440p ultrawide monitor. SAFE-ZONE RULE — on a standard 16:9 screen only the CENTRAL 76% of the WIDTH is shown (about 12% is cropped off on the left and 12% on the right). The composition must be complete and balanced inside that central 76%; any width-based rule below (side panels, edge strips, central play area) is measured INSIDE that central zone, not on the full canvas. The outer 12% on each side is a natural, seamless continuation of the same scene — more of the same ground and scenery, nothing essential, no second frame, no border where it begins.",
         "CRITICAL LAYOUT RULE — the CENTRAL 60% of the frame (horizontally and vertically) MUST be an empty, uniform, flat play surface. Allowed surfaces: polished stone, smooth planked wood, worn parchment, drifting low mist, brushed metal, fine sand. NO decorative props, NO objects, NO creatures, NO ornaments, NO runes, NO emblems, NO text inside this central play area. The surface must read as a clean stage where miniature figurines could be placed and remain highly legible.",
         "All decorative richness lives on the OUTER BORDERS only: two vertical side panels (left ~18% of width, right ~18% of width) carry ornate baroque filigree plus thematic props (candles, books, weapons, banners, trinkets) appropriate to the scene; a top band (~12% of height) and a bottom band (~12% of height) carry matching filigree and subtler props.",
         "A single subtle horizontal line may mark the midline between the two player halves, but NO ornate central divider, NO medallion, NO central emblem, NO central crest.",
@@ -601,7 +601,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       label: "Surface pure (terrain seul)",
       compositionRules: [
         "A pure natural terrain surface viewed from a slight top-down 3/4 perspective, completely filling the frame edge-to-edge.",
-        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every pixel readable at 1440p.",
+        "Ultra-wide 21:9 cinematic framing (aspect ratio about 2.35:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, no blur, no soft focus, no depth-of-field haze; every prop and texture must stay readable on a 1440p ultrawide monitor. SAFE-ZONE RULE — on a standard 16:9 screen only the CENTRAL 76% of the WIDTH is shown (about 12% is cropped off on the left and 12% on the right). The composition must be complete and balanced inside that central 76%; any width-based rule below (side panels, edge strips, central play area) is measured INSIDE that central zone, not on the full canvas. The outer 12% on each side is a natural, seamless continuation of the same scene — more of the same ground and scenery, nothing essential, no second frame, no border where it begins.",
         "CRITICAL LAYOUT RULE — the ENTIRE frame is a single uniform natural ground/terrain texture that matches the subject theme (e.g. lush grass, fresh snow, desert sand, cracked earth, mossy stone, shallow water, volcanic ash, forest floor, frozen tundra). NO decorative frame, NO borders, NO ornaments, NO baroque filigree, NO props, NO objects, NO buildings, NO structures, NO characters, NO creatures, NO banners, NO weapons, NO runes, NO emblems, NO crests, NO text, NO UI, NO central divider, NO medallions. JUST the ground.",
         "Subtle natural variation is welcome and encouraged: tufts of taller grass, small wildflowers, scattered pebbles, footprints in snow, patches of ice, dune ripples, leaves, twigs, light moss, cracks in stone — but they MUST blend into the surface, never forming a decorative arrangement or drawing attention away from the flat play area.",
         "Even, diffuse ambient lighting consistent with the environment's mood (warm midday sun, cold overcast sky, blue moonlight…). NO harsh shadows, NO rim light, NO dramatic spotlights — the whole surface must feel uniformly lit so miniature figurines placed on top remain highly legible.",
@@ -612,7 +612,7 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
       label: "MTGO (cimetière à gauche, héros à droite)",
       compositionRules: [
         "An MTG Arena / MTGO-inspired digital game board viewed from a slight top-down 3/4 perspective. Clean, restrained, AAA digital-trading-card-game look.",
-        "16:9 cinematic widescreen framing (aspect ratio exactly 1.778:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, every pixel readable at 1440p.",
+        "Ultra-wide 21:9 cinematic framing (aspect ratio about 2.35:1, horizontal). Render at the model's HIGHEST available resolution — ultra-sharp, crisp contours, no blur, no soft focus, no depth-of-field haze; every prop and texture must stay readable on a 1440p ultrawide monitor. SAFE-ZONE RULE — on a standard 16:9 screen only the CENTRAL 76% of the WIDTH is shown (about 12% is cropped off on the left and 12% on the right). The composition must be complete and balanced inside that central 76%; any width-based rule below (side panels, edge strips, central play area) is measured INSIDE that central zone, not on the full canvas. The outer 12% on each side is a natural, seamless continuation of the same scene — more of the same ground and scenery, nothing essential, no second frame, no border where it begins.",
         "CRITICAL FULL-BLEED RULE — the play surface (and the side panels) MUST extend ALL THE WAY to the four edges of the canvas. Every pixel of the frame is part of the scene. NO white band, NO light band, NO empty band, NO blank strip, NO letterbox, NO padding, NO border, NO vignette, NO transparent edge anywhere — top edge, bottom edge, left edge, right edge are ALL filled by the scene material with zero margin.",
         "CRITICAL LAYOUT RULE — the CENTRAL 92% of the WIDTH (and the FULL height) MUST be an empty, uniform, flat play surface that reads as a calm stage where cards can be placed and remain highly legible. Allowed surfaces: polished stone slab, smooth planked wood, worn parchment, brushed metal plate, fine sand, mossy flagstones — pick ONE consistent material. NO decorative props, NO objects, NO creatures, NO ornaments, NO runes, NO emblems, NO text, NO HUD elements inside this central play area. The play surface is the OVERWHELMING majority of the image and TOUCHES the top and bottom edges of the canvas.",
         "Decoration is restricted to two MINIMAL vertical edge strips — each only ~4% of width on the LEFT and RIGHT edges. Think \"a hint of vegetation creeping in from off-screen\", NOT a side panel or a UI bezel. Allowed per side: ONE or TWO small organic silhouettes (e.g. a few leaves, a small mushroom cluster, a single lantern peeking in, a tuft of grass). Loose, asymmetric, biological — they spill onto the play surface like real-world flora at the edge of a clearing. Top and bottom of these strips fade naturally into the play surface, with no visible boundary.",
@@ -1501,7 +1501,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
     if (!file) return;
     const img = new window.Image();
     img.onload = () => {
-      const MAX_W = 1920;
+      // 3840 : de quoi accueillir un plateau importé en haute définition ou
+      // au format large (21:9), que /api/boards reconnaît à l'enregistrement.
+      const MAX_W = 3840;
       let { width, height } = img;
       if (width > MAX_W) {
         height = Math.round(height * (MAX_W / width));
@@ -1536,16 +1538,16 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
 
     const callOnce = async (): Promise<BdVariation | { error: string }> => {
       try {
-        const res = await fetch("/api/cards/generate-image", {
+        // Un plateau s'affiche en plein écran, jusque sur des écrans
+        // ultra-larges : route dédiée, qui le génère en 21:9 à la plus haute
+        // définition du générateur puis le rend en WebP à une largeur utile.
+        // À l'enregistrement, /api/boards en tire l'illustration 16:9 (le
+        // centre) et garde l'image entière comme version large.
+        const res = await fetch("/api/boards/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             prompt: bdPrompt,
-            // Boards are rendered full-screen in-game → request Imagen 4 Ultra
-            // 2K when no reference is attached (API falls back to Gemini
-            // automatically if Imagen fails or a reference image is present).
-            highRes: true,
-            aspectRatio: "16:9",
             ...(bdRefImageBase64 && bdRefImageMime
               ? { referenceImageBase64: bdRefImageBase64, referenceImageMimeType: bdRefImageMime }
               : {}),
@@ -6088,7 +6090,9 @@ export default function CardForge({ initialBalance = {} }: { initialBalance?: Ba
                       return (
                         <button key={i} type="button" disabled={!v} onClick={toggle}
                           style={{
-                            width: "100%", aspectRatio: "16/9", borderRadius: 10, overflow: "hidden",
+                            // 21/9 : format des plateaux générés (un import 16:9 s'y
+                            // loge en entier, l'image étant affichée en « contain »).
+                            width: "100%", aspectRatio: "21/9", borderRadius: 10, overflow: "hidden",
                             border: isSelected ? "3px solid #27ae60" : "2px dashed #ddd",
                             background: v ? checkerBg : "#fafafa",
                             padding: 0, cursor: v ? "pointer" : "default",

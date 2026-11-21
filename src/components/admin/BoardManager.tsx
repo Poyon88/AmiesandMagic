@@ -226,8 +226,8 @@ export default function BoardManager() {
     }
   };
 
-  const handleExtendWide = async (board: GameBoard) => {
-    const data = await wideCall(board, "POST");
+  const handleExtendWide = async (board: GameBoard, mode: "etendre" | "redessiner" = "etendre") => {
+    const data = await wideCall(board, "POST", { mode });
     if (data?.url) setWideDrafts((d) => ({ ...d, [board.id]: data.url! }));
   };
 
@@ -606,8 +606,11 @@ export default function BoardManager() {
           </div>
 
           {/* Version large (21:9) : couvre le terrain élargi des écrans
-              ultra-larges. Le centre est l'illustration d'origine, intacte ;
-              seuls les côtés sont générés. À valider à l'œil avant usage. */}
+              ultra-larges, et c'est elle que le jeu affiche dès qu'elle existe.
+              « Étendre » : le centre est l'illustration d'origine, intacte,
+              seuls les côtés sont générés — la définition reste celle de
+              l'original. « Redessiner en 4K » : tout est repeint en haute
+              définition. À valider à l'œil avant usage. */}
           <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #eee" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
               <span style={STYLE.title as React.CSSProperties}>Version large (21:9)</span>
@@ -624,7 +627,15 @@ export default function BoardManager() {
                 disabled={wideBusy !== null}
                 style={{ ...STYLE.button, opacity: wideBusy !== null ? 0.5 : 1 }}
               >
-                {wideBusy === board.id ? "Génération… (jusqu'à une minute)" : wideDrafts[board.id] ? "Refaire" : board.image_url_wide ? "Régénérer" : "Étendre"}
+                {wideBusy === board.id ? "Génération… (jusqu'à deux minutes)" : wideDrafts[board.id] ? "Refaire" : board.image_url_wide ? "Régénérer" : "Étendre"}
+              </button>
+              <button
+                onClick={() => handleExtendWide(board, "redessiner")}
+                disabled={wideBusy !== null}
+                title="Tout est repeint en haute définition, centre compris : plus net qu'un petit original, mais ce n'est plus exactement le même dessin."
+                style={{ ...STYLE.button, background: "#6c3483", opacity: wideBusy !== null ? 0.5 : 1 }}
+              >
+                Redessiner en 4K
               </button>
               {wideDrafts[board.id] && (
                 <button onClick={() => handleValidateWide(board)} disabled={wideBusy !== null} style={{ ...STYLE.button, background: "#2e7d32" }}>

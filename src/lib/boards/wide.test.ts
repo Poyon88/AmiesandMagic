@@ -4,7 +4,7 @@
 // quelle que soit l'image rendue par le générateur.
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { estEtendable, gabaritLarge, preparerCanevas, recomposer } from "./wide";
+import { deplierLarge, estEtendable, estLarge, gabaritLarge, LARGEUR_MAX, preparerCanevas, recomposer, redessiner } from "./wide";
 
 /** Image unie w × h. */
 const unie = (w: number, h: number, c: { r: number; g: number; b: number }) =>
@@ -47,7 +47,7 @@ describe("canevas soumis au générateur", () => {
     const meta = await sharp(canevas).metadata();
     expect([meta.width, meta.height]).toEqual([gabarit.largeur, gabarit.hauteur]);
     expect(gabarit.hauteur).toBe(180);
-    expect(await pixel(canevas, gabarit.marge + 160, 90)).toEqual([200, 40, 40]);
+    expect(proche(await pixel(canevas, gabarit.marge + 160, 90), [200, 40, 40], 3)).toBe(true);
     // Les marges sont amorcées avec les couleurs de l'original, pas laissées noires.
     expect(proche(await pixel(canevas, 5, 90), [200, 40, 40], 12)).toBe(true);
   });
@@ -84,5 +84,43 @@ describe("recollage de l'original", () => {
     expect(r).toBeLessThan(190);
     expect(g).toBeGreaterThan(50);
     expect(g).toBeLessThan(170);
+  });
+});
+
+describe("haute définition", () => {
+  it("un original en haute définition garde sa hauteur, côtés compris", async () => {
+    const original = await unie(2816, 1536, { r: 200, g: 40, b: 40 });
+    const genere = await unie(6336, 2688, { r: 20, g: 180, b: 60 });
+    const { image, gabarit } = await recomposer(original, genere);
+    const meta = await sharp(image).metadata();
+    expect([meta.width, meta.height]).toEqual([gabarit.largeur, gabarit.hauteur]);
+    expect(gabarit.hauteur).toBe(1536);
+    expect(gabarit.largeur).toBeLessThanOrEqual(LARGEUR_MAX);
+  });
+
+  it("aucune illustration enregistrée ne dépasse la largeur maximale", async () => {
+    const { image, gabarit } = await redessiner(await unie(6336, 2688, { r: 20, g: 180, b: 60 }));
+    const meta = await sharp(image).metadata();
+    expect(meta.width).toBe(LARGEUR_MAX);
+    expect(meta.format).toBe("webp");
+    expect(gabarit.largeur / gabarit.hauteur).toBeCloseTo(6336 / 2688, 2);
+  });
+
+  it("un plateau généré en large donne aussi son illustration 16:9, à la même hauteur", async () => {
+    const { large, centre, gabarit } = await deplierLarge(await unie(6336, 2688, { r: 20, g: 180, b: 60 }));
+    const l = await sharp(large).metadata();
+    const c = await sharp(centre).metadata();
+    expect(c.height).toBe(l.height);
+    expect(c.width! / c.height!).toBeCloseTo(16 / 9, 2);
+    // Le centre est bien pris au milieu : marges égales de part et d'autre.
+    expect(gabarit.marge * 2 + gabarit.centre).toBeLessThanOrEqual(l.width!);
+    expect(l.width! - (gabarit.marge * 2 + gabarit.centre)).toBeLessThanOrEqual(1);
+  });
+
+  it("reconnaît une illustration déjà large", () => {
+    expect(estLarge(6336, 2688)).toBe(true);
+    expect(estLarge(3840, 1629)).toBe(true);
+    expect(estLarge(1920, 1080)).toBe(false);
+    expect(estLarge(0, 0)).toBe(false);
   });
 });

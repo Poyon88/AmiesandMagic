@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { validateFactionClan, validateRace } from '@/lib/validation/faction-clan';
 import { requireAdmin } from '@/lib/admin/requireAdmin';
+import sharp from 'sharp';
+import { deplierLarge, estLarge } from '@/lib/boards/wide';
 
 async function getAuthUser() {
   const cookieStore = await cookies();
@@ -88,6 +90,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image requise (base64 ou URL)' }, { status: 400 });
     }
 
+    // PLATEAU GÉNÉRÉ EN LARGE (21:9). La forge envoie une seule image ; si elle
+    // est au format large, elle devient la version large du plateau, et son
+    // centre 16:9 — à la même hauteur — devient l'illustration ordinaire
+    // (écrans standards, vignettes, collection). Un plateau importé en 16:9
+    // reste tel quel : sa version large se fait ensuite depuis /admin/boards.
+    let image_url_wide: string | null = null;
+    try {
+      const rep = await fetch(image_url, { signal: AbortSignal.timeout(30_000) });
+      if (rep.ok) {
+        const octets = Buffer.from(await rep.arrayBuffer());
+        const meta = await sharp(octets).metadata();
+        if (estLarge(meta.width ?? 0, meta.height ?? 0)) {
+          const { large, centre } = await deplierLarge(octets);
+          const base = `board_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          const envoyer = async (chemin: string, contenu: Buffer) => {
+            const { error: e } = await supabase.storage
+              .from('board-images')
+              .upload(chemin, contenu, { upsert: true, contentType: 'image/webp', cacheControl: '31536000' });
+            if (e) throw new Error(`Image: ${e.message}`);
+            return supabase.storage.from('board-images').getPublicUrl(chemin).data.publicUrl;
+          };
+          image_url_wide = await envoyer(`wide/${base}.webp`, large);
+          image_url = await envoyer(`${base}.webp`, centre);
+        }
+      }
+    } catch (e) {
+      // L'image reste enregistrée telle qu'envoyée : un plateau sans version
+      // large vaut mieux qu'un enregistrement refusé.
+      console.warn('[boards] version large non dérivée :', e instanceof Error ? e.message : e);
+      image_url_wide = null;
+    }
+
     // Optional graveyard image — uploaded to the same bucket as the main
     // board image so it shares the storage / signed-URL pipeline.
     let graveyard_image_url: string | null = null;
@@ -104,6 +138,7 @@ export async function POST(request: Request) {
     }
 
     const insertData: Record<string, unknown> = { name, image_url };
+    if (image_url_wide) insertData.image_url_wide = image_url_wide;
     if (typeof layout === 'string' && (layout === 'classic' || layout === 'mtgo')) {
       insertData.layout = layout;
     }
