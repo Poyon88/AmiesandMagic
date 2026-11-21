@@ -252,17 +252,17 @@
         "label": "Hex",
         "desc": "On death, deal X damage to all units (allies and enemies), where X equals its ATK."
       },
-      "synergie": {
-        "label": "Synergy X",
-        "desc": "When it arrives, choose an ability: gains +X/+X each time that ability triggers (once per source per turn)."
+      "indestructible": {
+        "label": "Indestructible",
+        "desc": "Takes no combat damage."
       },
       "etheree": {
         "label": "Ethereal",
         "desc": "Takes at most 1 damage per hit in combat. Damage it takes from actions is doubled."
       },
-      "indestructible": {
-        "label": "Indestructible",
-        "desc": "Takes no combat damage."
+      "synergie": {
+        "label": "Synergy X",
+        "desc": "When it arrives, choose an ability: gains +X/+X each time that ability triggers (once per source per turn)."
       },
       "regeneration": {
         "label": "Regeneration X",
@@ -446,13 +446,25 @@
         "label": "Discipline +X/+Y",
         "desc": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to another targeted allied unit."
       },
-      "lien_du_sang": {
-        "label": "Blood Bond X",
-        "desc": "Gains +X/+X and you lose X HP, if your HP allows it."
-      },
       "usurpation": {
         "label": "Usurpation +X/+Y",
         "desc": "Gives permanent +X/+Y to another targeted allied unit for each opponent's card you have played."
+      },
+      "mutation": {
+        "label": "Mutation X",
+        "desc": "In hand: discover 2 common creatures costing X. This card takes their best ATK and HP and 1 ability from each."
+      },
+      "infestation": {
+        "label": "Infestation X",
+        "desc": "Shuffle X copies of this unit into your deck. When drawn, a copy is summoned and you draw another card."
+      },
+      "enterrement": {
+        "label": "Burial X",
+        "desc": "Put the top X cards of the targeted player's deck into their graveyard (fatigue for each missing card)."
+      },
+      "lien_du_sang": {
+        "label": "Blood Bond X",
+        "desc": "Gains +X/+X and you lose X HP, if your HP allows it."
       },
       "esprit_de_corps": {
         "label": "Camaraderie",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "Impact X",
         "desc": "Deals X damage to an enemy target (unit or hero)."
+      },
+      "execution": {
+        "label": "Execution X",
+        "desc": "Destroys a targeted enemy unit with cost ≤ X.",
+        "desc_any": "Destroys a targeted enemy unit."
+      },
+      "silence": {
+        "label": "Silence",
+        "desc": "Removes all keywords from a targeted other unit and resets its stats to their original values."
+      },
+      "guerison": {
+        "label": "Healing X",
+        "desc": "Restores X HP to a targeted other allied unit or to your hero."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -573,30 +598,9 @@
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       },
-      "execution": {
-        "label": "Execution X",
-        "desc": "Destroys a targeted enemy unit with cost ≤ X.",
-        "desc_any": "Destroys a targeted enemy unit."
-      },
-      "silence": {
-        "label": "Silence",
-        "desc": "Removes all keywords from a targeted other unit and resets its stats to their original values."
-      },
-      "guerison": {
-        "label": "Healing X",
-        "desc": "Restores X HP to a targeted other allied unit or to your hero."
-      },
-      "mutation": {
-        "label": "Mutation X",
-        "desc": "In hand: discover 2 common creatures costing X. This card takes their best ATK and HP and 1 ability from each."
-      },
-      "infestation": {
-        "label": "Infestation X",
-        "desc": "Shuffle X copies of this unit into your deck. When drawn, a copy is summoned and you draw another card."
-      },
-      "enterrement": {
-        "label": "Burial X",
-        "desc": "Put the top X cards of the targeted player's deck into their graveyard (fatigue for each missing card)."
+      "peste": {
+        "label": "Plague",
+        "desc": "Plagued: loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "Summon",
         "desc": "Creates {token}."
       },
+      "malediction": {
+        "label": "Curse X",
+        "desc": "Curses the targeted enemy unit with cost ≤ X: it is exiled at the end of the opponent's next turn",
+        "desc_any": "Curses the targeted enemy unit: it is exiled at the end of the opponent's next turn"
+      },
       "seuil_colere": {
         "label": "Wrath Threshold X",
         "desc": "If your deck has 25 cards or fewer, this action deals X additional damage."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "Divination",
         "desc": "Reveals the top 3 cards of your deck; place 1 on top and 2 on the bottom, in the order chosen."
-      },
-      "malediction": {
-        "label": "Curse X",
-        "desc": "Curses the targeted enemy unit with cost ≤ X: it is exiled at the end of the opponent's next turn",
-        "desc_any": "Curses the targeted enemy unit: it is exiled at the end of the opponent's next turn"
       },
       "corruption": {
         "label": "Corruption X",
@@ -738,10 +742,6 @@
         "label": "Impact X",
         "desc": "Deals X damage to an enemy target (unit or hero)."
       },
-      "canon": {
-        "label": "Cannon X",
-        "desc": "Deals X damage to a random enemy unit."
-      },
       "deferlement": {
         "label": "Onslaught X",
         "desc": "Deal X damage to all enemy creatures."
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "Healing X",
-        "desc": "Restores X HP to an allied unit or to your hero."
+        "desc": "Restores X HP to an allied unit or to your hero"
       },
       "seconde_vie": {
         "label": "Second Life X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "Incineration X",
         "desc": "Puts X random cards from the targeted graveyard back under their owner's deck"
+      },
+      "enterrement": {
+        "label": "Burial X",
+        "desc": "Put the top X cards of the targeted player's deck into their graveyard"
       },
       "creuser": {
         "label": "Dig X",
@@ -860,6 +864,10 @@
         "label": "Mass Summon",
         "desc": "Creates {tokens}."
       },
+      "canon": {
+        "label": "Cannon X",
+        "desc": "Deals X damage to a random enemy unit."
+      },
       "tempete": {
         "label": "Storm X",
         "desc": "Deals X damage split randomly among enemy units."
@@ -880,9 +888,9 @@
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
       },
-      "enterrement": {
-        "label": "Burial X",
-        "desc": "Put the top X cards of the targeted player's deck into their graveyard"
+      "peste": {
+        "label": "Plague",
+        "desc": "Plagues a unit: it loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "At Start of Turn",
         "on_start_of_turn_in_hand": "At the start of the turn, while it is in your hand",
         "in_hand_suffix": "in hand",
+        "in_graveyard_suffix": "in graveyard",
+        "on_end_of_turn_in_graveyard": "At end of turn, while in the graveyard",
         "on_draw": "When Drawn",
         "on_low_hp": "Below 15 HP",
         "on_wound": "Wound",
-        "on_delay": "Delay {d}",
-        "on_end_of_turn_in_graveyard": "At end of turn, while in the graveyard",
-        "in_graveyard_suffix": "in graveyard"
-      },
-      "siphon": {
-        "heal": "and heals your hero for {x} HP",
-        "heal_each": "and heals your hero for {x} HP per target hit",
-        "heal_scatter": "and heals your hero for {x} HP in total"
-      },
-      "neutralise": {
-        "suite_one": ": paralyzed, abilities have no effect",
-        "suite_many": ": paralyzed, abilities have no effect",
-        "tant_que": "while it is in play"
-      },
-      "malediction": {
-        "suite_one": ", exiled at the end of the opponent's next turn",
-        "suite_many": ", exiled at the end of the opponent's next turn"
-      },
-      "domination": {
-        "limit": "as space allows"
+        "on_delay": "Delay {d}"
       },
       "content": {
         "deal_damage_one": "deals {x} damage",
@@ -1010,6 +1001,8 @@
         "conquete": "adds {x} to your Conquest counter",
         "exploration": "adds {x} to your Exploration counter",
         "incineration": "puts {x} cards from the targeted graveyard back under its deck",
+        "enterrement_one": "puts the top card{filter} {deck}",
+        "enterrement_many": "puts the top {x} cards{filter} {deck}",
         "incineration_cible": "puts {cartes} {zone} under {deck}",
         "occurrences": "{n} times: ",
         "alternative": "One of: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action",
-        "enterrement_one": "puts the top card{filter} {deck}",
-        "enterrement_many": "puts the top {x} cards{filter} {deck}"
+        "dechainement_one_any": "plays a random action"
+      },
+      "siphon": {
+        "heal": "and heals your hero for {x} HP",
+        "heal_each": "and heals your hero for {x} HP per target hit",
+        "heal_scatter": "and heals your hero for {x} HP in total"
+      },
+      "domination": {
+        "limit": "as space allows"
       },
       "self": {
         "transformation": "transforms",
@@ -1076,12 +1075,12 @@
         "transformation": "choose a creature to transform",
         "deal_damage": "choose a target to damage",
         "siphon": "choose a target to siphon",
-        "domination": "choose a creature to dominate",
         "heal": "choose a target to heal",
         "buff": "choose a creature to strengthen",
         "usurpation": "choose a creature to strengthen",
         "debuff": "choose a creature to weaken",
         "destroy": "choose a creature to destroy",
+        "domination": "choose a creature to dominate",
         "bounce": "choose a creature to return to hand",
         "paralyze": "choose a creature to paralyze",
         "poison": "choose a creature to poison",
@@ -1091,6 +1090,15 @@
         "exhumation": "choose a creature to resurrect",
         "rappel": "choose a card to return to hand",
         "default": "choose a target"
+      },
+      "neutralise": {
+        "suite_one": ": paralyzed, abilities have no effect",
+        "suite_many": ": paralyzed, abilities have no effect",
+        "tant_que": "while it is in play"
+      },
+      "malediction": {
+        "suite_one": ", exiled at the end of the opponent's next turn",
+        "suite_many": ", exiled at the end of the opponent's next turn"
       },
       "emblem": {
         "badge": "Emblem",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", which triggers at end of turn while it is in the graveyard",
         "on_delay": ", which triggers in {n} turn(s)"
       },
+      "enterrement": {
+        "deck_enemy": "of the opponent's deck into their graveyard",
+        "deck_ally": "of your deck into your graveyard",
+        "deck_any": "of the targeted deck into its graveyard"
+      },
       "incin": {
         "zone_ally": "from your graveyard",
         "zone_enemy": "from the enemy graveyard",
@@ -1161,8 +1174,8 @@
         "keyword": " with the ability {v}",
         "type_creature": " of type Unit",
         "type_spell": " of type action",
-        "min_cost": " costing {n} or more",
-        "type_item": " of type item"
+        "type_item": " of type item",
+        "min_cost": " costing {n} or more"
       },
       "targetd": {
         "count_all": "all units",
@@ -1241,11 +1254,6 @@
         "times": "{x} times 1 {unit}, each time",
         "target_both": "to a random {side} target (unit or hero)",
         "target_unit": "to a random {side} unit"
-      },
-      "enterrement": {
-        "deck_enemy": "of the opponent's deck into their graveyard",
-        "deck_ally": "of your deck into your graveyard",
-        "deck_any": "of the targeted deck into its graveyard"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "all Pegasi",
         "upto": "up to {n} Pegasi"
       },
-      "Sphinx": {
-        "def": "the Sphinx",
-        "bare": "Sphinx",
-        "de": "of the Sphinx",
-        "one": "a Sphinx",
-        "all": "all Sphinxes",
-        "upto": "up to {n} Sphinxes"
-      },
       "Yétis": {
         "def": "the Yeti",
         "bare": "Yeti",
@@ -1636,6 +1636,14 @@
         "one": "a Yeti",
         "all": "all Yetis",
         "upto": "up to {n} Yetis"
+      },
+      "Sphinx": {
+        "def": "the Sphinx",
+        "bare": "Sphinx",
+        "de": "of the Sphinx",
+        "one": "a Sphinx",
+        "all": "all Sphinxes",
+        "upto": "up to {n} Sphinxes"
       },
       "Hommes-Loups": {
         "def": "the Werewolf",
@@ -2181,8 +2189,8 @@
       "scope": "to an allied unit (or to all)",
       "scope_target": "to an allied unit",
       "edc_compte": "Gains +1 ATK or +1 HP at random {n} times (1 per Camaraderie you have already triggered).",
-      "usurpation_actuel": "Opponent's cards played: {n} — currently +{x}/+{y}.",
       "scope_all": "to all your units",
+      "usurpation_actuel": "Opponent's cards played: {n} — currently +{x}/+{y}.",
       "machine_part": " and {ability}",
       "machine_part_timed": " and {ability} ({timing})",
       "machine_name": "Machine",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
+        "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
         "impact": "Deals X damage to {cibles}.",
         "affaiblissement": "Gives -X ATK and -Y HP to {cibles}.",
         "retour_differe": "Places {cibles} with cost ≤ X beneath their owner's deck.",
         "retour_differe_any": "Places {cibles} on the bottom of their owner's deck.",
         "remontee": "Returns {cibles} to their original owner's hand.",
-        "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
-        "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
         "corruption": "Converts {cibles} with cost ≤ X to your side until end of turn, as space allows; they gain Charge.",
         "corruption_any": "Converts {cibles} to your side until the end of the turn, up to the available slots; they gain Charge.",
         "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
@@ -2261,10 +2269,10 @@
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
         "usurpation": "+X/+Y to {cibles} for each opponent's card you have played.",
-        "guerison": "Restores X HP to {cibles} and to your hero."
+        "guerison": "Restores X HP to {cibles} and to your hero.",
+        "peste": "Plagues {cibles}: each loses 1 HP at the end of its turn, and its Plague spreads to another unit when it dies."
       },
       "creature": {
-        "neutralisation": "While it is in play, {cibles} are paralyzed and their abilities have no effect.",
         "impact": "Deals X damage to {cibles}.",
         "affaiblissement": "Gives -X ATK and -Y HP to {cibles}.",
         "retour_differe": "Places {cibles} with cost ≤ X beneath their owner's deck.",
@@ -2275,18 +2283,13 @@
         "domination": "Takes control of {cibles} with cost ≤ X, as space allows.",
         "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
+        "neutralisation": "While it is in play, {cibles} are paralyzed and their abilities have no effect.",
         "malediction": "Curses {cibles} with cost ≤ X: they are exiled at the end of the opponent's next turn.",
         "malediction_any": "Curses {cibles}: they are exiled at the end of the next enemy turn.",
         "tactique": "Give {cibles} X random abilities taken from creatures of the same cost (one draw per unit).",
         "vampirisme": "Steals up to X HP from {cibles} and adds them to this unit's HP.",
         "devoration": "Destroys {cibles}; this unit permanently gains their ATK and HP.",
         "sacrifice": "Destroy all other allied units to permanently gain their HP and ATK.",
-        "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
-        "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
-        "usurpation": "Permanently gives +X/+Y to all other allied units for each opponent's card you have played.",
-        "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
-        "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
-        "usurpation_soi": "Permanently gains +X ATK and +Y HP for each opponent's card you have played.",
         "execution": "Destroys {cibles} with cost ≤ X, items included.",
         "execution_any": "Destroys {cibles}, items included.",
         "silence": "Removes all keywords from {cibles}, items included, and resets their stats to their original values.",
@@ -2294,6 +2297,12 @@
         "purete": "While your graveyard is empty, all other allied units gain +X ATK and +Y HP.",
         "force_des_ancetres": "While your graveyard holds 7 or more creatures, all other allied units gain +X ATK and +Y HP.",
         "seuil_sacrificiel": "While your deck holds 25 cards or fewer, all other allied units gain +X ATK and +Y HP.",
+        "renforcement": "Permanently gives +X ATK and +Y HP to all other allied units.",
+        "discipline": "If all the costs on your board share the same parity as its own, gives permanent +X/+Y to all other allied units.",
+        "usurpation": "Permanently gives +X/+Y to all other allied units for each opponent's card you have played.",
+        "renforcement_soi": "Permanently gains +X ATK and +Y HP.",
+        "discipline_soi": "If all your creatures in play have a cost of the same parity as its own, permanently gains +X ATK and +Y HP.",
+        "usurpation_soi": "Permanently gains +X ATK and +Y HP for each opponent's card you have played.",
         "silence_soi": "Loses all its keywords and its stats revert to their original values.",
         "guerison_soi": "Recovers X HP.",
         "tactique_soi": "Gains X random abilities taken from creatures of the same cost."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "At start of turn (after the draw)",
     "mode_title_draw": "When this card is drawn",
     "mode_title_low_hp": "When your hero drops below 15 HP (once only)",
-    "mode_title_wound": "Wound: when it takes damage without dying (once per source per turn)",
+    "mode_title_wound": "Wound: when it takes damage without dying (on each wound)",
     "grant_scope_target": "Granted to the targeted creature",
     "grant_scope_all_allies": "Granted to all allied units",
     "required_caps": "Required",
@@ -3782,9 +3791,11 @@
     "kind_label": "Feedback type",
     "kind_bug": "Bug",
     "kind_idea": "Idea",
+    "kind_balance": "Balance",
     "kind_question": "Question",
     "placeholder_bug": "What happened, and what should you have seen instead? Mention the card or screen involved.",
     "placeholder_idea": "What would you like to see changed or added, and why?",
+    "placeholder_balance": "Which card seems too strong or too weak to you, and why?",
     "placeholder_question": "What is your question?",
     "add_screenshot": "Attach a screenshot",
     "attach_hint": "or paste it into the text",

@@ -1,17 +1,18 @@
 // Déclencheur « BLESSURE » (mode "wound" / trigger on_wound).
 //
 // Règle arbitrée par l'auteur : la capacité part quand CETTE créature subit des
-// dégâts et y SURVIT, une fois par SOURCE de dégâts différente et par tour.
+// dégâts et y SURVIT, À CHAQUE blessure — plus de limite par source ni par tour
+// (levée le 2026-11-21, pour en faire un contre de Tempête). Seul garde-fou :
+// les dégâts infligés par une réponse Blessure ne déclenchent rien.
 //
 // Ce qui est verrouillé ici, point par point :
 //   1. blessure RÉELLE seulement (un Bouclier qui absorbe tout ne compte pas) ;
-//   2. la source est le LANCEMENT ou l'EXEMPLAIRE, pas le nom de la carte :
-//      un sort qui frappe trois fois = 1, deux exemplaires = 2, une même
-//      créature par deux canaux = 1 ;
+//   2. chaque paquet de dégâts encaissé compte : un sort qui frappe trois
+//      fois = 3, une même créature qui frappe deux fois = 2 ;
 //   3. « sans mourir » se juge à la GOUTTE pour Tempête et la répartition au
 //      hasard (le pouvoir interrompt les gouttes suivantes), à la frontière
 //      d'effet pour le reste ;
-//   4. la mémoire des sources tombe à chaque fin de tour ;
+//   4. la réponse d'une Blessure ne déclenche aucune Blessure (anti-boucle) ;
 //   5. Poison (tick) et Vampirisme (vol de PV) comptent, hors canal de dégâts ;
 //   6. la cible « damage_source » vise le coupable, héros de son camp à défaut.
 import { describe, expect, it } from "vitest";
@@ -93,7 +94,7 @@ describe("blessure — le cas de base", () => {
     expect(st.effectStack ?? []).toEqual([]);
   });
 
-  it("une créature sans le pouvoir ne déclenche rien (mais retient la source)", () => {
+  it("une créature sans le pouvoir ne déclenche rien", () => {
     const s = mkState();
     s.players[1].board = [attaquant(1, 5)];
     const sort = sortDegats(1);
@@ -102,7 +103,6 @@ describe("blessure — le cas de base", () => {
     const st = lance(s, sort.instanceId);
 
     expect(st.players[0].hero.hp).toBe(30);
-    expect(st.players[1].board[0].woundSourcesThisTurn).toHaveLength(1);
   });
 
   it("un Bouclier qui absorbe tout n'est pas une blessure", () => {
@@ -117,12 +117,11 @@ describe("blessure — le cas de base", () => {
 
     expect(st.players[1].board[0].currentHealth).toBe(5);
     expect(declenchements(st)).toBe(0);
-    expect(st.players[1].board[0].woundSourcesThisTurn ?? []).toEqual([]);
   });
 });
 
-describe("blessure — une fois par SOURCE", () => {
-  it("un même sort qui frappe trois fois ne déclenche qu'une fois", () => {
+describe("blessure — à CHAQUE blessure", () => {
+  it("un même sort qui frappe trois fois déclenche trois fois", () => {
     const s = mkState();
     s.players[1].board = [ecorchee(5)];
     const sort = sortDegats(3, true);
@@ -131,10 +130,10 @@ describe("blessure — une fois par SOURCE", () => {
     const st = lance(s, sort.instanceId);
 
     expect(st.players[1].board[0].currentHealth).toBe(2);
-    expect(declenchements(st)).toBe(1);
+    expect(declenchements(st)).toBe(3);
   });
 
-  it("« sans mourir » se juge à la GOUTTE : 3×1 sur une 2 PV répond à la 1re, puis meurt", () => {
+  it("« sans mourir » se juge à la GOUTTE : 3×1 sur une 2 PV répond à la 1re, puis meurt à la 2e", () => {
     const s = mkState();
     s.players[1].board = [ecorchee(2)];
     const sort = sortDegats(3, true);
@@ -146,7 +145,7 @@ describe("blessure — une fois par SOURCE", () => {
     expect(declenchements(st)).toBe(1);
   });
 
-  it("deux exemplaires de la MÊME carte sont deux sources", () => {
+  it("deux exemplaires de la même carte déclenchent chacun", () => {
     const s = mkState();
     s.players[1].board = [ecorchee(5)];
     const carte = sortDegats(1).card;
@@ -160,7 +159,7 @@ describe("blessure — une fois par SOURCE", () => {
     expect(declenchements(st)).toBe(2);
   });
 
-  it("une même créature qui frappe deux fois dans le tour ne compte qu'une fois ; une autre compte", () => {
+  it("une même créature qui frappe deux fois dans le tour déclenche deux fois ; une autre aussi", () => {
     const s = mkState();
     const e = ecorchee(10);
     s.players[1].board = [e];
@@ -171,16 +170,15 @@ describe("blessure — une fois par SOURCE", () => {
     let st = applyAction(s, { type: "attack", attackerInstanceId: a.instanceId, targetInstanceId: e.instanceId });
     expect(declenchements(st)).toBe(1);
 
-    // 2ᵉ assaut du MÊME attaquant : déjà encaissé ce tour-ci.
+    // 2ᵉ assaut du MÊME attaquant : nouvelle blessure, nouveau déclenchement.
     const a2 = st.players[0].board.find(c => c.instanceId === a.instanceId)!;
     a2.hasAttacked = false; a2.attacksRemaining = 1; a2.tapped = false; a2.targetsAttackedThisTurn = [];
     st = applyAction(st, { type: "attack", attackerInstanceId: a.instanceId, targetInstanceId: e.instanceId });
     expect(st.players[1].board[0].currentHealth).toBe(8);
-    expect(declenchements(st)).toBe(1);
-
-    // Un AUTRE attaquant : nouvelle source.
-    st = applyAction(st, { type: "attack", attackerInstanceId: b.instanceId, targetInstanceId: e.instanceId });
     expect(declenchements(st)).toBe(2);
+
+    st = applyAction(st, { type: "attack", attackerInstanceId: b.instanceId, targetInstanceId: e.instanceId });
+    expect(declenchements(st)).toBe(3);
   });
 
   it("en combat, l'ATTAQUANT blessé par la riposte déclenche aussi", () => {
@@ -198,23 +196,7 @@ describe("blessure — une fois par SOURCE", () => {
   });
 });
 
-describe("blessure — fenêtre d'un tour", () => {
-  it("la mémoire des sources tombe à la fin du tour (des deux camps)", () => {
-    const s = mkState();
-    s.players[1].board = [ecorchee(10)];
-    s.players[0].board = [attaquant(1, 10)];
-    s.players[0].board[0].woundSourcesThisTurn = ["c:quelquun"];
-    const sort = sortDegats(1);
-    s.players[0].hand = [sort];
-
-    let st = lance(s, sort.instanceId);
-    expect(st.players[1].board[0].woundSourcesThisTurn).toHaveLength(1);
-
-    st = applyAction(st, { type: "end_turn" });
-    expect(st.players[1].board[0].woundSourcesThisTurn ?? []).toEqual([]);
-    expect(st.players[0].board[0].woundSourcesThisTurn ?? []).toEqual([]);
-  });
-
+describe("blessure — d'un tour à l'autre", () => {
   it("le même attaquant redéclenche au tour suivant", () => {
     const s = mkStateAvecDecks();
     const e = ecorchee(10);
@@ -243,7 +225,6 @@ describe("blessure — hors canal de dégâts", () => {
     const apres = st.players[1].board[0];
     expect(apres.currentHealth).toBe(4);
     expect(declenchements(st)).toBe(1);
-    expect(apres.woundSourcesThisTurn).toEqual(["poison"]);
   });
 
   it("le tick de Poison qui TUE ne déclenche rien", () => {
@@ -272,7 +253,6 @@ describe("blessure — hors canal de dégâts", () => {
 
     expect(st.players[1].board[0].currentHealth).toBe(3);
     expect(declenchements(st)).toBe(1);
-    expect(st.players[1].board[0].woundSourcesThisTurn).toEqual([`c:${vampire.instanceId}`]);
   });
 });
 
@@ -315,7 +295,7 @@ describe("blessure — cible « la source des dégâts »", () => {
     expect(st.players[1].hero.hp).toBe(30);
   });
 
-  it("deux Vengeresses face à face ne bouclent pas : chacune ne compte l'autre qu'une fois", () => {
+  it("deux Vengeresses face à face ne bouclent pas : une réponse ne déclenche pas l'autre", () => {
     const s = mkState();
     const a = vengeresse(20, 1), b = vengeresse(20, 1);
     s.players[0].board = [a];
@@ -323,10 +303,46 @@ describe("blessure — cible « la source des dégâts »", () => {
 
     const st = applyAction(s, { type: "attack", attackerInstanceId: a.instanceId, targetInstanceId: b.instanceId });
 
-    // Combat 1/1, puis chacune rend 2 à l'autre UNE fois (la 2ᵉ blessure vient
-    // d'une source déjà comptée ce tour-ci).
+    // Combat 1/1, puis chacune rend 2 à l'autre UNE fois : les dégâts d'une
+    // réponse Blessure ne sont pas une blessure au sens du déclencheur.
     expect(st.players[0].board[0].currentHealth).toBe(20 - 1 - 2);
     expect(st.players[1].board[0].currentHealth).toBe(20 - 1 - 2);
+    expect(st.effectStack ?? []).toEqual([]);
+  });
+});
+
+describe("blessure — garde anti-boucle", () => {
+  it("la réponse d'une Blessure ne déclenche pas la Blessure d'une AUTRE porteuse", () => {
+    // P2 : une Vengeresse (2 au coupable) ; P1 : un attaquant qui porte lui
+    // aussi une Blessure (2 au héros ennemi). L'attaquant est blessé deux fois :
+    // par la riposte (il répond), puis par la Vengeresse (il ne répond pas).
+    const s = mkState();
+    const a = ecorchee(20, 1);
+    const v = vengeresse(20, 1);
+    s.players[0].board = [a];
+    s.players[1].board = [v];
+
+    const st = applyAction(s, { type: "attack", attackerInstanceId: a.instanceId, targetInstanceId: v.instanceId });
+
+    expect(st.players[0].board[0].currentHealth).toBe(20 - 1 - 2);
+    expect(st.players[1].hero.hp).toBe(28); // UNE réponse de l'attaquant, pas deux
+    expect(st.effectStack ?? []).toEqual([]);
+  });
+
+  it("une réponse qui blesse sa propre porteuse ne se relance pas", () => {
+    const s = mkState();
+    const TOUTES: TargetSpec = { entity: "unit", count: "all", side: "any", location: "board", designation: "automatic" };
+    const epineuse = mkInstance(mkCard({
+      name: "Épineuse", mana_cost: 3, attack: 0, health: 10,
+      capabilities: [capWound({ content: "deal_damage", magnitude: { x: 1 }, target: TOUTES })],
+    }));
+    s.players[1].board = [epineuse];
+    const sort = sortDegats(1);
+    s.players[0].hand = [sort];
+
+    const st = lance(s, sort.instanceId);
+
+    expect(st.players[1].board[0].currentHealth).toBe(10 - 1 - 1);
     expect(st.effectStack ?? []).toEqual([]);
   });
 });
@@ -445,9 +461,10 @@ describe("blessure — interrompt Tempête et la répartition au hasard", () => 
 
     const st = lance(s, sort.instanceId);
 
-    // 2 − 1 = 1, +5 ⇒ 6, puis −2 ⇒ 4. Sans interruption : morte à la 2e goutte.
+    // Chaque goutte blesse, chaque blessure répond : 2 − 1 + 5 − 1 + 5 − 1 + 5 = 14.
+    // Sans interruption : morte à la 2e goutte.
     expect(st.players[1].board).toHaveLength(1);
-    expect(st.players[1].board[0].currentHealth).toBe(4);
+    expect(st.players[1].board[0].currentHealth).toBe(14);
     expect(st.effectStack ?? []).toEqual([]);
   });
 
@@ -460,7 +477,7 @@ describe("blessure — interrompt Tempête et la répartition au hasard", () => 
     const st = lance(s, sort.instanceId);
 
     expect(st.players[1].board).toHaveLength(1);
-    expect(st.players[1].board[0].currentHealth).toBe(4);
+    expect(st.players[1].board[0].currentHealth).toBe(14);
   });
 
   it("Tempête à l'entrée en jeu d'une créature : même interruption", () => {
@@ -476,12 +493,12 @@ describe("blessure — interrompt Tempête et la répartition au hasard", () => 
     const st = lance(s, orageuse.instanceId);
 
     expect(st.players[1].board).toHaveLength(1);
-    expect(st.players[1].board[0].currentHealth).toBe(4);
+    expect(st.players[1].board[0].currentHealth).toBe(14);
   });
 
   it("la riposte qui tue la source en pleine Tempête ne l'empêche pas de finir", () => {
     // Vengeresse : 2 dégâts au coupable. Le coupable d'une Tempête de sort est
-    // le héros lanceur — il perd 2 PV, et les gouttes restantes partent quand même.
+    // le héros lanceur — il perd 2 PV par goutte, et les gouttes partent toutes.
     const s = mkState();
     s.players[1].board = [vengeresse(5)];
     const sort = sortTempete(3);
@@ -490,7 +507,7 @@ describe("blessure — interrompt Tempête et la répartition au hasard", () => 
     const st = lance(s, sort.instanceId);
 
     expect(st.players[1].board[0].currentHealth).toBe(2);
-    expect(st.players[0].hero.hp).toBe(28);
+    expect(st.players[0].hero.hp).toBe(24);
   });
 
   it("un pouvoir « au choix » en pleine Tempête se résout au hasard, sans question", () => {
@@ -512,6 +529,7 @@ describe("blessure — interrompt Tempête et la répartition au hasard", () => 
 
     expect(st.pendingTriggers ?? []).toEqual([]);
     expect(st.effectStack ?? []).toEqual([]);
-    expect(st.players[0].board[0].currentHealth).toBe(4);
+    // Deux gouttes, deux réponses : 5 − 1 − 1.
+    expect(st.players[0].board[0].currentHealth).toBe(3);
   });
 });

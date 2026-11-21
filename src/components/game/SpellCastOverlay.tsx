@@ -21,8 +21,8 @@ import { emitImpact } from "@/lib/fx/impactFx";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, spellCardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
 import { useVocab } from "@/i18n/useVocab";
+import { useCardText } from "./CardTextProvider";
 import CompagnonsNames from "@/components/cards/CompagnonsNames";
 import TokenNames from "@/components/cards/TokenNames";
 import { tokenCardsForKeyword, tokenCardsForComposed } from "@/lib/game/token-preview";
@@ -134,6 +134,7 @@ function SpellTargetArrows({
 export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlayProps) {
   const t = useTranslations("game");
   const vocab = useVocab();
+  const { localizeName } = useCardText();
   const [mounted, setMounted] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const tokenTemplates = useGameStore((s) => s.tokenTemplates);
@@ -189,6 +190,12 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
   const card = event?.card ?? null;
   const xVals = card ? parseXValuesFromEffectText(card.effect_text) : {};
   const cleaned = card ? cleanEffectText(card.effect_text, card.spell_keywords) : "";
+  // Le store compose `spellName` avec le nom FRANÇAIS de la carte (l'état de
+  // partie reste canonique), parfois précédé d'un marqueur (« ♻️ » pour une
+  // relance). On y substitue le nom traduit en gardant le marqueur.
+  const titre = !event ? "" : card?.name && event.spellName.includes(card.name)
+    ? event.spellName.replace(card.name, localizeName(card))
+    : event.spellName;
 
   return createPortal(
     <AnimatePresence>
@@ -274,7 +281,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               letterSpacing: "0.03em",
               textDecoration: countered ? "line-through" : "none",
             }}>
-              {event.spellName}
+              {titre}
             </div>
 
             {/* Bannière « à la pioche » : la carte n'est pas jouée, elle rejoint
@@ -317,7 +324,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               <>
                 {/* Mana + Faction */}
                 <div style={{ display: "flex", justifyContent: "center", gap: 10, fontSize: "0.7rem", color: "#ccc", textShadow: "0 1px 2px rgba(0,0,0,0.9)" }}>
-                  {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{getFactionDisplayName(card.faction)}</span>}
+                  {card.faction && <span style={{ color: accentColor, fontWeight: 600 }}>{vocab.factionName(card.faction)}</span>}
                   <span style={{ color: "#74b9ff", fontWeight: 700 }}>💧 {card.mana_cost}</span>
                   {card.rarity && <span style={{ color: "#bbb", fontStyle: "italic" }}>{vocab.rarityLabel(card.rarity)}</span>}
                 </div>

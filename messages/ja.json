@@ -252,17 +252,17 @@
         "label": "呪詛",
         "desc": "死亡時：全ユニット（味方・敵問わず）にXダメージを与える。X＝このユニットのATK。"
       },
-      "synergie": {
-        "label": "シナジー X",
-        "desc": "登場時、能力を1つ選ぶ。その能力が発動するたびに+X/+Xを得る(1ターンにつき発動元ごとに1回)。"
+      "indestructible": {
+        "label": "不壊",
+        "desc": "戦闘ダメージを一切受けない。"
       },
       "etheree": {
         "label": "霊体",
         "desc": "戦闘では1回の攻撃につき最大1ダメージしか受けない。受けるアクションのダメージは2倍になる。"
       },
-      "indestructible": {
-        "label": "不壊",
-        "desc": "戦闘ダメージを一切受けない。"
+      "synergie": {
+        "label": "シナジー X",
+        "desc": "登場時、能力を1つ選ぶ。その能力が発動するたびに+X/+Xを得る(1ターンにつき発動元ごとに1回)。"
       },
       "regeneration": {
         "label": "再生 X",
@@ -446,13 +446,25 @@
         "label": "規律 +X/+Y",
         "desc": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、対象の味方ユニット1体(このユニットを除く)に+X/+Yを永続的に与える。"
       },
-      "lien_du_sang": {
-        "label": "血の絆 X",
-        "desc": "+X/+Xを得て、HPがXを下回らない範囲で自分はXのHPを失う。"
-      },
       "usurpation": {
         "label": "簒奪 +X/+Y",
         "desc": "あなたがプレイした相手のカード1枚につき、対象の味方ユニット1体(このユニットを除く)に+X/+Yを永続的に与える。"
+      },
+      "mutation": {
+        "label": "変異X",
+        "desc": "手札で：コストXのコモンクリーチャーを2体発見する。このカードはそれらの最高のATKとHP、各1つの能力を得る。"
+      },
+      "infestation": {
+        "label": "侵食X",
+        "desc": "このユニットのコピーX枚をデッキに混ぜる。コピーを引くと召喚され、もう1枚引く。"
+      },
+      "enterrement": {
+        "label": "埋葬X",
+        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く（足りない1枚ごとに疲労）。"
+      },
+      "lien_du_sang": {
+        "label": "血の絆 X",
+        "desc": "+X/+Xを得て、HPがXを下回らない範囲で自分はXのHPを失う。"
       },
       "esprit_de_corps": {
         "label": "団結心",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "衝撃 X",
         "desc": "敵の対象1つ(ユニットまたはヒーロー)にXダメージを与える。"
+      },
+      "execution": {
+        "label": "処刑 X",
+        "desc": "対象のコスト X 以下の敵ユニット1体を破壊する。",
+        "desc_any": "対象の敵ユニット1体を破壊する。"
+      },
+      "silence": {
+        "label": "沈黙",
+        "desc": "対象の他のユニット1体からすべてのキーワードを取り除き、ステータスを元の値に戻す。"
+      },
+      "guerison": {
+        "label": "治癒 X",
+        "desc": "対象の他の味方ユニット1体または自分のヒーローのHPをX回復する。"
       },
       "inspiration": {
         "label": "霊感 X",
@@ -573,30 +598,9 @@
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
       },
-      "execution": {
-        "label": "処刑 X",
-        "desc": "対象のコスト X 以下の敵ユニット1体を破壊する。",
-        "desc_any": "対象の敵ユニット1体を破壊する。"
-      },
-      "silence": {
-        "label": "沈黙",
-        "desc": "対象の他のユニット1体からすべてのキーワードを取り除き、ステータスを元の値に戻す。"
-      },
-      "guerison": {
-        "label": "治癒 X",
-        "desc": "対象の他の味方ユニット1体または自分のヒーローのHPをX回復する。"
-      },
-      "mutation": {
-        "label": "変異X",
-        "desc": "手札で：コストXのコモンクリーチャーを2体発見する。このカードはそれらの最高のATKとHP、各1つの能力を得る。"
-      },
-      "infestation": {
-        "label": "侵食X",
-        "desc": "このユニットのコピーX枚をデッキに混ぜる。コピーを引くと召喚され、もう1枚引く。"
-      },
-      "enterrement": {
-        "label": "埋葬X",
-        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く（足りない1枚ごとに疲労）。"
+      "peste": {
+        "label": "疫病",
+        "desc": "疫病に侵される:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "招集",
         "desc": "{token}を生成する。"
       },
+      "malediction": {
+        "label": "呪い X",
+        "desc": "対象のコストX以下の敵ユニットを呪う。次の相手ターン終了時に追放される",
+        "desc_any": "対象の敵ユニットを呪う。次の相手ターン終了時に追放される"
+      },
       "seuil_colere": {
         "label": "憤怒の閾値 X",
         "desc": "あなたのデッキが25枚以下の場合、このアクションはX追加ダメージを与える。"
@@ -651,11 +660,6 @@
       "divination": {
         "label": "占術",
         "desc": "デッキの上から3枚を公開し、好きな順番でそのうち1枚を上に、2枚を下に置く。"
-      },
-      "malediction": {
-        "label": "呪い X",
-        "desc": "対象のコストX以下の敵ユニットを呪う。次の相手ターン終了時に追放される",
-        "desc_any": "対象の敵ユニットを呪う。次の相手ターン終了時に追放される"
       },
       "corruption": {
         "label": "堕落 X",
@@ -738,10 +742,6 @@
         "label": "衝撃 X",
         "desc": "敵の対象1つ(ユニットまたはヒーロー)にXダメージを与える。"
       },
-      "canon": {
-        "label": "大砲 X",
-        "desc": "ランダムな敵ユニット1体にXダメージを与える。"
-      },
       "deferlement": {
         "label": "殲滅 X",
         "desc": "敵クリーチャー全体にXダメージを与える。"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "回復 X",
-        "desc": "味方ユニット1体または自分のヒーローのHPをX回復する。"
+        "desc": "味方ユニット1体または自分のヒーローのHPをX回復する"
       },
       "seconde_vie": {
         "label": "第二の生X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "焼却X",
         "desc": "対象の墓地からカードをX枚ランダムに選び、所有者のデッキの一番下に戻す"
+      },
+      "enterrement": {
+        "label": "埋葬X",
+        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く"
       },
       "creuser": {
         "label": "掘削 X",
@@ -860,6 +864,10 @@
         "label": "複数招集",
         "desc": "{tokens}を生成する。"
       },
+      "canon": {
+        "label": "大砲 X",
+        "desc": "ランダムな敵ユニット1体にXダメージを与える。"
+      },
       "tempete": {
         "label": "嵐 X",
         "desc": "敵ユニットにXダメージをランダムに分散して与える。"
@@ -880,9 +888,9 @@
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
       },
-      "enterrement": {
-        "label": "埋葬X",
-        "desc": "対象のプレイヤーのデッキの上からX枚を墓地に置く"
+      "peste": {
+        "label": "疫病",
+        "desc": "ユニット1体を疫病状態にする:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "ターン開始時",
         "on_start_of_turn_in_hand": "ターン開始時、手札にある限り",
         "in_hand_suffix": "手札にある",
+        "in_graveyard_suffix": "墓地",
+        "on_end_of_turn_in_graveyard": "ターン終了時、墓地にある間",
         "on_draw": "引かれたとき",
         "on_low_hp": "HP15未満",
         "on_wound": "負傷",
-        "on_delay": "遅延 {d}",
-        "on_end_of_turn_in_graveyard": "ターン終了時、墓地にある間",
-        "in_graveyard_suffix": "墓地"
-      },
-      "siphon": {
-        "heal": "さらに自分のヒーローのHPを{x}回復する",
-        "heal_each": "さらに命中した対象1体につき、自分のヒーローのHPを{x}回復する",
-        "heal_scatter": "さらに自分のヒーローのHPを合計{x}回復する"
-      },
-      "neutralise": {
-        "suite_one": "：麻痺し、能力は無効",
-        "suite_many": "：麻痺し、能力は無効",
-        "tant_que": "場にいる間"
-      },
-      "malediction": {
-        "suite_one": "、次の相手ターン終了時に追放される",
-        "suite_many": "、次の相手ターン終了時に追放される"
-      },
-      "domination": {
-        "limit": "空きに応じた数まで"
+        "on_delay": "遅延 {d}"
       },
       "content": {
         "deal_damage_one": "{x}ダメージを与える",
@@ -1010,6 +1001,8 @@
         "conquete": "征服カウンターに{x}を加える",
         "exploration": "探索カウンターに{x}を加える",
         "incineration": "対象の墓地からカードを{x}枚所有者のデッキの一番下に戻す",
+        "enterrement_one": "{deck}：一番上のカード{filter}を墓地に置く",
+        "enterrement_many": "{deck}：上から{x}枚のカード{filter}を墓地に置く",
         "incineration_cible": "{zone}{cartes}を{deck}の下に戻す",
         "occurrences": "{n}回: ",
         "alternative": "選択: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
-        "enterrement_one": "{deck}：一番上のカード{filter}を墓地に置く",
-        "enterrement_many": "{deck}：上から{x}枚のカード{filter}を墓地に置く"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
+      },
+      "siphon": {
+        "heal": "さらに自分のヒーローのHPを{x}回復する",
+        "heal_each": "さらに命中した対象1体につき、自分のヒーローのHPを{x}回復する",
+        "heal_scatter": "さらに自分のヒーローのHPを合計{x}回復する"
+      },
+      "domination": {
+        "limit": "空きに応じた数まで"
       },
       "self": {
         "transformation": "変身する",
@@ -1076,12 +1075,12 @@
         "transformation": "変身させるクリーチャーを選択してください",
         "deal_damage": "ダメージを与える対象を選んでください",
         "siphon": "吸収する対象を1体選ぶ",
-        "domination": "支配するクリーチャーを1体選ぶ",
         "heal": "回復する対象を選んでください",
         "buff": "強化するクリーチャーを選んでください",
         "usurpation": "強化するクリーチャーを選んでください",
         "debuff": "弱体化するクリーチャーを選んでください",
         "destroy": "破壊するクリーチャーを選んでください",
+        "domination": "支配するクリーチャーを1体選ぶ",
         "bounce": "手札に戻すクリーチャーを選んでください",
         "paralyze": "麻痺させるクリーチャーを選んでください",
         "poison": "毒を与えるクリーチャーを選択してください",
@@ -1091,6 +1090,15 @@
         "exhumation": "蘇生するクリーチャーを選んでください",
         "rappel": "手札に戻すカードを1枚選ぶ",
         "default": "対象を選んでください"
+      },
+      "neutralise": {
+        "suite_one": "：麻痺し、能力は無効",
+        "suite_many": "：麻痺し、能力は無効",
+        "tant_que": "場にいる間"
+      },
+      "malediction": {
+        "suite_one": "、次の相手ターン終了時に追放される",
+        "suite_many": "、次の相手ターン終了時に追放される"
       },
       "emblem": {
         "badge": "紋章",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": "（墓地にある間、ターン終了時に誘発）",
         "on_delay": "（{n}ターン後に誘発）"
       },
+      "enterrement": {
+        "deck_enemy": "相手のデッキ",
+        "deck_ally": "あなたのデッキ",
+        "deck_any": "対象のデッキ"
+      },
       "incin": {
         "zone_ally": "あなたの墓地の",
         "zone_enemy": "相手の墓地の",
@@ -1161,8 +1174,8 @@
         "keyword": "能力{v}を持つ",
         "type_creature": "ユニットタイプの",
         "type_spell": "アクションタイプの",
-        "min_cost": "コスト{n}以上の",
-        "type_item": "アイテムタイプの"
+        "type_item": "アイテムタイプの",
+        "min_cost": "コスト{n}以上の"
       },
       "targetd": {
         "count_all": "すべてのユニット",
@@ -1241,11 +1254,6 @@
         "times": "{x}回、毎回1{unit}を",
         "target_both": "ランダムな{side}対象1体（ユニットまたはヒーロー）に",
         "target_unit": "ランダムな{side}ユニット1体に"
-      },
-      "enterrement": {
-        "deck_enemy": "相手のデッキ",
-        "deck_ally": "あなたのデッキ",
-        "deck_any": "対象のデッキ"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "すべてのペガサス",
         "upto": "ペガサス{n}体まで"
       },
-      "Sphinx": {
-        "def": "スフィンクス",
-        "bare": "スフィンクス",
-        "de": "スフィンクスの",
-        "one": "スフィンクス1体",
-        "all": "すべてのスフィンクス",
-        "upto": "スフィンクス{n}体まで"
-      },
       "Yétis": {
         "def": "イエティ",
         "bare": "イエティ",
@@ -1636,6 +1636,14 @@
         "one": "イエティ1体",
         "all": "すべてのイエティ",
         "upto": "最大{n}体のイエティ"
+      },
+      "Sphinx": {
+        "def": "スフィンクス",
+        "bare": "スフィンクス",
+        "de": "スフィンクスの",
+        "one": "スフィンクス1体",
+        "all": "すべてのスフィンクス",
+        "upto": "スフィンクス{n}体まで"
       },
       "Hommes-Loups": {
         "def": "狼男",
@@ -2181,8 +2189,8 @@
       "scope": "味方ユニット1体（または全体）に",
       "scope_target": "味方ユニット1体に",
       "edc_compte": "ランダムで+1 ATKまたは+1 HPを{n}回得る(すでに発動した団結心1回につき1回)。",
-      "usurpation_actuel": "プレイした相手のカード：{n}枚 — 現在+{x}/+{y}。",
       "scope_all": "あなたの全ユニットに",
+      "usurpation_actuel": "プレイした相手のカード：{n}枚 — 現在+{x}/+{y}。",
       "machine_part": "と{ability}",
       "machine_part_timed": "と{ability}（{timing}）",
       "machine_name": "機械",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "コストX以下の{cibles}を呪う。次の相手ターン終了時に追放される。",
+        "malediction_any": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
         "impact": "{cibles}にXダメージを与える。",
         "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
         "retour_differe": "コストX以下の{cibles}を持ち主のデッキの下に置く。",
         "retour_differe_any": "{cibles}を持ち主のデッキの一番下に置く。",
         "remontee": "{cibles}を元の持ち主の手札に戻す。",
-        "malediction": "コストX以下の{cibles}を呪う。次の相手ターン終了時に追放される。",
-        "malediction_any": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
         "corruption": "コストX以下の{cibles}をターン終了まで自陣に寝返らせる(空きの範囲内)。寝返った対象は追跡を得る。",
         "corruption_any": "場の空きがある限り、{cibles}をターン終了まで自軍に寝返らせる。それらは「追跡」を得る。",
         "domination": "コストX以下の{cibles}のコントロールを得る(空きの範囲内)。",
@@ -2261,10 +2269,10 @@
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
         "usurpation": "あなたがプレイした相手のカード1枚につき、{cibles}に+X/+Yを与える。",
-        "guerison": "{cibles}と自分のヒーローのHPをX回復する。"
+        "guerison": "{cibles}と自分のヒーローのHPをX回復する。",
+        "peste": "{cibles}を疫病状態にする:それぞれターン終了時にHPを1失い、死亡時に疫病が別のユニットに移る。"
       },
       "creature": {
-        "neutralisation": "場にいる間、{cibles}は麻痺し、その能力は無効になる。",
         "impact": "{cibles}にXダメージを与える。",
         "affaiblissement": "{cibles}にATK-X、HP-Yを与える。",
         "retour_differe": "コストX以下の{cibles}を持ち主のデッキの下に置く。",
@@ -2275,18 +2283,13 @@
         "domination": "コスト≤Xの{cibles}を、空きの範囲でコントロールする。",
         "domination_any": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
+        "neutralisation": "場にいる間、{cibles}は麻痺し、その能力は無効になる。",
         "malediction": "コストX以下の{cibles}を呪う。次の相手ターン終了時に追放される。",
         "malediction_any": "{cibles}を呪う：それらは次の相手のターン終了時に追放される。",
         "tactique": "{cibles}に、同じコストのクリーチャーの能力からランダムにX個を与える（ユニットごとに抽選）。",
         "vampirisme": "{cibles}から最大X点のHPを奪い、このユニットのHPに加える。",
         "devoration": "{cibles}を破壊する。このユニットはそれらのATKとHPを永続的に得る。",
         "sacrifice": "自軍の他のユニットをすべて破壊し、そのHPとATKを永続的に獲得する。",
-        "renforcement": "他のすべての味方ユニットに、ATK+XとHP+Yを永続的に与える。",
-        "discipline": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、他のすべての味方ユニットに+X/+Yを永続的に与える。",
-        "usurpation": "あなたがプレイした相手のカード1枚につき、他のすべての味方ユニットに+X/+Yを永続的に与える。",
-        "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
-        "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。",
-        "usurpation_soi": "あなたがプレイした相手のカード1枚につき、永続的に+X ATKと+Y HPを得る。",
         "execution": "コスト≤Xの{cibles}を、アイテムも含めて破壊する。",
         "execution_any": "アイテムを含む{cibles}を破壊する。",
         "silence": "アイテムを含む{cibles}からすべてのキーワードを取り除き、ステータスを元の値に戻す。",
@@ -2294,6 +2297,12 @@
         "purete": "自分の墓地が空である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "force_des_ancetres": "自分の墓地にクリーチャーが7体以上ある限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
         "seuil_sacrificiel": "自分のデッキが25枚以下である限り、他のすべての味方ユニットは+X ATKと+Y HPを得る。",
+        "renforcement": "他のすべての味方ユニットに、ATK+XとHP+Yを永続的に与える。",
+        "discipline": "自分の盤面のコストがすべてこのユニットと同じ偶奇なら、他のすべての味方ユニットに+X/+Yを永続的に与える。",
+        "usurpation": "あなたがプレイした相手のカード1枚につき、他のすべての味方ユニットに+X/+Yを永続的に与える。",
+        "renforcement_soi": "永続的に+X ATKと+Y HPを得る。",
+        "discipline_soi": "場にいる自分のクリーチャーすべてのコストがこのクリーチャーと同じ偶奇なら、永続的に+X ATKと+Y HPを得る。",
+        "usurpation_soi": "あなたがプレイした相手のカード1枚につき、永続的に+X ATKと+Y HPを得る。",
         "silence_soi": "すべてのキーワードを失い、ステータスが元の値に戻る。",
         "guerison_soi": "HPをX回復する。",
         "tactique_soi": "同じコストのクリーチャーの能力からランダムにX個を得る。"
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "ターン開始時（ドロー後）",
     "mode_title_draw": "このカードが引かれたとき",
     "mode_title_low_hp": "自分のヒーローのHPが15未満になったとき（1回のみ）",
-    "mode_title_wound": "負傷：ダメージを受けても死亡しなかった時（1ターンにつき1つのダメージ源から1回）",
+    "mode_title_wound": "負傷:死亡せずにダメージを受けたとき(負傷するたび)",
     "grant_scope_target": "対象クリーチャーに付与",
     "grant_scope_all_allies": "全味方ユニットに付与",
     "required_caps": "必須",
@@ -3782,9 +3791,11 @@
     "kind_label": "フィードバックの種類",
     "kind_bug": "バグ",
     "kind_idea": "アイデア",
+    "kind_balance": "バランス調整",
     "kind_question": "質問",
     "placeholder_bug": "何が起こりましたか?本来はどうなるはずでしたか?該当するカードや画面も記入してください。",
     "placeholder_idea": "何を変更・追加してほしいですか?その理由も教えてください。",
+    "placeholder_balance": "どのカードが強すぎる、または弱すぎると感じますか?その理由も教えてください。",
     "placeholder_question": "質問内容を入力してください。",
     "add_screenshot": "スクリーンショットを添付",
     "attach_hint": "または本文に貼り付け",

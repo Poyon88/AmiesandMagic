@@ -462,15 +462,19 @@ function woundOriginOf(source: CardInstance | import("./types").HeroState | null
   return { key: "?" };
 }
 
-/** Enregistre une blessure RÉELLE (PV effectivement perdus). La mémoire
- *  `woundSourcesThisTurn` dédoublonne ICI et non au balayage : les N points
- *  d'un même sort ne posent qu'une entrée, et une source déjà encaissée ce
- *  tour-ci n'en pose aucune. Tenue pour toute créature, porteuse ou non du
- *  pouvoir (cf. le champ). La survie, elle, se juge au balayage. */
+// GARDE ANTI-BOUCLE (arbitrée le 2026-11-21, avec la levée de la limite « une
+// fois par source et par tour ») : les dégâts infligés PAR une réponse Blessure
+// ne sont pas une blessure au sens du déclencheur. Deux porteuses qui se
+// répondent ne se renvoient donc pas la balle, et aucune boucle (soin compris)
+// n'est possible. > 0 pendant la résolution d'une frame `on_wound`.
+let reponseBlessureEnCours = 0;
+
+/** Enregistre une blessure RÉELLE (PV effectivement perdus). AUCUN
+ *  dédoublonnage : chaque paquet de dégâts encaissé vaut une entrée, donc un
+ *  déclenchement — les N points d'une Tempête en posent N. Seule exception, la
+ *  garde anti-boucle ci-dessus. La survie, elle, se juge au balayage. */
 function noteWound(creature: CardInstance, origin: WoundOrigin): void {
-  const seen = (creature.woundSourcesThisTurn ??= []);
-  if (seen.includes(origin.key)) return;
-  seen.push(origin.key);
+  if (reponseBlessureEnCours > 0) return;
   woundSink.push({ targetInstanceId: creature.instanceId, origin });
 }
 
@@ -3475,6 +3479,7 @@ function createCardInstance(card: Card): CardInstance {
     hasDivineShield: card.keywords.includes("divine_shield"),
     attacksRemaining: 1,
     isPoisoned: false,
+    ...(naitPestiferee(card) ? { isPlagued: true } : {}),
     hasUsedResurrection: false,
     tapped: false,
     fureurActive: false,
@@ -3719,6 +3724,10 @@ function returnInstanceToPlay(inst: CardInstance): void {
   inst.hasTransformedLycanthropie = false;
   inst.corruptionStolenIds = [];
   inst.hasDivineShield = inst.card.keywords.includes("divine_shield");
+  // PESTE : quitter le plateau éteint la maladie (retour en main, Rappel,
+  // Exhumation, Résurrection passent tous ici). Seule une unité NÉE pestiférée
+  // la retrouve — elle la porte sur sa carte.
+  poserPesteNative(inst);
 
   // Plus contrôlée/volée : revient à son propriétaire, sans marqueur de vol.
   inst.originalOwnerId = null;
@@ -4630,12 +4639,7 @@ export function startTurn(state: GameState): GameState {
   // doivent porter le NOUVEAU numéro. Variable à part : `currentTurnNumber`
   // sert de graine (Faveur) et ne doit pas bouger en cours d'action.
   tourNeutralisation = newState.turnNumber;
-  // Blessure : la mémoire « déjà blessée par cette source » vaut pour UN tour,
-  // de l'un ou l'autre joueur. Vidée ici, à la bascule, AVANT le tick de Poison
-  // plus bas (qui appartient au tour qui s'ouvre). Les blessures de la fin du
-  // tour sortant sont déjà dans `woundSink` : elles partiront quand même.
   for (const p of newState.players) {
-    for (const c of p.board) if (c.woundSourcesThisTurn?.length) c.woundSourcesThisTurn = [];
     // Synergie : « une fois par source et par tour ».
     for (const c of p.board) if (c.synergieSourcesThisTurn?.length) c.synergieSourcesThisTurn = [];
   }
@@ -5646,6 +5650,27 @@ function finishEndTurn(newState: GameState): GameState {
       const restant = (creature.paralysisTurnsLeft ?? 1) - 1;
       if (restant > 0) creature.paralysisTurnsLeft = restant;
       else levierParalysie(creature);
+    }
+  }
+  // PESTE : −1 PV à la fin du tour du CONTRÔLEUR, après ses effets de fin de
+  // tour (on est après `finalizeEndOfTurn`, d'où le règlement des morts ici
+  // même). Perte directe, hors canal de dégâts — ni Bouclier ni réduction —
+  // mais une blessure au sens du déclencheur Blessure, comme le Poison.
+  {
+    let touchee = false;
+    for (const creature of outgoing.board) {
+      if (!creature.isPlagued || creature.currentHealth <= 0) continue;
+      creature.currentHealth -= 1;
+      noteWound(creature, { key: "peste" });
+      touchee = true;
+    }
+    if (touchee) {
+      const entrant = newState.players[newState.currentPlayerIndex === 0 ? 1 : 0];
+      const mortsSortant = cleanDeadCreatures(outgoing);
+      const mortsEntrant = cleanDeadCreatures(entrant);
+      processDeathTriggers(mortsSortant, outgoing, entrant);
+      processDeathTriggers(mortsEntrant, entrant, outgoing);
+      recalculateAuras(outgoing, entrant);
     }
   }
   // Garde de Fureur : « une fois par tour », et un tour est celui de CHAQUE
@@ -6782,6 +6807,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       if (healTarget) {
         healTarget.currentHealth = healTarget.maxHealth;
         healTarget.isPoisoned = false;
+        delete healTarget.isPlagued;
       }
     }
 
@@ -7273,6 +7299,7 @@ function resolveSpellEffect(
         creature.currentHealth = creature.card.health ?? 1;
         creature.maxHealth = creature.card.health ?? 1;
         creature.hasDivineShield = creature.card.keywords.includes("divine_shield");
+        poserPesteNative(creature);
         creature.hasAttacked = false;
         creature.hasSummoningSickness = !creature.card.keywords.includes("charge");
         creature.attacksRemaining = maxAttacksFor(creature);
@@ -7939,7 +7966,16 @@ function resolveSpellKeywords(
         // retiré, sur une créature ALLIÉE ciblée.
         if (targetId) {
           const target = findCreatureOnBoard(ctx.caster, targetId);
-          if (target) { target.currentHealth = target.maxHealth; target.isPoisoned = false; }
+          if (target) { target.currentHealth = target.maxHealth; target.isPoisoned = false; delete target.isPlagued; }
+        }
+        break;
+      }
+      case "peste": {
+        // PESTE en action : rend pestiférée l'unité désignée, alliée ou
+        // ennemie. Déjà malade ⇒ rien (un état, pas un compteur).
+        if (targetId) {
+          const target = findCreatureOnBoard(ctx.caster, targetId) ?? findCreatureOnBoard(ctx.opponent, targetId);
+          if (target && target.currentHealth > 0) target.isPlagued = true;
         }
         break;
       }
@@ -10752,9 +10788,20 @@ function resolveFrame(state: GameState, frame: StackFrame): void {
   // Blessure : « sans mourir » vaut jusqu'à la résolution. Une porteuse tuée
   // (ou renvoyée) entre le balayage et son tour de pile ne dit plus rien —
   // `findInstanceById` la retrouverait au cimetière, d'où le test sur le plateau.
-  if (frame.trigger === "on_wound"
-    && !(source && source.currentHealth > 0 && owner.board.includes(source))) return;
+  if (frame.trigger === "on_wound") {
+    if (!(source && source.currentHealth > 0 && owner.board.includes(source))) return;
+    // Garde anti-boucle : rien de ce que cette réponse blesse ne répond.
+    reponseBlessureEnCours++;
+    try { resoudreLaFrame(state, frame, owner, opponent, source); }
+    finally { reponseBlessureEnCours--; }
+    return;
+  }
+  resoudreLaFrame(state, frame, owner, opponent, source);
+}
 
+function resoudreLaFrame(
+  state: GameState, frame: StackFrame, owner: PlayerState, opponent: PlayerState, source: CardInstance | null,
+): void {
   if (frame.kind === "composed" && frame.composed) {
     if (frame.valueMode && isSelfRemovalComposed(frame.composed)) return; // mode valeur : saute l'auto-suppression
     withComposedMode(triggerToKeywordMode(frame.trigger), () =>
@@ -11161,8 +11208,9 @@ function checkLowHpTriggers(state: GameState, depth = 0): void {
  *  déjà réglées — la créature est sur le plateau, en vie, ou elle ne dit rien.
  *  Touché mortel, mort puis Résurrection : rien non plus.
  *
- *  Le dédoublonnage « une fois par source et par tour » est déjà fait, à
- *  l'enregistrement (`noteWound`) ; ici chaque entrée vaut un déclenchement.
+ *  Chaque entrée vaut un déclenchement : il n'y a plus de limite par source
+ *  ni par tour (levée le 2026-11-21 ; seule reste la garde anti-boucle de
+ *  `noteWound`).
  *
  *  Ordre déterministe entre clients, arbitré par l'auteur : joueur ACTIF
  *  d'abord, plateau de gauche à droite, puis l'adversaire. Pour une même
@@ -11176,6 +11224,11 @@ function checkWoundTriggers(state: GameState, depth = 0): void {
   const actif = state.players[state.currentPlayerIndex];
   const autre = state.players[state.currentPlayerIndex === 0 ? 1 : 0];
   const frames: StackFrame[] = [];
+  // Une même source peut blesser plusieurs fois la même créature (deux assauts,
+  // deux points de dégâts) : le tag doit rester UNIQUE parmi les frames encore
+  // en pile, sinon deux réponses partageraient un sélecteur de cible ou se
+  // confondraient en un seul groupe « OU ».
+  const tagsPris = new Set((state.effectStack ?? []).map(f => f.originTag));
   for (const p of [actif, autre]) {
     for (const ci of p.board) {
       if (ci.currentHealth <= 0) continue;
@@ -11187,7 +11240,10 @@ function checkWoundTriggers(state: GameState, depth = 0): void {
         // L'origine entre dans le tag ET dans l'id : deux sources dans la même
         // action donnent deux lots de frames, qui ne doivent ni partager un id
         // de sélecteur de cible, ni se confondre en un seul groupe « OU ».
-        const tag = `${ci.instanceId}#on_wound#${w.origin.key}`;
+        const base = `${ci.instanceId}#on_wound#${w.origin.key}`;
+        let tag = base;
+        for (let n = 2; tagsPris.has(tag); n++) tag = `${base}#${n}`;
+        tagsPris.add(tag);
         const woundOrigin = { instanceId: w.origin.instanceId, heroOwnerId: w.origin.heroOwnerId };
         const composees = buildComposedFrames(ci.card, "on_wound", ci, p.id, undefined, undefined, { depth, originTag: tag });
         composees.forEach((f, i) => { f.frameId = `${tag}#${i}`; f.woundOrigin = woundOrigin; });
@@ -11261,7 +11317,39 @@ function runDeclenchement(
  *  Résurrection, Pacte de sang, Cycle éternel, auto-renvoi, instances
  *  curated mode death, composés on_death, Nécrophagie). Extrait de l'ancienne
  *  boucle de processDeathTriggers. `owner` = contrôleur de la créature morte. */
+/** Une unité NÉE pestiférée porte la capacité sur sa carte. */
+function naitPestiferee(card: Card): boolean {
+  return card.card_type === "creature" && (card.keywords as unknown as string[]).includes("peste");
+}
+
+/** Remet l'état de Peste à ce que dit la carte : malade si elle naît
+ *  pestiférée, saine sinon. Appelé chaque fois qu'une instance repart de zéro. */
+function poserPesteNative(inst: CardInstance): void {
+  if (naitPestiferee(inst.card)) inst.isPlagued = true;
+  else delete inst.isPlagued;
+}
+
+/** PESTE — à la mort d'une pestiférée, quelle qu'en soit la cause, la maladie
+ *  passe à UNE autre unité en jeu, vivante et saine, tirée au hasard dans les
+ *  deux camps. Ni ciblage ni action : Transcendance, Ombre et Invisible n'en
+ *  protègent pas. Aucune candidate ⇒ la Peste s'éteint. Le drapeau reste sur le
+ *  cadavre (l'écran le lit pour l'animation de mort) ; `returnInstanceToPlay`
+ *  le remettra d'aplomb si l'unité revient. Aucun tirage `rng()` sans
+ *  pestiférée : le flux aléatoire des autres parties est inchangé. */
+function propagerLaPeste(morte: CardInstance, owner: PlayerState, enemy: PlayerState): void {
+  if (!morte.isPlagued) return;
+  const saines = [...owner.board, ...enemy.board]
+    .filter(u => u !== morte && u.currentHealth > 0 && !u.isPlagued);
+  if (saines.length === 0) return;
+  const cible = saines[Math.floor(rng() * saines.length)];
+  cible.isPlagued = true;
+  noterDeclenchement("peste", cleCreature(morte));
+}
+
 function resolveCreatureDeath(c: CardInstance, owner: PlayerState, enemy: PlayerState): void {
+  // Avant tout le reste : la branche Résurrection, plus bas, remet la morte en
+  // jeu et efface son état.
+  propagerLaPeste(c, owner, enemy);
   {
     // Maléfice: inflige X dégâts à TOUTES les unités (alliés et ennemis), X = ATK
     if (hasKw(c, "malefice")) {
@@ -12546,7 +12634,7 @@ function resolveCuratedKeywordEffect(
     case "benediction": {
       const resolveBen = (tid: string) => {
         const t = owner.board.find(c => c.instanceId === tid);
-        if (t) { t.currentHealth = t.maxHealth; t.isPoisoned = false; }
+        if (t) { t.currentHealth = t.maxHealth; t.isPoisoned = false; delete t.isPlagued; }
       };
       if (targetInstanceId) { resolveBen(targetInstanceId); return; }
       const tidB = deferOrRandomTarget(kw, source, owner, opponent, inst);
@@ -14061,6 +14149,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   eclosionSink = [];
   lethalSpellActive = false;
   woundSink = [];
+  reponseBlessureEnCours = 0;
   damageOriginCtx = null;
   powerStrikeSink = [];
   composedStrikeMode = undefined;
@@ -14499,6 +14588,7 @@ export function mutateCard(state: GameState, action: import("./types").MutateCar
   inst.currentHealth = card.health ?? 1;
   inst.maxHealth = card.health ?? 1;
   inst.hasDivineShield = card.keywords.includes("divine_shield");
+  poserPesteNative(inst);
   stampKeywordXValues(inst);
   newState.lastAction = action;
   return newState;

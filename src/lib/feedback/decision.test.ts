@@ -56,6 +56,17 @@ describe("decider — « automatique si sûr »", () => {
     expect(decider(tri({ kind: "idea", reply: "" }))).toEqual({ reply: "none", status: "triaged" });
   });
 
+  it("range sans rien dire un avis d'équilibrage qui nomme sa carte", () => {
+    expect(decider(tri({ kind: "balance", category: "gameplay", reply: "" }))).toEqual({ reply: "none", status: "triaged" });
+  });
+
+  it("demande seul de quelle carte parle un avis d'équilibrage, mais ne donne pas d'avis sans relecture", () => {
+    const precision = tri({ kind: "balance", category: "gameplay", reply: "De quelle carte parlez-vous ?", needs_info: true });
+    expect(decider(precision)).toEqual({ reply: "send", status: "awaiting_player" });
+    const avis = tri({ kind: "balance", category: "gameplay", reply: "Elle sera affaiblie.", reply_grounded: true });
+    expect(decider(avis)).toEqual({ reply: "draft", status: "awaiting_admin" });
+  });
+
   it("renvoie à l'admin une question restée sans réponse", () => {
     expect(decider(tri({ reply: "" }))).toEqual({ reply: "none", status: "awaiting_admin" });
     expect(decider(tri({ kind: "other", reply: "" }))).toEqual({ reply: "none", status: "awaiting_admin" });
@@ -98,6 +109,13 @@ describe("assainirTri", () => {
     // Id inventé, ou recopié d'un message de joueur.
     const inconnu = { ...attache, id: "00000000-0000-0000-0000-000000000000" };
     expect(tri({ kind: "bug", topic: inconnu }).topic.action).toBe("none");
+  });
+
+  it("un avis d'équilibrage forme un sujet", () => {
+    const creation = { action: "create", id: "", title: "Carte X jugée trop forte", summary: "s", repro: "" };
+    const t = tri({ kind: "balance", topic: creation });
+    expect(t.kind).toBe("balance");
+    expect(t.topic).toMatchObject({ action: "create", title: "Carte X jugée trop forte" });
   });
 
   it("ne crée de sujet que pour un bug ou une idée, et avec un titre", () => {

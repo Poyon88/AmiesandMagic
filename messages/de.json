@@ -252,17 +252,17 @@
         "label": "Übeltat",
         "desc": "Beim Tod: Fügt allen Einheiten (Verbündeten und Feinden) X Schaden zu; X = ihre ATK."
       },
-      "synergie": {
-        "label": "Synergie X",
-        "desc": "Wähle beim Erscheinen eine Fähigkeit: Erhält bei jeder ihrer Auslösungen +X/+X (1-mal pro Quelle und Zug)."
+      "indestructible": {
+        "label": "Unzerstörbar",
+        "desc": "Erleidet keinen Kampfschaden."
       },
       "etheree": {
         "label": "Ätherisch",
         "desc": "Erleidet im Kampf höchstens 1 Schaden pro Treffer. Der Schaden durch Aktionen, den sie erleidet, wird verdoppelt."
       },
-      "indestructible": {
-        "label": "Unzerstörbar",
-        "desc": "Erleidet keinen Kampfschaden."
+      "synergie": {
+        "label": "Synergie X",
+        "desc": "Wähle beim Erscheinen eine Fähigkeit: Erhält bei jeder ihrer Auslösungen +X/+X (1-mal pro Quelle und Zug)."
       },
       "regeneration": {
         "label": "Regeneration X",
@@ -446,13 +446,25 @@
         "label": "Disziplin +X/+Y",
         "desc": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y."
       },
-      "lien_du_sang": {
-        "label": "Blutsband X",
-        "desc": "Erhält +X/+X, und du verlierst X LP, sofern deine LP es zulassen."
-      },
       "usurpation": {
         "label": "Usurpation +X/+Y",
         "desc": "Verleiht einer anderen verbündeten Einheit Eurer Wahl dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt."
+      },
+      "mutation": {
+        "label": "Mutation X",
+        "desc": "Auf der Hand: Entdecke 2 gewöhnliche Kreaturen mit Kosten X. Diese Karte erhält ihren besten ANG/LP und je 1 Fähigkeit."
+      },
+      "infestation": {
+        "label": "Befall X",
+        "desc": "Mische X Kopien dieser Einheit in dein Deck. Gezogen wird eine Kopie beschworen und du ziehst eine weitere Karte."
+      },
+      "enterrement": {
+        "label": "Begräbnis X",
+        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof (Erschöpfung pro fehlende Karte)."
+      },
+      "lien_du_sang": {
+        "label": "Blutsband X",
+        "desc": "Erhält +X/+X, und du verlierst X LP, sofern deine LP es zulassen."
       },
       "esprit_de_corps": {
         "label": "Korpsgeist",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "Wucht X",
         "desc": "Fügt einem feindlichen Ziel (Einheit oder Held) X Schaden zu."
+      },
+      "execution": {
+        "label": "Hinrichtung X",
+        "desc": "Zerstört eine ausgewählte feindliche Einheit mit Kosten ≤ X.",
+        "desc_any": "Zerstört eine anvisierte feindliche Einheit."
+      },
+      "silence": {
+        "label": "Stille",
+        "desc": "Entfernt alle Schlüsselwörter einer anderen anvisierten Einheit und setzt ihre Werte auf den Ausgangswert zurück."
+      },
+      "guerison": {
+        "label": "Heilung X",
+        "desc": "Stellt einer anderen anvisierten verbündeten Einheit oder deinem Helden X LP wieder her."
       },
       "inspiration": {
         "label": "Inspiration X",
@@ -573,30 +598,9 @@
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       },
-      "execution": {
-        "label": "Hinrichtung X",
-        "desc": "Zerstört eine ausgewählte feindliche Einheit mit Kosten ≤ X.",
-        "desc_any": "Zerstört eine anvisierte feindliche Einheit."
-      },
-      "silence": {
-        "label": "Stille",
-        "desc": "Entfernt alle Schlüsselwörter einer anderen anvisierten Einheit und setzt ihre Werte auf den Ausgangswert zurück."
-      },
-      "guerison": {
-        "label": "Heilung X",
-        "desc": "Stellt einer anderen anvisierten verbündeten Einheit oder deinem Helden X LP wieder her."
-      },
-      "mutation": {
-        "label": "Mutation X",
-        "desc": "Auf der Hand: Entdecke 2 gewöhnliche Kreaturen mit Kosten X. Diese Karte erhält ihren besten ANG/LP und je 1 Fähigkeit."
-      },
-      "infestation": {
-        "label": "Befall X",
-        "desc": "Mische X Kopien dieser Einheit in dein Deck. Gezogen wird eine Kopie beschworen und du ziehst eine weitere Karte."
-      },
-      "enterrement": {
-        "label": "Begräbnis X",
-        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof (Erschöpfung pro fehlende Karte)."
+      "peste": {
+        "label": "Pest",
+        "desc": "Verseucht: verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "Herbeirufung",
         "desc": "Erschafft {token}."
       },
+      "malediction": {
+        "label": "Fluch X",
+        "desc": "Verflucht die gewählte gegnerische Einheit mit Kosten ≤ X: Sie wird am Ende des nächsten gegnerischen Zuges verbannt",
+        "desc_any": "Verflucht die gewählte gegnerische Einheit: Sie wird am Ende des nächsten gegnerischen Zuges verbannt"
+      },
       "seuil_colere": {
         "label": "Zornschwelle X",
         "desc": "Wenn Ihr Deck 25 Karten oder weniger enthält, fügt diese Aktion X zusätzlichen Schaden zu."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "Weissagung",
         "desc": "Deckt die obersten 3 Karten des Decks auf; legt 1 davon oben und 2 unten ab, in gewählter Reihenfolge."
-      },
-      "malediction": {
-        "label": "Fluch X",
-        "desc": "Verflucht die gewählte gegnerische Einheit mit Kosten ≤ X: Sie wird am Ende des nächsten gegnerischen Zuges verbannt",
-        "desc_any": "Verflucht die gewählte gegnerische Einheit: Sie wird am Ende des nächsten gegnerischen Zuges verbannt"
       },
       "corruption": {
         "label": "Korruption X",
@@ -738,10 +742,6 @@
         "label": "Einschlag X",
         "desc": "Fügt einem feindlichen Ziel (Einheit oder Held) X Schaden zu."
       },
-      "canon": {
-        "label": "Kanone X",
-        "desc": "Fügt einer zufälligen gegnerischen Einheit X Schaden zu."
-      },
       "deferlement": {
         "label": "Ansturm X",
         "desc": "Fügt allen feindlichen Kreaturen X Schaden zu."
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "Heilung X",
-        "desc": "Stellt einer verbündeten Einheit oder deinem Helden X LP wieder her."
+        "desc": "Stellt X LP einer verbündeten Einheit oder deines Helden wieder her"
       },
       "seconde_vie": {
         "label": "Zweites Leben X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "Einäscherung X",
         "desc": "Legt X zufällige Karten des anvisierten Friedhofs unter das Deck ihres Besitzers"
+      },
+      "enterrement": {
+        "label": "Begräbnis X",
+        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof"
       },
       "creuser": {
         "label": "Graben X",
@@ -860,6 +864,10 @@
         "label": "Mehrfachherbeirufung",
         "desc": "Erschafft {tokens}."
       },
+      "canon": {
+        "label": "Kanone X",
+        "desc": "Fügt einer zufälligen gegnerischen Einheit X Schaden zu."
+      },
       "tempete": {
         "label": "Sturm X",
         "desc": "Verteilt X Schaden zufällig auf feindliche Einheiten."
@@ -880,9 +888,9 @@
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
       },
-      "enterrement": {
-        "label": "Begräbnis X",
-        "desc": "Lege die obersten X Karten des Decks des Zielspielers auf seinen Friedhof"
+      "peste": {
+        "label": "Pest",
+        "desc": "Verseucht eine Einheit: Sie verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "Am Rundenanfang",
         "on_start_of_turn_in_hand": "Am Anfang des Zuges, solange sie sich auf der Hand befindet",
         "in_hand_suffix": "auf der Hand",
+        "in_graveyard_suffix": "im Friedhof",
+        "on_end_of_turn_in_graveyard": "Am Zugende, solange sie im Friedhof ist",
         "on_draw": "Beim Ziehen",
         "on_low_hp": "Unter 15 LP",
         "on_wound": "Verwundung",
-        "on_delay": "Verzögerung {d}",
-        "on_end_of_turn_in_graveyard": "Am Zugende, solange sie im Friedhof ist",
-        "in_graveyard_suffix": "im Friedhof"
-      },
-      "siphon": {
-        "heal": "und heilt Euren Helden um {x} LP",
-        "heal_each": "und heilt Euren Helden um {x} LP pro getroffenem Ziel",
-        "heal_scatter": "und heilt Euren Helden insgesamt um {x} LP"
-      },
-      "neutralise": {
-        "suite_one": ": gelähmt, Fähigkeiten wirkungslos",
-        "suite_many": ": gelähmt, Fähigkeiten wirkungslos",
-        "tant_que": "solange sie im Spiel ist"
-      },
-      "malediction": {
-        "suite_one": ", am Ende des nächsten gegnerischen Zuges verbannt",
-        "suite_many": ", am Ende des nächsten gegnerischen Zuges verbannt"
-      },
-      "domination": {
-        "limit": "im Rahmen der verfügbaren Plätze"
+        "on_delay": "Verzögerung {d}"
       },
       "content": {
         "deal_damage_one": "verursacht {x} Schaden",
@@ -1010,6 +1001,8 @@
         "conquete": "erhöht deinen Eroberungszähler um {x}",
         "exploration": "erhöht deinen Erkundungszähler um {x}",
         "incineration": "legt {x} Karten des anvisierten Friedhofs unter dessen Deck",
+        "enterrement_one": "legt die oberste Karte{filter} {deck}",
+        "enterrement_many": "legt die obersten {x} Karten{filter} {deck}",
         "incineration_cible": "legt {cartes} {zone} unter {deck}",
         "occurrences": "{n}-mal: ",
         "alternative": "Wahlweise: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion",
-        "enterrement_one": "legt die oberste Karte{filter} {deck}",
-        "enterrement_many": "legt die obersten {x} Karten{filter} {deck}"
+        "dechainement_one_any": "spielt eine zufällige Aktion"
+      },
+      "siphon": {
+        "heal": "und heilt Euren Helden um {x} LP",
+        "heal_each": "und heilt Euren Helden um {x} LP pro getroffenem Ziel",
+        "heal_scatter": "und heilt Euren Helden insgesamt um {x} LP"
+      },
+      "domination": {
+        "limit": "im Rahmen der verfügbaren Plätze"
       },
       "self": {
         "transformation": "verwandelt sich",
@@ -1076,12 +1075,12 @@
         "transformation": "Wähle eine zu verwandelnde Kreatur",
         "deal_damage": "wähle ein Ziel zum Angreifen",
         "siphon": "wähle ein Ziel zum Abzapfen",
-        "domination": "wähle eine Kreatur, die du beherrschen willst",
         "heal": "wähle ein Ziel zum Heilen",
         "buff": "wähle eine Kreatur zum Stärken",
         "usurpation": "wähle eine Kreatur zum Stärken",
         "debuff": "wähle eine Kreatur zum Schwächen",
         "destroy": "wähle eine Kreatur zum Zerstören",
+        "domination": "wähle eine Kreatur, die du beherrschen willst",
         "bounce": "wähle eine Kreatur, um sie auf die Hand zurückzuschicken",
         "paralyze": "wähle eine Kreatur zum Lähmen",
         "poison": "Wählt eine Kreatur zum Vergiften",
@@ -1091,6 +1090,15 @@
         "exhumation": "wähle eine Kreatur zum Wiederbeleben",
         "rappel": "wählt eine Karte, um sie auf die Hand zurückzunehmen",
         "default": "wähle ein Ziel"
+      },
+      "neutralise": {
+        "suite_one": ": gelähmt, Fähigkeiten wirkungslos",
+        "suite_many": ": gelähmt, Fähigkeiten wirkungslos",
+        "tant_que": "solange sie im Spiel ist"
+      },
+      "malediction": {
+        "suite_one": ", am Ende des nächsten gegnerischen Zuges verbannt",
+        "suite_many": ", am Ende des nächsten gegnerischen Zuges verbannt"
       },
       "emblem": {
         "badge": "Emblem",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", die am Zugende auslöst, solange sie im Friedhof ist",
         "on_delay": ", die in {n} Zug/Zügen auslöst"
       },
+      "enterrement": {
+        "deck_enemy": "des gegnerischen Decks auf dessen Friedhof",
+        "deck_ally": "deines Decks auf deinen Friedhof",
+        "deck_any": "des Zieldecks auf dessen Friedhof"
+      },
       "incin": {
         "zone_ally": "aus deinem Friedhof",
         "zone_enemy": "aus dem gegnerischen Friedhof",
@@ -1161,8 +1174,8 @@
         "keyword": " mit der Fähigkeit {v}",
         "type_creature": " vom Typ Einheit",
         "type_spell": " vom Typ Aktion",
-        "min_cost": " mit Kosten von {n} oder mehr",
-        "type_item": " vom Typ Gegenstand"
+        "type_item": " vom Typ Gegenstand",
+        "min_cost": " mit Kosten von {n} oder mehr"
       },
       "targetd": {
         "count_all": "alle Einheiten",
@@ -1241,11 +1254,6 @@
         "times": "{x} Mal 1 {unit}, jedes Mal",
         "target_both": "an ein zufälliges {side} Ziel (Einheit oder Held)",
         "target_unit": "an eine zufällige {side} Einheit"
-      },
-      "enterrement": {
-        "deck_enemy": "des gegnerischen Decks auf dessen Friedhof",
-        "deck_ally": "deines Decks auf deinen Friedhof",
-        "deck_any": "des Zieldecks auf dessen Friedhof"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "alle Pegasusse",
         "upto": "bis zu {n} Pegasusse"
       },
-      "Sphinx": {
-        "def": "die Sphinx",
-        "bare": "Sphinx",
-        "de": "der Sphinx",
-        "one": "eine Sphinx",
-        "all": "alle Sphinxe",
-        "upto": "bis zu {n} Sphinxe"
-      },
       "Yétis": {
         "def": "der Yeti",
         "bare": "Yeti",
@@ -1636,6 +1636,14 @@
         "one": "ein Yeti",
         "all": "alle Yetis",
         "upto": "bis zu {n} Yetis"
+      },
+      "Sphinx": {
+        "def": "die Sphinx",
+        "bare": "Sphinx",
+        "de": "der Sphinx",
+        "one": "eine Sphinx",
+        "all": "alle Sphinxe",
+        "upto": "bis zu {n} Sphinxe"
       },
       "Hommes-Loups": {
         "def": "der Werwolf",
@@ -2181,8 +2189,8 @@
       "scope": "auf eine verbündete Einheit (oder auf alle)",
       "scope_target": "auf eine verbündete Einheit",
       "edc_compte": "Erhält {n}-mal zufällig +1 ANG oder +1 LP (1 pro Korpsgeist, den du bereits ausgelöst hast).",
-      "usurpation_actuel": "Gespielte gegnerische Karten: {n} — derzeit +{x}/+{y}.",
       "scope_all": "auf alle deine Einheiten",
+      "usurpation_actuel": "Gespielte gegnerische Karten: {n} — derzeit +{x}/+{y}.",
       "machine_part": " und {ability}",
       "machine_part_timed": " und {ability} ({timing})",
       "machine_name": "Maschine",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
+        "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "impact": "Fügt {cibles} X Schaden zu.",
         "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
         "retour_differe": "Legt {cibles} mit Kosten ≤ X unter das Deck des jeweiligen Besitzers.",
         "retour_differe_any": "Legt {cibles} unter das Deck ihres Besitzers.",
         "remontee": "Gibt {cibles} in die Hand ihres ursprünglichen Besitzers zurück.",
-        "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
-        "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "corruption": "Bekehrt {cibles} mit Kosten ≤ X bis zum Ende des Zuges auf deine Seite, im Rahmen der freien Plätze; sie erhalten Verfolgung.",
         "corruption_any": "Bekehrt {cibles} bis zum Ende des Zuges auf Ihre Seite, im Rahmen der verfügbaren Plätze; sie erhalten Verfolgung.",
         "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, im Rahmen der freien Plätze.",
@@ -2261,10 +2269,10 @@
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
         "usurpation": "{cibles} erhalten +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
-        "guerison": "Stellt {cibles} und deinem Helden X LP wieder her."
+        "guerison": "Stellt {cibles} und deinem Helden X LP wieder her.",
+        "peste": "Verseucht {cibles}: Jede verliert am Ende ihres Zuges 1 LP, und ihre Pest geht bei ihrem Tod auf eine andere Einheit über."
       },
       "creature": {
-        "neutralisation": "Solange sie im Spiel ist, sind {cibles} gelähmt und ihre Fähigkeiten wirkungslos.",
         "impact": "Fügt {cibles} X Schaden zu.",
         "affaiblissement": "Gewährt {cibles} -X ATK und -Y LP.",
         "retour_differe": "Legt {cibles} mit Kosten ≤ X unter das Deck des jeweiligen Besitzers.",
@@ -2275,18 +2283,13 @@
         "domination": "Übernimmt die Kontrolle über {cibles} mit Kosten ≤ X, soweit Plätze vorhanden sind.",
         "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
+        "neutralisation": "Solange sie im Spiel ist, sind {cibles} gelähmt und ihre Fähigkeiten wirkungslos.",
         "malediction": "Verflucht {cibles} mit Kosten ≤ X: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "malediction_any": "Verflucht {cibles}: Sie werden am Ende des nächsten gegnerischen Zuges verbannt.",
         "tactique": "Gib {cibles} X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten (je Einheit ein Wurf).",
         "vampirisme": "Stiehlt {cibles} bis zu X LP und fügt sie den LP dieser Einheit hinzu.",
         "devoration": "Zerstört {cibles}; diese Einheit erhält dauerhaft deren ANG und LP.",
         "sacrifice": "Zerstöre alle anderen verbündeten Einheiten, um dauerhaft ihre LP und ihren ANG zu erhalten.",
-        "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
-        "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
-        "usurpation": "Gibt allen anderen verbündeten Einheiten dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
-        "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
-        "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
-        "usurpation_soi": "Erhält dauerhaft +X ANG und +Y LP für jede gegnerische Karte, die Ihr gespielt habt.",
         "execution": "Zerstört {cibles} mit Kosten ≤ X, einschließlich Gegenständen.",
         "execution_any": "Zerstört {cibles}, einschließlich Gegenstände.",
         "silence": "Entfernt alle Schlüsselwörter von {cibles}, einschließlich Gegenstände, und setzt deren Werte auf den Ausgangswert zurück.",
@@ -2294,6 +2297,12 @@
         "purete": "Solange euer Friedhof leer ist, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "force_des_ancetres": "Solange euer Friedhof 7 oder mehr Kreaturen enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
         "seuil_sacrificiel": "Solange euer Deck 25 Karten oder weniger enthält, erhalten alle anderen verbündeten Einheiten +X ATK und +Y LP.",
+        "renforcement": "Gibt allen anderen verbündeten Einheiten dauerhaft +X ATK und +Y LP.",
+        "discipline": "Haben alle Kosten auf Eurem Spielfeld die gleiche Parität wie die Kosten dieser Karte, verleiht sie allen anderen verbündeten Einheiten dauerhaft +X/+Y.",
+        "usurpation": "Gibt allen anderen verbündeten Einheiten dauerhaft +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
+        "renforcement_soi": "Erhält dauerhaft +X ANG und +Y LP.",
+        "discipline_soi": "Haben alle Kreaturen, die Ihr im Spiel habt, Kosten mit derselben Parität wie diese, erhält sie dauerhaft +X ANG und +Y LP.",
+        "usurpation_soi": "Erhält dauerhaft +X ANG und +Y LP für jede gegnerische Karte, die Ihr gespielt habt.",
         "silence_soi": "Verliert alle Schlüsselwörter, und ihre Werte kehren auf den Ausgangswert zurück.",
         "guerison_soi": "Stellt X LP wieder her.",
         "tactique_soi": "Erhält X zufällige Fähigkeiten von Kreaturen mit gleichen Kosten."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "Am Rundenanfang (nach dem Ziehen)",
     "mode_title_draw": "Wenn diese Karte gezogen wird",
     "mode_title_low_hp": "Wenn Ihr Held unter 15 LP fällt (nur einmal)",
-    "mode_title_wound": "Verwundung: wenn sie Schaden erleidet, ohne zu sterben (einmal pro Quelle und Runde)",
+    "mode_title_wound": "Verwundung: wenn sie Schaden erleidet, ohne zu sterben (bei jeder Verwundung)",
     "grant_scope_target": "Dem Zielgeschöpf verliehen",
     "grant_scope_all_allies": "Allen verbündeten Einheiten verliehen",
     "required_caps": "Erforderlich",
@@ -3782,9 +3791,11 @@
     "kind_label": "Art des Feedbacks",
     "kind_bug": "Bug",
     "kind_idea": "Idee",
+    "kind_balance": "Balancing",
     "kind_question": "Frage",
     "placeholder_bug": "Was ist passiert, und was hättest du stattdessen sehen sollen? Nenne die betroffene Karte oder den betroffenen Bildschirm.",
     "placeholder_idea": "Was würdest du gern geändert oder hinzugefügt sehen, und warum?",
+    "placeholder_balance": "Welche Karte findest du zu stark oder zu schwach, und warum?",
     "placeholder_question": "Wie lautet deine Frage?",
     "add_screenshot": "Screenshot anhängen",
     "attach_hint": "oder füge ihn in den Text ein",

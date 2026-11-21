@@ -13,7 +13,7 @@ type StatutSujet = "proposed" | "accepted" | "rejected" | "deferred" | "fixed" |
 
 interface Sujet {
   id: string;
-  kind: "bug" | "improvement";
+  kind: "bug" | "improvement" | "balance";
   title: string;
   summary: string;
   repro: string;
@@ -103,7 +103,8 @@ const STATUT_FIL: Record<string, string> = {
   closed: "Clos",
 };
 
-const TYPE: Record<string, string> = { bug: "Bug", idea: "Idée", improvement: "Amélioration", question: "Question", other: "Autre" };
+const TYPE: Record<string, string> = { bug: "Bug", idea: "Idée", improvement: "Amélioration", balance: "Équilibrage", question: "Question", other: "Autre" };
+const COULEUR_SUJET: Record<string, string> = { bug: "#922b21", improvement: "#1a5276", balance: "#7d6608" };
 const CATEGORIE: Record<string, string> = {
   rules: "Règles", gameplay: "Jeu", site_usage: "Site", account: "Compte", payment: "Paiement",
   complaint: "Réclamation", moderation: "Modération", legal: "Juridique", other: "Autre",
@@ -350,7 +351,7 @@ function CarteSujet({
       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
-            <Pastille label={TYPE[sujet.kind]} color={sujet.kind === "bug" ? "#922b21" : "#1a5276"} />
+            <Pastille label={TYPE[sujet.kind]} color={COULEUR_SUJET[sujet.kind] ?? "#1a5276"} />
             <Pastille label={sev.label} color={sev.color} />
             <Pastille label={st.label} color={st.color} />
             {sujet.area && <Pastille label={sujet.area} color="#566573" />}
@@ -536,6 +537,7 @@ export default function FeedbackManager() {
   ];
   const bugs = sujets.filter((s) => s.kind === "bug");
   const idees = sujets.filter((s) => s.kind === "improvement");
+  const equilibrage = sujets.filter((s) => s.kind === "balance");
   const pages = Math.max(1, Math.ceil(total / 30));
 
   return (
@@ -599,7 +601,7 @@ export default function FeedbackManager() {
           ) : sujets.length === 0 ? (
             <div style={{ ...panneau, textAlign: "center", color: "#888" }}>Aucun sujet dans cet état.</div>
           ) : (
-            [{ titre: "Bugs", liste: bugs }, { titre: "Améliorations", liste: idees }].map(({ titre, liste }) =>
+            [{ titre: "Bugs", liste: bugs }, { titre: "Équilibrage", liste: equilibrage }, { titre: "Améliorations", liste: idees }].map(({ titre, liste }) =>
               liste.length === 0 ? null : (
                 <section key={titre} style={{ marginBottom: 24 }}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 10px", color: "#333" }}>{titre} ({liste.length})</h2>
@@ -675,7 +677,7 @@ export default function FeedbackManager() {
             <strong style={{ fontSize: 14, flex: 1 }}>Retours ({total})</strong>
             <select value={filtreType} onChange={(e) => { setFiltreType(e.target.value); setPage(1); }} aria-label="Type" style={{ ...champ, width: "auto" }}>
               <option value="">Tous les types</option>
-              {["bug", "idea", "question", "other"].map((k) => <option key={k} value={k}>{TYPE[k]}</option>)}
+              {["bug", "idea", "balance", "question", "other"].map((k) => <option key={k} value={k}>{TYPE[k]}</option>)}
             </select>
             <select value={filtreStatut} onChange={(e) => { setFiltreStatut(e.target.value); setPage(1); }} aria-label="Statut" style={{ ...champ, width: "auto" }}>
               <option value="">Tous les statuts</option>

@@ -136,3 +136,38 @@ describe("Éthérée — actions doublées, capacités inchangées", () => {
     expect(pvApresCarte(action(DEGATS_3), unite("Témoin", 2, 10)).pv).toBe(7);
   });
 });
+
+// Un emblème n'est pas une action : ses dégâts ne sont pas doublés, même posé
+// par une action, et ne sont pas plafonnés (le plafond est réservé au combat).
+describe("Éthérée — dégâts d'emblème : ni doublés ni plafonnés", () => {
+  const DEGATS_EMBLEME: ComposedEffect = {
+    content: "deal_damage", magnitude: { x: 3 },
+    target: { entity: "unit", count: "all", side: "enemy", location: "board", designation: "automatic" },
+  };
+  const poseur = (card_type: "spell" | "creature") => mkInstance(mkCard({
+    name: "Poseur", card_type, mana_cost: 0,
+    attack: card_type === "spell" ? null : 1, health: card_type === "spell" ? null : 1,
+    capabilities: [{ uid: "cx_0", trigger: "on_end_of_turn", effectKind: "emblem", abilityId: "_composed", composed: DEGATS_EMBLEME, targets: [] }],
+  }));
+
+  it.each(["spell", "creature"] as const)("emblème de fin de tour posé par une carte %s : 3 dégâts", (type) => {
+    const b = brume();
+    const { pv, st } = pvApresCarte(poseur(type), b);
+    expect(st.players[0].emblems).toHaveLength(1);
+    expect(pv).toBe(10); // rien à la pose
+    const fin = applyAction(st, { type: "end_turn" } as GameAction);
+    expect(trouver(fin, b)?.currentHealth).toBe(7);
+  });
+
+  it("emblème déclenché par un événement (carte jouée) : 3 dégâts", () => {
+    const s = mkState();
+    s.players[0].mana = 10;
+    s.players[0].emblems = [{ stacks: 1, trigger: "on_play", composed: DEGATS_EMBLEME }] as never;
+    const b = brume();
+    s.players[1].board.push(b);
+    const pion = mkInstance(mkCard({ name: "Pion", mana_cost: 0, attack: 1, health: 1 }));
+    s.players[0].hand.push(pion);
+    const st = applyAction(s, { type: "play_card", cardInstanceId: pion.instanceId } as GameAction);
+    expect(trouver(st, b)?.currentHealth).toBe(7);
+  });
+});

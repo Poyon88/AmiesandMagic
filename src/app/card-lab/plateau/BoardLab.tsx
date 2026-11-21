@@ -43,6 +43,14 @@ export default function BoardLab() {
       moi.board.push(unite(i, 2));
       adversaire.board.push(unite(i + 20, 3));
     }
+    // `?etats=1` : montre les états empilés (Peste seule, Peste + Poison,
+    // Peste + Poison + Paralysie) pour régler pastilles et voiles.
+    if (q.get("etats")) {
+      const [a, b, c] = moi.board;
+      if (a) a.isPlagued = true;
+      if (b) { b.isPlagued = true; b.isPoisoned = true; }
+      if (c) { c.isPlagued = true; c.isPoisoned = true; c.isParalyzed = true; }
+    }
     for (let i = 0; i < main; i++) moi.hand.push(unite(i + 40, 1 + (i % 6)));
     for (let i = 0; i < 5; i++) adversaire.hand.push(unite(i + 60, 2));
     for (let i = 0; i < 30; i++) {

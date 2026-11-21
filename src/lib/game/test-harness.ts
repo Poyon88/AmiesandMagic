@@ -29,6 +29,8 @@ export function mkInstance(card: Card): CardInstance {
     instinctDeMeuteX: 0, instinctDeMeuteATKBonus: 0, diedOnTurn: null,
     cycleEternelAutoPlay: false, originalOwnerId: null, trueOwnerId: null,
     hasTransformedLycanthropie: false, grantedKeywordX: {}, manaCostReduction: 0,
+    // Comme createCardInstance : une unité qui porte Peste naît pestiférée.
+    ...(card.card_type === "creature" && (card.keywords as unknown as string[]).includes("peste") ? { isPlagued: true } : {}),
   };
 }
 

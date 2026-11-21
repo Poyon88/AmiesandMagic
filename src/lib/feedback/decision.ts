@@ -25,6 +25,13 @@ export const CATEGORIES = [
 ] as const;
 export type FeedbackCategory = (typeof CATEGORIES)[number];
 
+/** Types que l'agent peut rendre. */
+export const KINDS_RECONNUS: readonly FeedbackKind[] = ["bug", "idea", "balance", "question", "other"];
+
+/** Types regroupés en sujets de synthèse, que l'admin décide. */
+export const formeUnSujet = (kind: FeedbackKind): boolean =>
+  kind === "bug" || kind === "idea" || kind === "balance";
+
 /** Seules catégories où une réponse peut partir sans relecture. */
 const CATEGORIES_SURES: readonly FeedbackCategory[] = ["rules", "gameplay", "site_usage"];
 
@@ -78,7 +85,7 @@ export function assainirTri(brut: unknown, sujetsOuverts: ReadonlySet<string>): 
   if (!brut || typeof brut !== "object") return null;
   const b = brut as Record<string, unknown>;
 
-  const kind = parmi<FeedbackKind>(b.kind, ["bug", "idea", "question", "other"], "other");
+  const kind = parmi<FeedbackKind>(b.kind, KINDS_RECONNUS, "other");
   const title_fr = texte(b.title_fr, 140);
   if (!title_fr) return null;
 
@@ -86,8 +93,8 @@ export function assainirTri(brut: unknown, sujetsOuverts: ReadonlySet<string>): 
   let action = parmi<TriTopic["action"]>(t.action, ["attach", "create", "none"], "none");
   const id = texte(t.id, 36);
   const titreSujet = texte(t.title, 140);
-  // Seuls les bugs et les idées forment des sujets.
-  if (kind !== "bug" && kind !== "idea") action = "none";
+  // Seuls les bugs, les idées et les avis d'équilibrage forment des sujets.
+  if (!formeUnSujet(kind)) action = "none";
   if (action === "attach" && !sujetsOuverts.has(id)) action = "none";
   if (action === "create" && !titreSujet) action = "none";
 
@@ -133,9 +140,10 @@ export function decider(tri: Tri, precisionsDejaDemandees = 0): Decision {
   const sure = CATEGORIES_SURES.includes(tri.category);
 
   if (!tri.reply) {
-    // Rien à dire : un bug ou une idée bien compris est simplement rangé ;
+    // Rien à dire : un bug, une idée ou un avis d'équilibrage bien compris est
+    // simplement rangé ;
     // une question restée sans réponse revient à l'admin.
-    const range = tri.kind === "bug" || tri.kind === "idea";
+    const range = formeUnSujet(tri.kind);
     return { reply: "none", status: range ? "triaged" : "awaiting_admin" };
   }
 

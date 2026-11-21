@@ -1212,6 +1212,20 @@ function detectDamageEvents(
         });
       }
 
+      // Devenue pestiférée (action Peste, ou propagation à la mort d'une
+      // malade) : c'est cette annonce qui rend la propagation lisible.
+      if (!oldCreature.isPlagued && newCreature.isPlagued) {
+        const pos = getElementCenter(oldCreature.instanceId);
+        events.push({
+          targetId: oldCreature.instanceId,
+          amount: 0,
+          type: "poison",
+          label: "🦠 Peste",
+          color: "#c9b037",
+          ...pos,
+        });
+      }
+
       // Divine Shield gained
       if (!oldCreature.hasDivineShield && newCreature.hasDivineShield) {
         const pos = getElementCenter(oldCreature.instanceId);
@@ -1410,6 +1424,7 @@ function generateEffectLog(
       if (oc && nc.isPoisoned && nc.currentHealth < oc.currentHealth) {
         add(`☠️ Poison : ${nc.card.name} -${oc.currentHealth - nc.currentHealth} PV`);
       }
+      if (oc && !oc.isPlagued && nc.isPlagued) add(`🦠 Peste : ${nc.card.name} est pestiférée`);
     }
   }
 

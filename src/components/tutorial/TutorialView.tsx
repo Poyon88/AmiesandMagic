@@ -256,7 +256,7 @@ const DECLENCHEURS_DEMO: { mode?: KeywordMode; nom: string; quand: string }[] = 
   { mode: "tap", nom: "Orange — activation", quand: "Pouvoir que vous déclenchez en cliquant la créature, une fois par tour (pas le tour de son arrivée, sauf Traque)." },
   { mode: "attack", nom: "Magenta — à l'attaque", quand: "Chaque fois que la créature attaque, avant les dégâts du combat." },
   { mode: "death", nom: "Rouge sombre — à la mort", quand: "Quand la créature meurt." },
-  { mode: "wound", nom: "Vert citron — blessure", quand: "Quand la créature est blessée sans mourir (une fois par tour)." },
+  { mode: "wound", nom: "Vert citron — blessure", quand: "Quand la créature est blessée sans mourir (à chaque blessure)." },
   { mode: "low_hp", nom: "Violet — sous 15 PV", quand: "Quand votre héros passe sous 15 points de vie." },
   { mode: "start_of_turn", nom: "Argent — début du tour", quand: "Au début de chacun de vos tours." },
   { mode: "end_of_turn", nom: "Vert — fin du tour", quand: "À la fin de chacun de vos tours." },

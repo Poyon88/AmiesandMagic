@@ -147,7 +147,7 @@ export default function FeedbackHost() {
                 <p style={{ margin: "8px 0 16px", fontSize: 13, lineHeight: 1.5, color: "var(--am-ink-soft)" }}>
                   {t("intro")}
                 </p>
-                <div role="radiogroup" aria-label={t("kind_label")} style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                <div role="radiogroup" aria-label={t("kind_label")} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(108px, 1fr))", gap: 8, marginBottom: 12 }}>
                   {FEEDBACK_KINDS.map((k) => {
                     const actif = k === kind;
                     return (
@@ -158,7 +158,7 @@ export default function FeedbackHost() {
                         aria-checked={actif}
                         onClick={() => setKind(k)}
                         style={{
-                          flex: 1, borderRadius: 8, padding: "9px 8px", fontSize: 13, fontFamily: "inherit",
+                          borderRadius: 8, padding: "9px 8px", fontSize: 13, fontFamily: "inherit",
                           fontWeight: actif ? 600 : 400, cursor: "pointer",
                           background: actif ? "var(--am-ink)" : "transparent",
                           color: actif ? "var(--am-bg-0)" : "var(--am-ink-soft)",

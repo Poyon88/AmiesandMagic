@@ -252,17 +252,17 @@
         "label": "Zły urok",
         "desc": "Po śmierci zadaje X obrażeń wszystkim jednostkom (sojuszniczym i wrogim), gdzie X = jej ATK."
       },
-      "synergie": {
-        "label": "Synergia X",
-        "desc": "Po wejściu do gry wybierz zdolność: zyskuje +X/+X przy każdym jej uruchomieniu (1 raz na źródło na turę)."
+      "indestructible": {
+        "label": "Niezniszczalna",
+        "desc": "Nie otrzymuje żadnych obrażeń w walce."
       },
       "etheree": {
         "label": "Eteryczna",
         "desc": "Otrzymuje maksymalnie 1 obrażenie od uderzenia w walce. Obrażenia od akcji, które otrzymuje, są podwojone."
       },
-      "indestructible": {
-        "label": "Niezniszczalna",
-        "desc": "Nie otrzymuje żadnych obrażeń w walce."
+      "synergie": {
+        "label": "Synergia X",
+        "desc": "Po wejściu do gry wybierz zdolność: zyskuje +X/+X przy każdym jej uruchomieniu (1 raz na źródło na turę)."
       },
       "regeneration": {
         "label": "Regeneracja X",
@@ -446,13 +446,25 @@
         "label": "Dyscyplina +X/+Y",
         "desc": "Jeśli wszystkie koszty na twojej planszy mają taką samą parzystość jak jego, daje na stałe +X/+Y wybranej innej sojuszniczej jednostce."
       },
-      "lien_du_sang": {
-        "label": "Więź krwi X",
-        "desc": "Zyskuje +X/+X, a ty tracisz X PZ, o ile pozwalają na to twoje PZ."
-      },
       "usurpation": {
         "label": "Uzurpacja +X/+Y",
         "desc": "Daje na stałe +X/+Y innej sojuszniczej jednostce wybranej przez zagraną przez ciebie kartę przeciwnika."
+      },
+      "mutation": {
+        "label": "Mutacja X",
+        "desc": "Na ręce: odkryj 2 pospolite stworzenia o koszcie X. Przejmuje ich najlepsze ATK i PZ oraz 1 zdolność od każdego."
+      },
+      "infestation": {
+        "label": "Plaga X",
+        "desc": "Tasuje X kopii tej jednostki z twoją talią. Dobrana kopia zostaje przywołana, a ty dobierasz kolejną kartę."
+      },
+      "enterrement": {
+        "label": "Pogrzebanie X",
+        "desc": "Umieszcza X górnych kart talii wskazanego gracza na jego cmentarzu (zmęczenie za każdą brakującą kartę)."
+      },
+      "lien_du_sang": {
+        "label": "Więź krwi X",
+        "desc": "Zyskuje +X/+X, a ty tracisz X PZ, o ile pozwalają na to twoje PZ."
       },
       "esprit_de_corps": {
         "label": "Duch drużyny",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "Uderzenie X",
         "desc": "Zadaje X obrażeń wybranemu celowi wroga (jednostce lub bohaterowi)."
+      },
+      "execution": {
+        "label": "Egzekucja X",
+        "desc": "Niszczy wskazaną wrogą jednostkę o koszcie ≤ X.",
+        "desc_any": "Niszczy wskazaną wrogą jednostkę."
+      },
+      "silence": {
+        "label": "Cisza",
+        "desc": "Usuwa wszystkie słowa kluczowe wskazanej innej jednostki i przywraca jej statystyki do wartości pierwotnych."
+      },
+      "guerison": {
+        "label": "Uzdrowienie X",
+        "desc": "Przywraca X PZ wskazanej innej sojuszniczej jednostce lub twojemu bohaterowi."
       },
       "inspiration": {
         "label": "Inspiracja X",
@@ -573,30 +598,9 @@
         "label": "Opiekun",
         "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
       },
-      "execution": {
-        "label": "Egzekucja X",
-        "desc": "Niszczy wskazaną wrogą jednostkę o koszcie ≤ X.",
-        "desc_any": "Niszczy wskazaną wrogą jednostkę."
-      },
-      "silence": {
-        "label": "Cisza",
-        "desc": "Usuwa wszystkie słowa kluczowe wskazanej innej jednostki i przywraca jej statystyki do wartości pierwotnych."
-      },
-      "guerison": {
-        "label": "Uzdrowienie X",
-        "desc": "Przywraca X PZ wskazanej innej sojuszniczej jednostce lub twojemu bohaterowi."
-      },
-      "mutation": {
-        "label": "Mutacja X",
-        "desc": "Na ręce: odkryj 2 pospolite stworzenia o koszcie X. Przejmuje ich najlepsze ATK i PZ oraz 1 zdolność od każdego."
-      },
-      "infestation": {
-        "label": "Plaga X",
-        "desc": "Tasuje X kopii tej jednostki z twoją talią. Dobrana kopia zostaje przywołana, a ty dobierasz kolejną kartę."
-      },
-      "enterrement": {
-        "label": "Pogrzebanie X",
-        "desc": "Umieszcza X górnych kart talii wskazanego gracza na jego cmentarzu (zmęczenie za każdą brakującą kartę)."
+      "peste": {
+        "label": "Zaraza",
+        "desc": "Zarażona: traci 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "Zwołanie",
         "desc": "Tworzy {token}."
       },
+      "malediction": {
+        "label": "Klątwa X",
+        "desc": "Przeklina wskazaną jednostkę przeciwnika o koszcie ≤ X: zostaje wygnana na koniec następnej tury przeciwnika",
+        "desc_any": "Przeklina wskazaną jednostkę przeciwnika: zostaje wygnana na koniec następnej tury przeciwnika"
+      },
       "seuil_colere": {
         "label": "Próg gniewu X",
         "desc": "Jeśli w twojej talii jest 25 kart lub mniej, ta akcja zadaje o X obrażeń więcej."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "Wróżba",
         "desc": "Odkrywa 3 wierzchnie karty talii; połóż 1 na wierzchu i 2 na spodzie, w wybranej kolejności."
-      },
-      "malediction": {
-        "label": "Klątwa X",
-        "desc": "Przeklina wskazaną jednostkę przeciwnika o koszcie ≤ X: zostaje wygnana na koniec następnej tury przeciwnika",
-        "desc_any": "Przeklina wskazaną jednostkę przeciwnika: zostaje wygnana na koniec następnej tury przeciwnika"
       },
       "corruption": {
         "label": "Zepsucie X",
@@ -738,10 +742,6 @@
         "label": "Uderzenie X",
         "desc": "Zadaje X obrażeń wrogiemu celowi (jednostce lub bohaterowi)."
       },
-      "canon": {
-        "label": "Działo X",
-        "desc": "Zadaje X obrażeń losowej wrogiej jednostce."
-      },
       "deferlement": {
         "label": "Nawałnica X",
         "desc": "Zadaje X obrażeń wszystkim wrogim istotom"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "Uzdrowienie X",
-        "desc": "Przywraca X PZ sojuszniczej jednostce lub twojemu bohaterowi."
+        "desc": "Przywraca X PV sojuszniczej jednostce lub twojemu bohaterowi"
       },
       "seconde_vie": {
         "label": "Drugie życie X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "Spopielenie X",
         "desc": "Odkłada X losowych kart z wybranego cmentarza pod talię ich właściciela"
+      },
+      "enterrement": {
+        "label": "Pochówek X",
+        "desc": "Umieszcza X górnych kart talii wybranego gracza na jego cmentarzu"
       },
       "creuser": {
         "label": "Przekopanie X",
@@ -860,6 +864,10 @@
         "label": "Wielokrotne wezwania",
         "desc": "Tworzy {tokens}."
       },
+      "canon": {
+        "label": "Działo X",
+        "desc": "Zadaje X obrażeń losowej wrogiej jednostce."
+      },
       "tempete": {
         "label": "Burza X",
         "desc": "Zadaje X obrażeń rozdzielonych losowo między jednostki wroga."
@@ -880,9 +888,9 @@
         "label": "Mentor",
         "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
       },
-      "enterrement": {
-        "label": "Pochówek X",
-        "desc": "Umieszcza X górnych kart talii wybranego gracza na jego cmentarzu"
+      "peste": {
+        "label": "Zaraza",
+        "desc": "Zaraża jednostkę: traci ona 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "Na początku tury",
         "on_start_of_turn_in_hand": "Na początku tury, dopóki jest na ręce",
         "in_hand_suffix": "na ręce",
+        "in_graveyard_suffix": "na cmentarzu",
+        "on_end_of_turn_in_graveyard": "Na koniec tury, dopóki jest na cmentarzu",
         "on_draw": "Gdy ta karta zostanie dobrana",
         "on_low_hp": "Poniżej 15 PZ",
         "on_wound": "Rana",
-        "on_delay": "Opóźnienie {d}",
-        "on_end_of_turn_in_graveyard": "Na koniec tury, dopóki jest na cmentarzu",
-        "in_graveyard_suffix": "na cmentarzu"
-      },
-      "siphon": {
-        "heal": "i leczy twojego bohatera o {x} PZ",
-        "heal_each": "i leczy twojego bohatera o {x} PZ za każdy trafiony cel",
-        "heal_scatter": "i leczy twojego bohatera łącznie o {x} PZ"
-      },
-      "neutralise": {
-        "suite_one": ": sparaliżowana, zdolności bez efektu",
-        "suite_many": ": sparaliżowane, zdolności bez efektu",
-        "tant_que": "dopóki jest w grze"
-      },
-      "malediction": {
-        "suite_one": ", wygnana na koniec następnej tury przeciwnika",
-        "suite_many": ", wygnane na koniec następnej tury przeciwnika"
-      },
-      "domination": {
-        "limit": "w granicach dostępnych miejsc"
+        "on_delay": "Opóźnienie {d}"
       },
       "content": {
         "deal_damage_one": "zadaje {x} obrażenie",
@@ -1010,6 +1001,8 @@
         "conquete": "dodaje {x} do twojego licznika Podboju",
         "exploration": "dodaje {x} do twojego licznika Eksploracji",
         "incineration": "odkłada {x} kart ze wskazanego cmentarza pod jego talię",
+        "enterrement_one": "umieszcza pierwszą kartę{filter} {deck}",
+        "enterrement_many": "umieszcza {x} pierwszych kart{filter} {deck}",
         "incineration_cible": "odkłada {cartes} {zone} pod {deck}",
         "occurrences": "{n} razy: ",
         "alternative": "Do wyboru: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "wprowadza do gry pierwszą jednostkę z waszej talii",
         "appel_item_any": "wprowadza do gry pierwszy przedmiot z waszej talii",
         "dechainement_any": "zagrywa {x} losowych akcji",
-        "dechainement_one_any": "zagrywa jedną losową akcję",
-        "enterrement_one": "umieszcza pierwszą kartę{filter} {deck}",
-        "enterrement_many": "umieszcza {x} pierwszych kart{filter} {deck}"
+        "dechainement_one_any": "zagrywa jedną losową akcję"
+      },
+      "siphon": {
+        "heal": "i leczy twojego bohatera o {x} PZ",
+        "heal_each": "i leczy twojego bohatera o {x} PZ za każdy trafiony cel",
+        "heal_scatter": "i leczy twojego bohatera łącznie o {x} PZ"
+      },
+      "domination": {
+        "limit": "w granicach dostępnych miejsc"
       },
       "self": {
         "transformation": "przemienia się",
@@ -1076,12 +1075,12 @@
         "transformation": "wybierz stworzenie do przemiany",
         "deal_damage": "wybierz cel do zranienia",
         "siphon": "wybierz cel do wyssania życia",
-        "domination": "wybierz stworzenie do zdominowania",
         "heal": "wybierz cel do uleczenia",
         "buff": "wybierz stworzenie do wzmocnienia",
         "usurpation": "wybierz stworzenie do wzmocnienia",
         "debuff": "wybierz stworzenie do osłabienia",
         "destroy": "wybierz stworzenie do zniszczenia",
+        "domination": "wybierz stworzenie do zdominowania",
         "bounce": "wybierz stworzenie do zwrócenia na rękę",
         "paralyze": "wybierz stworzenie do sparaliżowania",
         "poison": "wybierz stworzenie do otrucia",
@@ -1091,6 +1090,15 @@
         "exhumation": "wybierz stworzenie do wskrzeszenia",
         "rappel": "wybierz kartę do wzięcia z powrotem na rękę",
         "default": "wybierz cel"
+      },
+      "neutralise": {
+        "suite_one": ": sparaliżowana, zdolności bez efektu",
+        "suite_many": ": sparaliżowane, zdolności bez efektu",
+        "tant_que": "dopóki jest w grze"
+      },
+      "malediction": {
+        "suite_one": ", wygnana na koniec następnej tury przeciwnika",
+        "suite_many": ", wygnane na koniec następnej tury przeciwnika"
       },
       "emblem": {
         "badge": "Godło",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", która uruchomi się na koniec tury, dopóki jest na cmentarzu",
         "on_delay": ", który aktywuje się za {n} tur(y)"
       },
+      "enterrement": {
+        "deck_enemy": "z talii przeciwnika na jego cmentarz",
+        "deck_ally": "z twojej talii na twój cmentarz",
+        "deck_any": "z wybranej talii na jej cmentarz"
+      },
       "incin": {
         "zone_ally": "z twojego cmentarza",
         "zone_enemy": "z cmentarza przeciwnika",
@@ -1161,8 +1174,8 @@
         "keyword": " ze zdolnością {v}",
         "type_creature": " typu jednostka",
         "type_spell": " typu akcja",
-        "min_cost": " o koszcie co najmniej {n}",
-        "type_item": " typu przedmiot"
+        "type_item": " typu przedmiot",
+        "min_cost": " o koszcie co najmniej {n}"
       },
       "targetd": {
         "count_all": "wszystkie jednostki",
@@ -1241,11 +1254,6 @@
         "times": "{x} razy 1 {unit}, za każdym razem",
         "target_both": "losowemu celowi {side} (jednostce lub bohaterowi)",
         "target_unit": "losowej jednostce {side}"
-      },
-      "enterrement": {
-        "deck_enemy": "z talii przeciwnika na jego cmentarz",
-        "deck_ally": "z twojej talii na twój cmentarz",
-        "deck_any": "z wybranej talii na jej cmentarz"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "wszystkie Pegazy",
         "upto": "do {n} Pegazów"
       },
-      "Sphinx": {
-        "def": "Sfinks",
-        "bare": "Sfinks",
-        "de": "Sfinksa",
-        "one": "Sfinks",
-        "all": "wszystkie Sfinksy",
-        "upto": "do {n} Sfinksów"
-      },
       "Yétis": {
         "def": "Yeti",
         "bare": "Yeti",
@@ -1636,6 +1636,14 @@
         "one": "Yeti",
         "all": "wszystkie Yeti",
         "upto": "do {n} Yeti"
+      },
+      "Sphinx": {
+        "def": "Sfinks",
+        "bare": "Sfinks",
+        "de": "Sfinksa",
+        "one": "Sfinks",
+        "all": "wszystkie Sfinksy",
+        "upto": "do {n} Sfinksów"
       },
       "Hommes-Loups": {
         "def": "Wilkołak",
@@ -2181,8 +2189,8 @@
       "scope": "jednej sojuszniczej jednostce (lub wszystkim)",
       "scope_target": "jednej sojuszniczej jednostce",
       "edc_compte": "Zyskuje {n} razy +1 ATK lub +1 PV losowo (1 za każdego Ducha drużyny, którego już aktywowałeś).",
-      "usurpation_actuel": "Zagrane karty przeciwnika: {n} — obecnie +{x}/+{y}.",
       "scope_all": "wszystkim twoim jednostkom",
+      "usurpation_actuel": "Zagrane karty przeciwnika: {n} — obecnie +{x}/+{y}.",
       "machine_part": " i {ability}",
       "machine_part_timed": " i {ability} ({timing})",
       "machine_name": "Maszyna",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
+        "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
         "impact": "Zadaje X obrażeń: {cibles}.",
         "affaiblissement": "Daje -X ATK i -Y PZ: {cibles}.",
         "retour_differe": "Umieszcza {cibles} o koszcie ≤ X pod talią ich właściciela.",
         "retour_differe_any": "Umieszcza {cibles} pod talią ich właściciela.",
         "remontee": "Zwraca {cibles} na rękę ich pierwotnego właściciela.",
-        "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
-        "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
         "corruption": "Przeciąga {cibles} o koszcie ≤ X na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
         "corruption_any": "Przeciąga {cibles} na swoją stronę do końca tury, w granicach wolnych miejsc; zyskują Pościg.",
         "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
@@ -2261,10 +2269,10 @@
         "renforcement": "+X/+Y dla {cibles}.",
         "discipline": "Jeśli wszystkie twoje stworzenia w grze mają koszt o takiej samej parzystości jak koszt tej akcji, +X/+Y dla {cibles}.",
         "usurpation": "+X/+Y dla {cibles} za każdą kartę przeciwnika, którą zagrałeś.",
-        "guerison": "Przywraca X PV {cibles} i twojemu bohaterowi."
+        "guerison": "Przywraca X PV {cibles} i twojemu bohaterowi.",
+        "peste": "Zaraża {cibles}: każda traci 1 PV na koniec swojej tury, a po jej śmierci Zaraza przechodzi na inną jednostkę."
       },
       "creature": {
-        "neutralisation": "Dopóki jest w grze, {cibles} są sparaliżowane, a ich zdolności nie działają.",
         "impact": "Zadaje X obrażeń {cibles}.",
         "affaiblissement": "Daje -X ATK i -Y PV {cibles}.",
         "retour_differe": "Umieszcza {cibles} o koszcie ≤ X pod talią ich właściciela.",
@@ -2275,18 +2283,13 @@
         "domination": "Przejmuje kontrolę nad {cibles} o koszcie ≤ X, w granicach wolnych miejsc.",
         "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
         "benediction": "Całkowicie leczy {cibles}.",
+        "neutralisation": "Dopóki jest w grze, {cibles} są sparaliżowane, a ich zdolności nie działają.",
         "malediction": "Przeklina {cibles} o koszcie ≤ X: zostaną wygnane na końcu następnej tury przeciwnika.",
         "malediction_any": "Przeklina {cibles}: zostaną wygnane na końcu następnej tury przeciwnika.",
         "tactique": "Daje {cibles} X losowych zdolności spośród zdolności stworzeń o tym samym koszcie (jedno losowanie na jednostkę).",
         "vampirisme": "Kradnie do X PV {cibles} i dodaje je do PV tej jednostki.",
         "devoration": "Niszczy {cibles}; ta jednostka trwale zyskuje ich ATK i PV.",
         "sacrifice": "Zniszcz wszystkie inne sojusznicze jednostki, aby trwale zyskać ich PV i ATK.",
-        "renforcement": "Daje trwale +X ATK i +Y PV wszystkim innym sojuszniczym jednostkom.",
-        "discipline": "Jeśli wszystkie koszty na twojej planszy mają taką samą parzystość jak jej koszt, daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom.",
-        "usurpation": "Daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom za każdą kartę przeciwnika, którą zagrałeś.",
-        "renforcement_soi": "Zyskuje na stałe +X ATK i +Y PV.",
-        "discipline_soi": "Jeśli wszystkie twoje stwory w grze mają koszt o tej samej parzystości co ten stwór, zyskuje na stałe +X ATK i +Y PV.",
-        "usurpation_soi": "Zyskuje na stałe +X ATK i +Y PV za każdą zagraną przez ciebie kartę przeciwnika.",
         "execution": "Niszczy {cibles} o koszcie ≤ X, wraz z przedmiotami.",
         "execution_any": "Niszczy {cibles}, wraz z przedmiotami.",
         "silence": "Usuwa wszystkie słowa kluczowe {cibles}, wraz z przedmiotami, i przywraca ich statystyki do wartości początkowych.",
@@ -2294,6 +2297,12 @@
         "purete": "Dopóki twój cmentarz jest pusty, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
         "force_des_ancetres": "Dopóki na twoim cmentarzu są co najmniej 7 stwory lub więcej, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
         "seuil_sacrificiel": "Dopóki w twojej talii jest 25 kart lub mniej, wszystkie pozostałe sojusznicze jednostki zyskują +X ATK i +Y PV.",
+        "renforcement": "Daje trwale +X ATK i +Y PV wszystkim innym sojuszniczym jednostkom.",
+        "discipline": "Jeśli wszystkie koszty na twojej planszy mają taką samą parzystość jak jej koszt, daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom.",
+        "usurpation": "Daje trwale +X/+Y wszystkim innym sojuszniczym jednostkom za każdą kartę przeciwnika, którą zagrałeś.",
+        "renforcement_soi": "Zyskuje na stałe +X ATK i +Y PV.",
+        "discipline_soi": "Jeśli wszystkie twoje stwory w grze mają koszt o tej samej parzystości co ten stwór, zyskuje na stałe +X ATK i +Y PV.",
+        "usurpation_soi": "Zyskuje na stałe +X ATK i +Y PV za każdą zagraną przez ciebie kartę przeciwnika.",
         "silence_soi": "Traci wszystkie swoje słowa kluczowe, a jego statystyki wracają do wartości początkowych.",
         "guerison_soi": "Odzyskuje X PV.",
         "tactique_soi": "Zyskuje X losowych zdolności spośród zdolności stworów o tym samym koszcie."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "Na początku tury (po dobraniu)",
     "mode_title_draw": "Gdy ta karta zostanie dobrana",
     "mode_title_low_hp": "Gdy twój bohater spadnie poniżej 15 PZ (tylko raz)",
-    "mode_title_wound": "Rana: gdy otrzyma obrażenia i nie zginie (raz na źródło i na turę)",
+    "mode_title_wound": "Rana: gdy otrzyma obrażenia i nie zginie (przy każdej ranie)",
     "grant_scope_target": "Nadawana wybranemu stworzeniu",
     "grant_scope_all_allies": "Nadawana wszystkim sojuszniczym jednostkom",
     "required_caps": "Wymagany",
@@ -3782,9 +3791,11 @@
     "kind_label": "Rodzaj zgłoszenia",
     "kind_bug": "Błąd",
     "kind_idea": "Pomysł",
+    "kind_balance": "Balans",
     "kind_question": "Pytanie",
     "placeholder_bug": "Co się stało i co powinno się wyświetlić? Podaj kartę lub ekran, których to dotyczy.",
     "placeholder_idea": "Co chciałbyś zmienić lub dodać i dlaczego?",
+    "placeholder_balance": "Która karta wydaje ci się zbyt silna lub zbyt słaba i dlaczego?",
     "placeholder_question": "Jakie jest Twoje pytanie?",
     "add_screenshot": "Dołącz zrzut ekranu",
     "attach_hint": "lub wklej go do tekstu",

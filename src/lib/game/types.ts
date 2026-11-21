@@ -12,7 +12,7 @@ export type Keyword =
   | "raid" | "loyaute" | "ancre" | "resistance" | "premiere_frappe" | "gloire"
   | "convocations_multiples"
   // Tier 1 — Terrain
-  | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "celerite"
+  | "vol" | "precision" | "drain_de_vie" | "esquive" | "poison" | "peste" | "celerite"
   // Toute créature blessée par la source meurt (combat, capacité, ou sort
   // porteur du mot-clé). Modificateur, pas un effet à part entière.
   | "touche_mortel"
@@ -284,6 +284,7 @@ export type SpellKeywordId =
   | "concentration"
   | "selection_magique"
   | "poison"
+  | "peste"
   | "precision"
   | "seuil_colere"
   | "touche_mortel"
@@ -558,10 +559,10 @@ export type CapabilityTrigger =
    *  réarmé par un soin. Une carte posée alors que son contrôleur est déjà
    *  sous le seuil se déclenche immédiatement. */
   | "on_low_hp"
-  /** BLESSURE : quand CETTE créature subit des dégâts et y SURVIT. Une fois par
-   *  SOURCE de dégâts différente et par tour (`CardInstance.woundSourcesThisTurn`,
-   *  vidé à chaque fin de tour) : un sort qui frappe trois fois ne déclenche
-   *  qu'une fois, deux sorts distincts déclenchent deux fois. Blessure RÉELLE
+  /** BLESSURE : quand CETTE créature subit des dégâts et y SURVIT. À CHAQUE
+   *  blessure, sans limite par source ni par tour (levée le 2026-11-21) : un
+   *  sort qui frappe trois fois déclenche trois fois. Seule exception : les
+   *  dégâts infligés par une réponse Blessure ne déclenchent rien. Blessure RÉELLE
    *  seulement (après Bouclier / immunités / réductions) ; comptent aussi le
    *  tick de Poison et le vol de PV de Vampirisme. Se règle à la frontière
    *  d'effet (balayage `checkWoundTriggers`), jamais au milieu d'un sort : une
@@ -1303,20 +1304,18 @@ export interface CardInstance {
   // Keyword runtime state
   attacksRemaining: number;
   isPoisoned: boolean;
+  /** PESTE : unité pestiférée. Perd 1 PV à la fin du tour de son contrôleur ; à
+   *  sa mort, la maladie passe à une autre unité saine au hasard (deux camps).
+   *  Posée par l'action Peste, ou native (carte qui porte la capacité). Retirée
+   *  par Bénédiction et en quittant le plateau sans mourir. Absent ⇒ saine.
+   *  Vérité de jeu — hachée. */
+  isPlagued?: boolean;
   hasUsedResurrection: boolean;
   /** Déclencheur « Sous 15 PV » (on_low_hp) : une seule fois par instance,
    *  jamais réarmé (même si le héros est resoigné au-dessus du seuil). Champ
    *  optionnel : undefined ⇒ pas encore déclenché (snapshots antérieurs).
    *  Vérité de jeu durable — hashée, mutée uniquement sous applyAction. */
   lowHpTriggerFired?: boolean;
-  /** Déclencheur BLESSURE (on_wound) : clés des sources de dégâts qui ont DÉJÀ
-   *  compté ce tour-ci pour cette instance (cf. `wound-origin` dans le moteur :
-   *  `c:<instanceId>` créature, `s:<n>` lancement de sort, `h:<joueur>` héros,
-   *  `e:<joueur>:<i>` emblème, `poison`). Vidé à CHAQUE fin de tour, des deux
-   *  camps. Tenu pour TOUTE créature blessée, porteuse ou non du déclencheur :
-   *  un pouvoir conféré en cours de tour ne doit pas repartir sur une source
-   *  déjà encaissée. Vérité de jeu — hashée. */
-  woundSourcesThisTurn?: string[];
   /** SYNERGIE X — capacité choisie par le joueur à l'arrivée en jeu : chaque
    *  déclenchement de cette capacité (toute source, tout joueur) donne +X/+X à
    *  cette créature. Absent ⇒ pas encore choisie. Effacée par Silence, retour
@@ -1331,8 +1330,8 @@ export interface CardInstance {
    *  quand elle quitte le plateau ou subit un Silence. Hachée. */
   neutralisationComposeIds?: string[];
   synergieAbilityId?: string;
-  /** SYNERGIE X — clés des sources déjà comptées CE TOUR (même schéma que
-   *  `woundSourcesThisTurn`). Vidé à chaque bascule de tour. Hachée. */
+  /** SYNERGIE X — clés des sources déjà comptées CE TOUR (`c:<instanceId>` créature, `s:<n>` lancement
+   *  de sort, `h:<joueur>` héros, `e:<joueur>:<i>` emblème). Vidé à chaque bascule de tour. Hachée. */
   synergieSourcesThisTurn?: string[];
   // Tap state — true while the creature is "engaged" (MTG-style 45°
   // rotation). Set when the creature attacks OR when it tap-activates a

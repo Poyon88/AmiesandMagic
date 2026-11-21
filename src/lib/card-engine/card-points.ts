@@ -133,7 +133,11 @@ function termesNommes(b: Bareme, cap: Capability, ligneForcee?: string, multExte
   const y = p.y ?? p.health;
   const random = p.randomX === true;
   const scope = cap.targetScope ?? (cap.grantScope === "all_allies" ? "all_allies" : undefined);
-  const mult = multExterne
+  // PESTE : le coût du barème est celui de l'unité NÉE pestiférée — un
+  // handicap, donc négatif. L'action inflige la même maladie à une unité de son
+  // choix : même ampleur, signe opposé.
+  const signe = id === "peste" && cap.trigger === "spell_resolution" ? -1 : 1;
+  const mult = signe * multExterne
     * multDeclencheur(b, cap.trigger)
     * (scope ? b.portee[scope] : 1)
     * multFiltre(b, { race: [cap.race], clan: [cap.clan], faction: [cap.faction] })

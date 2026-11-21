@@ -2,10 +2,11 @@
 // les écrans (joueur et admin). Les tables sont décrites dans
 // supabase-migration-feedback.sql.
 
-export const FEEDBACK_KINDS = ["bug", "idea", "question"] as const;
+export const FEEDBACK_KINDS = ["bug", "idea", "balance", "question"] as const;
 /** Ce que le joueur coche en ouvrant un retour. */
 export type FeedbackKindDeclared = (typeof FEEDBACK_KINDS)[number];
-/** Ce que l'agent reconnaît vraiment (« other » : ni bug, ni idée, ni question). */
+/** Ce que l'agent reconnaît vraiment (« other » : rien de ce qui précède).
+ *  « balance » : une carte ou une capacité jugée trop forte ou trop faible. */
 export type FeedbackKind = FeedbackKindDeclared | "other";
 
 export type FeedbackStatus =
@@ -23,7 +24,7 @@ export type FeedbackAuthor = "player" | "agent" | "admin";
 
 export const TOPIC_STATUSES = ["proposed", "accepted", "rejected", "deferred", "fixed", "shipped"] as const;
 export type TopicStatus = (typeof TOPIC_STATUSES)[number];
-export type TopicKind = "bug" | "improvement";
+export type TopicKind = "bug" | "improvement" | "balance";
 
 /** Contexte joint automatiquement à l'ouverture d'un retour. */
 export interface FeedbackContext {

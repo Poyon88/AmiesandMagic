@@ -393,7 +393,7 @@ export const ALL_KEYWORDS: Keyword[] = [
   // (0 cards use "vol"), so "vol" is intentionally omitted from this list to
   // avoid a duplicate "Vol" entry in keyword pickers/filters. Its label, symbol
   // and engine handling are kept below as a harmless alias for safety.
-  "precision", "drain_de_vie", "esquive", "poison", "celerite",
+  "precision", "drain_de_vie", "esquive", "poison", "peste", "celerite",
   "augure", "benediction", "bravoure", "pillage", "riposte",
   "rappel", "combustion",
   "terreur", "armure", "commandement", "fureur", "double_attaque", "invisible",
@@ -460,7 +460,7 @@ export const KEYWORD_LABELS: Record<Keyword, string> = {
   charge: "Traque", taunt: "Provocation", divine_shield: "Bouclier", ranged: "Vol",
   raid: "Raid", convocations_multiples: "Convocations multiples", loyaute: "Loyauté", ancre: "Ancré", resistance: "Résistance X", premiere_frappe: "Première Frappe",
   gloire: "Gloire +X/+Y", vol: "Vol", precision: "Précision", drain_de_vie: "Drain de vie", esquive: "Esquive",
-  poison: "Poison", celerite: "Célérité",
+  poison: "Poison", peste: "Peste", celerite: "Célérité",
   augure: "Augure", benediction: "Bénédiction", bravoure: "Bravoure",
   pillage: "Pillage X", riposte: "Riposte X", chant: "Chant", lune: "Lune X", soleil: "Soleil X",
   rappel: "Rappel X", combustion: "Combustion",
@@ -667,7 +667,7 @@ export const KEYWORD_SYMBOLS: Record<Keyword, string> = {
   charge: "⚡", taunt: "🎯", divine_shield: "🔰", ranged: "🦅",
   raid: "⚔️", convocations_multiples: "📣📣", loyaute: "🤝", ancre: "⚓", resistance: "🛡️", premiere_frappe: "🗡️",
   gloire: "🏅", vol: "🦅", precision: "🏹", drain_de_vie: "🩸", esquive: "💨",
-  poison: "☠️", celerite: "💫",
+  poison: "☠️", peste: "🦠", celerite: "💫",
   augure: "/icons/augure.png", benediction: "✝️", bravoure: "🦁",
   pillage: "💰", riposte: "↩️", chant: "🎵", lune: "🌙", soleil: "☀️",
   rappel: "🔄", combustion: "🔥",

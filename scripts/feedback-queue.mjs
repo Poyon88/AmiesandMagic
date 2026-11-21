@@ -72,9 +72,10 @@ async function lister(seul) {
   const { data: sujets, error } = await req;
   if (error) echec(`Lecture impossible : ${error.message}`);
   if (!sujets?.length) { console.log("Aucun sujet accepté en attente."); return; }
-  // Les bugs avant les améliorations, les plus graves d'abord.
+  // Les bugs, puis l'équilibrage, puis les améliorations ; les plus graves d'abord.
+  const RANG = { bug: 0, balance: 1, improvement: 2 };
   sujets.sort((a, b) =>
-    (a.kind === b.kind ? 0 : a.kind === "bug" ? -1 : 1) ||
+    ((RANG[a.kind] ?? 9) - (RANG[b.kind] ?? 9)) ||
     ORDRE[a.severity] - ORDRE[b.severity] ||
     a.decided_at?.localeCompare(b.decided_at ?? "") || 0);
 
@@ -99,7 +100,7 @@ async function lister(seul) {
 
     console.log("════════════════════════════════════════════════════════════════");
     console.log(`SUJET ${s.id}`);
-    console.log(`${s.kind === "bug" ? "BUG" : "AMÉLIORATION"} · gravité ${s.severity} · zone ${s.area || "?"} · ${joueurs} joueur(s), ${ids.length} retour(s)`);
+    console.log(`${{ bug: "BUG", balance: "ÉQUILIBRAGE", improvement: "AMÉLIORATION" }[s.kind] ?? s.kind} · gravité ${s.severity} · zone ${s.area || "?"} · ${joueurs} joueur(s), ${ids.length} retour(s)`);
     console.log(`Titre        : ${s.title}`);
     console.log(`Synthèse     : ${s.summary}`);
     if (s.repro) console.log(`Reproduction : ${s.repro}`);

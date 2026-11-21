@@ -78,6 +78,20 @@ ne code rien pour ce sujet : rapporte l'écart.
 
 Un sujet qui bloque : passe au suivant, et dis précisément où ça coince.
 
+### Sujets d'équilibrage
+
+Un sujet marqué `ÉQUILIBRAGE` dit qu'une carte (ou une capacité, un héros) est
+jugée trop forte ou trop faible. Ce n'est pas un bug : le correctif est un
+changement de carte en base (coût, statistiques, capacités) ou de barème, et la
+base est partagée avec la production.
+
+1. Vérifie d'abord que ce n'est pas un bug déguisé : la carte fait-elle ce que
+   dit son texte ? Si non, traite-le comme un bug.
+2. Sinon, **ne modifie ni la carte ni le barème de toi-même**. Rassemble les
+   faits (fiche de la carte, coût au barème, cartes comparables, ce que
+   reprochent les joueurs), propose un ajustement chiffré, et demande à l'admin
+   de trancher — sauf si sa note donne déjà le changement exact à faire.
+
 ## 4. Ce que cette commande ne fait jamais
 
 - décider à la place de l'admin : elle ne touche qu'aux sujets **acceptés**, et

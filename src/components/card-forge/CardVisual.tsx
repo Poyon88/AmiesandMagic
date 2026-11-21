@@ -69,6 +69,7 @@ export const KEYWORD_SYMBOLS: Record<string, string> = {
   "Drain de vie":     "🩸",
   "Esquive":          "💨",
   "Poison":           "☠️",
+  "Peste":            "🦠",
   "Célérité":         "💫",
   "Augure":           "📖",
   "Bénédiction":      "✝️",

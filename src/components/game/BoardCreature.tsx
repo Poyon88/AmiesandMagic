@@ -349,6 +349,7 @@ function BoardCreature({
   const statutsEnJeu = () => {
           const statuses: { kw: Keyword; label: string; color: string }[] = [];
           if (creature.isPoisoned) statuses.push({ kw: "poison" as Keyword, label: "Empoisonné", color: "#22c55e" });
+          if (creature.isPlagued) statuses.push({ kw: "peste" as Keyword, label: "Pestiférée", color: "#c9b037" });
           // Neutralisée : paralysée et muette tant que la porteuse adverse est en jeu.
           if (estNeutralisee(creature)) statuses.push({ kw: "neutralisation" as Keyword, label: (creature.neutralisationTurnsLeft ?? 0) > 1 ? `Neutralisé (${creature.neutralisationTurnsLeft} tours)` : "Neutralisé", color: "#8b5cf6" });
           if (maudite) statuses.push({ kw: "malediction" as Keyword, label: "Maudit — exilé à la fin du prochain tour adverse", color: "#a855f7" });
@@ -726,6 +727,17 @@ function BoardCreature({
         }} />
       )}
 
+      {/* Voile de Peste : jaune malade, pour ne pas se confondre avec le vert
+          du Poison (les deux peuvent se superposer). */}
+      {creature.isPlagued && (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "rgba(201, 176, 55, 0.15)",
+          pointerEvents: "none",
+          animation: "peste-pulse 2.6s ease-in-out infinite",
+        }} />
+      )}
+
       {/* Mana cost orb (top-left) — sized 1/2.5 of the hand-card orb (22px →
           9px) per the design spec. Mirrors the hand-card style (blue
           gradient, fontSize scaled accordingly) so the player can read
@@ -764,6 +776,11 @@ function BoardCreature({
       {/* Poison indicator (shifted below the mana orb) */}
       {creature.isPoisoned && (
         <StatusPip keyword={"poison" as Keyword} color="#22c55e" top={14} side="left" title="Empoisonné" />
+      )}
+
+      {/* Peste : empilée sous le Poison quand les deux sont là. */}
+      {creature.isPlagued && (
+        <StatusPip keyword={"peste" as Keyword} color="#c9b037" top={creature.isPoisoned ? 36 : 14} side="left" title="Pestiférée" />
       )}
 
       {/* OBJET ÉQUIPÉ — pastille bronze. Elle existe parce que le lien
@@ -815,7 +832,7 @@ function BoardCreature({
         <StatusPip
           keyword={"paralysie" as Keyword}
           color="#8b5cf6"
-          top={creature.isPoisoned ? 36 : 14}
+          top={14 + 22 * ((creature.isPoisoned ? 1 : 0) + (creature.isPlagued ? 1 : 0))}
           side="left"
           title={(creature.paralysisTurnsLeft ?? 1) > 1 ? `Paralysé (${creature.paralysisTurnsLeft} tours)` : "Paralysé"}
         />

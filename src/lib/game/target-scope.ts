@@ -277,6 +277,7 @@ export const SPELL_SCOPE_DESC_FR: Record<string, string> = {
   malediction_any: "Maudit {cibles} : elles sont exilées à la fin du prochain tour adverse.",
   ...DESC_TOUTES_COMMUNES,
   poison: "Empoisonne {cibles} : elles perdent 1 PV à chaque fin de tour.",
+  peste: "Rend {cibles} pestiférées : chacune perd 1 PV à la fin de son tour, et sa Peste passe à une autre unité à sa mort.",
   siphon: "Inflige X dégâts à {cibles} et soigne votre héros de X par unité touchée.",
   entrave: "Paralyse {cibles} pendant X tour(s).",
   execution: "Détruit {cibles} de coût ≤ X, objets compris.",

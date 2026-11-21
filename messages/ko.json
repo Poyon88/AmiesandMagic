@@ -252,17 +252,17 @@
         "label": "액운",
         "desc": "죽을 때 모든 유닛(아군과 적)에게 X의 피해를 줍니다. X = 이 유닛의 공격력."
       },
-      "synergie": {
-        "label": "시너지 X",
-        "desc": "등장 시 능력 하나를 선택합니다. 해당 능력이 발동할 때마다 +X/+X를 얻습니다(출처당 턴마다 1회)."
+      "indestructible": {
+        "label": "불멸",
+        "desc": "전투 피해를 받지 않습니다."
       },
       "etheree": {
         "label": "영체",
         "desc": "전투에서 한 번의 타격당 최대 1의 피해만 받습니다. 액션으로 받는 피해는 두 배가 됩니다."
       },
-      "indestructible": {
-        "label": "불멸",
-        "desc": "전투 피해를 받지 않습니다."
+      "synergie": {
+        "label": "시너지 X",
+        "desc": "등장 시 능력 하나를 선택합니다. 해당 능력이 발동할 때마다 +X/+X를 얻습니다(출처당 턴마다 1회)."
       },
       "regeneration": {
         "label": "재생 X",
@@ -446,13 +446,25 @@
         "label": "규율 +X/+Y",
         "desc": "내 필드의 모든 비용이 이 카드와 같은 홀짝이면, 지정한 다른 아군 유닛에게 +X/+Y를 영구적으로 줍니다."
       },
-      "lien_du_sang": {
-        "label": "피의 유대 X",
-        "desc": "+X/+X를 얻고 체력이 허락하면 체력 X를 잃습니다."
-      },
       "usurpation": {
         "label": "찬탈 +X/+Y",
         "desc": "내가 사용한 카드가 적 카드의 대상이 된 다른 아군 유닛에게 +X/+Y를 영구적으로 줍니다."
+      },
+      "mutation": {
+        "label": "돌연변이 X",
+        "desc": "손에 있을 때: 비용이 X인 일반 크리처 2장 중에서 발견합니다. 각자의 최고 공격력과 체력, 그리고 능력 1개씩을 얻습니다."
+      },
+      "infestation": {
+        "label": "감염 X",
+        "desc": "이 유닛의 복사본 X장을 덱에 섞습니다. 복사본을 뽑으면 소환되고 카드를 한 장 더 뽑습니다."
+      },
+      "enterrement": {
+        "label": "매장 X",
+        "desc": "대상 플레이어의 덱 맨 위 카드 X장을 묘지로 보냅니다(부족한 카드마다 피로 피해)."
+      },
+      "lien_du_sang": {
+        "label": "피의 유대 X",
+        "desc": "+X/+X를 얻고 체력이 허락하면 체력 X를 잃습니다."
       },
       "esprit_de_corps": {
         "label": "단결심",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "충격 X",
         "desc": "적 대상(유닛 또는 영웅) 하나에게 X의 피해를 줍니다."
+      },
+      "execution": {
+        "label": "처형 X",
+        "desc": "비용이 X 이하인 대상 적 유닛 하나를 파괴합니다.",
+        "desc_any": "대상 적 유닛 하나를 파괴합니다."
+      },
+      "silence": {
+        "label": "침묵",
+        "desc": "대상으로 지정한 다른 유닛의 모든 키워드를 제거하고 능력치를 원래 값으로 되돌립니다."
+      },
+      "guerison": {
+        "label": "치유 X",
+        "desc": "대상으로 지정한 다른 아군 유닛 또는 당신의 영웅의 체력을 X 회복합니다."
       },
       "inspiration": {
         "label": "영감 X",
@@ -573,30 +598,9 @@
         "label": "스승",
         "desc": "제작 시 지정된 카드를 손으로 가져옵니다(같은 카드를 여러 번 지정할 수 있습니다)."
       },
-      "execution": {
-        "label": "처형 X",
-        "desc": "비용이 X 이하인 대상 적 유닛 하나를 파괴합니다.",
-        "desc_any": "대상 적 유닛 하나를 파괴합니다."
-      },
-      "silence": {
-        "label": "침묵",
-        "desc": "대상으로 지정한 다른 유닛의 모든 키워드를 제거하고 능력치를 원래 값으로 되돌립니다."
-      },
-      "guerison": {
-        "label": "치유 X",
-        "desc": "대상으로 지정한 다른 아군 유닛 또는 당신의 영웅의 체력을 X 회복합니다."
-      },
-      "mutation": {
-        "label": "돌연변이 X",
-        "desc": "손에 있을 때: 비용이 X인 일반 크리처 2장 중에서 발견합니다. 각자의 최고 공격력과 체력, 그리고 능력 1개씩을 얻습니다."
-      },
-      "infestation": {
-        "label": "감염 X",
-        "desc": "이 유닛의 복사본 X장을 덱에 섞습니다. 복사본을 뽑으면 소환되고 카드를 한 장 더 뽑습니다."
-      },
-      "enterrement": {
-        "label": "매장 X",
-        "desc": "대상 플레이어의 덱 맨 위 카드 X장을 묘지로 보냅니다(부족한 카드마다 피로 피해)."
+      "peste": {
+        "label": "역병",
+        "desc": "역병 감염: 자신의 턴 종료 시 HP 1을 잃습니다. 사망하면 역병이 무작위 다른 유닛에게 옮겨갑니다."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "소환",
         "desc": "{token}을(를) 생성합니다."
       },
+      "malediction": {
+        "label": "저주 X",
+        "desc": "비용이 X 이하인 대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다",
+        "desc_any": "대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다"
+      },
       "seuil_colere": {
         "label": "분노의 문턱 X",
         "desc": "덱에 남은 카드가 25장 이하라면, 이 액션은 피해를 X 더 줍니다."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "점술",
         "desc": "덱 맨 위 카드 3장을 공개합니다. 1장은 맨 위에, 2장은 맨 아래에 원하는 순서로 되돌려 놓습니다."
-      },
-      "malediction": {
-        "label": "저주 X",
-        "desc": "비용이 X 이하인 대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다",
-        "desc_any": "대상 적 유닛을 저주합니다. 해당 유닛은 상대의 다음 턴 종료 시 추방됩니다"
       },
       "corruption": {
         "label": "타락 X",
@@ -738,10 +742,6 @@
         "label": "충격 X",
         "desc": "적 대상 1명(유닛 또는 영웅)에게 X의 피해를 줍니다."
       },
-      "canon": {
-        "label": "대포 X",
-        "desc": "무작위 적 유닛 1명에게 X의 피해를 줍니다."
-      },
       "deferlement": {
         "label": "쇄도 X",
         "desc": "모든 적 크리처에게 X의 피해를 줍니다"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "치유 X",
-        "desc": "아군 유닛 또는 당신의 영웅의 체력을 X 회복합니다."
+        "desc": "아군 유닛 하나 또는 내 영웅의 HP를 X 회복합니다"
       },
       "seconde_vie": {
         "label": "두 번째 생명 X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "소각 X",
         "desc": "대상으로 지정한 묘지의 카드 X장을 무작위로 골라 그 주인의 덱 아래로 되돌립니다"
+      },
+      "enterrement": {
+        "label": "매장 X",
+        "desc": "대상 플레이어의 덱 위에서 X장의 카드를 묘지로 보냅니다"
       },
       "creuser": {
         "label": "파헤치기 X",
@@ -860,6 +864,10 @@
         "label": "다중 소집",
         "desc": "{tokens}을(를) 만듭니다."
       },
+      "canon": {
+        "label": "대포 X",
+        "desc": "무작위 적 유닛 1명에게 X의 피해를 줍니다."
+      },
       "tempete": {
         "label": "폭풍 X",
         "desc": "적 유닛들에게 무작위로 나누어 X의 피해를 줍니다."
@@ -880,9 +888,9 @@
         "label": "튜터",
         "desc": "제작 시 지정된 카드를 손으로 가져옵니다 (같은 카드를 여러 번 지정할 수 있습니다)."
       },
-      "enterrement": {
-        "label": "매장 X",
-        "desc": "대상 플레이어의 덱 위에서 X장의 카드를 묘지로 보냅니다"
+      "peste": {
+        "label": "역병",
+        "desc": "유닛 하나를 역병에 감염시킵니다. 해당 유닛은 자신의 턴 종료 시 HP 1을 잃습니다. 사망하면 역병이 무작위 다른 유닛에게 옮겨갑니다."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "턴 시작 시",
         "on_start_of_turn_in_hand": "턴 시작 시, 손에 있는 동안",
         "in_hand_suffix": "손에서",
+        "in_graveyard_suffix": "묘지에서",
+        "on_end_of_turn_in_graveyard": "턴 종료 시, 묘지에 있는 동안",
         "on_draw": "이 카드를 뽑았을 때",
         "on_low_hp": "체력 15 미만",
         "on_wound": "부상",
-        "on_delay": "지연 {d}",
-        "on_end_of_turn_in_graveyard": "턴 종료 시, 묘지에 있는 동안",
-        "in_graveyard_suffix": "묘지에서"
-      },
-      "siphon": {
-        "heal": "그리고 내 영웅의 체력을 {x} 회복합니다",
-        "heal_each": "그리고 적중한 대상마다 내 영웅의 체력을 {x} 회복합니다",
-        "heal_scatter": "그리고 내 영웅의 체력을 총 {x} 회복합니다"
-      },
-      "neutralise": {
-        "suite_one": ": 마비되어 능력이 효과를 잃습니다",
-        "suite_many": ": 마비되어 능력이 효과를 잃습니다",
-        "tant_que": "필드에 있는 동안"
-      },
-      "malediction": {
-        "suite_one": ", 다음 상대 턴 종료 시 추방됩니다",
-        "suite_many": ", 다음 상대 턴 종료 시 추방됩니다"
-      },
-      "domination": {
-        "limit": "빈 자리 한도 내에서"
+        "on_delay": "지연 {d}"
       },
       "content": {
         "deal_damage_one": "피해 {x}를 줍니다",
@@ -1010,6 +1001,8 @@
         "conquete": "정복 카운터에 {x}를 추가합니다",
         "exploration": "탐험 카운터에 {x}를 추가합니다",
         "incineration": "지정한 묘지의 카드 {x}장을 덱 아래로 되돌립니다",
+        "enterrement_one": "첫 번째 카드{filter}을(를) {deck}에 놓습니다",
+        "enterrement_many": "처음 {x}장의 카드{filter}을(를) {deck}에 놓습니다",
         "incineration_cible": "{cartes} {zone} {deck} 아래로 되돌립니다",
         "occurrences": "{n}회: ",
         "alternative": "택일: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "덱의 첫 번째 유닛을 필드에 내보냅니다",
         "appel_item_any": "덱의 첫 번째 아이템을 필드에 내보냅니다",
         "dechainement_any": "무작위 액션 {x}개를 사용합니다",
-        "dechainement_one_any": "무작위 액션 1개를 사용합니다",
-        "enterrement_one": "첫 번째 카드{filter}을(를) {deck}에 놓습니다",
-        "enterrement_many": "처음 {x}장의 카드{filter}을(를) {deck}에 놓습니다"
+        "dechainement_one_any": "무작위 액션 1개를 사용합니다"
+      },
+      "siphon": {
+        "heal": "그리고 내 영웅의 체력을 {x} 회복합니다",
+        "heal_each": "그리고 적중한 대상마다 내 영웅의 체력을 {x} 회복합니다",
+        "heal_scatter": "그리고 내 영웅의 체력을 총 {x} 회복합니다"
+      },
+      "domination": {
+        "limit": "빈 자리 한도 내에서"
       },
       "self": {
         "transformation": "변신합니다",
@@ -1076,12 +1075,12 @@
         "transformation": "변신시킬 크리처를 선택하세요",
         "deal_damage": "피해를 입힐 대상을 선택하세요",
         "siphon": "흡수할 대상을 선택하세요",
-        "domination": "지배할 크리처를 선택하세요",
         "heal": "치유할 대상을 선택하세요",
         "buff": "강화할 크리처를 선택하세요",
         "usurpation": "강화할 크리처를 선택하세요",
         "debuff": "약화시킬 크리처를 선택하세요",
         "destroy": "파괴할 크리처를 선택하세요",
+        "domination": "지배할 크리처를 선택하세요",
         "bounce": "손으로 되돌릴 크리처를 선택하세요",
         "paralyze": "마비시킬 크리처를 선택하세요",
         "poison": "중독시킬 크리처를 선택하세요",
@@ -1091,6 +1090,15 @@
         "exhumation": "되살릴 크리처를 선택하세요",
         "rappel": "손으로 되돌릴 카드를 선택하세요",
         "default": "대상을 선택하세요"
+      },
+      "neutralise": {
+        "suite_one": ": 마비되어 능력이 효과를 잃습니다",
+        "suite_many": ": 마비되어 능력이 효과를 잃습니다",
+        "tant_que": "필드에 있는 동안"
+      },
+      "malediction": {
+        "suite_one": ", 다음 상대 턴 종료 시 추방됩니다",
+        "suite_many": ", 다음 상대 턴 종료 시 추방됩니다"
       },
       "emblem": {
         "badge": "문장",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", 묘지에 있는 동안 턴 종료 시 발동합니다",
         "on_delay": ", {n}턴 후에 발동합니다"
       },
+      "enterrement": {
+        "deck_enemy": "상대 덱에서 상대 묘지로",
+        "deck_ally": "내 덱에서 내 묘지로",
+        "deck_any": "대상 덱에서 해당 묘지로"
+      },
       "incin": {
         "zone_ally": "내 무덤의",
         "zone_enemy": "상대 무덤의",
@@ -1161,8 +1174,8 @@
         "keyword": " {v} 능력을 가진",
         "type_creature": " 유닛 유형의",
         "type_spell": " 액션 유형의",
-        "min_cost": " 비용이 {n} 이상인",
-        "type_item": " 아이템 유형의"
+        "type_item": " 아이템 유형의",
+        "min_cost": " 비용이 {n} 이상인"
       },
       "targetd": {
         "count_all": "모든 유닛",
@@ -1241,11 +1254,6 @@
         "times": "무작위로 {unit} 1씩 {x}번",
         "target_both": "무작위 {side} 대상(유닛 또는 영웅)에게",
         "target_unit": "무작위 {side} 유닛에게"
-      },
-      "enterrement": {
-        "deck_enemy": "상대 덱에서 상대 묘지로",
-        "deck_ally": "내 덱에서 내 묘지로",
-        "deck_any": "대상 덱에서 해당 묘지로"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "모든 페가수스",
         "upto": "최대 {n}마리의 페가수스"
       },
-      "Sphinx": {
-        "def": "스핑크스",
-        "bare": "스핑크스",
-        "de": "스핑크스의",
-        "one": "스핑크스 1체",
-        "all": "모든 스핑크스",
-        "upto": "스핑크스 최대 {n}체"
-      },
       "Yétis": {
         "def": "예티",
         "bare": "예티",
@@ -1636,6 +1636,14 @@
         "one": "예티 1체",
         "all": "모든 예티",
         "upto": "예티 최대 {n}체"
+      },
+      "Sphinx": {
+        "def": "스핑크스",
+        "bare": "스핑크스",
+        "de": "스핑크스의",
+        "one": "스핑크스 1체",
+        "all": "모든 스핑크스",
+        "upto": "스핑크스 최대 {n}체"
       },
       "Hommes-Loups": {
         "def": "늑대인간",
@@ -2181,8 +2189,8 @@
       "scope": "아군 유닛 하나(또는 전체)에게",
       "scope_target": "아군 유닛 하나에게",
       "edc_compte": "무작위로 ATK +1 또는 HP +1을 {n}회 얻습니다 (이미 발동한 단결심 1회당 1회).",
-      "usurpation_actuel": "상대가 낸 카드: {n}장 — 현재 +{x}/+{y}.",
       "scope_all": "아군 유닛 전체에게",
+      "usurpation_actuel": "상대가 낸 카드: {n}장 — 현재 +{x}/+{y}.",
       "machine_part": " 및 {ability}",
       "machine_part_timed": " 및 {ability} ({timing})",
       "machine_name": "기계",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
+        "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
         "impact": "{cibles}에게 X의 피해를 줍니다.",
         "affaiblissement": "{cibles}에게 공격력 -X, 체력 -Y를 줍니다.",
         "retour_differe": "비용이 X 이하인 {cibles}을(를) 소유자의 덱 아래에 놓습니다.",
         "retour_differe_any": "{cibles}을(를) 소유자의 덱 아래에 놓습니다.",
         "remontee": "{cibles}을(를) 원래 소유자의 손으로 되돌립니다.",
-        "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
-        "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
         "corruption": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
         "corruption_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 턴 종료 시까지 아군으로 전환합니다. 전환된 유닛은 추격을 얻습니다.",
         "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
@@ -2261,10 +2269,10 @@
         "renforcement": "{cibles}에게 +X/+Y.",
         "discipline": "필드에 있는 아군 크리처의 비용이 모두 이 액션의 비용과 홀짝이 같다면, {cibles}에게 +X/+Y.",
         "usurpation": "내가 사용한 상대 카드 1장당 {cibles}에게 +X/+Y.",
-        "guerison": "{cibles}와(과) 아군 영웅의 체력을 X 회복합니다."
+        "guerison": "{cibles}와(과) 아군 영웅의 체력을 X 회복합니다.",
+        "peste": "{cibles}을(를) 역병에 감염시킵니다. 감염된 대상은 각자 자신의 턴 종료 시 HP 1을 잃으며, 사망하면 역병이 다른 유닛에게 옮겨갑니다."
       },
       "creature": {
-        "neutralisation": "이 유닛이 필드에 있는 동안, {cibles}은(는) 마비되고 능력이 효과를 잃습니다.",
         "impact": "{cibles}에게 피해를 X 줍니다.",
         "affaiblissement": "{cibles}에게 공격력 -X, 체력 -Y를 줍니다.",
         "retour_differe": "비용이 X 이하인 {cibles}을(를) 소유자의 덱 아래에 놓습니다.",
@@ -2275,18 +2283,13 @@
         "domination": "비용이 X 이하인 {cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "domination_any": "{cibles}을(를) 자리가 허용하는 한도 내에서 지배합니다.",
         "benediction": "{cibles}을(를) 완전히 치유합니다.",
+        "neutralisation": "이 유닛이 필드에 있는 동안, {cibles}은(는) 마비되고 능력이 효과를 잃습니다.",
         "malediction": "비용이 X 이하인 {cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
         "malediction_any": "{cibles}에게 저주를 겁니다: 다음 상대 턴 종료 시 추방됩니다.",
         "tactique": "{cibles}에게 같은 비용 크리처의 능력 중 무작위로 뽑은 X개를 부여합니다(유닛마다 한 번씩 뽑음).",
         "vampirisme": "{cibles}에게서 체력을 최대 X까지 빼앗아 이 유닛의 체력에 더합니다.",
         "devoration": "{cibles}을(를) 파괴합니다. 이 유닛은 그 공격력과 체력을 영구적으로 얻습니다.",
         "sacrifice": "다른 아군 유닛을 모두 파괴하고 그 체력과 공격력을 영구적으로 얻습니다.",
-        "renforcement": "다른 모든 아군 유닛에게 공격력 +X, 체력 +Y를 영구적으로 부여합니다.",
-        "discipline": "내 필드의 모든 비용이 이 유닛의 비용과 홀짝이 같다면, 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
-        "usurpation": "내가 사용한 상대 카드 1장당 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
-        "renforcement_soi": "ATK +X, HP +Y를 영구적으로 얻습니다.",
-        "discipline_soi": "필드에 있는 아군 크리처의 비용이 모두 이 크리처와 같은 홀짝일 경우, ATK +X, HP +Y를 영구적으로 얻습니다.",
-        "usurpation_soi": "당신이 사용한 상대 카드 한 장당 ATK +X, HP +Y를 영구적으로 얻습니다.",
         "execution": "비용이 X 이하인 {cibles}을(를) 아이템 포함하여 파괴합니다.",
         "execution_any": "{cibles}을(를) 아이템 포함하여 파괴합니다.",
         "silence": "{cibles}의 모든 키워드를 아이템 포함하여 제거하고, 능력치를 원래 값으로 되돌립니다.",
@@ -2294,6 +2297,12 @@
         "purete": "당신의 무덤이 비어 있는 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
         "force_des_ancetres": "당신의 무덤에 크리처가 7장 이상 있는 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
         "seuil_sacrificiel": "당신의 덱이 25장 이하인 동안, 자신을 제외한 모든 아군 유닛이 ATK +X, HP +Y를 얻습니다.",
+        "renforcement": "다른 모든 아군 유닛에게 공격력 +X, 체력 +Y를 영구적으로 부여합니다.",
+        "discipline": "내 필드의 모든 비용이 이 유닛의 비용과 홀짝이 같다면, 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
+        "usurpation": "내가 사용한 상대 카드 1장당 다른 모든 아군 유닛에게 +X/+Y를 영구적으로 부여합니다.",
+        "renforcement_soi": "ATK +X, HP +Y를 영구적으로 얻습니다.",
+        "discipline_soi": "필드에 있는 아군 크리처의 비용이 모두 이 크리처와 같은 홀짝일 경우, ATK +X, HP +Y를 영구적으로 얻습니다.",
+        "usurpation_soi": "당신이 사용한 상대 카드 한 장당 ATK +X, HP +Y를 영구적으로 얻습니다.",
         "silence_soi": "모든 키워드를 잃고 능력치가 원래 값으로 돌아갑니다.",
         "guerison_soi": "HP를 X 회복합니다.",
         "tactique_soi": "비용이 같은 크리처들의 능력 중 무작위로 X개를 얻습니다."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "턴 시작 시 (카드를 뽑은 후)",
     "mode_title_draw": "이 카드를 뽑았을 때",
     "mode_title_low_hp": "영웅의 체력이 15 이하가 될 때 (한 번만)",
-    "mode_title_wound": "부상: 죽지 않고 피해를 입었을 때 (출처당 턴마다 한 번)",
+    "mode_title_wound": "부상: 죽지 않고 피해를 받았을 때 (부상할 때마다)",
     "grant_scope_target": "대상 크리처에게 부여",
     "grant_scope_all_allies": "모든 아군 유닛에게 부여",
     "required_caps": "필수",
@@ -3782,9 +3791,11 @@
     "kind_label": "피드백 유형",
     "kind_bug": "버그",
     "kind_idea": "아이디어",
+    "kind_balance": "밸런스",
     "kind_question": "질문",
     "placeholder_bug": "어떤 일이 있었고, 원래 어떻게 표시되어야 했나요? 해당 카드나 화면을 알려 주세요.",
     "placeholder_idea": "무엇을 바꾸거나 추가했으면 하시나요? 그 이유는 무엇인가요?",
+    "placeholder_balance": "어떤 카드가 너무 강하거나 약하다고 느끼시나요? 그 이유는 무엇인가요?",
     "placeholder_question": "질문이 무엇인가요?",
     "add_screenshot": "스크린샷 첨부",
     "attach_hint": "또는 텍스트에 붙여넣기",

@@ -123,7 +123,7 @@ Le chapitre « Lexique des capacités » donne l'effet de chaque capacité, et �
 - **orange — activation** : pouvoir que le joueur déclenche en cliquant l'unité, une fois par tour (pas le tour de son arrivée, sauf Traque) ;
 - **magenta — à l'attaque** : chaque fois que l'unité attaque, avant les dégâts du combat ;
 - **rouge sombre — à la mort** : quand l'unité meurt ;
-- **vert citron — blessure** : quand l'unité est blessée sans mourir (une fois par source de dégâts et par tour) ;
+- **vert citron — blessure** : quand l'unité est blessée sans mourir (à chaque blessure) ;
 - **violet — sous 15 PV** : quand le héros du joueur passe strictement sous 15 PV. Ce seuil est le même pour tous les héros ;
 - **argent — début du tour** : au début de chacun des tours du joueur ;
 - **vert — fin du tour** : à la fin de chacun des tours du joueur ;
@@ -173,7 +173,7 @@ Une unité morte garde donc ses bonus au cimetière, et les retrouve si elle rev
 - Les bonus qui dépendent du terrain, recalculés à son retour selon la situation du moment : auras comme Commandement, Sang mêlé, Force des ancêtres, Pureté, Seuil Sacrificiel ; la Fureur en cours.
 - Le bonus de son objet : l'objet se détache et reste en jeu.
 - Les valeurs relevées par un emblème ou un objet.
-- Ses blessures, et ses états : Poison, Paralysie, neutralisation subie.
+- Ses blessures, et ses états : Poison, Peste (sauf si elle la porte sur sa carte), Paralysie, neutralisation subie.
 - Les décomptes de Retard en cours (ils repartent de zéro si elle est rejouée) et l'action mémorisée par Apprentissage.
 
 **Ce qui se réarme.** Bouclier, Esquive, Ombre et Résurrection sont de nouveau disponibles. L'unité subit de nouveau le mal d'invocation (sauf Traque).
@@ -259,6 +259,8 @@ Nom de la capacité, type de carte qui peut la porter, effet. X et Y sont les va
 - **Drain de vie** (unité) — Soigne votre héros des dégâts infligés.
 - **Esquive** (unité) — Évite automatiquement la première attaque reçue chaque tour.
 - **Poison** (unité et action) — Les unités blessées perdent 1 PV par tour.
+- **Peste** (unité et action) — Pestiférée : perd 1 PV à la fin de son tour. À sa mort, la Peste passe à une autre unité au hasard.
+  - sur une action : Rend une unité pestiférée : elle perd 1 PV à la fin de son tour. À sa mort, la Peste passe à une autre unité au hasard.
 - **Célérité** (unité) — Peut attaquer deux fois par tour.
 - **Augure** (unité) — Quand cette unité inflige des dégâts au héros adverse, vous piochez une carte.
 - **Bénédiction** (unité et action) — Soigne complètement l'unité ciblée.
@@ -663,15 +665,15 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 **Déclencheur « Blessure »**
 - Un effet « Blessure » se déclenche quand l'unité qui le porte subit des dégâts et y survit.
 - Des dégâts entièrement absorbés (par exemple par Bouclier) ne sont pas une blessure.
-- L'effet ne part qu'une fois par source de dégâts et par tour : une même action qui frappe l'unité plusieurs fois ne le déclenche qu'une fois.
-- Deux exemplaires de la même carte comptent pour deux sources différentes.
-- Une même unité ennemie qui blesse deux fois dans le tour ne compte qu'une fois ; une autre unité compte à part.
-- La mémoire des sources est effacée à chaque fin de tour (celle de chaque joueur) : le même attaquant redéclenche l'effet au tour suivant.
+- L'effet se déclenche à chaque blessure, sans limite par source ni par tour : une même unité ennemie qui la blesse deux fois dans le tour le déclenche deux fois.
+- Une action qui frappe l'unité en plusieurs points (Tempête X, dégâts répartis au hasard) déclenche l'effet à chaque point qui la blesse.
+- Le coup d'une Double attaque est un seul paquet de dégâts : il ne déclenche l'effet qu'une fois.
+- Les dégâts infligés par une réponse « Blessure » ne déclenchent aucun effet « Blessure », ni chez l'adversaire ni chez vous.
 - En combat, l'attaquant blessé par la riposte de sa cible déclenche lui aussi son effet « Blessure ».
-- Les dégâts de Poison comptent comme une blessure (le Poison est une source à part) ; s'ils tuent l'unité, rien ne se déclenche.
+- Les dégâts de Poison comptent comme une blessure, à chaque tour où ils s'appliquent ; s'ils tuent l'unité, rien ne se déclenche.
 - Les PV volés par Vampirisme X comptent comme une blessure.
 - Un effet « Blessure » qui vise « la source des dégâts » frappe l'unité coupable ; si la source est une action, il retombe sur le héros du joueur qui l'a jouée ; si c'est le Poison, l'effet est perdu.
-- Deux unités à effet « Blessure » qui se blessent mutuellement ne bouclent pas : chacune ne répond qu'une fois à l'autre par tour.
+- Deux unités à effet « Blessure » qui se blessent mutuellement ne bouclent pas : la réponse de l'une ne déclenche pas celle de l'autre.
 - Une unité blessée puis tuée (ou retirée du terrain) avant que son effet ne se résolve ne répond pas.
 - Quand plusieurs unités sont blessées en même temps, celles du joueur actif répondent d'abord (de gauche à droite), puis celles de l'adversaire.
 - Pendant une Tempête X ou des dégâts répartis au hasard, l'unité blessée répond entre deux points de dégâts : blessée par le premier puis tuée par un suivant, elle a quand même répondu.
@@ -1150,6 +1152,27 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 - Le bonus est calculé au moment du déclenchement et reste acquis ; une Usurpation qui se déclenche plusieurs fois (en fin de tour, par exemple) cumule ses gains.
 - Par défaut le bonus va à une autre unité alliée désignée ; avec « S » à la porteuse, avec « A » à toutes les autres unités alliées.
 - En action, Usurpation ne peut renforcer qu'une unité alliée.
+
+**Éthérée**
+- Seuls les dégâts qu'une action inflige elle-même à sa résolution sont doublés sur une unité Éthérée.
+- Les dégâts d'un emblème ne sont pas doublés, même si l'emblème a été posé par une action ; ils ne sont pas non plus plafonnés à 1, ce plafond étant réservé au combat.
+- Les dégâts d'une capacité d'unité ne sont ni doublés ni plafonnés.
+- Un Bouclier absorbe le coup entier, doublé ou non ; Résistance X se retranche après le doublement.
+- Double attaque porte deux coups : une unité Éthérée perd alors jusqu'à 2 PV en combat.
+
+**Peste**
+- Une unité pestiférée perd 1 PV à la fin du tour de son contrôleur, après ses effets de fin de tour ; elle ne perd rien à la fin du tour adverse.
+- Cette perte est directe : ni Bouclier, ni Résistance, ni Armure, ni Éthérée ne la réduisent, et le Bouclier n'est pas consommé. Elle compte comme une blessure pour le déclencheur « Blessure ».
+- L'action Peste rend pestiférée l'unité que vous désignez, alliée ou ennemie ; rien ne se passe à la pose, la première perte tombe à la fin du tour du contrôleur de cette unité.
+- Une unité qui porte Peste sur sa carte entre en jeu pestiférée, et perd son premier PV dès la fin du tour où elle est jouée. En main, elle ne perd rien.
+- Une unité déjà pestiférée ne peut pas l'être une seconde fois.
+- Quand une unité pestiférée meurt, quelle qu'en soit la cause (combat, action, Peste elle-même), la Peste passe à une autre unité en jeu, tirée au hasard dans les deux camps parmi celles qui ne sont pas déjà pestiférées. Elle peut donc revenir chez le joueur qui l'a lancée.
+- La propagation n'est ni un ciblage ni une action : Transcendance, Ombre et Invisible n'en protègent pas.
+- S'il n'y a aucune unité saine en jeu à la mort de la pestiférée, la Peste disparaît.
+- Deux unités pestiférées qui meurent en même temps contaminent deux unités différentes, s'il y en a.
+- Bénédiction retire la Peste, sans propagation. Guérison rend des PV mais laisse la Peste. Silence ne la retire pas.
+- Une unité pestiférée qui quitte le plateau sans mourir (retour en main, exil, Transformation) n'est plus pestiférée, et la Peste ne se propage pas.
+- Une unité contaminée par une action qui meurt puis revient par Résurrection revient saine : sa Peste est déjà passée à une autre unité. Une unité qui porte Peste sur sa carte revient pestiférée, et sa Peste s'est quand même propagée.
 
 ## 13. Factions, clans et races
 

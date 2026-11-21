@@ -227,6 +227,20 @@ export const ABILITIES: Record<string, AbilityDef> = {
     creature: { cost: 9, costPerX: 0, se: 2.0, minTier: 1, scalable: false, zone: "Terrain" },
     spell: { params: [], needsTarget: true, targetType: "enemy_creature" },
   },
+  peste: {
+    id: "peste", label: "Peste", symbol: "🦠",
+    desc: "Pestiférée : perd 1 PV à la fin de son tour. À sa mort, la Peste passe à une autre unité au hasard.",
+    applicable_to: ["creature", "spell"],
+    // Côté unité, c'est un HANDICAP : la carte entre en jeu malade. D'où le
+    // coût négatif (contrepartie), à régler au barème. Le barème n'a qu'UN coût
+    // par capacité : pour l'action, qui inflige la maladie, card-points.ts en
+    // prend l'opposé (cf. `termesNommes`).
+    creature: { cost: -7, costPerX: 0, se: -1.5, minTier: 1, scalable: false, zone: "Terrain" },
+    spell: {
+      desc: "Rend une unité pestiférée : elle perd 1 PV à la fin de son tour. À sa mort, la Peste passe à une autre unité au hasard.",
+      params: [], needsTarget: true, targetType: "any_creature",
+    },
+  },
   celerite: {
     id: "celerite", label: "Célérité", symbol: "💫",
     desc: "Peut attaquer deux fois par tour.",
@@ -2175,7 +2189,7 @@ export const AUTOMATIC_ABILITY_IDS: ReadonlySet<string> = new Set([
   "charge", "raid", "drain_de_vie", "bravoure",
   // Réactifs (déclenchés au combat / à la mort d'autrui / à la défausse)
   "augure", "fureur", "gloire", "riposte", "persecution", "souffle_de_feu", "pietinement",
-  "liaison_de_vie", "paralysie", "poison", "necrophagie", "richesse",
+  "liaison_de_vie", "paralysie", "poison", "peste", "necrophagie", "richesse",
   // Touché mortel : réactif de COMBAT pur, lu par simple présence
   // (`isLethalTouch` → `hasKw`), exactement comme Précision, Poison ou
   // Piétinement ci-dessus. Son absence d'ici était une omission, pas un

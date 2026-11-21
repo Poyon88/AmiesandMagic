@@ -15,7 +15,7 @@ Une unité morte garde donc ses bonus au cimetière, et les retrouve si elle rev
 - Les bonus qui dépendent du terrain, recalculés à son retour selon la situation du moment : auras comme Commandement, Sang mêlé, Force des ancêtres, Pureté, Seuil Sacrificiel ; la Fureur en cours.
 - Le bonus de son objet : l'objet se détache et reste en jeu.
 - Les valeurs relevées par un emblème ou un objet.
-- Ses blessures, et ses états : Poison, Paralysie, neutralisation subie.
+- Ses blessures, et ses états : Poison, Peste (sauf si elle la porte sur sa carte), Paralysie, neutralisation subie.
 - Les décomptes de Retard en cours (ils repartent de zéro si elle est rejouée) et l'action mémorisée par Apprentissage.
 
 **Ce qui se réarme.** Bouclier, Esquive, Ombre et Résurrection sont de nouveau disponibles. L'unité subit de nouveau le mal d'invocation (sauf Traque).

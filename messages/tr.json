@@ -252,17 +252,17 @@
         "label": "Uğursuzluk",
         "desc": "Öldüğünde tüm birimlere (müttefik ve düşman) X hasar verir, X = SAL değeri."
       },
-      "synergie": {
-        "label": "Sinerji X",
-        "desc": "Oyuna girdiğinde bir yetenek seç: her tetiklenişinde +X/+X kazanır (kaynak başına ve tur başına 1 kez)."
+      "indestructible": {
+        "label": "Yıkılmaz",
+        "desc": "Savaş hasarı almaz."
       },
       "etheree": {
         "label": "Ruhani",
         "desc": "Savaşta vuruş başına en fazla 1 hasar alır. Aksiyonlardan aldığı hasar ikiye katlanır."
       },
-      "indestructible": {
-        "label": "Yıkılmaz",
-        "desc": "Savaş hasarı almaz."
+      "synergie": {
+        "label": "Sinerji X",
+        "desc": "Oyuna girdiğinde bir yetenek seç: her tetiklenişinde +X/+X kazanır (kaynak başına ve tur başına 1 kez)."
       },
       "regeneration": {
         "label": "Yenilenme X",
@@ -446,13 +446,25 @@
         "label": "Disiplin +X/+Y",
         "desc": "Sahanızdaki tüm maliyetler kendisininkiyle aynı çift/tek durumundaysa, hedeflenen başka bir müttefik birime kalıcı +X/+Y verir."
       },
-      "lien_du_sang": {
-        "label": "Kan Bağı X",
-        "desc": "+X/+X kazanır ve siz X CAN kaybedersiniz, canınız yeterliyse."
-      },
       "usurpation": {
         "label": "Gasp +X/+Y",
         "desc": "Oynadığınız ve rakibin kartı tarafından hedeflenen başka bir müttefik birime kalıcı +X/+Y verir."
+      },
+      "mutation": {
+        "label": "Mutasyon X",
+        "desc": "Elde: maliyeti X olan 2 sıradan yaratık keşfedin. Onların en iyi SAL ve CAN değerlerini ve her birinden 1 yeteneği alır."
+      },
+      "infestation": {
+        "label": "Istila X",
+        "desc": "Bu birimin X kopyasını destenize karıştırır. Çekildiğinde bir kopya çağrılır ve başka bir kart çekersiniz."
+      },
+      "enterrement": {
+        "label": "Gömme X",
+        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar (eksik her kart için yorgunluk)."
+      },
+      "lien_du_sang": {
+        "label": "Kan Bağı X",
+        "desc": "+X/+X kazanır ve siz X CAN kaybedersiniz, canınız yeterliyse."
       },
       "esprit_de_corps": {
         "label": "Birlik Ruhu",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "Darbe X",
         "desc": "Bir düşman hedefe (birim veya kahraman) X hasar verir."
+      },
+      "execution": {
+        "label": "İnfaz X",
+        "desc": "Maliyeti ≤ X olan hedeflenen bir düşman birimini yok eder.",
+        "desc_any": "Hedeflenen bir düşman birimini yok eder."
+      },
+      "silence": {
+        "label": "Susturma",
+        "desc": "Hedeflenen başka bir birimin tüm anahtar sözcüklerini kaldırır ve statlarını orijinal değerlerine döndürür."
+      },
+      "guerison": {
+        "label": "Şifa X",
+        "desc": "Hedeflenen başka bir müttefik birime veya kahramanınıza X CAN yeniler."
       },
       "inspiration": {
         "label": "İlham X",
@@ -573,30 +598,9 @@
         "label": "Öğretmen",
         "desc": "Oluşturma sırasında belirlenen kartları elinize ekler (aynı kart birden fazla kez belirlenebilir)."
       },
-      "execution": {
-        "label": "İnfaz X",
-        "desc": "Maliyeti ≤ X olan hedeflenen bir düşman birimini yok eder.",
-        "desc_any": "Hedeflenen bir düşman birimini yok eder."
-      },
-      "silence": {
-        "label": "Susturma",
-        "desc": "Hedeflenen başka bir birimin tüm anahtar sözcüklerini kaldırır ve statlarını orijinal değerlerine döndürür."
-      },
-      "guerison": {
-        "label": "Şifa X",
-        "desc": "Hedeflenen başka bir müttefik birime veya kahramanınıza X CAN yeniler."
-      },
-      "mutation": {
-        "label": "Mutasyon X",
-        "desc": "Elde: maliyeti X olan 2 sıradan yaratık keşfedin. Onların en iyi SAL ve CAN değerlerini ve her birinden 1 yeteneği alır."
-      },
-      "infestation": {
-        "label": "Istila X",
-        "desc": "Bu birimin X kopyasını destenize karıştırır. Çekildiğinde bir kopya çağrılır ve başka bir kart çekersiniz."
-      },
-      "enterrement": {
-        "label": "Gömme X",
-        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar (eksik her kart için yorgunluk)."
+      "peste": {
+        "label": "Veba",
+        "desc": "Vebalı: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "Çağrı",
         "desc": "{token} oluşturur."
       },
+      "malediction": {
+        "label": "Lanet X",
+        "desc": "Maliyeti ≤ X olan hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir",
+        "desc_any": "Hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir"
+      },
       "seuil_colere": {
         "label": "Öfke Eşiği X",
         "desc": "Destenizde 25 veya daha az kart varsa bu aksiyon X ek hasar verir."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "Kehanet",
         "desc": "Destenin ilk 3 kartını gösterir; 1'ini üste, 2'sini alta istediğiniz sırayla geri koyun."
-      },
-      "malediction": {
-        "label": "Lanet X",
-        "desc": "Maliyeti ≤ X olan hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir",
-        "desc_any": "Hedef düşman birimini lanetler: rakibin bir sonraki turunun sonunda sürgüne gönderilir"
       },
       "corruption": {
         "label": "Yozlaşma X",
@@ -738,10 +742,6 @@
         "label": "Darbe X",
         "desc": "Düşman hedefe (birim veya kahraman) X hasar verir."
       },
-      "canon": {
-        "label": "Top X",
-        "desc": "Rastgele bir düşman birime X hasar verir."
-      },
       "deferlement": {
         "label": "Hücum Dalgası X",
         "desc": "Tüm düşman yaratıklara X hasar verir"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "Şifa X",
-        "desc": "Bir müttefik birime veya kahramanınıza X CAN yeniler."
+        "desc": "Bir müttefik birimin veya kahramanınızın X Canını yeniler"
       },
       "seconde_vie": {
         "label": "İkinci Can X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "Yakıp Yok Etme X",
         "desc": "Hedef alınan mezarlıktan rastgele X kartı sahibinin destesinin altına geri koyar."
+      },
+      "enterrement": {
+        "label": "Gömme X",
+        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar"
       },
       "creuser": {
         "label": "Kazma X",
@@ -860,6 +864,10 @@
         "label": "Çoklu Çağrı",
         "desc": "{tokens} yaratır."
       },
+      "canon": {
+        "label": "Top X",
+        "desc": "Rastgele bir düşman birime X hasar verir."
+      },
       "tempete": {
         "label": "Fırtına X",
         "desc": "Düşman birimlere rastgele dağıtılan X hasar verir."
@@ -880,9 +888,9 @@
         "label": "Öğretmen",
         "desc": "Oluşturulurken belirlenen kartları eline ekler (aynı kart birden fazla kez belirlenebilir)."
       },
-      "enterrement": {
-        "label": "Gömme X",
-        "desc": "Hedeflenen oyuncunun destesindeki ilk X kartı mezarlığına koyar"
+      "peste": {
+        "label": "Veba",
+        "desc": "Bir birimi vebalı yapar: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "Tur başında",
         "on_start_of_turn_in_hand": "Tur başında, elde olduğu sürece",
         "in_hand_suffix": "elde",
+        "in_graveyard_suffix": "mezarlıkta",
+        "on_end_of_turn_in_graveyard": "Tur sonunda, mezarlıkta olduğu sürece",
         "on_draw": "Bu kart çekildiğinde",
         "on_low_hp": "15 CP altında",
         "on_wound": "Yara",
-        "on_delay": "Gecikme {d}",
-        "on_end_of_turn_in_graveyard": "Tur sonunda, mezarlıkta olduğu sürece",
-        "in_graveyard_suffix": "mezarlıkta"
-      },
-      "siphon": {
-        "heal": "ve kahramanınızı {x} CP iyileştirir",
-        "heal_each": "ve vurulan her hedef için kahramanınızı {x} CP iyileştirir",
-        "heal_scatter": "ve kahramanınızı toplamda {x} CP iyileştirir"
-      },
-      "neutralise": {
-        "suite_one": ": felç olur, yetenekleri etkisiz kalır",
-        "suite_many": ": felç olurlar, yetenekleri etkisiz kalır",
-        "tant_que": "oyunda olduğu sürece"
-      },
-      "malediction": {
-        "suite_one": ", rakibin bir sonraki turunun sonunda sürgün edilir",
-        "suite_many": ", bir sonraki rakip turunun sonunda sürgün edilir"
-      },
-      "domination": {
-        "limit": "boş yer sayısı kadar"
+        "on_delay": "Gecikme {d}"
       },
       "content": {
         "deal_damage_one": "{x} hasar verir",
@@ -1010,6 +1001,8 @@
         "conquete": "Fetih sayacınıza {x} ekler",
         "exploration": "Keşif sayacınıza {x} ekler",
         "incineration": "hedef mezarlıktaki {x} kartı destesinin altına koyar",
+        "enterrement_one": "ilk kartı{filter} {deck} yerleştirir",
+        "enterrement_many": "ilk {x} kartı{filter} {deck} yerleştirir",
         "incineration_cible": "{cartes} {zone} içinden {deck} altına koyar",
         "occurrences": "{n} kez: ",
         "alternative": "Birini seç: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "destenizdeki ilk birimi oyuna sokar",
         "appel_item_any": "destenizdeki ilk eşyayı oyuna sokar",
         "dechainement_any": "rastgele {x} aksiyon oynar",
-        "dechainement_one_any": "rastgele bir aksiyon oynar",
-        "enterrement_one": "ilk kartı{filter} {deck} yerleştirir",
-        "enterrement_many": "ilk {x} kartı{filter} {deck} yerleştirir"
+        "dechainement_one_any": "rastgele bir aksiyon oynar"
+      },
+      "siphon": {
+        "heal": "ve kahramanınızı {x} CP iyileştirir",
+        "heal_each": "ve vurulan her hedef için kahramanınızı {x} CP iyileştirir",
+        "heal_scatter": "ve kahramanınızı toplamda {x} CP iyileştirir"
+      },
+      "domination": {
+        "limit": "boş yer sayısı kadar"
       },
       "self": {
         "transformation": "dönüşür",
@@ -1076,12 +1075,12 @@
         "transformation": "dönüştürülecek bir yaratık seçin",
         "deal_damage": "yaralanacak bir hedef seçin",
         "siphon": "canı emilecek bir hedef seçin",
-        "domination": "ele geçirilecek bir yaratık seçin",
         "heal": "iyileştirilecek bir hedef seçin",
         "buff": "güçlendirilecek bir yaratık seçin",
         "usurpation": "güçlendirilecek bir yaratık seçin",
         "debuff": "zayıflatılacak bir yaratık seçin",
         "destroy": "yok edilecek bir yaratık seçin",
+        "domination": "ele geçirilecek bir yaratık seçin",
         "bounce": "ele geri gönderilecek bir yaratık seçin",
         "paralyze": "felç edilecek bir yaratık seçin",
         "poison": "zehirlenecek bir yaratık seçin",
@@ -1091,6 +1090,15 @@
         "exhumation": "diriltilecek bir yaratık seçin",
         "rappel": "ele geri alınacak bir kart seçin",
         "default": "bir hedef seçin"
+      },
+      "neutralise": {
+        "suite_one": ": felç olur, yetenekleri etkisiz kalır",
+        "suite_many": ": felç olurlar, yetenekleri etkisiz kalır",
+        "tant_que": "oyunda olduğu sürece"
+      },
+      "malediction": {
+        "suite_one": ", rakibin bir sonraki turunun sonunda sürgün edilir",
+        "suite_many": ", bir sonraki rakip turunun sonunda sürgün edilir"
       },
       "emblem": {
         "badge": "Amblem",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", mezarlıkta olduğu sürece turun sonunda tetiklenecek",
         "on_delay": ", {n} tur sonra tetiklenecek"
       },
+      "enterrement": {
+        "deck_enemy": "rakip destesinden kendi mezarlığına",
+        "deck_ally": "destenden mezarlığına",
+        "deck_any": "hedeflenen destesinden kendi mezarlığına"
+      },
       "incin": {
         "zone_ally": "mezarlığınızdaki",
         "zone_enemy": "rakibin mezarlığındaki",
@@ -1161,8 +1174,8 @@
         "keyword": " {v} yeteneğine sahip",
         "type_creature": " birim türünde",
         "type_spell": " aksiyon türünde",
-        "min_cost": " maliyeti {n} veya daha yüksek",
-        "type_item": " eşya türünde"
+        "type_item": " eşya türünde",
+        "min_cost": " maliyeti {n} veya daha yüksek"
       },
       "targetd": {
         "count_all": "tüm birimler",
@@ -1241,11 +1254,6 @@
         "times": "her seferinde 1 {unit} olacak şekilde {x} kez",
         "target_both": "rastgele bir {side} hedefe (birim veya kahraman)",
         "target_unit": "rastgele bir {side} birime"
-      },
-      "enterrement": {
-        "deck_enemy": "rakip destesinden kendi mezarlığına",
-        "deck_ally": "destenden mezarlığına",
-        "deck_any": "hedeflenen destesinden kendi mezarlığına"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "tüm Pegasuslar",
         "upto": "en fazla {n} Pegasus"
       },
-      "Sphinx": {
-        "def": "Sfenks",
-        "bare": "Sfenks",
-        "de": "Sfenks'in",
-        "one": "bir Sfenks",
-        "all": "tüm Sfenksler",
-        "upto": "en fazla {n} Sfenks"
-      },
       "Yétis": {
         "def": "Yeti",
         "bare": "Yeti",
@@ -1636,6 +1636,14 @@
         "one": "bir Yeti",
         "all": "tüm Yetiler",
         "upto": "en fazla {n} Yeti"
+      },
+      "Sphinx": {
+        "def": "Sfenks",
+        "bare": "Sfenks",
+        "de": "Sfenks'in",
+        "one": "bir Sfenks",
+        "all": "tüm Sfenksler",
+        "upto": "en fazla {n} Sfenks"
       },
       "Hommes-Loups": {
         "def": "Kurtadam",
@@ -2181,8 +2189,8 @@
       "scope": "bir müttefik birime (veya tümüne)",
       "scope_target": "bir müttefik birime",
       "edc_compte": "Rastgele +1 SLD veya +1 CAN kazanır, bunu {n} kez yapar (daha önce tetiklediğiniz her Birlik Ruhu için 1).",
-      "usurpation_actuel": "Oynanan rakip kartları: {n} — şu an +{x}/+{y}.",
       "scope_all": "tüm birimlerinize",
+      "usurpation_actuel": "Oynanan rakip kartları: {n} — şu an +{x}/+{y}.",
       "machine_part": " ve {ability}",
       "machine_part_timed": " ve {ability} ({timing})",
       "machine_name": "Makine",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
+        "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
         "impact": "{cibles} hedefine X hasar verir.",
         "affaiblissement": "{cibles} hedefine -X SLD ve -Y CP verir.",
         "retour_differe": "Maliyeti ≤ X olan {cibles} sahiplerinin destesinin altına yerleştirir.",
         "retour_differe_any": "{cibles} sahiplerinin destesinin altına yerleştirir.",
         "remontee": "{cibles} ilk sahiplerinin eline geri gönderir.",
-        "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
-        "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
         "corruption": "Maliyeti ≤ X olan {cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
         "corruption_any": "{cibles} turun sonuna kadar, boş yer sınırları dahilinde, sizin tarafınıza geçirir; bunlar Av kazanır.",
         "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
@@ -2261,10 +2269,10 @@
         "renforcement": "{cibles} +X/+Y verir.",
         "discipline": "Oyundaki tüm yaratıklarınızın maliyeti bu aksiyonun maliyetiyle aynı paritedeyse {cibles} +X/+Y verir.",
         "usurpation": "Oynadığınız her rakip kartı için {cibles} +X/+Y verir.",
-        "guerison": "{cibles} ve kahramanınıza X CP yeniler."
+        "guerison": "{cibles} ve kahramanınıza X CP yeniler.",
+        "peste": "{cibles} vebalı yapar: her biri turunun sonunda 1 Can kaybeder ve öldüğünde Vebası başka bir birime geçer."
       },
       "creature": {
-        "neutralisation": "Oyunda olduğu sürece {cibles} felç olur ve yetenekleri etkisiz kalır.",
         "impact": "{cibles} X hasar verir.",
         "affaiblissement": "{cibles} -X SAL ve -Y CP verir.",
         "retour_differe": "Maliyeti ≤ X olan {cibles} sahiplerinin destesinin altına yerleştirir.",
@@ -2275,18 +2283,13 @@
         "domination": "Maliyeti ≤ X olan {cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "benediction": "{cibles} tamamen iyileştirir.",
+        "neutralisation": "Oyunda olduğu sürece {cibles} felç olur ve yetenekleri etkisiz kalır.",
         "malediction": "Maliyeti ≤ X olan {cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
         "malediction_any": "{cibles} lanetler: rakibin bir sonraki turunun sonunda sürgün edilirler.",
         "tactique": "{cibles} aynı maliyetli yaratıkların yetenekleri arasından rastgele X yetenek verir (birim başına bir çekiliş).",
         "vampirisme": "{cibles} en fazla X CP çalar ve bunları bu birimin CP'sine ekler.",
         "devoration": "{cibles} yok eder; bu birim onların SAL ve CP değerlerini kalıcı olarak kazanır.",
         "sacrifice": "CP ve SAL değerlerini kalıcı olarak kazanmak için diğer tüm müttefik birimleri yok edin.",
-        "renforcement": "Diğer tüm müttefik birimlere kalıcı olarak +X SAL ve +Y CP verir.",
-        "discipline": "Tahtanızdaki tüm maliyetler onunkiyle aynı paritedeyse, diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
-        "usurpation": "Oynadığınız her rakip kartı için diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
-        "renforcement_soi": "Kalıcı olarak +X ATK ve +Y CAN kazanır.",
-        "discipline_soi": "Oyundaki tüm yaratıklarınızın maliyeti kendisininkiyle aynı paritedeyse, kalıcı olarak +X ATK ve +Y CAN kazanır.",
-        "usurpation_soi": "Oynadığınız her rakip kartı başına kalıcı olarak +X ATK ve +Y CAN kazanır.",
         "execution": "Maliyeti ≤ X olan {cibles} yok eder, eşyalar dahil.",
         "execution_any": "{cibles} yok eder, eşyalar dahil.",
         "silence": "{cibles} üzerindeki tüm anahtar sözcükleri, eşyalar dahil, kaldırır ve statlarını orijinal değerlerine döndürür.",
@@ -2294,6 +2297,12 @@
         "purete": "Mezarlığınız boş olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
         "force_des_ancetres": "Mezarlığınızda 7 veya daha fazla yaratık olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
         "seuil_sacrificiel": "Destenizde 25 veya daha az kart olduğu sürece, diğer tüm müttefik birimler +X ATK ve +Y CAN kazanır.",
+        "renforcement": "Diğer tüm müttefik birimlere kalıcı olarak +X SAL ve +Y CP verir.",
+        "discipline": "Tahtanızdaki tüm maliyetler onunkiyle aynı paritedeyse, diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
+        "usurpation": "Oynadığınız her rakip kartı için diğer tüm müttefik birimlere kalıcı +X/+Y verir.",
+        "renforcement_soi": "Kalıcı olarak +X ATK ve +Y CAN kazanır.",
+        "discipline_soi": "Oyundaki tüm yaratıklarınızın maliyeti kendisininkiyle aynı paritedeyse, kalıcı olarak +X ATK ve +Y CAN kazanır.",
+        "usurpation_soi": "Oynadığınız her rakip kartı başına kalıcı olarak +X ATK ve +Y CAN kazanır.",
         "silence_soi": "Tüm anahtar sözcüklerini kaybeder ve statları orijinal değerlerine döner.",
         "guerison_soi": "X CAN yeniler.",
         "tactique_soi": "Aynı maliyetli yaratıkların yetenekleri arasından rastgele seçilen X yetenek kazanır."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "Tur başında (kart çekildikten sonra)",
     "mode_title_draw": "Bu kart çekildiğinde",
     "mode_title_low_hp": "Kahramanınız 15 CP'nin altına düştüğünde (yalnızca bir kez)",
-    "mode_title_wound": "Yara: ölmeden hasar aldığında (kaynak başına ve tur başına bir kez)",
+    "mode_title_wound": "Yaralanma: hasar alıp ölmediğinde (her yaralanmada)",
     "grant_scope_target": "Hedeflenen yaratığa verilir",
     "grant_scope_all_allies": "Tüm müttefik birimlere verilir",
     "required_caps": "Gerekli",
@@ -3782,9 +3791,11 @@
     "kind_label": "Geri bildirim türü",
     "kind_bug": "Hata",
     "kind_idea": "Fikir",
+    "kind_balance": "Dengeleme",
     "kind_question": "Soru",
     "placeholder_bug": "Ne oldu ve bunun yerine ne görmeniz gerekiyordu? İlgili kartı veya ekranı belirtin.",
     "placeholder_idea": "Neyin değişmesini veya eklenmesini isterdiniz ve neden?",
+    "placeholder_balance": "Hangi kart size çok güçlü ya da yeterince güçlü gelmiyor ve neden?",
     "placeholder_question": "Sorunuz nedir?",
     "add_screenshot": "Ekran görüntüsü ekle",
     "attach_hint": "veya metne yapıştırın",

@@ -11,7 +11,7 @@ export const capacites: Chapitre = {
 - **orange — activation** : pouvoir que le joueur déclenche en cliquant l'unité, une fois par tour (pas le tour de son arrivée, sauf Traque) ;
 - **magenta — à l'attaque** : chaque fois que l'unité attaque, avant les dégâts du combat ;
 - **rouge sombre — à la mort** : quand l'unité meurt ;
-- **vert citron — blessure** : quand l'unité est blessée sans mourir (une fois par source de dégâts et par tour) ;
+- **vert citron — blessure** : quand l'unité est blessée sans mourir (à chaque blessure) ;
 - **violet — sous ${LOW_HP_TRIGGER_THRESHOLD} PV** : quand le héros du joueur passe strictement sous ${LOW_HP_TRIGGER_THRESHOLD} PV. Ce seuil est le même pour tous les héros ;
 - **argent — début du tour** : au début de chacun des tours du joueur ;
 - **vert — fin du tour** : à la fin de chacun des tours du joueur ;

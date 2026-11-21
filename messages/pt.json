@@ -252,17 +252,17 @@
         "label": "Malefício",
         "desc": "Ao morrer, inflige X de dano a todas as unidades (aliadas e inimigas), X = seu ATK."
       },
-      "synergie": {
-        "label": "Sinergia X",
-        "desc": "Ao chegar, escolha uma habilidade: ganha +X/+X a cada ativação dela (1 vez por fonte e por turno)."
+      "indestructible": {
+        "label": "Indestrutível",
+        "desc": "Não sofre dano de combate."
       },
       "etheree": {
         "label": "Etérea",
         "desc": "Sofre no máximo 1 de dano por golpe em combate. O dano de ações que ela sofre é dobrado."
       },
-      "indestructible": {
-        "label": "Indestrutível",
-        "desc": "Não sofre dano de combate."
+      "synergie": {
+        "label": "Sinergia X",
+        "desc": "Ao chegar, escolha uma habilidade: ganha +X/+X a cada ativação dela (1 vez por fonte e por turno)."
       },
       "regeneration": {
         "label": "Regeneração X",
@@ -446,13 +446,25 @@
         "label": "Disciplina +X/+Y",
         "desc": "Se todos os custos do seu tabuleiro tiverem a mesma paridade que o dela, concede +X/+Y permanente a outra unidade aliada alvo."
       },
-      "lien_du_sang": {
-        "label": "Laço de sangue X",
-        "desc": "Ganha +X/+X e você perde X PV, se seus PV permitirem."
-      },
       "usurpation": {
         "label": "Usurpação +X/+Y",
         "desc": "Concede +X/+Y permanente a outra unidade aliada alvo por cada carta do adversário que você jogou."
+      },
+      "mutation": {
+        "label": "Mutação X",
+        "desc": "Na mão: descubra 2 criaturas comuns de custo X. Esta carta recebe o melhor ATQ e PV delas e 1 habilidade de cada."
+      },
+      "infestation": {
+        "label": "Infestação X",
+        "desc": "Embaralha X cópias desta unidade no seu baralho. Ao ser comprada, a cópia é invocada e você compra outra carta."
+      },
+      "enterrement": {
+        "label": "Enterro X",
+        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele (fadiga por carta em falta)."
+      },
+      "lien_du_sang": {
+        "label": "Laço de sangue X",
+        "desc": "Ganha +X/+X e você perde X PV, se seus PV permitirem."
       },
       "esprit_de_corps": {
         "label": "Espírito de Corpo",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "Impacto X",
         "desc": "Causa X de dano a um alvo inimigo (unidade ou herói)."
+      },
+      "execution": {
+        "label": "Execução X",
+        "desc": "Destrói uma unidade inimiga escolhida de custo ≤ X.",
+        "desc_any": "Destrói uma unidade inimiga alvo."
+      },
+      "silence": {
+        "label": "Silêncio",
+        "desc": "Remove todas as palavras-chave de outra unidade alvo e restaura seus atributos aos valores originais."
+      },
+      "guerison": {
+        "label": "Cura X",
+        "desc": "Restaura X PV de outra unidade aliada alvo ou do seu herói."
       },
       "inspiration": {
         "label": "Inspiração X",
@@ -573,30 +598,9 @@
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
       },
-      "execution": {
-        "label": "Execução X",
-        "desc": "Destrói uma unidade inimiga escolhida de custo ≤ X.",
-        "desc_any": "Destrói uma unidade inimiga alvo."
-      },
-      "silence": {
-        "label": "Silêncio",
-        "desc": "Remove todas as palavras-chave de outra unidade alvo e restaura seus atributos aos valores originais."
-      },
-      "guerison": {
-        "label": "Cura X",
-        "desc": "Restaura X PV de outra unidade aliada alvo ou do seu herói."
-      },
-      "mutation": {
-        "label": "Mutação X",
-        "desc": "Na mão: descubra 2 criaturas comuns de custo X. Esta carta recebe o melhor ATQ e PV delas e 1 habilidade de cada."
-      },
-      "infestation": {
-        "label": "Infestação X",
-        "desc": "Embaralha X cópias desta unidade no seu baralho. Ao ser comprada, a cópia é invocada e você compra outra carta."
-      },
-      "enterrement": {
-        "label": "Enterro X",
-        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele (fadiga por carta em falta)."
+      "peste": {
+        "label": "Peste",
+        "desc": "Empestada: perde 1 PV no fim do seu turno. Quando morre, a Peste passa para outra unidade aleatória."
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "Convocação",
         "desc": "Cria {token}."
       },
+      "malediction": {
+        "label": "Maldição X",
+        "desc": "Amaldiçoa a unidade inimiga alvo de custo ≤ X: ela é exilada no final do próximo turno do adversário",
+        "desc_any": "Amaldiçoa a unidade inimiga alvo: ela é exilada no final do próximo turno do adversário"
+      },
       "seuil_colere": {
         "label": "Limiar de ira X",
         "desc": "Se o seu deck tiver 25 cartas ou menos, esta ação causa X de dano adicional."
@@ -651,11 +660,6 @@
       "divination": {
         "label": "Divinação",
         "desc": "Revela as 3 primeiras cartas do deck; recoloque 1 em cima e 2 embaixo, na ordem escolhida."
-      },
-      "malediction": {
-        "label": "Maldição X",
-        "desc": "Amaldiçoa a unidade inimiga alvo de custo ≤ X: ela é exilada no final do próximo turno do adversário",
-        "desc_any": "Amaldiçoa a unidade inimiga alvo: ela é exilada no final do próximo turno do adversário"
       },
       "corruption": {
         "label": "Corrupção X",
@@ -738,10 +742,6 @@
         "label": "Impacto X",
         "desc": "Causa X de dano a um alvo inimigo (unidade ou herói)."
       },
-      "canon": {
-        "label": "Canhão X",
-        "desc": "Causa X de dano a uma unidade inimiga aleatória."
-      },
       "deferlement": {
         "label": "Devastação X",
         "desc": "Causa X de dano a todas as criaturas inimigas"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "Cura X",
-        "desc": "Restaura X PV de uma unidade aliada ou do seu herói."
+        "desc": "Restaura X PV a uma unidade aliada ou ao seu herói"
       },
       "seconde_vie": {
         "label": "Segunda vida X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "Incineração X",
         "desc": "Devolve X cartas aleatórias do cemitério alvo para debaixo do deck de seu dono"
+      },
+      "enterrement": {
+        "label": "Enterro X",
+        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele"
       },
       "creuser": {
         "label": "Escavar X",
@@ -860,6 +864,10 @@
         "label": "Convocações Múltiplas",
         "desc": "Cria {tokens}."
       },
+      "canon": {
+        "label": "Canhão X",
+        "desc": "Causa X de dano a uma unidade inimiga aleatória."
+      },
       "tempete": {
         "label": "Tempestade X",
         "desc": "Causa X de dano distribuído aleatoriamente entre as unidades inimigas."
@@ -880,9 +888,9 @@
         "label": "Tutor",
         "desc": "Adiciona à sua mão as cartas designadas na criação (a mesma carta pode ser designada várias vezes)."
       },
-      "enterrement": {
-        "label": "Enterro X",
-        "desc": "Coloca as X primeiras cartas do baralho do jogador alvo no cemitério dele"
+      "peste": {
+        "label": "Peste",
+        "desc": "Empesta uma unidade: ela perde 1 PV no fim do seu turno. Quando morre, a Peste passa para outra unidade aleatória."
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "No início do turno",
         "on_start_of_turn_in_hand": "No início do turno, enquanto estiver na mão",
         "in_hand_suffix": "na mão",
+        "in_graveyard_suffix": "no cemitério",
+        "on_end_of_turn_in_graveyard": "No fim do turno, enquanto estiver no cemitério",
         "on_draw": "Ao ser comprada",
         "on_low_hp": "Abaixo de 15 PV",
         "on_wound": "Ferimento",
-        "on_delay": "Atraso {d}",
-        "on_end_of_turn_in_graveyard": "No fim do turno, enquanto estiver no cemitério",
-        "in_graveyard_suffix": "no cemitério"
-      },
-      "siphon": {
-        "heal": "e cura seu herói em {x} PV",
-        "heal_each": "e cura seu herói em {x} PV por alvo atingido",
-        "heal_scatter": "e cura seu herói em {x} PV no total"
-      },
-      "neutralise": {
-        "suite_one": ": paralisada, habilidades sem efeito",
-        "suite_many": ": paralisadas, habilidades sem efeito",
-        "tant_que": "enquanto estiver em jogo"
-      },
-      "malediction": {
-        "suite_one": ", exilada no fim do próximo turno do adversário",
-        "suite_many": ", exiladas no fim do próximo turno do adversário"
-      },
-      "domination": {
-        "limit": "dentro do limite de espaços disponíveis"
+        "on_delay": "Atraso {d}"
       },
       "content": {
         "deal_damage_one": "causa {x} de dano",
@@ -1010,6 +1001,8 @@
         "conquete": "adiciona {x} ao seu contador de Conquista",
         "exploration": "adiciona {x} ao seu contador de Exploração",
         "incineration": "devolve {x} cartas do cemitério alvo para debaixo do deck",
+        "enterrement_one": "coloca a primeira carta{filter} {deck}",
+        "enterrement_many": "coloca as {x} primeiras cartas{filter} {deck}",
         "incineration_cible": "devolve {cartes} {zone} para {deck}",
         "occurrences": "{n} vezes: ",
         "alternative": "À escolha: ",
@@ -1052,9 +1045,15 @@
         "appel_any": "coloca em jogo a 1ª unidade do seu baralho",
         "appel_item_any": "coloca em jogo o 1º objeto do seu baralho",
         "dechainement_any": "joga {x} ações aleatórias",
-        "dechainement_one_any": "joga uma ação aleatória",
-        "enterrement_one": "coloca a primeira carta{filter} {deck}",
-        "enterrement_many": "coloca as {x} primeiras cartas{filter} {deck}"
+        "dechainement_one_any": "joga uma ação aleatória"
+      },
+      "siphon": {
+        "heal": "e cura seu herói em {x} PV",
+        "heal_each": "e cura seu herói em {x} PV por alvo atingido",
+        "heal_scatter": "e cura seu herói em {x} PV no total"
+      },
+      "domination": {
+        "limit": "dentro do limite de espaços disponíveis"
       },
       "self": {
         "transformation": "se transforma",
@@ -1076,12 +1075,12 @@
         "transformation": "escolha uma criatura para transformar",
         "deal_damage": "escolha um alvo para atacar",
         "siphon": "escolha um alvo para sifonar",
-        "domination": "escolha uma criatura para dominar",
         "heal": "escolha um alvo para curar",
         "buff": "escolha uma criatura para fortalecer",
         "usurpation": "escolha uma criatura para fortalecer",
         "debuff": "escolha uma criatura para enfraquecer",
         "destroy": "escolha uma criatura para destruir",
+        "domination": "escolha uma criatura para dominar",
         "bounce": "escolha uma criatura para devolver à mão",
         "paralyze": "escolha uma criatura para paralisar",
         "poison": "escolha uma criatura para envenenar",
@@ -1091,6 +1090,15 @@
         "exhumation": "escolha uma criatura para ressuscitar",
         "rappel": "escolha uma carta para retornar à mão",
         "default": "escolha um alvo"
+      },
+      "neutralise": {
+        "suite_one": ": paralisada, habilidades sem efeito",
+        "suite_many": ": paralisadas, habilidades sem efeito",
+        "tant_que": "enquanto estiver em jogo"
+      },
+      "malediction": {
+        "suite_one": ", exilada no fim do próximo turno do adversário",
+        "suite_many": ", exiladas no fim do próximo turno do adversário"
       },
       "emblem": {
         "badge": "Emblema",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": ", que será ativada no fim do turno enquanto estiver no cemitério",
         "on_delay": ", que será ativada em {n} turno(s)"
       },
+      "enterrement": {
+        "deck_enemy": "do baralho adversário no cemitério dele",
+        "deck_ally": "do seu baralho no seu cemitério",
+        "deck_any": "do baralho alvo no respetivo cemitério"
+      },
       "incin": {
         "zone_ally": "do seu cemitério",
         "zone_enemy": "do cemitério adversário",
@@ -1161,8 +1174,8 @@
         "keyword": " com a habilidade {v}",
         "type_creature": " do tipo unidade",
         "type_spell": " do tipo ação",
-        "min_cost": " de custo {n} ou mais",
-        "type_item": " do tipo objeto"
+        "type_item": " do tipo objeto",
+        "min_cost": " de custo {n} ou mais"
       },
       "targetd": {
         "count_all": "todas as unidades",
@@ -1241,11 +1254,6 @@
         "times": "{x} vezes 1 {unit}, a cada vez",
         "target_both": "a um alvo {side} aleatório (unidade ou herói)",
         "target_unit": "a uma unidade {side} aleatória"
-      },
-      "enterrement": {
-        "deck_enemy": "do baralho adversário no cemitério dele",
-        "deck_ally": "do seu baralho no seu cemitério",
-        "deck_any": "do baralho alvo no respetivo cemitério"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "todos os Pégasos",
         "upto": "até {n} Pégasos"
       },
-      "Sphinx": {
-        "def": "a Esfinge",
-        "bare": "Esfinge",
-        "de": "da Esfinge",
-        "one": "uma Esfinge",
-        "all": "todas as Esfinges",
-        "upto": "até {n} Esfinges"
-      },
       "Yétis": {
         "def": "o Yeti",
         "bare": "Yeti",
@@ -1636,6 +1636,14 @@
         "one": "um Yeti",
         "all": "todos os Yetis",
         "upto": "até {n} Yetis"
+      },
+      "Sphinx": {
+        "def": "a Esfinge",
+        "bare": "Esfinge",
+        "de": "da Esfinge",
+        "one": "uma Esfinge",
+        "all": "todas as Esfinges",
+        "upto": "até {n} Esfinges"
       },
       "Hommes-Loups": {
         "def": "o Homem-Lobo",
@@ -2181,8 +2189,8 @@
       "scope": "a uma unidade aliada (ou a todas)",
       "scope_target": "a uma unidade aliada",
       "edc_compte": "Ganha +1 ATQ ou +1 PV aleatoriamente {n} vezes (1 por cada Espírito de Corpo que você já ativou).",
-      "usurpation_actuel": "Cartas do adversário jogadas: {n} — atualmente +{x}/+{y}.",
       "scope_all": "a todas as suas unidades",
+      "usurpation_actuel": "Cartas do adversário jogadas: {n} — atualmente +{x}/+{y}.",
       "machine_part": " e {ability}",
       "machine_part_timed": " e {ability} ({timing})",
       "machine_name": "Máquina",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "Amaldiçoa {cibles} de custo ≤ X: elas são exiladas no final do próximo turno do adversário.",
+        "malediction_any": "Amaldiçoa {cibles}: elas são exiladas ao final do próximo turno adversário.",
         "impact": "Inflige X de dano a {cibles}.",
         "affaiblissement": "Concede -X ATQ e -Y PV a {cibles}.",
         "retour_differe": "Coloca {cibles} de custo ≤ X embaixo do deck de seu dono.",
         "retour_differe_any": "Coloca {cibles} sob o deck de seu proprietário.",
         "remontee": "Devolve {cibles} à mão de seu proprietário original.",
-        "malediction": "Amaldiçoa {cibles} de custo ≤ X: elas são exiladas no final do próximo turno do adversário.",
-        "malediction_any": "Amaldiçoa {cibles}: elas são exiladas ao final do próximo turno adversário.",
         "corruption": "Converte {cibles} de custo ≤ X para o seu lado até o fim do turno, dentro do limite de vagas; elas ganham Perseguição.",
         "corruption_any": "Converte {cibles} para o seu lado até o final do turno, dentro do limite de espaços; elas ganham Perseguição.",
         "domination": "Assume o controle de {cibles} de custo ≤ X, dentro do limite de vagas.",
@@ -2261,10 +2269,10 @@
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o desta ação, +X/+Y a {cibles}.",
         "usurpation": "+X/+Y para {cibles} por cada carta do adversário que você jogou.",
-        "guerison": "Restaura X PV de {cibles} e do seu herói."
+        "guerison": "Restaura X PV de {cibles} e do seu herói.",
+        "peste": "Empesta {cibles}: cada uma perde 1 PV no fim do seu turno, e sua Peste passa para outra unidade quando morre."
       },
       "creature": {
-        "neutralisation": "Enquanto estiver em jogo, {cibles} ficam paralisadas e suas habilidades não têm efeito.",
         "impact": "Inflige X de dano a {cibles}.",
         "affaiblissement": "Concede -X ATQ e -Y PV a {cibles}.",
         "retour_differe": "Coloca {cibles} de custo ≤ X embaixo do deck de seu dono.",
@@ -2275,18 +2283,13 @@
         "domination": "Assume o controle de {cibles} com custo ≤ X, dentro do limite de espaços.",
         "domination_any": "Assume o controle de {cibles}, dentro do limite de espaços.",
         "benediction": "Cura completamente {cibles}.",
+        "neutralisation": "Enquanto estiver em jogo, {cibles} ficam paralisadas e suas habilidades não têm efeito.",
         "malediction": "Amaldiçoa {cibles} de custo ≤ X: elas são exiladas no final do próximo turno do adversário.",
         "malediction_any": "Amaldiçoa {cibles}: elas são exiladas ao final do próximo turno adversário.",
         "tactique": "Dá a {cibles} X habilidades aleatórias de criaturas do mesmo custo (um sorteio por unidade).",
         "vampirisme": "Rouba até X PV de {cibles} e os adiciona aos PV desta unidade.",
         "devoration": "Destrói {cibles}; esta unidade ganha permanentemente seu ATQ e seus PV.",
         "sacrifice": "Destrua todas as outras unidades aliadas para ganhar permanentemente os PV e o ATQ delas.",
-        "renforcement": "Concede +X ATK e +Y PV permanentemente a todas as outras unidades aliadas.",
-        "discipline": "Se todos os custos do seu tabuleiro tiverem a mesma paridade que o dela, concede +X/+Y permanente a todas as outras unidades aliadas.",
-        "usurpation": "Concede +X/+Y permanentemente a todas as outras unidades aliadas por cada carta do adversário que você jogou.",
-        "renforcement_soi": "Ganha +X ATQ e +Y PV de forma permanente.",
-        "discipline_soi": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o dela, ganha +X ATQ e +Y PV de forma permanente.",
-        "usurpation_soi": "Ganha +X ATQ e +Y PV de forma permanente por cada carta do adversário que você jogou.",
         "execution": "Destrói {cibles} com custo ≤ X, incluindo objetos.",
         "execution_any": "Destrói {cibles}, incluindo objetos.",
         "silence": "Remove todas as palavras-chave de {cibles}, incluindo objetos, e restaura seus atributos aos valores originais.",
@@ -2294,6 +2297,12 @@
         "purete": "Enquanto seu cemitério estiver vazio, todas as outras unidades aliadas ganham +X ATK e +Y PV.",
         "force_des_ancetres": "Enquanto seu cemitério contiver 7 ou mais criaturas, todas as outras unidades aliadas ganham +X ATK e +Y PV.",
         "seuil_sacrificiel": "Enquanto seu baralho tiver 25 cartas ou menos, todas as outras unidades aliadas ganham +X ATK e +Y PV.",
+        "renforcement": "Concede +X ATK e +Y PV permanentemente a todas as outras unidades aliadas.",
+        "discipline": "Se todos os custos do seu tabuleiro tiverem a mesma paridade que o dela, concede +X/+Y permanente a todas as outras unidades aliadas.",
+        "usurpation": "Concede +X/+Y permanentemente a todas as outras unidades aliadas por cada carta do adversário que você jogou.",
+        "renforcement_soi": "Ganha +X ATQ e +Y PV de forma permanente.",
+        "discipline_soi": "Se todas as suas criaturas em jogo tiverem um custo de mesma paridade que o dela, ganha +X ATQ e +Y PV de forma permanente.",
+        "usurpation_soi": "Ganha +X ATQ e +Y PV de forma permanente por cada carta do adversário que você jogou.",
         "silence_soi": "Perde todas as suas palavras-chave e seus atributos voltam aos valores originais.",
         "guerison_soi": "Recupera X PV.",
         "tactique_soi": "Ganha X habilidades aleatórias de criaturas do mesmo custo."
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "Ao início do turno (após a compra)",
     "mode_title_draw": "Quando esta carta é comprada",
     "mode_title_low_hp": "Quando seu herói cai abaixo de 15 PV (apenas uma vez)",
-    "mode_title_wound": "Ferida: quando sofre dano sem morrer (uma vez por fonte e por turno)",
+    "mode_title_wound": "Ferimento: quando sofre dano sem morrer (a cada ferimento)",
     "grant_scope_target": "Concedida à criatura-alvo",
     "grant_scope_all_allies": "Concedida a todas as unidades aliadas",
     "required_caps": "Obrigatório",
@@ -3782,9 +3791,11 @@
     "kind_label": "Tipo de feedback",
     "kind_bug": "Bug",
     "kind_idea": "Ideia",
+    "kind_balance": "Balanceamento",
     "kind_question": "Dúvida",
     "placeholder_bug": "O que aconteceu e o que você deveria ter visto? Indique a carta ou a tela em questão.",
     "placeholder_idea": "O que você gostaria de ver mudar ou ser adicionado, e por quê?",
+    "placeholder_balance": "Qual carta lhe parece forte ou fraca demais, e por quê?",
     "placeholder_question": "Qual é a sua dúvida?",
     "add_screenshot": "Anexar captura",
     "attach_hint": "ou cole no texto",

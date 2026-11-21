@@ -2470,7 +2470,7 @@ export default function CardEditor() {
                                     else next[kw] = mode;
                                     return next;
                                   })}
-                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : mode === "low_hp" ? "Quand votre héros passe sous 15 PV (une seule fois)" : mode === "wound" ? "Blessure : quand elle subit des dégâts sans mourir (une fois par source et par tour)" : mode === "start_of_turn" ? "Au début du tour (après la pioche)" : mode === "delay" ? "Retard X : une seule fois, au début du X-ième tour suivant, si l'unité est encore en jeu" : "À la fin du tour"}
+                                  title={mode === "play" ? "À l'arrivée en jeu (défaut)" : mode === "death" ? "À la mort (deathrattle)" : mode === "tap" ? "Activable (tap / engagement)" : mode === "return" ? "Au retour en main" : mode === "attack" ? "À l'attaque" : mode === "draw" ? "Quand cette carte est piochée" : mode === "low_hp" ? "Quand votre héros passe sous 15 PV (une seule fois)" : mode === "wound" ? "Blessure : quand elle subit des dégâts sans mourir (à chaque blessure)" : mode === "start_of_turn" ? "Au début du tour (après la pioche)" : mode === "delay" ? "Retard X : une seule fois, au début du X-ième tour suivant, si l'unité est encore en jeu" : "À la fin du tour"}
                                   style={{
                                     width: 22, height: 22, borderRadius: 4,
                                     background: active ? color : "transparent",

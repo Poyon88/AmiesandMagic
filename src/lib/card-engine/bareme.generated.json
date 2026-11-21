@@ -404,6 +404,12 @@
       "perY": 0,
       "n": 15
     },
+    "peste": {
+      "base": -7,
+      "perX": 0,
+      "perY": 0,
+      "n": 0
+    },
     "celerite": {
       "base": 7.19,
       "perX": 0,

@@ -252,17 +252,17 @@
         "label": "邪咒",
         "desc": "死亡時,對所有單位(友方與敵方)造成 X 點傷害,X 等於其攻擊力。"
       },
-      "synergie": {
-        "label": "協同 X",
-        "desc": "登場時選擇一項能力:該能力每次觸發時獲得 +X/+X(每個來源每回合限一次)。"
+      "indestructible": {
+        "label": "不滅",
+        "desc": "不會受到任何戰鬥傷害。"
       },
       "etheree": {
         "label": "虛體",
         "desc": "戰鬥中每次受到的傷害最多為 1 點。所受行動的傷害加倍。"
       },
-      "indestructible": {
-        "label": "不滅",
-        "desc": "不會受到任何戰鬥傷害。"
+      "synergie": {
+        "label": "協同 X",
+        "desc": "登場時選擇一項能力:該能力每次觸發時獲得 +X/+X(每個來源每回合限一次)。"
       },
       "regeneration": {
         "label": "再生 X",
@@ -446,13 +446,25 @@
         "label": "紀律 +X/+Y",
         "desc": "若你場上所有費用與其奇偶性相同,則使另一個被選為目標的友方單位永久獲得 +X/+Y。"
       },
-      "lien_du_sang": {
-        "label": "血契 X",
-        "desc": "獲得 +X/+X,且你失去 X 點生命(須有足夠生命)。"
-      },
       "usurpation": {
         "label": "篡奪 +X/+Y",
         "desc": "使另一個被你打出的敵方卡牌指定為目標的友方單位永久獲得 +X/+Y。"
+      },
+      "mutation": {
+        "label": "突變 X",
+        "desc": "在手牌中：發現 2 隻費用為 X 的普通生物。獲得它們各自最高的攻擊與生命，以及各 1 項能力。"
+      },
+      "infestation": {
+        "label": "侵蝕 X",
+        "desc": "將 X 張此單位的複製洗入你的牌組。抽到時，一張複製會被召喚，且你再抽一張牌。"
+      },
+      "enterrement": {
+        "label": "掩埋 X",
+        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地（每缺少一張牌就受到疲勞傷害）。"
+      },
+      "lien_du_sang": {
+        "label": "血契 X",
+        "desc": "獲得 +X/+X,且你失去 X 點生命(須有足夠生命)。"
       },
       "esprit_de_corps": {
         "label": "團結精神",
@@ -470,6 +482,19 @@
       "impact": {
         "label": "衝擊 X",
         "desc": "對一個敵方目標(單位或英雄)造成 X 點傷害。"
+      },
+      "execution": {
+        "label": "處決 X",
+        "desc": "摧毀一個費用 ≤ X 的目標敵方單位。",
+        "desc_any": "摧毀一個目標敵方單位。"
+      },
+      "silence": {
+        "label": "沉默",
+        "desc": "移除一個目標其他單位的所有關鍵字，並將其數值還原為原始值。"
+      },
+      "guerison": {
+        "label": "治癒 X",
+        "desc": "為一個目標其他友方單位或你的英雄恢復 X 點生命。"
       },
       "inspiration": {
         "label": "靈感 X",
@@ -573,30 +598,9 @@
         "label": "導師",
         "desc": "將創建時指定的卡牌加入你的手牌（同一張卡牌可被指定多次）。"
       },
-      "execution": {
-        "label": "處決 X",
-        "desc": "摧毀一個費用 ≤ X 的目標敵方單位。",
-        "desc_any": "摧毀一個目標敵方單位。"
-      },
-      "silence": {
-        "label": "沉默",
-        "desc": "移除一個目標其他單位的所有關鍵字，並將其數值還原為原始值。"
-      },
-      "guerison": {
-        "label": "治癒 X",
-        "desc": "為一個目標其他友方單位或你的英雄恢復 X 點生命。"
-      },
-      "mutation": {
-        "label": "突變 X",
-        "desc": "在手牌中：發現 2 隻費用為 X 的普通生物。獲得它們各自最高的攻擊與生命，以及各 1 項能力。"
-      },
-      "infestation": {
-        "label": "侵蝕 X",
-        "desc": "將 X 張此單位的複製洗入你的牌組。抽到時，一張複製會被召喚，且你再抽一張牌。"
-      },
-      "enterrement": {
-        "label": "掩埋 X",
-        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地（每缺少一張牌就受到疲勞傷害）。"
+      "peste": {
+        "label": "瘟疫",
+        "desc": "染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
       }
     },
     "spell_keywords": {
@@ -632,6 +636,11 @@
         "label": "召集",
         "desc": "創造 {token}。"
       },
+      "malediction": {
+        "label": "詛咒 X",
+        "desc": "詛咒目標費用 ≤ X 的敵方單位:該單位將在對手下個回合結束時被放逐",
+        "desc_any": "詛咒目標敵方單位:該單位將在對手下個回合結束時被放逐"
+      },
       "seuil_colere": {
         "label": "憤怒閾值 X",
         "desc": "若你的牌組剩餘 25 張牌或更少,此行動額外造成 X 點傷害。"
@@ -651,11 +660,6 @@
       "divination": {
         "label": "占卜",
         "desc": "揭示牌組頂端的 3 張牌;將 1 張放回頂端、2 張放到底部,順序自選。"
-      },
-      "malediction": {
-        "label": "詛咒 X",
-        "desc": "詛咒目標費用 ≤ X 的敵方單位:該單位將在對手下個回合結束時被放逐",
-        "desc_any": "詛咒目標敵方單位:該單位將在對手下個回合結束時被放逐"
       },
       "corruption": {
         "label": "腐化 X",
@@ -738,10 +742,6 @@
         "label": "衝擊 X",
         "desc": "對一個敵方目標(單位或英雄)造成 X 點傷害。"
       },
-      "canon": {
-        "label": "加農砲 X",
-        "desc": "對一個隨機敵方單位造成 X 點傷害。"
-      },
       "deferlement": {
         "label": "洶湧 X",
         "desc": "對所有敵方生物造成 X 點傷害"
@@ -785,7 +785,7 @@
       },
       "guerison": {
         "label": "治癒 X",
-        "desc": "為一個友方單位或你的英雄恢復 X 點生命值。"
+        "desc": "為一個友方單位或你的英雄恢復 X 點生命"
       },
       "seconde_vie": {
         "label": "第二生命 X",
@@ -794,6 +794,10 @@
       "incineration": {
         "label": "焚化 X",
         "desc": "將被指定墓地中隨機 X 張卡牌放到其擁有者的牌庫底部"
+      },
+      "enterrement": {
+        "label": "埋葬 X",
+        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地"
       },
       "creuser": {
         "label": "挖掘 X",
@@ -860,6 +864,10 @@
         "label": "多重徵召",
         "desc": "創造 {tokens}。"
       },
+      "canon": {
+        "label": "加農砲 X",
+        "desc": "對一個隨機敵方單位造成 X 點傷害。"
+      },
       "tempete": {
         "label": "風暴 X",
         "desc": "造成 X 點傷害,隨機分配給敵方單位。"
@@ -880,9 +888,9 @@
         "label": "導師",
         "desc": "將建立時指定的卡牌加入你的手牌(同一張卡牌可被指定多次)。"
       },
-      "enterrement": {
-        "label": "埋葬 X",
-        "desc": "將目標玩家牌組頂端的 X 張牌放入其墓地"
+      "peste": {
+        "label": "瘟疫",
+        "desc": "使一個單位染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
       }
     },
     "composed": {
@@ -897,29 +905,12 @@
         "on_start_of_turn": "回合開始時",
         "on_start_of_turn_in_hand": "回合開始時,若在手牌中",
         "in_hand_suffix": "在手牌中",
+        "in_graveyard_suffix": "在墓地中",
+        "on_end_of_turn_in_graveyard": "回合結束時,若在墓地中",
         "on_draw": "當此牌被抽到時",
         "on_low_hp": "生命低於 15 時",
         "on_wound": "受傷",
-        "on_delay": "延遲 {d}",
-        "on_end_of_turn_in_graveyard": "回合結束時,若在墓地中",
-        "in_graveyard_suffix": "在墓地中"
-      },
-      "siphon": {
-        "heal": "並為你的英雄恢復 {x} 點生命",
-        "heal_each": "並為你的英雄每命中一個目標恢復 {x} 點生命",
-        "heal_scatter": "並為你的英雄總共恢復 {x} 點生命"
-      },
-      "neutralise": {
-        "suite_one": ":麻痺,能力失效",
-        "suite_many": ":麻痺,能力失效",
-        "tant_que": "在場期間"
-      },
-      "malediction": {
-        "suite_one": ",於對手下個回合結束時被放逐",
-        "suite_many": ",於對手下個回合結束時被放逐"
-      },
-      "domination": {
-        "limit": "以空位數量為上限"
+        "on_delay": "延遲 {d}"
       },
       "content": {
         "deal_damage_one": "造成 {x} 點傷害",
@@ -1010,6 +1001,8 @@
         "conquete": "為你的征服計數器增加 {x}",
         "exploration": "為你的探索計數器增加 {x}",
         "incineration": "將目標墓地中的 {x} 張牌放回其牌組底部",
+        "enterrement_one": "將第 1 張{filter}牌放置於{deck}",
+        "enterrement_many": "將前 {x} 張{filter}牌放置於{deck}",
         "incineration_cible": "將{cartes}從{zone}放回{deck}底部",
         "occurrences": "{n} 次:",
         "alternative": "二選一:",
@@ -1052,9 +1045,15 @@
         "appel_any": "將你牌組的第 1 個單位放入場上",
         "appel_item_any": "將你牌組的第 1 個物品放入場上",
         "dechainement_any": "隨機使用 {x} 個行動",
-        "dechainement_one_any": "隨機使用一個行動",
-        "enterrement_one": "將第 1 張{filter}牌放置於{deck}",
-        "enterrement_many": "將前 {x} 張{filter}牌放置於{deck}"
+        "dechainement_one_any": "隨機使用一個行動"
+      },
+      "siphon": {
+        "heal": "並為你的英雄恢復 {x} 點生命",
+        "heal_each": "並為你的英雄每命中一個目標恢復 {x} 點生命",
+        "heal_scatter": "並為你的英雄總共恢復 {x} 點生命"
+      },
+      "domination": {
+        "limit": "以空位數量為上限"
       },
       "self": {
         "transformation": "自身變形",
@@ -1076,12 +1075,12 @@
         "transformation": "選擇一個要變形的生物",
         "deal_damage": "選擇一個要傷害的目標",
         "siphon": "選擇一個要汲取的目標",
-        "domination": "選擇一個要支配的生物",
         "heal": "選擇一個要治療的目標",
         "buff": "選擇一個要強化的生物",
         "usurpation": "選擇一個要強化的生物",
         "debuff": "選擇一個要削弱的生物",
         "destroy": "選擇一個要摧毀的生物",
+        "domination": "選擇一個要支配的生物",
         "bounce": "選擇一個要送回手牌的生物",
         "paralyze": "選擇一個要麻痺的生物",
         "poison": "選擇一個要下毒的生物",
@@ -1091,6 +1090,15 @@
         "exhumation": "選擇一個要復活的生物",
         "rappel": "選擇一張要收回手牌的卡牌",
         "default": "選擇一個目標"
+      },
+      "neutralise": {
+        "suite_one": ":麻痺,能力失效",
+        "suite_many": ":麻痺,能力失效",
+        "tant_que": "在場期間"
+      },
+      "malediction": {
+        "suite_one": ",於對手下個回合結束時被放逐",
+        "suite_many": ",於對手下個回合結束時被放逐"
       },
       "emblem": {
         "badge": "徽記",
@@ -1132,6 +1140,11 @@
         "on_end_of_turn_in_graveyard": "，將於回合結束時觸發，前提是其在墓地中",
         "on_delay": "，將在 {n} 回合後觸發"
       },
+      "enterrement": {
+        "deck_enemy": "對手牌組中的牌送入其墓地",
+        "deck_ally": "你的牌組中的牌送入你的墓地",
+        "deck_any": "目標牌組中的牌送入其墓地"
+      },
       "incin": {
         "zone_ally": "自己的墓地",
         "zone_enemy": "對手的墓地",
@@ -1161,8 +1174,8 @@
         "keyword": "具有{v}能力的",
         "type_creature": "單位類型的",
         "type_spell": "行動類型的",
-        "min_cost": "費用為 {n} 或以上的",
-        "type_item": "物品類型的"
+        "type_item": "物品類型的",
+        "min_cost": "費用為 {n} 或以上的"
       },
       "targetd": {
         "count_all": "所有單位",
@@ -1241,11 +1254,6 @@
         "times": "{x}次，每次1{unit}",
         "target_both": "對隨機一個{side}目標（單位或英雄）",
         "target_unit": "對隨機一個{side}單位"
-      },
-      "enterrement": {
-        "deck_enemy": "對手牌組中的牌送入其墓地",
-        "deck_ally": "你的牌組中的牌送入你的墓地",
-        "deck_any": "目標牌組中的牌送入其墓地"
       }
     },
     "factions": {
@@ -1621,14 +1629,6 @@
         "all": "所有天馬",
         "upto": "最多 {n} 匹天馬"
       },
-      "Sphinx": {
-        "def": "斯芬克斯",
-        "bare": "斯芬克斯",
-        "de": "人面獅身獸的",
-        "one": "一隻人面獅身獸",
-        "all": "所有人面獅身獸",
-        "upto": "最多 {n} 隻人面獅身獸"
-      },
       "Yétis": {
         "def": "雪怪",
         "bare": "雪怪",
@@ -1636,6 +1636,14 @@
         "one": "一隻雪怪",
         "all": "所有雪怪",
         "upto": "最多 {n} 隻雪怪"
+      },
+      "Sphinx": {
+        "def": "斯芬克斯",
+        "bare": "斯芬克斯",
+        "de": "人面獅身獸的",
+        "one": "一隻人面獅身獸",
+        "all": "所有人面獅身獸",
+        "upto": "最多 {n} 隻人面獅身獸"
       },
       "Hommes-Loups": {
         "def": "狼人",
@@ -2181,8 +2189,8 @@
       "scope": "給一個友方單位（或全部）",
       "scope_target": "給一個友方單位",
       "edc_compte": "隨機獲得{n}次+1 ATK或+1 PV（你每已觸發一次團結精神即獲得1次）。",
-      "usurpation_actuel": "已打出的敵方卡牌：{n}，目前+{x}/+{y}。",
       "scope_all": "給你所有的單位",
+      "usurpation_actuel": "已打出的敵方卡牌：{n}，目前+{x}/+{y}。",
       "machine_part": "與{ability}",
       "machine_part_timed": "與{ability}（{timing}）",
       "machine_name": "機械",
@@ -2240,13 +2248,13 @@
     },
     "target_scope": {
       "spell": {
+        "malediction": "詛咒{cibles}中費用 ≤ X 的單位:它們將在對手下個回合結束時被放逐。",
+        "malediction_any": "詛咒{cibles}:它們將在對手下個回合結束時被放逐。",
         "impact": "對{cibles}造成 X 點傷害。",
         "affaiblissement": "使{cibles}獲得 -X 攻擊力與 -Y 生命值。",
         "retour_differe": "將{cibles}中費用 ≤ X 的單位置於其擁有者的牌組底部。",
         "retour_differe_any": "將{cibles}置於其擁有者的牌組底部。",
         "remontee": "將{cibles}送回其原始擁有者的手牌。",
-        "malediction": "詛咒{cibles}中費用 ≤ X 的單位:它們將在對手下個回合結束時被放逐。",
-        "malediction_any": "詛咒{cibles}:它們將在對手下個回合結束時被放逐。",
         "corruption": "在空位限度內,將{cibles}中費用 ≤ X 的單位轉為你方所有,直到回合結束;它們獲得追獵。",
         "corruption_any": "在空位限度內,將{cibles}轉為你方所有,直到回合結束;它們獲得追獵。",
         "domination": "在空位限度內,控制{cibles}中費用 ≤ X 的單位。",
@@ -2261,10 +2269,10 @@
         "renforcement": "{cibles}獲得 +X/+Y。",
         "discipline": "若你場上所有生物的費用與此行動的費用奇偶性相同,{cibles}獲得 +X/+Y。",
         "usurpation": "你每打出一張對手的牌,{cibles}便獲得 +X/+Y。",
-        "guerison": "為{cibles}和你的英雄恢復 X 點生命值。"
+        "guerison": "為{cibles}和你的英雄恢復 X 點生命值。",
+        "peste": "使{cibles}染疫:每個單位在回合結束時失去 1 點生命,死亡時其瘟疫會傳給另一個單位。"
       },
       "creature": {
-        "neutralisation": "此單位在場時,{cibles}會被麻痺,且其能力無效。",
         "impact": "對{cibles}造成 X 點傷害。",
         "affaiblissement": "使{cibles}獲得 -X 攻擊力與 -Y 生命值。",
         "retour_differe": "將{cibles}中費用 ≤ X 的單位置於其擁有者的牌組底部。",
@@ -2275,18 +2283,13 @@
         "domination": "在空位限度內,控制{cibles}中費用 ≤ X 的單位。",
         "domination_any": "在空位限度內,控制{cibles}。",
         "benediction": "完全治癒{cibles}。",
+        "neutralisation": "此單位在場時,{cibles}會被麻痺,且其能力無效。",
         "malediction": "詛咒{cibles}中費用 ≤ X 的單位:它們將在對手下個回合結束時被放逐。",
         "malediction_any": "詛咒{cibles}:它們將在對手下個回合結束時被放逐。",
         "tactique": "使{cibles}從相同費用生物的能力中隨機獲得 X 個能力(每個單位各抽取一次)。",
         "vampirisme": "從{cibles}身上奪取最多 X 點生命值,並加到此單位的生命值上。",
         "devoration": "消滅{cibles};此單位永久獲得其攻擊力與生命值。",
         "sacrifice": "消滅所有其他友方單位,永久獲得它們的生命值與攻擊力。",
-        "renforcement": "使所有其他友方單位永久獲得 +X 攻擊力與 +Y 生命值。",
-        "discipline": "若你場上所有費用的奇偶性與此單位相同,所有其他友方單位永久獲得 +X/+Y。",
-        "usurpation": "你每打出一張對手的牌,所有其他友方單位便永久獲得 +X/+Y。",
-        "renforcement_soi": "永久獲得 +X 攻擊與 +Y 生命。",
-        "discipline_soi": "若你所有場上的生物費用奇偶性皆與其相同,則永久獲得 +X 攻擊與 +Y 生命。",
-        "usurpation_soi": "你每打出一張對手的牌,便永久獲得 +X 攻擊與 +Y 生命。",
         "execution": "摧毀費用 ≤ X 的{cibles},包含物品。",
         "execution_any": "摧毀{cibles},包含物品。",
         "silence": "移除{cibles}的所有關鍵字(包含物品),並將其數值恢復為原始值。",
@@ -2294,6 +2297,12 @@
         "purete": "只要你的墓地為空,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
         "force_des_ancetres": "只要你的墓地有 7 張或以上生物牌,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
         "seuil_sacrificiel": "只要你的牌組剩 25 張牌或更少,所有其他友方單位獲得 +X 攻擊與 +Y 生命。",
+        "renforcement": "使所有其他友方單位永久獲得 +X 攻擊力與 +Y 生命值。",
+        "discipline": "若你場上所有費用的奇偶性與此單位相同,所有其他友方單位永久獲得 +X/+Y。",
+        "usurpation": "你每打出一張對手的牌,所有其他友方單位便永久獲得 +X/+Y。",
+        "renforcement_soi": "永久獲得 +X 攻擊與 +Y 生命。",
+        "discipline_soi": "若你所有場上的生物費用奇偶性皆與其相同,則永久獲得 +X 攻擊與 +Y 生命。",
+        "usurpation_soi": "你每打出一張對手的牌,便永久獲得 +X 攻擊與 +Y 生命。",
         "silence_soi": "失去所有關鍵字,數值恢復為原始值。",
         "guerison_soi": "恢復 X 點生命。",
         "tactique_soi": "從費用相同的生物能力中隨機獲得 X 個能力。"
@@ -2915,7 +2924,7 @@
     "mode_title_start_of_turn": "回合開始時（抽牌後）",
     "mode_title_draw": "當此牌被抽到時",
     "mode_title_low_hp": "當你的英雄生命值降到 15 以下時（僅限一次）",
-    "mode_title_wound": "受傷：受到傷害但未死亡時（每個來源每回合一次）",
+    "mode_title_wound": "受傷:受到傷害但未死亡時(每次受傷)",
     "grant_scope_target": "賦予指定的生物",
     "grant_scope_all_allies": "賦予所有友方單位",
     "required_caps": "必需",
@@ -3782,9 +3791,11 @@
     "kind_label": "回饋類型",
     "kind_bug": "錯誤",
     "kind_idea": "點子",
+    "kind_balance": "平衡性",
     "kind_question": "疑問",
     "placeholder_bug": "發生了什麼事?您原本預期看到什麼?請註明相關的卡牌或畫面。",
     "placeholder_idea": "您希望更改或新增什麼?原因是什麼?",
+    "placeholder_balance": "你覺得哪張卡牌太強或太弱?原因是什麼?",
     "placeholder_question": "請問您的問題是什麼?",
     "add_screenshot": "附加截圖",
     "attach_hint": "或直接貼在文字中",
