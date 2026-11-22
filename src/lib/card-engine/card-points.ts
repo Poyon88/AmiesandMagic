@@ -9,7 +9,7 @@
 // diverger du modèle qui a produit ses chiffres.
 import type { Capability, Card, CardType, ComposedEffect, TargetSpec } from "@/lib/game/types";
 import { getCapabilities } from "@/lib/game/capability-adapter";
-import { ABILITIES, COUT_OPTIONNEL, KEYWORD_DEFAULT_X, xEquivalentCoutLibre } from "@/lib/game/abilities";
+import { ABILITIES, COUT_OPTIONNEL, GRANT_COMPOSED_ID, KEYWORD_DEFAULT_X, xEquivalentCoutLibre } from "@/lib/game/abilities";
 import { zonesDeCible } from "@/lib/game/target-scope";
 import type { Bareme, CoutLineaire } from "./bareme";
 
@@ -174,6 +174,17 @@ function termesComposes(b: Bareme, cap: Capability, c: ComposedEffect): Terme[] 
   const out = termesLineaires(`comp.${c.content}`, ligne, mult, xEffectif(m.x, random, m.minX), m.y);
   // Don d'une capacité : le contenu a son socle, plus une part de la valeur de
   // la capacité conférée — sous le déclencheur qu'elle portera chez son hôte.
+  // Effet composé conféré : sa propre valeur (déclencheur, cibles, amplitude
+  // compris), sous le même coefficient de don. Un seul niveau — un don dans un
+  // don ne se compte pas.
+  if (c.content === "grant_keyword" && c.grantAbilityId === GRANT_COMPOSED_ID) {
+    const don = c.grantCapability;
+    if (don?.composed && don.composed.grantAbilityId !== GRANT_COMPOSED_ID) {
+      const k = b.don * multCible(b, t, false) * multDeclencheur(b, cap.trigger);
+      out.push(...termesComposes(b, don, don.composed).map((terme) => ({ ...terme, ligne, coef: terme.coef * k })));
+    }
+    return out;
+  }
   if (c.content === "grant_keyword" && c.grantAbilityId) {
     const conferee: Capability = {
       uid: "don", effectKind: "immediate", abilityId: c.grantAbilityId,

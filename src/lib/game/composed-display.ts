@@ -6,7 +6,7 @@
 // SafeT optionnel) avec repli FR intégré (COMPOSED_FR = source unique, aussi
 // graine du générateur vocab). Sans traducteur (store, tests) → FR.
 
-import { ABILITIES, creatureEngineId, getCapabilityTriggers, XY_ABILITY_IDS } from "./abilities";
+import { ABILITIES, creatureEngineId, getCapabilityTriggers, GRANT_COMPOSED_ID, XY_ABILITY_IDS } from "./abilities";
 import { designatedCardIds, groupDesignatedIds, tuteurCardIds } from "./tuteur";
 import { xNumeral, keywordModeColor, KEYWORD_LABELS, KEYWORD_SYMBOLS, applyKeywordValueToLabel } from "./keyword-labels";
 import type { Capability, CapabilityTrigger, ComposedEffect, Keyword, KeywordMode, TargetSpec, TokenTemplate } from "./types";
@@ -380,6 +380,9 @@ export const COMPOSED_FR: Record<string, string> = {
   "target.loc_hand": "en main",
   "target.loc_deck": "du deck",
   "target.loc_graveyard": "du cimetière",
+  // Bord indifférent : les DEUX cimetières sont visés — « du cimetière » se
+  // lisait comme un seul, sans dire lequel.
+  "target.loc_graveyard_any": "de n'importe quel cimetière",
   "target.des_random": "au hasard",
   "target.des_automatic": "automatiquement",
   "target.des_choice": "au choix",
@@ -495,6 +498,11 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     // créature gagne qui compte, pas le fait qu'on le lui donne. L'astérisque
     // des composés reste posée par ComposedMarker, côté rendu.
     case "grant_keyword": {
+      // Effet composé conféré : l'icône de CE qu'il fera.
+      if (eff.grantAbilityId === GRANT_COMPOSED_ID && eff.grantCapability?.composed
+        && eff.grantCapability.composed.grantAbilityId !== GRANT_COMPOSED_ID) {
+        return composedIcon(eff.grantCapability);
+      }
       const granted = grantedEngineId(eff);
       if (granted && KEYWORD_SYMBOLS[granted]) return { symbol: KEYWORD_SYMBOLS[granted], keyword: granted };
       // Repli : capacité inconnue ou sans symbole propre → icône générique.
@@ -645,7 +653,31 @@ export function composedMarkerColor(mode: KeywordMode | undefined): string {
  *  « Gloire +2/+1 », « Résistance 3 », « Provocation ». Sans cette injection le
  *  texte de carte affichait littéralement le marqueur du registre (« Gloire
  *  +X/+Y »), l'amplitude saisie dans le forge restant invisible au joueur. */
-function grantedAbilityLabel(eff: ComposedEffect, x: number, y: number, t?: SafeT): string {
+function grantedAbilityLabel(eff: ComposedEffect, x: number, y: number, t?: SafeT, tokens?: TokenTemplate[]): string {
+  // EFFET COMPOSÉ conféré : la phrase de l'effet lui-même, précédée de son
+  // déclencheur — « À la fin du tour : dévore une unité ennemie au hasard… ».
+  // Un nom de capacité ne dirait rien, il n'y en a pas.
+  const don = eff.grantAbilityId === GRANT_COMPOSED_ID ? eff.grantCapability : undefined;
+  if (don?.composed && don.composed.grantAbilityId !== GRANT_COMPOSED_ID) {
+    const quand = frag(t, `trigger.${don.trigger}`, { d: String(don.delay ?? 1) });
+    const quoi = describeComposedCap({ ...don, alternative: undefined }, tokens, t).replace(/\.$/, "");
+    return `« ${quand} : ${quoi.charAt(0).toLowerCase()}${quoi.slice(1)} »`;
+  }
+  return grantedAbilityLabelBase(eff, x, y, t) + grantedTokenSuffix(eff, tokens, t);
+}
+
+/** « (Squelette) » — le token d'une Convocation conférée, nommé à la suite du
+ *  libellé : sans lui la phrase ne dit pas CE que la capacité créera. */
+function grantedTokenSuffix(eff: ComposedEffect, tokens?: TokenTemplate[], t?: SafeT): string {
+  if (eff.tokenId == null) return "";
+  const id = grantedEngineId(eff);
+  if (id !== "convocation" && id !== "convocation_simple") return "";
+  const tok = tokens?.find((tk) => tk.id === eff.tokenId);
+  if (!tok) return "";
+  return ` (${t?.(`vocab.tokens.${tok.id}`) ?? tok.name})`;
+}
+
+function grantedAbilityLabelBase(eff: ComposedEffect, x: number, y: number, t?: SafeT): string {
   const id = eff.grantAbilityId;
   const a = id ? (ABILITIES[id] ?? Object.values(ABILITIES).find((d) => creatureEngineId(d) === id)) : undefined;
   // Nom de capacité localisé quand disponible (vocab.keywords), sinon label moteur.
@@ -762,7 +794,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
     case "poison": return frag(t, "content.poison");
     case "malediction": return frag(t, "content.malediction");
     case "neutralise": return frag(t, "content.neutralise");
-    case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t) })
+    case "grant_keyword": return frag(t, "content.grant_keyword", { ability: grantedAbilityLabel(eff, x, y, t, tokens) })
       + describeGrantTrigger(eff, t);
     case "appel": {
       // Le type n'est pas un filtre accolé ici mais le NOM de ce qui est appelé :
@@ -1087,7 +1119,7 @@ function describeTarget(
   const sideTxt = sideAdj(tr, t.side, many, t.entity === "item" || t.entity === "unit_or_item");
   const mtxt = filtreLabel(t, tr);
   const zones = zonesDeCible(t);
-  const locTxt = zones.length > 1 ? listeZones(zones, tr) : t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, "target.loc_graveyard") : "";
+  const locTxt = zones.length > 1 ? listeZones(zones, tr) : t.location === "hand" ? frag(tr, "target.loc_hand") : t.location === "deck" ? frag(tr, "target.loc_deck") : t.location === "graveyard" ? frag(tr, t.side === "any" ? "target.loc_graveyard_any" : "target.loc_graveyard") : "";
   const desTxt = t.designation === "random" || t.designation === "scatter" ? frag(tr, "target.des_random")
     : t.designation === "automatic" ? (t.count !== "all" ? frag(tr, "target.des_automatic") : "")
     : (t.count !== "all" ? frag(tr, "target.des_choice") : "");

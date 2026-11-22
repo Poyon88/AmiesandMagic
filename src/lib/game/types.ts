@@ -942,10 +942,20 @@ export interface ComposedEffect {
    *  un mode indéfini) : `automatic` pour les passives, `on_death` pour les
    *  râles d'agonie. Ignoré par celles qui n'ont qu'un seul déclencheur possible. */
   grantTrigger?: CapabilityTrigger;
+  /** content === "grant_keyword" avec `grantAbilityId: "_composed"` : l'EFFET
+   *  COMPOSÉ conféré, entier — son déclencheur chez la nouvelle porteuse, son
+   *  contenu, son amplitude et SES cibles (« confère : à la fin du tour, dévore
+   *  une unité au hasard du cimetière adverse »). Le moteur le recopie dans les
+   *  capacités de la carte receveuse sous un nouvel uid ; `uid` est ignoré. */
+  grantCapability?: Capability;
   /** RETARD X du don (`grantTrigger: "on_delay"`) : tours avant le
    *  déclenchement (1–3). Le décompte démarre AU DON. */
   grantDelay?: number;
-  /** content === "summon_token" : token à invoquer. */
+  /** content === "summon_token" : token à invoquer.
+   *  content === "grant_keyword" + Convocation (X ou simple) : token que la
+   *  Convocation CONFÉRÉE créera. Le moteur le lit sur la carte porteuse
+   *  (`convocation_token_id`) ; sans lui, une créature qui n'a pas de
+   *  Convocation à elle recevait une capacité muette. */
   tokenId?: number | null;
   /** content === "invocation" : carte DÉSIGNÉE à invoquer (id de la table
    *  `cards`), choisie à la création. Renseignée, elle REMPLACE le tirage
@@ -2126,6 +2136,15 @@ export interface GameState {
   faveurEvents?: Array<{
     card: Card;
     ownerId: string;
+  }>;
+  // Transient : unités DÉVORÉES hors du terrain (main, deck, cimetière), pour
+  // que le store les montre aux deux joueurs — sinon la dévoreuse grossit sans
+  // que rien n'indique ce qu'elle a mangé. `ownerId` = joueur dont la zone a
+  // perdu la carte. Vidé par le store après planification ; exclu du hash.
+  devorationEvents?: Array<{
+    card: Card;
+    ownerId: string;
+    zone: "hand" | "deck" | "graveyard";
   }>;
   // Transient : chaque gain d'Exploration de l'action, avec le nombre de
   // pioches qu'il a déclenchées. Les trois autres compteurs s'animent par un

@@ -320,6 +320,23 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
               </div>
             )}
 
+            {/* Bannière « Dévorée » : l'unité n'est ni jouée ni offerte, elle
+                vient d'être mangée dans une main, un deck ou un cimetière.
+                Rouge sombre, la couleur de la mort. */}
+            {event.devoured && (
+              <div style={{
+                fontSize: "0.72rem",
+                color: "#ff6b5e",
+                fontWeight: 700,
+                textAlign: "center",
+                letterSpacing: "0.04em",
+                textShadow: "0 1px 3px rgba(0,0,0,0.95)",
+                marginTop: -2,
+              }}>
+                {t(`devoured_${event.devoured.zone}_${event.devoured.side}`)}
+              </div>
+            )}
+
             {card && (
               <>
                 {/* Mana + Faction */}

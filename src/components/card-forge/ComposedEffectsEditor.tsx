@@ -19,7 +19,7 @@ import { ACTION_TARGET_CONTENTS, basculerType, cibleDesTypes, typesCoches, type 
 import { designatedCardIds, tuteurCardIds } from "@/lib/game/tuteur";
 import SpellEffectPicker from "./SpellEffectPicker";
 import { neutraliseTantQuEnJeu } from "@/lib/game/composed-display";
-import { ABILITIES, COUT_OPTIONNEL, creatureEngineId, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
+import { ABILITIES, COUT_OPTIONNEL, creatureEngineId, GRANT_COMPOSED_ID, grantTriggersFor, RANDOM_X_ABILITY_IDS, XY_ABILITY_IDS } from "@/lib/game/abilities";
 import { OCCURRENCE_CONTENTS, MAX_OCCURRENCES } from "@/lib/game/composed-occurrences";
 import { DEFAULT_EMBLEM_CADENCE, isEmblemCadence, isItemFiringTrigger, isTokenFiringTrigger } from "@/lib/game/capability-adapter";
 import { ALL_SPELL_KEYWORDS, SPELL_KEYWORDS, SPELL_KEYWORD_LABELS, SPELL_KEYWORD_SYMBOLS } from "@/lib/game/spell-keywords";
@@ -218,6 +218,9 @@ const GRANTABLE = Object.values(ABILITIES)
   .map((a) => ({ id: creatureEngineId(a), label: a.creature?.label ?? a.label }))
   .sort((a, b) => a.label.localeCompare(b.label, "fr"));
 
+/** Capacités conférées qui demandent de désigner un token (cf. moteur). */
+const TOKEN_GRANT_IDS: ReadonlySet<string> = new Set(["convocation", "convocation_simple"]);
+
 /** Déclencheur proposé par défaut pour une capacité fraîchement choisie. */
 function defaultGrantTrigger(abilityId: string, location?: TargetSpec["location"]): CapabilityTrigger | undefined {
   return grantTriggersFor(abilityId, location)[0];
@@ -247,8 +250,11 @@ const DECLENCHEUR_DU_PORTEUR = new Set<CapabilityTrigger>([
 
 export default function ComposedEffectsEditor({
   value, onChange, isUnit, tokenTemplates, singleEffect = false,
-  pourToken = false, pourObjet = false, curated, onCuratedChange,
+  pourToken = false, pourObjet = false, curated, onCuratedChange, sansDonCompose = false,
 }: {
+  // Éditeur IMBRIQUÉ (l'effet composé conféré par un don) : n'offre pas à son
+  // tour de conférer un effet composé — un seul niveau.
+  sansDonCompose?: boolean;
   value: Capability[];
   onChange: (v: Capability[]) => void;
   isUnit: boolean;
@@ -837,8 +843,9 @@ export default function ComposedEffectsEditor({
                   content: v, target: cibleAjustee,
                   grantAbilityId: v === "grant_keyword" ? (eff.grantAbilityId ?? GRANTABLE[0]?.id) : undefined,
                   grantTrigger: v === "grant_keyword"
-                    ? (eff.grantTrigger ?? defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", eff.target?.location))
+                    ? (eff.grantTrigger ?? (eff.grantAbilityId === GRANT_COMPOSED_ID ? undefined : defaultGrantTrigger(eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "", eff.target?.location)))
                     : undefined,
+                  grantCapability: v === "grant_keyword" ? eff.grantCapability : undefined,
                   // Le filtre de pool ne survit pas à un changement vers un
                   // contenu qui n'en a pas (sinon champ fantôme en base).
                   // Le type de carte, lui, ne survit qu'entre contenus qui le
@@ -846,6 +853,8 @@ export default function ComposedEffectsEditor({
                   // pool en silence, sans case à l'écran pour s'en apercevoir.
                   pool: POOL_CONTENTS.has(v) ? poolSansTypeHorsPerimetre(eff.pool, v)
                     : undefined,
+                  // Le token ne survit qu'entre contenus qui en portent un.
+                  tokenId: v === "summon_token" || (v === "grant_keyword" && TOKEN_GRANT_IDS.has(eff.grantAbilityId ?? "")) ? eff.tokenId : undefined,
                   // Idem pour la carte désignée d'une Invocation.
                   cardId: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardId : undefined,
                   cardIds: v === "invocation" || v === "tuteur" || v === "transformation" ? eff.cardIds : undefined,
@@ -942,6 +951,11 @@ export default function ComposedEffectsEditor({
 
               {eff.content === "grant_keyword" && (() => {
                 const grantId = eff.grantAbilityId ?? GRANTABLE[0]?.id ?? "";
+                const donCompose = grantId === GRANT_COMPOSED_ID;
+                const optionsDon = [
+                  ...(sansDonCompose ? [] : [{ v: GRANT_COMPOSED_ID, l: tr('grant_composed_option') }]),
+                  ...GRANTABLE.map((g) => ({ v: g.id, l: g.label })),
+                ];
                 // Elle se confère la capacité en quittant le plateau : sa prochaine
                 // entrée en jeu est à venir.
                 const donAvantRetour = eff.target?.entity === "self"
@@ -950,8 +964,18 @@ export default function ComposedEffectsEditor({
                 return (
                   <>
                     <span style={labelStyle}>{tr('label_granted_ability')}</span>
-                    {sel(grantId, GRANTABLE.map((g) => ({ v: g.id, l: g.label })), (v) => patchEffect(idx, {
+                    {sel(grantId, optionsDon, (v) => patchEffect(idx, {
                       grantAbilityId: v,
+                      // Effet composé conféré : amorcé sur un effet complet et
+                      // valide, que l'auteur règle ensuite ; effacé sinon.
+                      grantCapability: v === GRANT_COMPOSED_ID
+                        ? (eff.grantCapability ?? {
+                            uid: "don", trigger: "on_end_of_turn", effectKind: "immediate", abilityId: GRANT_COMPOSED_ID,
+                            composed: { content: "deal_damage", magnitude: { x: 1 }, target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "random" } },
+                          })
+                        : undefined,
+                      // Le token ne suit que les Convocations.
+                      tokenId: TOKEN_GRANT_IDS.has(v) ? eff.tokenId : undefined,
                       // Capacité à couple X/Y : amorcer Y à 1 (repli du moteur)
                       // plutôt que 0, sinon la Gloire conférée n'accorde aucun PV.
                       magnitude: XY_ABILITY_IDS.has(v) && eff.magnitude?.y == null
@@ -960,11 +984,37 @@ export default function ComposedEffectsEditor({
                       // Le déclencheur suit la capacité : garder celui de la
                       // précédente le rendrait incohérent en silence (une Armure
                       // « à la mort », un râle « à l'attaque »).
-                      grantTrigger: grantTriggersFor(v, zoneDuDon(eff.target), donAvantRetour).includes(eff.grantTrigger as CapabilityTrigger)
+                      grantTrigger: v === GRANT_COMPOSED_ID ? undefined
+                        : grantTriggersFor(v, zoneDuDon(eff.target), donAvantRetour).includes(eff.grantTrigger as CapabilityTrigger)
                         ? eff.grantTrigger
                         : defaultGrantTrigger(v, zoneDuDon(eff.target)),
+                      grantDelay: v === GRANT_COMPOSED_ID ? undefined : eff.grantDelay,
                     }))}
-                    {optionsDecl.length > 1 && (
+                    {/* EFFET COMPOSÉ CONFÉRÉ : l'éditeur lui-même, imbriqué — même
+                        déclencheurs, contenus et cibles que pour une unité. Sur le
+                        plateau la receveuse est déjà entrée en jeu : « à l'entrée »
+                        y serait muet, comme sur un token. */}
+                    {donCompose && eff.grantCapability && (
+                      <div style={{ gridColumn: "1 / -1", marginLeft: 12, paddingLeft: 12, borderLeft: "3px solid #c9a84c" }}>
+                        <div style={{ ...labelStyle, marginBottom: 6 }}>{tr('grant_composed_title')}</div>
+                        <ComposedEffectsEditor
+                          value={[eff.grantCapability]}
+                          onChange={(caps) => { if (caps[0]) patchEffect(idx, { grantCapability: caps[0] }); }}
+                          isUnit singleEffect sansDonCompose
+                          pourToken={zoneDuDon(eff.target) === "board" || zoneDuDon(eff.target) == null}
+                          tokenTemplates={tokenTemplates}
+                        />
+                      </div>
+                    )}
+                    {/* Convocation conférée : le token qu'elle créera chez sa
+                        nouvelle porteuse — sans lui, elle ne crée rien. */}
+                    {TOKEN_GRANT_IDS.has(grantId) && (
+                      <>
+                        <span style={labelStyle}>{tr('label_token')}</span>
+                        <TokenCascadePicker value={eff.tokenId ?? null} onChange={(id) => patchEffect(idx, { tokenId: id })} tokens={tokenTemplates} compact />
+                      </>
+                    )}
+                    {!donCompose && optionsDecl.length > 1 && (
                       <>
                         <span style={labelStyle}>{tr('label_grant_trigger')}</span>
                         {sel(
@@ -976,6 +1026,42 @@ export default function ComposedEffectsEditor({
                           // Retard X : 1 tour par défaut en y passant, effacé sinon.
                           (v) => patchEffect(idx, { grantTrigger: v as CapabilityTrigger, grantDelay: v === "on_delay" ? (eff.grantDelay ?? 1) : undefined }),
                         )}
+                      </>
+                    )}
+                    {/* PASSERELLE vers l'effet composé conféré : c'est ici, sous le
+                        déclencheur du don, que l'auteur cherche « ce que visera
+                        l'effet ». La capacité du registre n'a pas de cibles
+                        réglables ; on la convertit en effet composé de même
+                        contenu (quand il existe), déclencheur et X conservés. */}
+                    {!donCompose && !sansDonCompose && optionsDecl.length > 1 && (
+                      <>
+                        <span style={labelStyle}>{tr('label_grant_targets')}</span>
+                        <span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const contenu: ComposedEffectContent = COMPOSED_CONTENTS.find((c) => c.v === grantId)?.v ?? "deal_damage";
+                              const x = eff.magnitude?.x;
+                              patchEffect(idx, {
+                                grantAbilityId: GRANT_COMPOSED_ID,
+                                grantTrigger: undefined, grantDelay: undefined, tokenId: undefined,
+                                grantCapability: {
+                                  uid: "don", effectKind: "immediate", abilityId: GRANT_COMPOSED_ID,
+                                  trigger: (eff.grantTrigger ?? optionsDecl[0]) as CapabilityTrigger,
+                                  ...(eff.grantTrigger === "on_delay" ? { delay: eff.grantDelay ?? 1 } : {}),
+                                  composed: {
+                                    content: contenu,
+                                    magnitude: { x: x != null && x > 0 ? x : 1 },
+                                    target: { entity: "unit", count: 1, side: "enemy", location: "board", designation: "random" },
+                                  },
+                                },
+                              });
+                            }}
+                            style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #c9a84c", background: "#fffbea", color: "#7a5c12", cursor: "pointer", fontSize: 12, fontWeight: 700 }}
+                          >
+                            🎯 {tr('grant_targets_button')}
+                          </button>
+                        </span>
                       </>
                     )}
                     {eff.grantTrigger === "on_delay" && (

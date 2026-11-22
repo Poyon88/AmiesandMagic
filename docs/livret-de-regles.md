@@ -327,7 +327,7 @@ Nom de la capacité, type de carte qui peut la porter, effet. X et Y sont les va
 - **Pacte de sang** (unité) — À sa mort, invoque deux tokens 1/1 de sa race.
 - **Sacrifice démoniaque X** (unité) — À sa mort, répartit X réductions de -1 mana entre les Démons de votre main (min. 1).
 - **Souffle de feu X** (unité) — Inflige X dégâts à toutes les unités ennemies lors de l'attaque (ex : Souffle de feu 2 = 2 dégâts).
-- **Domination X** (unité et action) — Prend le contrôle d'une unité ennemie au hasard de coût ≤ X à son invocation.
+- **Domination X** (unité et action) — Prend le contrôle d'une unité ennemie au hasard de coût ≤ X.
   - sur une action : Prend le contrôle de l'unité ennemie ciblée de coût ≤ X.
 - **Résurrection** (unité) — Revient en jeu après sa mort avec 1 PV ; perd la capacité Résurrection à son retour.
 - **Transcendance** (unité) — Immunité totale aux actions adverses : ne peut subir aucun dégât ni effet d'action, y compris les actions de zone.
@@ -695,6 +695,9 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 - Une unité ne peut pas se dévorer elle-même.
 - Dévoration tue l'unité visée et ajoute définitivement son ATK et ses PV du moment (bonus compris) à l'unité qui dévore.
 - Une Dévoration portée par une action ne détruit rien, faute d'unité pour absorber.
+- Une Dévoration qui vise une unité en main ou dans un deck l'envoie au cimetière de son propriétaire, sans déclencher ses effets « à la mort » ; l'unité qui dévore gagne son ATK et ses PV.
+- Une Dévoration qui vise une unité d'un cimetière la retire de la partie ; l'unité qui dévore gagne l'ATK et les PV inscrits sur la carte.
+- Hors du terrain, Dévoration ne prend que des unités : sans unité dans la zone visée, rien ne se passe.
 
 **Discipline +X/+Y**
 - Le bonus n'est accordé que si toutes les unités de votre terrain ont un coût de même parité (pair ou impair) que la carte qui déclenche Discipline ; une seule unité de l'autre parité suffit à l'empêcher.
@@ -734,6 +737,8 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 - Une capacité conférée par une action reste acquise : reçue pendant qu'un emblème donnait une valeur plus haute, elle subsiste après la disparition de l'emblème (2 de base, emblème 5, action 3 ⇒ 3).
 - La disparition d'un emblème ne retire jamais une capacité que l'unité possédait déjà par elle-même.
 - Une capacité peut être conférée avec un déclencheur « fin de tour, en main », « début de tour, en main » ou « fin de tour, au cimetière » : elle se déclenche alors depuis cette zone à chacun de vos tours, et jamais depuis le terrain.
+- Une carte peut conférer un effet complet, écrit entre guillemets sur la carte (« À la fin du tour : … ») : l'unité qui le reçoit le déclenche ensuite elle-même, avec ses propres cibles. Recevoir deux fois le même effet le déclenche deux fois.
+- Une Convocation conférée crée le token désigné par la carte qui la confère ; une unité qui a déjà sa propre Convocation garde son token.
 - Une capacité conférée qui se déclenche depuis la main ou le cimetière et qui demande une cible la choisit au hasard.
 - Une capacité conférée avec un Retard X compte à partir du moment où elle est conférée : elle se déclenche au début de votre X-ième tour suivant, une seule fois.
 

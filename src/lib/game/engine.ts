@@ -41,7 +41,7 @@ import type {
 import { carteMutante, leguerCapacites, mutationXInstance, resoudreChoixMutation, tactiqueVivier } from "./mutation";
 import { getFormatFilterByCode } from "./format-legality";
 import { SPELL_KEYWORDS } from "./spell-keywords";
-import { ABILITIES, CAPACITES_A_COUT_MAX_CIBLE, CAPACITES_SYNERGISABLES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
+import { ABILITIES, GRANT_COMPOSED_ID, CAPACITES_A_COUT_MAX_CIBLE, CAPACITES_SYNERGISABLES, creatureEngineId, DEATH_NATURE_IDS, getEntraideReduction, getTokenManaCost, isCreatureKwShadowedBySpell, KEYWORD_DEFAULT_X, XY_ABILITY_IDS } from "./abilities";
 import { bonusDesObjetsPortes, estUnObjet, getEquipCost, MAX_OBJETS_PAR_UNITE, objetsDe, objetsPortesPar, occupeUnePlace, peutRecevoirObjet, placesOccupees, uidCapaciteObjet } from "./items";
 import { isManaSpark, MANA_SPARK_FALLBACK } from "./mana-spark";
 import { pvDeDepart } from "./hero-hp";
@@ -147,6 +147,12 @@ let drawTriggerSink: Array<{ card: Card; ownerId: string }> = [];
 // même son propriétaire : le tirage est aléatoire, il n'a rien choisi.
 // Vidé au début d'applyAction, rattaché à state.faveurEvents ; hors hash.
 let faveurSink: Array<{ card: Card; ownerId: string }> = [];
+// Unités DÉVORÉES HORS DU TERRAIN (main, deck, cimetière). Sur le plateau la
+// victime meurt sous les yeux des joueurs ; ici elle disparaît d'une zone
+// cachée ou d'une pile, et la dévoreuse grossit sans que rien ne dise de quoi.
+// `ownerId` = joueur dont la zone a été vidée.
+// Vidé au début d'applyAction, rattaché à state.devorationEvents ; hors hash.
+let devorationSink: Array<{ card: Card; ownerId: string; zone: "hand" | "deck" | "graveyard" }> = [];
 // Gains d'Exploration de l'action, avec les pioches qu'ils ont déclenchées. Le
 // store anime les autres compteurs par un diff d'état ; ici le palier fait
 // REDESCENDRE le compteur dans la même action, le diff serait muet ou négatif.
@@ -1479,6 +1485,24 @@ function restaurerDonsTemporaires(inst: CardInstance): void {
   inst.donsTemporaires = undefined;
 }
 
+/** Greffe un effet composé CONFÉRÉ sur la carte receveuse : la capacité est
+ *  recopiée telle quelle sous un uid libre. NOUVEL objet carte — le cache de
+ *  `getCapabilities` est indexé par objet. Plusieurs dons s'ajoutent : deux
+ *  « fin de tour » conférés se déclenchent tous les deux. */
+function confererEffetCompose(u: CardInstance, don: import("./types").Capability): void {
+  const caps = getCapabilities(u.card);
+  const pris = new Set(caps.map((c) => c.uid));
+  let k = 0;
+  while (pris.has(`don_${k}`)) k++;
+  u.card = {
+    ...u.card,
+    capabilities: [...caps, { ...don, uid: `don_${k}`, abilityId: GRANT_COMPOSED_ID, effectKind: "immediate", position: undefined }],
+  };
+}
+
+/** Capacités conférables dont l'effet dépend d'un token désigné. */
+const TOKEN_GRANT_IDS: ReadonlySet<string> = new Set(["convocation", "convocation_simple"]);
+
 function applyGrantedKeyword(
   creature: CardInstance,
   kwId: string,
@@ -1962,6 +1986,33 @@ function applyComposedToUnit(
       // absorber les stats : on ne détruit rien plutôt que de faire une
       // destruction déguisée qui mentirait sur la capacité.
       if (!source) return;
+      // HORS PLATEAU (main, deck) : `resolveDevoration` ne cherche sa victime
+      // que sur les plateaux — une Dévoration visant la main adverse ne
+      // trouvait personne et ne faisait RIEN (« Rabatteuse du Charnier »). La
+      // carte part au cimetière par le chemin de Détruire hors plateau (sans
+      // râle : en main, aucune capacité n'est active) et la source l'absorbe.
+      if (![owner, opponent].some((p) => p.board.includes(u))) {
+        if (u === source) return;
+        // AU CIMETIÈRE : la carte est déjà morte (0 PV courants) — la source
+        // absorbe ses stats IMPRIMÉES, et la carte quitte la partie (exilée) :
+        // on ne dévore pas deux fois le même cadavre.
+        for (const p of [owner, opponent]) {
+          const i = p.graveyard.indexOf(u);
+          if (i === -1) continue;
+          p.graveyard.splice(i, 1);
+          absorberDevoration(source, u.card.attack ?? 0, u.card.health ?? 0);
+          devorationSink.push({ card: u.card, ownerId: p.id, zone: "graveyard" });
+          return;
+        }
+        const atk = u.currentAttack, pv = u.currentHealth;
+        const tenue = [owner, opponent].find((p) => p.hand.includes(u) || p.deck.includes(u));
+        const zone = tenue?.hand.includes(u) ? "hand" as const : "deck" as const;
+        if (destroyOutsideBoard(u, owner, opponent)) {
+          absorberDevoration(source, atk, pv);
+          if (tenue) devorationSink.push({ card: u.card, ownerId: tenue.id, zone });
+        }
+        return;
+      }
       resolveDevoration(source, u.instanceId, owner, opponent);
       return;
     }
@@ -2105,6 +2156,12 @@ function applyComposedToUnit(
       else resolveRemontee(u.instanceId, source?.instanceId ?? null, owner, opponent, fromSpell, designationCiblee(composed));
       break;
     case "grant_keyword":
+      // EFFET COMPOSÉ conféré : la capacité entière (déclencheur, contenu,
+      // cibles) rejoint celles de la receveuse.
+      if (composed.grantAbilityId === GRANT_COMPOSED_ID) {
+        if (composed.grantCapability?.composed) confererEffetCompose(u, composed.grantCapability);
+        break;
+      }
       if (composed.grantAbilityId) {
         // `grantTrigger` dit QUAND la capacité conférée se déclenchera chez sa
         // nouvelle porteuse. C'est lui qui rend conférable autre chose qu'une
@@ -2115,6 +2172,15 @@ function applyComposedToUnit(
           { ...grantParamsFor(composed.grantAbilityId, x, y), delay: composed.grantDelay }, true,
           composed.grantTrigger,
         );
+        // Convocation conférée : son token voyage avec le don. La Convocation
+        // lit `convocation_token_id` sur sa porteuse — vide chez une créature
+        // qui n'en a pas à elle, d'où une capacité conférée qui ne créait rien.
+        // Une porteuse qui a DÉJÀ son token le garde (champ unique par carte).
+        if (composed.tokenId != null
+          && TOKEN_GRANT_IDS.has(idMoteurDuDon(composed.grantAbilityId))
+          && u.card.convocation_token_id == null) {
+          u.card = { ...u.card, convocation_token_id: composed.tokenId };
+        }
       }
       break;
     default: break;
@@ -10101,11 +10167,17 @@ function resolveDevoration(
   // On ne se dévore pas soi-même : le gain serait absurde et la source mourrait.
   if (!target || target === source) return;
 
-  const gainedAtk = Math.max(0, target.currentAttack);
-  const gainedHp = Math.max(0, target.currentHealth);
+  const atk = target.currentAttack, pv = target.currentHealth;
   // La victime meurt par mise à 0 des PV : elle passe donc par le traitement de
   // mort normal (râles d'agonie compris), au lieu d'être escamotée du plateau.
   target.currentHealth = 0;
+  absorberDevoration(source, atk, pv);
+}
+
+/** La source absorbe définitivement les stats de sa victime. */
+function absorberDevoration(source: CardInstance, atk: number, pv: number): void {
+  const gainedAtk = Math.max(0, atk);
+  const gainedHp = Math.max(0, pv);
   // Bonus SUIVIS, puis report immédiat sur les stats courantes. Le champ dédié
   // est indispensable : recalculateAuras rebâtit currentAttack depuis la base
   // et effacerait un simple `+=`, et persistentStats le rejoue lors des
@@ -14170,6 +14242,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   damageLedgerSink = [];
   drawTriggerSink = [];
   faveurSink = [];
+  devorationSink = [];
   explorationSink = [];
   emblemFireSink = [];
   abilitySfxSink = [];
@@ -14318,6 +14391,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
   // tirées, pour que le store les révèle aux DEUX joueurs.
   if (faveurSink.length > 0 && result !== state) {
     result.faveurEvents = [...(result.faveurEvents ?? []), ...faveurSink];
+  }
+  // Rattache les unités dévorées hors du terrain, pour que le store les montre.
+  if (devorationSink.length > 0 && result !== state) {
+    result.devorationEvents = [...(result.devorationEvents ?? []), ...devorationSink];
   }
   // Rattache les gains d'Exploration, dans l'ordre : le store ne peut pas les
   // déduire d'un diff, le palier ayant déjà fait redescendre le compteur.

@@ -116,3 +116,49 @@ describe("Dévoration — le repli AU HASARD ne mange jamais son camp", () => {
     expect(sur(st).currentAttack).toBe(4); // aucun gain
   });
 });
+
+// « Rabatteuse du Charnier » : Dévoration COMPOSÉE visant la MAIN adverse. La
+// victime n'est sur aucun plateau — le résolveur ne la trouvait pas et l'effet
+// ne faisait rien, en silence.
+describe("Dévoration composée — une unité de la main adverse", () => {
+  const rabatteuse = () => mkInstance(mkCard({
+    name: "Rabatteuse", mana_cost: 4, attack: 1, health: 1,
+    capabilities: [{
+      uid: "cx_0", trigger: "on_play", effectKind: "immediate", abilityId: "_composed",
+      composed: { content: "devoration", target: { entity: "unit", count: 1, side: "enemy", location: "hand", designation: "random" } },
+    }] as unknown as Capability[],
+  }));
+
+  it("la victime quitte la main pour le cimetière et la source absorbe ses stats", () => {
+    const s0 = mkState();
+    const proie = mkInstance(mkCard({ name: "Proie", attack: 3, health: 5 }));
+    s0.players[1].hand = [proie, mkInstance(mkCard({ name: "Sort", card_type: "spell", attack: null, health: null }))];
+    const carte = rabatteuse();
+    s0.players[0].hand.push(carte);
+    s0.players[0].mana = 10;
+
+    const s = applyAction(s0, { type: "play_card", cardInstanceId: carte.instanceId });
+
+    expect(s.players[1].hand.map((c) => c.card.name)).toEqual(["Sort"]);
+    expect(s.players[1].graveyard.map((c) => c.card.name)).toContain("Proie");
+    const source = s.players[0].board.find((c) => c.card.name === "Rabatteuse")!;
+    expect([source.currentAttack, source.currentHealth, source.maxHealth]).toEqual([4, 6, 6]);
+    // La victime est signalée pour être MONTRÉE : elle sort d'une zone cachée.
+    expect(s.devorationEvents).toEqual([
+      expect.objectContaining({ zone: "hand", ownerId: s.players[1].id, card: expect.objectContaining({ name: "Proie" }) }),
+    ]);
+  });
+
+  it("main adverse sans unité : rien ne se passe", () => {
+    const s0 = mkState();
+    s0.players[1].hand = [mkInstance(mkCard({ name: "Sort", card_type: "spell", attack: null, health: null }))];
+    const carte = rabatteuse();
+    s0.players[0].hand.push(carte);
+    s0.players[0].mana = 10;
+
+    const s = applyAction(s0, { type: "play_card", cardInstanceId: carte.instanceId });
+    expect(s.players[1].hand).toHaveLength(1);
+    const source = s.players[0].board.find((c) => c.card.name === "Rabatteuse")!;
+    expect([source.currentAttack, source.currentHealth]).toEqual([1, 1]);
+  });
+});

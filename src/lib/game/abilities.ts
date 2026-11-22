@@ -800,7 +800,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   domination: {
     id: "domination", label: "Domination X", symbol: "👁️‍🗨️",
-    desc: "Prend le contrôle d'une unité ennemie au hasard de coût ≤ X à son invocation.",
+    desc: "Prend le contrôle d'une unité ennemie au hasard de coût ≤ X.",
     applicable_to: ["creature", "spell"],
     // X = coût maximum de la créature prise ; vide ⇒ tout coût (COUT_OPTIONNEL),
     // compté X = 10 au barème : 9 + 9 × 2 = 27, l'ancien prix fixe.
@@ -2386,6 +2386,11 @@ export function xEquivalentCoutLibre(id: string): number {
   return COUT_OPTIONNEL[id] === "max" ? 10 : 5;
 }
 
+/** `grantAbilityId` d'un don qui confère un EFFET COMPOSÉ entier (déclencheur,
+ *  contenu, cibles — cf. `ComposedEffect.grantCapability`) au lieu d'une
+ *  capacité du registre. Même valeur que l'`abilityId` des capacités composées. */
+export const GRANT_COMPOSED_ID = "_composed";
+
 /** Descriptions FR quand le coût n'est PAS renseigné — la mention du coût
  *  disparaît. Graine de `vocab.keywords.{id}.desc_any` / `vocab.spell_keywords.
  *  {id}.desc_any` (generate-vocab-fr), et repli runtime. */
@@ -2395,7 +2400,7 @@ export const DESC_COUT_LIBRE: Readonly<Record<string, { creature?: string; spell
     spell: "Maudit l'unité ennemie ciblée : elle est exilée à la fin du prochain tour adverse",
   },
   domination: {
-    creature: "Prend le contrôle d'une unité ennemie au hasard à son invocation.",
+    creature: "Prend le contrôle d'une unité ennemie au hasard.",
     spell: "Prend le contrôle de l'unité ennemie ciblée.",
   },
   corruption: {

@@ -416,6 +416,9 @@ export interface SpellCastEvent {
   // apparue en main. Porte le point de vue du client local, pour la même
   // raison que ci-dessus.
   handGift?: "self" | "opponent";
+  // Révélation d'une unité DÉVORÉE hors du terrain : la zone d'où elle a été
+  // prise et, du point de vue du client local, à qui elle appartenait.
+  devoured?: { zone: "hand" | "deck" | "graveyard"; side: "self" | "opponent" };
 }
 
 // Flèche source→cible tracée depuis la CRÉATURE qui active un pouvoir (tap)
@@ -2577,6 +2580,19 @@ export const useGameStore = create<GameStore>((set, get) => {
       handGift: fv.ownerId === localPlayerId ? "self" : "opponent",
     }));
 
+    // Dévorations hors du terrain : la victime sort d'une main, d'un deck ou
+    // d'un cimetière — rien à l'écran ne la montrait. Même overlay, même
+    // prolongement de la numérotation des clés de montage.
+    const rawDevorations = newState.devorationEvents ?? [];
+    if (newState.devorationEvents) newState.devorationEvents = undefined;
+    const devorationSpells: SpellCastEvent[] = rawDevorations.map((dv, i) => ({
+      spellName: dv.card.name,
+      effectText: dv.card.effect_text,
+      timestamp: Date.now() + 1 + recastSpells.length + rawDrawTriggers.length + rawFaveurs.length + i,
+      card: dv.card,
+      devoured: { zone: dv.zone, side: dv.ownerId === localPlayerId ? "self" : "opponent" },
+    }));
+
     // Detect if a spell was countered (contresort)
     if (spellEvent && action.type === "play_card") {
       const opponentIdx = gameState.currentPlayerIndex === 0 ? 1 : 0;
@@ -3560,7 +3576,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     // en éveil ou y verser un point ne fait grossir aucune zone visible — la main
     // RÉTRÉCIT, ce que `drawnCardIds` ne regarde pas. Sans ce drapeau, le seul
     // mouvement du mécanisme n'aurait jamais d'animation.
-    const hasAnything = frontieres.length > 0 || hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!graveyardBuffEvent || !!maledictionEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eclosionEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0;
+    const hasAnything = frontieres.length > 0 || hasOverlay || hasImpacts || hasDeaths || hasSummons || hasDraws || isAttack || !!graveyardAffectEvent || !!graveyardBuffEvent || !!maledictionEvent || !!discardFromHandEvent || !!costDiscardEvent || !!tempeteEvent || !!powerArrowEvent || !!manaReductionEvent || !!epargneGainEvent || !!foiGainEvent || !!conqueteGainEvent || !!inventionGainEvent || !!explorationGainEvent || !!emblemFireEvent || !!exileCostEvent || !!topdeckCostEvent || !!deckEffectEvent || !!cycleEvent || !!compagnonsEvent || !!enterrementEvent || !!eclosionEvent || !!eveilEvent || drawTriggerSpells.length > 0 || faveurSpells.length > 0 || devorationSpells.length > 0;
 
     // Deep clone helper — factionCardPool / allSpellsPool carry non-serialisable refs, keep them aside.
     const cloneState = (state: GameState): GameState => {
@@ -4400,6 +4416,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       // Les Faveurs ne sont PAS conditionnées par `drawWave` : elles ne suivent
       // aucune pioche, donc aucune frontière ne les repousse.
       ...faveurSpells,
+      // Idem pour les unités dévorées hors du terrain.
+      ...devorationSpells,
     ];
     for (const reveal of revelationsAvantImpacts) {
       schedule(() => set({ spellCastEvent: reveal }), cursor);

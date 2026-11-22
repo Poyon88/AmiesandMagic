@@ -241,3 +241,44 @@ describe("le texte de carte dit QUAND la capacité conférée partira", () => {
     expect(describeComposedCap(capDon("carnage", "on_death"))).not.toContain("se déclenchera");
   });
 });
+
+// CONVOCATION CONFÉRÉE — la Convocation lit son token sur la carte porteuse.
+// Une créature qui n'a pas de Convocation à elle n'en porte aucun : le don
+// doit donc emmener le sien, sinon la capacité conférée ne crée rien.
+describe("une Convocation conférée emmène son token", () => {
+  const SQUELETTE = { id: 77, race: "Squelettes", clan: null, name: "Squelette", attack: 1, health: 1, image_url: null, keywords: [] };
+  const donConvocation = (tokenId?: number): CardInstance => sortCompose("Le Don", {
+    content: "grant_keyword", grantAbilityId: "convocation_simple", grantTrigger: "on_death",
+    ...(tokenId != null ? { tokenId } : {}),
+    target: ALLIE_AU_CHOIX,
+  });
+
+  it("à la mort de la porteuse, le token désigné arrive en jeu", () => {
+    const s0 = mkState();
+    s0.tokenTemplates = [SQUELETTE] as never;
+    const porteuse = creature("Porteuse");
+    s0.players[0].board = [porteuse];
+
+    let s = lancer(s0, donConvocation(77), porteuse);
+    expect(trouve(s, porteuse.instanceId)!.card.convocation_token_id).toBe(77);
+
+    s = lancer(s, sortCompose("Le Couperet", { content: "destroy", target: ALLIE_AU_CHOIX }), s.players[0].board[0]);
+    expect(s.players[0].board.map((c) => c.card.race)).toEqual(["Squelettes"]);
+  });
+
+  it("une porteuse qui a déjà son token le garde", () => {
+    const s0 = mkState();
+    s0.tokenTemplates = [SQUELETTE] as never;
+    const porteuse = mkInstance(mkCard({ name: "Porteuse", attack: 1, health: 5, convocation_token_id: 12 }));
+    s0.players[0].board = [porteuse];
+
+    const s = lancer(s0, donConvocation(77), porteuse);
+    expect(trouve(s, porteuse.instanceId)!.card.convocation_token_id).toBe(12);
+  });
+
+  it("le texte nomme le token conféré", () => {
+    const cap: Capability = { uid: "cx_0", trigger: "spell_resolution", effectKind: "immediate", abilityId: "_composed",
+      composed: { content: "grant_keyword", grantAbilityId: "convocation_simple", grantTrigger: "on_death", tokenId: 77, target: ALLIE_AU_CHOIX } };
+    expect(describeComposedCap(cap, [SQUELETTE] as never)).toContain("Convocation (Squelette)");
+  });
+});

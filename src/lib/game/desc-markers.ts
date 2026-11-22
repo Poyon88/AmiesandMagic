@@ -79,6 +79,9 @@ export const MARKERS_FR: Record<string, string> = {
   // Gabarit de l'alignement concret : localisable, contrairement à une
   // préposition recollée dans le résolveur.
   "alignment_of": "d'alignement {a}",
+  // Vivier RÉEL des tirages d'alignement (Sélection, Faveur, Invocation,
+  // Déchainement…) : l'alignement de la carte ET le neutre.
+  "alignment_or_neutral": "d'alignement {a} ou {n}",
   "token": "le token configuré",
   "tokens": "plusieurs tokens",
   // Invocations multiples : phrase spécifique, à l'image de Convocations
@@ -203,10 +206,18 @@ export const BASE_RESOLVERS: Record<string, Resolver> = {
     return f ? getFactionForm(f, t) : null;
   },
   faction_de: (_kw, ctx, t) => getFactionForm(ctx.card?.faction, t),
-  alignment: (_kw, ctx, t) => {
+  alignment: (kw, ctx, t) => {
     if (!ctx.card) return null;
     const a = getEffectiveAlignment(ctx.card);
     if (!a) return null;
+    // Le moteur puise dans l'alignement de la carte ET dans le neutre
+    // (selectionFactionBuckets) : annoncer le seul alignement propre faisait
+    // passer pour un bug chaque carte neutre reçue. Trésor le dit déjà dans
+    // son gabarit (« … ou neutres »), une source neutre n'a rien à ajouter.
+    if (a !== "neutre" && kw !== "tresor") {
+      const avecNeutre = marker("alignment_or_neutral", t) ?? "d'alignement {a} ou {n}";
+      return avecNeutre.replace(/\{a\}/g, getAlignmentLabel(a, t)).replace(/\{n\}/g, getAlignmentLabel("neutre", t));
+    }
     const tmpl = marker("alignment_of", t) ?? "d'alignement {a}";
     return tmpl.replace(/\{a\}/g, getAlignmentLabel(a, t));
   },
