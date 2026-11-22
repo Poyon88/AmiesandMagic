@@ -65,6 +65,10 @@
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP1を失う。"
       },
+      "peste": {
+        "label": "疫病",
+        "desc": "疫病に侵される:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
+      },
       "celerite": {
         "label": "速攻",
         "desc": "1ターンに2回攻撃できる。"
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "peste": {
-        "label": "疫病",
-        "desc": "疫病に侵される:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "毒",
         "desc": "傷ついたユニットはターンごとにHP-1。"
+      },
+      "peste": {
+        "label": "疫病",
+        "desc": "ユニット1体を疫病状態にする:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
       },
       "benediction": {
         "label": "祝福",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "チューター",
         "desc": "作成時に指定したカードを手札に加える（同じカードを複数回指定できる）。"
-      },
-      "peste": {
-        "label": "疫病",
-        "desc": "ユニット1体を疫病状態にする:ターン終了時にHPを1失う。死亡時、疫病はランダムな別のユニットに移る。"
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "デッキの最初のユニットを場に出す",
         "appel_item_any": "デッキの最初のアイテムを場に出す",
         "dechainement_any": "ランダムなアクションを{x}枚プレイする",
-        "dechainement_one_any": "ランダムなアクションを1枚プレイする"
+        "dechainement_one_any": "ランダムなアクションを1枚プレイする",
+        "profanation_one": "墓地の最新のカードを1枚追放し、+1/+1を得る",
+        "profanation_many": "墓地のカードを最新のものから最大{x}枚まで追放し、追放したカード1枚につき+1/+1を得る"
       },
       "siphon": {
         "heal": "さらに自分のヒーローのHPを{x}回復する",
@@ -2261,6 +2263,7 @@
         "domination_any": "場の空きがある限り、{cibles}を支配下に置く。",
         "benediction": "{cibles}を完全に回復する。",
         "poison": "{cibles}を毒状態にする：それらはターン終了時ごとにHPを1失う。",
+        "peste": "{cibles}を疫病状態にする:それぞれターン終了時にHPを1失い、死亡時に疫病が別のユニットに移る。",
         "siphon": "{cibles}にXダメージを与え、ダメージを受けたユニット1体につきあなたのヒーローをX回復する。",
         "entrave": "{cibles}をXターンの間束縛する。",
         "execution": "コストX以下の{cibles}を破壊する。アイテムも含む。",
@@ -2269,8 +2272,7 @@
         "renforcement": "{cibles}に+X/+Y。",
         "discipline": "自分の場のクリーチャーがすべてこのアクションと同じ偶奇のコストを持つ場合、{cibles}に+X/+Y。",
         "usurpation": "あなたがプレイした相手のカード1枚につき、{cibles}に+X/+Yを与える。",
-        "guerison": "{cibles}と自分のヒーローのHPをX回復する。",
-        "peste": "{cibles}を疫病状態にする:それぞれターン終了時にHPを1失い、死亡時に疫病が別のユニットに移る。"
+        "guerison": "{cibles}と自分のヒーローのHPをX回復する。"
       },
       "creature": {
         "impact": "{cibles}にXダメージを与える。",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "遅延：効果は使用者のX回後のターン開始時に発動し、対象はその時点で選ばれる",
     "label_retard": "遅延",
     "trigger_on_end_of_turn_in_graveyard": "ターン終了時、墓地にある間",
-    "content_enterrement": "埋葬（デッキ→墓地、絞り込み可）"
+    "content_enterrement": "埋葬（デッキ→墓地、絞り込み可）",
+    "content_profanation": "冒涜(墓地を追放、カード1枚につき+1/+1)"
   },
   "game": {
     "hero_power_grant": "クリーチャー1体に{kw}を付与する",

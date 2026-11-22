@@ -65,6 +65,10 @@
         "label": "Gift",
         "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
       },
+      "peste": {
+        "label": "Pest",
+        "desc": "Verseucht: verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
+      },
       "celerite": {
         "label": "Eile",
         "desc": "Kann zweimal pro Runde angreifen."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "peste": {
-        "label": "Pest",
-        "desc": "Verseucht: verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Gift",
         "desc": "Verwundete Einheiten verlieren 1 LP pro Runde."
+      },
+      "peste": {
+        "label": "Pest",
+        "desc": "Verseucht eine Einheit: Sie verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
       },
       "benediction": {
         "label": "Segnung",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Fügt die bei der Erstellung bestimmten Karten deiner Hand hinzu (dieselbe Karte kann mehrfach bestimmt werden)."
-      },
-      "peste": {
-        "label": "Pest",
-        "desc": "Verseucht eine Einheit: Sie verliert am Ende ihres Zuges 1 LP. Stirbt sie, geht die Pest auf eine zufällige andere Einheit über."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "bringt die erste Einheit deines Decks ins Spiel",
         "appel_item_any": "bringt den ersten Gegenstand deines Decks ins Spiel",
         "dechainement_any": "spielt {x} zufällige Aktionen",
-        "dechainement_one_any": "spielt eine zufällige Aktion"
+        "dechainement_one_any": "spielt eine zufällige Aktion",
+        "profanation_one": "verbannt die neueste Karte aus deinem Friedhof und erhält +1/+1",
+        "profanation_many": "verbannt bis zu {x} Karten aus deinem Friedhof, die neuesten zuerst, und erhält +1/+1 pro verbannter Karte"
       },
       "siphon": {
         "heal": "und heilt Euren Helden um {x} LP",
@@ -2261,6 +2263,7 @@
         "domination_any": "Übernimmt die Kontrolle über {cibles}, im Rahmen der verfügbaren Plätze.",
         "benediction": "Heilt {cibles} vollständig.",
         "poison": "Vergiftet {cibles}: Sie verlieren an jedem Zugende 1 LP.",
+        "peste": "Verseucht {cibles}: Jede verliert am Ende ihres Zuges 1 LP, und ihre Pest geht bei ihrem Tod auf eine andere Einheit über.",
         "siphon": "Fügt {cibles} X Schaden zu und heilt deinen Helden um X pro getroffene Einheit.",
         "entrave": "Fesselt {cibles} für X Runde(n).",
         "execution": "Zerstört {cibles} mit Kosten ≤ X, einschließlich Gegenstände.",
@@ -2269,8 +2272,7 @@
         "renforcement": "+X/+Y auf {cibles}.",
         "discipline": "Wenn alle Ihre Kreaturen im Spiel Kosten mit derselben Parität wie diese Aktion haben, +X/+Y auf {cibles}.",
         "usurpation": "{cibles} erhalten +X/+Y für jede gegnerische Karte, die Ihr gespielt habt.",
-        "guerison": "Stellt {cibles} und deinem Helden X LP wieder her.",
-        "peste": "Verseucht {cibles}: Jede verliert am Ende ihres Zuges 1 LP, und ihre Pest geht bei ihrem Tod auf eine andere Einheit über."
+        "guerison": "Stellt {cibles} und deinem Helden X LP wieder her."
       },
       "creature": {
         "impact": "Fügt {cibles} X Schaden zu.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Verzögerung: Der Effekt wird zu Beginn des X-ten folgenden Zuges des Wirkenden ausgelöst, das Ziel wird erst dann gewählt",
     "label_retard": "Verzögerung",
     "trigger_on_end_of_turn_in_graveyard": "Am Zugende, solange sie im Friedhof ist",
-    "content_enterrement": "Begräbnis (Deck → Friedhof, filterbar)"
+    "content_enterrement": "Begräbnis (Deck → Friedhof, filterbar)",
+    "content_profanation": "Schändung (Friedhof verbannen, +1/+1 pro Karte)"
   },
   "game": {
     "hero_power_grant": "Verleiht einer Kreatur {kw}",

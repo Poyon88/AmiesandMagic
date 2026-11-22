@@ -65,6 +65,10 @@
         "label": "Trucizna",
         "desc": "Ranne jednostki tracą 1 PZ na turę."
       },
+      "peste": {
+        "label": "Zaraza",
+        "desc": "Zarażona: traci 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
+      },
       "celerite": {
         "label": "Szybkość",
         "desc": "Może atakować dwa razy na turę."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Opiekun",
         "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
-      },
-      "peste": {
-        "label": "Zaraza",
-        "desc": "Zarażona: traci 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Trucizna",
         "desc": "Zranione jednostki tracą 1 PZ na turę."
+      },
+      "peste": {
+        "label": "Zaraza",
+        "desc": "Zaraża jednostkę: traci ona 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
       },
       "benediction": {
         "label": "Błogosławieństwo",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Mentor",
         "desc": "Dodaje do twojej ręki karty wskazane przy tworzeniu (ta sama karta może być wskazana kilka razy)."
-      },
-      "peste": {
-        "label": "Zaraza",
-        "desc": "Zaraża jednostkę: traci ona 1 PV na koniec swojej tury. Po jej śmierci Zaraza przechodzi na losową inną jednostkę."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "wprowadza do gry pierwszą jednostkę z waszej talii",
         "appel_item_any": "wprowadza do gry pierwszy przedmiot z waszej talii",
         "dechainement_any": "zagrywa {x} losowych akcji",
-        "dechainement_one_any": "zagrywa jedną losową akcję"
+        "dechainement_one_any": "zagrywa jedną losową akcję",
+        "profanation_one": "wygnaj najnowszą kartę z twojego cmentarza i zyskaj +1/+1",
+        "profanation_many": "wygnaj do {x} kart z twojego cmentarza, zaczynając od najnowszych, i zyskaj +1/+1 za każdą wygnaną kartę"
       },
       "siphon": {
         "heal": "i leczy twojego bohatera o {x} PZ",
@@ -2261,6 +2263,7 @@
         "domination_any": "Przejmuje kontrolę nad {cibles}, w granicach wolnych miejsc.",
         "benediction": "Całkowicie leczy {cibles}.",
         "poison": "Zatruwa {cibles}: tracą 1 PV na końcu każdej tury.",
+        "peste": "Zaraża {cibles}: każda traci 1 PV na koniec swojej tury, a po jej śmierci Zaraza przechodzi na inną jednostkę.",
         "siphon": "Zadaje X obrażeń {cibles} i leczy twojego bohatera o X za każdą trafioną jednostkę.",
         "entrave": "Paraliżuje {cibles} na X tur.",
         "execution": "Niszczy {cibles} o koszcie ≤ X, w tym przedmioty.",
@@ -2269,8 +2272,7 @@
         "renforcement": "+X/+Y dla {cibles}.",
         "discipline": "Jeśli wszystkie twoje stworzenia w grze mają koszt o takiej samej parzystości jak koszt tej akcji, +X/+Y dla {cibles}.",
         "usurpation": "+X/+Y dla {cibles} za każdą kartę przeciwnika, którą zagrałeś.",
-        "guerison": "Przywraca X PV {cibles} i twojemu bohaterowi.",
-        "peste": "Zaraża {cibles}: każda traci 1 PV na koniec swojej tury, a po jej śmierci Zaraza przechodzi na inną jednostkę."
+        "guerison": "Przywraca X PV {cibles} i twojemu bohaterowi."
       },
       "creature": {
         "impact": "Zadaje X obrażeń {cibles}.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Opóźnienie: efekt wyzwala się na początku X-tej następnej tury zagrywającego, cel wybierany w tym momencie",
     "label_retard": "Opóźnienie",
     "trigger_on_end_of_turn_in_graveyard": "Na koniec tury, dopóki jest na cmentarzu",
-    "content_enterrement": "Pochówek (talia → cmentarz, z filtrem)"
+    "content_enterrement": "Pochówek (talia → cmentarz, z filtrem)",
+    "content_profanation": "Profanacja (wygnaj swój cmentarz, +1/+1 za kartę)"
   },
   "game": {
     "hero_power_grant": "Nadaje {kw} stworzeniu",

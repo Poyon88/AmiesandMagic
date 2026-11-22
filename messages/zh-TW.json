@@ -65,6 +65,10 @@
         "label": "劇毒",
         "desc": "受傷的單位每回合失去 1 點生命。"
       },
+      "peste": {
+        "label": "瘟疫",
+        "desc": "染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
+      },
       "celerite": {
         "label": "迅捷",
         "desc": "每回合可攻擊兩次。"
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "導師",
         "desc": "將創建時指定的卡牌加入你的手牌（同一張卡牌可被指定多次）。"
-      },
-      "peste": {
-        "label": "瘟疫",
-        "desc": "染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "毒素",
         "desc": "受傷的單位每回合失去 1 點生命。"
+      },
+      "peste": {
+        "label": "瘟疫",
+        "desc": "使一個單位染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
       },
       "benediction": {
         "label": "祝福",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "導師",
         "desc": "將建立時指定的卡牌加入你的手牌(同一張卡牌可被指定多次)。"
-      },
-      "peste": {
-        "label": "瘟疫",
-        "desc": "使一個單位染疫:回合結束時失去 1 點生命。死亡時,瘟疫會隨機傳給另一個單位。"
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "將你牌組的第 1 個單位放入場上",
         "appel_item_any": "將你牌組的第 1 個物品放入場上",
         "dechainement_any": "隨機使用 {x} 個行動",
-        "dechainement_one_any": "隨機使用一個行動"
+        "dechainement_one_any": "隨機使用一個行動",
+        "profanation_one": "放逐你墓地中最新的一張牌,並獲得 +1/+1",
+        "profanation_many": "放逐你墓地中最多 {x} 張牌(由最新的開始),每放逐一張牌便獲得 +1/+1"
       },
       "siphon": {
         "heal": "並為你的英雄恢復 {x} 點生命",
@@ -2261,6 +2263,7 @@
         "domination_any": "在空位限度內,控制{cibles}。",
         "benediction": "完全治癒{cibles}。",
         "poison": "使{cibles}中毒:它們在每個回合結束時失去 1 點生命值。",
+        "peste": "使{cibles}染疫:每個單位在回合結束時失去 1 點生命,死亡時其瘟疫會傳給另一個單位。",
         "siphon": "對{cibles}造成 X 點傷害,每有一個單位受創,你的英雄便恢復 X 點生命值。",
         "entrave": "使{cibles}麻痺 X 個回合。",
         "execution": "消滅{cibles}中費用 ≤ X 的單位,包括物品。",
@@ -2269,8 +2272,7 @@
         "renforcement": "{cibles}獲得 +X/+Y。",
         "discipline": "若你場上所有生物的費用與此行動的費用奇偶性相同,{cibles}獲得 +X/+Y。",
         "usurpation": "你每打出一張對手的牌,{cibles}便獲得 +X/+Y。",
-        "guerison": "為{cibles}和你的英雄恢復 X 點生命值。",
-        "peste": "使{cibles}染疫:每個單位在回合結束時失去 1 點生命,死亡時其瘟疫會傳給另一個單位。"
+        "guerison": "為{cibles}和你的英雄恢復 X 點生命值。"
       },
       "creature": {
         "impact": "對{cibles}造成 X 點傷害。",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "延遲：效果於施放者後續第 X 個回合開始時觸發,屆時才選擇目標",
     "label_retard": "延遲",
     "trigger_on_end_of_turn_in_graveyard": "回合結束時,若其在墓地中",
-    "content_enterrement": "埋葬（牌組 → 墓地,可篩選）"
+    "content_enterrement": "埋葬（牌組 → 墓地,可篩選）",
+    "content_profanation": "褻瀆(放逐自己的墓地,每張牌 +1/+1)"
   },
   "game": {
     "hero_power_grant": "賦予一隻生物{kw}",

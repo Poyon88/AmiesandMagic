@@ -1210,4 +1210,16 @@ export const PRECISIONS: Precision[] = [
     ],
     sources: ["game/peste.test.ts"],
   },
+  {
+    type: "capacite",
+    theme: "Profanation X",
+    regles: [
+      "Profanation X peut aussi être un effet d'unité à déclencheur (entrée en jeu, fin de tour, attaque…) : à chaque déclenchement, l'unité exile jusqu'à X cartes de votre cimetière, les plus récentes d'abord, et gagne +1/+1 par carte exilée.",
+      "Si votre cimetière contient moins de X cartes, elle exile ce qu'il y a et ne gagne que pour les cartes réellement exilées.",
+      "Avec le déclencheur « fin de tour au cimetière », l'unité profane depuis le cimetière : elle exile jusqu'à X autres cartes, jamais elle-même, et garde son gain, qu'elle retrouve si elle revient en jeu. Seule au cimetière, elle n'exile rien.",
+      "Déclenchée à sa mort, elle exile de même les autres cartes de votre cimetière, sans s'exiler elle-même.",
+      "Portée par une action, Profanation ne fait rien et aucune carte n'est exilée : il faut une unité pour recevoir le gain.",
+    ],
+    sources: ["game/profanation-composee.test.ts"],
+  },
 ];

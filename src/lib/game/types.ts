@@ -770,6 +770,11 @@ export type ComposedEffectContent =
   // Détruit l'unité ciblée ; la SOURCE absorbe définitivement ses stats. Sans
   // instance source (effet porté par un sort), l'effet ne fait rien.
   | "devoration"
+  // PROFANATION : exile jusqu'à X cartes du cimetière du contrôleur ; la SOURCE
+  // gagne +1/+1 par carte exilée. Aucune cible. Il faut une UNITÉ source (muet
+  // sur un sort) ; au cimetière ou en main, elle ne s'exile jamais elle-même et
+  // son gain est cuit dans la carte.
+  | "profanation"
   // TACTIQUE : la SOURCE transmet X de ses capacités PERMANENTES (icône
   // blanche), tirées au hasard, à l'unité visée. Même règle et même code que le
   // mot-clé curé homonyme. Comme `devoration`, l'effet a besoin d'une instance

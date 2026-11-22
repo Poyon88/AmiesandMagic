@@ -65,6 +65,10 @@
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
       },
+      "peste": {
+        "label": "Plague",
+        "desc": "Plagued: loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
+      },
       "celerite": {
         "label": "Swiftness",
         "desc": "Can attack twice per turn."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
-      "peste": {
-        "label": "Plague",
-        "desc": "Plagued: loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Poison",
         "desc": "Wounded units lose 1 HP per turn."
+      },
+      "peste": {
+        "label": "Plague",
+        "desc": "Plagues a unit: it loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
       },
       "benediction": {
         "label": "Blessing",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Adds the cards designated at creation to your hand (the same card may be designated several times)."
-      },
-      "peste": {
-        "label": "Plague",
-        "desc": "Plagues a unit: it loses 1 HP at the end of its turn. When it dies, the Plague spreads to another random unit."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "puts the top unit from your deck into play",
         "appel_item_any": "puts the top item from your deck into play",
         "dechainement_any": "plays {x} random actions",
-        "dechainement_one_any": "plays a random action"
+        "dechainement_one_any": "plays a random action",
+        "profanation_one": "exiles the most recent card from your graveyard and gains +1/+1",
+        "profanation_many": "exiles up to {x} cards from your graveyard, most recent first, and gains +1/+1 per card exiled"
       },
       "siphon": {
         "heal": "and heals your hero for {x} HP",
@@ -2261,6 +2263,7 @@
         "domination_any": "Takes control of {cibles}, up to the available slots.",
         "benediction": "Fully heals {cibles}.",
         "poison": "Poisons {cibles}: they lose 1 HP at the end of each turn.",
+        "peste": "Plagues {cibles}: each loses 1 HP at the end of its turn, and its Plague spreads to another unit when it dies.",
         "siphon": "Deals X damage to {cibles} and heals your hero for X per unit hit.",
         "entrave": "Paralyzes {cibles} for X turn(s).",
         "execution": "Destroys {cibles} with cost ≤ X, items included.",
@@ -2269,8 +2272,7 @@
         "renforcement": "+X/+Y to {cibles}.",
         "discipline": "If all your creatures in play have a cost of the same parity as this action's cost, +X/+Y to {cibles}.",
         "usurpation": "+X/+Y to {cibles} for each opponent's card you have played.",
-        "guerison": "Restores X HP to {cibles} and to your hero.",
-        "peste": "Plagues {cibles}: each loses 1 HP at the end of its turn, and its Plague spreads to another unit when it dies."
+        "guerison": "Restores X HP to {cibles} and to your hero."
       },
       "creature": {
         "impact": "Deals X damage to {cibles}.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Delay: the effect triggers at the start of the caster's Xth following turn, with the target chosen at that time",
     "label_retard": "Delay",
     "trigger_on_end_of_turn_in_graveyard": "At end of turn, while in the graveyard",
-    "content_enterrement": "Burial (deck → graveyard, filterable)"
+    "content_enterrement": "Burial (deck → graveyard, filterable)",
+    "content_profanation": "Desecration (exile your graveyard, +1/+1 per card)"
   },
   "game": {
     "hero_power_grant": "Grants {kw} to a creature",

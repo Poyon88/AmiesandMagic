@@ -1174,6 +1174,13 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 - Une unité pestiférée qui quitte le plateau sans mourir (retour en main, exil, Transformation) n'est plus pestiférée, et la Peste ne se propage pas.
 - Une unité contaminée par une action qui meurt puis revient par Résurrection revient saine : sa Peste est déjà passée à une autre unité. Une unité qui porte Peste sur sa carte revient pestiférée, et sa Peste s'est quand même propagée.
 
+**Profanation X**
+- Profanation X peut aussi être un effet d'unité à déclencheur (entrée en jeu, fin de tour, attaque…) : à chaque déclenchement, l'unité exile jusqu'à X cartes de votre cimetière, les plus récentes d'abord, et gagne +1/+1 par carte exilée.
+- Si votre cimetière contient moins de X cartes, elle exile ce qu'il y a et ne gagne que pour les cartes réellement exilées.
+- Avec le déclencheur « fin de tour au cimetière », l'unité profane depuis le cimetière : elle exile jusqu'à X autres cartes, jamais elle-même, et garde son gain, qu'elle retrouve si elle revient en jeu. Seule au cimetière, elle n'exile rien.
+- Déclenchée à sa mort, elle exile de même les autres cartes de votre cimetière, sans s'exiler elle-même.
+- Portée par une action, Profanation ne fait rien et aucune carte n'est exilée : il faut une unité pour recevoir le gain.
+
 ## 13. Factions, clans et races
 
 - **L'Alliance Céleste** (bon) — races : Elfes, Fées, Aigles Géants, Hobbits, Hommes-Arbres, Farfadets, Korrigans, Faunes, Dryades — clans : Les Sylvains, Les Hauts-Elfes, La Forêt d'Émeraude, La Combe Verte

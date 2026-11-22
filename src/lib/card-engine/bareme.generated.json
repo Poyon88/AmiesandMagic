@@ -1384,6 +1384,12 @@
       "perY": 4,
       "n": 2
     },
+    "profanation": {
+      "base": 8.09,
+      "perX": 3.72,
+      "perY": 3,
+      "n": 0
+    },
     "epargne": {
       "base": 9.5,
       "perX": 5.29,

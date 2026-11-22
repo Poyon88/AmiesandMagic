@@ -72,6 +72,10 @@ const COMPOSED_CONTENTS: { v: ComposedEffectContent; l: string; target: "none" |
   // Tuteur : la carte désignée (créature ou sort) rejoint la main. Ni cible,
   // ni amplitude, ni filtre de pool.
   { v: "tuteur", l: "Tuteur (cartes désignées → main)", target: "none" },
+  // Profanation : la SOURCE exile son propre cimetière et grossit. Ni cible ni
+  // filtre ; réservée de fait aux unités (muette sur une action), y compris
+  // depuis le cimetière ou la main.
+  { v: "profanation", l: "Profanation (exiler son cimetière, +1/+1 par carte)", target: "none" },
   { v: "epargne", l: "Épargne (compteur)", target: "none" },
   { v: "foi", l: "Foi (compteur)", target: "none" },
   { v: "conquete", l: "Conquête (compteur)", target: "none" },

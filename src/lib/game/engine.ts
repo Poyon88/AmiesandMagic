@@ -2423,6 +2423,18 @@ function resolveComposedEffect(
       resolveDechainement(live, owner, opponent, carte, x, y, composed.magnitude?.randomY === true);
       return;
     }
+    // PROFANATION composée : même règle que le mot-clé. C'est la SOURCE qui
+    // grossit, donc il faut une UNITÉ : portée par une action, l'effet ne fait
+    // rien et n'exile rien. En jeu, elle gagne comme le mot-clé. Au cimetière
+    // ou en main (« fin de tour au cimetière », râle d'agonie…), elle ne
+    // s'exile jamais elle-même et son gain est cuit dans la carte, pour la
+    // suivre à son retour.
+    case "profanation": {
+      if (!source) return;
+      if (owner.board.includes(source)) { if (source.currentHealth > 0) profaner(source, owner, x); return; }
+      if (owner.graveyard.includes(source) || owner.hand.includes(source)) profanerHorsPlateau(source, owner, x);
+      return;
+    }
     case "epargne": addEpargne(owner, x); return;
     case "foi": addFoi(owner, x); return;
     case "conquete": addConquete(owner, x); return;
@@ -6698,14 +6710,7 @@ export function playCard(state: GameState, action: PlayCardAction): GameState {
       const legacyX = parseXValuesFromEffectText(cardInstance.card.effect_text)["profanation"]
         || Math.max(1, Math.floor(cardInstance.card.mana_cost / 2));
       const x = getKwX(cardInstance, "profanation", undefined, legacyX);
-      const toExile = Math.min(x, player.graveyard.length);
-      for (let i = 0; i < toExile; i++) {
-        player.graveyard.pop(); // exile (remove from game)
-      }
-      cardInstance.summonBonusATK += toExile;
-      cardInstance.currentAttack += toExile;
-      cardInstance.currentHealth += toExile;
-      cardInstance.maxHealth += toExile;
+      profaner(cardInstance, player, x);
     }
 
     // Exhumation X: ressuscite une unité du cimetière (mana ≤ X)
@@ -11317,6 +11322,43 @@ function runDeclenchement(
  *  Résurrection, Pacte de sang, Cycle éternel, auto-renvoi, instances
  *  curated mode death, composés on_death, Nécrophagie). Extrait de l'ancienne
  *  boucle de processDeathTriggers. `owner` = contrôleur de la créature morte. */
+/** PROFANATION : exile jusqu'à X cartes du cimetière de `owner`, les plus
+ *  récentes d'abord, et donne +1/+1 à `source` par carte exilée. Partagé par le
+ *  mot-clé (entrée en jeu, déclencheurs sur plateau) et l'effet composé. */
+function profaner(source: CardInstance, owner: PlayerState, x: number): void {
+  const exilees = exilerDuCimetiere(owner, x, source);
+  source.summonBonusATK += exilees;
+  source.currentAttack += exilees;
+  source.currentHealth += exilees;
+  source.maxHealth += exilees;
+}
+
+/** Exile jusqu'à X cartes du cimetière, les plus récentes d'abord, sans jamais
+ *  toucher `epargnee` (la profanatrice quand elle y repose elle-même). Rend le
+ *  nombre de cartes réellement exilées. */
+function exilerDuCimetiere(owner: PlayerState, x: number, epargnee: CardInstance): number {
+  let exilees = 0;
+  for (let i = owner.graveyard.length - 1; i >= 0 && exilees < x; i--) {
+    if (owner.graveyard[i] === epargnee) continue;
+    owner.graveyard.splice(i, 1);
+    exilees++;
+  }
+  return exilees;
+}
+
+/** Profanation d'une unité HORS PLATEAU (au cimetière ou en main, via un
+ *  déclencheur « fin de tour au cimetière / en main », ou à sa mort). Le gain
+ *  est cuit dans la carte, comme un buff composé : c'est ce qui le fait tenir
+ *  hors plateau et suivre l'unité quand elle revient en jeu. */
+function profanerHorsPlateau(source: CardInstance, owner: PlayerState, x: number): void {
+  const n = exilerDuCimetiere(owner, x, source);
+  if (n === 0) return;
+  source.card = { ...source.card, attack: (source.card.attack ?? 0) + n, health: (source.card.health ?? 0) + n };
+  source.currentAttack += n;
+  source.currentHealth += n;
+  source.maxHealth += n;
+}
+
 /** Une unité NÉE pestiférée porte la capacité sur sa carte. */
 function naitPestiferee(card: Card): boolean {
   return card.card_type === "creature" && (card.keywords as unknown as string[]).includes("peste");
@@ -12389,12 +12431,7 @@ function resolveCuratedKeywordEffect(
       // Restreint aux déclencheurs « sur plateau » (tap / fin de tour / attaque)
       // pour ne jamais auto-exiler la source depuis son propre cimetière.
       const xP = inst?.x ?? (parseXValuesFromEffectText(source.card.effect_text)["profanation"] || Math.max(1, Math.floor(source.card.mana_cost / 2)));
-      const toExile = Math.min(xP, owner.graveyard.length);
-      for (let i = 0; i < toExile; i++) owner.graveyard.pop();
-      source.summonBonusATK += toExile;
-      source.currentAttack += toExile;
-      source.currentHealth += toExile;
-      source.maxHealth += toExile;
+      profaner(source, owner, xP);
       return;
     }
     case "contresort": {

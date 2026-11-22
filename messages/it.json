@@ -65,6 +65,10 @@
         "label": "Veleno",
         "desc": "Le unità ferite perdono 1 PV per turno."
       },
+      "peste": {
+        "label": "Peste",
+        "desc": "Appestata: perde 1 PV alla fine del proprio turno. Alla sua morte, la Peste passa a un'altra unità a caso."
+      },
       "celerite": {
         "label": "Celerità",
         "desc": "Può attaccare due volte per turno."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Tutore",
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
-      },
-      "peste": {
-        "label": "Peste",
-        "desc": "Appestata: perde 1 PV alla fine del proprio turno. Alla sua morte, la Peste passa a un'altra unità a caso."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Veleno",
         "desc": "Le unità ferite perdono 1 PV per turno."
+      },
+      "peste": {
+        "label": "Peste",
+        "desc": "Rende un'unità appestata: perde 1 PV alla fine del proprio turno. Alla sua morte, la Peste passa a un'altra unità a caso."
       },
       "benediction": {
         "label": "Benedizione",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Tutore",
         "desc": "Aggiunge alla tua mano le carte designate alla creazione (la stessa carta può essere designata più volte)."
-      },
-      "peste": {
-        "label": "Peste",
-        "desc": "Rende un'unità appestata: perde 1 PV alla fine del proprio turno. Alla sua morte, la Peste passa a un'altra unità a caso."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "mette in gioco la prima unità del tuo mazzo",
         "appel_item_any": "mette in gioco il primo oggetto del tuo mazzo",
         "dechainement_any": "gioca {x} azioni casuali",
-        "dechainement_one_any": "gioca un'azione casuale"
+        "dechainement_one_any": "gioca un'azione casuale",
+        "profanation_one": "esilia la carta più recente del tuo cimitero e ottiene +1/+1",
+        "profanation_many": "esilia fino a {x} carte dal tuo cimitero, partendo dalle più recenti, e ottiene +1/+1 per ogni carta esiliata"
       },
       "siphon": {
         "heal": "e cura il tuo eroe di {x} PV",
@@ -2261,6 +2263,7 @@
         "domination_any": "Prende il controllo di {cibles}, nei limiti dei posti disponibili.",
         "benediction": "Cura completamente {cibles}.",
         "poison": "Avvelena {cibles}: perdono 1 PV a ogni fine turno.",
+        "peste": "Rende {cibles} appestate: ognuna perde 1 PV alla fine del proprio turno e, alla sua morte, la sua Peste passa a un'altra unità.",
         "siphon": "Infligge X danni a {cibles} e cura il tuo eroe di X per ogni unità colpita.",
         "entrave": "Paralizza {cibles} per X turno/i.",
         "execution": "Distrugge {cibles} di costo ≤ X, oggetti compresi.",
@@ -2269,8 +2272,7 @@
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Se tutte le tue creature in gioco hanno un costo della stessa parità di quello di questa azione, +X/+Y a {cibles}.",
         "usurpation": "+X/+Y a {cibles} per ogni carta dell'avversario che hai giocato.",
-        "guerison": "Ripristina X PV a {cibles} e al tuo eroe.",
-        "peste": "Rende {cibles} appestate: ognuna perde 1 PV alla fine del proprio turno e, alla sua morte, la sua Peste passa a un'altra unità."
+        "guerison": "Ripristina X PV a {cibles} e al tuo eroe."
       },
       "creature": {
         "impact": "Infligge X danni a {cibles}.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Ritardo: l'effetto si attiva all'inizio dell'X-esimo turno successivo di chi lo lancia, con bersaglio scelto in quel momento",
     "label_retard": "Ritardo",
     "trigger_on_end_of_turn_in_graveyard": "A fine turno, finché è nel cimitero",
-    "content_enterrement": "Sepoltura (mazzo → cimitero, filtrabile)"
+    "content_enterrement": "Sepoltura (mazzo → cimitero, filtrabile)",
+    "content_profanation": "Profanazione (esilia il tuo cimitero, +1/+1 per carta)"
   },
   "game": {
     "hero_power_grant": "Conferisce {kw} a una creatura",

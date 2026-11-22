@@ -65,6 +65,10 @@
         "label": "Veneno",
         "desc": "Las unidades heridas pierden 1 PV por turno."
       },
+      "peste": {
+        "label": "Peste",
+        "desc": "Apestada: pierde 1 PV al final de su turno. Al morir, la Peste pasa a otra unidad al azar."
+      },
       "celerite": {
         "label": "Celeridad",
         "desc": "Puede atacar dos veces por turno."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "peste": {
-        "label": "Peste",
-        "desc": "Apestada: pierde 1 PV al final de su turno. Al morir, la Peste pasa a otra unidad al azar."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Veneno",
         "desc": "Las unidades heridas pierden 1 PV por turno."
+      },
+      "peste": {
+        "label": "Peste",
+        "desc": "Apesta a una unidad: pierde 1 PV al final de su turno. Al morir, la Peste pasa a otra unidad al azar."
       },
       "benediction": {
         "label": "Bendición",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Tutor",
         "desc": "Añade a tu mano las cartas designadas al crearla (una misma carta puede designarse varias veces)."
-      },
-      "peste": {
-        "label": "Peste",
-        "desc": "Apesta a una unidad: pierde 1 PV al final de su turno. Al morir, la Peste pasa a otra unidad al azar."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "pone en juego la 1ª unidad de tu mazo",
         "appel_item_any": "pone en juego el 1er objeto de tu mazo",
         "dechainement_any": "juega {x} acciones aleatorias",
-        "dechainement_one_any": "juega una acción aleatoria"
+        "dechainement_one_any": "juega una acción aleatoria",
+        "profanation_one": "exilia la carta más reciente de tu cementerio y gana +1/+1",
+        "profanation_many": "exilia hasta {x} cartas de tu cementerio, las más recientes primero, y gana +1/+1 por cada carta exiliada"
       },
       "siphon": {
         "heal": "y cura a tu héroe {x} PV",
@@ -2261,6 +2263,7 @@
         "domination_any": "Toma el control de {cibles}, dentro del límite de espacios.",
         "benediction": "Cura por completo a {cibles}.",
         "poison": "Envenena a {cibles}: pierden 1 PV al final de cada turno.",
+        "peste": "Apesta a {cibles}: cada una pierde 1 PV al final de su turno, y su Peste pasa a otra unidad al morir.",
         "siphon": "Inflige X de daño a {cibles} y cura a tu héroe X por cada unidad alcanzada.",
         "entrave": "Paraliza a {cibles} durante X turno(s).",
         "execution": "Destruye {cibles} de coste ≤ X, incluidos los objetos.",
@@ -2269,8 +2272,7 @@
         "renforcement": "+X/+Y a {cibles}.",
         "discipline": "Si todas tus criaturas en juego tienen un coste de la misma paridad que esta acción, +X/+Y a {cibles}.",
         "usurpation": "+X/+Y a {cibles} por cada carta del adversario que hayas jugado.",
-        "guerison": "Restaura X PV a {cibles} y a tu héroe.",
-        "peste": "Apesta a {cibles}: cada una pierde 1 PV al final de su turno, y su Peste pasa a otra unidad al morir."
+        "guerison": "Restaura X PV a {cibles} y a tu héroe."
       },
       "creature": {
         "impact": "Inflige X de daño a {cibles}.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Retraso: el efecto se activa al comienzo del X-ésimo turno siguiente del lanzador, con el objetivo elegido en ese momento",
     "label_retard": "Retraso",
     "trigger_on_end_of_turn_in_graveyard": "Al final del turno, mientras esté en el cementerio",
-    "content_enterrement": "Entierro (mazo → cementerio, filtrable)"
+    "content_enterrement": "Entierro (mazo → cementerio, filtrable)",
+    "content_profanation": "Profanación (exilia tu cementerio, +1/+1 por carta)"
   },
   "game": {
     "hero_power_grant": "Otorga {kw} a una criatura",

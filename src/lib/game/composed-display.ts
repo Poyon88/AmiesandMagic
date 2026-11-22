@@ -202,6 +202,8 @@ export const COMPOSED_FR: Record<string, string> = {
   "content.appel_supreme": "ajoutez à votre main la carte au coût le plus élevé de votre deck{filter}{cost}",
   "content.appel_supreme_cost": " (coût ≤ {max})",
   "content.tuteur_many": "ajoutez les {n} cartes désignées à votre main",
+  "content.profanation_one": "exile la carte la plus récente de votre cimetière et gagne +1/+1",
+  "content.profanation_many": "exile jusqu'à {x} cartes de votre cimetière, les plus récentes d'abord, et gagne +1/+1 par carte exilée",
   "content.epargne": "ajoute {x} à votre compteur d'Épargne",
   "content.foi": "ajoute {x} à votre compteur de Foi",
   "content.conquete": "ajoute {x} à votre compteur de Conquête",
@@ -511,6 +513,7 @@ export function composedIcon(cap: Capability): { symbol: string; keyword: string
     case "tuteur": return { symbol: "🎓", keyword: "tuteur" };
     // Transformation : même icône que la capacité de créature homonyme.
     case "transformation": return { symbol: KEYWORD_SYMBOLS.transformation, keyword: "transformation" };
+    case "profanation": return { symbol: KEYWORD_SYMBOLS.profanation, keyword: "profanation" };
     case "epargne": return { symbol: KEYWORD_SYMBOLS.epargne, keyword: "epargne" };
     case "foi": return { symbol: KEYWORD_SYMBOLS.foi, keyword: "foi" };
     case "conquete": return { symbol: KEYWORD_SYMBOLS.conquete, keyword: "conquete" };
@@ -803,6 +806,7 @@ function describeContentBody(eff: ComposedEffect, tokens: TokenTemplate[] | unde
       return frag(t, x > 1 ? "content.summon_many" : "content.summon_one", { x: xAff, token: label });
     }
     case "gain_mana": return frag(t, "content.gain_mana", { x: xAff });
+    case "profanation": return frag(t, x > 1 ? "content.profanation_many" : "content.profanation_one", { x: xAff });
     case "epargne": return frag(t, "content.epargne", { x: xAff });
     case "foi": return frag(t, "content.foi", { x: xAff });
     case "conquete": return frag(t, "content.conquete", { x: xAff });
@@ -987,7 +991,7 @@ function describeIncineration(eff: ComposedEffect, t?: SafeT): string | null {
 
 // Contenus dont le verbe est TRANSITIF DIRECT : ils prennent leur cible sans
 // préposition. Les autres (« inflige … à », « octroie … à ») gardent « à ».
-const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "malediction", "neutralise", "silence", "transformation"]);
+const DIRECT_OBJECT_CONTENT = new Set(["destroy", "domination", "bounce", "paralyze", "poison", "malediction", "neutralise", "silence", "transformation", "devoration"]);
 
 /** Libellé d'une appartenance de cible.
  *

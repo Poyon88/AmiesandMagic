@@ -65,6 +65,10 @@
         "label": "Zehir",
         "desc": "Yaralı birimler her tur 1 CP kaybeder."
       },
+      "peste": {
+        "label": "Veba",
+        "desc": "Vebalı: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
+      },
       "celerite": {
         "label": "Çeviklik",
         "desc": "Tur başına iki kez saldırabilir."
@@ -597,10 +601,6 @@
       "tuteur": {
         "label": "Öğretmen",
         "desc": "Oluşturma sırasında belirlenen kartları elinize ekler (aynı kart birden fazla kez belirlenebilir)."
-      },
-      "peste": {
-        "label": "Veba",
-        "desc": "Vebalı: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
       }
     },
     "spell_keywords": {
@@ -615,6 +615,10 @@
       "poison": {
         "label": "Zehir",
         "desc": "Yaralı birimler her tur 1 CAN kaybeder."
+      },
+      "peste": {
+        "label": "Veba",
+        "desc": "Bir birimi vebalı yapar: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
       },
       "benediction": {
         "label": "Kutsama",
@@ -887,10 +891,6 @@
       "tuteur": {
         "label": "Öğretmen",
         "desc": "Oluşturulurken belirlenen kartları eline ekler (aynı kart birden fazla kez belirlenebilir)."
-      },
-      "peste": {
-        "label": "Veba",
-        "desc": "Bir birimi vebalı yapar: Turunun sonunda 1 Can kaybeder. Öldüğünde Veba rastgele başka bir birime geçer."
       }
     },
     "composed": {
@@ -1045,7 +1045,9 @@
         "appel_any": "destenizdeki ilk birimi oyuna sokar",
         "appel_item_any": "destenizdeki ilk eşyayı oyuna sokar",
         "dechainement_any": "rastgele {x} aksiyon oynar",
-        "dechainement_one_any": "rastgele bir aksiyon oynar"
+        "dechainement_one_any": "rastgele bir aksiyon oynar",
+        "profanation_one": "mezarlığınızdaki en son kartı sürgün eder ve +1/+1 kazanır",
+        "profanation_many": "mezarlığınızdan en yeni kartlardan başlayarak en fazla {x} kartı sürgün eder ve sürgün edilen her kart için +1/+1 kazanır"
       },
       "siphon": {
         "heal": "ve kahramanınızı {x} CP iyileştirir",
@@ -2261,6 +2263,7 @@
         "domination_any": "{cibles} boş yer sınırları dahilinde kontrol altına alır.",
         "benediction": "{cibles} tamamen iyileştirir.",
         "poison": "{cibles} zehirler: her tur sonunda 1 CP kaybederler.",
+        "peste": "{cibles} vebalı yapar: her biri turunun sonunda 1 Can kaybeder ve öldüğünde Vebası başka bir birime geçer.",
         "siphon": "{cibles} X hasar verir ve isabet alan her birim için kahramanınızı X iyileştirir.",
         "entrave": "{cibles} X tur boyunca felç eder.",
         "execution": "Maliyeti ≤ X olan {cibles} eşyalar dahil yok eder.",
@@ -2269,8 +2272,7 @@
         "renforcement": "{cibles} +X/+Y verir.",
         "discipline": "Oyundaki tüm yaratıklarınızın maliyeti bu aksiyonun maliyetiyle aynı paritedeyse {cibles} +X/+Y verir.",
         "usurpation": "Oynadığınız her rakip kartı için {cibles} +X/+Y verir.",
-        "guerison": "{cibles} ve kahramanınıza X CP yeniler.",
-        "peste": "{cibles} vebalı yapar: her biri turunun sonunda 1 Can kaybeder ve öldüğünde Vebası başka bir birime geçer."
+        "guerison": "{cibles} ve kahramanınıza X CP yeniler."
       },
       "creature": {
         "impact": "{cibles} X hasar verir.",
@@ -3215,7 +3217,8 @@
     "retard_spell_title": "Gecikme: etki, oynayanın X. sonraki turunun başında tetiklenir; hedef o anda seçilir",
     "label_retard": "Gecikme",
     "trigger_on_end_of_turn_in_graveyard": "Turun sonunda, mezarlıkta olduğu sürece",
-    "content_enterrement": "Gömme (deste → mezarlık, filtrelenebilir)"
+    "content_enterrement": "Gömme (deste → mezarlık, filtrelenebilir)",
+    "content_profanation": "Saygısızlık (mezarlığı sürgün et, kart başına +1/+1)"
   },
   "game": {
     "hero_power_grant": "Bir yaratığa {kw} verir",

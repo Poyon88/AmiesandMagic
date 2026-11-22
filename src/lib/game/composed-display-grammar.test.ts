@@ -59,6 +59,15 @@ describe("verbes transitifs directs → pas de préposition", () => {
     expect(describeComposedCap(cap(content, ENEMY_HERO))).toBe(expected);
   });
 
+  // Vu sur une carte réelle : « Dévore à une unité ennemie en main au hasard. »
+  it("Dévoration prend sa cible sans préposition, plafond de coût compris", () => {
+    const enMain = { entity: "unit", side: "enemy", count: 1, location: "hand", designation: "random" };
+    expect(describeComposedCap(cap("devoration", enMain)))
+      .toBe("Dévore une unité ennemie en main au hasard.");
+    expect(describeComposedCap(cap("devoration", { ...enMain, maxCost: 5 })))
+      .toBe("Dévore une unité ennemie de coût 5 ou moins en main au hasard.");
+  });
+
   it("les verbes indirects gardent « à »", () => {
     expect(describeComposedCap(cap("deal_damage", ENEMY_UNIT)))
       .toBe("Inflige 1 dégât à une unité ennemie au choix.");
