@@ -2,8 +2,9 @@ import Link from "next/link";
 import { bricolage } from "@/components/vitrine/font";
 import "@/components/vitrine/vitrine.css";
 import Marque from "@/components/shared/Marque";
+import { DOCUMENTS_LEGAUX } from "@/content/legal/editeur";
 
-// Chrome commune aux pages légales (/legal/cgu, /legal/confidentialite).
+// Chrome commune aux pages légales (/legal/*).
 // Volontairement sobre et sans illustration : ces pages doivent rester lisibles,
 // imprimables, et rapides — elles sont consultées depuis le formulaire
 // d'inscription, souvent dans un onglet ouvert au vol avant de cocher la case.
@@ -34,7 +35,14 @@ export default function LegalShell({
 
         <div className="legal-prose vt-prose">{children}</div>
 
+        {/* Chaque document renvoie aux autres : les mentions d'identification
+            doivent rester à un clic depuis n'importe quelle page légale. */}
         <div className="vt-lecture-pied">
+          <nav aria-label="Documents légaux" className="mb-4 flex flex-wrap gap-x-6 gap-y-1">
+            {DOCUMENTS_LEGAUX.map(({ href, titre }) => (
+              <Link key={href} href={href} className="vt-link">{titre}</Link>
+            ))}
+          </nav>
           <Link href="/landing" className="vt-link">{backLabel}</Link>
         </div>
       </main>

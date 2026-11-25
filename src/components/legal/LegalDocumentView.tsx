@@ -7,8 +7,8 @@ const DRAFT_WARNING =
   "⚠ Document en cours de rédaction, soumis à relecture juridique. " +
   "Il n'a pas de valeur contractuelle en l'état.";
 
-// Rendu d'un document légal (CGU, confidentialité) depuis son module de contenu
-// français. Partagé par les deux pages. Le contenu fait foi en français et n'est
+// Rendu d'un document légal depuis son module de contenu français. Partagé par
+// toutes les pages de /legal. Le contenu fait foi en français et n'est
 // pas traduit (cf. src/content/legal/types.ts).
 
 export default function LegalDocumentView({ doc }: { doc: LegalDocument }) {
@@ -43,6 +43,18 @@ export default function LegalDocumentView({ doc }: { doc: LegalDocument }) {
           <LegalSection key={section.title} n={i + 1} title={section.title} todo={section.todo}>
             {section.body.map((p, j) => (
               <p key={j} className="mb-3 leading-relaxed">
+                {p}
+              </p>
+            ))}
+            {section.items && (
+              <ul className="mb-3 pl-5 list-disc space-y-1.5 leading-relaxed">
+                {section.items.map((item, j) => (
+                  <li key={j}>{item}</li>
+                ))}
+              </ul>
+            )}
+            {section.after?.map((p, j) => (
+              <p key={`after-${j}`} className="mb-3 leading-relaxed">
                 {p}
               </p>
             ))}

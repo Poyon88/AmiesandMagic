@@ -9,6 +9,10 @@ export interface LegalSection {
   title: string;
   /** Paragraphes. Une chaîne = un <p>. */
   body: string[];
+  /** Liste à puces, rendue après les paragraphes. */
+  items?: string[];
+  /** Paragraphes rendus après la liste. */
+  after?: string[];
   /** Signale un passage encore incomplet : rendu en encadré d'avertissement. */
   todo?: string;
 }

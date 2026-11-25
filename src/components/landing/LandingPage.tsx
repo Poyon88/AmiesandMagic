@@ -261,7 +261,11 @@ export default function LandingPage({
         {/* Accès aux mentions légales depuis la vitrine publique : c'est la
             seule page qu'un visiteur non connecté atteint avant /login. */}
         <nav aria-label={messages.legal.cgu_title}>
+          {/* Libellé français en repli : la clé n'existe que dans fr.json tant
+              que les traductions ne sont pas propagées, et la page est en français. */}
+          <Link href="/legal/mentions-legales">{messages.legal.notice_title ?? "Mentions légales"}</Link>
           <Link href="/legal/cgu">{messages.legal.cgu_title}</Link>
+          <Link href="/legal/cgv">{messages.legal.cgv_title ?? "Conditions générales de vente"}</Link>
           <Link href="/legal/confidentialite">{messages.legal.privacy_title}</Link>
         </nav>
       </footer>
