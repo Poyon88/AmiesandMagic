@@ -21,7 +21,7 @@ export const CGU: LegalDocument = {
     `Les présentes conditions générales d'utilisation (les « Conditions ») régissent ` +
       `l'accès au jeu de cartes à collectionner en ligne ${SERVICE} et son utilisation, ` +
       `sur le site ${SITE} (le « Service »). Le Service est édité par ` +
-      `${EDITEUR.denomination}, dont le siège est établi ${EDITEUR.siege} ` +
+      `${EDITEUR.denomination}, dont le siège est établi à ${EDITEUR.siegeVille} ` +
       `(l'« Éditeur », « nous »).`,
     `Elles forment, avec les conditions générales de vente, la politique de ` +
       `confidentialité, la page sur les cookies et, le cas échéant, le règlement propre à ` +
@@ -357,7 +357,7 @@ export const CGU: LegalDocument = {
     {
       title: "Contact",
       body: [
-        `${EDITEUR.denomination} — ${EDITEUR.siege}.`,
+        `${EDITEUR.denomination} — ${EDITEUR.siegeVille}.`,
         `Email : ${EDITEUR.emailContact}. Vous pouvez aussi nous écrire depuis votre ` +
           `Compte, par la fonction de retours.`,
       ],

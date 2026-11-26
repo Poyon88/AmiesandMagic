@@ -1,6 +1,6 @@
 import type { LegalDocument } from "./types";
 import { DATE_MISE_A_JOUR, EDITEUR, MEDIATEUR, SERVICE } from "./editeur";
-import { GOLD_PACKS, TICKET_PACKS, TICKET_VALIDITY_DAYS } from "@/lib/payments/config";
+import { TICKET_VALIDITY_DAYS } from "@/lib/payments/config";
 
 // ⚠️ PROJET — relecture par un avocat indispensable avant mise en ligne.
 //
@@ -8,18 +8,15 @@ import { GOLD_PACKS, TICKET_PACKS, TICKET_VALIDITY_DAYS } from "@/lib/payments/c
 // carnets de tickets, réglés par Stripe Checkout. Les dépenses en or, en
 // crédits marché ou en essence relèvent des CGU, pas d'ici.
 //
-// Le catalogue est lu dans src/lib/payments/config.ts : la page ne peut donc pas
-// annoncer un autre prix que celui que la boutique affiche. Le montant débité
-// reste celui du Price Stripe.
+// Aucun montant ici (arbitrage du 2026-11-26) : le texte décrit les types de
+// produits et renvoie aux prix de la boutique, pour ne pas changer à chaque
+// évolution du catalogue. Le prix est affiché avant l'achat, dans la boutique
+// puis sur la page de paiement ; le montant débité est celui du Price Stripe.
 //
 // Politique retenue (arbitrage du 2026-11-24) : RENONCIATION EXPRESSE au droit
-// de rétractation, le contenu numérique étant fourni immédiatement. ⚠️ Elle
-// suppose une case à cocher AVANT le paiement et une confirmation sur support
-// durable — ni l'une ni l'autre n'existent encore dans le parcours d'achat.
-// Tant qu'elles manquent, la renonciation n'est pas opposable.
-
-const euros = (centimes: number) =>
-  `${(centimes / 100).toFixed(2).replace(".", ",")} €`;
+// de rétractation, le contenu numérique étant fourni immédiatement. La case à
+// cocher avant le paiement et l'email de confirmation existent : cf.
+// src/lib/payments/retractation.ts.
 
 export const CGV: LegalDocument = {
   title: "Conditions générales de vente",
@@ -44,22 +41,16 @@ export const CGV: LegalDocument = {
           `uniquement dans le Service :`,
       ],
       items: [
-        ...GOLD_PACKS.map(
-          (p) => `${p.label} : ${p.gold} pièces d'or — ${euros(p.displayPriceCents)} ;`,
-        ),
-        ...TICKET_PACKS.map(
-          (p) =>
-            `${p.label} : ${p.tickets} ticket${p.tickets > 1 ? "s" : ""} de tournoi — ` +
-            `${euros(p.displayPriceCents)} ;`,
-        ),
+        `des pièces d'or, vendues par bourses de tailles différentes ;`,
+        `des tickets de tournoi, vendus à l'unité ou par carnets.`,
       ],
       after: [
         `Les pièces d'or servent à débloquer des factions dans la boutique et à enchérir ` +
           `à l'hôtel des ventes. Un ticket donne droit à une inscription à un tournoi à ` +
           `ticket ; il est valable ${TICKET_VALIDITY_DAYS} jours à compter de l'achat et ` +
           `chaque ticket porte sa propre date d'expiration, affichée dans la boutique.`,
-        `L'offre et les prix peuvent évoluer. Le prix qui s'applique est celui affiché ` +
-          `au moment où vous validez votre commande.`,
+        `Le contenu et le prix de chaque produit sont ceux affichés dans la boutique au ` +
+          `moment de la commande. L'offre et les prix peuvent évoluer.`,
       ],
     },
     {

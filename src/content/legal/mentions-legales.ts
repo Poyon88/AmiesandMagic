@@ -34,14 +34,10 @@ export const MENTIONS_LEGALES: LegalDocument = {
       title: "Hébergement",
       body: [],
       items: [
-        `Application : Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, ` +
-          `États-Unis — vercel.com`,
-        `Base de données, authentification et fichiers : Supabase, Inc., 970 Toa Payoh ` +
-          `North #07-04, Singapour 318992 — supabase.com`,
+        `Application : Vercel Inc. — vercel.com`,
+        `Base de données, authentification et fichiers : Supabase, Inc. — supabase.com`,
       ],
-      todo:
-        "À VÉRIFIER : adresses des hébergeurs à la date de mise en ligne, et région " +
-        "d'hébergement des données.",
+      todo: "À VÉRIFIER : région d'hébergement des données à la date de mise en ligne.",
     },
     {
       title: "Contact et signalement d'un contenu",

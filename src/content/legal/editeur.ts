@@ -5,13 +5,18 @@
 //
 // Valeurs reprises des pièces de la société (statuts du 25 juillet 2018, fiche
 // du RCS, courrier TVA du 7 janvier 2019, autorisation d'établissement du
-// 15 mai 2023). Pas de téléphone public : la ligne n'existe pas.
+// 15 mai 2023). Le siège est l'adresse actuelle indiquée par la société le
+// 2026-11-26 ; les pièces portent encore l'ancienne. Pas de téléphone public.
 
 export const EDITEUR = {
   /** Dénomination sociale et forme (S.à r.l., S.A., S.à r.l.-S…). */
   denomination: "Totem HR, S.à r.l. (société à responsabilité limitée)",
   capital: "12 500 euros",
-  siege: "9, rue du Laboratoire, L-1911 Luxembourg",
+  /** Adresse complète : exigée dans les mentions légales, les CGV et la
+   *  politique de confidentialité. */
+  siege: "9, rue Pierre Notting, L-2243 Luxembourg",
+  /** Forme courte, pour les textes qui renvoient aux mentions légales. */
+  siegeVille: "Luxembourg",
   rcs: "B227165",
   /** Exigée par la loi sur le commerce électronique quand l'activité y est soumise. */
   autorisation: "10096960 / 1",

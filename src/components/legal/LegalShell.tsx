@@ -50,9 +50,9 @@ export default function LegalShell({
   );
 }
 
-/** Section numérotée. `todo` marque un contenu qui reste à rédiger : il
- *  s'affiche en encadré d'avertissement bien visible, pour qu'une page
- *  incomplète ne puisse pas passer pour un texte valide. */
+/** Section numérotée. `todo` est une note de travail (point à compléter ou à
+ *  faire valider), affichée en encadré. L'appelant ne la transmet que sur
+ *  demande (LEGAL_NOTES=1) : cf. `NOTES_VISIBLES` dans LegalDocumentView. */
 export function LegalSection({
   n,
   title,

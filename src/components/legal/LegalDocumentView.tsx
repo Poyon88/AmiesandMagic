@@ -7,6 +7,12 @@ const DRAFT_WARNING =
   "⚠ Document en cours de rédaction, soumis à relecture juridique. " +
   "Il n'a pas de valeur contractuelle en l'état.";
 
+// Les notes de travail (`todo`) — points à compléter ou à faire valider —
+// s'adressent à l'équipe, pas aux visiteurs : elles restent masquées, sauf à
+// lancer le serveur avec LEGAL_NOTES=1 pour une relecture. Le bandeau « en
+// cours de rédaction », lui, reste visible partout.
+const NOTES_VISIBLES = process.env.LEGAL_NOTES === "1";
+
 // Rendu d'un document légal depuis son module de contenu français. Partagé par
 // toutes les pages de /legal. Le contenu fait foi en français et n'est
 // pas traduit (cf. src/content/legal/types.ts).
@@ -40,7 +46,7 @@ export default function LegalDocumentView({ doc }: { doc: LegalDocument }) {
 
       <div className="mt-6">
         {doc.sections.map((section, i) => (
-          <LegalSection key={section.title} n={i + 1} title={section.title} todo={section.todo}>
+          <LegalSection key={section.title} n={i + 1} title={section.title} todo={NOTES_VISIBLES ? section.todo : undefined}>
             {section.body.map((p, j) => (
               <p key={j} className="mb-3 leading-relaxed">
                 {p}
