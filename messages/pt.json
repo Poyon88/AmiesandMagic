@@ -3852,5 +3852,19 @@
     "notif_reply_body": "A equipe respondeu a um dos seus feedbacks.",
     "notif_shipped_title": "Seu feedback foi levado em conta",
     "notif_shipped_body": "Uma alteração relacionada a um dos seus feedbacks já está no ar."
+  },
+  "retractation": {
+    "title": "Crédito imediato e direito de retratação",
+    "intro": "Numa compra online, dispõe em princípio de 14 dias para se retratar. A sua compra é creditada na sua conta assim que o pagamento é confirmado: esse direito termina então, se o pedir abaixo.",
+    "checkbox": "Peço que a minha compra seja creditada de imediato e reconheço que perco o meu direito de retratação assim que o for.",
+    "terms": "Condições gerais de venda",
+    "confirm": "Continuar para o pagamento",
+    "cancel": "Cancelar",
+    "email_subject": "Confirmação da sua compra — {service}",
+    "email_intro": "Confirmamos a sua compra de {date}: {produit}, por {montant}.",
+    "email_waiver": "Antes de pagar, pediu que esta compra fosse creditada de imediato na sua conta e reconheceu que perde o seu direito de retratação de 14 dias assim que o for. A compra foi creditada.",
+    "email_contact": "Uma questão sobre esta compra? Escreva-nos para {email}.",
+    "email_product_gold": "moedas de ouro: {count}",
+    "email_product_tickets": "bilhetes de torneio: {count}"
   }
 }

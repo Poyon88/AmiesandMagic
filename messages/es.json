@@ -3852,5 +3852,19 @@
     "notif_reply_body": "El equipo ha respondido a uno de tus comentarios.",
     "notif_shipped_title": "Hemos tenido en cuenta tu comentario",
     "notif_shipped_body": "Ya está disponible un cambio relacionado con uno de tus comentarios."
+  },
+  "retractation": {
+    "title": "Entrega inmediata y derecho de desistimiento",
+    "intro": "En una compra en línea dispones, en principio, de 14 días para desistir. Tu compra se abona en tu cuenta en cuanto se confirma el pago: ese derecho termina entonces, si lo solicitas a continuación.",
+    "checkbox": "Solicito que mi compra se abone de inmediato y reconozco que pierdo mi derecho de desistimiento en cuanto se abone.",
+    "terms": "Condiciones generales de venta",
+    "confirm": "Continuar al pago",
+    "cancel": "Cancelar",
+    "email_subject": "Confirmación de tu compra — {service}",
+    "email_intro": "Confirmamos tu compra del {date}: {produit}, por {montant}.",
+    "email_waiver": "Antes de pagar, solicitaste que esta compra se abonara de inmediato en tu cuenta y reconociste que pierdes tu derecho de desistimiento de 14 días en cuanto se abone. La compra ha sido abonada.",
+    "email_contact": "¿Alguna pregunta sobre esta compra? Escríbenos a {email}.",
+    "email_product_gold": "monedas de oro: {count}",
+    "email_product_tickets": "tickets de torneo: {count}"
   }
 }

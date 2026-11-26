@@ -11,6 +11,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
 import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
 import AdultConfirm from "@/components/shared/AdultConfirm";
+import WithdrawalWaiverConfirm from "@/components/shared/WithdrawalWaiverConfirm";
 
 interface PublicTicketPack {
   code: string;
@@ -39,6 +40,9 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
   // Achat mis en attente par la déclaration de majorité : relancé une fois
   // celle-ci enregistrée.
   const [majorite, setMajorite] = useState<{ code: string; minAge: number } | null>(null);
+  // Pack dont l'achat attend l'accord sur le crédit immédiat (renonciation au
+  // droit de rétractation). Demandé à CHAQUE achat : `buy` n'est appelé qu'après.
+  const [accord, setAccord] = useState<string | null>(null);
   const [state, setState] = useState<TicketState | null>(null);
 
   useEffect(() => {
@@ -55,7 +59,7 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
       const res = await fetch("/api/checkout/ticket-pack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pack_code: code }),
+        body: JSON.stringify({ pack_code: code, withdrawal_waiver: true }),
       });
       const data = await res.json();
       if (data.code === "age_required") {
@@ -126,7 +130,7 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
               </span>
             )}
             {ouvert && (
-              <AmButton onClick={() => buy(p.code)} disabled={pending !== null} className="mt-2 w-full">
+              <AmButton onClick={() => setAccord(p.code)} disabled={pending !== null} className="mt-2 w-full">
                 {pending === p.code ? "Redirection…" : "Acheter"}
               </AmButton>
             )}
@@ -139,6 +143,12 @@ export default function TicketShop({ packs }: { packs: PublicTicketPack[] }) {
         transférable, ni revendable, ni convertible en euros. Un ticket dépensé dans un tournoi qui
         est ensuite annulé vous est rendu, avec sa date d&apos;expiration d&apos;origine.
       </p>
+      {accord && (
+        <WithdrawalWaiverConfirm
+          onCancel={() => setAccord(null)}
+          onConfirmed={() => { const code = accord; setAccord(null); void buy(code); }}
+        />
+      )}
       {majorite && (
         <AdultConfirm
           minAge={majorite.minAge}

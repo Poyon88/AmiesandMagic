@@ -98,11 +98,6 @@ export const CGU: LegalDocument = {
           `connexion. Un achat obtenu par une fausse déclaration peut être annulé et le ` +
           `Compte suspendu.`,
       ],
-      todo:
-        "À VALIDER : seuil de 16 ans (âge du consentement numérique au Luxembourg) appliqué à " +
-        "tous les pays, sans recueil de l'accord parental en dessous. Variante possible : " +
-        "ouvrir le jeu gratuit dès 13 ans avec accord parental vérifié — ce qui demanderait " +
-        "un mécanisme qui n'existe pas aujourd'hui.",
     },
     {
       title: "Le jeu gratuit",
@@ -329,9 +324,8 @@ export const CGU: LegalDocument = {
           `pièces d'or et de tickets cesse dès cette annonce.`,
       ],
       todo:
-        "À VALIDER : la suppression se fait aujourd'hui sur demande par email (aucun bouton " +
-        "dans le compte). Préavis de 60 jours en cas d'arrêt du Service et sort de l'or et des " +
-        "tickets achetés mais non utilisés à cette date : à arrêter avec l'avocat.",
+        "À ARRÊTER AVEC L'AVOCAT : préavis de 60 jours en cas d'arrêt du Service et sort de " +
+        "l'or et des tickets achetés mais non utilisés à cette date.",
     },
     {
       title: "Modification des Conditions",

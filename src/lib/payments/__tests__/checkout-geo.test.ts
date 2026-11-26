@@ -36,11 +36,20 @@ const regle = (code: string, over = {}) => ({
   country_code: code, gold_purchases: true, tickets: true, auctions: true, cash_prizes: true, min_age: 18, ...over,
 });
 
-function acheter(route: typeof goldPack, pack: string, pays: string) {
+function acheter(
+  route: typeof goldPack,
+  pack: string,
+  pays: string,
+  { accord = true, cookie }: { accord?: boolean; cookie?: string } = {},
+) {
   return route(new Request("http://localhost/api/checkout", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-vercel-ip-country": pays },
-    body: JSON.stringify({ pack_code: pack }),
+    headers: {
+      "Content-Type": "application/json",
+      "x-vercel-ip-country": pays,
+      ...(cookie ? { cookie } : {}),
+    },
+    body: JSON.stringify({ pack_code: pack, ...(accord ? { withdrawal_waiver: true } : {}) }),
   }));
 }
 
@@ -103,5 +112,42 @@ describe("session ouverte", () => {
     expect(params.metadata).toMatchObject({ user_id: "user-1", type: "ticket_pack", ...conformite });
     expect(params.payment_intent_data.metadata).toMatchObject(conformite);
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ request_country: "LU", status: "pending" }));
+  });
+});
+
+describe("renonciation au droit de rétractation", () => {
+  it("sans l'accord ⇒ 400 waiver_required, aucune session Stripe (or et tickets)", async () => {
+    for (const [route, pack] of [[goldPack, "gold_pack_s"], [ticketPack, "ticket_pack_s"]] as const) {
+      const res = await acheter(route, pack, "LU", { accord: false });
+      expect(res.status).toBe(400);
+      expect((await res.json()).code).toBe("waiver_required");
+    }
+    expect(sessionsCreate).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("un accord qui n'est pas exactement `true` ne compte pas", async () => {
+    const res = await goldPack(new Request("http://localhost/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-vercel-ip-country": "LU" },
+      body: JSON.stringify({ pack_code: "gold_pack_s", withdrawal_waiver: "true" }),
+    }));
+    expect(res.status).toBe(400);
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("l'accord est daté et la langue du joueur notée, sur la session ET le paiement", async () => {
+    const avant = Date.now();
+    await acheter(goldPack, "gold_pack_s", "LU", { cookie: "autre=1; am-locale=de" });
+    const params = sessionsCreate.mock.calls[0][0];
+    for (const meta of [params.metadata, params.payment_intent_data.metadata]) {
+      expect(meta.locale).toBe("de");
+      expect(Date.parse(meta.withdrawal_waiver_at)).toBeGreaterThanOrEqual(avant);
+    }
+  });
+
+  it("sans cookie de langue, celle du pays de connexion", async () => {
+    await acheter(goldPack, "gold_pack_s", "LU");
+    expect(sessionsCreate.mock.calls[0][0].metadata.locale).toBe("fr");
   });
 });

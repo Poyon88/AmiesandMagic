@@ -80,6 +80,7 @@ export const ECONOMIE: Precision[] = [
     regles: [
       "Avant le premier achat en euros, le joueur doit certifier, en cochant une case, qu'il a au moins l'âge minimum exigé dans son pays ; cette confirmation n'est demandée qu'une fois.",
       "Si le joueur achète ensuite depuis un pays où l'âge minimum est plus élevé que celui qu'il a certifié, la confirmation lui est redemandée.",
+      "Avant chaque achat en euros, une fenêtre demande au joueur de cocher une case : il demande que son achat soit crédité immédiatement et reconnaît perdre son droit de rétractation dès qu'il l'est ; sans cette case cochée, le paiement ne s'ouvre pas.",
       "Le paiement se fait sur une page sécurisée de Stripe : aucune donnée bancaire ne passe par le jeu, et une adresse de facturation est demandée.",
       "Une session de paiement ouverte et non terminée expire d'elle-même ; rien n'est alors débité et l'achat apparaît « Non abouti ».",
       "L'or ou les tickets ne sont crédités qu'une fois le paiement confirmé par la banque, en général en quelques secondes ; la page de retour attend cette confirmation avant d'annoncer « Paiement confirmé ».",
@@ -88,7 +89,7 @@ export const ECONOMIE: Precision[] = [
       "La page « Mes paiements » du compte liste les achats de tickets et de pièces d'or avec leur date, leur objet, leur montant et leur état : En attente, Réglé, Remboursé ou Non abouti.",
       "Un paiement encore en attente n'affiche pas de montant.",
     ],
-    sources: ["src/components/shared/AdultConfirm.tsx:52-70 ; src/lib/geo/rules.ts:101-120 ; messages/fr.json", "src/lib/geo/rules.ts:122-127 ; test src/lib/payments/__tests__/checkout-geo.test.ts", "src/components/payments/GoldShop.tsx:123 ; src/app/api/checkout/gold-pack/route.ts", "src/app/api/checkout/gold-pack/route.ts:71 ; supabase-migration-stripe-payments.sql:301-314 ; src/components/payments/PaymentResult.tsx", "src/components/payments/PaymentResult.tsx:5-9, 77-89, 113-119 ; supabase-migration-tournament-tickets.sql", "src/components/payments/PaymentResult.tsx", "src/app/paiement/annule/page.tsx", "src/app/compte/paiements/page.tsx:17-29 ; src/components/payments/PaymentHistory.tsx:24-29, 53-95", "src/components/payments/PaymentHistory.tsx"],
+    sources: ["src/components/shared/AdultConfirm.tsx:52-70 ; src/lib/geo/rules.ts:101-120 ; messages/fr.json", "src/lib/geo/rules.ts:122-127 ; test src/lib/payments/__tests__/checkout-geo.test.ts", "src/components/shared/WithdrawalWaiverConfirm.tsx ; src/lib/payments/retractation.ts ; test src/lib/payments/__tests__/checkout-geo.test.ts", "src/components/payments/GoldShop.tsx:123 ; src/app/api/checkout/gold-pack/route.ts", "src/app/api/checkout/gold-pack/route.ts:71 ; supabase-migration-stripe-payments.sql:301-314 ; src/components/payments/PaymentResult.tsx", "src/components/payments/PaymentResult.tsx:5-9, 77-89, 113-119 ; supabase-migration-tournament-tickets.sql", "src/components/payments/PaymentResult.tsx", "src/app/paiement/annule/page.tsx", "src/app/compte/paiements/page.tsx:17-29 ; src/components/payments/PaymentHistory.tsx:24-29, 53-95", "src/components/payments/PaymentHistory.tsx"],
   },
   {
     type: "theme",

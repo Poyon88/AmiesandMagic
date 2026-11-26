@@ -3852,5 +3852,19 @@
     "notif_reply_body": "Das Team hat auf eines deiner Feedbacks geantwortet.",
     "notif_shipped_title": "Dein Feedback wurde berücksichtigt",
     "notif_shipped_body": "Eine Änderung zu einem deiner Feedbacks ist jetzt live."
+  },
+  "retractation": {
+    "title": "Sofortige Gutschrift und Widerrufsrecht",
+    "intro": "Bei einem Online-Kauf haben Sie grundsätzlich 14 Tage Zeit, um zu widerrufen. Ihr Kauf wird Ihrem Konto gutgeschrieben, sobald die Zahlung bestätigt ist: Dieses Recht erlischt dann, wenn Sie es unten verlangen.",
+    "checkbox": "Ich verlange, dass mein Kauf sofort gutgeschrieben wird, und erkenne an, dass ich mein Widerrufsrecht verliere, sobald dies geschehen ist.",
+    "terms": "Allgemeine Verkaufsbedingungen",
+    "confirm": "Weiter zur Zahlung",
+    "cancel": "Abbrechen",
+    "email_subject": "Bestätigung Ihres Kaufs — {service}",
+    "email_intro": "Wir bestätigen Ihren Kauf vom {date}: {produit}, für {montant}.",
+    "email_waiver": "Vor der Zahlung haben Sie verlangt, dass dieser Kauf Ihrem Konto sofort gutgeschrieben wird, und anerkannt, dass Sie Ihr 14-tägiges Widerrufsrecht verlieren, sobald dies geschehen ist. Der Kauf wurde gutgeschrieben.",
+    "email_contact": "Eine Frage zu diesem Kauf? Schreiben Sie uns an {email}.",
+    "email_product_gold": "Goldmünzen: {count}",
+    "email_product_tickets": "Turniertickets: {count}"
   }
 }

@@ -20,6 +20,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe, getAdminClient } from "@/lib/payments/stripe";
+import { sendPurchaseConfirmation } from "@/lib/payments/confirmation-email";
 
 // Corps brut obligatoire : ce handler ne doit jamais être servi depuis un cache.
 export const dynamic = "force-dynamic";
@@ -28,6 +29,8 @@ interface WebhookOutcome {
   status: string;
   reason?: string;
   payment_id?: string;
+  gold?: number;
+  tickets?: number;
 }
 
 export async function POST(request: Request) {
@@ -95,6 +98,22 @@ export async function POST(request: Request) {
         // par événement.
         if (outcome.status === "refund_needed") {
           await refundSession(stripe, session, outcome.reason ?? "unavailable");
+        }
+
+        // Confirmation par email, avec le rappel de l'accord sur le crédit
+        // immédiat. Seulement au PREMIER crédit : un rejeu rend `duplicate`.
+        // Ne lève jamais — le crédit est fait, l'email ne doit pas le défaire.
+        if (outcome.status === "credited") {
+          await sendPurchaseConfirmation({
+            to: session.customer_details?.email,
+            locale: session.metadata?.locale,
+            waiverAt: session.metadata?.withdrawal_waiver_at,
+            amountCents: session.amount_total ?? 0,
+            currency: session.currency ?? "eur",
+            gold: outcome.gold,
+            tickets: outcome.tickets,
+            sessionId: session.id,
+          });
         }
         break;
       }

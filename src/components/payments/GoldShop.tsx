@@ -12,6 +12,7 @@ import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
 import { GeoNotice, useGeo } from "@/components/shared/GeoProvider";
 import AdultConfirm from "@/components/shared/AdultConfirm";
+import WithdrawalWaiverConfirm from "@/components/shared/WithdrawalWaiverConfirm";
 
 interface PublicPack {
   code: string;
@@ -31,6 +32,9 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
   // Achat mis en attente par la déclaration de majorité : relancé une fois
   // celle-ci enregistrée.
   const [majorite, setMajorite] = useState<{ code: string; minAge: number } | null>(null);
+  // Pack dont l'achat attend l'accord sur le crédit immédiat (renonciation au
+  // droit de rétractation). Demandé à CHAQUE achat : `buy` n'est appelé qu'après.
+  const [accord, setAccord] = useState<string | null>(null);
   const [debt, setDebt] = useState(0);
 
   useEffect(() => {
@@ -50,7 +54,7 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
       const res = await fetch("/api/checkout/gold-pack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pack_code: code }),
+        body: JSON.stringify({ pack_code: code, withdrawal_waiver: true }),
       });
       const data = await res.json();
       if (data.code === "age_required") {
@@ -106,7 +110,7 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
             <span className="text-lg text-am-ink-2">{euros(p.displayPriceCents)}</span>
             {ouvert && (
               <AmButton
-                onClick={() => buy(p.code)}
+                onClick={() => setAccord(p.code)}
                 disabled={pending !== null}
                 className="mt-2 w-full"
               >
@@ -122,6 +126,12 @@ export default function GoldShop({ packs }: { packs: PublicPack[] }) {
         euros, ni transférables, ni remboursables — hors remboursement du paiement d&apos;origine.
         Paiement traité par Stripe : aucune donnée bancaire ne transite par Armies of Legends.
       </p>
+      {accord && (
+        <WithdrawalWaiverConfirm
+          onCancel={() => setAccord(null)}
+          onConfirmed={() => { const code = accord; setAccord(null); void buy(code); }}
+        />
+      )}
       {majorite && (
         <AdultConfirm
           minAge={majorite.minAge}

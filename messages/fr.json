@@ -3855,5 +3855,19 @@
     "notif_reply_body": "L'équipe a répondu à l'un de vos retours.",
     "notif_shipped_title": "Votre retour a été pris en compte",
     "notif_shipped_body": "Un changement lié à l'un de vos retours est en ligne."
+  },
+  "retractation": {
+    "title": "Crédit immédiat et droit de rétractation",
+    "intro": "Pour un achat en ligne, vous disposez en principe de 14 jours pour vous rétracter. Votre achat est crédité sur votre compte dès la confirmation du paiement : ce droit prend alors fin, si vous le demandez ci-dessous.",
+    "checkbox": "Je demande que mon achat soit crédité immédiatement et je reconnais perdre mon droit de rétractation dès qu'il l'est.",
+    "terms": "Conditions générales de vente",
+    "confirm": "Continuer vers le paiement",
+    "cancel": "Annuler",
+    "email_subject": "Confirmation de votre achat — {service}",
+    "email_intro": "Nous confirmons votre achat du {date} : {produit}, pour {montant}.",
+    "email_waiver": "Avant de payer, vous avez demandé que cet achat soit crédité immédiatement sur votre compte et reconnu perdre votre droit de rétractation de 14 jours dès qu'il l'est. L'achat a été crédité.",
+    "email_contact": "Une question sur cet achat ? Écrivez-nous à {email}.",
+    "email_product_gold": "pièces d'or : {count}",
+    "email_product_tickets": "tickets de tournoi : {count}"
   }
 }

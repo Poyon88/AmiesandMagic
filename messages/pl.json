@@ -3852,5 +3852,19 @@
     "notif_reply_body": "Zespół odpowiedział na jedno z Twoich zgłoszeń.",
     "notif_shipped_title": "Twoje zgłoszenie zostało uwzględnione",
     "notif_shipped_body": "Zmiana związana z jednym z Twoich zgłoszeń jest już dostępna."
+  },
+  "retractation": {
+    "title": "Natychmiastowe dostarczenie i prawo odstąpienia",
+    "intro": "Przy zakupie online masz co do zasady 14 dni na odstąpienie od umowy. Zakup trafia na Twoje konto od razu po potwierdzeniu płatności: wtedy to prawo wygasa, jeśli zażądasz tego poniżej.",
+    "checkbox": "Żądam natychmiastowego dostarczenia mojego zakupu i przyjmuję do wiadomości, że z chwilą jego dostarczenia tracę prawo odstąpienia od umowy.",
+    "terms": "Ogólne warunki sprzedaży",
+    "confirm": "Przejdź do płatności",
+    "cancel": "Anuluj",
+    "email_subject": "Potwierdzenie zakupu — {service}",
+    "email_intro": "Potwierdzamy Twój zakup z dnia {date}: {produit}, za {montant}.",
+    "email_waiver": "Przed zapłatą zażądałeś(-aś) natychmiastowego dostarczenia tego zakupu na swoje konto i przyjąłeś(-aś) do wiadomości, że z chwilą jego dostarczenia tracisz 14-dniowe prawo odstąpienia od umowy. Zakup został dostarczony.",
+    "email_contact": "Masz pytanie dotyczące tego zakupu? Napisz do nas: {email}.",
+    "email_product_gold": "złote monety: {count}",
+    "email_product_tickets": "bilety turniejowe: {count}"
   }
 }

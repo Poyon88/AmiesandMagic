@@ -48,6 +48,8 @@ redélivre ses événements ; un rejeu ne doit jamais recréditer.
 |---|---|---|
 | `STRIPE_SECRET_KEY` | serveur | Clé secrète (`sk_test_…` en développement). **Jamais côté client.** |
 | `STRIPE_WEBHOOK_SECRET` | serveur | Secret de signature du webhook (`whsec_…`). |
+| `RESEND_API_KEY` | serveur | Clé d'API Resend pour l'email de confirmation d'achat. Sans elle, l'email ne part pas (journalisé). |
+| `PAYMENT_EMAIL_FROM` | serveur | Expéditeur de cet email, sur un domaine vérifié chez Resend : `Armies of Legends <adresse@domaine>`. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | client | Clé publiable. Non utilisée par Checkout hébergé, prévue pour la suite. |
 | `STRIPE_PRICE_TICKET_PACK_S` | serveur | `price_…` du ticket à l'unité (2,50 €). |
 | `STRIPE_PRICE_TICKET_PACK_M` | serveur | `price_…` du carnet de 5 (11,50 €). |
@@ -202,3 +204,18 @@ Retraits en cash · revente de cartes contre euros · Mangopay · Stripe Connect
 transferts d'argent entre joueurs · KYC joueur · moteur de tournoi (arbre,
 appariement, distribution des gains) · TVA/OSS — seul `payments.customer_country`
 est déjà capté, pour ce futur chantier.
+
+## Renonciation au droit de rétractation
+
+Avant **chaque** achat en euros, une fenêtre (`WithdrawalWaiverConfirm`) demande
+au joueur de cocher une case, jamais précochée : il demande le crédit immédiat
+et reconnaît perdre son droit de rétractation. Sans `withdrawal_waiver: true`,
+les routes `/api/checkout/*` répondent `400 waiver_required` et n'ouvrent aucune
+session Stripe (`src/lib/payments/retractation.ts`).
+
+La date de l'accord (`withdrawal_waiver_at`) et la langue du joueur (`locale`)
+sont écrites dans les metadata de la session et du paiement Stripe : c'est la
+preuve, consultable dans le tableau de bord. Au premier crédit, le webhook
+envoie l'email de confirmation qui rappelle cet accord, dans la langue du
+joueur (`src/lib/payments/confirmation-email.ts`). Un échec d'envoi est
+journalisé et n'annule jamais le crédit.

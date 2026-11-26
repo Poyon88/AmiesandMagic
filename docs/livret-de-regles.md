@@ -1264,6 +1264,7 @@ Réglés par l'équipe du jeu (ils peuvent changer) :
 ### Payer en euros
 - Avant le premier achat en euros, le joueur doit certifier, en cochant une case, qu'il a au moins l'âge minimum exigé dans son pays ; cette confirmation n'est demandée qu'une fois.
 - Si le joueur achète ensuite depuis un pays où l'âge minimum est plus élevé que celui qu'il a certifié, la confirmation lui est redemandée.
+- Avant chaque achat en euros, une fenêtre demande au joueur de cocher une case : il demande que son achat soit crédité immédiatement et reconnaît perdre son droit de rétractation dès qu'il l'est ; sans cette case cochée, le paiement ne s'ouvre pas.
 - Le paiement se fait sur une page sécurisée de Stripe : aucune donnée bancaire ne passe par le jeu, et une adresse de facturation est demandée.
 - Une session de paiement ouverte et non terminée expire d'elle-même ; rien n'est alors débité et l'achat apparaît « Non abouti ».
 - L'or ou les tickets ne sont crédités qu'une fois le paiement confirmé par la banque, en général en quelques secondes ; la page de retour attend cette confirmation avant d'annoncer « Paiement confirmé ».

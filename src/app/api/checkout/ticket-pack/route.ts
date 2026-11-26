@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { findTicketPack, requirePriceId, CHECKOUT_EXPIRY_MINUTES } from "@/lib/payments/config";
 import { getStripe, getAuthUser, getAdminClient, ensureStripeCustomer, siteUrl } from "@/lib/payments/stripe";
 import { gateFeature, requireAdult } from "@/lib/geo/rules";
+import { requireWithdrawalWaiver } from "@/lib/payments/retractation";
 
 export async function POST(request: Request) {
   const user = await getAuthUser();
@@ -28,6 +29,11 @@ export async function POST(request: Request) {
   const supabase = getAdminClient();
   const adult = await requireAdult(supabase, user.id, geo.rules);
   if (adult.error) return adult.error;
+
+  // Accord exprès sur le crédit immédiat et la perte du droit de rétractation,
+  // redonné à chaque achat. Sans lui, aucune session Stripe ne s'ouvre.
+  const waiver = requireWithdrawalWaiver(request, body, geo.country);
+  if (waiver.error) return waiver.error;
   const stripe = getStripe();
 
   let priceId: string;
@@ -48,6 +54,7 @@ export async function POST(request: Request) {
     request_country: geo.country,
     min_age: String(geo.rules.min_age),
     adult_declared_at: adult.declaredAt,
+    ...waiver.metadata,
   };
 
   const session = await stripe.checkout.sessions.create({

@@ -3852,5 +3852,19 @@
     "notif_reply_body": "The team has replied to one of your feedback submissions.",
     "notif_shipped_title": "Your feedback has been taken into account",
     "notif_shipped_body": "A change related to one of your feedback submissions is now live."
+  },
+  "retractation": {
+    "title": "Immediate delivery and right of withdrawal",
+    "intro": "For an online purchase, you normally have 14 days to withdraw. Your purchase is credited to your account as soon as the payment is confirmed: that right then ends, if you request it below.",
+    "checkbox": "I request that my purchase be credited immediately and I acknowledge that I lose my right of withdrawal as soon as it is.",
+    "terms": "Terms of sale",
+    "confirm": "Continue to payment",
+    "cancel": "Cancel",
+    "email_subject": "Your purchase confirmation — {service}",
+    "email_intro": "We confirm your purchase of {date}: {produit}, for {montant}.",
+    "email_waiver": "Before paying, you requested that this purchase be credited to your account immediately and acknowledged that you lose your 14-day right of withdrawal as soon as it is. The purchase has been credited.",
+    "email_contact": "A question about this purchase? Write to us at {email}.",
+    "email_product_gold": "gold coins: {count}",
+    "email_product_tickets": "tournament tickets: {count}"
   }
 }

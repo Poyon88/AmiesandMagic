@@ -3852,5 +3852,19 @@
     "notif_reply_body": "团队已回复你的一条反馈。",
     "notif_shipped_title": "你的反馈已被采纳",
     "notif_shipped_body": "与你的某条反馈相关的改动已上线。"
+  },
+  "retractation": {
+    "title": "即时到账与撤回权",
+    "intro": "对于在线购买，您原则上有14天的撤回期。付款确认后，所购内容会立即计入您的账户：如您在下方提出要求，该权利即告终止。",
+    "checkbox": "我要求立即将所购内容计入账户，并确认一旦到账即丧失撤回权。",
+    "terms": "销售条款",
+    "confirm": "继续付款",
+    "cancel": "取消",
+    "email_subject": "购买确认 — {service}",
+    "email_intro": "我们确认您于{date}的购买：{produit}，金额{montant}。",
+    "email_waiver": "付款前，您已要求将本次购买立即计入您的账户，并确认一旦到账即丧失14天的撤回权。所购内容已到账。",
+    "email_contact": "对本次购买有疑问？请写信至 {email}。",
+    "email_product_gold": "金币：{count}",
+    "email_product_tickets": "锦标赛门票：{count}"
   }
 }

@@ -3852,5 +3852,19 @@
     "notif_reply_body": "Il team ha risposto a uno dei tuoi feedback.",
     "notif_shipped_title": "Il tuo feedback è stato preso in considerazione",
     "notif_shipped_body": "Una modifica legata a uno dei tuoi feedback è ora online."
+  },
+  "retractation": {
+    "title": "Accredito immediato e diritto di recesso",
+    "intro": "Per un acquisto online hai, in linea di principio, 14 giorni per recedere. Il tuo acquisto viene accreditato sul tuo account non appena il pagamento è confermato: quel diritto allora si estingue, se lo richiedi qui sotto.",
+    "checkbox": "Chiedo che il mio acquisto sia accreditato immediatamente e riconosco di perdere il diritto di recesso non appena lo è.",
+    "terms": "Condizioni generali di vendita",
+    "confirm": "Continua al pagamento",
+    "cancel": "Annulla",
+    "email_subject": "Conferma del tuo acquisto — {service}",
+    "email_intro": "Confermiamo il tuo acquisto del {date}: {produit}, per {montant}.",
+    "email_waiver": "Prima di pagare hai chiesto che questo acquisto fosse accreditato immediatamente sul tuo account e hai riconosciuto di perdere il diritto di recesso di 14 giorni non appena lo fosse. L'acquisto è stato accreditato.",
+    "email_contact": "Una domanda su questo acquisto? Scrivici a {email}.",
+    "email_product_gold": "monete d'oro: {count}",
+    "email_product_tickets": "biglietti torneo: {count}"
   }
 }

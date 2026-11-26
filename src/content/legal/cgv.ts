@@ -161,10 +161,9 @@ export const CGV: LegalDocument = {
           `remboursons dans les 14 jours, par le moyen de paiement utilisé pour l'achat.`,
       ],
       todo:
-        "À METTRE EN PLACE AVANT D'OPPOSER CETTE CLAUSE : une case à cocher (non précochée) " +
-        "avant le paiement, recueillant la demande d'exécution immédiate et la renonciation, " +
-        "puis sa confirmation dans l'email de paiement. Le parcours d'achat actuel n'en " +
-        "comporte pas : sans elles, le joueur conserve ses 14 jours.",
+        "À ACTIVER AVANT LA MISE EN VENTE : l'email de confirmation ne part que si les " +
+        "variables RESEND_API_KEY et PAYMENT_EMAIL_FROM sont renseignées sur le serveur. La " +
+        "case à cocher, elle, est en place et exigée à chaque achat.",
     },
     {
       title: "Remboursements",

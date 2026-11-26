@@ -3852,5 +3852,19 @@
     "notif_reply_body": "團隊已回覆您的其中一則回饋。",
     "notif_shipped_title": "您的回饋已被採納",
     "notif_shipped_body": "與您其中一則回饋相關的更動已上線。"
+  },
+  "retractation": {
+    "title": "即時入帳與撤回權",
+    "intro": "對於線上購買，您原則上有14天的撤回期。付款確認後，所購內容會立即計入您的帳戶：如您在下方提出要求，該權利即告終止。",
+    "checkbox": "我要求立即將所購內容計入帳戶，並確認一旦入帳即喪失撤回權。",
+    "terms": "銷售條款",
+    "confirm": "繼續付款",
+    "cancel": "取消",
+    "email_subject": "購買確認 — {service}",
+    "email_intro": "我們確認您於{date}的購買：{produit}，金額{montant}。",
+    "email_waiver": "付款前，您已要求將本次購買立即計入您的帳戶，並確認一旦入帳即喪失14天的撤回權。所購內容已入帳。",
+    "email_contact": "對本次購買有疑問？請來信至 {email}。",
+    "email_product_gold": "金幣：{count}",
+    "email_product_tickets": "錦標賽門票：{count}"
   }
 }

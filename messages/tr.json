@@ -3852,5 +3852,19 @@
     "notif_reply_body": "Ekip geri bildirimlerinizden birine yanıt verdi.",
     "notif_shipped_title": "Geri bildiriminiz dikkate alındı",
     "notif_shipped_body": "Geri bildirimlerinizden biriyle ilgili bir değişiklik yayında."
+  },
+  "retractation": {
+    "title": "Anında teslim ve cayma hakkı",
+    "intro": "Çevrimiçi bir satın alımda kural olarak 14 gün içinde cayma hakkınız vardır. Satın aldığınız ürün, ödeme onaylanır onaylanmaz hesabınıza yüklenir: aşağıda talep ederseniz bu hak o anda sona erer.",
+    "checkbox": "Satın aldığım ürünün hemen yüklenmesini talep ediyor ve yüklendiği anda cayma hakkımı kaybettiğimi kabul ediyorum.",
+    "terms": "Satış koşulları",
+    "confirm": "Ödemeye devam et",
+    "cancel": "İptal",
+    "email_subject": "Satın alma onayınız — {service}",
+    "email_intro": "{date} tarihli satın alımınızı onaylıyoruz: {produit}, {montant}.",
+    "email_waiver": "Ödemeden önce bu satın alımın hesabınıza hemen yüklenmesini talep ettiniz ve yüklendiği anda 14 günlük cayma hakkınızı kaybettiğinizi kabul ettiniz. Satın alım yüklendi.",
+    "email_contact": "Bu satın alımla ilgili bir sorunuz mu var? Bize {email} adresinden yazın.",
+    "email_product_gold": "altın: {count}",
+    "email_product_tickets": "turnuva bileti: {count}"
   }
 }
