@@ -27,9 +27,7 @@ export const MENTIONS_LEGALES: LegalDocument = {
         `Autorisation d'établissement : ${EDITEUR.autorisation}, délivrée par le ministère ` +
           `de l'Économie du Grand-Duché de Luxembourg`,
         `Numéro de TVA : ${EDITEUR.tva}`,
-        `Directeur de la publication : ${EDITEUR.directeurPublication}`,
         `Email : ${EDITEUR.emailContact}`,
-        `Téléphone : ${EDITEUR.telephone}`,
       ],
     },
     {
@@ -68,12 +66,16 @@ export const MENTIONS_LEGALES: LegalDocument = {
           `droit des marques. Toute reproduction ou réutilisation, totale ou partielle, ` +
           `sans autorisation écrite préalable est interdite, sous réserve des usages ` +
           `permis par les conditions générales d'utilisation.`,
+        `La plupart des images, des musiques et des sons du Service ont été générés à ` +
+          `l'aide d'outils d'intelligence artificielle, dans le cadre de licences qui en ` +
+          `autorisent l'exploitation commerciale.`,
         `Les marques et logos de tiers cités sur le site appartiennent à leurs ` +
           `titulaires respectifs.`,
       ],
       todo:
-        "À COMPLÉTER le cas échéant : numéro et office d'enregistrement de la marque " +
-        "« Armies of Legends », crédits des illustrations, musiques et polices.",
+        "À COMPLÉTER une fois le dépôt effectué : numéro et office d'enregistrement de la " +
+        "marque « Armies of Legends ». À VALIDER PAR L'AVOCAT : portée de la protection par " +
+        "le droit d'auteur des contenus générés par intelligence artificielle.",
     },
     {
       title: "Règlement des litiges de consommation",
