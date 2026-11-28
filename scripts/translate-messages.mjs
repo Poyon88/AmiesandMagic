@@ -5,7 +5,11 @@
 // dernier et JAMAIS régénérées.
 //
 // Usage:
-//   node scripts/translate-messages.mjs [--only=de,es] [--batch=40] [--force]
+//   node scripts/translate-messages.mjs [--only=de,es] [--batch=40] [--force] [--missing-only]
+//
+// --missing-only : ne traduit que les clés ABSENTES de la cible. À préférer pour
+// ajouter des clés : sans lui, toute clé dont l'empreinte manque ou dont le FR a
+// bougé est retraduite, ce qui réécrit des termes établis.
 //
 // Format d'échange = TSV (clé⇥valeur) : robuste aux guillemets / apostrophes
 // que le modèle n'échappe pas toujours en JSON (cf. pipeline cartes). Les
@@ -30,6 +34,7 @@ const only = (args.find((a) => a.startsWith("--only=")) || "").split("=")[1];
 const targets = only ? only.split(",").filter((l) => TARGET_LOCALES.includes(l)) : TARGET_LOCALES;
 const BATCH = Number((args.find((a) => a.startsWith("--batch=")) || "").split("=")[1]) || 40;
 const FORCE = args.includes("--force");
+const MISSING_ONLY = args.includes("--missing-only");
 
 // ─── env ──────────────────────────────────────────────────────────────────
 function loadEnv() {
@@ -192,6 +197,7 @@ async function main() {
       if (overrides[k] !== undefined) return false; // surcharge manuelle → jamais
       if (typeof flatSource[k] !== "string") return false;
       if (flatExisting[k] === undefined) return true;
+      if (MISSING_ONLY) return false;
       return hashes[hkey(k)] !== hash(String(flatSource[k]));
     });
     console.log(`\n[${locale}] à traduire: ${todo.length}`);

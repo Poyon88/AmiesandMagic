@@ -9,10 +9,12 @@
 // pour qu'un clic impatient n'escamote pas la carte.
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import GameCard from "@/components/cards/GameCard";
 import PremiumAura from "@/components/heroes/PremiumAura";
 import { HaloBloom, ExpandingRing, OrbitingSparkles, RadialFlash } from "@/components/game/OverlayPrimitives";
-import { RARITY_MAP, getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
+import { RARITY_MAP } from "@/lib/card-engine/constants";
 import type { Card } from "@/lib/game/types";
 import type { CraftResult } from "@/lib/economy/types";
 
@@ -25,11 +27,6 @@ function rgb(hex: string): string {
   return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
 }
 
-/** Libellé de rareté de l'étape 1 : un héros est annoncé comme tel. */
-function libelleRarete(r: CraftResult): string {
-  return r.kind === "hero" ? "Héros unique" : getRarityLabel(r.rarity);
-}
-
 export default function EssenceReveal({
   result,
   onClose,
@@ -38,6 +35,8 @@ export default function EssenceReveal({
   onClose: () => void;
 }) {
   const [etape, setEtape] = useState(0);
+  const t = useTranslations("shop");
+  const vocab = useVocab();
   const rar = RARITY_MAP[result.rarity] ?? RARITY_MAP["Peu Commune"];
   const couleur = rgb(rar.color);
   // Plus la rareté est haute, plus l'effet est appuyé.
@@ -62,16 +61,17 @@ export default function EssenceReveal({
   }, [etape, avancer, onClose]);
 
   const indices: { label: string; valeur: string }[] = [
-    { label: "Rareté", valeur: libelleRarete(result) },
-    { label: "Faction", valeur: result.faction ? getFactionDisplayName(result.faction) : "Sans faction" },
-    { label: "Clan", valeur: result.clan ?? "Sans clan" },
+    // Un héros est annoncé comme tel dès la première étape.
+    { label: t("reveal_rarity"), valeur: result.kind === "hero" ? t("odds_hero") : vocab.rarityLabel(result.rarity) },
+    { label: t("reveal_faction"), valeur: result.faction ? vocab.factionName(result.faction) : t("reveal_no_faction") },
+    { label: t("reveal_clan"), valeur: result.clan ? vocab.clanName(result.clan) : t("reveal_no_clan") },
   ];
 
   return (
     <motion.div
       role="dialog"
       aria-modal="true"
-      aria-label="Révélation de la forge d'essence"
+      aria-label={t("reveal_aria")}
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-black/90 px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -170,11 +170,11 @@ export default function EssenceReveal({
                   {result.kind === "hero" ? result.hero?.name : (result.card as { name?: string } | undefined)?.name}
                 </div>
                 <div className="text-sm text-am-ink-3">
-                  Exemplaire n°{result.print_number} / {result.max_prints}
+                  {t("reveal_print", { n: result.print_number, max: result.max_prints })}
                 </div>
                 {result.fallback && (
                   <div className="mt-1 text-xs text-am-ink-3">
-                    La rareté tirée était épuisée : la forge est descendue d&apos;un cran.
+                    {t("reveal_fallback")}
                   </div>
                 )}
               </div>
@@ -190,7 +190,7 @@ export default function EssenceReveal({
             onClick={(e) => { e.stopPropagation(); setEtape(DERNIERE); }}
             className="am-btn am-btn-ghost px-4 py-2 text-xs"
           >
-            Passer
+            {t("reveal_skip")}
           </button>
         ) : (
           <button
@@ -199,7 +199,7 @@ export default function EssenceReveal({
             className="am-btn am-btn-gold px-6 py-2 text-sm"
             autoFocus
           >
-            Continuer
+            {t("reveal_continue")}
           </button>
         )}
       </div>

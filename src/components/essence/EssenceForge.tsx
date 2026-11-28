@@ -8,6 +8,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import { AmButton } from "@/components/ui/AmButton";
@@ -23,6 +25,10 @@ export default function EssenceForge() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CraftResult | null>(null);
+  const t = useTranslations("shop");
+  const vocab = useVocab();
+  // Chiffres latins partout : l'arabe garde 0-9 dans tout le jeu.
+  const nombre = new Intl.NumberFormat(useLocale(), { numberingSystem: "latn" });
 
   const charger = useCallback(async () => {
     try {
@@ -42,7 +48,7 @@ export default function EssenceForge() {
       const res = await fetch("/api/essence/craft", { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message ?? "La forge a échoué.");
+        setError(data.message ?? t("forge_error"));
         if (typeof data.essence === "number") setEssence(data.essence);
         return;
       }
@@ -51,7 +57,7 @@ export default function EssenceForge() {
       announceEssence(r.essence);
       setResult(r);
     } catch {
-      setError("La forge a échoué.");
+      setError(t("forge_error"));
     } finally {
       setPending(false);
     }
@@ -66,15 +72,15 @@ export default function EssenceForge() {
   return (
     <section id="forge" className="mx-auto max-w-5xl scroll-mt-28 px-4 py-12">
       <AmHeading
-        eyebrow="Essence"
-        subtitle="Dépensez votre essence pour forger une carte limitée au hasard parmi les exemplaires encore disponibles."
+        eyebrow={t("forge_eyebrow")}
+        subtitle={t("forge_subtitle")}
       >
-        La forge d&apos;essence
+        {t("forge_title")}
       </AmHeading>
 
       <AmPanel corners className="mx-auto mt-10 flex max-w-xl flex-col items-center gap-4 p-8 text-center">
         <span className="flex items-center gap-2 text-4xl font-bold text-violet-200">
-          {essence.toLocaleString("fr-FR")}
+          {nombre.format(essence)}
           <EssenceIcon size={30} />
         </span>
 
@@ -84,39 +90,38 @@ export default function EssenceForge() {
           aria-valuemin={0}
           aria-valuemax={ESSENCE_CRAFT_COST}
           aria-valuenow={Math.min(essence, ESSENCE_CRAFT_COST)}
-          aria-label="Essence vers la prochaine forge"
+          aria-label={t("forge_progress_aria")}
         >
           <div className="h-full rounded-full bg-violet-400 transition-all" style={{ width: `${progression * 100}%` }} />
         </div>
 
         <AmButton variant="arcane" onClick={forger} disabled={pending || !pret} className="w-full max-w-xs">
-          {pending ? "Forge en cours…" : pret ? (
+          {pending ? t("forge_pending") : pret ? (
             <span className="inline-flex items-center gap-2">
-              Forger · {ESSENCE_CRAFT_COST.toLocaleString("fr-FR")} <EssenceIcon size={16} />
+              {t("forge_button", { cost: nombre.format(ESSENCE_CRAFT_COST) })} <EssenceIcon size={16} />
             </span>
-          ) : `Il vous faut ${ESSENCE_CRAFT_COST.toLocaleString("fr-FR")} essence`}
+          ) : t("forge_need", { cost: nombre.format(ESSENCE_CRAFT_COST) })}
         </AmButton>
 
         {error && <p className="text-sm text-red-300" role="alert">{error}</p>}
 
         <table className="mt-4 w-full max-w-xs text-sm">
-          <caption className="mb-2 text-xs uppercase tracking-[0.2em] text-am-ink-3">Chances</caption>
+          <caption className="mb-2 text-xs uppercase tracking-[0.2em] text-am-ink-3">{t("odds_caption")}</caption>
           <tbody>
             {ESSENCE_CRAFT_ODDS.map((o) => (
               <tr key={o.key} className="border-t border-white/5">
-                <td className="py-1 text-left" style={{ color: RARITY_MAP[o.rarity]?.color }}>{o.label}</td>
-                <td className="py-1 text-right text-am-ink-2">{o.odds}</td>
+                <td className="py-1 text-left" style={{ color: RARITY_MAP[o.rarity]?.color }}>{o.key === "hero" ? t("odds_hero") : vocab.rarityLabel(o.rarity)}</td>
+                <td className="py-1 text-right text-am-ink-2">{o.oneIn ? t("odds_one_in", { n: nombre.format(o.oneIn) }) : t("odds_rest")}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <p className="text-xs text-am-ink-3">
-          La faction puis le clan sont tirés parmi ceux qui ont encore des exemplaires libres. Si une
-          rareté est épuisée, la forge descend d&apos;un cran.
+          {t("forge_note")}
         </p>
         <Link href="/compte/essence" className="text-xs text-violet-300 underline-offset-2 hover:underline">
-          Historique de mon essence
+          {t("forge_history")}
         </Link>
       </AmPanel>
 

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import HomeHeader from "@/components/home/HomeHeader";
 import AmAtmosphere from "@/components/ui/AmAtmosphere";
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Cadre commun des pages hors-jeu : l'en-tête du site avec son lien de retour,
@@ -19,13 +20,14 @@ import type { ReactNode } from "react";
 export default async function PageChrome({
   children,
   backHref = "/",
-  backLabel = "Accueil",
+  backLabel,
 }: {
   children: ReactNode;
   backHref?: string;
   backLabel?: string;
 }) {
   const supabase = await createClient();
+  const t = await getTranslations("common");
   const { data: { user } } = await supabase.auth.getUser();
 
   const [{ data: profile }, { data: wallet }] = await Promise.all([
@@ -41,7 +43,7 @@ export default async function PageChrome({
         goldBalance={wallet?.balance ?? 0}
         goldDebt={wallet?.gold_debt ?? 0}
         backHref={backHref}
-        backLabel={backLabel}
+        backLabel={backLabel ?? t("home")}
       />
       <main id="main-content" className="relative pt-24 md:pt-28">
         {children}

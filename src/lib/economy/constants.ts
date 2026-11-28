@@ -21,14 +21,16 @@ export const REWARD_QUEST_LARGE = 50;
 // ces valeurs ne servent qu'à l'AFFICHAGE. Toute modification doit être
 // reportée dans le SQL, faute de quoi la boutique annoncerait d'autres chances
 // que celles appliquées.
+// `label` et `odds` sont le texte FRANÇAIS (livret de règles) ; l'interface
+// traduite se sert de `rarity` et de `oneIn`.
 export const ESSENCE_NAME = 'Essence';
 export const ESSENCE_CRAFT_COST = 2000;
-export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odds: string; rarity: string }> = [
-  { key: 'hero', label: 'Héros unique', odds: '1 sur 10 000', rarity: 'Légendaire' },
-  { key: 'Légendaire', label: 'Unique', odds: '1 sur 1 000', rarity: 'Légendaire' },
-  { key: 'Épique', label: 'Épique', odds: '1 sur 100', rarity: 'Épique' },
-  { key: 'Rare', label: 'Rare', odds: '1 sur 10', rarity: 'Rare' },
-  { key: 'Peu Commune', label: 'Peu Commune', odds: 'le reste', rarity: 'Peu Commune' },
+export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odds: string; rarity: string; oneIn: number | null }> = [
+  { key: 'hero', label: 'Héros unique', odds: '1 sur 10 000', rarity: 'Légendaire', oneIn: 10000 },
+  { key: 'Légendaire', label: 'Unique', odds: '1 sur 1 000', rarity: 'Légendaire', oneIn: 1000 },
+  { key: 'Épique', label: 'Épique', odds: '1 sur 100', rarity: 'Épique', oneIn: 100 },
+  { key: 'Rare', label: 'Rare', odds: '1 sur 10', rarity: 'Rare', oneIn: 10 },
+  { key: 'Peu Commune', label: 'Peu Commune', odds: 'le reste', rarity: 'Peu Commune', oneIn: null },
 ];
 
 // ─── Crédits marché ──────────────────────────────────────────────────────────

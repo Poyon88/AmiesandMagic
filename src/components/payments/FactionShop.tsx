@@ -8,11 +8,12 @@
 // le jour où l'administrateur relève le prix du forfait — ce qui est prévu, le
 // prix de lancement étant temporaire.
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useVocab } from "@/i18n/useVocab";
 import AmPanel from "@/components/ui/AmPanel";
 import AmHeading from "@/components/ui/AmHeading";
 import GoldCoin from "@/components/shared/GoldCoin";
 import { AmButton } from "@/components/ui/AmButton";
-import { getFactionDisplayName } from "@/lib/card-engine/constants";
 
 interface FactionRow {
   id: string;
@@ -36,6 +37,12 @@ export default function FactionShop() {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const t = useTranslations("shop");
+  const vocab = useVocab();
+  const riche = {
+    b: (chunks: React.ReactNode) => <strong className="text-am-gold">{chunks}</strong>,
+    coin: () => <GoldCoin size={14} />,
+  };
 
   const charger = useCallback(async () => {
     try {
@@ -60,20 +67,20 @@ export default function FactionShop() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.message ?? "L'achat n'a pas pu aboutir.");
+        setError(data.message ?? t("purchase_error"));
         return;
       }
       setFlash(
         data.unlocked === "*"
-          ? "Toutes les factions sont désormais à vous."
-          : `Faction débloquée : ${getFactionDisplayName(data.unlocked)}.`,
+          ? t("unlocked_all")
+          : t("unlocked_one", { faction: vocab.factionName(data.unlocked) }),
       );
       // On relit l'état plutôt que de le rafistoler localement : le solde, la
       // dette et les droits changent tous en même temps côté serveur, et une
       // mise à jour partielle afficherait un solde faux jusqu'au rechargement.
       await charger();
     } catch {
-      setError("L'achat n'a pas pu aboutir.");
+      setError(t("purchase_error"));
     } finally {
       setPending(null);
     }
@@ -90,21 +97,20 @@ export default function FactionShop() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-12">
       <AmHeading
-        eyebrow="Factions"
-        subtitle="Chaque faction débloquée vous donne toutes ses cartes communes. Les cartes rares et au-delà restent l'affaire des enchères."
+        eyebrow={t("factions_eyebrow")}
+        subtitle={t("factions_subtitle")}
       >
-        Étendre votre armée
+        {t("factions_title")}
       </AmHeading>
 
       <p className="mt-6 text-center text-sm text-am-ink-2">
-        Votre solde : <strong className="text-am-gold">{balance}</strong> <GoldCoin size={14} />
+        {t.rich("balance", { ...riche, balance })}
       </p>
 
       {goldDebt > 0 && (
         <AmPanel className="mt-6 p-5 border border-red-500/40">
           <p className="text-sm text-red-300">
-            Une dette de <strong>{goldDebt}</strong> <GoldCoin size={14} /> vous empêche d&apos;acheter une
-            faction. Elle s&apos;épongera sur vos prochains gains ou achats d&apos;or.
+            {t.rich("faction_debt", { ...riche, b: (chunks) => <strong>{chunks}</strong>, debt: goldDebt })}
           </p>
         </AmPanel>
       )}
@@ -117,37 +123,37 @@ export default function FactionShop() {
       {!ownsBundle && bundlePrice != null && manquantes.length > 1 && (
         <AmPanel corners className="mt-10 flex flex-col items-center gap-3 p-8 text-center">
           <span className="font-display text-sm uppercase tracking-[0.24em] text-am-arcane-bright/80">
-            Toutes les factions
+            {t("bundle_label")}
           </span>
           <span className="flex items-center gap-2 text-4xl font-bold text-am-gold">
             {bundlePrice}
             <GoldCoin size={30} />
           </span>
           <span className="text-sm text-am-ink-2">
-            Les {manquantes.length} factions qu&apos;il vous manque, et toutes celles à venir.
+            {t("bundle_desc", { count: manquantes.length })}
           </span>
           <span className="text-xs text-am-ink-3">
-            Prix de lancement — moins que deux factions achetées séparément.
+            {t("bundle_launch")}
           </span>
           <AmButton
             onClick={() => acheter({ bundle: true }, "*")}
             disabled={pending !== null || goldDebt > 0 || balance < bundlePrice}
             className="mt-2 w-full max-w-xs"
           >
-            {pending === "*" ? "Achat…" : balance < bundlePrice ? "Or insuffisant" : "Prendre le forfait"}
+            {pending === "*" ? t("buying") : balance < bundlePrice ? t("not_enough_gold") : t("take_bundle")}
           </AmButton>
         </AmPanel>
       )}
 
       {ownsBundle && (
         <p className="mt-10 text-center text-sm text-am-gold">
-          Vous possédez le forfait : toutes les factions, présentes et à venir, sont à vous.
+          {t("owns_bundle")}
         </p>
       )}
 
       {tout && !ownsBundle && (
         <p className="mt-10 text-center text-sm text-am-gold">
-          Vous possédez déjà toutes les factions.
+          {t("owns_all")}
         </p>
       )}
 
@@ -155,10 +161,9 @@ export default function FactionShop() {
         <div className="mt-10 grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {manquantes.map((f) => (
             <AmPanel key={f.id} corners className="flex h-full flex-col items-center gap-3 p-6 text-center">
-              <span className="font-display text-base text-am-ink-1">{getFactionDisplayName(f.id)}</span>
+              <span className="font-display text-base text-am-ink-1">{vocab.factionName(f.id)}</span>
               <span className="text-xs text-am-ink-3">
-                {f.commonCount} carte{f.commonCount > 1 ? "s" : ""} commune
-                {f.commonCount > 1 ? "s" : ""}
+                {t("common_count", { count: f.commonCount })}
               </span>
               <span className="mt-auto flex items-center gap-2 text-2xl font-bold text-am-gold">
                 {factionPrice}
@@ -169,7 +174,7 @@ export default function FactionShop() {
                 disabled={pending !== null || goldDebt > 0 || balance < factionPrice}
                 className="mt-2 w-full"
               >
-                {pending === f.id ? "Achat…" : balance < factionPrice ? "Or insuffisant" : "Débloquer"}
+                {pending === f.id ? t("buying") : balance < factionPrice ? t("not_enough_gold") : t("unlock")}
               </AmButton>
             </AmPanel>
           ))}
@@ -177,8 +182,7 @@ export default function FactionShop() {
       )}
 
       <p className="mt-10 text-center text-xs text-am-ink-3">
-        Le déblocage est définitif et rattaché à votre compte. Les factions débloquées avec de l&apos;or
-        issu d&apos;un paiement remboursé peuvent être reprises.
+        {t("factions_note")}
       </p>
     </section>
   );
