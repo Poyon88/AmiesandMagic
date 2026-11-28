@@ -45,14 +45,24 @@ const KEYFRAMES = `
 `;
 
 export default function PremiumAura({
-  rarete, halo = true, reflet = true, children,
+  rarete, halo = true, reflet = true, actif = true, children,
 }: {
   rarete?: string | null;
   halo?: boolean;
   reflet?: boolean;
+  /** Aura allumée ? Vrai partout par défaut (collection, révélation). EN
+   *  PARTIE, le plateau ne l'allume que le temps du pouvoir héroïque : en
+   *  permanence, elle accaparait le regard. Éteinte, elle s'efface en fondu et
+   *  ses animations sont mises en pause (aucun coût tant qu'elle dort). */
+  actif?: boolean;
   children: React.ReactNode;
 }) {
   const teinte = teinteAura(rarete);
+  const veille: React.CSSProperties = {
+    opacity: actif ? 1 : 0,
+    transition: "opacity 0.6s ease-out",
+  };
+  const lecture = actif ? "running" : "paused";
   return (
     <div className="relative" style={{ isolation: "isolate" }}>
       <style>{KEYFRAMES}</style>
@@ -64,8 +74,12 @@ export default function PremiumAura({
           style={{
             inset: -30, zIndex: -1,
             background: `radial-gradient(circle, ${teinte} 0%, ${teinte}b3 54%, ${teinte}55 66%, transparent 74%)`,
-            filter: "blur(5px) saturate(1.3)",
             animation: "am-aura-respire 3.6s ease-in-out infinite",
+            animationPlayState: lecture,
+            // L'opacité de veille passe par un filtre : `opacity` est déjà
+            // pilotée par l'animation de respiration.
+            filter: `blur(5px) saturate(1.3) opacity(${actif ? 1 : 0})`,
+            transition: "filter 0.6s ease-out",
           }}
         />
       )}
@@ -80,16 +94,21 @@ export default function PremiumAura({
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
             zIndex: 1,
+            ...veille,
             WebkitMaskImage: "radial-gradient(closest-side, transparent 82%, #000 86%, #000 98%, transparent 100%)",
             maskImage: "radial-gradient(closest-side, transparent 82%, #000 86%, #000 98%, transparent 100%)",
             mixBlendMode: "screen",
           }}
         >
           <div
+            // Remonté à chaque allumage : le reflet repart du début de son tour
+            // au lieu de reprendre au milieu d'un cycle, en plein silence.
+            key={actif ? "allume" : "eteint"}
             className="am-aura-anim absolute inset-0 rounded-full"
             style={{
               background: "conic-gradient(from 0deg, transparent 0deg, transparent 300deg, rgba(255,250,225,.15) 318deg, rgba(255,250,225,.95) 340deg, rgba(255,250,225,.15) 352deg, transparent 360deg)",
               animation: "am-aura-reflet 6s ease-in-out infinite",
+              animationPlayState: lecture,
             }}
           />
         </div>

@@ -474,6 +474,27 @@ body {
   .statut-anim { animation: none !important; }
 }
 
+/* ── Héros en danger (sous le quart de ses PV) : battement de cœur ── */
+/* Double pulsation « poum-poum » puis silence, sur l'opacité seule. */
+@keyframes danger-coeur {
+  0%, 100% { opacity: 0.35; }
+  8% { opacity: 1; }
+  18% { opacity: 0.5; }
+  28% { opacity: 0.9; }
+  46% { opacity: 0.35; }
+}
+/* Même rythme pour l'anneau du médaillon, qui enfle légèrement à chaque coup. */
+@keyframes danger-anneau {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  8% { opacity: 1; transform: scale(1.045); }
+  18% { opacity: 0.6; transform: scale(1.01); }
+  28% { opacity: 0.95; transform: scale(1.035); }
+  46% { opacity: 0.45; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .danger-anim { animation: none !important; opacity: 0.6; }
+}
+
 /* Gloire — liseré doré pulsé des unités qui ont survécu au combat */
 @keyframes gloire-pulse {
   0%, 100% { border-color: rgba(212, 168, 0, 0.3); box-shadow: 0 0 4px rgba(212, 168, 0, 0.2); }

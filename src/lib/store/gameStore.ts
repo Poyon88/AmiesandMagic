@@ -579,6 +579,9 @@ export interface HeroPowerCastEvent {
   // Purely an FX payload (not part of hashed GameState). heroId lets the
   // overlay localise name / power via useHeroText at render time.
   heroId: number;
+  /** Joueur qui lance le pouvoir : distingue les deux médaillons quand les
+   *  deux joueurs ont le MÊME héros (l'aura ne s'allume que chez le lanceur). */
+  casterId?: string;
   heroName: string;
   race: string;
   powerName: string;
@@ -2305,6 +2308,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (heroDef) {
         heroPowerEvent = {
           heroId: heroDef.id,
+          casterId: player.id,
           heroName: heroDef.name,
           race: heroDef.race,
           powerName: heroDef.powerName,

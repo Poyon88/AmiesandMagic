@@ -383,3 +383,56 @@ export function PalierOverlay() {
     document.body,
   );
 }
+
+// ─── Héros en danger ─────────────────────────────────────────────────────────
+
+/** Part des PV de départ sous laquelle un héros est « en danger ». */
+export const SEUIL_DANGER = 0.25;
+export function herosEnDanger(pv: number, pvMax: number): boolean {
+  return pv > 0 && pvMax > 0 && pv <= pvMax * SEUIL_DANGER;
+}
+
+/**
+ * HÉROS EN DANGER : quand SON propre héros passe sous le quart de ses PV, les
+ * bords de l'écran rougissent et battent comme un cœur. Rien pour le héros
+ * adverse ici — c'est son médaillon qui pulse (cf. HeroPortrait), pas l'écran :
+ * l'alarme plein écran est réservée à ce qui vous menace.
+ *
+ * Une seule couche fixe animée en CSS sur l'opacité : aucun coût par image.
+ */
+export function DangerOverlay({ actif }: { actif: boolean }) {
+  const enDanger = useGameStore((s) => {
+    const moi = s.gameState?.players.find((p) => p.id === s.localPlayerId);
+    return !!moi && s.gameState?.phase === "playing" && herosEnDanger(moi.hero.hp, moi.hero.maxHp);
+  });
+  if (!actif || typeof document === "undefined") return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {enDanger && (
+        <motion.div
+          key="danger"
+          aria-hidden
+          // Sous les bandeaux et les modales (z 50), au-dessus du plateau.
+          style={{ position: "fixed", inset: 0, zIndex: 44, pointerEvents: "none" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div
+            className="danger-anim"
+            style={{
+              position: "absolute", inset: 0,
+              // Le centre reste intact : on ne voile jamais les cartes.
+              background: "radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(150, 12, 18, 0.34) 82%, rgba(110, 0, 8, 0.62) 100%)",
+              boxShadow: "inset 0 0 120px 30px rgba(170, 14, 22, 0.42)",
+              animation: "danger-coeur 1.25s ease-in-out infinite",
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+}

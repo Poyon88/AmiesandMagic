@@ -8,6 +8,7 @@ import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import { isBigHit } from "@/lib/fx/impactFx";
 import PremiumAura, { aAuraPremium } from "@/components/heroes/PremiumAura";
 import { lent } from "@/lib/fx/overlayMotion";
+import { useGameStore } from "@/lib/store/gameStore";
 
 const HERO_IMAGES: Record<string, string> = {
   elves: "/images/heroes/elves.png",
@@ -69,6 +70,18 @@ export default function HeroPortrait({
   // Activatable-power targeting → colour the ring like the power icon instead
   // of the default red attack ring.
   const powerRing = isValidTarget && !!validTargetColor;
+  // AURA D'ÉDITION LIMITÉE : allumée seulement pendant que CE héros lance son
+  // pouvoir (le temps de l'overlay du pouvoir, que le store efface ensuite).
+  // En permanence sur le plateau, elle accaparait le regard.
+  const pouvoirEnCours = useGameStore((s) => {
+    const ev = s.heroPowerCastEvent;
+    if (!ev) return false;
+    if (ev.casterId) return (ev.casterId === s.localPlayerId) !== isOpponent;
+    return ev.heroId === hero.heroDefinition?.id; // évènement sans lanceur : repli sur le héros
+  });
+  // En danger : sous le quart de ses PV (sur les PV AFFICHÉS, pour que l'anneau
+  // s'allume avec le chiffre et pas avant le coup qui l'y fait tomber).
+  const enDanger = pvAffiche > 0 && hero.maxHp > 0 && pvAffiche <= hero.maxHp * 0.25;
 
   return (
     // Boîte = le MÉDAILLON exactement (rond, 192 px / 208 px) : l'orbite du
@@ -76,7 +89,7 @@ export default function HeroPortrait({
     // absolu, sans agrandir la boîte.
     <div className="relative">
       {/* Aura des héros LÉGENDAIRES (halo + reflet) autour du seul médaillon. */}
-      <AuraSiLegendaire rarete={hero.heroDefinition?.rarity}>
+      <AuraSiLegendaire rarete={hero.heroDefinition?.rarity} actif={pouvoirEnCours}>
       <motion.div
         animate={
           damageAmount
@@ -165,6 +178,18 @@ export default function HeroPortrait({
       </motion.div>
       </AuraSiLegendaire>
 
+      {/* Héros en danger : anneau rouge qui bat comme un cœur autour du médaillon. */}
+      {enDanger && (
+        <div
+          aria-hidden
+          className="danger-anim pointer-events-none absolute inset-0 rounded-full"
+          style={{
+            boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.95), 0 0 26px 8px rgba(220, 38, 38, 0.6), inset 0 0 30px 6px rgba(190, 20, 20, 0.5)",
+            animation: "danger-anneau 1.25s ease-in-out infinite",
+          }}
+        />
+      )}
+
       {/* PV dans l'écu, à cheval sur le bas du médaillon. Rouge sous 10 PV. */}
       <div
         className="pointer-events-none absolute left-1/2 z-10 flex items-start justify-center"
@@ -213,6 +238,6 @@ export default function HeroPortrait({
   );
 }
 
-function AuraSiLegendaire({ rarete, children }: { rarete?: string | null; children: React.ReactNode }) {
-  return aAuraPremium(rarete) ? <PremiumAura rarete={rarete}>{children}</PremiumAura> : <>{children}</>;
+function AuraSiLegendaire({ rarete, actif, children }: { rarete?: string | null; actif: boolean; children: React.ReactNode }) {
+  return aAuraPremium(rarete) ? <PremiumAura rarete={rarete} actif={actif}>{children}</PremiumAura> : <>{children}</>;
 }

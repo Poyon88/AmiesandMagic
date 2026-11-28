@@ -43,7 +43,8 @@ import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
 import { AmesOverlay, CoupFatalOverlay, EntreeUniqueOverlay } from "./MomentsForts";
 import AmbianceLayer, { genreAmbiance } from "./AmbianceLayer";
-import { BanniereDeTour, PalierOverlay, VersusOverlay } from "./MomentsRares";
+import BandeauJeu from "./BandeauJeu";
+import { BanniereDeTour, DangerOverlay, PalierOverlay, VersusOverlay } from "./MomentsRares";
 import SpellCastOverlay from "./SpellCastOverlay";
 import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
@@ -1648,13 +1649,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
               n'était pas vide, il était démonté avec ses enfants quand la
               dernière créature mourait, et celle-ci s'effaçait sans jouer
-              sa sortie (animation de mort). Le message de plateau vide est
-              un frère, plus une alternative. */}
-          {opponent.board.length === 0 && (
-            <div className="text-foreground/10 text-sm">
-              {t("no_creatures")}
-            </div>
-          )}
+              sa sortie (animation de mort). Plateau vide : aucun texte
+              incrusté, le décor reste nu. */}
             <AnimatePresence>
               {opponent.board.map((creature) => (
                 <BoardCreature
@@ -1714,15 +1710,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             // Plateau vide : sans ce cas, l'aperçu serait avalé par le message
             // « glissez une carte ici » et la créature n'apparaîtrait jamais.
             <PendingCreaturePreview instance={pendingPreview.inst} />
-          ) : myPlayer.board.length === 0 && !isDragOver ? (
-            <div className="text-foreground/10 text-sm">
-              {t("drag_hint")}
-            </div>
-          ) : myPlayer.board.length === 0 && isDragOver ? (
-            <div className="text-success/50 text-sm font-medium">
-              {t("drop_hint")}
-            </div>
-          ) : null}
+          ) : null /* plateau vide : aucun texte incrusté, au repos comme au survol */}
           {/* AnimatePresence TOUJOURS monté : rendu seulement si le plateau
               n'était pas vide, il était démonté avec ses enfants quand la
               dernière créature mourait, et celle-ci s'effaçait sans jouer
@@ -2392,14 +2380,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
 
       {/* Multi-target spell banner */}
       {targetingMode === "spell_multi" && spellTargetSlots.length > 0 && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-purple-900/90 border border-purple-500 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
-          <p className="text-purple-200 text-sm">
-            Cible {currentTargetSlotIndex + 1}/{spellTargetSlots.length}
-          </p>
-          <p className="text-white font-bold">
-            {spellTargetSlots[currentTargetSlotIndex]?.label ?? "Choisissez une cible"}
-          </p>
-        </div>
+        <BandeauJeu ton="arcane" surtitre={`Cible ${currentTargetSlotIndex + 1}/${spellTargetSlots.length}`}>
+          {spellTargetSlots[currentTargetSlotIndex]?.label ?? "Choisissez une cible"}
+        </BandeauJeu>
       )}
 
       {/* Déclaration d'attaque : désignations à faire AVANT le combat (pouvoir
@@ -2407,35 +2390,26 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           dit QUEL effet on cible — sans lui, rien ne distinguait le clic du
           pouvoir de celui d'un Affaiblissement. */}
       {targetingMode === "attack_power" && attackPowerLabel && (
-        <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 bg-purple-900/90 border border-purple-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
-          <p className="text-white font-bold">{t("attack_choice_target", { label: attackPowerLabel })}</p>
-        </div>
+        <BandeauJeu ton="arcane">{t("attack_choice_target", { label: attackPowerLabel })}</BandeauJeu>
       )}
 
       {/* Choix en attente chez l'ADVERSAIRE : la partie est suspendue (verrou
           du store) le temps de sa fenêtre — sans ce bandeau, le plateau
           semblait simplement figé. */}
       {choiceOwnerId != null && !isChoiceMine && (
-        <div className="fixed left-1/2 -translate-x-1/2 top-4 z-50 bg-slate-900/90 border border-slate-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm">
-          <p className="text-white font-bold">{t("opponent_choosing")}</p>
-        </div>
+        <BandeauJeu ton="attente">{t("opponent_choosing")}</BandeauJeu>
       )}
 
       {/* Déclencheur interactif en attente (Remontée mort/retour, ou effet
           composé de fin de tour). Le message reflète l'effet réel. */}
       {targetingMode === "pending_trigger" && (
-        <div
-          // ChoiceTimerBadge occupe EXACTEMENT le même point d'ancrage (fixed,
-          // haut, centré) et passe devant : le libellé de l'effet en attente se
-          // retrouvait tronqué en son milieu. On descend donc le bandeau sous le
-          // chrono quand celui-ci est affiché, plutôt que de déplacer le chrono,
-          // qui sert aussi aux modales de choix où sa place est acquise.
-          className={`fixed left-1/2 -translate-x-1/2 z-50 bg-blue-900/90 border border-blue-400 rounded-lg px-6 py-3 text-center backdrop-blur-sm ${
-            choiceTimer ? "top-[72px]" : "top-4"
-          }`}
-        >
-          <p className="text-white font-bold">{pendingTriggerPrompt ?? "🎯 Choisissez une cible"}</p>
-        </div>
+        // ChoiceTimerBadge occupe EXACTEMENT le même point d'ancrage (fixed,
+        // haut, centré) et passe devant : le libellé de l'effet en attente se
+        // retrouvait tronqué en son milieu. Le bandeau descend donc sous le
+        // chrono quand celui-ci est affiché.
+        <BandeauJeu ton="cible" sousLeChrono={!!choiceTimer}>
+          {pendingTriggerPrompt ?? "Choisissez une cible"}
+        </BandeauJeu>
       )}
 
       {/* Damage animation overlay */}
@@ -2445,6 +2419,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <VersusOverlay />
       <BanniereDeTour actif={!mulliganOverlayRequired && !isFinished} />
       <PalierOverlay />
+      <DangerOverlay actif={!mulliganOverlayRequired && !isFinished} />
       <CoupFatalOverlay onDebut={debuterFinale} onFin={finirFinale} />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
