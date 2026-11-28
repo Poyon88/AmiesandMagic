@@ -1,31 +1,35 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import AmHeading from "@/components/ui/AmHeading";
 import PaymentHistory from "@/components/payments/PaymentHistory";
 import PageChrome from "@/components/shared/PageChrome";
 
-export const metadata = { title: "Mes paiements — Armies of Legends" };
+export async function generateMetadata() {
+  const t = await getTranslations("account");
+  return { title: `${t("payments_title")} — Armies of Legends` };
+}
 
 export default async function PaiementsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const t = await getTranslations("account");
 
   return (
     <PageChrome>
       <div className="mx-auto max-w-3xl px-4 pb-16">
         <AmHeading
-          eyebrow="Compte"
-          subtitle="Vos achats de tickets de tournoi et de pièces d'or."
+          eyebrow={t("eyebrow")}
+          subtitle={t("payments_subtitle")}
         >
-          Mes paiements
+          {t("payments_title")}
         </AmHeading>
         <div className="mt-10">
           <PaymentHistory />
         </div>
         <p className="mt-8 text-center text-xs text-am-ink-3">
-          Pour toute question sur un paiement, contactez le support. Les pièces d&apos;or ne sont
-          pas convertibles en euros ; seul le paiement d&apos;origine peut être remboursé.
+          {t("payments_note")}
         </p>
       </div>
     </PageChrome>
