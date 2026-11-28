@@ -13,6 +13,8 @@ import {
   colonneAscendante,
   ondesMultiples,
   poussiereAuSol,
+  sillage,
+  familleSortEnCours,
   directionalDebris,
   sparkBurst,
   embers,
@@ -146,10 +148,71 @@ export default function ImpactFxLayer() {
       return p;
     };
 
+    // SIGNATURE D'UNE FAMILLE DE SORT sur sa cible : chaque famille a son
+    // GESTE (ce qui monte, tombe, converge ou éclate), pas seulement sa couleur.
+    const signatureFamille = (famille: string | undefined, x: number, y: number, pal: ReturnType<typeof paletteFor>) => {
+      switch (famille) {
+        case "feu": // éruption : gerbe et braises qui montent
+          sparkBurst(acquire, x, y, 8, true, pal);
+          embers(acquire, x, y, 12, true, pal);
+          shockwaveSprite(acquire, x, y, true, pal);
+          break;
+        case "givre": // cristaux qui se referment puis retombent
+          arcaneConverge(acquire, x, y, 8, pal);
+          deathShards(acquire, x, y, pal);
+          haloRing(acquire, x, y, pal);
+          break;
+        case "foudre": // décharge : étincelles vives en tous sens, deux ondes
+          directionalDebris(acquire, x, y, 0, 0, 12, true, pal);
+          ondesMultiples(acquire, x, y, 2, pal);
+          break;
+        case "terre": // éclats qui retombent lourdement
+          deathShards(acquire, x, y, pal);
+          sparkBurst(acquire, x, y, 5, false, pal);
+          shockwaveSprite(acquire, x, y, true, pal);
+          break;
+        case "poison": // miasme : bulles lentes qui montent, résidu qui coule
+          risingMotes(acquire, x, y, 10, pal);
+          ashFall(acquire, x, y, pal);
+          haloRing(acquire, x, y, pal);
+          break;
+        case "sacre": // colonne de lumière
+          colonneAscendante(acquire, x, y, pal);
+          haloRing(acquire, x, y, pal);
+          break;
+        case "ombre": // implosion, puis l'âme s'échappe
+          arcaneConverge(acquire, x, y, 12, pal);
+          ashFall(acquire, x, y, pal);
+          soulRise(acquire, x, y, pal);
+          break;
+        case "nature": // pollen et pousse
+          risingMotes(acquire, x, y, 9, pal);
+          sparkBurst(acquire, x, y, 4, false, pal);
+          haloRing(acquire, x, y, pal);
+          break;
+        case "soin": // douce montée
+          risingMotes(acquire, x, y, 12, pal);
+          haloRing(acquire, x, y, pal);
+          break;
+        case "acier": // étincelles de fer, sèches
+          directionalDebris(acquire, x, y, 0, 0, 8, false, pal);
+          shockwaveSprite(acquire, x, y, false, pal);
+          break;
+        default: // arcane — la signature d'origine
+          arcaneConverge(acquire, x, y, 7, pal);
+          haloRing(acquire, x, y, pal);
+      }
+    };
+
     const spawn = (e: ImpactEmit) => {
       if (reducedRef.current) return;
       const intensity = Math.min(e.amount, 12);
       if (e.type === "secousse") return; // rien à peindre : lu par useScreenShake
+      if (e.type === "trainee") {
+        sillage(acquire, e.x, e.y, paletteFor(e.paletteKey ?? "summon"));
+        arm();
+        return;
+      }
       if (e.type === "poussiere") {
         // Carte qui se pose : poussière au sol, ralentie comme le reste de l'entrée.
         const k = e.lenteur ?? 1;
@@ -215,7 +278,10 @@ export default function ImpactFxLayer() {
       }
       if (e.type === "death") {
         // The unit comes apart — shards fall, ash settles, soul rises.
-        const pal = paletteFor(e.poisoned ? "death_poison" : "death");
+        // Tuée par un sort : la dépouille se défait dans la matière du sort
+        // (braises pour le feu, éclats de givre…) au lieu de la cendre neutre.
+        const pal = paletteFor(e.poisoned ? "death_poison" : e.paletteKey ?? "death");
+        if (e.famille && !e.poisoned) signatureFamille(e.famille, e.x, e.y, pal);
         deathShards(acquire, e.x, e.y, pal);
         ashFall(acquire, e.x, e.y, pal);
         soulRise(acquire, e.x, e.y, pal);
@@ -246,12 +312,12 @@ export default function ImpactFxLayer() {
       if (e.type === "cast_hit") {
         // Spell ARRIVAL on a target — energy gathers in just before the impact.
         const pal = paletteFor(e.paletteKey ?? "spell");
-        arcaneConverge(acquire, e.x, e.y, 7, pal);
-        haloRing(acquire, e.x, e.y, pal);
+        signatureFamille(e.famille, e.x, e.y, pal);
         arm();
         return;
       }
-      const pal = paletteFor(e.type);
+      // Dégâts d'un sort : teintés à sa famille, et signés de sa recette.
+      const pal = paletteFor(e.paletteKey ?? e.type);
       if (e.type === "buff") {
         // Stat boost — graceful ascending gold. L'anneau est désormais rendu
         // en DOM derrière la carte (BoardCreature) ; on garde les motes montantes.
@@ -267,6 +333,7 @@ export default function ImpactFxLayer() {
         sparkBurst(acquire, e.x, e.y, intensity, e.big, pal);
         directionalDebris(acquire, e.x, e.y, e.dirX, e.dirY, intensity, e.big, pal);
         embers(acquire, e.x, e.y, intensity, e.big, pal);
+        if (e.famille) signatureFamille(e.famille, e.x, e.y, pal);
         // Palier « énorme » : seconde salve et ondes en cascade.
         if (isHugeHit(e.amount)) {
           ondesMultiples(acquire, e.x, e.y, 3, pal);
@@ -402,6 +469,7 @@ export default function ImpactFxLayer() {
       if (!FX_TYPES.has(evType)) continue;
       if (ev.x < -9000) continue; // target node was gone — nothing to draw
       const emit = () => {
+        const familleSort = familleSortEnCours();
         const hasSrc = ev.srcX != null && ev.srcY != null && ev.srcX > -9000;
         let dirX = 0;
         let dirY = 0;
@@ -420,6 +488,8 @@ export default function ImpactFxLayer() {
           dirX,
           dirY,
           big: isBigHit(ev.amount),
+          // Dégâts infligés pendant la résolution d'un sort : à sa famille.
+          ...(evType === "damage" && familleSort ? { paletteKey: `sort_${familleSort}`, famille: familleSort } : {}),
           // Seuls les vrais dégâts énormes secouent le plateau.
           ...(evType === "damage" && isHugeHit(ev.amount) ? { secousse: 9 } : {}),
         });
@@ -437,9 +507,11 @@ export default function ImpactFxLayer() {
     if (signature === lastDeathSigRef.current) return;
     lastDeathSigRef.current = signature;
     if (deathEvents.length === 0) return;
+    const familleSort = familleSortEnCours();
     for (const ev of deathEvents) {
       if (ev.x < -9000) continue; // node was already gone — nothing to draw
       emitImpact({
+        ...(familleSort ? { paletteKey: `sort_${familleSort}`, famille: familleSort } : {}),
         x: ev.x,
         y: ev.y,
         amount: 0,

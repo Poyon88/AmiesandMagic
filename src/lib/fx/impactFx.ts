@@ -59,6 +59,18 @@ const PALETTES: Record<string, Palette> = {
   heropower: { ember: [234, 179, 8], spark: [254, 240, 138], ring: [250, 204, 21] },
   // Entrée d'une carte Unique — or de la rareté, étincelles blanc chaud.
   unique: { ember: [255, 213, 79], spark: [255, 250, 225], ring: [255, 179, 0] },
+  // Familles de sorts (cf. spellFamilies.ts) — clé `sort_<famille>`.
+  sort_feu: { ember: [249, 115, 22], spark: [255, 236, 180], ring: [239, 68, 68] },
+  sort_givre: { ember: [56, 189, 248], spark: [236, 250, 255], ring: [125, 211, 252] },
+  sort_foudre: { ember: [250, 204, 21], spark: [255, 255, 235], ring: [147, 197, 253] },
+  sort_terre: { ember: [180, 134, 70], spark: [240, 220, 180], ring: [146, 104, 52] },
+  sort_poison: { ember: [132, 204, 22], spark: [217, 249, 157], ring: [77, 124, 15] },
+  sort_sacre: { ember: [253, 224, 120], spark: [255, 252, 235], ring: [250, 204, 21] },
+  sort_ombre: { ember: [139, 92, 246], spark: [221, 214, 254], ring: [91, 33, 182] },
+  sort_nature: { ember: [52, 211, 153], spark: [209, 250, 229], ring: [16, 185, 129] },
+  sort_soin: { ember: [74, 222, 128], spark: [240, 255, 244], ring: [34, 197, 94] },
+  sort_acier: { ember: [203, 213, 225], spark: [255, 255, 255], ring: [148, 163, 184] },
+  sort_arcane: { ember: [168, 85, 247], spark: [233, 213, 255], ring: [192, 132, 252] },
   // Coup fatal sur un héros — braise rouge, cœur blanc.
   fatal: { ember: [255, 120, 60], spark: [255, 245, 225], ring: [255, 70, 50] },
 };
@@ -71,7 +83,9 @@ export type ImpactType =
   // Moments forts : entrée d'une Unique, héros abattu, simple secousse.
   | "summon_unique" | "fatal" | "secousse"
   // Poussière soulevée au pied d'une carte qui se pose (toutes raretés).
-  | "poussiere";
+  | "poussiere"
+  // Sillage d'une carte qu'on fait glisser de la main vers le plateau.
+  | "trainee";
 
 // Accepts any palette key (ImpactType plus internal variants like
 // "death_poison" / "spell_red" / "heropower"); unknown keys fall back to the
@@ -101,8 +115,26 @@ export interface ImpactEmit {
   teinte?: [number, number, number];
   /** Ralenti des particules de CET effet (1,5 = 50 % plus lent). Absent ⇒ 1. */
   lenteur?: number;
+  /** Sort : famille visuelle (cf. spellFamilies.ts) — choisit la recette de
+   *  particules à l'arrivée sur la cible, en plus de la palette. */
+  famille?: string;
   /** Entrée en jeu : palier de rareté de la carte (2 Rare, 3 Épique, 4 Unique). */
   palier?: number;
+}
+
+// --- Sort en cours de résolution --------------------------------------------
+// Les dégâts d'un sort partent APRÈS sa révélation, par le canal ordinaire des
+// dégâts : sans ce témoin, un sort de zone (sans cible désignée, donc sans
+// flèche) frapperait en orange neutre. L'overlay du sort annonce sa famille et
+// une durée ; le pont des dégâts la lit et teinte ses impacts. Cosmétique.
+let familleActive: { famille: string; jusquA: number } | null = null;
+export function annoncerFamilleSort(famille: string, dureeMs: number): void {
+  familleActive = { famille, jusquA: performance.now() + dureeMs };
+}
+export function familleSortEnCours(): string | null {
+  if (!familleActive) return null;
+  if (performance.now() > familleActive.jusquA) { familleActive = null; return null; }
+  return familleActive.famille;
 }
 
 type Listener = (e: ImpactEmit) => void;
@@ -561,5 +593,29 @@ export function poussiereAuSol(
     p.g = g;
     p.b = b;
     p.alpha = 0.2;
+  }
+}
+
+/** Sillage d'une carte glissée : quelques escarbilles lâchées sur place, qui
+ *  retombent doucement. Appelée à intervalles de distance, pas à chaque image. */
+export function sillage(acquire: Acquire, x: number, y: number, pal: Palette): void {
+  for (let i = 0; i < 3; i++) {
+    const p = acquire();
+    if (!p) return;
+    p.kind = i === 0 ? "spark" : "ember";
+    p.x = x + (Math.random() - 0.5) * 46;
+    p.y = y + (Math.random() - 0.5) * 60;
+    p.vx = (Math.random() - 0.5) * 30;
+    p.vy = 10 + Math.random() * 30;
+    p.age = 0;
+    p.life = 0.45 + Math.random() * 0.35;
+    p.size = 2 + Math.random() * 2.5;
+    p.drag = 2;
+    p.gravity = 50;
+    const c = p.kind === "spark" ? pal.spark : pal.ember;
+    p.r = c[0];
+    p.g = c[1];
+    p.b = c[2];
+    p.alpha = 0.32;
   }
 }

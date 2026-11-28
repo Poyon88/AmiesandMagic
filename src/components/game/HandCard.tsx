@@ -34,6 +34,7 @@ import { useVocab } from "@/i18n/useVocab";
 import DetailEnJeu from "@/components/cards/DetailEnJeu";
 import { SOI_ARIA_FR, TARGET_SCOPE_FR, composedScope, composedSoi, kwInstanceScope, kwInstanceSoi, scopeAriaLabel, spellKwScope } from "@/lib/game/target-scope";
 import { keywordIconFor } from "@/lib/game/keyword-labels";
+import { emitImpact } from "@/lib/fx/impactFx";
 
 interface HandCardProps {
   cardInstance: CardInstance;
@@ -238,6 +239,28 @@ function HandCard({
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const detachePointeurRef = useRef<(() => void) | null>(null);
 
+  // FANTÔME DU GLISSER — position, inclinaison et sillage. La carte penche dans
+  // le sens du déplacement (inclinaison lissée, bornée à ±14°) et laisse
+  // quelques escarbilles derrière elle, lâchées tous les ~28 px parcourus et
+  // non à chaque évènement, pour ne pas noyer la couche de particules.
+  const fantomeRef = useRef<{ x: number; y: number; rot: number; depuisSillage: number } | null>(null);
+  const poserFantome = (x: number, y: number) => {
+    const avant = fantomeRef.current;
+    const dx = avant ? x - avant.x : 0;
+    const dy = avant ? y - avant.y : 0;
+    const rot = Math.max(-14, Math.min(14, (avant?.rot ?? 0) * 0.72 + dx * 0.55));
+    let depuisSillage = (avant?.depuisSillage ?? 0) + Math.hypot(dx, dy);
+    if (depuisSillage >= 28) {
+      depuisSillage = 0;
+      emitImpact({
+        x, y, amount: 0, type: "trainee", dirX: 0, dirY: 0, big: false,
+        paletteKey: card.card_type === "spell" ? "spell" : "summon",
+      });
+    }
+    fantomeRef.current = { x, y, rot, depuisSillage };
+    setTouchGhostPos({ x, y, rot });
+  };
+
   // Mouvements et relâchement écoutés sur WINDOW, et non sur la carte.
   //
   // Première tentative : `setPointerCapture` sur la carte. Mauvaise idée — si la
@@ -271,7 +294,7 @@ function HandCard({
         setIsHovered(false);
         setShowDetails(false);
       }
-      setTouchGhostPos({ x: ev.clientX, y: ev.clientY });
+      poserFantome(ev.clientX, ev.clientY);
       window.dispatchEvent(new CustomEvent("hand-touch-move", {
         detail: { clientX: ev.clientX, cardType: card.card_type },
       }));
@@ -286,7 +309,7 @@ function HandCard({
       pointerIdRef.current = null;
       if (!glissait) return;
       setIsDragging(false);
-      setTouchGhostPos(null);
+      fantomeRef.current = null; setTouchGhostPos(null);
 
       // Le fantôme est en `pointerEvents: "none"` : elementFromPoint rend donc
       // ce qui se trouve DESSOUS, et non le fantôme lui-même.
@@ -412,7 +435,7 @@ function HandCard({
   // into a drag. The two are composed in the touch handlers below.
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const touchDraggingRef = useRef(false);
-  const [touchGhostPos, setTouchGhostPos] = useState<{ x: number; y: number } | null>(null);
+  const [touchGhostPos, setTouchGhostPos] = useState<{ x: number; y: number; rot?: number } | null>(null);
   const TOUCH_DRAG_THRESHOLD = 12;
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -448,7 +471,7 @@ function HandCard({
       }
     }
     if (touchDraggingRef.current) {
-      setTouchGhostPos({ x: t.clientX, y: t.clientY });
+      poserFantome(t.clientX, t.clientY);
       window.dispatchEvent(
         new CustomEvent("hand-touch-move", {
           detail: { clientX: t.clientX, cardType: card.card_type },
@@ -483,7 +506,7 @@ function HandCard({
       }
       touchDraggingRef.current = false;
       setIsDragging(false);
-      setTouchGhostPos(null);
+      fantomeRef.current = null; setTouchGhostPos(null);
       e.preventDefault();
     }
     touchStartRef.current = null;
@@ -494,7 +517,7 @@ function HandCard({
       window.dispatchEvent(new CustomEvent("hand-touch-end"));
       touchDraggingRef.current = false;
       setIsDragging(false);
-      setTouchGhostPos(null);
+      fantomeRef.current = null; setTouchGhostPos(null);
     }
     touchStartRef.current = null;
   };
@@ -1038,7 +1061,8 @@ function HandCard({
             left: 0,
             width: W,
             height: H,
-            transform: `translate(${touchGhostPos.x - W / 2}px, ${touchGhostPos.y - H / 2}px)`,
+            // La carte penche dans le sens du mouvement : elle a du poids.
+            transform: `translate(${touchGhostPos.x - W / 2}px, ${touchGhostPos.y - H / 2}px) rotate(${touchGhostPos.rot ?? 0}deg)`,
             pointerEvents: "none",
             zIndex: 9999,
             borderRadius: 8,

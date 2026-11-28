@@ -17,7 +17,8 @@ import {
 } from "@/lib/game/spell-keywords";
 import { isCreatureKwShadowedBySpell } from "@/lib/game/abilities";
 import { buildKeywordDisplayEntries, applyKeywordValueToLabel } from "@/lib/game/keyword-labels";
-import { emitImpact } from "@/lib/fx/impactFx";
+import { emitImpact, annoncerFamilleSort } from "@/lib/fx/impactFx";
+import { familleDuSort, STYLES_FAMILLE } from "@/lib/fx/spellFamilies";
 import { OVERLAY, cardRevealInitial, cardRevealAnimate, spellCardRevealTransition, findInstanceEl, curvedPath, overlayRect } from "@/lib/fx/overlayMotion";
 import { RadialFlash, HaloBloom, ExpandingRing, OrbitingSparkles } from "@/components/game/OverlayPrimitives";
 import KeywordIcon from "@/components/shared/KeywordIcon";
@@ -152,7 +153,14 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
   // deterministically with the overlay on both clients.
   useEffect(() => {
     if (!event) return;
-    const paletteKey = event.countered ? "spell_red" : "spell";
+    // Famille du sort : sa palette, son geste sur les cibles, et la teinte des
+    // dégâts qu'il inflige ensuite (annoncée pour toute sa résolution). Une
+    // simple révélation (pioche, Faveur, Dévoration) ne lance rien : elle garde
+    // la signature neutre et n'annonce aucune famille.
+    const lance = !event.countered && !event.drawTrigger && !event.handGift && !event.devoured;
+    const famille = lance ? familleDuSort(event.card) : "arcane";
+    const paletteKey = event.countered ? "spell_red" : `sort_${famille}`;
+    if (lance) annoncerFamilleSort(famille, OVERLAY.spell.preImpactMs + 1600);
     const release = setTimeout(() => {
       const r = cardRef.current?.getBoundingClientRect();
       if (r) {
@@ -169,7 +177,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
         const r = overlayRect(el);
         emitImpact({
           x: r.left + r.width / 2, y: r.top + r.height / 2,
-          amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey,
+          amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey, famille,
         });
       }
     }, OVERLAY.spell.targetGatherMs);
@@ -182,12 +190,16 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
   if (!mounted) return null;
 
   const countered = event?.countered ?? false;
-  const color = countered ? "239, 68, 68" : "168, 85, 247";
-  const hexColor = countered ? "#ef4444" : "#a855f7";
-  const lightColor = countered ? "#fca5a5" : "#c084fc";
-  const accentColor = countered ? "#fca5a5" : "#c084fc";
-
   const card = event?.card ?? null;
+  // Habillage de l'overlay (halo, anneau, étincelles, bordure, flèches) à la
+  // couleur de la FAMILLE du sort ; rouge s'il est contré.
+  const estRevelation = !!(event?.drawTrigger || event?.handGift || event?.devoured);
+  const style = STYLES_FAMILLE[estRevelation ? "arcane" : familleDuSort(card)];
+  const color = countered ? "239, 68, 68" : style.rgb;
+  const hexColor = countered ? "#ef4444" : style.hex;
+  const lightColor = countered ? "#fca5a5" : style.clair;
+  const accentColor = countered ? "#fca5a5" : style.clair;
+
   const xVals = card ? parseXValuesFromEffectText(card.effect_text) : {};
   const cleaned = card ? cleanEffectText(card.effect_text, card.spell_keywords) : "";
   // Le store compose `spellName` avec le nom FRANÇAIS de la carte (l'état de
@@ -271,7 +283,7 @@ export default function SpellCastOverlay({ event, onComplete }: SpellCastOverlay
             {/* Spell name */}
             <div style={{
               fontSize: "1.15rem",
-              color: countered ? "#fecaca" : "#e9d5ff",
+              color: countered ? "#fecaca" : style.clair,
               fontWeight: 700,
               textAlign: "center",
               fontFamily: "'Cinzel', serif",

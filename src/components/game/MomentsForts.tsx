@@ -378,3 +378,98 @@ export function CoupFatalOverlay({ onDebut, onFin }: CoupFatalProps) {
     document.body,
   );
 }
+
+// ─── L'âme rejoint le cimetière ──────────────────────────────────────────────
+
+const AME_MS = lent(1050);
+/** L'âme part après l'éclat de la mort, pas en même temps. */
+const AME_DEPART_MS = lent(320);
+
+interface Ame { key: string; x: number; y: number; versX: number; versY: number; teinte: string }
+
+/**
+ * Quand une unité meurt et rejoint un cimetière, une lueur quitte l'endroit où
+ * elle est tombée et file vers la pile de ce cimetière : on VOIT où part la
+ * carte. Rien pour une unité qui disparaît sans y aller (exil, jeton dissipé,
+ * dévoration) — l'absence de lueur dit alors, à sa façon, qu'elle ne reviendra pas.
+ */
+export function AmesOverlay() {
+  const deathEvents = useGameStore((s) => s.deathEvents);
+  const reduced = useReducedMotion();
+  const [ames, setAmes] = useState<Ame[]>([]);
+  const dernierLotRef = useRef<typeof deathEvents | null>(null);
+  const serieRef = useRef(0);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => () => { for (const t of timersRef.current) clearTimeout(t); }, []);
+
+  useEffect(() => {
+    if (deathEvents === dernierLotRef.current) return;
+    dernierLotRef.current = deathEvents;
+    if (reduced || deathEvents.length === 0) return;
+    const { gameState, localPlayerId } = useGameStore.getState();
+    if (!gameState) return;
+    const serie = ++serieRef.current;
+    const nouvelles: Ame[] = [];
+    deathEvents.forEach((ev, i) => {
+      if (ev.x < -9000) return;
+      const proprietaire = gameState.players.find((p) => p.graveyard.some((c) => c.instanceId === ev.instanceId));
+      if (!proprietaire) return; // n'a rejoint aucun cimetière
+      const pile = document.querySelector(`[data-graveyard-pile="${proprietaire.id === localPlayerId ? "my" : "opponent"}"]`);
+      if (!pile) return;
+      const r = overlayRect(pile);
+      nouvelles.push({
+        key: `${serie}-${i}`,
+        x: ev.x, y: ev.y,
+        versX: r.left + r.width / 2, versY: r.top + r.height / 2,
+        teinte: ev.poisoned ? "#86efac" : "#e8e4ff",
+      });
+    });
+    if (nouvelles.length === 0) return;
+    timersRef.current.push(setTimeout(() => setAmes((prev) => [...prev, ...nouvelles]), AME_DEPART_MS));
+    timersRef.current.push(setTimeout(() => {
+      // Arrivée : un souffle sur la pile.
+      for (const a of nouvelles) {
+        emitImpact({ x: a.versX, y: a.versY, amount: 0, type: "cast_hit", dirX: 0, dirY: 0, big: false, paletteKey: "death" });
+      }
+      setAmes((prev) => prev.filter((a) => !nouvelles.includes(a)));
+    }, AME_DEPART_MS + AME_MS));
+  }, [deathEvents, reduced]);
+
+  if (ames.length === 0 || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 98 }}>
+      {ames.map((a) => {
+        // Trajet en arc : l'âme s'élève d'abord, puis plonge vers la pile.
+        const dx = a.versX - a.x;
+        const dy = a.versY - a.y;
+        const sommet = -Math.min(120, 40 + Math.hypot(dx, dy) * 0.18);
+        return (
+          <motion.div
+            key={a.key}
+            style={{
+              position: "absolute", left: a.x - 9, top: a.y - 9, width: 18, height: 18, borderRadius: "50%",
+              background: `radial-gradient(circle, #ffffff 0%, ${a.teinte} 35%, transparent 72%)`,
+              boxShadow: `0 0 14px 5px ${a.teinte}99, 0 0 34px 12px ${a.teinte}44`,
+            }}
+            initial={{ x: 0, y: 0, opacity: 0, scale: 0.3 }}
+            animate={{
+              x: [0, dx * 0.3, dx],
+              y: [0, dy * 0.3 + sommet, dy],
+              opacity: [0, 1, 1, 0],
+              scale: [0.3, 1.25, 0.55],
+            }}
+            transition={{
+              duration: AME_MS / 1000,
+              x: { duration: AME_MS / 1000, times: [0, 0.35, 1], ease: ["easeOut", "easeIn"] },
+              y: { duration: AME_MS / 1000, times: [0, 0.35, 1], ease: ["easeOut", "easeIn"] },
+              scale: { duration: AME_MS / 1000, times: [0, 0.3, 1] },
+              opacity: { duration: AME_MS / 1000, times: [0, 0.12, 0.85, 1] },
+            }}
+          />
+        );
+      })}
+    </div>,
+    document.body,
+  );
+}

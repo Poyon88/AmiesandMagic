@@ -25,6 +25,7 @@ import useLongPress, { LONG_PRESS_RESET_STYLE } from "@/hooks/useLongPress";
 import useCoarsePointer from "@/hooks/useCoarsePointer";
 import { isBigHit } from "@/lib/fx/impactFx";
 import { SPRINGS, lent } from "@/lib/fx/overlayMotion";
+import { PoisonVivant, ParalysieVivante, OmbreVivante } from "./StatutsVivants";
 import { useCardText } from "./CardTextProvider";
 import { useVocab } from "@/i18n/useVocab";
 import DetailEnJeu from "@/components/cards/DetailEnJeu";
@@ -726,6 +727,8 @@ function BoardCreature({
           animation: "poison-pulse 2s ease-in-out infinite",
         }} />
       )}
+      {/* Le poison se voit : gouttes qui perlent, bulles qui remontent. */}
+      {creature.isPoisoned && <PoisonVivant />}
 
       {/* Voile de Peste : jaune malade, pour ne pas se confondre avec le vert
           du Poison (les deux peuvent se superposer). */}
@@ -825,6 +828,8 @@ function BoardCreature({
           animation: "paralyze-pulse 2s ease-in-out infinite",
         }} />
       )}
+      {/* Chaînes en croix : elles se tendent à la pose du statut, puis frémissent. */}
+      {(creature.isParalyzed || estNeutralisee(creature)) && <ParalysieVivante />}
 
       {/* Paralyzed indicator (stacked below the mana orb, then below poison
           when poison is also active) */}
@@ -950,6 +955,8 @@ function BoardCreature({
           animation: "ombre-pulse 3s ease-in-out infinite",
         }} />
       )}
+      {/* Volutes sombres tant que l'Ombre n'est pas dissipée. */}
+      {hasOmbre && !creature.ombreRevealed && <OmbreVivante />}
 
       {/* Capacité à SEUIL active (Seuil Sacrificiel, Force des ancêtres) : liseré
           qui respire, couleur propre à la capacité. Un seul anneau même si deux

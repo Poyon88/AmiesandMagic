@@ -41,7 +41,8 @@ import ChoiceTimerBadge from "./ChoiceTimerBadge";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
-import { CoupFatalOverlay, EntreeUniqueOverlay } from "./MomentsForts";
+import { AmesOverlay, CoupFatalOverlay, EntreeUniqueOverlay } from "./MomentsForts";
+import AmbianceLayer, { genreAmbiance } from "./AmbianceLayer";
 import SpellCastOverlay from "./SpellCastOverlay";
 import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
@@ -1391,6 +1392,14 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           />
         </div>
 
+        {/* Ambiance vivante, par héros : l'adversaire en haut, soi en bas. */}
+        <AmbianceLayer
+          largeur={boardWidth}
+          hauteur={DESIGN_H}
+          haut={genreAmbiance(oppHeroDef?.faction, oppHeroDef?.clan)}
+          bas={genreAmbiance(myHeroDef?.faction, myHeroDef?.clan)}
+        />
+
         {/* Subtle overlay for readability — kept light (/5) so it doesn't fight
             the brightness lift above. */}
         <div className="absolute inset-0 bg-background/5 pointer-events-none z-0" />
@@ -2431,6 +2440,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {/* Damage animation overlay */}
       <ImpactFxLayer />
       <EntreeUniqueOverlay />
+      <AmesOverlay />
       <CoupFatalOverlay onDebut={debuterFinale} onFin={finirFinale} />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
