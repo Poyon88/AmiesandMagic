@@ -3413,7 +3413,8 @@
     "mutation_cancel": "İptal",
     "infestation_caption": "🪳 Istila",
     "infestation_eclosion_caption": "🪳 Istila — yumurtadan çıkış",
-    "enterrement_caption": "⚰ Gömme"
+    "enterrement_caption": "⚰ Gömme",
+    "daily_win_essence": "Günün ilk zaferi: +{amount} öz"
   },
   "tutorial": {
     "page_eyebrow": "Düello sanatını öğren",
@@ -3622,6 +3623,9 @@
     "todo": "TAMAMLANACAK — halka açılmadan önce yazılması gereken bölüm.",
     "updated": "Son güncelleme: {date}",
     "cgu_title": "Kullanım Koşulları",
+    "cgv_title": "Genel Satış Koşulları",
+    "notice_title": "Yasal Bilgiler",
+    "cookies_title": "Çerezler ve İzleyiciler",
     "cgu_s1": "Konu ve kabul",
     "cgu_s2": "Hizmete erişim ve hesap oluşturma",
     "cgu_s3": "Gerekli asgari yaş",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Çerezler ve izleyiciler",
     "privacy_s7": "Haklarınız (GDPR)",
     "privacy_s8": "Güvenlik",
-    "privacy_s9": "İletişim ve şikâyet",
-    "cgv_title": "Genel Satış Koşulları",
-    "notice_title": "Yasal Bilgiler",
-    "cookies_title": "Çerezler ve İzleyiciler"
+    "privacy_s9": "İletişim ve şikâyet"
   },
   "factions_page": {
     "back": "Ana sayfaya dön",

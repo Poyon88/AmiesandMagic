@@ -3413,7 +3413,8 @@
     "mutation_cancel": "Abbrechen",
     "infestation_caption": "🪳 Befall",
     "infestation_eclosion_caption": "🪳 Befall — Schlüpfen",
-    "enterrement_caption": "⚰ Begräbnis"
+    "enterrement_caption": "⚰ Begräbnis",
+    "daily_win_essence": "Erster Sieg des Tages: +{amount} Essenz"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",
@@ -3622,6 +3623,9 @@
     "todo": "NOCH AUSZUFÜLLEN — Abschnitt vor jeder Veröffentlichung zu verfassen.",
     "updated": "Letzte Aktualisierung: {date}",
     "cgu_title": "Allgemeine Nutzungsbedingungen",
+    "cgv_title": "Allgemeine Geschäftsbedingungen",
+    "notice_title": "Impressum",
+    "cookies_title": "Cookies und Tracker",
     "cgu_s1": "Gegenstand und Annahme",
     "cgu_s2": "Zugang zum Dienst und Kontoerstellung",
     "cgu_s3": "Erforderliches Mindestalter",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookies und Tracker",
     "privacy_s7": "Ihre Rechte (DSGVO)",
     "privacy_s8": "Sicherheit",
-    "privacy_s9": "Kontakt und Beschwerde",
-    "cgv_title": "Allgemeine Geschäftsbedingungen",
-    "notice_title": "Impressum",
-    "cookies_title": "Cookies und Tracker"
+    "privacy_s9": "Kontakt und Beschwerde"
   },
   "factions_page": {
     "back": "Zurück zur Startseite",

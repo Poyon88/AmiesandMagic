@@ -1,7 +1,7 @@
 import { MIN_STARTING_BID } from "@/lib/auction/pricing";
 import { USERNAME_MAX, USERNAME_MIN } from "@/lib/auth/username";
 import { LIMITED_PRINT_COUNTS, RARITY_MAP } from "@/lib/card-engine/constants";
-import { CREDIT_EXPIRY_ALERT_DAYS, ESSENCE_CRAFT_COST, ESSENCE_CRAFT_ODDS } from "@/lib/economy/constants";
+import { CREDIT_EXPIRY_ALERT_DAYS, ESSENCE_CRAFT_COST, ESSENCE_CRAFT_ODDS, ESSENCE_DAILY_WIN } from "@/lib/economy/constants";
 import { DELAI_INACTIVITE_MS } from "@/lib/game/match-result";
 import { SUPPORTED_LOCALES } from "@/i18n/config";
 import { CHECKOUT_EXPIRY_MINUTES, GOLD_PACKS, TICKET_PACKS, TICKET_VALIDITY_DAYS } from "@/lib/payments/config";
@@ -47,6 +47,7 @@ Fixés dans le jeu :
 - Carnets de tickets de tournoi : ${TICKET_PACKS.map((p) => `${p.tickets} ticket${p.tickets > 1 ? "s" : ""} pour ${euros(p.displayPriceCents)}`).join(" ; ")}.
 - Validité d'un ticket : ${TICKET_VALIDITY_DAYS} jours à partir de l'achat.
 - Une session de paiement non terminée expire après ${CHECKOUT_EXPIRY_MINUTES} minutes.
+- Première victoire du jour : ${ESSENCE_DAILY_WIN} essence, une seule fois par jour. Le jour change à minuit en temps universel (UTC).
 - Forge d'essence : ${ESSENCE_CRAFT_COST} essence par forge. Chances : ${ESSENCE_CRAFT_ODDS.map((o) => `${o.label} ${o.odds}`).join(" ; ")}.
 - Exemplaires d'une édition limitée, par rareté : ${parRarete(LIMITED_PRINT_COUNTS)}.
 - Mise de départ minimale aux enchères, par rareté (en pièces d'or) : ${parRarete(MIN_STARTING_BID)}.

@@ -3413,7 +3413,8 @@
     "mutation_cancel": "取消",
     "infestation_caption": "🪳 侵染",
     "infestation_eclosion_caption": "🪳 侵染 — 孵化",
-    "enterrement_caption": "⚰ 埋葬"
+    "enterrement_caption": "⚰ 埋葬",
+    "daily_win_essence": "每日首胜:+{amount} 精华"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",
@@ -3622,6 +3623,9 @@
     "todo": "待补充——在正式公开前需完成本节内容。",
     "updated": "最近更新时间：{date}",
     "cgu_title": "用户使用条款",
+    "cgv_title": "通用销售条款",
+    "notice_title": "法律声明",
+    "cookies_title": "Cookie 与追踪器",
     "cgu_s1": "宗旨与接受条款",
     "cgu_s2": "服务访问与账号创建",
     "cgu_s3": "最低年龄要求",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookie 与追踪器",
     "privacy_s7": "您的权利（GDPR）",
     "privacy_s8": "安全性",
-    "privacy_s9": "联系与投诉方式",
-    "cgv_title": "通用销售条款",
-    "notice_title": "法律声明",
-    "cookies_title": "Cookie 与追踪器"
+    "privacy_s9": "联系与投诉方式"
   },
   "factions_page": {
     "back": "返回主页",

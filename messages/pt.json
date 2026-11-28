@@ -3413,7 +3413,8 @@
     "mutation_cancel": "Cancelar",
     "infestation_caption": "🪳 Infestação",
     "infestation_eclosion_caption": "🪳 Infestação — eclosão",
-    "enterrement_caption": "⚰ Enterro"
+    "enterrement_caption": "⚰ Enterro",
+    "daily_win_essence": "Primeira vitória do dia: +{amount} de essência"
   },
   "tutorial": {
     "page_eyebrow": "Aprenda a arte do duelo",
@@ -3622,6 +3623,9 @@
     "todo": "A COMPLETAR — seção a ser redigida antes de qualquer abertura ao público.",
     "updated": "Última atualização: {date}",
     "cgu_title": "Termos Gerais de Uso",
+    "cgv_title": "Condições gerais de venda",
+    "notice_title": "Avisos legais",
+    "cookies_title": "Cookies e rastreadores",
     "cgu_s1": "Objeto e aceitação",
     "cgu_s2": "Acesso ao serviço e criação de conta",
     "cgu_s3": "Idade mínima exigida",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookies e rastreadores",
     "privacy_s7": "Seus direitos (RGPD)",
     "privacy_s8": "Segurança",
-    "privacy_s9": "Contato e reclamação",
-    "cgv_title": "Condições gerais de venda",
-    "notice_title": "Avisos legais",
-    "cookies_title": "Cookies e rastreadores"
+    "privacy_s9": "Contato e reclamação"
   },
   "factions_page": {
     "back": "Voltar ao início",

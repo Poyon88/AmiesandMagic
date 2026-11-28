@@ -11,6 +11,7 @@ const LIBELLES: Record<string, string> = {
   admin_debit: "Débit",
   craft: "Forge",
   reward_tournament: "Récompense de tournoi",
+  reward_daily_win: "Victoire du jour",
 };
 
 function detail(tx: EssenceTransaction): string | null {

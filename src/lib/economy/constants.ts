@@ -25,6 +25,11 @@ export const REWARD_QUEST_LARGE = 50;
 // traduite se sert de `rarity` et de `oneIn`.
 export const ESSENCE_NAME = 'Essence';
 export const ESSENCE_CRAFT_COST = 2000;
+/** Essence créditée pour la PREMIÈRE victoire de chaque jour (jour UTC). La
+ *  règle — une fois par jour, résultat établi par le rejeu serveur — vit dans
+ *  `grant_daily_win_essence` (supabase-migration-essence-daily-win.sql) ; seul
+ *  le montant est ici, passé par le serveur à la fonction. */
+export const ESSENCE_DAILY_WIN = 100;
 export const ESSENCE_CRAFT_ODDS: ReadonlyArray<{ key: string; label: string; odds: string; rarity: string; oneIn: number | null }> = [
   { key: 'hero', label: 'Héros unique', odds: '1 sur 10 000', rarity: 'Légendaire', oneIn: 10000 },
   { key: 'Légendaire', label: 'Unique', odds: '1 sur 1 000', rarity: 'Légendaire', oneIn: 1000 },

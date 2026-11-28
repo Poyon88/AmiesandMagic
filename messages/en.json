@@ -3413,7 +3413,8 @@
     "mutation_cancel": "Cancel",
     "infestation_caption": "🪳 Infestation",
     "infestation_eclosion_caption": "🪳 Infestation — hatching",
-    "enterrement_caption": "⚰ Burial"
+    "enterrement_caption": "⚰ Burial",
+    "daily_win_essence": "First win of the day: +{amount} essence"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",
@@ -3622,6 +3623,9 @@
     "todo": "TO BE COMPLETED — section to be written before any public launch.",
     "updated": "Last updated: {date}",
     "cgu_title": "Terms of Use",
+    "cgv_title": "Terms and Conditions of Sale",
+    "notice_title": "Legal Notice",
+    "cookies_title": "Cookies and Trackers",
     "cgu_s1": "Purpose and Acceptance",
     "cgu_s2": "Access to the Service and Account Creation",
     "cgu_s3": "Minimum Required Age",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookies and Trackers",
     "privacy_s7": "Your Rights (GDPR)",
     "privacy_s8": "Security",
-    "privacy_s9": "Contact and Complaints",
-    "cgv_title": "Terms and Conditions of Sale",
-    "notice_title": "Legal Notice",
-    "cookies_title": "Cookies and Trackers"
+    "privacy_s9": "Contact and Complaints"
   },
   "factions_page": {
     "back": "Back to home",

@@ -3413,7 +3413,8 @@
     "mutation_cancel": "Annuler",
     "infestation_caption": "🪳 Infestation",
     "infestation_eclosion_caption": "🪳 Infestation — éclosion",
-    "enterrement_caption": "⚰ Enterrement"
+    "enterrement_caption": "⚰ Enterrement",
+    "daily_win_essence": "Première victoire du jour : +{amount} essence"
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",

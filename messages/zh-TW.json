@@ -3413,7 +3413,8 @@
     "mutation_cancel": "取消",
     "infestation_caption": "🪳 侵蝕",
     "infestation_eclosion_caption": "🪳 侵蝕 — 孵化",
-    "enterrement_caption": "⚰ 掩埋"
+    "enterrement_caption": "⚰ 掩埋",
+    "daily_win_essence": "今日首勝:+{amount} 精華"
   },
   "tutorial": {
     "page_eyebrow": "學習決鬥的藝術",
@@ -3622,6 +3623,9 @@
     "todo": "待補充——公開上線前須撰寫之章節。",
     "updated": "最後更新:{date}",
     "cgu_title": "服務條款",
+    "cgv_title": "銷售條款",
+    "notice_title": "法律聲明",
+    "cookies_title": "Cookie 與追蹤技術",
     "cgu_s1": "目的與接受",
     "cgu_s2": "服務存取與帳號建立",
     "cgu_s3": "最低年齡要求",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookie 與追蹤技術",
     "privacy_s7": "您的權利(GDPR)",
     "privacy_s8": "安全性",
-    "privacy_s9": "聯絡與申訴",
-    "cgv_title": "銷售條款",
-    "notice_title": "法律聲明",
-    "cookies_title": "Cookie 與追蹤技術"
+    "privacy_s9": "聯絡與申訴"
   },
   "factions_page": {
     "back": "返回首頁",

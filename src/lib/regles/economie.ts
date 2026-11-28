@@ -123,8 +123,10 @@ export const ECONOMIE: Precision[] = [
       "Seules les cartes jouables, hors sets spéciaux, peuvent sortir de la forge.",
       "Il n'y a aucune limite au nombre de forges : chaque forge ne demande que l'essence nécessaire.",
       "L'historique des gains d'essence et des forges se consulte dans le compte, page « Mon essence ».",
+      "Le joueur gagne de l'essence à sa première victoire de la journée ; ses autres victoires du même jour n'en rapportent pas.",
+      "Seule compte une victoire dont le serveur a pu vérifier le résultat en rejouant la partie ; le gain est annoncé sur l'écran de fin de partie.",
     ],
-    sources: ["supabase-migration-essence.sql:155-290 ; src/components/essence/EssenceForge.tsx", "src/components/essence/EssenceForge.tsx:63-64, 81-98", "supabase-migration-essence.sql", "src/lib/economy/constants.ts:26-32 ; supabase-migration-essence.sql", "supabase-migration-essence.sql:221-236 ; test essence-craft.test.ts", "supabase-migration-essence.sql:189-255 ; tests essence-craft.test.ts:127, 196", "supabase-migration-essence.sql:257-259 ; test essence-craft.test.ts", "supabase-migration-essence.sql:225-226 ; test essence-craft.test.ts", "src/app/compte/essence/page.tsx:17 ; src/app/api/essence/route.ts"],
+    sources: ["supabase-migration-essence-daily-win.sql ; src/lib/game/server/finalize-match.ts", "supabase-migration-essence-daily-win.sql ; src/components/game/GameBoard.tsx", "supabase-migration-essence.sql:155-290 ; src/components/essence/EssenceForge.tsx", "src/components/essence/EssenceForge.tsx:63-64, 81-98", "supabase-migration-essence.sql", "src/lib/economy/constants.ts:26-32 ; supabase-migration-essence.sql", "supabase-migration-essence.sql:221-236 ; test essence-craft.test.ts", "supabase-migration-essence.sql:189-255 ; tests essence-craft.test.ts:127, 196", "supabase-migration-essence.sql:257-259 ; test essence-craft.test.ts", "supabase-migration-essence.sql:225-226 ; test essence-craft.test.ts", "src/app/compte/essence/page.tsx:17 ; src/app/api/essence/route.ts"],
   },
   {
     type: "theme",

@@ -3413,7 +3413,8 @@
     "mutation_cancel": "Anuluj",
     "infestation_caption": "🪳 Plaga",
     "infestation_eclosion_caption": "🪳 Plaga — wylęg",
-    "enterrement_caption": "⚰ Pochówek"
+    "enterrement_caption": "⚰ Pochówek",
+    "daily_win_essence": "Pierwsze zwycięstwo dnia: +{amount} esencji"
   },
   "tutorial": {
     "page_eyebrow": "Poznaj sztukę pojedynku",
@@ -3622,6 +3623,9 @@
     "todo": "DO UZUPEŁNIENIA — sekcja do napisania przed udostępnieniem publicznym.",
     "updated": "Ostatnia aktualizacja: {date}",
     "cgu_title": "Regulamin korzystania z usługi",
+    "cgv_title": "Ogólne warunki sprzedaży",
+    "notice_title": "Informacje prawne",
+    "cookies_title": "Pliki cookie i narzędzia śledzące",
     "cgu_s1": "Przedmiot i akceptacja",
     "cgu_s2": "Dostęp do usługi i tworzenie konta",
     "cgu_s3": "Minimalny wymagany wiek",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Pliki cookie i identyfikatory",
     "privacy_s7": "Twoje prawa (RODO)",
     "privacy_s8": "Bezpieczeństwo",
-    "privacy_s9": "Kontakt i skargi",
-    "cgv_title": "Ogólne warunki sprzedaży",
-    "notice_title": "Informacje prawne",
-    "cookies_title": "Pliki cookie i narzędzia śledzące"
+    "privacy_s9": "Kontakt i skargi"
   },
   "factions_page": {
     "back": "Powrót do strony głównej",

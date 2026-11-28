@@ -30,7 +30,9 @@ interface MatchData {
 /** Clôture côté SERVEUR : il rejoue la partie et écrit lui-même le résultat
  *  (le client ne fait que déclarer le vainqueur qu'il voit). Idempotente,
  *  appelée par les deux clients ; quelques essais en cas d'échec réseau. */
-async function finaliserPartie(matchId: string, claimedWinner: string | null) {
+type RecompenseEssence = { amount: number; essence: number };
+
+async function finaliserPartie(matchId: string, claimedWinner: string | null): Promise<RecompenseEssence | null> {
   for (let essai = 1; essai <= 3; essai++) {
     try {
       const res = await fetch(`/api/matches/${matchId}/finalize`, {
@@ -38,11 +40,17 @@ async function finaliserPartie(matchId: string, claimedWinner: string | null) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ claimedWinner }),
       });
-      if (res.ok || res.status === 202 || res.status === 403) return;
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        const r = data?.essenceReward;
+        return r && typeof r.amount === "number" && typeof r.essence === "number" ? r : null;
+      }
+      if (res.status === 202 || res.status === 403) return null;
     } catch { /* réseau : on réessaie */ }
     await new Promise((r) => setTimeout(r, 1000 * essai));
   }
   console.error("[match] clôture serveur impossible", matchId);
+  return null;
 }
 
 export default function GamePage() {
@@ -74,6 +82,9 @@ export default function GamePage() {
   // A missing row means the opponent can't resync past that seq, so we surface
   // a non-blocking banner inviting a reload rather than failing silently.
   const [persistWarning, setPersistWarning] = useState(false);
+  // Essence reçue pour la première victoire du jour, annoncée sur l'écran de
+  // fin. Connue seulement après la clôture serveur, donc un peu après lui.
+  const [recompenseEssence, setRecompenseEssence] = useState<number | null>(null);
   // Vrai quand l'adversaire a fini son animation de révélation de mulligan
   // (broadcast "mulligan_reveal_done"). Le plateau n'est dévoilé que lorsque les
   // DEUX joueurs ont terminé (cf. GameBoard) → démarrage synchronisé. État de
@@ -978,7 +989,9 @@ export default function GamePage() {
       const gagnant = vainqueurTransition(prev.gameState, state.gameState);
       if (!gagnant) return;
       timer = setTimeout(() => {
-        void derniereJournalisationRef.current.then(() => finaliserPartie(matchId, gagnant));
+        void derniereJournalisationRef.current
+          .then(() => finaliserPartie(matchId, gagnant))
+          .then((recompense) => { if (recompense) setRecompenseEssence(recompense.amount); });
       }, 2500);
     });
     return () => {
@@ -1046,7 +1059,7 @@ export default function GamePage() {
         </div>
       )}
       <CardTextProvider>
-        <GameBoard onAction={handleAction} onMulliganRevealDone={emitRevealDone} opponentMulliganRevealDone={opponentMulliganRevealDone} />
+        <GameBoard onAction={handleAction} onMulliganRevealDone={emitRevealDone} opponentMulliganRevealDone={opponentMulliganRevealDone} dailyWinEssence={recompenseEssence} />
       </CardTextProvider>
     </>
   );

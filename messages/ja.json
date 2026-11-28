@@ -3413,7 +3413,8 @@
     "mutation_cancel": "キャンセル",
     "infestation_caption": "🪳 侵食",
     "infestation_eclosion_caption": "🪳 侵食 — 孵化",
-    "enterrement_caption": "⚰ 埋葬"
+    "enterrement_caption": "⚰ 埋葬",
+    "daily_win_essence": "本日の初勝利:エッセンス+{amount}"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",
@@ -3622,6 +3623,9 @@
     "todo": "要記入 — 一般公開前に記載が必要なセクションです。",
     "updated": "最終更新日：{date}",
     "cgu_title": "利用規約",
+    "cgv_title": "販売条件",
+    "notice_title": "法的表示",
+    "cookies_title": "Cookieとトラッカー",
     "cgu_s1": "目的および同意",
     "cgu_s2": "サービスへのアクセスおよびアカウント作成",
     "cgu_s3": "必要最低年齢",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "Cookieおよびトラッキング技術",
     "privacy_s7": "お客様の権利（GDPR）",
     "privacy_s8": "セキュリティ",
-    "privacy_s9": "お問い合わせおよび苦情申立て",
-    "cgv_title": "販売条件",
-    "notice_title": "法的表示",
-    "cookies_title": "Cookieとトラッカー"
+    "privacy_s9": "お問い合わせおよび苦情申立て"
   },
   "factions_page": {
     "back": "ホームに戻る",

@@ -10,6 +10,7 @@ import { ancrageDuBadge } from "@/lib/game/choice-timer";
 import { useVocab } from "@/i18n/useVocab";
 import { useGameStore, selectPowerTargetingColor } from "@/lib/store/gameStore";
 import { useTranslations } from "next-intl";
+import EssenceIcon from "@/components/shared/EssenceIcon";
 import { canPlayCard, canSuspendToEveil, canMutate, canAttack, canUseHeroPower, effectiveManaCost, getSpellSlotTargets, getValidTargets, heroPowerNeedsTarget, isIncinerationSlot, creatureTargetsIncinerationCamp, needsTarget } from "@/lib/game/engine";
 import HeroPortrait from "./HeroPortrait";
 import HeroOrbit from "./orbite/HeroOrbit";
@@ -77,6 +78,8 @@ interface GameBoardProps {
   // (prévient le pair). Vrai quand l'adversaire a émis le sien.
   onMulliganRevealDone?: () => void;
   opponentMulliganRevealDone?: boolean;
+  /** Essence reçue pour la première victoire du jour ; nul sinon. */
+  dailyWinEssence?: number | null;
 }
 
 
@@ -97,7 +100,7 @@ function PendingCreaturePreview({ instance }: { instance: CardInstance }) {
   );
 }
 
-export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false }: GameBoardProps) {
+export default function GameBoard({ onAction, onMulliganRevealDone, opponentMulliganRevealDone = false, dailyWinEssence = null }: GameBoardProps) {
   useGameMusic();
   const t = useTranslations("game");
   const vocab = useVocab();
@@ -2342,6 +2345,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
             >
               {isWinner ? "VICTORY" : "DEFEAT"}
             </h1>
+            {isWinner && dailyWinEssence != null && (
+              <p className="mb-6 flex items-center justify-center gap-2 text-xl font-semibold text-violet-200" role="status">
+                {t("daily_win_essence", { amount: dailyWinEssence })}
+                <EssenceIcon size={20} />
+              </p>
+            )}
             <button
               onClick={() => (window.location.href = "/")}
               className="px-8 py-3 bg-primary hover:bg-primary-dark text-background font-bold rounded-xl text-lg transition-colors"

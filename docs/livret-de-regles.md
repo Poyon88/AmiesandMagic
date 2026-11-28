@@ -1210,6 +1210,7 @@ Fixés dans le jeu :
 - Carnets de tickets de tournoi : 1 ticket pour 2,50 € ; 5 tickets pour 11,50 € ; 12 tickets pour 25,00 €.
 - Validité d'un ticket : 365 jours à partir de l'achat.
 - Une session de paiement non terminée expire après 30 minutes.
+- Première victoire du jour : 100 essence, une seule fois par jour. Le jour change à minuit en temps universel (UTC).
 - Forge d'essence : 2000 essence par forge. Chances : Héros unique 1 sur 10 000 ; Unique 1 sur 1 000 ; Épique 1 sur 100 ; Rare 1 sur 10 ; Peu Commune le reste.
 - Exemplaires d'une édition limitée, par rareté : Unique 1, Épique 10, Rare 100, Peu Commune 1000.
 - Mise de départ minimale aux enchères, par rareté (en pièces d'or) : Peu Commune 5, Rare 10, Épique 15, Unique 20.
@@ -1297,6 +1298,8 @@ Réglés par l'équipe du jeu (ils peuvent changer) :
 - Seules les cartes jouables, hors sets spéciaux, peuvent sortir de la forge.
 - Il n'y a aucune limite au nombre de forges : chaque forge ne demande que l'essence nécessaire.
 - L'historique des gains d'essence et des forges se consulte dans le compte, page « Mon essence ».
+- Le joueur gagne de l'essence à sa première victoire de la journée ; ses autres victoires du même jour n'en rapportent pas.
+- Seule compte une victoire dont le serveur a pu vérifier le résultat en rejouant la partie ; le gain est annoncé sur l'écran de fin de partie.
 
 ### La collection
 - La collection se compose de quatre rubriques : les cartes, les héros, les dos de cartes et les plateaux.

@@ -8,15 +8,18 @@
 // « server » n'est jamais rétrogradé. Un résultat « review » ou « client » peut
 // être réévalué — le second appel arrive souvent après que la dernière action a
 // été journalisée, et le rejeu peut alors aboutir.
+//
+// Un résultat « server » crédite aussi la première victoire du jour (essence) ;
+// la réponse dit au vainqueur ce qu'il a reçu.
 import { NextResponse } from "next/server";
 import { matchContext } from "@/lib/game/server/match-auth";
-import { cloturerPartie } from "@/lib/game/server/finalize-match";
+import { cloturerPartie, recompenseDeLaPartie } from "@/lib/game/server/finalize-match";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const ctx = await matchContext(id);
   if ("error" in ctx) return NextResponse.json({ error: ctx.error }, { status: ctx.status });
-  const { db, match } = ctx;
+  const { db, match, userId } = ctx;
 
   let claimedWinner: string | null = null;
   try {
@@ -25,7 +28,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } catch { /* corps vide accepté */ }
 
   if (match.status === "finished" && match.result_source === "server") {
-    return NextResponse.json({ winnerId: match.winner_id, source: "server", already: true });
+    return NextResponse.json({
+      winnerId: match.winner_id, source: "server", already: true,
+      essenceReward: match.winner_id === userId ? await recompenseDeLaPartie(db, id, userId) : null,
+    });
   }
 
   let decision;
@@ -39,5 +45,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!decision.winnerId) {
     return NextResponse.json({ winnerId: null, source: decision.source, notes: decision.notes }, { status: 202 });
   }
-  return NextResponse.json(decision);
+  // `essenceReward` : ce que la partie a valu en essence à l'APPELANT (nul pour
+  // le perdant, et pour une victoire qui n'est pas la première du jour).
+  return NextResponse.json({
+    ...decision,
+    essenceReward: decision.winnerId === userId ? await recompenseDeLaPartie(db, id, userId) : null,
+  });
 }

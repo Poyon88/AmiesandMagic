@@ -38,7 +38,7 @@ export interface AdjustBalanceResult {
 }
 
 // ─── Essence ──────────────────────────────────────────────────────────────────
-export type EssenceTransactionType = 'admin_credit' | 'admin_debit' | 'craft' | 'reward_tournament';
+export type EssenceTransactionType = 'admin_credit' | 'admin_debit' | 'craft' | 'reward_tournament' | 'reward_daily_win';
 
 export interface EssenceTransaction {
   id: string;

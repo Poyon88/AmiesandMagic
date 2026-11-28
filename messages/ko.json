@@ -3413,7 +3413,8 @@
     "mutation_cancel": "취소",
     "infestation_caption": "🪳 감염",
     "infestation_eclosion_caption": "🪳 감염 — 부화",
-    "enterrement_caption": "⚰ 매장"
+    "enterrement_caption": "⚰ 매장",
+    "daily_win_essence": "오늘의 첫 승리: 정수 +{amount}"
   },
   "tutorial": {
     "page_eyebrow": "결투의 기술을 배워 보세요",
@@ -3622,6 +3623,9 @@
     "todo": "작성 필요 — 일반 공개 전에 작성해야 하는 항목입니다.",
     "updated": "최종 업데이트: {date}",
     "cgu_title": "이용약관",
+    "cgv_title": "판매 일반 약관",
+    "notice_title": "법적 고지",
+    "cookies_title": "쿠키 및 트래커",
     "cgu_s1": "목적 및 동의",
     "cgu_s2": "서비스 이용 및 계정 생성",
     "cgu_s3": "최소 연령 요건",
@@ -3641,10 +3645,7 @@
     "privacy_s6": "쿠키 및 추적기",
     "privacy_s7": "이용자의 권리 (GDPR)",
     "privacy_s8": "보안",
-    "privacy_s9": "문의 및 이의 제기",
-    "cgv_title": "판매 일반 약관",
-    "notice_title": "법적 고지",
-    "cookies_title": "쿠키 및 트래커"
+    "privacy_s9": "문의 및 이의 제기"
   },
   "factions_page": {
     "back": "홈으로 돌아가기",

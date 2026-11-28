@@ -5,6 +5,7 @@ import type { getAdminClient } from "@/lib/admin/requireAdmin";
 import { initialStateFromSetup, reglesDuSnapshot, setupFromSnapshot, type MatchSetupSnapshot } from "@/lib/game/match-setup";
 import { replayMatch, type ActionRow, type MulliganRow } from "@/lib/game/replay";
 import { decideResult, type ResultDecision } from "@/lib/game/match-result";
+import { ESSENCE_DAILY_WIN } from "@/lib/economy/constants";
 
 type Db = ReturnType<typeof getAdminClient>;
 
@@ -84,5 +85,40 @@ export async function cloturerPartie(
   if (error) throw new Error(error.message);
 
   if (decision.source !== "server") console.warn("[finalize]", id, decision.source, decision.notes);
+  else await recompenserVictoireDuJour(db, id, decision.winnerId);
   return decision;
+}
+
+/** Première victoire du jour : essence pour le vainqueur d'un résultat
+ *  « server ». La fonction SQL revérifie la partie et n'accorde qu'une
+ *  récompense par joueur et par jour ; l'appeler deux fois est sans effet.
+ *
+ *  Un échec ne fait PAS échouer la clôture : le résultat est déjà écrit, et le
+ *  renvoyer en erreur ferait réessayer le client pour rien. Il est journalisé. */
+async function recompenserVictoireDuJour(db: Db, matchId: string, winnerId: string): Promise<void> {
+  const { error } = await db.rpc("grant_daily_win_essence", {
+    p_user_id: winnerId,
+    p_match_id: matchId,
+    p_amount: ESSENCE_DAILY_WIN,
+  });
+  if (error) console.error("[finalize] récompense d'essence en échec", matchId, error.message);
+}
+
+/** Récompense d'essence que CETTE partie a value à ce joueur, s'il y en a une.
+ *  Lue dans le journal plutôt que renvoyée par l'attribution : la clôture est
+ *  souvent déclenchée par l'appel du PERDANT, et le vainqueur n'apprendrait
+ *  alors jamais qu'il a été crédité. */
+export async function recompenseDeLaPartie(
+  db: Db,
+  matchId: string,
+  userId: string,
+): Promise<{ amount: number; essence: number } | null> {
+  const { data } = await db
+    .from("essence_transactions")
+    .select("amount, essence_after")
+    .eq("user_id", userId)
+    .eq("type", "reward_daily_win")
+    .eq("metadata->>match_id", matchId)
+    .maybeSingle();
+  return data ? { amount: data.amount as number, essence: data.essence_after as number } : null;
 }
