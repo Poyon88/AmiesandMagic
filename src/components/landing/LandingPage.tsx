@@ -209,12 +209,17 @@ export default function LandingPage({
           </div>
         </section>
 
-        {/* Rendue par le projet Remotion de `video/` (npm run render). Muette :
-            aucune musique n'est livrée avec. `preload="none"` — les 8 Mo ne
-            partent que si le visiteur lance la lecture. */}
+        {/* Vidéo promotionnelle fournie telle quelle (30 s, 1920×1080, avec
+            piste son) ; l'image d'attente est sa propre image à 4 s.
+            `preload="none"` — les 15 Mo ne partent que si le visiteur lance
+            la lecture.
+            DEUX cadrages : 16:9, et 9:16 pour un téléphone tenu debout. Ce
+            sont deux balises, dont le CSS n'affiche qu'une (`vitrine.css`) :
+            l'image d'attente et les proportions du cadre changent avec le
+            cadrage, ce qu'un `<source media>` seul ne ferait pas. */}
         <section id="bande-annonce" className="vt-section">
             <h2 className="vt-h2">{txt.trailer_title}</h2>
-            <div className="vt-film">
+            <div className="vt-film vt-film-paysage">
               <video
                 controls
                 playsInline
@@ -223,6 +228,17 @@ export default function LandingPage({
                 aria-label={txt.trailer_title}
               >
                 <source src="/videos/bande-annonce.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <div className="vt-film vt-film-portrait">
+              <video
+                controls
+                playsInline
+                preload="none"
+                poster="/videos/bande-annonce-mobile.jpg"
+                aria-label={txt.trailer_title}
+              >
+                <source src="/videos/bande-annonce-mobile.mp4" type="video/mp4" />
               </video>
             </div>
         </section>

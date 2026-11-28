@@ -339,6 +339,17 @@
   border-radius: var(--vt-r-lg); overflow: hidden; background: #000;
 }
 .vt-film video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Deux cadrages de la bande-annonce : le 9:16 remplace le 16:9 sur un
+   téléphone tenu debout. Sa hauteur est bornée pour que les commandes de
+   lecture restent à l'écran. */
+.vt-film-portrait {
+  display: none; aspect-ratio: 9 / 16;
+  width: min(100%, calc(78svh * 9 / 16)); margin-inline: auto;
+}
+@media (orientation: portrait) and (max-width: 720px) {
+  .vt-film-paysage { display: none; }
+  .vt-film-portrait { display: block; }
+}
 
 /* Tournois */
 /* Le tableau grandit avec l'écran : il remplit sa colonne jusqu'à ~46 % de la
