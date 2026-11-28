@@ -9,6 +9,10 @@ import {
   emitImpact,
   paletteFor,
   isBigHit,
+  isHugeHit,
+  colonneAscendante,
+  ondesMultiples,
+  poussiereAuSol,
   directionalDebris,
   sparkBurst,
   embers,
@@ -145,6 +149,70 @@ export default function ImpactFxLayer() {
     const spawn = (e: ImpactEmit) => {
       if (reducedRef.current) return;
       const intensity = Math.min(e.amount, 12);
+      if (e.type === "secousse") return; // rien à peindre : lu par useScreenShake
+      if (e.type === "poussiere") {
+        // Carte qui se pose : poussière au sol, ralentie comme le reste de l'entrée.
+        const k = e.lenteur ?? 1;
+        const prises: Particle[] = [];
+        poussiereAuSol(() => { const p = acquire(); prises.push(p); return p; }, e.x, e.y, intensity, e.teinte);
+        for (const p of prises) {
+          p.life *= k; p.age *= k;
+          p.vx /= k; p.vy /= k;
+          p.gravity /= k * k; p.drag /= k;
+        }
+        arm();
+        return;
+      }
+      if (e.type === "summon_unique") {
+        // Entrée d'une Unique — l'énergie converge, une colonne jaillit, deux
+        // ondes partent au sol. Corps teinté à la couleur de la faction.
+        // Ralenti propre à l'effet : on note les particules prises, puis on
+        // étire leur vie et on freine leur mouvement d'autant (vitesse ÷ k,
+        // gravité ÷ k², frottement ÷ k ⇒ même trajectoire, parcourue k× plus
+        // lentement).
+        const k = e.lenteur ?? 1;
+        const prises: Particle[] = [];
+        const prendre = k === 1 ? acquire : () => { const p = acquire(); prises.push(p); return p; };
+        const base = paletteFor("unique");
+        const pal = e.teinte ? { ...base, ember: e.teinte, ring: e.teinte } : base;
+        // Trois paliers : Unique (colonne, deux ondes), Épique (allégé, sans
+        // colonne), Rare (quelques motes et une onde, sans convergence).
+        const palier = e.palier ?? 4;
+        if (palier >= 4) {
+          arcaneConverge(prendre, e.x, e.y, 12, pal);
+          colonneAscendante(prendre, e.x, e.y, pal);
+          sparkBurst(prendre, e.x, e.y, 8, true, base);
+          ondesMultiples(prendre, e.x, e.y, 2, pal);
+        } else if (palier === 3) {
+          arcaneConverge(prendre, e.x, e.y, 6, pal);
+          risingMotes(prendre, e.x, e.y, 9, pal);
+          sparkBurst(prendre, e.x, e.y, 3, false, base);
+          ondesMultiples(prendre, e.x, e.y, 1, pal);
+        } else {
+          risingMotes(prendre, e.x, e.y, 5, pal);
+          ondesMultiples(prendre, e.x, e.y, 1, pal);
+        }
+        for (const p of prises) {
+          p.life *= k; p.age *= k;
+          p.vx /= k; p.vy /= k;
+          p.gravity /= k * k; p.drag /= k;
+        }
+        arm();
+        return;
+      }
+      if (e.type === "fatal") {
+        // Héros abattu — la plus grosse explosion du jeu.
+        const pal = paletteFor("fatal");
+        ondesMultiples(acquire, e.x, e.y, 4, pal);
+        sparkBurst(acquire, e.x, e.y, 12, true, pal);
+        sparkBurst(acquire, e.x, e.y, 12, true, paletteFor("damage"));
+        directionalDebris(acquire, e.x, e.y, 0, 0, 12, true, pal);
+        deathShards(acquire, e.x, e.y, pal);
+        embers(acquire, e.x, e.y, 12, true, pal);
+        colonneAscendante(acquire, e.x, e.y, pal);
+        arm();
+        return;
+      }
       if (e.type === "death") {
         // The unit comes apart — shards fall, ash settles, soul rises.
         const pal = paletteFor(e.poisoned ? "death_poison" : "death");
@@ -199,6 +267,11 @@ export default function ImpactFxLayer() {
         sparkBurst(acquire, e.x, e.y, intensity, e.big, pal);
         directionalDebris(acquire, e.x, e.y, e.dirX, e.dirY, intensity, e.big, pal);
         embers(acquire, e.x, e.y, intensity, e.big, pal);
+        // Palier « énorme » : seconde salve et ondes en cascade.
+        if (isHugeHit(e.amount)) {
+          ondesMultiples(acquire, e.x, e.y, 3, pal);
+          directionalDebris(acquire, e.x, e.y, 0, 0, intensity, true, pal);
+        }
       }
       arm();
     };
@@ -347,6 +420,8 @@ export default function ImpactFxLayer() {
           dirX,
           dirY,
           big: isBigHit(ev.amount),
+          // Seuls les vrais dégâts énormes secouent le plateau.
+          ...(evType === "damage" && isHugeHit(ev.amount) ? { secousse: 9 } : {}),
         });
       };
       const delay = ev.delayMs ?? 0;

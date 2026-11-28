@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useAnimationControls } from "framer-motion";
 import { useGameStore } from "@/lib/store/gameStore";
-import { SHAKE_THRESHOLD, BIG_HIT_THRESHOLD } from "@/lib/fx/impactFx";
+import { SHAKE_THRESHOLD, BIG_HIT_THRESHOLD, HUGE_HIT_THRESHOLD, subscribe } from "@/lib/fx/impactFx";
 
 const HIT_STOP_MS = 70;
 const BIG_HIT_STOP_MS = 110; // longer freeze on big hits — the cinematic beat
+const HUGE_HIT_STOP_MS = 160; // palier « énorme » (≥ 10) : l'arrêt le plus long
 const DEATH_STOP_MS = 75; // brief freeze on a death (a bigger beat than a small hit)
 
 export function useScreenShake() {
@@ -37,7 +38,7 @@ export function useScreenShake() {
     const earliestDelay = Math.min(...damageOnly.map((e) => e.delayMs ?? 0));
     const isBig = biggest >= BIG_HIT_THRESHOLD;
     let freezeTimer: ReturnType<typeof setTimeout> | null = null;
-    const hitStop = isBig ? BIG_HIT_STOP_MS : HIT_STOP_MS;
+    const hitStop = biggest >= HUGE_HIT_THRESHOLD ? HUGE_HIT_STOP_MS : isBig ? BIG_HIT_STOP_MS : HIT_STOP_MS;
 
     // Hit-stop only: a brief brightness/contrast punch on the board (filter,
     // driven by isFrozen) — NO positional shake/recoil. The board no longer
@@ -56,6 +57,23 @@ export function useScreenShake() {
       if (freezeTimer) clearTimeout(freezeTimer);
     };
   }, [damageEvents, shakeControls]);
+
+  // SECOUSSE DU PLATEAU — réservée aux moments forts. Les coups ordinaires ne
+  // déplacent plus le plateau (choix antérieur, conservé) : seuls les effets
+  // qui portent explicitement `secousse` (dégâts ≥ 10, entrée d'une Unique,
+  // héros abattu) le font trembler, amplitude décroissante, ~0,45 s.
+  useEffect(() => {
+    return subscribe((e) => {
+      const a = e.secousse;
+      if (!a) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      void shakeControls.start({
+        x: [0, -a, a * 0.75, -a * 0.5, a * 0.3, -a * 0.12, 0],
+        y: [0, a * 0.45, -a * 0.35, a * 0.2, -a * 0.1, 0, 0],
+        transition: { duration: 0.45, ease: "easeOut" },
+      });
+    });
+  }, [shakeControls]);
 
   // A death is a bigger narrative beat than a small hit but, when it comes from
   // an effect or poison rather than a heavy strike, it gets no damage-driven

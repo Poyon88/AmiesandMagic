@@ -41,6 +41,7 @@ import ChoiceTimerBadge from "./ChoiceTimerBadge";
 import TargetingArrow from "./TargetingArrow";
 import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
+import { CoupFatalOverlay, EntreeUniqueOverlay } from "./MomentsForts";
 import SpellCastOverlay from "./SpellCastOverlay";
 import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
@@ -105,6 +106,12 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
   const t = useTranslations("game");
   const vocab = useVocab();
   const { shakeControls, isFrozen, isFrozenBig } = useScreenShake();
+  // COUP FATAL : l'écran de fin attend la mise en scène du héros abattu.
+  // "attente" → (éventuellement "encours") → "finie". Cf. CoupFatalOverlay, qui
+  // passe directement à "finie" quand il n'y a rien à jouer.
+  const [finale, setFinale] = useState<"attente" | "encours" | "finie">("attente");
+  const debuterFinale = useCallback(() => setFinale("encours"), []);
+  const finirFinale = useCallback(() => setFinale("finie"), []);
 
   const {
     gameState,
@@ -1321,7 +1328,10 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
           width: boardWidth,
           height: DESIGN_H,
           position: "relative",
-          filter: isFrozen
+          filter: finale === "encours"
+            // Coup fatal : le plateau se vide de ses couleurs autour du héros.
+            ? "saturate(0.3) brightness(0.82)"
+            : isFrozen
             ? isFrozenBig
               // Punchy but cross-browser safe. Firefox applies brightness()/
               // saturate() in a way that blows out the (already bright) board
@@ -1330,7 +1340,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               ? "brightness(1.32) saturate(1.45) contrast(1.15)"
               : "brightness(1.22) saturate(1.3) contrast(1.1)"
             : "none",
-          transition: isFrozen ? "none" : "filter 90ms ease-out",
+          transition: finale === "encours" ? "filter 450ms ease-out" : isFrozen ? "none" : "filter 90ms ease-out",
         }}
       >
         {/* Board artwork — next/image pipeline respects DPR and serves the
@@ -2335,16 +2345,25 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       {!mulliganOverlayRequired && !isFinished && (
         <ActionHistoryStrip entries={actionHistory} />
       )}
-      {isFinished && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      {isFinished && finale === "finie" && (
+        <motion.div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+        >
           <div className="text-center">
-            <h1
+            {/* Le verdict s'abat : grand, puis se pose. */}
+            <motion.h1
               className={`text-6xl font-bold mb-4 ${
                 isWinner ? "text-success" : "text-accent"
               }`}
+              initial={{ opacity: 0, scale: 2.4, letterSpacing: "0.3em" }}
+              animate={{ opacity: 1, scale: 1, letterSpacing: "0.04em" }}
+              transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
               {isWinner ? "VICTORY" : "DEFEAT"}
-            </h1>
+            </motion.h1>
             {isWinner && dailyWinEssence != null && (
               <p className="mb-6 flex items-center justify-center gap-2 text-xl font-semibold text-violet-200" role="status">
                 {t("daily_win_essence", { amount: dailyWinEssence })}
@@ -2358,7 +2377,7 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
               Return to Menu
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Multi-target spell banner */}
@@ -2411,6 +2430,8 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
 
       {/* Damage animation overlay */}
       <ImpactFxLayer />
+      <EntreeUniqueOverlay />
+      <CoupFatalOverlay onDebut={debuterFinale} onFin={finirFinale} />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />
       <PowerArrowOverlay event={powerArrowEvent} onComplete={clearPowerArrowEvent} />

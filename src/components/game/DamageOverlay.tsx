@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import type { DamageEvent } from "@/lib/game/types";
-import { isBigHit } from "@/lib/fx/impactFx";
+import { isBigHit, isHugeHit } from "@/lib/fx/impactFx";
 import { lent } from "@/lib/fx/overlayMotion";
 
 interface DamageOverlayProps {
@@ -413,8 +413,25 @@ function DamagePopup({ event }: { event: DamageEvent }) {
   // also draw a radial flash here, but that stacked a second, flatter glow on
   // top of the Canvas shockwave at the same point — muddy. Canvas owns the glow.
   const big = isBigHit(event.amount);
+  // Palier « énorme » (≥ 10) : chiffre encore plus gros, tenu plus longtemps à
+  // sa taille de pointe, et un éclair plein écran centré sur l'impact.
+  const huge = isHugeHit(event.amount);
 
   return (
+    <>
+    {huge && (
+      <motion.div
+        style={{
+          position: "fixed",
+          inset: 0,
+          pointerEvents: "none",
+          background: `radial-gradient(circle at ${event.x}px ${event.y}px, rgba(255,244,214,0.85) 0%, rgba(255,120,60,0.4) 22%, rgba(180,20,20,0.16) 50%, transparent 75%)`,
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ duration: lent(0.55), times: [0, 0.14, 1], ease: "easeOut" }}
+      />
+    )}
     <motion.div
       style={{
         position: "absolute",
@@ -434,7 +451,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          fontSize: big ? "3.4rem" : "2.4rem",
+          fontSize: huge ? "4.6rem" : big ? "3.4rem" : "2.4rem",
           fontWeight: 900,
           color: big ? "#fff3d6" : textColor,
           // Dual-offset chromatic shadows give a punchy, slightly aberrated
@@ -451,9 +468,9 @@ function DamagePopup({ event }: { event: DamageEvent }) {
         initial={{ y: 10, scale: 0.2, opacity: 0, rotate: -12 }}
         animate={{
           y: [10, -6, -6, -52],
-          scale: big ? [0.2, 2.4, 1.8, 1.3] : [0.2, 1.9, 1.6, 1.2],
+          scale: huge ? [0.2, 2.9, 2, 1.4] : big ? [0.2, 2.4, 1.8, 1.3] : [0.2, 1.9, 1.6, 1.2],
           opacity: [0, 1, 1, 0],
-          rotate: [-12, big ? 5 : 4, 0, 0],
+          rotate: [-12, huge ? 8 : big ? 5 : 4, 0, 0],
         }}
         transition={{
           duration: lent(3.5),
@@ -464,6 +481,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
         {big ? `${format(event)}!` : format(event)}
       </motion.span>
     </motion.div>
+    </>
   );
 }
 
