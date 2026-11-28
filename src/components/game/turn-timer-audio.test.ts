@@ -1,7 +1,7 @@
 // Cadrage sonore du chrono : QUAND l'alarme des 15 secondes doit sonner.
 //
 // Deux horloges se partagent le composant depuis l'ajout de la fenêtre de choix
-// (`CHOICE_TIMER_SECONDS`) : celle du TOUR (90 s) et celle du CHOIX (20 s). Or
+// (`CHOICE_TIMER_SECONDS`) : celle du TOUR (90 s) et celle du CHOIX (30 s). Or
 // l'alarme se déclenche quand le compteur passe sous `WARNING_THRESHOLD`, qui
 // tombe à l'intérieur de la seconde — l'alerte partait donc au beau milieu de
 // chaque fenêtre de choix, alors que le joueur avait tout son temps,

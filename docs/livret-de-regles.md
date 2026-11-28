@@ -150,7 +150,7 @@ Le chapitre « Lexique des capacités » donne l'effet de chaque capacité, et �
 
 **Qui choisit.** Quand un effet demande un choix — une cible, une carte parmi plusieurs —, c'est toujours le **propriétaire de l'effet** qui choisit, même pendant le tour adverse.
 
-**Délai.** Le joueur dispose de 20 secondes par choix. Pendant ce temps le chrono du tour est suspendu. Sans réponse, le jeu tranche au hasard.
+**Délai.** Le joueur dispose de 30 secondes par choix. Pendant ce temps le chrono du tour est suspendu. Sans réponse, le jeu tranche au hasard.
 
 **Tant qu'un choix est en attente**, aucune autre action n'est possible, pour les deux joueurs : il faut d'abord le régler.
 
@@ -571,7 +571,7 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 
 **Choix à faire pendant une partie**
 - Tout choix lié à un effet revient au propriétaire de la carte qui le déclenche, même pendant le tour adverse (par exemple un effet « à la mort » qui demande une cible).
-- Vous disposez de 20 secondes pour chaque choix ; passé ce délai, le choix est fait au hasard.
+- Vous disposez de 30 secondes pour chaque choix ; passé ce délai, le choix est fait au hasard.
 - Le temps passé dans une fenêtre de choix n'est pas décompté du chrono de tour (90 secondes).
 - Si le joueur qui doit choisir ne répond pas (déconnexion), le choix est tranché au hasard au bout de 45 secondes supplémentaires.
 - Un effet « à l'attaque » qui demande de choisir une carte (Sélection X, Sélection Royale X…) suspend l'attaque : vous choisissez d'abord, le combat a lieu ensuite.
@@ -780,7 +780,7 @@ Cas particuliers, exceptions et arbitrages. Ils complètent le lexique : en cas 
 - Les effets de fin de tour se résolvent un par un, de gauche à droite selon la position des unités sur le terrain (et non selon l'ordre dans lequel elles ont été jouées).
 - Une unité tuée par un effet de fin de tour situé à sa gauche ne déclenche pas son propre effet de fin de tour.
 - Un effet de fin de tour qui demande de choisir une cible met la fin du tour en pause ; le tour ne passe à l'adversaire qu'une fois le choix fait, et les effets situés plus à droite attendent ce choix.
-- Vous disposez de 20 secondes pour chaque choix, indépendamment du temps restant sur le chrono du tour ; passé ce délai, la cible est tirée au hasard parmi les cibles valides.
+- Vous disposez de 30 secondes pour chaque choix, indépendamment du temps restant sur le chrono du tour ; passé ce délai, la cible est tirée au hasard parmi les cibles valides.
 - Si un effet en attente n'a plus aucune cible valide au moment de choisir, il est abandonné et le tour se poursuit.
 - Demander deux fois la fin du tour pendant une pause de choix ne rejoue pas les effets de fin de tour et ne fait passer le tour qu'une seule fois.
 - Un effet « au choix » déclenché pendant votre tour et resté sans cible désignée quand vous terminez le tour est abandonné.
