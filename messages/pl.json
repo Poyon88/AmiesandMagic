@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Plaga",
     "infestation_eclosion_caption": "🪳 Plaga — wylęg",
     "enterrement_caption": "⚰ Pochówek",
-    "daily_win_essence": "Pierwsze zwycięstwo dnia: +{amount} esencji"
+    "daily_win_essence": "Pierwsze zwycięstwo dnia: +{amount} esencji",
+    "turn_banner_mine": "Twoja tura",
+    "turn_banner_theirs": "Tura przeciwnika"
   },
   "tutorial": {
     "page_eyebrow": "Poznaj sztukę pojedynku",

@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Infestazione",
     "infestation_eclosion_caption": "🪳 Infestazione — schiusa",
     "enterrement_caption": "⚰ Sepoltura",
-    "daily_win_essence": "Prima vittoria del giorno: +{amount} essenza"
+    "daily_win_essence": "Prima vittoria del giorno: +{amount} essenza",
+    "turn_banner_mine": "Tocca a te",
+    "turn_banner_theirs": "Turno avversario"
   },
   "tutorial": {
     "page_eyebrow": "Impara l'arte del duello",

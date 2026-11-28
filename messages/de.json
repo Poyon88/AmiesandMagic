@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Befall",
     "infestation_eclosion_caption": "🪳 Befall — Schlüpfen",
     "enterrement_caption": "⚰ Begräbnis",
-    "daily_win_essence": "Erster Sieg des Tages: +{amount} Essenz"
+    "daily_win_essence": "Erster Sieg des Tages: +{amount} Essenz",
+    "turn_banner_mine": "Du bist am Zug",
+    "turn_banner_theirs": "Gegnerischer Zug"
   },
   "tutorial": {
     "page_eyebrow": "Lerne die Kunst des Duells",

@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 侵食",
     "infestation_eclosion_caption": "🪳 侵食 — 孵化",
     "enterrement_caption": "⚰ 埋葬",
-    "daily_win_essence": "本日の初勝利:エッセンス+{amount}"
+    "daily_win_essence": "本日の初勝利:エッセンス+{amount}",
+    "turn_banner_mine": "あなたのターン",
+    "turn_banner_theirs": "相手のターン"
   },
   "tutorial": {
     "page_eyebrow": "決闘の極意を学べ",

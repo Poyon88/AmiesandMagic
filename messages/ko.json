@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 감염",
     "infestation_eclosion_caption": "🪳 감염 — 부화",
     "enterrement_caption": "⚰ 매장",
-    "daily_win_essence": "오늘의 첫 승리: 정수 +{amount}"
+    "daily_win_essence": "오늘의 첫 승리: 정수 +{amount}",
+    "turn_banner_mine": "당신의 차례",
+    "turn_banner_theirs": "상대의 차례"
   },
   "tutorial": {
     "page_eyebrow": "결투의 기술을 배워 보세요",

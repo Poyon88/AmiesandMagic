@@ -43,6 +43,7 @@ import DamageOverlay from "./DamageOverlay";
 import ImpactFxLayer from "./ImpactFxLayer";
 import { AmesOverlay, CoupFatalOverlay, EntreeUniqueOverlay } from "./MomentsForts";
 import AmbianceLayer, { genreAmbiance } from "./AmbianceLayer";
+import { BanniereDeTour, PalierOverlay, VersusOverlay } from "./MomentsRares";
 import SpellCastOverlay from "./SpellCastOverlay";
 import PowerArrowOverlay from "./PowerArrowOverlay";
 import FireBreathOverlay from "./FireBreathOverlay";
@@ -2441,6 +2442,9 @@ export default function GameBoard({ onAction, onMulliganRevealDone, opponentMull
       <ImpactFxLayer />
       <EntreeUniqueOverlay />
       <AmesOverlay />
+      <VersusOverlay />
+      <BanniereDeTour actif={!mulliganOverlayRequired && !isFinished} />
+      <PalierOverlay />
       <CoupFatalOverlay onDebut={debuterFinale} onFin={finirFinale} />
       <DamageOverlay events={damageEvents} />
       <SpellCastOverlay event={spellCastEvent} onComplete={clearSpellCastEvent} />

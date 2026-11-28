@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 侵蝕",
     "infestation_eclosion_caption": "🪳 侵蝕 — 孵化",
     "enterrement_caption": "⚰ 掩埋",
-    "daily_win_essence": "今日首勝:+{amount} 精華"
+    "daily_win_essence": "今日首勝:+{amount} 精華",
+    "turn_banner_mine": "輪到你了",
+    "turn_banner_theirs": "對手回合"
   },
   "tutorial": {
     "page_eyebrow": "學習決鬥的藝術",

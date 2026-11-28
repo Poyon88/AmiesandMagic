@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Infestation",
     "infestation_eclosion_caption": "🪳 Infestation — hatching",
     "enterrement_caption": "⚰ Burial",
-    "daily_win_essence": "First win of the day: +{amount} essence"
+    "daily_win_essence": "First win of the day: +{amount} essence",
+    "turn_banner_mine": "Your turn",
+    "turn_banner_theirs": "Opponent's turn"
   },
   "tutorial": {
     "page_eyebrow": "Master the Art of the Duel",

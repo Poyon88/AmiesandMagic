@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 التفشي",
     "infestation_eclosion_caption": "🪳 التفشي — الفقس",
     "enterrement_caption": "⚰ الدفن",
-    "daily_win_essence": "أول انتصار في اليوم: +{amount} جوهر"
+    "daily_win_essence": "أول انتصار في اليوم: +{amount} جوهر",
+    "turn_banner_mine": "دورك الآن",
+    "turn_banner_theirs": "دور الخصم"
   },
   "tutorial": {
     "page_eyebrow": "تعلّم فنون المبارزة",

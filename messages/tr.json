@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Istila",
     "infestation_eclosion_caption": "🪳 Istila — yumurtadan çıkış",
     "enterrement_caption": "⚰ Gömme",
-    "daily_win_essence": "Günün ilk zaferi: +{amount} öz"
+    "daily_win_essence": "Günün ilk zaferi: +{amount} öz",
+    "turn_banner_mine": "Sıra sizde",
+    "turn_banner_theirs": "Rakibin sırası"
   },
   "tutorial": {
     "page_eyebrow": "Düello sanatını öğren",
@@ -3951,6 +3953,7 @@
     "tx_admin_debit": "Borç",
     "tx_craft": "Dövme",
     "tx_reward_tournament": "Turnuva ödülü",
+    "tx_reward_daily_win": "Günün Zaferi",
     "tx_auction_escrow": "Müzayede teklifi",
     "tx_auction_refund": "Teklif iadesi",
     "print_ref": "(no. {n}/{max})",
@@ -3987,7 +3990,6 @@
     "lots_none": "Aktif lot yok. Turnuvalar pazar kredisi kazandırır.",
     "lots_expired_recent": "Yakın zamanda süresi dolanlar",
     "history": "Geçmiş",
-    "history_empty": "Henüz hiçbir hareket yok.",
-    "tx_reward_daily_win": "Günün Zaferi"
+    "history_empty": "Henüz hiçbir hareket yok."
   }
 }

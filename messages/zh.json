@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 侵染",
     "infestation_eclosion_caption": "🪳 侵染 — 孵化",
     "enterrement_caption": "⚰ 埋葬",
-    "daily_win_essence": "每日首胜:+{amount} 精华"
+    "daily_win_essence": "每日首胜:+{amount} 精华",
+    "turn_banner_mine": "轮到你了",
+    "turn_banner_theirs": "对手回合"
   },
   "tutorial": {
     "page_eyebrow": "学习决斗之道",

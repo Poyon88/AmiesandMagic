@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Заражение",
     "infestation_eclosion_caption": "🪳 Заражение — вылупление",
     "enterrement_caption": "⚰ Погребение",
-    "daily_win_essence": "Первая победа за день: +{amount} эссенции"
+    "daily_win_essence": "Первая победа за день: +{amount} эссенции",
+    "turn_banner_mine": "Ваш ход",
+    "turn_banner_theirs": "Ход противника"
   },
   "tutorial": {
     "page_eyebrow": "Постигни искусство дуэли",

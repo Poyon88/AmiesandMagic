@@ -3414,7 +3414,9 @@
     "infestation_caption": "🪳 Infestation",
     "infestation_eclosion_caption": "🪳 Infestation — éclosion",
     "enterrement_caption": "⚰ Enterrement",
-    "daily_win_essence": "Première victoire du jour : +{amount} essence"
+    "daily_win_essence": "Première victoire du jour : +{amount} essence",
+    "turn_banner_mine": "À vous de jouer",
+    "turn_banner_theirs": "Tour adverse"
   },
   "tutorial": {
     "page_eyebrow": "Apprends l'art du duel",
