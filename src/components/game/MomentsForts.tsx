@@ -33,10 +33,11 @@ function hexVersRgb(hex: string): [number, number, number] | null {
 
 // ─── Entrée d'une Unique ─────────────────────────────────────────────────────
 
-/** Ralenti propre aux entrées (×1,5 = 50 % plus lentes) : à la cadence
- *  d'origine on n'avait pas le temps de les savourer. S'applique au faisceau,
- *  aux ondes, à l'assombrissement ET aux particules (cf. `lenteur` de l'effet). */
-export const LENTEUR_ENTREE = 1.5;
+/** Ralenti propre aux entrées. Essayé à 1,5 (50 % plus lentes) puis ramené à 1,
+ *  la cadence d'origine : le ralenti pesait sur le rythme de la partie. Le
+ *  réglage reste unique — faisceau, ondes, assombrissement ET particules
+ *  (cf. `lenteur` de l'effet) le suivent ensemble. */
+export const LENTEUR_ENTREE = 1;
 const lentE = (duree: number): number => lent(duree) * LENTEUR_ENTREE;
 /** Durée totale de la mise en scène d'entrée (ms). */
 const ENTREE_MS = lentE(1500);

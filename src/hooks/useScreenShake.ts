@@ -7,7 +7,7 @@ import { SHAKE_THRESHOLD, BIG_HIT_THRESHOLD, HUGE_HIT_THRESHOLD, subscribe } fro
 
 const HIT_STOP_MS = 70;
 const BIG_HIT_STOP_MS = 110; // longer freeze on big hits — the cinematic beat
-const HUGE_HIT_STOP_MS = 160; // palier « énorme » (≥ 10) : l'arrêt le plus long
+const HUGE_HIT_STOP_MS = 160; // palier « énorme » (≥ 6) : l'arrêt le plus long
 const DEATH_STOP_MS = 75; // brief freeze on a death (a bigger beat than a small hit)
 
 export function useScreenShake() {
@@ -60,7 +60,7 @@ export function useScreenShake() {
 
   // SECOUSSE DU PLATEAU — réservée aux moments forts. Les coups ordinaires ne
   // déplacent plus le plateau (choix antérieur, conservé) : seuls les effets
-  // qui portent explicitement `secousse` (dégâts ≥ 10, entrée d'une Unique,
+  // qui portent explicitement `secousse` (dégâts ≥ 6, entrée d'une Unique,
   // héros abattu) le font trembler, amplitude décroissante, ~0,45 s.
   useEffect(() => {
     return subscribe((e) => {

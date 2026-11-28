@@ -18,9 +18,11 @@ export function isBigHit(amount: number): boolean {
   return amount >= BIG_HIT_THRESHOLD;
 }
 
-/** Troisième palier — le coup « énorme » : rare, il a droit à la secousse du
- *  plateau, à un éclair plein écran et à une seconde onde de choc. */
-export const HUGE_HIT_THRESHOLD = 10;
+/** Le coup « énorme » : secousse du plateau, éclair plein écran, ondes en
+ *  cascade. Compté PAR CIBLE (un coup de 6 sur une unité, pas 3 + 3 sur deux).
+ *  D'abord placé à 10, ramené à 6 : il se confond désormais avec le gros coup,
+ *  les deux paliers se déclenchent ensemble. */
+export const HUGE_HIT_THRESHOLD = 6;
 export function isHugeHit(amount: number): boolean {
   return amount >= HUGE_HIT_THRESHOLD;
 }

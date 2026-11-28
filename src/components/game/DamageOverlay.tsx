@@ -413,7 +413,7 @@ function DamagePopup({ event }: { event: DamageEvent }) {
   // also draw a radial flash here, but that stacked a second, flatter glow on
   // top of the Canvas shockwave at the same point — muddy. Canvas owns the glow.
   const big = isBigHit(event.amount);
-  // Palier « énorme » (≥ 10) : chiffre encore plus gros, tenu plus longtemps à
+  // Palier « énorme » (≥ 6) : chiffre encore plus gros, tenu plus longtemps à
   // sa taille de pointe, et un éclair plein écran centré sur l'impact.
   const huge = isHugeHit(event.amount);
 
