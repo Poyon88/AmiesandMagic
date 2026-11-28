@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { AuctionSettings, AuctionWithDetails } from "@/lib/auction/types";
-import { getFactionDisplayName, getRarityLabel } from "@/lib/card-engine/constants";
+import { getFactionDisplayName, getRarityLabel, RARITIES } from "@/lib/card-engine/constants";
 
 import { minStartingBidForLot, isAuctionableRarity } from "@/lib/auction/pricing";
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -12,11 +12,22 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Annulée", color: "#999" },
 };
 
+/** Valeur du filtre « clan » pour les cartes qui n'en ont pas. */
+const SANS_CLAN = "__sans_clan__";
+
+/** Statuts que le serveur refuse à la mise en vente (voir /api/auctions) : une
+ *  carte exclue ne reviendra pas, un brouillon n'est pas encore public. */
+const STATUTS_INVENDABLES: Record<string, string> = {
+  excluded: "Exclue du jeu — non vendable",
+};
+
 interface CardRow {
   id: number;
   name: string;
   rarity: string;
   faction: string;
+  clan: string | null;
+  status: string | null;
   card_type: string;
   mana_cost: number;
 }
@@ -65,6 +76,10 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
   // Create auction form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
+  const [rarityFilter, setRarityFilter] = useState("");
+  const [factionFilter, setFactionFilter] = useState("");
+  // "" = tous les clans ; SANS_CLAN = les cartes dont le clan est vide.
+  const [clanFilter, setClanFilter] = useState("");
   const [selectedCardIds, setSelectedCardIds] = useState<Set<number>>(new Set());
   const [createStartingBid, setCreateStartingBid] = useState("10");
   const [createBuyoutPrice, setCreateBuyoutPrice] = useState("");
@@ -185,10 +200,27 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
   // Les COMMUNES ne sont jamais mises aux enchères (décision de l'auteur) :
   // elles sont retirées de la liste plutôt que refusées après coup, pour qu'on
   // ne puisse pas les sélectionner et découvrir l'interdiction à l'envoi.
-  const auctionableCards = cards.filter((c) => isAuctionableRarity(c.rarity));
-  const filteredCards = cardSearch
-    ? auctionableCards.filter((c) => c.name.toLowerCase().includes(cardSearch.toLowerCase()))
+  // Les BROUILLONS sont retirés de la même façon : pas encore publics, le
+  // serveur les refuse de toute manière.
+  const auctionableCards = cards.filter((c) => isAuctionableRarity(c.rarity) && c.status !== "draft");
+  // Les trois listes ne proposent que des valeurs réellement présentes parmi
+  // les cartes vendables ; celle des clans se resserre sur la faction choisie.
+  const rarityOptions = RARITIES.filter((r) => auctionableCards.some((c) => c.rarity === r.id));
+  const factionOptions = [...new Set(auctionableCards.map((c) => c.faction).filter(Boolean))]
+    .sort((a, b) => getFactionDisplayName(a).localeCompare(getFactionDisplayName(b), "fr"));
+  const cartesDeLaFaction = factionFilter
+    ? auctionableCards.filter((c) => c.faction === factionFilter)
     : auctionableCards;
+  const clanOptions = [...new Set(cartesDeLaFaction.map((c) => c.clan).filter((c): c is string => !!c))]
+    .sort((a, b) => a.localeCompare(b, "fr"));
+  const aDesSansClan = cartesDeLaFaction.some((c) => !c.clan);
+  const recherche = cardSearch.trim().toLowerCase();
+  const filteredCards = auctionableCards.filter((c) =>
+    (!recherche || c.name.toLowerCase().includes(recherche)) &&
+    (!rarityFilter || c.rarity === rarityFilter) &&
+    (!factionFilter || c.faction === factionFilter) &&
+    (!clanFilter || (clanFilter === SANS_CLAN ? !c.clan : c.clan === clanFilter)),
+  );
 
   // Plancher du lot en cours de composition : la rareté la plus élevée décide.
   const selectedRarities = cards
@@ -429,13 +461,59 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
                 onChange={(e) => setCardSearch(e.target.value)}
                 style={{ ...adminInputStyle, marginBottom: 8 }}
               />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 8 }}>
+                <select
+                  aria-label="Filtrer par rareté"
+                  value={rarityFilter}
+                  onChange={(e) => setRarityFilter(e.target.value)}
+                  style={adminInputStyle}
+                >
+                  <option value="">Toutes les raretés</option>
+                  {rarityOptions.map((r) => (
+                    <option key={r.id} value={r.id}>{r.label}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Filtrer par faction"
+                  value={factionFilter}
+                  onChange={(e) => {
+                    // Un clan appartient à une faction : changer celle-ci
+                    // laisserait un clan sans aucune carte.
+                    setFactionFilter(e.target.value);
+                    setClanFilter("");
+                  }}
+                  style={adminInputStyle}
+                >
+                  <option value="">Toutes les factions</option>
+                  {factionOptions.map((f) => (
+                    <option key={f} value={f}>{getFactionDisplayName(f)}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Filtrer par clan"
+                  value={clanFilter}
+                  onChange={(e) => setClanFilter(e.target.value)}
+                  style={adminInputStyle}
+                >
+                  <option value="">Tous les clans</option>
+                  {clanOptions.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                  {aDesSansClan && <option value={SANS_CLAN}>Sans clan</option>}
+                </select>
+              </div>
               <div style={{ maxHeight: 250, overflow: "auto", border: "1px solid #eee", borderRadius: 6 }}>
                   {filteredCards.slice(0, 100).map((card) => {
                     const isSelected = selectedCardIds.has(card.id);
+                    // Refusée par le serveur : on le dit sur la ligne et on
+                    // empêche la sélection, plutôt que de laisser tout le lot
+                    // échouer à l'envoi sans dire quelle carte bloque.
+                    const invendable = STATUTS_INVENDABLES[card.status ?? ""];
                     return (
                       <div
                         key={card.id}
-                        onClick={() => toggleCard(card.id)}
+                        onClick={invendable ? undefined : () => toggleCard(card.id)}
+                        aria-disabled={invendable ? true : undefined}
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
@@ -443,7 +521,8 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
                           padding: "8px 12px",
                           background: isSelected ? "#e3f2fd" : "transparent",
                           borderBottom: "1px solid #f5f5f5",
-                          cursor: "pointer",
+                          cursor: invendable ? "not-allowed" : "pointer",
+                          opacity: invendable ? 0.55 : 1,
                           fontSize: 13,
                         }}
                       >
@@ -451,9 +530,13 @@ export default function AuctionManager({ cards, firstAvailablePrint }: AuctionMa
                           <span style={{ color: "#bbb", fontSize: 11, marginRight: 6 }}>#{card.id}</span>
                           <span style={{ fontWeight: 500, color: "#333" }}>{card.name}</span>
                           <span style={{ color: "#999", marginLeft: 8, fontSize: 11 }}>
-                            {getRarityLabel(card.rarity)} — {getFactionDisplayName(card.faction)} — {card.card_type === "creature" ? "Créature" : card.card_type === "item" ? "Objet" : "Action"} — Mana: {card.mana_cost}
+                            {getRarityLabel(card.rarity)} — {getFactionDisplayName(card.faction)}{card.clan ? ` — ${card.clan}` : ""} — {card.card_type === "creature" ? "Créature" : card.card_type === "item" ? "Objet" : "Action"} — Mana: {card.mana_cost}
                           </span>
-                          {firstAvailablePrint[card.id] ? (
+                          {invendable ? (
+                            <span style={{ color: "#e74c3c", marginLeft: 8, fontSize: 11, fontWeight: 600 }}>
+                              {invendable}
+                            </span>
+                          ) : firstAvailablePrint[card.id] ? (
                             <span style={{ color: "#2196f3", marginLeft: 8, fontSize: 11, fontWeight: 600 }}>
                               Exemplaire #{firstAvailablePrint[card.id].print_number}/{firstAvailablePrint[card.id].max_prints}
                             </span>

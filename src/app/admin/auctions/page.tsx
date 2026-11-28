@@ -22,7 +22,7 @@ export default async function AdminAuctionsPage() {
     (from, to) =>
       supabase
         .from("cards")
-        .select("id, name, rarity, faction, card_type, mana_cost")
+        .select("id, name, rarity, faction, clan, card_type, mana_cost, status")
         .neq("rarity", "Commune")
         .order("name")
         .order("id")
